@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.*;
@@ -145,7 +145,7 @@ public class TestVectorizer {
   @Test
   public void testValidateNestedExpressions() {
     ExprNodeColumnDesc col1Expr = new ExprNodeColumnDesc(Integer.class, "col1", "table", false);
-    ExprNodeConstantDesc constDesc = new ExprNodeConstantDesc(new Integer(10));
+    ExprNodeConstantDesc constDesc = new ExprNodeConstantDesc(Integer.valueOf(10));
 
     GenericUDFOPGreaterThan udf = new GenericUDFOPGreaterThan();
     ExprNodeGenericFuncDesc greaterExprDesc = new ExprNodeGenericFuncDesc();

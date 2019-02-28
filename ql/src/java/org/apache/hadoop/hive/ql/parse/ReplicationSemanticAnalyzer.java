@@ -19,9 +19,9 @@ package org.apache.hadoop.hive.ql.parse;
 
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -36,17 +36,21 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URI;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Reader;
+import static org.apache.hadoop.hive.ql.exec.repl.ExternalTableCopyTaskBuilder.DirCopyWork;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEQUERYID;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_ENABLE_MOVE_OPTIMIZATION;
@@ -81,10 +85,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   private static String testInjectDumpDir = null; // unit tests can overwrite this to affect default dump behaviour
   private static final String dumpSchema = "dump_dir,last_repl_id#string,string";
 
-  public static final String LAST_REPL_ID_KEY = "hive.repl.last.repl.id";
-  public static final String FUNCTIONS_ROOT_DIR_NAME = "_functions";
-  public static final String CONSTRAINTS_ROOT_DIR_NAME = "_constraints";
-
   ReplicationSemanticAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
     this.db = super.db;
@@ -95,6 +95,9 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   public void analyzeInternal(ASTNode ast) throws SemanticException {
     LOG.debug("ReplicationSemanticAanalyzer: analyzeInternal");
     LOG.debug(ast.getName() + ":" + ast.getToken().getText() + "=" + ast.getText());
+    // Some of the txn related configs were not set when ReplicationSemanticAnalyzer.conf was initialized.
+    // It should be set first.
+    setTxnConfigs();
     switch (ast.getToken().getType()) {
       case TOK_REPL_DUMP: {
         LOG.debug("ReplicationSemanticAnalyzer: analyzeInternal: dump");
@@ -121,6 +124,13 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       default: {
         throw new SemanticException("Unexpected root token");
       }
+    }
+  }
+
+  private void setTxnConfigs() {
+    String validTxnList = queryState.getConf().get(ValidTxnList.VALID_TXNS_KEY);
+    if (validTxnList != null) {
+      conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList);
     }
   }
 
@@ -360,20 +370,41 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       DumpMetaData dmd = new DumpMetaData(loadPath, conf);
 
       boolean evDump = false;
-      if (dmd.isIncrementalDump()){
+      // we will decide what hdfs locations needs to be copied over here as well.
+      if (dmd.isIncrementalDump()) {
         LOG.debug("{} contains an incremental dump", loadPath);
         evDump = true;
       } else {
         LOG.debug("{} contains an bootstrap dump", loadPath);
       }
-
       ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern,
-              tblNameOrPattern, queryState.getLineageState(), evDump, dmd.getEventTo());
+          tblNameOrPattern, queryState.getLineageState(), evDump, dmd.getEventTo(),
+          dirLocationsToCopy(loadPath, evDump));
       rootTasks.add(TaskFactory.get(replLoadWork, conf));
     } catch (Exception e) {
       // TODO : simple wrap & rethrow for now, clean up with error codes
       throw new SemanticException(e.getMessage(), e);
     }
+  }
+
+  private List<DirCopyWork> dirLocationsToCopy(Path loadPath, boolean isIncrementalPhase)
+      throws HiveException, IOException {
+    List<DirCopyWork> list = new ArrayList<>();
+    String baseDir = conf.get(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname);
+    // this is done to remove any scheme related information that will be present in the base path
+    // specifically when we are replicating to cloud storage
+    Path basePath = new Path(baseDir);
+
+    for (String location : new Reader(conf, loadPath, isIncrementalPhase).sourceLocationsToCopy()) {
+      Path sourcePath = new Path(location);
+      String targetPathWithoutSchemeAndAuth = basePath.toUri().getPath() + sourcePath.toUri().getPath();
+      Path fullyQualifiedTargetUri = PathBuilder.fullyQualifiedHDFSUri(
+          new Path(targetPathWithoutSchemeAndAuth),
+          basePath.getFileSystem(conf)
+      );
+      list.add(new DirCopyWork(sourcePath, fullyQualifiedTargetUri));
+    }
+    return list;
   }
 
   private void setConfigs(ASTNode node) throws SemanticException {

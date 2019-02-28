@@ -498,14 +498,15 @@ public class CLIService extends CompositeService implements ICLIService {
     SessionState sessionState = operation.getParentSession().getSessionState();
     long startTime = System.nanoTime();
     int timeOutMs = 8;
+    boolean terminated = operation.isDone();
     try {
-      while (sessionState.getProgressMonitor() == null && !operation.isDone()) {
+      while ((sessionState.getProgressMonitor() == null) && !terminated) {
         long remainingMs = (PROGRESS_MAX_WAIT_NS - (System.nanoTime() - startTime)) / 1000000l;
         if (remainingMs <= 0) {
           LOG.debug("timed out and hence returning progress log as NULL");
           return new JobProgressUpdate(ProgressMonitor.NULL);
         }
-        Thread.sleep(Math.min(remainingMs, timeOutMs));
+        terminated = operation.waitToTerminate(Math.min(remainingMs, timeOutMs));
         timeOutMs <<= 1;
       }
     } catch (InterruptedException e) {
@@ -569,8 +570,7 @@ public class CLIService extends CompositeService implements ICLIService {
   }
 
   // obtain delegation token for the give user from metastore
-  // TODO: why is this synchronized?
-  public synchronized String getDelegationTokenFromMetaStore(String owner)
+  public String getDelegationTokenFromMetaStore(String owner)
       throws HiveSQLException, UnsupportedOperationException, LoginException, IOException {
     HiveConf hiveConf = getHiveConf();
     if (!hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL) ||

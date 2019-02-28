@@ -50,6 +50,7 @@ STAGE PLANS:
                       key expressions: _col0 (type: string)
                       sort order: +
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                      TopN Hash Memory Usage: 0.1
                       value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -266,6 +267,7 @@ STAGE PLANS:
                       key expressions: _col0 (type: string)
                       sort order: +
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                      TopN Hash Memory Usage: 0.1
                       value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -447,6 +449,7 @@ STAGE PLANS:
                       key expressions: _col0 (type: string)
                       sort order: +
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                      TopN Hash Memory Usage: 0.1
                       value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: no inputs

@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -91,8 +92,15 @@ class AlterPartitionHandler extends AbstractEventHandler<AlterPartitionMessage> 
   public void handle(Context withinContext) throws Exception {
     LOG.info("Processing#{} ALTER_PARTITION message : {}", fromEventId(), eventMessageAsJSON);
 
+    // We do not dump partitions during metadata only bootstrap dump (See TableExport
+    // .getPartitions(), for bootstrap dump we pass tableSpec with TABLE_ONLY set.). So don't
+    // dump partition related events for metadata-only dump.
+    if (withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY)) {
+      return;
+    }
+
     Table qlMdTable = new Table(tableObject);
-    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, withinContext.hiveConf)) {
+    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, true, withinContext.hiveConf)) {
       return;
     }
 

@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -47,7 +46,7 @@ public interface MetaStoreThread extends Configurable {
    *               least once.
    */
   // TODO: move these test parameters to more specific places... there's no need to have them here
-  void init(AtomicBoolean stop, AtomicBoolean looped) throws MetaException;
+  void init(AtomicBoolean stop, AtomicBoolean looped) throws Exception;
 
   /**
    * Run the thread in the background.  This must not be called until

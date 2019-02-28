@@ -100,7 +100,7 @@ public class MapInput implements SparkTran<WritableComparable, Writable,
 
   @Override
   public Boolean isCacheEnable() {
-    return new Boolean(toCache);
+    return Boolean.valueOf(toCache);
   }
 
   @Override

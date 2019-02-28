@@ -7,7 +7,9 @@ import kafka.server.KafkaServerStartable;
 import kafka.utils.ZKStringSerializer$;
 import kafka.utils.ZkUtils;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.service.AbstractService;
+import org.apache.hive.druid.MiniDruidCluster;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -35,26 +37,44 @@ import java.util.stream.IntStream;
 
 /**
  * This class has the hooks to start and stop single node kafka cluster.
- * The kafka broker is started on port 9092
+ *
  */
 public class SingleNodeKafkaCluster extends AbstractService {
   private static final Logger log = LoggerFactory.getLogger(SingleNodeKafkaCluster.class);
   private static final int BROKER_PORT = 9092;
   private static final String LOCALHOST = "localhost";
-  private static final String LOCALHOST_9092 = String.format("%s:%s", LOCALHOST, BROKER_PORT);
 
 
   private final KafkaServerStartable serverStartable;
   private final String zkString;
+  private final int brokerPort;
+  private final String kafkaServer;
 
-  public SingleNodeKafkaCluster(String name, String logDir, Integer zkPort){
+  public SingleNodeKafkaCluster(String name, String logDir, Integer zkPort, Integer brokerPort){
     super(name);
     Properties properties = new Properties();
+    this.brokerPort = brokerPort == null ? BROKER_PORT : brokerPort;
+    File dir = new File(logDir);
+    if (dir.exists()) {
+      // need to clean data directory to ensure that there is no interference from old runs
+      // Cleaning is happening here to allow debugging in case of tests fail
+      // we don;t have to clean logs since it is an append mode
+      log.info("Cleaning the druid directory [{}]", dir.getAbsolutePath());
+      try {
+        FileUtils.deleteDirectory(dir);
+      } catch (IOException e) {
+        log.error("Failed to clean druid directory");
+        throw new RuntimeException(e);
+      }
+    }
     this.zkString = String.format("localhost:%d", zkPort);
+
+    this.kafkaServer = String.format("%s:%d", LOCALHOST, this.brokerPort);
+
     properties.setProperty("zookeeper.connect", zkString);
     properties.setProperty("broker.id", String.valueOf(1));
     properties.setProperty("host.name", LOCALHOST);
-    properties.setProperty("port", Integer.toString(BROKER_PORT));
+    properties.setProperty("port", Integer.toString(brokerPort));
     properties.setProperty("log.dir", logDir);
     // This property is very important, we are sending form records with a specific time
     // Thus need to make sure that they don't get DELETED
@@ -73,7 +93,7 @@ public class SingleNodeKafkaCluster extends AbstractService {
   @Override
   protected void serviceStart() throws Exception {
     serverStartable.startup();
-    log.info("Kafka Server Started");
+    log.info("Kafka Server Started on port {}", brokerPort);
 
   }
 
@@ -94,7 +114,7 @@ public class SingleNodeKafkaCluster extends AbstractService {
     createTopic(topicName);
     // set up kafka producer
     Properties properties = new Properties();
-    properties.put("bootstrap.servers", LOCALHOST_9092);
+    properties.put("bootstrap.servers", kafkaServer);
     properties.put("acks", "1");
     properties.put("retries", "3");
 
@@ -116,7 +136,7 @@ public class SingleNodeKafkaCluster extends AbstractService {
     createTopic(topic);
     // set up kafka producer
     Properties properties = new Properties();
-    properties.put("bootstrap.servers", LOCALHOST_9092);
+    properties.put("bootstrap.servers", kafkaServer);
     properties.put("acks", "1");
     properties.put("retries", "3");
 

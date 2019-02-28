@@ -486,7 +486,7 @@ public class BeeLine implements Closeable {
     try {
       return MessageFormat.format(
           new ChoiceFormat(resourceBundle.getString(res)).format(param),
-          new Object[] {new Integer(param)});
+          new Object[] {Integer.valueOf(param)});
     } catch (Exception e) {
       return res + ": " + param;
     }
@@ -515,7 +515,7 @@ public class BeeLine implements Closeable {
 
   protected String locElapsedTime(long milliseconds) {
     if (getOpts().getShowElapsedTime()) {
-      return loc("time-ms", new Object[] {new Double(milliseconds / 1000d)});
+      return loc("time-ms", new Object[] {Double.valueOf(milliseconds / 1000d)});
     }
     return "";
   }
@@ -2176,7 +2176,7 @@ public class BeeLine implements Closeable {
         new Object[] {
             e.getMessage() == null ? "" : e.getMessage().trim(),
             e.getSQLState() == null ? "" : e.getSQLState().trim(),
-            new Integer(e.getErrorCode())}));
+            Integer.valueOf(e.getErrorCode())}));
 
     if (getOpts().getVerbose()) {
       e.printStackTrace(getErrorStream());

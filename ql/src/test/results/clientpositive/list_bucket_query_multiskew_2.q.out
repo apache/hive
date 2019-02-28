@@ -100,22 +100,22 @@ STAGE PLANS:
           TableScan
             alias: fact_daily_n2
             filterExpr: ((ds = '1') and (hr = '4') and (value = 'val_484')) (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: (value = 'val_484') (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), 'val_484' (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -279,22 +279,22 @@ STAGE PLANS:
           TableScan
             alias: fact_daily_n2
             filterExpr: ((ds = '1') and (hr = '4') and (key = '406')) (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: (key = '406') (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: '406' (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -408,22 +408,22 @@ STAGE PLANS:
           TableScan
             alias: fact_daily_n2
             filterExpr: ((struct(key,value)) IN (const struct('484','val_484'), const struct('238','val_238')) and (ds = '1') and (hr = '4')) (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: (struct(key,value)) IN (const struct('484','val_484'), const struct('238','val_238')) (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat

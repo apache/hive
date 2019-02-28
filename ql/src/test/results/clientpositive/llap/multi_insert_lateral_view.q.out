@@ -71,23 +71,23 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_10_n0
-                  Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 870 Basic stats: COMPLETE Column stats: COMPLETE
                   Lateral View Forward
-                    Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 870 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: key
-                      Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 10 Data size: 4310 Basic stats: COMPLETE Column stats: COMPLETE
                       Lateral View Join Operator
                         outputColumnNames: _col0, _col5
-                        Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 20 Data size: 5910 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col0 (type: string), CAST( _col5 AS STRING) (type: string)
                           outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 20 Data size: 5420 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             compressed: false
-                            Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 20 Data size: 5420 Basic stats: COMPLETE Column stats: COMPLETE
                             table:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -96,33 +96,33 @@ STAGE PLANS:
                           Select Operator
                             expressions: _col0 (type: string), _col1 (type: string)
                             outputColumnNames: key, value
-                            Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 20 Data size: 5420 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                               mode: hash
                               outputColumnNames: _col0, _col1
-                              Statistics: Num rows: 1 Data size: 1684 Basic stats: COMPLETE Column stats: NONE
+                              Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                               Reduce Output Operator
                                 sort order: 
-                                Statistics: Num rows: 1 Data size: 1684 Basic stats: COMPLETE Column stats: NONE
+                                Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                                 value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
                     Select Operator
                       expressions: array((key + 1),(key + 2)) (type: array<double>)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 10 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                       UDTF Operator
-                        Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 10 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col5
-                          Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 20 Data size: 5910 Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
                             expressions: _col0 (type: string), CAST( _col5 AS STRING) (type: string)
                             outputColumnNames: _col0, _col1
-                            Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 20 Data size: 5420 Basic stats: COMPLETE Column stats: COMPLETE
                             File Output Operator
                               compressed: false
-                              Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                              Statistics: Num rows: 20 Data size: 5420 Basic stats: COMPLETE Column stats: COMPLETE
                               table:
                                   input format: org.apache.hadoop.mapred.TextInputFormat
                                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -131,32 +131,32 @@ STAGE PLANS:
                             Select Operator
                               expressions: _col0 (type: string), _col1 (type: string)
                               outputColumnNames: key, value
-                              Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                              Statistics: Num rows: 20 Data size: 5420 Basic stats: COMPLETE Column stats: COMPLETE
                               Group By Operator
                                 aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                                 mode: hash
                                 outputColumnNames: _col0, _col1
-                                Statistics: Num rows: 1 Data size: 1684 Basic stats: COMPLETE Column stats: NONE
+                                Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                                 Reduce Output Operator
                                   sort order: 
-                                  Statistics: Num rows: 1 Data size: 1684 Basic stats: COMPLETE Column stats: NONE
+                                  Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                                   value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
                   Lateral View Forward
-                    Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 870 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: key
-                      Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 10 Data size: 4310 Basic stats: COMPLETE Column stats: COMPLETE
                       Lateral View Join Operator
                         outputColumnNames: _col0, _col5
-                        Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 20 Data size: 5910 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col0 (type: string), CAST( _col5 AS STRING) (type: string)
                           outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 20 Data size: 5420 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             compressed: false
-                            Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 20 Data size: 5420 Basic stats: COMPLETE Column stats: COMPLETE
                             table:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -165,33 +165,33 @@ STAGE PLANS:
                           Select Operator
                             expressions: _col0 (type: string), _col1 (type: string)
                             outputColumnNames: key, value
-                            Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 20 Data size: 5420 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                               mode: hash
                               outputColumnNames: _col0, _col1
-                              Statistics: Num rows: 1 Data size: 1684 Basic stats: COMPLETE Column stats: NONE
+                              Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                               Reduce Output Operator
                                 sort order: 
-                                Statistics: Num rows: 1 Data size: 1684 Basic stats: COMPLETE Column stats: NONE
+                                Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                                 value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
                     Select Operator
                       expressions: array((key + 3),(key + 4)) (type: array<double>)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 10 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                       UDTF Operator
-                        Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 10 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col5
-                          Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 20 Data size: 5910 Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
                             expressions: _col0 (type: string), CAST( _col5 AS STRING) (type: string)
                             outputColumnNames: _col0, _col1
-                            Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 20 Data size: 5420 Basic stats: COMPLETE Column stats: COMPLETE
                             File Output Operator
                               compressed: false
-                              Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                              Statistics: Num rows: 20 Data size: 5420 Basic stats: COMPLETE Column stats: COMPLETE
                               table:
                                   input format: org.apache.hadoop.mapred.TextInputFormat
                                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -200,15 +200,15 @@ STAGE PLANS:
                             Select Operator
                               expressions: _col0 (type: string), _col1 (type: string)
                               outputColumnNames: key, value
-                              Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                              Statistics: Num rows: 20 Data size: 5420 Basic stats: COMPLETE Column stats: COMPLETE
                               Group By Operator
                                 aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                                 mode: hash
                                 outputColumnNames: _col0, _col1
-                                Statistics: Num rows: 1 Data size: 1684 Basic stats: COMPLETE Column stats: NONE
+                                Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                                 Reduce Output Operator
                                   sort order: 
-                                  Statistics: Num rows: 1 Data size: 1684 Basic stats: COMPLETE Column stats: NONE
+                                  Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                                   value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
             Execution mode: llap
             LLAP IO: no inputs
@@ -219,10 +219,10 @@ STAGE PLANS:
                 aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 1684 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 1684 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -234,10 +234,10 @@ STAGE PLANS:
                 aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 1684 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 1684 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -395,92 +395,92 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_10_n0
-                  Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 870 Basic stats: COMPLETE Column stats: COMPLETE
                   Lateral View Forward
-                    Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 870 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: key
-                      Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 10 Data size: 4310 Basic stats: COMPLETE Column stats: COMPLETE
                       Lateral View Join Operator
                         outputColumnNames: _col0, _col5
-                        Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 20 Data size: 5910 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: sum(_col5)
                           keys: _col0 (type: string)
                           mode: hash
                           outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: string)
                             sort order: +
                             Map-reduce partition columns: _col0 (type: string)
-                            Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col1 (type: double)
                     Select Operator
                       expressions: array((key + 1),(key + 2)) (type: array<double>)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 10 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                       UDTF Operator
-                        Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 10 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col5
-                          Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 20 Data size: 5910 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: sum(_col5)
                             keys: _col0 (type: string)
                             mode: hash
                             outputColumnNames: _col0, _col1
-                            Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                             Reduce Output Operator
                               key expressions: _col0 (type: string)
                               sort order: +
                               Map-reduce partition columns: _col0 (type: string)
-                              Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                              Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                               value expressions: _col1 (type: double)
                   Lateral View Forward
-                    Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 870 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: key
-                      Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 10 Data size: 4310 Basic stats: COMPLETE Column stats: COMPLETE
                       Lateral View Join Operator
                         outputColumnNames: _col0, _col5
-                        Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 20 Data size: 5910 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: sum(_col5)
                           keys: _col0 (type: string)
                           mode: hash
                           outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: string)
                             sort order: +
                             Map-reduce partition columns: _col0 (type: string)
-                            Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col1 (type: double)
                     Select Operator
                       expressions: array((key + 3),(key + 4)) (type: array<double>)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 10 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                       UDTF Operator
-                        Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 10 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col5
-                          Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 20 Data size: 5910 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: sum(_col5)
                             keys: _col0 (type: string)
                             mode: hash
                             outputColumnNames: _col0, _col1
-                            Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                             Reduce Output Operator
                               key expressions: _col0 (type: string)
                               sort order: +
                               Map-reduce partition columns: _col0 (type: string)
-                              Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                              Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                               value expressions: _col1 (type: double)
             Execution mode: llap
             LLAP IO: no inputs
@@ -492,14 +492,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 2710 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 2710 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -508,15 +508,15 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 2710 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 1684 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 1684 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
         Reducer 3 
             Execution mode: llap
@@ -525,10 +525,10 @@ STAGE PLANS:
                 aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 1684 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 1684 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -541,14 +541,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 2710 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 2710 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -557,15 +557,15 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 2710 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 1684 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 1684 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
         Reducer 5 
             Execution mode: llap
@@ -574,10 +574,10 @@ STAGE PLANS:
                 aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 1684 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 1684 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -722,58 +722,58 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_10_n0
-                  Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                   Lateral View Forward
-                    Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: key
-                      Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 10 Data size: 5220 Basic stats: COMPLETE Column stats: COMPLETE
                       Lateral View Join Operator
                         outputColumnNames: _col0, _col5
-                        Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 20 Data size: 6820 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: sum(_col5)
                           keys: _col0 (type: string)
                           mode: hash
                           outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: string)
                             sort order: +
                             Map-reduce partition columns: _col0 (type: string)
-                            Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col1 (type: double)
                     Select Operator
                       expressions: array((key + 1),(key + 2)) (type: array<double>)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 10 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                       UDTF Operator
-                        Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 10 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col5
-                          Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 20 Data size: 6820 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: sum(_col5)
                             keys: _col0 (type: string)
                             mode: hash
                             outputColumnNames: _col0, _col1
-                            Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                             Reduce Output Operator
                               key expressions: _col0 (type: string)
                               sort order: +
                               Map-reduce partition columns: _col0 (type: string)
-                              Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                              Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                               value expressions: _col1 (type: double)
                   Filter Operator
                     predicate: ((key < 200) or (key > 200)) (type: boolean)
-                    Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: string)
                       sort order: +
                       Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 6 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: value (type: string)
             Execution mode: llap
             LLAP IO: no inputs
@@ -785,14 +785,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 2710 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 2710 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -801,15 +801,15 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 2710 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
         Reducer 3 
             Execution mode: llap
@@ -818,10 +818,10 @@ STAGE PLANS:
                 aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -830,23 +830,23 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Forward
-                Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: (KEY._col0 > 200) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(VALUE._col0)
                     keys: KEY._col0 (type: string)
                     mode: complete
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 542 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 542 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -855,32 +855,32 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col0 (type: string), _col1 (type: string)
                         outputColumnNames: key, value
-                        Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 542 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                           mode: hash
                           outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 1 Data size: 1248 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             sort order: 
-                            Statistics: Num rows: 1 Data size: 1248 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
                 Filter Operator
                   predicate: (KEY._col0 < 200) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(VALUE._col0)
                     keys: KEY._col0 (type: string)
                     mode: complete
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 542 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 542 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -889,15 +889,15 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col0 (type: string), _col1 (type: string)
                         outputColumnNames: key, value
-                        Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 542 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                           mode: hash
                           outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 1 Data size: 1248 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             sort order: 
-                            Statistics: Num rows: 1 Data size: 1248 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
         Reducer 5 
             Execution mode: llap
@@ -906,10 +906,10 @@ STAGE PLANS:
                 aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 1248 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 1248 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -921,10 +921,10 @@ STAGE PLANS:
                 aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 1248 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 1248 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1102,104 +1102,104 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_10_n0
-                  Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                   Lateral View Forward
-                    Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: key
-                      Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 10 Data size: 5220 Basic stats: COMPLETE Column stats: COMPLETE
                       Lateral View Join Operator
                         outputColumnNames: _col0, _col5
-                        Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 20 Data size: 6820 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: sum(DISTINCT _col0)
                           keys: _col5 (type: double), _col0 (type: string)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: double), _col1 (type: string)
                             sort order: ++
                             Map-reduce partition columns: _col0 (type: double)
-                            Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: array((key + 1),(key + 2)) (type: array<double>)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 10 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                       UDTF Operator
-                        Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 10 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col5
-                          Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 20 Data size: 6820 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: sum(DISTINCT _col0)
                             keys: _col5 (type: double), _col0 (type: string)
                             mode: hash
                             outputColumnNames: _col0, _col1, _col2
-                            Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                             Reduce Output Operator
                               key expressions: _col0 (type: double), _col1 (type: string)
                               sort order: ++
                               Map-reduce partition columns: _col0 (type: double)
-                              Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                              Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                   Lateral View Forward
-                    Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: key
-                      Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 10 Data size: 5220 Basic stats: COMPLETE Column stats: COMPLETE
                       Lateral View Join Operator
                         outputColumnNames: _col0, _col5
-                        Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 20 Data size: 6820 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: sum(DISTINCT _col0)
                           keys: _col5 (type: double), _col0 (type: string)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: double), _col1 (type: string)
                             sort order: ++
                             Map-reduce partition columns: _col0 (type: double)
-                            Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: array((key + 3),(key + 4)) (type: array<double>)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 10 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                       UDTF Operator
-                        Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 10 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col5
-                          Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 20 Data size: 6820 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: sum(DISTINCT _col0)
                             keys: _col5 (type: double), _col0 (type: string)
                             mode: hash
                             outputColumnNames: _col0, _col1, _col2
-                            Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                             Reduce Output Operator
                               key expressions: _col0 (type: double), _col1 (type: string)
                               sort order: ++
                               Map-reduce partition columns: _col0 (type: double)
-                              Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                              Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(DISTINCT key)
                       keys: value (type: string), key (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 5 Data size: 930 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 5 Data size: 930 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -1210,14 +1210,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: double)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: CAST( _col0 AS STRING) (type: string), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1226,15 +1226,15 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
         Reducer 3 
             Execution mode: llap
@@ -1243,10 +1243,10 @@ STAGE PLANS:
                 aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1259,14 +1259,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: double)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: CAST( _col0 AS STRING) (type: string), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1275,15 +1275,15 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
         Reducer 5 
             Execution mode: llap
@@ -1292,10 +1292,10 @@ STAGE PLANS:
                 aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1308,14 +1308,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 5 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 5 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 5 Data size: 1375 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 5 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 1375 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1324,15 +1324,15 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 5 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 1375 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 1256 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 1256 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
         Reducer 7 
             Execution mode: llap
@@ -1341,10 +1341,10 @@ STAGE PLANS:
                 aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 1256 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 1256 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1567,97 +1567,97 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_10_n0
-                  Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                   Lateral View Forward
-                    Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: key
-                      Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 10 Data size: 5220 Basic stats: COMPLETE Column stats: COMPLETE
                       Lateral View Join Operator
                         outputColumnNames: _col0, _col5
-                        Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 20 Data size: 6820 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: sum(DISTINCT _col5)
                           keys: _col0 (type: string), _col5 (type: double)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: string), _col1 (type: double)
                             sort order: ++
                             Map-reduce partition columns: _col0 (type: string)
-                            Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: array((key + 1),(key + 2)) (type: array<double>)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 10 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                       UDTF Operator
-                        Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 10 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col5
-                          Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 20 Data size: 6820 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: sum(DISTINCT _col5)
                             keys: _col0 (type: string), _col5 (type: double)
                             mode: hash
                             outputColumnNames: _col0, _col1, _col2
-                            Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                             Reduce Output Operator
                               key expressions: _col0 (type: string), _col1 (type: double)
                               sort order: ++
                               Map-reduce partition columns: _col0 (type: string)
-                              Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                              Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                   Lateral View Forward
-                    Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: key
-                      Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 10 Data size: 5220 Basic stats: COMPLETE Column stats: COMPLETE
                       Lateral View Join Operator
                         outputColumnNames: _col0, _col5
-                        Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 20 Data size: 6820 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: sum(DISTINCT _col5)
                           keys: _col0 (type: string), _col5 (type: double)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: string), _col1 (type: double)
                             sort order: ++
                             Map-reduce partition columns: _col0 (type: string)
-                            Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: array((key + 3),(key + 4)) (type: array<double>)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 10 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                       UDTF Operator
-                        Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 10 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col5
-                          Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 20 Data size: 6820 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: sum(DISTINCT _col5)
                             keys: _col0 (type: string), _col5 (type: double)
                             mode: hash
                             outputColumnNames: _col0, _col1, _col2
-                            Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                             Reduce Output Operator
                               key expressions: _col0 (type: string), _col1 (type: double)
                               sort order: ++
                               Map-reduce partition columns: _col0 (type: string)
-                              Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+                              Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((key < 200) or (key > 200)) (type: boolean)
-                    Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: value (type: string), key (type: string)
                       sort order: ++
                       Map-reduce partition columns: value (type: string)
-                      Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 6 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -1668,14 +1668,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 2710 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 2710 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1684,15 +1684,15 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 2710 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
         Reducer 3 
             Execution mode: llap
@@ -1701,10 +1701,10 @@ STAGE PLANS:
                 aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1717,14 +1717,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 2710 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 2710 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1733,15 +1733,15 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 2710 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
         Reducer 5 
             Execution mode: llap
@@ -1750,10 +1750,10 @@ STAGE PLANS:
                 aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1762,23 +1762,23 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Forward
-                Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: (KEY._col1:0._col0 > 200) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: sum(DISTINCT KEY._col1:0._col0)
                     keys: KEY._col0 (type: string)
                     mode: complete
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 198 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 550 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 550 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1787,32 +1787,32 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col0 (type: string), _col1 (type: string)
                         outputColumnNames: key, value
-                        Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 550 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                           mode: hash
                           outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 1 Data size: 1248 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             sort order: 
-                            Statistics: Num rows: 1 Data size: 1248 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
                 Filter Operator
                   predicate: (KEY._col1:0._col0 < 200) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: sum(DISTINCT KEY._col1:0._col0)
                     keys: KEY._col0 (type: string)
                     mode: complete
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 198 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 550 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 550 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1821,15 +1821,15 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col0 (type: string), _col1 (type: string)
                         outputColumnNames: key, value
-                        Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 550 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                           mode: hash
                           outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 1 Data size: 1248 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             sort order: 
-                            Statistics: Num rows: 1 Data size: 1248 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
         Reducer 7 
             Execution mode: llap
@@ -1838,10 +1838,10 @@ STAGE PLANS:
                 aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 1248 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 1248 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1853,10 +1853,10 @@ STAGE PLANS:
                 aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 1248 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 1248 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

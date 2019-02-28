@@ -132,6 +132,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.session.CreateTableAutomaticGrant;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -167,35 +168,36 @@ public class Hive {
   private IMetaStoreClient metaStoreClient;
   private SynchronizedMetaStoreClient syncMetaStoreClient;
   private UserGroupInformation owner;
+  private boolean isAllowClose = true;
 
   // metastore calls timing information
   private final ConcurrentHashMap<String, Long> metaCallTimeMap = new ConcurrentHashMap<>();
 
-  // Static class to store thread local Hive object and allowClose flag.
+  // Static class to store thread local Hive object.
   private static class ThreadLocalHive extends ThreadLocal<Hive> {
-    private ThreadLocal<Boolean> allowClose = ThreadLocal.withInitial(() -> true);
-
     @Override
     protected Hive initialValue() {
       return null;
     }
 
     @Override
-    public synchronized void remove() {
-      if (allowClose() && (this.get() != null)) {
-        this.get().close();
+    public synchronized void set(Hive hiveObj) {
+      Hive currentHive = this.get();
+      if (currentHive != hiveObj) {
+        // Remove/close current thread-local Hive object before overwriting with new Hive object.
+        remove();
+        super.set(hiveObj);
       }
-      super.remove();
-      this.allowClose.set(true);
     }
 
-    public synchronized void set(Hive hiveObj, boolean allowClose) {
-      super.set(hiveObj);
-      this.allowClose.set(allowClose);
-    }
-
-    boolean allowClose() {
-      return this.allowClose.get();
+    @Override
+    public synchronized void remove() {
+      Hive currentHive = this.get();
+      if (currentHive != null) {
+        // Close the metastore connections before removing it from thread local hiveDB.
+        currentHive.close(false);
+        super.remove();
+      }
     }
   }
 
@@ -317,7 +319,12 @@ public class Hive {
     Hive db = hiveDB.get();
     if (db == null || !db.isCurrentUserOwner() || needsRefresh
         || (c != null && !isCompatible(db, c, isFastCheck))) {
-      db = create(c, false, db, doRegisterAllFns);
+      if (db != null) {
+        LOG.debug("Creating new db. db = " + db + ", needsRefresh = " + needsRefresh +
+                ", db.isCurrentUserOwner = " + db.isCurrentUserOwner());
+        closeCurrent();
+      }
+      db = create(c, doRegisterAllFns);
     }
     if (c != null) {
       db.conf = c;
@@ -325,25 +332,15 @@ public class Hive {
     return db;
   }
 
-  private static Hive create(HiveConf c, boolean needsRefresh, Hive db, boolean doRegisterAllFns)
-      throws HiveException {
-    if (db != null) {
-      LOG.debug("Creating new db. db = " + db + ", needsRefresh = " + needsRefresh +
-        ", db.isCurrentUserOwner = " + db.isCurrentUserOwner());
-      if (hiveDB.allowClose()) {
-        db.close();
-      }
-    }
-    closeCurrent();
+  private static Hive create(HiveConf c, boolean doRegisterAllFns) throws HiveException {
     if (c == null) {
       c = createHiveConf();
     }
     c.set("fs.scheme.class", "dfs");
     Hive newdb = new Hive(c, doRegisterAllFns);
-    hiveDB.set(newdb, true);
+    hiveDB.set(newdb);
     return newdb;
   }
-
 
   private static HiveConf createHiveConf() {
     SessionState session = SessionState.get();
@@ -358,6 +355,18 @@ public class Hive {
       return (db.metaStoreClient == null || db.metaStoreClient.isCompatibleWith(c))
           && (db.syncMetaStoreClient == null || db.syncMetaStoreClient.isCompatibleWith(c));
     }
+  }
+
+  private boolean isCurrentUserOwner() throws HiveException {
+    try {
+      return owner == null || owner.equals(UserGroupInformation.getCurrentUser());
+    } catch(IOException e) {
+      throw new HiveException("Error getting current user: " + e.getMessage(), e);
+    }
+  }
+
+  public static Hive getThreadLocal() {
+    return hiveDB.get();
   }
 
   public static Hive get() throws HiveException {
@@ -383,19 +392,11 @@ public class Hive {
   }
 
   public static void set(Hive hive) {
-    hiveDB.set(hive, true);
-  }
-
-  public static void set(Hive hive, boolean allowClose) {
-    hiveDB.set(hive, allowClose);
+    hiveDB.set(hive);
   }
 
   public static void closeCurrent() {
     hiveDB.remove();
-  }
-
-  public static Hive getThreadLocal() {
-    return hiveDB.get();
   }
 
   /**
@@ -411,30 +412,49 @@ public class Hive {
     }
   }
 
-
-  private boolean isCurrentUserOwner() throws HiveException {
-    try {
-      return owner == null || owner.equals(UserGroupInformation.getCurrentUser());
-    } catch(IOException e) {
-      throw new HiveException("Error getting current user: " + e.getMessage(), e);
-    }
+  /**
+   * GC is attempting to destroy the object.
+   * No one references this Hive anymore, so HMS connection from this Hive object can be closed.
+   * @throws Throwable
+   */
+  @Override
+  protected void finalize() throws Throwable {
+    close(true);
+    super.finalize();
   }
 
-
+  /**
+   * Marks if the given Hive object is allowed to close metastore connections.
+   * @param allowClose
+   */
+  public void setAllowClose(boolean allowClose) {
+    isAllowClose = allowClose;
+  }
 
   /**
-   * closes the connection to metastore for the calling thread
+   * Gets the allowClose flag which determines if it is allowed to close metastore connections.
+   * @returns allowClose flag
    */
-  private void close() {
-    LOG.debug("Closing current thread's connection to Hive Metastore.");
-    if (metaStoreClient != null) {
-      metaStoreClient.close();
-      metaStoreClient = null;
-    }
-    // syncMetaStoreClient is wrapped on metaStoreClient. So, it is enough to close it once.
-    syncMetaStoreClient = null;
-    if (owner != null) {
-      owner = null;
+  public boolean allowClose() {
+    return isAllowClose;
+  }
+
+  /**
+   * Closes the connection to metastore for the calling thread if allow to close.
+   * @param forceClose - Override the isAllowClose flag to forcefully close the MS connections.
+   */
+  public void close(boolean forceClose) {
+    if (allowClose() || forceClose) {
+      LOG.debug("Closing current thread's connection to Hive Metastore.");
+      if (metaStoreClient != null) {
+        metaStoreClient.close();
+        metaStoreClient = null;
+      }
+      // syncMetaStoreClient is wrapped on metaStoreClient. So, it is enough to close it once.
+      syncMetaStoreClient = null;
+      if (owner != null) {
+        owner = null;
+      }
     }
   }
 
@@ -676,7 +696,7 @@ public class Hive {
       AcidUtils.TableSnapshot tableSnapshot = null;
       if (transactional) {
         if (replWriteId > 0) {
-          ValidWriteIdList writeIds = getMSC().getValidWriteIds(getFullTableName(dbName, tblName), replWriteId);
+          ValidWriteIdList writeIds = AcidUtils.getTableValidWriteIdListWithTxnList(conf, dbName, tblName);
           tableSnapshot = new TableSnapshot(replWriteId, writeIds.writeToString());
         } else {
           // Make sure we pass in the names, so we can get the correct snapshot for rename table.
@@ -1222,8 +1242,30 @@ public class Hive {
    * @return the table or if throwException is false a null value.
    * @throws HiveException
    */
-  public Table getTable(final String dbName, final String tableName,
-      boolean throwException, boolean checkTransactional) throws HiveException {
+  public Table getTable(final String dbName, final String tableName, boolean throwException,
+                        boolean checkTransactional) throws HiveException {
+    return getTable(dbName, tableName, throwException, checkTransactional, false);
+  }
+
+  /**
+   * Returns metadata of the table.
+   *
+   * @param dbName
+   *          the name of the database
+   * @param tableName
+   *          the name of the table
+   * @param throwException
+   *          controls whether an exception is thrown or a returns a null
+   * @param checkTransactional
+   *          checks whether the metadata table stats are valid (or
+   *          compilant with the snapshot isolation of) for the current transaction.
+   * @param getColumnStats
+   *          get column statistics if available
+   * @return the table or if throwException is false a null value.
+   * @throws HiveException
+   */
+  public Table getTable(final String dbName, final String tableName, boolean throwException,
+                        boolean checkTransactional, boolean getColumnStats) throws HiveException {
 
     if (tableName == null || tableName.equals("")) {
       throw new HiveException("empty table creation??");
@@ -1242,13 +1284,12 @@ public class Hive {
               dbName, tableName);
         }
         tTable = getMSC().getTable(getDefaultCatalog(conf), dbName, tableName,
-            validWriteIdList != null ? validWriteIdList.toString() : null);
+            validWriteIdList != null ? validWriteIdList.toString() : null, getColumnStats);
       } else {
-        tTable = getMSC().getTable(dbName, tableName);
+        tTable = getMSC().getTable(dbName, tableName, getColumnStats);
       }
     } catch (NoSuchObjectException e) {
       if (throwException) {
-        LOG.error("Table " + dbName + "." + tableName + " not found: " + e.getMessage());
         throw new InvalidTableException(tableName);
       }
       return null;
@@ -1314,6 +1355,18 @@ public class Hive {
    */
   public List<Table> getAllTableObjects(String dbName) throws HiveException {
     return getTableObjects(dbName, ".*", null);
+  }
+
+  /**
+   * Get tables for the specified database that match the provided regex pattern and table type.
+   * @param dbName
+   * @param pattern
+   * @param tableType
+   * @return List of table objects
+   * @throws HiveException
+   */
+  public List<Table> getTableObjectsByType(String dbName, String pattern, TableType tableType) throws HiveException {
+    return getTableObjects(dbName, pattern, tableType);
   }
 
   /**
@@ -1854,18 +1907,20 @@ public class Hive {
    *          If the source directory is LOCAL
    * @param isAcidIUDoperation
    *          true if this is an ACID operation Insert/Update/Delete operation
-   * @param hasFollowingStatsTask
-   *          true if there is a following task which updates the stats, so, this method need not update.
+   * @param resetStatistics
+   *          if true, reset the statistics. If false, do not reset statistics.
    * @param writeId write ID allocated for the current load operation
    * @param stmtId statement ID of the current load statement
    * @param isInsertOverwrite
    * @return Partition object being loaded with data
    */
   public Partition loadPartition(Path loadPath, Table tbl, Map<String, String> partSpec,
-      LoadFileType loadFileType, boolean inheritTableSpecs, boolean inheritLocation,
-      boolean isSkewedStoreAsSubdir,
-      boolean isSrcLocal, boolean isAcidIUDoperation, boolean hasFollowingStatsTask, Long writeId,
-      int stmtId, boolean isInsertOverwrite) throws HiveException {
+                                 LoadFileType loadFileType, boolean inheritTableSpecs,
+                                 boolean inheritLocation,
+                                 boolean isSkewedStoreAsSubdir,
+                                 boolean isSrcLocal, boolean isAcidIUDoperation,
+                                 boolean resetStatistics, Long writeId,
+                                 int stmtId, boolean isInsertOverwrite) throws HiveException {
 
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin("MoveTask", PerfLogger.LOAD_PARTITION);
@@ -1882,16 +1937,25 @@ public class Hive {
     Partition newTPart = loadPartitionInternal(loadPath, tbl, partSpec, oldPart,
             loadFileType, inheritTableSpecs,
             inheritLocation, isSkewedStoreAsSubdir, isSrcLocal, isAcidIUDoperation,
-            hasFollowingStatsTask, writeId, stmtId, isInsertOverwrite, isTxnTable, newFiles);
+            resetStatistics, writeId, stmtId, isInsertOverwrite, isTxnTable, newFiles);
 
-    AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf,
-            newTPart.getTable(), true);
+    AcidUtils.TableSnapshot tableSnapshot = null;
+    if (isTxnTable) {
+      if ((writeId != null) && (writeId > 0)) {
+        ValidWriteIdList writeIds = AcidUtils.getTableValidWriteIdListWithTxnList(
+                conf, tbl.getDbName(), tbl.getTableName());
+        tableSnapshot = new TableSnapshot(writeId, writeIds.writeToString());
+      } else {
+        // Make sure we pass in the names, so we can get the correct snapshot for rename table.
+        tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl, tbl.getDbName(), tbl.getTableName(), true);
+      }
+    }
     if (tableSnapshot != null) {
       newTPart.getTPartition().setWriteId(tableSnapshot.getWriteId());
     }
 
     if (oldPart == null) {
-      addPartitionToMetastore(newTPart, hasFollowingStatsTask, tbl, tableSnapshot);
+      addPartitionToMetastore(newTPart, resetStatistics, tbl, tableSnapshot);
       // For acid table, add the acid_write event with file list at the time of load itself. But
       // it should be done after partition is created.
       if (isTxnTable && (null != newFiles)) {
@@ -1899,7 +1963,7 @@ public class Hive {
       }
     } else {
       try {
-        setStatsPropAndAlterPartition(hasFollowingStatsTask, tbl, newTPart, tableSnapshot);
+        setStatsPropAndAlterPartition(resetStatistics, tbl, newTPart, tableSnapshot);
       } catch (TException e) {
         LOG.error(StringUtils.stringifyException(e));
         throw new HiveException(e);
@@ -1937,8 +2001,8 @@ public class Hive {
    *          If the source directory is LOCAL
    * @param isAcidIUDoperation
    *          true if this is an ACID operation Insert/Update/Delete operation
-   * @param hasFollowingStatsTask
-   *          true if there is a following task which updates the stats, so, this method need not update.
+   * @param resetStatistics
+   *          if true, reset the statistics. Do not reset statistics if false.
    * @param writeId
    *          write ID allocated for the current load operation
    * @param stmtId
@@ -1952,7 +2016,7 @@ public class Hive {
   private Partition loadPartitionInternal(Path loadPath, Table tbl, Map<String, String> partSpec,
                         Partition oldPart, LoadFileType loadFileType, boolean inheritTableSpecs,
                         boolean inheritLocation, boolean isSkewedStoreAsSubdir,
-                        boolean isSrcLocal, boolean isAcidIUDoperation, boolean hasFollowingStatsTask,
+                        boolean isSrcLocal, boolean isAcidIUDoperation, boolean resetStatistics,
                         Long writeId, int stmtId, boolean isInsertOverwrite,
                         boolean isTxnTable, List<Path> newFiles) throws HiveException {
     Path tblDataLocationPath =  tbl.getDataLocation();
@@ -2070,7 +2134,7 @@ public class Hive {
       }
 
       // column stats will be inaccurate
-      if (!hasFollowingStatsTask) {
+      if (resetStatistics) {
         StatsSetupConst.clearColumnStatsState(newTPart.getParameters());
       }
 
@@ -2118,12 +2182,10 @@ public class Hive {
     }
   }
 
-  private void addPartitionToMetastore(Partition newTPart, boolean hasFollowingStatsTask,
+  private void addPartitionToMetastore(Partition newTPart, boolean resetStatistics,
                                        Table tbl, TableSnapshot tableSnapshot) throws HiveException{
     try {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Adding new partition " + newTPart.getSpec());
-      }
+      LOG.debug("Adding new partition " + newTPart.getSpec());
       getSynchronizedMSC().add_partition(newTPart.getTPartition());
     } catch (AlreadyExistsException aee) {
       // With multiple users concurrently issuing insert statements on the same partition has
@@ -2139,7 +2201,7 @@ public class Hive {
       // In that case, we want to retry with alterPartition.
       LOG.debug("Caught AlreadyExistsException, trying to alter partition instead");
       try {
-        setStatsPropAndAlterPartition(hasFollowingStatsTask, tbl, newTPart, tableSnapshot);
+        setStatsPropAndAlterPartition(resetStatistics, tbl, newTPart, tableSnapshot);
       } catch (TException e) {
         LOG.error(StringUtils.stringifyException(e));
         throw new HiveException(e);
@@ -2159,16 +2221,19 @@ public class Hive {
   }
 
   private void addPartitionsToMetastore(List<Partition> partitions,
-                                        boolean hasFollowingStatsTask, Table tbl,
+                                        boolean resetStatistics, Table tbl,
                                         List<AcidUtils.TableSnapshot> tableSnapshots)
                                         throws HiveException {
     try {
+      if (partitions.isEmpty() || tableSnapshots.isEmpty()) {
+        return;
+      }
       if (LOG.isDebugEnabled()) {
         StringBuffer debugMsg = new StringBuffer("Adding new partitions ");
         partitions.forEach(partition -> debugMsg.append(partition.getSpec() + " "));
         LOG.debug(debugMsg.toString());
       }
-      getSynchronizedMSC().add_partitions(partitions.parallelStream().map(Partition::getTPartition)
+      getSynchronizedMSC().add_partitions(partitions.stream().map(Partition::getTPartition)
               .collect(Collectors.toList()));
     } catch(AlreadyExistsException aee) {
       // With multiple users concurrently issuing insert statements on the same partition has
@@ -2185,7 +2250,7 @@ public class Hive {
       LOG.debug("Caught AlreadyExistsException, trying to add partitions one by one.");
       assert partitions.size() == tableSnapshots.size();
       for (int i = 0; i < partitions.size(); i++) {
-        addPartitionToMetastore(partitions.get(i), hasFollowingStatsTask, tbl,
+        addPartitionToMetastore(partitions.get(i), resetStatistics, tbl,
                 tableSnapshots.get(i));
       }
     } catch (Exception e) {
@@ -2288,16 +2353,37 @@ public class Hive {
     return;
   }
 
-  private void setStatsPropAndAlterPartition(boolean hasFollowingStatsTask, Table tbl,
-      Partition newTPart, TableSnapshot tableSnapshot) throws MetaException, TException {
+  private void setStatsPropAndAlterPartition(boolean resetStatistics, Table tbl,
+                                             Partition newTPart, TableSnapshot tableSnapshot) throws TException {
     EnvironmentContext ec = new EnvironmentContext();
-    if (hasFollowingStatsTask) {
+    if (!resetStatistics) {
       ec.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
     }
     LOG.debug("Altering existing partition " + newTPart.getSpec());
     getSynchronizedMSC().alter_partition(tbl.getCatName(),
         tbl.getDbName(), tbl.getTableName(), newTPart.getTPartition(), new EnvironmentContext(),
         tableSnapshot == null ? null : tableSnapshot.getValidWriteIdList());
+  }
+
+  private void setStatsPropAndAlterPartitions(boolean resetStatistics, Table tbl,
+                                             List<Partition> partitions,
+                                             long writeId) throws TException {
+    if (partitions.isEmpty()) {
+      return;
+    }
+    EnvironmentContext ec = new EnvironmentContext();
+    if (!resetStatistics) {
+      ec.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
+    }
+    if (LOG.isDebugEnabled()) {
+      StringBuilder sb = new StringBuilder("Altering existing partitions ");
+      partitions.forEach(p -> sb.append(p.getSpec()));
+      LOG.debug(sb.toString());
+    }
+
+    getSynchronizedMSC().alter_partitions(tbl.getCatName(), tbl.getDbName(), tbl.getTableName(),
+            partitions.stream().map(Partition::getTPartition).collect(Collectors.toList()),
+            ec, null, writeId);
   }
 
   /**
@@ -2476,13 +2562,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param numDP number of dynamic partitions
    * @param isAcid true if this is an ACID operation
    * @param writeId writeId, can be 0 unless isAcid == true
+   * @param resetStatistics if true, reset statistics. Do not reset statistics otherwise.
    * @return partition map details (PartitionSpec and Partition)
    * @throws HiveException
    */
   public Map<Map<String, String>, Partition> loadDynamicPartitions(final Path loadPath,
       final String tableName, final Map<String, String> partSpec, final LoadFileType loadFileType,
       final int numDP, final int numLB, final boolean isAcid, final long writeId, final int stmtId,
-      final boolean hasFollowingStatsTask, final AcidUtils.Operation operation,
+      final boolean resetStatistics, final AcidUtils.Operation operation,
       boolean isInsertOverwrite) throws HiveException {
 
     PerfLogger perfLogger = SessionState.getPerfLogger();
@@ -2534,7 +2621,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     // Match valid partition path to partitions
     while (iterator.hasNext()) {
       Partition partition = iterator.next();
-      partitionDetailsMap.entrySet().parallelStream()
+      partitionDetailsMap.entrySet().stream()
               .filter(entry -> entry.getValue().fullSpec.equals(partition.getSpec()))
               .findAny().ifPresent(entry -> {
                 entry.getValue().partition = partition;
@@ -2558,7 +2645,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           // load the partition
           Partition partition = loadPartitionInternal(entry.getKey(), tbl,
                   fullPartSpec, oldPartition, loadFileType, true, false, numLB > 0, false, isAcid,
-                  hasFollowingStatsTask, writeId, stmtId, isInsertOverwrite, isTxnTable, newFiles);
+                  resetStatistics, writeId, stmtId, isInsertOverwrite, isTxnTable, newFiles);
           // if the partition already existed before the loading, no need to add it again to the
           // metastore
 
@@ -2591,7 +2678,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
                   + " loadFileType=" + loadFileType.toString() + ", "
                   + " listBucketingLevel=" + numLB + ", "
                   + " isAcid=" + isAcid + ", "
-                  + " hasFollowingStatsTask=" + hasFollowingStatsTask, e);
+                  + " resetStatistics=" + resetStatistics, e);
           throw e;
         }
       });
@@ -2614,14 +2701,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
       addPartitionsToMetastore(
               partitionDetailsMap.entrySet()
-                      .parallelStream()
+                      .stream()
                       .filter(entry -> !entry.getValue().hasOldPartition)
                       .map(entry -> entry.getValue().partition)
                       .collect(Collectors.toList()),
-              hasFollowingStatsTask,
+              resetStatistics,
               tbl,
               partitionDetailsMap.entrySet()
-                      .parallelStream()
+                      .stream()
                       .filter(entry -> !entry.getValue().hasOldPartition)
                       .map(entry -> entry.getValue().tableSnapshot)
                       .collect(Collectors.toList()));
@@ -2633,11 +2720,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
         if (isTxnTable && partitionDetails.newFiles != null) {
           addWriteNotificationLog(tbl, partitionDetails.fullSpec, partitionDetails.newFiles, writeId);
         }
-        if (partitionDetails.hasOldPartition) {
-          setStatsPropAndAlterPartition(hasFollowingStatsTask, tbl, partitionDetails.partition,
-                  partitionDetails.tableSnapshot);
-        }
       }
+
+      setStatsPropAndAlterPartitions(resetStatistics, tbl,
+              partitionDetailsMap.entrySet().stream()
+                      .filter(entry -> entry.getValue().hasOldPartition)
+                      .map(entry -> entry.getValue().partition)
+                      .collect(Collectors.toList()), writeId);
+
     } catch (InterruptedException | ExecutionException e) {
       throw new HiveException("Exception when loading " + validPartitions.size()
               + " in table " + tbl.getTableName()
@@ -2656,7 +2746,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               append("loadFileType=" + loadFileType.toString() + ", ").
               append("listBucketingLevel=" + numLB + ", ").
               append("isAcid=" + isAcid + ", ").
-              append("hasFollowingStatsTask=" + hasFollowingStatsTask);
+              append("resetStatistics=" + resetStatistics);
 
       LOG.error(logMsg.toString(), e);
       throw e;
@@ -2668,7 +2758,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       if (isAcid) {
         List<String> partNames =
-                result.values().parallelStream().map(Partition::getName).collect(Collectors.toList());
+                result.values().stream().map(Partition::getName).collect(Collectors.toList());
         getMSC().addDynamicPartitions(parentSession.getTxnMgr().getCurrentTxnId(), writeId,
                 tbl.getDbName(), tbl.getTableName(), partNames,
                 AcidUtils.toDataOperationType(operation));
@@ -2702,14 +2792,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
    *          If the source directory is LOCAL
    * @param isSkewedStoreAsSubdir
    *          if list bucketing enabled
-   * @param hasFollowingStatsTask
-   *          if there is any following stats task
    * @param isAcidIUDoperation true if this is an ACID based Insert [overwrite]/update/delete
+   * @param resetStatistics should reset statistics as part of move.
    * @param writeId write ID allocated for the current load operation
    * @param stmtId statement ID of the current load statement
    */
   public void loadTable(Path loadPath, String tableName, LoadFileType loadFileType, boolean isSrcLocal,
-      boolean isSkewedStoreAsSubdir, boolean isAcidIUDoperation, boolean hasFollowingStatsTask,
+      boolean isSkewedStoreAsSubdir, boolean isAcidIUDoperation, boolean resetStatistics,
       Long writeId, int stmtId, boolean isInsertOverwrite) throws HiveException {
 
     PerfLogger perfLogger = SessionState.getPerfLogger();
@@ -2782,11 +2871,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
       perfLogger.PerfLogEnd("MoveTask", PerfLogger.FILE_MOVES);
     }
     if (!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+      LOG.debug("setting table statistics false for " + tbl.getDbName() + "." + tbl.getTableName());
       StatsSetupConst.setBasicStatsState(tbl.getParameters(), StatsSetupConst.FALSE);
     }
 
     //column stats will be inaccurate
-    if (!hasFollowingStatsTask) {
+    if (resetStatistics) {
+      LOG.debug("Clearing table statistics for " + tbl.getDbName() + "." + tbl.getTableName());
       StatsSetupConst.clearColumnStatsState(tbl.getParameters());
     }
 
@@ -2805,12 +2896,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
 
     EnvironmentContext environmentContext = null;
-    if (hasFollowingStatsTask) {
+    if (!resetStatistics) {
       environmentContext = new EnvironmentContext();
       environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
     }
 
-    alterTable(tbl, false, environmentContext, true);
+    alterTable(tbl.getCatName(), tbl.getDbName(), tbl.getTableName(), tbl, false, environmentContext,
+            true, ((writeId == null) ? 0 : writeId));
 
     if (AcidUtils.isTransactionalTable(tbl)) {
       addWriteNotificationLog(tbl, null, newFiles, writeId);
@@ -2852,8 +2944,16 @@ private void constructOneLBLocationMap(FileStatus fSta,
     int size = addPartitionDesc.getPartitionCount();
     List<org.apache.hadoop.hive.metastore.api.Partition> in =
         new ArrayList<org.apache.hadoop.hive.metastore.api.Partition>(size);
-    AcidUtils.TableSnapshot tableSnapshot =
-        AcidUtils.getTableSnapshot(conf, tbl);
+    AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl, true);
+    long writeId;
+    String validWriteIdList;
+    if (tableSnapshot != null && tableSnapshot.getWriteId() > 0) {
+      writeId = tableSnapshot.getWriteId();
+      validWriteIdList = tableSnapshot.getValidWriteIdList();
+    } else {
+      writeId = -1;
+      validWriteIdList = null;
+    }
     for (int i = 0; i < size; ++i) {
       org.apache.hadoop.hive.metastore.api.Partition tmpPart =
           convertAddSpecToMetaPartition(tbl, addPartitionDesc.getPartition(i), conf);
@@ -2885,6 +2985,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
             org.apache.hadoop.hive.metastore.api.Partition ptn =
                 getMSC().getPartition(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(), p.getValues());
             if (addPartitionDesc.getReplicationSpec().allowReplacementInto(ptn.getParameters())){
+              ReplicationSpec.copyLastReplId(ptn.getParameters(), p.getParameters());
               partsToAlter.add(p);
             } // else ptn already exists, but we do nothing with it.
           } catch (NoSuchObjectException nsoe){
@@ -2896,8 +2997,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
             : getMSC().add_partitions(partsToAdd, addPartitionDesc.isIfNotExists(), true)) {
           out.add(new Partition(tbl, outPart));
         }
+        EnvironmentContext ec = new EnvironmentContext();
+        // In case of replication statistics is obtained from the source, so do not update those
+        // on replica. Since we are not replicating statistics for transactional tables, do not do
+        // so for a partition of a transactional table right now.
+        if (!AcidUtils.isTransactionalTable(tbl)) {
+          ec.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
+        }
         getMSC().alter_partitions(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(),
-            partsToAlter, new EnvironmentContext(), null, -1);
+            partsToAlter, ec, validWriteIdList, writeId);
 
         for ( org.apache.hadoop.hive.metastore.api.Partition outPart :
         getMSC().getPartitionsByNames(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(),part_names)){
@@ -2947,6 +3055,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
     if (addSpec.getSortCols() != null) {
       part.getSd().setSortCols(addSpec.getSortCols());
+    }
+    if (addSpec.getColStats() != null) {
+      part.setColStats(addSpec.getColStats());
     }
     return part;
   }
@@ -3544,6 +3655,23 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   public List<Partition> getPartitionsByNames(Table tbl, List<String> partNames)
       throws HiveException {
+    return getPartitionsByNames(tbl, partNames, false);
+  }
+
+  /**
+   * Get all partitions of the table that matches the list of given partition names.
+   *
+   * @param tbl
+   *          object for which partition is needed. Must be partitioned.
+   * @param partNames
+   *          list of partition names
+   * @param getColStats
+   *          if true, Partition object includes column statistics for that partition.
+   * @return list of partition objects
+   * @throws HiveException
+   */
+  public List<Partition> getPartitionsByNames(Table tbl, List<String> partNames, boolean getColStats)
+      throws HiveException {
 
     if (!tbl.isPartitioned()) {
       throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, tbl.getTableName());
@@ -3559,7 +3687,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       for (int i = 0; i < nBatches; ++i) {
         List<org.apache.hadoop.hive.metastore.api.Partition> tParts =
           getMSC().getPartitionsByNames(tbl.getDbName(), tbl.getTableName(),
-          partNames.subList(i*batchSize, (i+1)*batchSize));
+            partNames.subList(i*batchSize, (i+1)*batchSize), getColStats);
         if (tParts != null) {
           for (org.apache.hadoop.hive.metastore.api.Partition tpart: tParts) {
             partitions.add(new Partition(tbl, tpart));
@@ -3570,7 +3698,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (nParts > nBatches * batchSize) {
         List<org.apache.hadoop.hive.metastore.api.Partition> tParts =
           getMSC().getPartitionsByNames(tbl.getDbName(), tbl.getTableName(),
-          partNames.subList(nBatches*batchSize, nParts));
+            partNames.subList(nBatches*batchSize, nParts), getColStats);
         if (tParts != null) {
           for (org.apache.hadoop.hive.metastore.api.Partition tpart: tParts) {
             partitions.add(new Partition(tbl, tpart));
@@ -4089,7 +4217,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public void recycleDirToCmPath(Path dataPath, boolean isPurge) throws HiveException {
     try {
       CmRecycleRequest request = new CmRecycleRequest(dataPath.toString(), isPurge);
-      getMSC().recycleDirToCmPath(request);
+      getSynchronizedMSC().recycleDirToCmPath(request);
     } catch (Exception e) {
       throw new HiveException(e);
     }

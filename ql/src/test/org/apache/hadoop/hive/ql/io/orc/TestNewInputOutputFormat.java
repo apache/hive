@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -383,7 +383,7 @@ public class TestNewInputOutputFormat {
     assertEquals(6, ((List<Object>)list.get(0)).get(1));
     Map<String, Integer> map = (Map<String, Integer>)converted.get(3);
     assertEquals(map.size(), 1);
-    assertEquals(map.get("saving"), new Integer(1));
+    assertEquals(map.get("saving"), Integer.valueOf(1));
     
     row = rows.next(null);
     converted = (List<Object>)converter.convert(row);
@@ -395,7 +395,7 @@ public class TestNewInputOutputFormat {
     assertEquals(9, ((List<Object>)list.get(0)).get(1));
     map = (Map<String, Integer>)converted.get(3);
     assertEquals(map.size(), 11);
-    assertEquals(map.get("the"), new Integer(2));
+    assertEquals(map.get("the"), Integer.valueOf(2));
     
     row = rows.next(null);
     converted = (List<Object>)converter.convert(row);
@@ -407,7 +407,7 @@ public class TestNewInputOutputFormat {
     assertEquals(4, ((List<Object>)list.get(0)).get(1));
     map = (Map<String, Integer>)converted.get(3);
     assertEquals(map.size(), 13);
-    assertEquals(map.get("were"), new Integer(3));
+    assertEquals(map.get("were"), Integer.valueOf(3));
     
     assertFalse(rows.hasNext());
     

@@ -285,7 +285,8 @@ CREATE TABLE DBS
     "NAME" nvarchar(128) NULL,
     OWNER_NAME nvarchar(128) NULL,
     OWNER_TYPE nvarchar(10) NULL,
-    CTLG_NAME nvarchar(256)
+    CTLG_NAME nvarchar(256),
+    CREATE_TIME INT
 );
 
 ALTER TABLE DBS ADD CONSTRAINT DBS_PK PRIMARY KEY (DB_ID);
@@ -697,7 +698,8 @@ CREATE TABLE CTLGS (
       CTLG_ID bigint primary key,
       "NAME" nvarchar(256),
       "DESC" nvarchar(4000),
-      LOCATION_URI nvarchar(4000) not null
+      LOCATION_URI nvarchar(4000) not null,
+      CREATE_TIME INT
 );
 
 CREATE UNIQUE INDEX UNIQUE_CTLG ON CTLGS ("NAME");

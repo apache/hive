@@ -73,6 +73,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  TopN Hash Memory Usage: 0.1
       Execution mode: vectorized
       Reduce Operator Tree:
         Limit
@@ -265,6 +266,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  TopN Hash Memory Usage: 0.1
       Execution mode: vectorized
       Reduce Operator Tree:
         Limit
@@ -295,6 +297,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  TopN Hash Memory Usage: 0.1
       Execution mode: vectorized
       Reduce Operator Tree:
         Limit

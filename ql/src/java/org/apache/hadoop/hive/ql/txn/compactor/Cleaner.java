@@ -17,11 +17,17 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -32,9 +38,6 @@ import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
-import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
-import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -46,33 +49,25 @@ import org.apache.hadoop.util.StringUtils;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
  * A class to clean directories after compactions.  This will run in a separate thread.
  */
-public class Cleaner extends CompactorThread {
+public class Cleaner extends MetaStoreCompactorThread {
   static final private String CLASS_NAME = Cleaner.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private long cleanerCheckInterval = 0;
 
   private ReplChangeManager replChangeManager;
-  // List of compactions to clean.
-  private Map<Long, Set<Long>> compactId2LockMap = new HashMap<>();
-  private Map<Long, CompactionInfo> compactId2CompactInfoMap = new HashMap<>();
 
   @Override
-  public void init(AtomicBoolean stop, AtomicBoolean looped) throws MetaException {
+  public void init(AtomicBoolean stop, AtomicBoolean looped) throws Exception {
     super.init(stop, looped);
     replChangeManager = ReplChangeManager.getInstance(conf);
   }
@@ -96,95 +91,9 @@ public class Cleaner extends CompactorThread {
       try {
         handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Cleaner.name());
         startedAt = System.currentTimeMillis();
-        // First look for all the compactions that are waiting to be cleaned.  If we have not
-        // seen an entry before, look for all the locks held on that table or partition and
-        // record them.  We will then only clean the partition once all of those locks have been
-        // released.  This way we avoid removing the files while they are in use,
-        // while at the same time avoiding starving the cleaner as new readers come along.
-        // This works because we know that any reader who comes along after the worker thread has
-        // done the compaction will read the more up to date version of the data (either in a
-        // newer delta or in a newer base).
-        List<CompactionInfo> toClean = txnHandler.findReadyToClean();
-        {
-          /**
-           * Since there may be more than 1 instance of Cleaner running we may have state info
-           * for items which were cleaned by instances.  Here we remove them.
-           *
-           * In the long run if we add end_time to compaction_queue, then we can check that
-           * hive_locks.acquired_at > compaction_queue.end_time + safety_buffer in which case
-           * we know the lock owner is reading files created by this compaction or later.
-           * The advantage is that we don't have to store the locks.
-           */
-          Set<Long> currentToCleanSet = new HashSet<>();
-          for (CompactionInfo ci : toClean) {
-            currentToCleanSet.add(ci.id);
-          }
-          Set<Long> cleanPerformedByOthers = new HashSet<>();
-          for (long id : compactId2CompactInfoMap.keySet()) {
-            if (!currentToCleanSet.contains(id)) {
-              cleanPerformedByOthers.add(id);
-            }
-          }
-          for (long id : cleanPerformedByOthers) {
-            compactId2CompactInfoMap.remove(id);
-            compactId2LockMap.remove(id);
-          }
-        }
-        if (toClean.size() > 0 || compactId2LockMap.size() > 0) {
-          ShowLocksResponse locksResponse = txnHandler.showLocks(new ShowLocksRequest());
-          if(LOG.isDebugEnabled()) {
-            dumpLockState(locksResponse);
-          }
-          for (CompactionInfo ci : toClean) {
-            // Check to see if we have seen this request before.  If so, ignore it.  If not,
-            // add it to our queue.
-            if (!compactId2LockMap.containsKey(ci.id)) {
-              compactId2LockMap.put(ci.id, findRelatedLocks(ci, locksResponse));
-              compactId2CompactInfoMap.put(ci.id, ci);
-            }
-          }
-
-          // Now, for each entry in the queue, see if all of the associated locks are clear so we
-          // can clean
-          Set<Long> currentLocks = buildCurrentLockSet(locksResponse);
-          List<Long> expiredLocks = new ArrayList<Long>();
-          List<Long> compactionsCleaned = new ArrayList<Long>();
-          try {
-            for (Map.Entry<Long, Set<Long>> queueEntry : compactId2LockMap.entrySet()) {
-              boolean sawLock = false;
-              for (Long lockId : queueEntry.getValue()) {
-                if (currentLocks.contains(lockId)) {
-                  sawLock = true;
-                  break;
-                } else {
-                  expiredLocks.add(lockId);
-                }
-              }
-
-              if (!sawLock) {
-                // Remember to remove this when we're out of the loop,
-                // we can't do it in the loop or we'll get a concurrent modification exception.
-                compactionsCleaned.add(queueEntry.getKey());
-                //Future thought: this may be expensive so consider having a thread pool run in parallel
-                clean(compactId2CompactInfoMap.get(queueEntry.getKey()));
-              } else {
-                // Remove the locks we didn't see so we don't look for them again next time
-                for (Long lockId : expiredLocks) {
-                  queueEntry.getValue().remove(lockId);
-                }
-                LOG.info("Skipping cleaning of " +
-                    idWatermark(compactId2CompactInfoMap.get(queueEntry.getKey())) +
-                    " due to reader present: " + queueEntry.getValue());
-              }
-            }
-          } finally {
-            if (compactionsCleaned.size() > 0) {
-              for (Long compactId : compactionsCleaned) {
-                compactId2LockMap.remove(compactId);
-                compactId2CompactInfoMap.remove(compactId);
-              }
-            }
-          }
+        long minOpenTxnId = txnHandler.findMinOpenTxnId();
+        for(CompactionInfo compactionInfo : txnHandler.findReadyToClean()) {
+          clean(compactionInfo, minOpenTxnId);
         }
       } catch (Throwable t) {
         LOG.error("Caught an exception in the main loop of compactor cleaner, " +
@@ -212,41 +121,7 @@ public class Cleaner extends CompactorThread {
     } while (!stop.get());
   }
 
-  private Set<Long> findRelatedLocks(CompactionInfo ci, ShowLocksResponse locksResponse) {
-    Set<Long> relatedLocks = new HashSet<Long>();
-    for (ShowLocksResponseElement lock : locksResponse.getLocks()) {
-      /**
-       * Hive QL is not case sensitive wrt db/table/column names
-       * Partition names get
-       * normalized (as far as I can tell) by lower casing column name but not partition value.
-       * {@link org.apache.hadoop.hive.metastore.Warehouse#makePartName(List, List, String)}
-       * {@link org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer#getPartSpec(ASTNode)}
-       * Since user input may start out in any case, compare here case-insensitive for db/table
-       * but leave partition name as is.
-       */
-      if (ci.dbname.equalsIgnoreCase(lock.getDbname())) {
-        if ((ci.tableName == null && lock.getTablename() == null) ||
-            (ci.tableName != null && ci.tableName.equalsIgnoreCase(lock.getTablename()))) {
-          if ((ci.partName == null && lock.getPartname() == null) ||
-              (ci.partName != null && ci.partName.equals(lock.getPartname()))) {
-            relatedLocks.add(lock.getLockid());
-          }
-        }
-      }
-    }
-
-    return relatedLocks;
-  }
-
-  private Set<Long> buildCurrentLockSet(ShowLocksResponse locksResponse) {
-    Set<Long> currentLocks = new HashSet<Long>(locksResponse.getLocks().size());
-    for (ShowLocksResponseElement lock : locksResponse.getLocks()) {
-      currentLocks.add(lock.getLockid());
-    }
-    return currentLocks;
-  }
-
-  private void clean(CompactionInfo ci) throws MetaException {
+  private void clean(CompactionInfo ci, long minOpenTxnGLB) throws MetaException {
     LOG.info("Starting cleaning for " + ci);
     try {
       Table t = resolveTable(ci);
@@ -270,27 +145,52 @@ public class Cleaner extends CompactorThread {
       }
       StorageDescriptor sd = resolveStorageDescriptor(t, p);
       final String location = sd.getLocation();
-
+      ValidTxnList validTxnList =
+          TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), minOpenTxnGLB);
+      //save it so that getAcidState() sees it
+      conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
       /**
-       * Each Compaction only compacts as far as the highest txn id such that all txns below it
-       * are resolved (i.e. not opened).  This is what "highestWriteId" tracks.  This is only tracked
-       * since Hive 1.3.0/2.0 - thus may be 0.  See ValidCompactorWriteIdList and uses for more info.
+       * {@code validTxnList} is capped by minOpenTxnGLB so if
+       * {@link AcidUtils#getAcidState(Path, Configuration, ValidWriteIdList)} sees a base/delta
+       * produced by a compactor, that means every reader that could be active right now see it
+       * as well.  That means if this base/delta shadows some earlier base/delta, the it will be
+       * used in favor of any files that it shadows.  Thus the shadowed files are safe to delete.
        *
-       * We only want to clean up to the highestWriteId - otherwise we risk deleting deltas from
-       * under an active reader.
        *
-       * Suppose we have deltas D2 D3 for table T, i.e. the last compaction created D3 so now there is a 
-       * clean request for D2.  
-       * Cleaner checks existing locks and finds none.
-       * Between that check and removeFiles() a query starts (it will be reading D3) and another compaction
-       * completes which creates D4.
-       * Now removeFiles() (more specifically AcidUtils.getAcidState()) will declare D3 to be obsolete
-       * unless ValidWriteIdList is "capped" at highestWriteId.
+       * The metadata about aborted writeIds (and consequently aborted txn IDs) cannot be deleted
+       * above COMPACTION_QUEUE.CQ_HIGHEST_WRITE_ID.
+       * See {@link TxnStore#markCleaned(CompactionInfo)} for details.
+       * For example given partition P1, txnid:150 starts and sees txnid:149 as open.
+       * Say compactor runs in txnid:160, but 149 is still open and P1 has the largest resolved
+       * writeId:17.  Compactor will produce base_17_c160.
+       * Suppose txnid:149 writes delta_18_18
+       * to P1 and aborts.  Compactor can only remove TXN_COMPONENTS entries
+       * up to (inclusive) writeId:17 since delta_18_18 may be on disk (and perhaps corrupted) but
+       * not visible based on 'validTxnList' capped at minOpenTxn so it will not not be cleaned by
+       * {@link #removeFiles(String, ValidWriteIdList, CompactionInfo)} and so we must keep the
+       * metadata that says that 18 is aborted.
+       * In a slightly different case, whatever txn created delta_18 (and all other txn) may have
+       * committed by the time cleaner runs and so cleaner will indeed see delta_18_18 and remove
+       * it (since it has nothing but aborted data).  But we can't tell which actually happened
+       * in markCleaned() so make sure it doesn't delete meta above CG_CQ_HIGHEST_WRITE_ID.
+       *
+       * We could perhaps make cleaning of aborted and obsolete and remove all aborted files up
+       * to the current Min Open Write Id, this way aborted TXN_COMPONENTS meta can be removed
+       * as well up to that point which may be higher than CQ_HIGHEST_WRITE_ID.  This could be
+       * useful if there is all of a sudden a flood of aborted txns.  (For another day).
        */
-      final ValidWriteIdList validWriteIdList = (ci.highestWriteId > 0)
-          ? new ValidReaderWriteIdList(ci.getFullTableName(), new long[0], new BitSet(),
-          ci.highestWriteId)
-          : new ValidReaderWriteIdList();
+      List<String> tblNames = Collections.singletonList(
+          TableName.getDbTable(t.getDbName(), t.getTableName()));
+      GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(tblNames);
+      rqst.setValidTxnList(validTxnList.writeToString());
+      GetValidWriteIdsResponse rsp = txnHandler.getValidWriteIds(rqst);
+      //we could have no write IDs for a table if it was never written to but
+      // since we are in the Cleaner phase of compactions, there must have
+      // been some delta/base dirs
+      assert rsp != null && rsp.getTblValidWriteIdsSize() == 1;
+      //Creating 'reader' list since we are interested in the set of 'obsolete' files
+      ValidReaderWriteIdList validWriteIdList =
+          TxnCommonUtils.createValidReaderWriteIdList(rsp.getTblValidWriteIds().get(0));
 
       if (runJobAsSelf(ci.runAs)) {
         removeFiles(location, validWriteIdList, ci);
@@ -323,23 +223,30 @@ public class Cleaner extends CompactorThread {
     return " id=" + ci.id;
   }
   private void removeFiles(String location, ValidWriteIdList writeIdList, CompactionInfo ci)
-          throws IOException, HiveException {
+          throws IOException, NoSuchObjectException {
     Path locPath = new Path(location);
     AcidUtils.Directory dir = AcidUtils.getAcidState(locPath, conf, writeIdList);
-    List<FileStatus> obsoleteDirs = dir.getObsolete();
-    List<Path> filesToDelete = new ArrayList<Path>(obsoleteDirs.size());
+    List<Path> obsoleteDirs = dir.getObsolete();
+    /**
+     * add anything in 'dir'  that only has data from aborted transactions - no one should be
+     * trying to read anything in that dir (except getAcidState() that only reads the name of
+     * this dir itself)
+     * So this may run ahead of {@link CompactionInfo#highestWriteId} but it's ok (suppose there
+     * are no active txns when cleaner runs).  The key is to not delete metadata about aborted
+     * txns with write IDs > {@link CompactionInfo#highestWriteId}.
+     * See {@link TxnStore#markCleaned(CompactionInfo)}
+     */
+    obsoleteDirs.addAll(dir.getAbortedDirectories());
+    List<Path> filesToDelete = new ArrayList<>(obsoleteDirs.size());
     StringBuilder extraDebugInfo = new StringBuilder("[");
-    for (FileStatus stat : obsoleteDirs) {
-      filesToDelete.add(stat.getPath());
-      extraDebugInfo.append(stat.getPath().getName()).append(",");
-      if(!FileUtils.isPathWithinSubtree(stat.getPath(), locPath)) {
-        LOG.info(idWatermark(ci) + " found unexpected file: " + stat.getPath());
+    for (Path stat : obsoleteDirs) {
+      filesToDelete.add(stat);
+      extraDebugInfo.append(stat.getName()).append(",");
+      if(!FileUtils.isPathWithinSubtree(stat, locPath)) {
+        LOG.info(idWatermark(ci) + " found unexpected file: " + stat);
       }
     }
     extraDebugInfo.setCharAt(extraDebugInfo.length() - 1, ']');
-    List<Long> compactIds = new ArrayList<>(compactId2CompactInfoMap.keySet());
-    Collections.sort(compactIds);
-    extraDebugInfo.append("compactId2CompactInfoMap.keySet(").append(compactIds).append(")");
     LOG.info(idWatermark(ci) + " About to remove " + filesToDelete.size() +
          " obsolete directories from " + location + ". " + extraDebugInfo.toString());
     if (filesToDelete.size() < 1) {
@@ -349,73 +256,15 @@ public class Cleaner extends CompactorThread {
     }
 
     FileSystem fs = filesToDelete.get(0).getFileSystem(conf);
-    Database db = Hive.get().getDatabase(ci.dbname);
+    Database db = rs.getDatabase(getDefaultCatalog(conf), ci.dbname);
+    Boolean isSourceOfRepl = ReplChangeManager.isSourceOfReplication(db);
 
     for (Path dead : filesToDelete) {
       LOG.debug("Going to delete path " + dead.toString());
-      if (ReplChangeManager.isSourceOfReplication(db)) {
+      if (isSourceOfRepl) {
         replChangeManager.recycle(dead, ReplChangeManager.RecycleType.MOVE, true);
       }
       fs.delete(dead, true);
-    }
-  }
-  private static class LockComparator implements Comparator<ShowLocksResponseElement> {
-    //sort ascending by resource, nulls first
-    @Override
-    public int compare(ShowLocksResponseElement o1, ShowLocksResponseElement o2) {
-      if(o1 == o2) {
-        return 0;
-      }
-      if(o1 == null) {
-        return -1;
-      }
-      if(o2 == null) {
-        return 1;
-      }
-      int v = o1.getDbname().compareToIgnoreCase(o2.getDbname());
-      if(v != 0) {
-        return v;
-      }
-      if(o1.getTablename() == null) {
-        return -1;
-      }
-      if(o2.getTablename() == null) {
-        return 1;
-      }
-      v = o1.getTablename().compareToIgnoreCase(o2.getTablename());
-      if(v != 0) {
-        return v;
-      }
-      if(o1.getPartname() == null) {
-        return -1;
-      }
-      if(o2.getPartname() == null) {
-        return 1;
-      }
-      v = o1.getPartname().compareToIgnoreCase(o2.getPartname());
-      if(v != 0) {
-        return v;
-      }
-      //if still equal, compare by lock ids
-      v = Long.compare(o1.getLockid(), o2.getLockid());
-      if(v != 0) {
-        return v;
-      }
-      return Long.compare(o1.getLockIdInternal(), o2.getLockIdInternal());
-
-    }
-  }
-  private void dumpLockState(ShowLocksResponse slr) {
-    Iterator<ShowLocksResponseElement> l = slr.getLocksIterator();
-    List<ShowLocksResponseElement> sortedList = new ArrayList<>();
-    while(l.hasNext()) {
-      sortedList.add(l.next());
-    }
-    //sort for readability
-    sortedList.sort(new LockComparator());
-    LOG.info("dumping locks");
-    for(ShowLocksResponseElement lock : sortedList) {
-      LOG.info(lock.toString());
     }
   }
 }

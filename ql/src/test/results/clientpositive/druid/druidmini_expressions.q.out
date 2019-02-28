@@ -226,7 +226,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col0 (type: bigint)
                         auto parallelism: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
               hdfs://### HDFS PATH ### [druid_table_alltypesorc]
@@ -304,7 +304,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /druid_table_alltypesorc [druid_table_alltypesorc]
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -688,10 +688,10 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -751,10 +751,10 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: bigint), _col1 (type: double)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), sum(VALUE._col1)
@@ -814,10 +814,10 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: bigint), _col1 (type: double), _col2 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), sum(VALUE._col1), min(VALUE._col2)
@@ -827,6 +827,71 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN select count(*) from (select `__time` from druid_table_alltypesorc limit 1025) as src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN select count(*) from (select `__time` from druid_table_alltypesorc limit 1025) as src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: druid_table_alltypesorc
+                  properties:
+                    druid.fieldNames vc
+                    druid.fieldTypes int
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"0","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList","limit":1025}
+                    druid.query.type scan
+                  Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count()
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -865,6 +930,78 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 6078
+PREHOOK: query: explain select count(DISTINCT cstring1) FROM druid_table_alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select count(DISTINCT cstring1) FROM druid_table_alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: druid_table_alltypesorc
+                  properties:
+                    druid.fieldNames cstring1
+                    druid.fieldTypes string
+                    druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"default","dimension":"cstring1","outputName":"cstring1","outputType":"STRING"}],"limitSpec":{"type":"default"},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+                    druid.query.type groupBy
+                  Statistics: Num rows: 9173 Data size: 1603744 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count(cstring1)
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(DISTINCT cstring1) FROM druid_table_alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(DISTINCT cstring1) FROM druid_table_alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3025
 PREHOOK: query: select count(DISTINCT cstring2), sum(cdouble) FROM druid_table_alltypesorc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_alltypesorc
@@ -883,6 +1020,241 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 6095	2.7308662809692383E7	-1073279343
+PREHOOK: query: select count(*) from (select `__time` from druid_table_alltypesorc limit 1025) as src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from (select `__time` from druid_table_alltypesorc limit 1025) as src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1025
+PREHOOK: query: select count(*) from (select `__time` from druid_table_alltypesorc limit 200000) as src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from (select `__time` from druid_table_alltypesorc limit 200000) as src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+6105
+PREHOOK: query: select count(`__time`) from (select `__time` from druid_table_alltypesorc limit 200) as src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(`__time`) from (select `__time` from druid_table_alltypesorc limit 200) as src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+200
+PREHOOK: query: select count(distinct `__time`) from druid_table_alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(distinct `__time`) from druid_table_alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2
+PREHOOK: query: select count(distinct `ctimestamp1`) from alltypesorc1  where ctimestamp1 IS NOT NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(distinct `ctimestamp1`) from alltypesorc1  where ctimestamp1 IS NOT NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+5523
+PREHOOK: query: explain select `timets` from (select `__time` as timets from druid_table_alltypesorc order by timets limit 10)  as src order by `timets`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select `timets` from (select `__time` as timets from druid_table_alltypesorc order by timets limit 10)  as src order by `timets`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: druid_table_alltypesorc
+                  properties:
+                    druid.fieldNames vc
+                    druid.fieldTypes timestamp with local time zone
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+                    druid.query.type scan
+                  Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: vc (type: timestamp with local time zone)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: timestamp with local time zone)
+                      sort order: +
+                      Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: timestamp with local time zone)
+                outputColumnNames: _col0
+                Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: timestamp with local time zone)
+                    sort order: +
+                    Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: timestamp with local time zone)
+                outputColumnNames: _col0
+                Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select `timets` from (select cast(`__time` as timestamp ) as timets from druid_table_alltypesorc order by timets limit 10)  as src order by `timets`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select `timets` from (select cast(`__time` as timestamp ) as timets from druid_table_alltypesorc order by timets limit 10)  as src order by `timets`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: druid_table_alltypesorc
+                  properties:
+                    druid.fieldNames vc
+                    druid.fieldTypes timestamp
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC')","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+                    druid.query.type scan
+                  Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: vc (type: timestamp)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: timestamp)
+                      sort order: +
+                      Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: timestamp)
+                outputColumnNames: _col0
+                Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: timestamp)
+                    sort order: +
+                    Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: timestamp)
+                outputColumnNames: _col0
+                Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select `timets_with_tz` from (select `__time` as timets_with_tz from druid_table_alltypesorc order by timets_with_tz limit 10)  as src order by `timets_with_tz`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `timets_with_tz` from (select `__time` as timets_with_tz from druid_table_alltypesorc order by timets_with_tz limit 10)  as src order by `timets_with_tz`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+PREHOOK: query: select `timets` from (select cast(`__time` as timestamp ) as timets from druid_table_alltypesorc order by timets limit 10)  as src order by `timets`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `timets` from (select cast(`__time` as timestamp ) as timets from druid_table_alltypesorc order by timets limit 10)  as src order by `timets`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1969-12-31 15:59:00
+1969-12-31 15:59:00
+1969-12-31 15:59:00
+1969-12-31 15:59:00
+1969-12-31 15:59:00
+1969-12-31 15:59:00
+1969-12-31 15:59:00
+1969-12-31 15:59:00
+1969-12-31 15:59:00
+1969-12-31 15:59:00
 PREHOOK: query: explain select unix_timestamp(from_unixtime(1396681200)) from druid_table_alltypesorc limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_alltypesorc
@@ -1284,10 +1656,10 @@ STAGE PLANS:
                       sort order: ++
                       Statistics: Num rows: 9173 Data size: 976192 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: date), KEY.reducesinkkey1 (type: date)
@@ -1636,3 +2008,500 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2004-04-09	2004-04-09
 2004-04-11	2004-04-11
 2004-04-12	2004-04-12
+PREHOOK: query: EXPLAIN select count(*) from (select `__time` from druid_table_alltypesorc limit 1025) as src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN select count(*) from (select `__time` from druid_table_alltypesorc limit 1025) as src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: druid_table_alltypesorc
+                  properties:
+                    druid.fieldNames vc
+                    druid.fieldTypes int
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"0","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList","limit":1025}
+                    druid.query.type scan
+                  Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count()
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from (select `__time` from druid_table_alltypesorc limit 1025) as src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from (select `__time` from druid_table_alltypesorc limit 1025) as src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1025
+PREHOOK: query: explain select `timets` from (select `__time` as timets from druid_table_alltypesorc order by timets limit 10)  as src order by `timets`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select `timets` from (select `__time` as timets from druid_table_alltypesorc order by timets limit 10)  as src order by `timets`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: druid_table_alltypesorc
+                  properties:
+                    druid.fieldNames vc
+                    druid.fieldTypes timestamp with local time zone
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+                    druid.query.type scan
+                  Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: vc (type: timestamp with local time zone)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: timestamp with local time zone)
+                      sort order: +
+                      Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: timestamp with local time zone)
+                outputColumnNames: _col0
+                Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: timestamp with local time zone)
+                    sort order: +
+                    Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: timestamp with local time zone)
+                outputColumnNames: _col0
+                Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select `timets` from (select cast(`__time` as timestamp ) as timets from druid_table_alltypesorc order by timets limit 10)  as src order by `timets`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select `timets` from (select cast(`__time` as timestamp ) as timets from druid_table_alltypesorc order by timets limit 10)  as src order by `timets`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: druid_table_alltypesorc
+                  properties:
+                    druid.fieldNames vc
+                    druid.fieldTypes timestamp
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC')","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+                    druid.query.type scan
+                  Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: vc (type: timestamp)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: timestamp)
+                      sort order: +
+                      Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: timestamp)
+                outputColumnNames: _col0
+                Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: timestamp)
+                    sort order: +
+                    Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: timestamp)
+                outputColumnNames: _col0
+                Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select `timets_with_tz` from (select `__time` as timets_with_tz from druid_table_alltypesorc order by timets_with_tz limit 10)  as src order by `timets_with_tz`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `timets_with_tz` from (select `__time` as timets_with_tz from druid_table_alltypesorc order by timets_with_tz limit 10)  as src order by `timets_with_tz`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+PREHOOK: query: select `timets` from (select cast(`__time` as timestamp ) as timets from druid_table_alltypesorc order by timets limit 10)  as src order by `timets`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `timets` from (select cast(`__time` as timestamp ) as timets from druid_table_alltypesorc order by timets limit 10)  as src order by `timets`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1969-12-31 15:59:00
+1969-12-31 15:59:00
+1969-12-31 15:59:00
+1969-12-31 15:59:00
+1969-12-31 15:59:00
+1969-12-31 15:59:00
+1969-12-31 15:59:00
+1969-12-31 15:59:00
+1969-12-31 15:59:00
+1969-12-31 15:59:00
+PREHOOK: query: select count(cfloat) from (select `cfloat`, `cstring1` from druid_table_alltypesorc limit 1025) as src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(cfloat) from (select `cfloat`, `cstring1` from druid_table_alltypesorc limit 1025) as src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1025
+PREHOOK: query: select count(cstring1) from (select `cfloat`, `cstring1` from druid_table_alltypesorc limit 90000) as src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(cstring1) from (select `cfloat`, `cstring1` from druid_table_alltypesorc limit 90000) as src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3036
+PREHOOK: query: explain select count(cstring1) from (select `cfloat`, `cstring1`, `cint` from druid_table_alltypesorc limit 90000) as src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select count(cstring1) from (select `cfloat`, `cstring1`, `cint` from druid_table_alltypesorc limit 90000) as src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: druid_table_alltypesorc
+                  properties:
+                    druid.fieldNames cstring1
+                    druid.fieldTypes string
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"columns":["cstring1"],"resultFormat":"compactedList","limit":90000}
+                    druid.query.type scan
+                  Statistics: Num rows: 9173 Data size: 1603744 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count(cstring1)
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(cint * cdouble) from (select `cfloat`, `cstring1`, `cint`, `cdouble` from druid_table_alltypesorc limit 90000) as src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select max(cint * cdouble) from (select `cfloat`, `cstring1`, `cint`, `cdouble` from druid_table_alltypesorc limit 90000) as src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+8.256991051261554E15
+PREHOOK: query: explain select max(cint * cfloat) from (select `cfloat`, `cstring1`, `cint`, `cdouble` from druid_table_alltypesorc limit 90000) as src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select max(cint * cfloat) from (select `cfloat`, `cstring1`, `cint`, `cdouble` from druid_table_alltypesorc limit 90000) as src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: druid_table_alltypesorc
+                  properties:
+                    druid.fieldNames cfloat,cint
+                    druid.fieldTypes float,int
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"columns":["cfloat","cint"],"resultFormat":"compactedList","limit":90000}
+                    druid.query.type scan
+                  Statistics: Num rows: 9173 Data size: 69728 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: (UDFToFloat(cint) * cfloat) (type: float)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 9173 Data size: 69728 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: max(_col0)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: float)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select count(distinct `__time`, cint) from (select * from druid_table_alltypesorc) as src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select count(distinct `__time`, cint) from (select * from druid_table_alltypesorc) as src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: druid_table_alltypesorc
+                  properties:
+                    druid.fieldNames extract,cint
+                    druid.fieldTypes timestamp with local time zone,int
+                    druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"UTC"}},{"type":"default","dimension":"cint","outputName":"cint","outputType":"LONG"}],"limitSpec":{"type":"default"},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+                    druid.query.type groupBy
+                  Statistics: Num rows: 9173 Data size: 34864 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: cint (type: int)
+                    outputColumnNames: cint
+                    Statistics: Num rows: 9173 Data size: 34864 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(cint)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(distinct `__time`, cint) from (select * from druid_table_alltypesorc) as src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(distinct `__time`, cint) from (select * from druid_table_alltypesorc) as src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3027

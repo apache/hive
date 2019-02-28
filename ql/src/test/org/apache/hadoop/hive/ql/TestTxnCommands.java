@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager2;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -358,6 +359,8 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       throws Exception, MetaException, TException, NoSuchObjectException {
     hiveConf.setBoolean("hive.stats.autogather", true);
     hiveConf.setBoolean("hive.stats.column.autogather", true);
+    // Need to close the thread local Hive object so that configuration change is reflected to HMS.
+    Hive.closeCurrent();
     runStatementOnDriver("drop table if exists " + tableName);
     runStatementOnDriver(String.format("create table %s (a int) stored as orc " +
         "TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')",
@@ -433,6 +436,8 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     String tableName = "mm_table";
     hiveConf.setBoolean("hive.stats.autogather", true);
     hiveConf.setBoolean("hive.stats.column.autogather", true);
+    // Need to close the thread local Hive object so that configuration change is reflected to HMS.
+    Hive.closeCurrent();
     runStatementOnDriver("drop table if exists " + tableName);
     runStatementOnDriver(String.format("create table %s (a int) stored as orc " +
         "TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')",
@@ -459,6 +464,8 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     Assert.assertEquals(1, stats.size());
     msClient.close();
     hiveConf.setBoolean(MetastoreConf.ConfVars.HIVE_TXN_STATS_ENABLED.getVarname(), false);
+    // Need to close the thread local Hive object so that configuration change is reflected to HMS.
+    Hive.closeCurrent();
     // Running the query with stats disabled will cause stats in metastore itself to become invalid.
     runStatementOnDriver(String.format("insert into %s (a) values (1)", tableName));
     hiveConf.setBoolean(MetastoreConf.ConfVars.HIVE_TXN_STATS_ENABLED.getVarname(), true);
@@ -970,13 +977,29 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       sb.append(s).append('\n');
     }
     LOG.info("Explain1: " + sb);
+    /*
+     Edges:
+     Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
+     Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+     Reducer 4 <- Reducer 2 (SIMPLE_EDGE)
+     Reducer 5 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+     Reducer 6 <- Reducer 2 (SIMPLE_EDGE)
+     Reducer 7 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+     */
     for(int i = 0; i < explain.size(); i++) {
       if(explain.get(i).contains("Edges:")) {
-        Assert.assertTrue("At i+1=" + (i+1) + explain.get(i + 1), explain.get(i + 1).contains("Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)"));
-        Assert.assertTrue("At i+1=" + (i+2) + explain.get(i + 2), explain.get(i + 2).contains("Reducer 3 <- Reducer 2 (SIMPLE_EDGE)"));
-        Assert.assertTrue("At i+1=" + (i+3) + explain.get(i + 3), explain.get(i + 3).contains("Reducer 4 <- Reducer 2 (SIMPLE_EDGE)"));
-        Assert.assertTrue("At i+1=" + (i+4) + explain.get(i + 4), explain.get(i + 4).contains("Reducer 5 <- Reducer 2 (SIMPLE_EDGE)"));
-        Assert.assertTrue("At i+1=" + (i+5) + explain.get(i + 5), explain.get(i + 5).contains("Reducer 6 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)"));
+        Assert.assertTrue("At i+1=" + (i+1) + explain.get(i + 1),
+            explain.get(i + 1).contains("Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)"));
+        Assert.assertTrue("At i+1=" + (i+2) + explain.get(i + 2),
+            explain.get(i + 2).contains("Reducer 3 <- Reducer 2 (SIMPLE_EDGE)"));
+        Assert.assertTrue("At i+1=" + (i+3) + explain.get(i + 3),
+            explain.get(i + 3).contains("Reducer 4 <- Reducer 2 (SIMPLE_EDGE)"));
+        Assert.assertTrue("At i+1=" + (i+4) + explain.get(i + 4),
+            explain.get(i + 4).contains("Reducer 5 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)"));
+        Assert.assertTrue("At i+1=" + (i+5) + explain.get(i + 5),
+            explain.get(i + 5).contains("Reducer 6 <- Reducer 2 (SIMPLE_EDGE)"));
+        Assert.assertTrue("At i+1=" + (i+5) + explain.get(i + 5),
+            explain.get(i + 6).contains("Reducer 7 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)"));
         break;
       }
     }
@@ -1129,54 +1152,34 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     //create a delta directory
     runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(1,17)");
 
-    //make sure we assign correct Ids
-    List<String> rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " +  Table.NONACIDORCTBL + " order by ROW__ID");
-    LOG.warn("before compact");
-    for(String s : rs) {
-      LOG.warn(s);
-    }
+    boolean isVectorized = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
+    String query = "select ROW__ID, a, b" + (isVectorized ? " from  " : ", INPUT__FILE__NAME from ") +  Table.NONACIDORCTBL + " order by ROW__ID";
+    String[][] expected = new String[][] {
+      {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2", "nonacidorctbl/000001_0"},
+      {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t1\t5", "nonacidorctbl/000001_0_copy_1"},
+      {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t0\t12", "nonacidorctbl/000001_0_copy_1"},
+      {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17", "nonacidorctbl/delta_10000001_10000001_0000/bucket_00001"}
+    };
+    checkResult(expected, query, isVectorized, "before compact", LOG);
+
     Assert.assertEquals(536870912,
-      BucketCodec.V1.encode(new AcidOutputFormat.Options(hiveConf).bucket(0)));
+        BucketCodec.V1.encode(new AcidOutputFormat.Options(hiveConf).bucket(0)));
     Assert.assertEquals(536936448,
-      BucketCodec.V1.encode(new AcidOutputFormat.Options(hiveConf).bucket(1)));
-    Assert.assertEquals("", 4, rs.size());
-    Assert.assertTrue(rs.get(0),
-            rs.get(0).startsWith("{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2"));
-    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("nonacidorctbl/000001_0"));
-    Assert.assertTrue(rs.get(1),
-            rs.get(1).startsWith("{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t1\t5"));
-    Assert.assertTrue(rs.get(1), rs.get(1).endsWith("nonacidorctbl/000001_0_copy_1"));
-    Assert.assertTrue(rs.get(2),
-            rs.get(2).startsWith("{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t0\t12"));
-    Assert.assertTrue(rs.get(2), rs.get(2).endsWith("nonacidorctbl/000001_0_copy_1"));
-    Assert.assertTrue(rs.get(3),
-            rs.get(3).startsWith("{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17"));
-    Assert.assertTrue(rs.get(3), rs.get(3)
-        .endsWith("nonacidorctbl/delta_10000001_10000001_0000/bucket_00001"));
+        BucketCodec.V1.encode(new AcidOutputFormat.Options(hiveConf).bucket(1)));
+
     //run Compaction
     runStatementOnDriver("alter table "+ TestTxnCommands2.Table.NONACIDORCTBL +" compact 'major'");
     TestTxnCommands2.runWorker(hiveConf);
-    rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " +
-        Table.NONACIDORCTBL + " order by ROW__ID");
-    LOG.warn("after compact");
-    for(String s : rs) {
-      LOG.warn(s);
-    }
-    Assert.assertEquals("", 4, rs.size());
-    Assert.assertTrue(rs.get(0),
-            rs.get(0).startsWith("{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2"));
-    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("nonacidorctbl/base_10000001/bucket_00001"));
-    Assert.assertTrue(rs.get(1),
-            rs.get(1).startsWith("{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t1\t5"));
-    Assert.assertTrue(rs.get(1), rs.get(1).endsWith("nonacidorctbl/base_10000001/bucket_00001"));
-    Assert.assertTrue(rs.get(2),
-            rs.get(2).startsWith("{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t0\t12"));
-    Assert.assertTrue(rs.get(2), rs.get(2).endsWith("nonacidorctbl/base_10000001/bucket_00001"));
-    Assert.assertTrue(rs.get(3),
-            rs.get(3)
-                .startsWith("{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17"));
-    Assert.assertTrue(rs.get(3), rs.get(3).endsWith("nonacidorctbl/base_10000001/bucket_00001"));
 
+    query = "select ROW__ID, a, b" + (isVectorized ? "" : ", INPUT__FILE__NAME") + " from "
+        + Table.NONACIDORCTBL + " order by ROW__ID";
+    String[][] expected2 = new String[][] {
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2", "nonacidorctbl/base_10000001_v0000020/bucket_00001"},
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t1\t5", "nonacidorctbl/base_10000001_v0000020/bucket_00001"},
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t0\t12", "nonacidorctbl/base_10000001_v0000020/bucket_00001"},
+        {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17", "nonacidorctbl/base_10000001_v0000020/bucket_00001"}
+    };
+    checkResult(expected2, query, isVectorized, "after major compact", LOG);
     //make sure they are the same before and after compaction
   }
   //@Ignore("see bucket_num_reducers_acid.q")
@@ -1228,6 +1231,8 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
   @Test
   public void testVersioning() throws Exception {
     hiveConf.set(MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID.getVarname(), "true");
+    // Need to close the thread local Hive object so that configuration change is reflected to HMS.
+    Hive.closeCurrent();
     runStatementOnDriver("drop table if exists T");
     runStatementOnDriver("create table T (a int, b int) stored as orc");
     int[][] data = {{1, 2}};

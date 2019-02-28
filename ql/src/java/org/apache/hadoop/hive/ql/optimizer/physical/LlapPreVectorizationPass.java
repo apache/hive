@@ -101,17 +101,15 @@ public class LlapPreVectorizationPass implements PhysicalPlanResolver {
         // In LLAP only mode, grace hash join will be disabled later on by the LlapDispatcher anyway.
         // Since the presence of Grace Hash Join disables some "native" vectorization optimizations,
         // we will disable the grace hash join now, before vectorization is done.
-        opRules.put(
-            new RuleRegExp("Disable grace hash join if LLAP mode and not dynamic partition hash join",
-                MapJoinOperator.getOperatorName() + "%"), new NodeProcessor() {
+        opRules.put(new RuleRegExp("Disable grace hash join if LLAP mode and not dynamic partition hash join",
+            MapJoinOperator.getOperatorName() + "%"), new NodeProcessor() {
               @Override
               public Object process(Node n, Stack<Node> s, NodeProcessorCtx c, Object... os) {
                 MapJoinOperator mapJoinOp = (MapJoinOperator) n;
-                if (mapJoinOp.getConf().isHybridHashJoin()
-                    && !(mapJoinOp.getConf().isDynamicPartitionHashJoin())) {
+                if (mapJoinOp.getConf().isHybridHashJoin() && !(mapJoinOp.getConf().isDynamicPartitionHashJoin())) {
                   mapJoinOp.getConf().setHybridHashJoin(false);
                 }
-                return new Boolean(true);
+                return Boolean.TRUE;
               }
             });
       }

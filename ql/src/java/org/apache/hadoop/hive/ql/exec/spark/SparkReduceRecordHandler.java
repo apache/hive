@@ -401,9 +401,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
       row.clear();
       row.add(keyObject);
       row.add(valueObject[tag]);
-      if (LOG.isInfoEnabled()) {
-        logMemoryInfo();
-      }
+      incrementRowNumber();
       try {
         reducer.process(row, tag);
       } catch (Exception e) {
@@ -571,9 +569,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
     }
 
     batchBytes = 0;
-    if (LOG.isInfoEnabled()) {
-      logMemoryInfo();
-    }
+    incrementRowNumber();
   }
 
   private Object deserializeValue(BytesWritable valueWritable, byte tag) throws HiveException {
@@ -593,12 +589,11 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
 
   @Override
   public void close() {
-
+    super.close();
     // No row was processed
     if (!anyRow) {
       LOG.trace("Close called without any rows processed");
     }
-
     try {
       if (vectorized) {
         if (batch.size > 0) {
@@ -616,9 +611,6 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
           LOG.trace("End Group");
           reducer.endGroup();
         }
-      }
-      if (LOG.isInfoEnabled()) {
-        logCloseInfo();
       }
 
       reducer.close(abort);

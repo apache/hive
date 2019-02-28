@@ -172,6 +172,9 @@ public class Stmt {
       }
       exec.append(sql, ctx.T_CLOSE_P().getText(), last, ctx.T_CLOSE_P().getSymbol());
     }
+    else if (ctx.T_LIKE() != null) {
+      sql.append(" ").append(ctx.T_LIKE().getText()).append(" ").append(evalPop(ctx.table_name()));
+    }
     // CREATE TABLE AS SELECT statement
     else {
       exec.append(sql, evalPop(ctx.select_stmt()).toString(), last, ctx.select_stmt().getStart());
@@ -994,9 +997,9 @@ public class Stmt {
   private Var setIndex(int start, int end, HplsqlParser.For_range_stmtContext ctx) {
 
     if (ctx.T_REVERSE() == null)
-      return new Var(ctx.L_ID().getText(), new Long(start));
+      return new Var(ctx.L_ID().getText(), Long.valueOf(start));
     else
-      return new Var(ctx.L_ID().getText(), new Long(end));
+      return new Var(ctx.L_ID().getText(), Long.valueOf(end));
   }
 
   /**
@@ -1005,9 +1008,9 @@ public class Stmt {
   private void updateIndex(int step, Var index, HplsqlParser.For_range_stmtContext ctx) {
 
     if (ctx.T_REVERSE() == null)
-      index.increment(new Long(step));
+      index.increment(step);
     else
-      index.decrement(new Long(step));
+      index.decrement(step);
   }
 
   /**

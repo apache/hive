@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -86,7 +87,7 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
 
     Table qlMdTableBefore = new Table(before);
     if (!Utils
-        .shouldReplicate(withinContext.replicationSpec, qlMdTableBefore, withinContext.hiveConf)) {
+        .shouldReplicate(withinContext.replicationSpec, qlMdTableBefore, true, withinContext.hiveConf)) {
       return;
     }
 
@@ -94,6 +95,14 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
       withinContext.replicationSpec.setIsMetadataOnly(true);
       Table qlMdTableAfter = new Table(after);
       Path metaDataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
+
+      // If we are not dumping metadata about a table, we shouldn't be dumping basic statistics
+      // as well, since that won't be accurate. So reset them to what they would look like for an
+      // empty table.
+      if (withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY)) {
+        qlMdTableAfter.setStatsStateLikeNewTable();
+      }
+
       EximUtil.createExportDump(
           metaDataPath.getFileSystem(withinContext.hiveConf),
           metaDataPath,

@@ -206,15 +206,15 @@ public class TestSparkSessionManagerImpl {
     SparkSessionManager ssm = SparkSessionManagerImpl.getInstance();
 
     ss.setSparkSession(ssm.getSession(null, SESSION_HIVE_CONF, true));
-    assertEquals("0", ss.getSparkSession().getSessionId());
+    assertEquals(ss.getSessionId() + "_0", ss.getSparkSession().getSessionId());
 
     ss.setSparkSession(ssm.getSession(null, SESSION_HIVE_CONF, true));
-    assertEquals("1", ss.getSparkSession().getSessionId());
+    assertEquals(ss.getSessionId() + "_1", ss.getSparkSession().getSessionId());
 
     ss = SessionState.start(SESSION_HIVE_CONF);
 
     ss.setSparkSession(ssm.getSession(null, SESSION_HIVE_CONF, true));
-    assertEquals("0", ss.getSparkSession().getSessionId());
+    assertEquals(ss.getSessionId() + "_0", ss.getSparkSession().getSessionId());
   }
 
   @Test

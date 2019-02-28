@@ -18,12 +18,25 @@
 
 package org.apache.hadoop.hive.druid;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import io.druid.data.input.impl.CSVParseSpec;
+import io.druid.data.input.impl.DelimitedParseSpec;
+import io.druid.data.input.impl.DimensionsSpec;
+import io.druid.data.input.impl.InputRowParser;
+import io.druid.data.input.impl.JSONParseSpec;
+import io.druid.data.input.impl.StringInputRowParser;
+import io.druid.data.input.impl.TimestampSpec;
 import io.druid.java.util.http.client.Request;
 import io.druid.java.util.http.client.response.FullResponseHandler;
 import io.druid.java.util.http.client.response.FullResponseHolder;
 import io.druid.segment.IndexSpec;
 import io.druid.segment.indexing.DataSchema;
+import org.apache.hadoop.hive.druid.conf.DruidConstants;
+import org.apache.hadoop.hive.druid.json.AvroParseSpec;
+import org.apache.hadoop.hive.druid.json.AvroStreamInputRowParser;
+import org.apache.hadoop.hive.druid.json.InlineSchemaAvroBytesDecoder;
 import org.apache.hadoop.hive.druid.json.KafkaSupervisorIOConfig;
 import org.apache.hadoop.hive.druid.json.KafkaSupervisorSpec;
 import org.apache.hadoop.hive.druid.json.KafkaSupervisorTuningConfig;
@@ -59,60 +72,60 @@ final class DruidKafkaUtils {
       IndexSpec indexSpec) {
     return new KafkaSupervisorSpec(dataSchema,
         new KafkaSupervisorTuningConfig(DruidStorageHandlerUtils.getIntegerProperty(table,
-            DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "maxRowsInMemory"),
+            DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "maxRowsInMemory"),
             DruidStorageHandlerUtils.getIntegerProperty(table,
-                DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "maxRowsPerSegment"),
+                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "maxRowsPerSegment"),
             DruidStorageHandlerUtils.getPeriodProperty(table,
-                DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "intermediatePersistPeriod"),
+                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "intermediatePersistPeriod"),
             null,
             // basePersistDirectory - use druid default, no need to be configured by user
             DruidStorageHandlerUtils.getIntegerProperty(table,
-                DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "maxPendingPersists"),
+                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "maxPendingPersists"),
             indexSpec,
             null,
             // buildV9Directly - use druid default, no need to be configured by user
             DruidStorageHandlerUtils.getBooleanProperty(table,
-                DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "reportParseExceptions"),
+                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "reportParseExceptions"),
             DruidStorageHandlerUtils.getLongProperty(table,
-                DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "handoffConditionTimeout"),
+                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "handoffConditionTimeout"),
             DruidStorageHandlerUtils.getBooleanProperty(table,
-                DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "resetOffsetAutomatically"),
+                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "resetOffsetAutomatically"),
             DruidStorageHandlerUtils.getIntegerProperty(table,
-                DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "workerThreads"),
+                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "workerThreads"),
             DruidStorageHandlerUtils.getIntegerProperty(table,
-                DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "chatThreads"),
+                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "chatThreads"),
             DruidStorageHandlerUtils.getLongProperty(table,
-                DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "chatRetries"),
+                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "chatRetries"),
             DruidStorageHandlerUtils.getPeriodProperty(table,
-                DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "httpTimeout"),
+                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "httpTimeout"),
             DruidStorageHandlerUtils.getPeriodProperty(table,
-                DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "shutdownTimeout"),
+                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "shutdownTimeout"),
             DruidStorageHandlerUtils.getPeriodProperty(table,
-                DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "offsetFetchPeriod")),
+                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "offsetFetchPeriod")),
         new KafkaSupervisorIOConfig(kafkaTopic,
             // Mandatory Property
             DruidStorageHandlerUtils.getIntegerProperty(table,
-                DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "replicas"),
+                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "replicas"),
             DruidStorageHandlerUtils.getIntegerProperty(table,
-                DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "taskCount"),
+                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "taskCount"),
             DruidStorageHandlerUtils.getPeriodProperty(table,
-                DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "taskDuration"),
+                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "taskDuration"),
             getKafkaConsumerProperties(table, kafkaServers),
             // Mandatory Property
             DruidStorageHandlerUtils.getPeriodProperty(table,
-                DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "startDelay"),
+                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "startDelay"),
             DruidStorageHandlerUtils.getPeriodProperty(table,
-                DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "period"),
+                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "period"),
             DruidStorageHandlerUtils.getBooleanProperty(table,
-                DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "useEarliestOffset"),
+                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "useEarliestOffset"),
             DruidStorageHandlerUtils.getPeriodProperty(table,
-                DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "completionTimeout"),
+                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "completionTimeout"),
             DruidStorageHandlerUtils.getPeriodProperty(table,
-                DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "lateMessageRejectionPeriod"),
+                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "lateMessageRejectionPeriod"),
             DruidStorageHandlerUtils.getPeriodProperty(table,
-                DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "earlyMessageRejectionPeriod"),
+                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "earlyMessageRejectionPeriod"),
             DruidStorageHandlerUtils.getBooleanProperty(table,
-                DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "skipOffsetGaps")),
+                DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "skipOffsetGaps")),
         new HashMap<>());
   }
 
@@ -120,10 +133,8 @@ final class DruidKafkaUtils {
     ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
     builder.put(KafkaSupervisorIOConfig.BOOTSTRAP_SERVERS_KEY, kafkaServers);
     for (Map.Entry<String, String> entry : table.getParameters().entrySet()) {
-      if (entry.getKey().startsWith(DruidStorageHandlerUtils.DRUID_KAFKA_CONSUMER_PROPERTY_PREFIX)) {
-        String
-            propertyName =
-            entry.getKey().substring(DruidStorageHandlerUtils.DRUID_KAFKA_CONSUMER_PROPERTY_PREFIX.length());
+      if (entry.getKey().startsWith(DruidConstants.DRUID_KAFKA_CONSUMER_PROPERTY_PREFIX)) {
+        String propertyName = entry.getKey().substring(DruidConstants.DRUID_KAFKA_CONSUMER_PROPERTY_PREFIX.length());
         builder.put(propertyName, entry.getValue());
       }
     }
@@ -162,6 +173,50 @@ final class DruidKafkaUtils {
 
   static boolean isKafkaStreamingTable(Table table) {
     // For kafka Streaming tables it is mandatory to set a kafka topic.
-    return DruidStorageHandlerUtils.getTableProperty(table, DruidStorageHandlerUtils.KAFKA_TOPIC) != null;
+    return DruidStorageHandlerUtils.getTableProperty(table, DruidConstants.KAFKA_TOPIC) != null;
+  }
+
+  static InputRowParser getInputRowParser(Table table, TimestampSpec timestampSpec, DimensionsSpec dimensionsSpec) {
+    String parseSpecFormat = DruidStorageHandlerUtils.getTableProperty(table, DruidConstants.DRUID_PARSE_SPEC_FORMAT);
+
+    // Default case JSON
+    if ((parseSpecFormat == null) || "json".equalsIgnoreCase(parseSpecFormat)) {
+      return new StringInputRowParser(new JSONParseSpec(timestampSpec, dimensionsSpec, null, null), "UTF-8");
+    } else if ("csv".equalsIgnoreCase(parseSpecFormat)) {
+      return new StringInputRowParser(new CSVParseSpec(timestampSpec,
+          dimensionsSpec,
+          DruidStorageHandlerUtils.getTableProperty(table, DruidConstants.DRUID_PARSE_SPEC_LIST_DELIMITER),
+          DruidStorageHandlerUtils.getListProperty(table, DruidConstants.DRUID_PARSE_SPEC_COLUMNS),
+          DruidStorageHandlerUtils.getBooleanProperty(table, DruidConstants.DRUID_PARSE_SPEC_HAS_HEADER_ROWS, false),
+          DruidStorageHandlerUtils.getIntegerProperty(table, DruidConstants.DRUID_PARSE_SPEC_SKIP_HEADER_ROWS, 0)),
+          "UTF-8");
+    } else if ("delimited".equalsIgnoreCase(parseSpecFormat)) {
+      return new StringInputRowParser(new DelimitedParseSpec(timestampSpec,
+          dimensionsSpec,
+          DruidStorageHandlerUtils.getTableProperty(table, DruidConstants.DRUID_PARSE_SPEC_DELIMITER),
+          DruidStorageHandlerUtils.getTableProperty(table, DruidConstants.DRUID_PARSE_SPEC_LIST_DELIMITER),
+          DruidStorageHandlerUtils.getListProperty(table, DruidConstants.DRUID_PARSE_SPEC_COLUMNS),
+          DruidStorageHandlerUtils.getBooleanProperty(table, DruidConstants.DRUID_PARSE_SPEC_HAS_HEADER_ROWS, false),
+          DruidStorageHandlerUtils.getIntegerProperty(table, DruidConstants.DRUID_PARSE_SPEC_SKIP_HEADER_ROWS, 0)),
+          "UTF-8");
+    } else if ("avro".equalsIgnoreCase(parseSpecFormat)) {
+      try {
+        String avroSchemaLiteral = DruidStorageHandlerUtils.getTableProperty(table, DruidConstants.AVRO_SCHEMA_LITERAL);
+        Preconditions.checkNotNull(avroSchemaLiteral, "Please specify avro schema literal when using avro parser");
+        Map<String, Object>
+            avroSchema =
+            JSON_MAPPER.readValue(avroSchemaLiteral, new TypeReference<Map<String, Object>>() {
+            });
+        return new AvroStreamInputRowParser(new AvroParseSpec(timestampSpec, dimensionsSpec, null),
+            new InlineSchemaAvroBytesDecoder(avroSchema));
+      } catch (Exception e) {
+        throw new IllegalStateException("Exception while creating avro schema", e);
+      }
+    }
+
+    throw new IllegalArgumentException("Invalid parse spec format ["
+        + parseSpecFormat
+        + "]. "
+        + "Supported types are : json, csv, tsv, avro");
   }
 }

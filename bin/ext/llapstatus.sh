@@ -17,7 +17,7 @@ THISSERVICE=llapstatus
 export SERVICE_LIST="${SERVICE_LIST}${THISSERVICE} "
 
 llapstatus () {
-  CLASS=org.apache.hadoop.hive.llap.cli.LlapStatusServiceDriver;
+  CLASS=org.apache.hadoop.hive.llap.cli.status.LlapStatusServiceDriver;
   if [ ! -f ${HIVE_LIB}/hive-cli-*.jar ]; then
     echo "Missing Hive CLI Jar"
     exit 3;
@@ -36,7 +36,7 @@ llapstatus () {
 }
 
 llapstatus_help () {
-  CLASS=org.apache.hadoop.hive.llap.cli.LlapStatusServiceDriver;
+  CLASS=org.apache.hadoop.hive.llap.cli.status.LlapStatusServiceDriver;
   execHiveCmd $CLASS "--help"
 } 
 

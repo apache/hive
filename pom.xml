@@ -101,7 +101,7 @@
     <datanucleus.maven.plugin.version>3.3.0-release</datanucleus.maven.plugin.version>
     <maven.test.jvm.args>-Xmx2048m</maven.test.jvm.args>
     <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
-    <maven.assembly.plugin.version>2.3</maven.assembly.plugin.version>
+    <maven.assembly.plugin.version>3.1.0</maven.assembly.plugin.version>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
     <maven.compiler.plugin.version>3.6.1</maven.compiler.plugin.version>
     <maven.enforcer.plugin.version>1.3.1</maven.enforcer.plugin.version>
@@ -159,8 +159,8 @@
     <disruptor.version>3.3.7</disruptor.version>
     <hikaricp.version>2.6.1</hikaricp.version>
     <!-- httpcomponents are not always in version sync -->
-    <httpcomponents.client.version>4.5.2</httpcomponents.client.version>
-    <httpcomponents.core.version>4.4.4</httpcomponents.core.version>
+    <httpcomponents.client.version>4.5.6</httpcomponents.client.version>
+    <httpcomponents.core.version>4.4.10</httpcomponents.core.version>
     <ivy.version>2.4.0</ivy.version>
     <jackson.version>2.9.5</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
@@ -186,7 +186,7 @@
     <libthrift.version>0.9.3</libthrift.version>
     <log4j2.version>2.10.0</log4j2.version>
     <opencsv.version>2.3</opencsv.version>
-    <orc.version>1.5.3</orc.version>
+    <orc.version>1.5.4</orc.version>
     <mockito-all.version>1.10.19</mockito-all.version>
     <powermock.version>1.7.4</powermock.version>
     <mina.version>2.0.0-M5</mina.version>

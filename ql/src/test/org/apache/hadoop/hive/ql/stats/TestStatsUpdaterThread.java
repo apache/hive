@@ -274,6 +274,12 @@ public class TestStatsUpdaterThread {
         Lists.newArrayList("s"), currentWriteIds);
     assertEquals(1, stats.size());
 
+    // Test with null list of partNames
+    stats = msClient.getPartitionColumnStatistics(
+        dbName, tblName, null,
+        Lists.newArrayList("s"), currentWriteIds);
+    assertEquals(0, stats.size());
+
     // New reader.
     currentWriteIds = msClient.getValidWriteIds(fqName).toString();
     stats = msClient.getPartitionColumnStatistics(
@@ -610,7 +616,7 @@ public class TestStatsUpdaterThread {
   }
 
   private void executeQuery(String query) throws HiveException {
-    DriverUtils.runOnDriver(hiveConf, ss.getUserName(), ss, query, null);
+    DriverUtils.runOnDriver(hiveConf, ss.getUserName(), ss, query);
   }
 
   private StatsUpdaterThread createUpdater() throws MetaException {

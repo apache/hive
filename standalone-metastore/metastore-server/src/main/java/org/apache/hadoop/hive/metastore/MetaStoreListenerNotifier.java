@@ -55,6 +55,10 @@ import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
+import org.apache.hadoop.hive.metastore.events.UpdateTableColumnStatEvent;
+import org.apache.hadoop.hive.metastore.events.DeleteTableColumnStatEvent;
+import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEvent;
+import org.apache.hadoop.hive.metastore.events.DeletePartitionColumnStatEvent;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import java.sql.Connection;
 import java.util.List;
@@ -224,6 +228,14 @@ public class MetaStoreListenerNotifier {
               (listener, event) -> listener.onAllocWriteId((AllocWriteIdEvent) event, null, null))
           .put(EventType.ACID_WRITE,
                   (listener, event) -> listener.onAcidWrite((AcidWriteEvent) event, null, null))
+          .put(EventType.UPDATE_TABLE_COLUMN_STAT,
+                      (listener, event) -> listener.onUpdateTableColumnStat((UpdateTableColumnStatEvent) event))
+          .put(EventType.DELETE_TABLE_COLUMN_STAT,
+                  (listener, event) -> listener.onDeleteTableColumnStat((DeleteTableColumnStatEvent) event))
+          .put(EventType.UPDATE_PARTITION_COLUMN_STAT,
+                  (listener, event) -> listener.onUpdatePartitionColumnStat((UpdatePartitionColumnStatEvent) event))
+          .put(EventType.DELETE_PARTITION_COLUMN_STAT,
+                  (listener, event) -> listener.onDeletePartitionColumnStat((DeletePartitionColumnStatEvent) event))
           .build()
   );
 

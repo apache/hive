@@ -79,7 +79,7 @@ public class GenericUDTFPosExplode extends GenericUDTF {
 
     for (int i = 0; i < list.size(); i++) {
       Object r = list.get(i);
-      forwardObj[0] = new Integer(i);
+      forwardObj[0] = Integer.valueOf(i);
       forwardObj[1] = r;
       forward(forwardObj);
     }

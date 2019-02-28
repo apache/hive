@@ -96,6 +96,7 @@ public class EximUtil {
     private Logger LOG;
     private Context ctx;
     private DumpType eventType = DumpType.EVENT_UNKNOWN;
+    private Task<? extends Serializable> openTxnTask = null;
 
     public HiveConf getConf() {
       return conf;
@@ -145,6 +146,13 @@ public class EximUtil {
       this.tasks = tasks;
       this.LOG = LOG;
       this.ctx = ctx;
+    }
+
+    public Task<? extends Serializable> getOpenTxnTask() {
+      return openTxnTask;
+    }
+    public void setOpenTxnTask(Task<? extends Serializable> openTxnTask) {
+      this.openTxnTask = openTxnTask;
     }
   }
 
@@ -267,7 +275,8 @@ public class EximUtil {
       tmpParameters.entrySet()
                 .removeIf(e -> e.getKey().startsWith(Utils.BOOTSTRAP_DUMP_STATE_KEY_PREFIX)
                             || e.getKey().equals(ReplUtils.REPL_CHECKPOINT_KEY)
-                            || e.getKey().equals(ReplChangeManager.SOURCE_OF_REPLICATION));
+                            || e.getKey().equals(ReplChangeManager.SOURCE_OF_REPLICATION)
+                            || e.getKey().equals(ReplUtils.REPL_FIRST_INC_PENDING_FLAG));
       dbObj.setParameters(tmpParameters);
     }
     try (JsonWriter jsonWriter = new JsonWriter(fs, metadataPath)) {

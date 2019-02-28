@@ -245,4 +245,36 @@ explain insert overwrite table over1k_part partition(ds="foo", t) select si,i,b,
 set hive.optimize.sort.dynamic.partition.threshold=1;
 explain insert overwrite table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27 limit 10;
 
+
+create table over1k_part4_0(i int) partitioned by (s string);
+create table over1k_part4_1(i int) partitioned by (s string);
+
+EXPLAIN
+WITH CTE AS (
+select i, s from over1k_n3 where s like 'bob%'
+)
+FROM (
+select * from CTE where i > 1 ORDER BY s
+) src1k
+insert overwrite table over1k_part4_0 partition(s)
+select i+1, s
+insert overwrite table over1k_part4_1 partition(s)
+select i+0, s
+;
+
+WITH CTE AS (
+select i, s from over1k_n3 where s like 'bob%'
+)
+FROM (
+select * from CTE where i > 1 ORDER BY s
+) src1k
+insert overwrite table over1k_part4_0 partition(s)
+select i+1, s
+insert overwrite table over1k_part4_1 partition(s)
+select i+0, s
+;
+
+select count(1) from over1k_part4_0;
+select count(1) from over1k_part4_1;
+
 drop table over1k_n3;

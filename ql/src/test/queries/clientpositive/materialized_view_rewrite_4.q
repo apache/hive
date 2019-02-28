@@ -15,7 +15,6 @@ create table emps_n5 (
 stored as orc TBLPROPERTIES ('transactional'='true');
 insert into emps_n5 values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
   (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (120, 10, 'Bill', 10000, 250);
-analyze table emps_n5 compute statistics for columns;
 
 create table depts_n4 (
   deptno int,
@@ -23,21 +22,18 @@ create table depts_n4 (
   locationid int)
 stored as orc TBLPROPERTIES ('transactional'='true');
 insert into depts_n4 values (10, 'Sales', 10), (30, 'Marketing', null), (20, 'HR', 20);
-analyze table depts_n4 compute statistics for columns;
 
 create table dependents_n3 (
   empid int,
   name varchar(256))
 stored as orc TBLPROPERTIES ('transactional'='true');
 insert into dependents_n3 values (10, 'Michael'), (20, 'Jane');
-analyze table dependents_n3 compute statistics for columns;
 
 create table locations_n3 (
   locationid int,
   name varchar(256))
 stored as orc TBLPROPERTIES ('transactional'='true');
 insert into locations_n3 values (10, 'San Francisco'), (20, 'San Diego');
-analyze table locations_n3 compute statistics for columns;
 
 alter table emps_n5 add constraint pk1 primary key (empid) disable novalidate rely;
 alter table depts_n4 add constraint pk2 primary key (deptno) disable novalidate rely;
@@ -52,7 +48,6 @@ alter table depts_n4 add constraint fk2 foreign key (locationid) references loca
 create materialized view mv1_n3 as
 select name, salary, count(*) as c, sum(empid) as s
 from emps_n5 group by name, salary;
-analyze table mv1_n3 compute statistics for columns;
 
 explain
 select name, count(*) as c, sum(empid) as s
@@ -67,7 +62,6 @@ drop materialized view mv1_n3;
 create materialized view mv1_n3 as
 select name, salary, count(*) as c, sum(empid) as s
 from emps_n5 group by name, salary;
-analyze table mv1_n3 compute statistics for columns;
 
 explain
 select salary, name, sum(empid) as s, count(*) as c
@@ -84,7 +78,6 @@ create materialized view mv1_n3 as
 select empid, emps_n5.deptno, count(*) as c, sum(empid) as s
 from emps_n5 join depts_n4 using (deptno)
 group by empid, emps_n5.deptno;
-analyze table mv1_n3 compute statistics for columns;
 
 explain
 select depts_n4.deptno, count(*) as c, sum(empid) as s
@@ -102,7 +95,6 @@ create materialized view mv1_n3 as
 select empid, emps_n5.deptno, count(*) as c, sum(empid) as s
 from emps_n5 join depts_n4 using (deptno)
 where emps_n5.deptno >= 10 group by empid, emps_n5.deptno;
-analyze table mv1_n3 compute statistics for columns;
 
 explain
 select depts_n4.deptno, sum(empid) as s
@@ -120,7 +112,6 @@ create materialized view mv1_n3 as
 select empid, depts_n4.deptno, count(*) + 1 as c, sum(empid) as s
 from emps_n5 join depts_n4 using (deptno)
 where depts_n4.deptno >= 10 group by empid, depts_n4.deptno;
-analyze table mv1_n3 compute statistics for columns;
 
 explain
 select depts_n4.deptno, sum(empid) + 1 as s
@@ -139,7 +130,6 @@ select depts_n4.name, sum(salary) as s
 from emps_n5
 join depts_n4 on (emps_n5.deptno = depts_n4.deptno)
 group by depts_n4.name;
-analyze table mv1_n3 compute statistics for columns;
 
 explain
 select dependents_n3.empid, sum(salary) as s
@@ -162,7 +152,6 @@ select dependents_n3.empid, emps_n5.deptno, count(distinct salary) as s
 from emps_n5
 join dependents_n3 on (emps_n5.empid = dependents_n3.empid)
 group by dependents_n3.empid, emps_n5.deptno;
-analyze table mv1_n3 compute statistics for columns;
 
 explain
 select emps_n5.deptno, count(distinct salary) as s

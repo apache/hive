@@ -184,7 +184,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
           return null;
         }
       }
-      validateAcidFiles(table, srcs, fileSystem);
+      AcidUtils.validateAcidFiles(table, srcs, fileSystem);
       // Do another loop if table is bucketed
       List<String> bucketCols = table.getBucketCols();
       if (bucketCols != null && !bucketCols.isEmpty()) {
@@ -221,27 +221,6 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     return Lists.newArrayList(srcs);
   }
 
-  /**
-   * Safety check to make sure a file take from one acid table is not added into another acid table
-   * since the ROW__IDs embedded as part a write to one table won't make sense in different
-   * table/cluster.
-   */
-  private static void validateAcidFiles(Table table, FileStatus[] srcs, FileSystem fs)
-      throws SemanticException {
-    if(!AcidUtils.isFullAcidTable(table)) {
-      return;
-    }
-    try {
-      for (FileStatus oneSrc : srcs) {
-        if (!AcidUtils.MetaDataFile.isRawFormatFile(oneSrc.getPath(), fs)) {
-          throw new SemanticException(ErrorMsg.LOAD_DATA_ACID_FILE, oneSrc.getPath().toString());
-        }
-      }
-    }
-    catch(IOException ex) {
-      throw new SemanticException(ex);
-    }
-  }
 
   @Override
   public void init(boolean clearPartsCache) {

@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONAbortTxnMessage;
@@ -73,6 +74,10 @@ import org.apache.hadoop.hive.metastore.messaging.json.JSONDropPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONDropTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONInsertMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONOpenTxnMessage;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONUpdateTableColumnStatMessage;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONUpdatePartitionColumnStatMessage;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONDeleteTableColumnStatMessage;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONDeletePartitionColumnStatMessage;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TDeserializer;
@@ -118,6 +123,10 @@ public class MessageBuilder {
   public static final String ALLOC_WRITE_ID_EVENT = "ALLOC_WRITE_ID_EVENT";
   public static final String ALTER_CATALOG_EVENT = "ALTER_CATALOG";
   public static final String ACID_WRITE_EVENT = "ACID_WRITE_EVENT";
+  public static final String UPDATE_TBL_COL_STAT_EVENT = "UPDATE_TBL_COL_STAT_EVENT";
+  public static final String DELETE_TBL_COL_STAT_EVENT = "DELETE_TBL_COL_STAT_EVENT";
+  public static final String UPDATE_PART_COL_STAT_EVENT = "UPDATE_PART_COL_STAT_EVENT";
+  public static final String DELETE_PART_COL_STAT_EVENT = "DELETE_PART_COL_STAT_EVENT";
 
   protected static final Configuration conf = MetastoreConf.newMetastoreConf();
 
@@ -277,6 +286,31 @@ public class MessageBuilder {
         files);
   }
 
+  public JSONUpdateTableColumnStatMessage buildUpdateTableColumnStatMessage(ColumnStatistics colStats,
+                                                                            Table tableObj,
+                                                                            Map<String, String> parameters,
+                                                                            long writeId) {
+    return new JSONUpdateTableColumnStatMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, now(),
+            colStats, tableObj, parameters, writeId);
+  }
+
+  public JSONDeleteTableColumnStatMessage buildDeleteTableColumnStatMessage(String dbName, String colName) {
+    return new JSONDeleteTableColumnStatMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, now(), dbName, colName);
+  }
+
+  public JSONUpdatePartitionColumnStatMessage buildUpdatePartitionColumnStatMessage(ColumnStatistics colStats,
+                                                            List<String> partVals, Map<String, String> parameters,
+                                                            Table tableObj, long writeId) {
+    return new JSONUpdatePartitionColumnStatMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, now(), colStats, partVals,
+            parameters, tableObj, writeId);
+  }
+
+  public JSONDeletePartitionColumnStatMessage buildDeletePartitionColumnStatMessage(String dbName, String colName,
+                                                                            String partName, List<String> partValues) {
+    return new JSONDeletePartitionColumnStatMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, now(), dbName,
+            colName, partName, partValues);
+  }
+
   private long now() {
     return System.currentTimeMillis() / 1000;
   }
@@ -340,6 +374,11 @@ public class MessageBuilder {
     String tableJson = jsonTree.get("tableObjJson").asText();
     deSerializer.deserialize(tableObj, tableJson, "UTF-8");
     return tableObj;
+  }
+
+  public static String createTableColumnStatJson(ColumnStatistics tableColumnStat) throws TException {
+    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+    return serializer.toString(tableColumnStat, "UTF-8");
   }
 
   /*

@@ -22,7 +22,7 @@ import java.sql.Connection;
 import java.util.List;
 
 import org.apache.hadoop.classification.InterfaceAudience;
-import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper;
+import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper;
 
 /**
  * Defines the method which must be implemented to be used using schema tool to support metastore

@@ -21,12 +21,12 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.TruncateTableDesc;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -40,8 +40,9 @@ public class TruncatePartitionHandler extends AbstractMessageHandler {
     String actualTblName = context.isTableNameEmpty() ? msg.getTable() : context.tableName;
 
     Map<String, String> partSpec = new LinkedHashMap<>();
+    org.apache.hadoop.hive.metastore.api.Table tblObj;
     try {
-      org.apache.hadoop.hive.metastore.api.Table tblObj = msg.getTableObj();
+      tblObj = msg.getTableObj();
       Iterator<String> afterIterator = msg.getPtnObjAfter().getValuesIterator();
       for (FieldSchema fs : tblObj.getPartitionKeys()) {
         partSpec.put(fs.getName(), afterIterator.next());
@@ -63,6 +64,12 @@ public class TruncatePartitionHandler extends AbstractMessageHandler {
     context.log.debug("Added truncate ptn task : {}:{}:{}", truncatePtnTask.getId(),
         truncateTableDesc.getTableName(), truncateTableDesc.getWriteId());
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, partSpec);
-    return Collections.singletonList(truncatePtnTask);
+
+    try {
+      return ReplUtils.addOpenTxnTaskForMigration(actualDbName, actualTblName,
+              context.hiveConf, updatedMetadata, truncatePtnTask, tblObj);
+    } catch (Exception e) {
+      throw new SemanticException(e.getMessage());
+    }
   }
 }

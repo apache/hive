@@ -61,6 +61,7 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
 
 
   private final VectorMapJoinFastHashTable vectorMapJoinFastHashTable;
+  private String key;
 
   public VectorMapJoinFastTableContainer(MapJoinDesc desc, Configuration hconf,
       long estimatedKeyCount) throws SerDeException {
@@ -86,6 +87,16 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
   @Override
   public VectorMapJoinHashTable vectorMapJoinHashTable() {
     return vectorMapJoinFastHashTable;
+  }
+
+  @Override
+  public void setKey(String key) {
+    this.key = key;
+  }
+
+  @Override
+  public String getKey() {
+    return key;
   }
 
   private VectorMapJoinFastHashTable createHashTable(int newThreshold) {

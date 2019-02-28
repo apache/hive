@@ -41,18 +41,18 @@ STAGE PLANS:
           TableScan
             alias: src
             filterExpr: (ds = '2008-04-08') (type: boolean)
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: PARTIAL
             GatherStats: false
             Select Operator
               expressions: substr(key, 1, 1) (type: string), substr(value, 5) (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: PARTIAL
               Reduce Output Operator
                 key expressions: _col0 (type: string), _col1 (type: string)
                 null sort order: aa
                 sort order: ++
                 Map-reduce partition columns: _col0 (type: string)
-                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: PARTIAL
                 tag: -1
                 auto parallelism: false
       Execution mode: vectorized
@@ -167,17 +167,17 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: complete
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 316 Data size: 63200 Basic stats: COMPLETE Column stats: PARTIAL
           Select Operator
             expressions: _col0 (type: string), UDFToInteger(_col1) (type: int), concat(_col0, _col2) (type: string)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 316 Data size: 117552 Basic stats: COMPLETE Column stats: PARTIAL
             File Output Operator
               compressed: false
               GlobalTableId: 1
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 316 Data size: 117552 Basic stats: COMPLETE Column stats: PARTIAL
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -208,7 +208,7 @@ STAGE PLANS:
             Select Operator
               expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
               outputColumnNames: key, c1, c2
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 316 Data size: 117552 Basic stats: COMPLETE Column stats: PARTIAL
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
@@ -275,7 +275,7 @@ STAGE PLANS:
             Reduce Output Operator
               null sort order: 
               sort order: 
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 316 Data size: 117552 Basic stats: COMPLETE Column stats: PARTIAL
               tag: -1
               value expressions: key (type: string), c1 (type: int), c2 (type: string)
               auto parallelism: false
@@ -313,13 +313,13 @@ STAGE PLANS:
           aggregations: compute_stats(VALUE._col0, 'hll'), compute_stats(VALUE._col2, 'hll'), compute_stats(VALUE._col3, 'hll')
           mode: complete
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: PARTIAL
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: PARTIAL
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat

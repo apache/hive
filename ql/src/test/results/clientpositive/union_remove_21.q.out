@@ -55,31 +55,31 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: inputtbl1_n12
-            Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string)
               outputColumnNames: key
-              Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: key (type: string)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -101,31 +101,31 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: inputtbl1_n12
-            Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string)
               outputColumnNames: key
-              Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: key (type: string)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

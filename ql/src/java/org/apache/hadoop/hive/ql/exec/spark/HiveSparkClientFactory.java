@@ -74,7 +74,7 @@ public class HiveSparkClientFactory {
       // With local spark context, all user sessions share the same spark context.
       return LocalHiveSparkClient.getInstance(generateSparkConf(sparkConf), hiveconf);
     } else {
-      return new RemoteHiveSparkClient(hiveconf, sparkConf, hiveSessionId + "_" + sparkSessionId);
+      return new RemoteHiveSparkClient(hiveconf, sparkConf, sparkSessionId);
     }
   }
 

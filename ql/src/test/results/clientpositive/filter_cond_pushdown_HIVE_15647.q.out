@@ -41,28 +41,28 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: sales
-            filterExpr: ((store_number = customer_id) and store_id is not null) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: ((store_number IS NOT DISTINCT FROM customer_id) and store_id is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((store_number = customer_id) and store_id is not null) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              predicate: ((store_number IS NOT DISTINCT FROM customer_id) and store_id is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: store_id (type: int)
                 sort order: +
                 Map-reduce partition columns: store_id (type: int)
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: store
             filterExpr: (store_id is not null and salad_bar) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (salad_bar and store_id is not null) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: store_id (type: int)
                 sort order: +
                 Map-reduce partition columns: store_id (type: int)
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -70,12 +70,12 @@ STAGE PLANS:
           keys:
             0 store_id (type: int)
             1 store_id (type: int)
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
             aggregations: count()
             mode: hash
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -89,7 +89,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               sort order: 
-              Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -97,10 +97,10 @@ STAGE PLANS:
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -140,27 +140,27 @@ STAGE PLANS:
           TableScan
             alias: sales
             filterExpr: ((store_number = customer_id) and store_id is not null) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((store_number = customer_id) and store_id is not null) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: store_id (type: int)
                 sort order: +
                 Map-reduce partition columns: store_id (type: int)
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: store
             filterExpr: (store_id is not null and salad_bar) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (salad_bar and store_id is not null) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: store_id (type: int)
                 sort order: +
                 Map-reduce partition columns: store_id (type: int)
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -168,12 +168,12 @@ STAGE PLANS:
           keys:
             0 store_id (type: int)
             1 store_id (type: int)
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
             aggregations: count()
             mode: hash
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -187,7 +187,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               sort order: 
-              Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -195,10 +195,10 @@ STAGE PLANS:
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -237,28 +237,28 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: sales
-            filterExpr: ((store_number = customer_id) and store_id is not null) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: ((store_number IS NOT DISTINCT FROM customer_id) and store_id is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((store_number = customer_id) and store_id is not null) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              predicate: ((store_number IS NOT DISTINCT FROM customer_id) and store_id is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: store_id (type: int)
                 sort order: +
                 Map-reduce partition columns: store_id (type: int)
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: store
             filterExpr: (store_id is not null and (salad_bar = true)) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((salad_bar = true) and store_id is not null) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: store_id (type: int)
                 sort order: +
                 Map-reduce partition columns: store_id (type: int)
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -266,12 +266,12 @@ STAGE PLANS:
           keys:
             0 store_id (type: int)
             1 store_id (type: int)
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
             aggregations: count()
             mode: hash
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -285,7 +285,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               sort order: 
-              Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -293,10 +293,10 @@ STAGE PLANS:
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -336,27 +336,27 @@ STAGE PLANS:
           TableScan
             alias: sales
             filterExpr: (store_id is not null and (store_number > customer_id)) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((store_number > customer_id) and store_id is not null) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: store_id (type: int)
                 sort order: +
                 Map-reduce partition columns: store_id (type: int)
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: store
             filterExpr: (store_id is not null and (salad_bar = false)) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((salad_bar = false) and store_id is not null) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: store_id (type: int)
                 sort order: +
                 Map-reduce partition columns: store_id (type: int)
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -364,12 +364,12 @@ STAGE PLANS:
           keys:
             0 store_id (type: int)
             1 store_id (type: int)
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
             aggregations: count()
             mode: hash
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -383,7 +383,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               sort order: 
-              Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -391,10 +391,10 @@ STAGE PLANS:
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

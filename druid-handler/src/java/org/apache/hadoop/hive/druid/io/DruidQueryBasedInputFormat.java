@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.druid.DruidStorageHandler;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
+import org.apache.hadoop.hive.druid.conf.DruidConstants;
 import org.apache.hadoop.hive.druid.serde.DruidGroupByQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidScanQueryRecordReader;
@@ -44,6 +45,8 @@ import org.apache.hadoop.hive.druid.serde.DruidTimeseriesQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidTopNQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidWritable;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
@@ -59,7 +62,6 @@ import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -74,11 +76,11 @@ import java.util.List;
  * and parse the results.
  */
 public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidWritable>
-        implements org.apache.hadoop.mapred.InputFormat<NullWritable, DruidWritable> {
+        implements org.apache.hadoop.mapred.InputFormat<NullWritable, DruidWritable>, VectorizedInputFormatInterface {
 
-  protected static final Logger LOG = LoggerFactory.getLogger(DruidQueryBasedInputFormat.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DruidQueryBasedInputFormat.class);
 
-  @Nullable public static DruidQueryRecordReader getDruidQueryReader(String druidQueryType) {
+  public static DruidQueryRecordReader getDruidQueryReader(String druidQueryType) {
     switch (druidQueryType) {
     case Query.TIMESERIES:
       return new DruidTimeseriesQueryRecordReader();
@@ -91,26 +93,20 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     case Query.SCAN:
       return new DruidScanQueryRecordReader();
     default:
-      return null;
+      throw new IllegalStateException("Druid query type " + druidQueryType + " not recognized");
     }
   }
 
-  @Override
-  public org.apache.hadoop.mapred.InputSplit[] getSplits(JobConf job, int numSplits)
-          throws IOException {
+  @Override public org.apache.hadoop.mapred.InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
     return getInputSplits(job);
   }
 
-  @Override
-  public List<InputSplit> getSplits(JobContext context) throws IOException, InterruptedException {
+  @Override public List<InputSplit> getSplits(JobContext context) throws IOException, InterruptedException {
     return Arrays.asList(getInputSplits(context.getConfiguration()));
   }
 
-  @SuppressWarnings("deprecation")
   protected HiveDruidSplit[] getInputSplits(Configuration conf) throws IOException {
-    String address = HiveConf.getVar(conf,
-            HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS
-    );
+    String address = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS);
     String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
     if (StringUtils.isEmpty(address)) {
       throw new IOException("Druid broker address not specified in configuration");
@@ -144,7 +140,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     }
 
     // hive depends on FileSplits
-    Job job = new Job(conf);
+    Job job = Job.getInstance(conf);
     JobContext jobContext = ShimLoader.getHadoopShims().newJobContext(job);
     Path[] paths = FileInputFormat.getInputPaths(jobContext);
 
@@ -173,7 +169,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
   private static HiveDruidSplit[] distributeSelectQuery(String address, SelectQuery query, Path dummyPath)
       throws IOException {
     // If it has a limit, we use it and we do not distribute the query
-    final boolean isFetch = query.getContextBoolean(DruidStorageHandlerUtils.DRUID_QUERY_FETCH, false);
+    final boolean isFetch = query.getContextBoolean(DruidConstants.DRUID_QUERY_FETCH, false);
     if (isFetch) {
       return new HiveDruidSplit[] {new HiveDruidSplit(DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(query),
           dummyPath,
@@ -192,16 +188,18 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
         hosts[j] = locatedSD.getLocations().get(j).getHost();
       }
       // Create partial Select query
-      final SegmentDescriptor newSD = new SegmentDescriptor(
-              locatedSD.getInterval(), locatedSD.getVersion(), locatedSD.getPartitionNumber());
+      final SegmentDescriptor
+          newSD =
+          new SegmentDescriptor(locatedSD.getInterval(), locatedSD.getVersion(), locatedSD.getPartitionNumber());
       //@TODO This is fetching all the rows at once from broker or multiple historical nodes
       // Move to use scan query to avoid GC back pressure on the nodes
       // https://issues.apache.org/jira/browse/HIVE-17627
-      final SelectQuery partialQuery = query
-              .withQuerySegmentSpec(new MultipleSpecificSegmentSpec(Lists.newArrayList(newSD)))
+      final SelectQuery
+          partialQuery =
+          query.withQuerySegmentSpec(new MultipleSpecificSegmentSpec(Lists.newArrayList(newSD)))
               .withPagingSpec(PagingSpec.newSpec(Integer.MAX_VALUE));
-      splits[i] = new HiveDruidSplit(DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(partialQuery),
-              dummyPath, hosts);
+      splits[i] =
+          new HiveDruidSplit(DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(partialQuery), dummyPath, hosts);
     }
     return splits;
   }
@@ -220,8 +218,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
       };
     }
 
-    final List<LocatedSegmentDescriptor> segmentDescriptors = fetchLocatedSegmentDescriptors(
-        address, query);
+    final List<LocatedSegmentDescriptor> segmentDescriptors = fetchLocatedSegmentDescriptors(address, query);
 
     // Create one input split for each segment
     final int numSplits = segmentDescriptors.size();
@@ -236,28 +233,31 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
       hosts[locatedSD.getLocations().size()] = address;
 
       // Create partial Select query
-      final SegmentDescriptor newSD = new SegmentDescriptor(
-          locatedSD.getInterval(), locatedSD.getVersion(), locatedSD.getPartitionNumber());
-      final Query partialQuery = query
-          .withQuerySegmentSpec(new MultipleSpecificSegmentSpec(Lists.newArrayList(newSD)));
-      splits[i] = new HiveDruidSplit(DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(partialQuery),
-          dummyPath, hosts);
+      final SegmentDescriptor
+          newSD =
+          new SegmentDescriptor(locatedSD.getInterval(), locatedSD.getVersion(), locatedSD.getPartitionNumber());
+      final Query partialQuery = query.withQuerySegmentSpec(new MultipleSpecificSegmentSpec(Lists.newArrayList(newSD)));
+      splits[i] =
+          new HiveDruidSplit(DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(partialQuery), dummyPath, hosts);
     }
     return splits;
   }
 
-  private static List<LocatedSegmentDescriptor> fetchLocatedSegmentDescriptors(String address,
-      BaseQuery query) throws IOException {
-    final String intervals =
-            StringUtils.join(query.getIntervals(), ","); // Comma-separated intervals without brackets
-    final String request = String.format(
-            "http://%s/druid/v2/datasources/%s/candidates?intervals=%s",
-            address, query.getDataSource().getNames().get(0), URLEncoder.encode(intervals, "UTF-8"));
+  private static List<LocatedSegmentDescriptor> fetchLocatedSegmentDescriptors(String address, BaseQuery query)
+      throws IOException {
+    final String intervals = StringUtils.join(query.getIntervals(), ","); // Comma-separated intervals without brackets
+    final String
+        request =
+        String.format("http://%s/druid/v2/datasources/%s/candidates?intervals=%s",
+            address,
+            query.getDataSource().getNames().get(0),
+            URLEncoder.encode(intervals, "UTF-8"));
     LOG.debug("sending request {} to query for segments", request);
     final InputStream response;
     try {
-      response = DruidStorageHandlerUtils
-          .submitRequest(DruidStorageHandler.getHttpClient(), new Request(HttpMethod.GET, new URL(request)));
+      response =
+          DruidStorageHandlerUtils.submitRequest(DruidStorageHandler.getHttpClient(),
+              new Request(HttpMethod.GET, new URL(request)));
     } catch (Exception e) {
       throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
     }
@@ -265,8 +265,9 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     // Retrieve results
     final List<LocatedSegmentDescriptor> segmentDescriptors;
     try {
-      segmentDescriptors = DruidStorageHandlerUtils.JSON_MAPPER.readValue(response,
-              new TypeReference<List<LocatedSegmentDescriptor>>() {});
+      segmentDescriptors =
+          DruidStorageHandlerUtils.JSON_MAPPER.readValue(response, new TypeReference<List<LocatedSegmentDescriptor>>() {
+          });
     } catch (Exception e) {
       response.close();
       throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
@@ -275,50 +276,39 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
   }
 
   private static String withQueryId(String druidQuery, String queryId) throws IOException {
-    Query<?> queryWithId =
-        DruidStorageHandlerUtils.JSON_MAPPER.readValue(druidQuery, BaseQuery.class).withId(queryId);
+    Query<?> queryWithId = DruidStorageHandlerUtils.JSON_MAPPER.readValue(druidQuery, BaseQuery.class).withId(queryId);
     return DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(queryWithId);
   }
 
-  @Override
-  public org.apache.hadoop.mapred.RecordReader<NullWritable, DruidWritable> getRecordReader(
-          org.apache.hadoop.mapred.InputSplit split, JobConf job, Reporter reporter
-  )
-          throws IOException {
+  @Override public org.apache.hadoop.mapred.RecordReader<NullWritable, DruidWritable> getRecordReader(
+      org.apache.hadoop.mapred.InputSplit split,
+      JobConf job,
+      Reporter reporter) throws IOException {
     // We need to provide a different record reader for every type of Druid query.
     // The reason is that Druid results format is different for each type.
     final DruidQueryRecordReader<?> reader;
-    final String druidQueryType = job.get(Constants.DRUID_QUERY_TYPE);
-    if (druidQueryType == null) {
-      reader = new DruidScanQueryRecordReader(); // By default we use scan query as fallback.
-      reader.initialize((HiveDruidSplit) split, job);
-      return reader;
-    }
-
+    // By default, we use druid scan query as fallback.
+    final String druidQueryType = job.get(Constants.DRUID_QUERY_TYPE, Query.SCAN);
     reader = getDruidQueryReader(druidQueryType);
-    if (reader == null) {
-      throw new IOException("Druid query type " + druidQueryType + " not recognized");
-    }
     reader.initialize((HiveDruidSplit) split, job);
+    if (Utilities.getIsVectorized(job)) {
+      //noinspection unchecked
+      return (org.apache.hadoop.mapred.RecordReader) new DruidVectorizedWrapper(reader, job);
+    }
     return reader;
   }
 
-  @Override
-  public RecordReader<NullWritable, DruidWritable> createRecordReader(InputSplit split,
-          TaskAttemptContext context
-  ) throws IOException, InterruptedException {
+  @Override public RecordReader<NullWritable, DruidWritable> createRecordReader(InputSplit split,
+      TaskAttemptContext context) throws IOException, InterruptedException {
+    // By default, we use druid scan query as fallback.
+    final String druidQueryType = context.getConfiguration().get(Constants.DRUID_QUERY_TYPE, Query.SCAN);
     // We need to provide a different record reader for every type of Druid query.
     // The reason is that Druid results format is different for each type.
-    final String druidQueryType = context.getConfiguration().get(Constants.DRUID_QUERY_TYPE);
-    if (druidQueryType == null) {
-      return new DruidScanQueryRecordReader(); // By default, we use druid scan query as fallback.
-    }
-    final DruidQueryRecordReader<?> reader =
-            getDruidQueryReader(druidQueryType);
-    if (reader == null) {
-      throw new IOException("Druid query type " + druidQueryType + " not recognized");
-    }
-    return reader;
+    //noinspection unchecked
+    return getDruidQueryReader(druidQueryType);
   }
 
+  @Override public VectorizedSupport.Support[] getSupportedFeatures() {
+    return new VectorizedSupport.Support[0];
+  }
 }

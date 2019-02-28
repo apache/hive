@@ -1035,7 +1035,8 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
           Options readerPairOptions = mergerOptions;
           if(mergerOptions.getBaseDir().getName().startsWith(AcidUtils.BASE_PREFIX)) {
             readerPairOptions = modifyForNonAcidSchemaRead(mergerOptions,
-              AcidUtils.parseBase(mergerOptions.getBaseDir()), mergerOptions.getBaseDir());
+                AcidUtils.ParsedBase.parseBase(mergerOptions.getBaseDir()).getWriteId(),
+                mergerOptions.getBaseDir());
           }
           pair = new OriginalReaderPairToCompact(baseKey, bucket, options, readerPairOptions,
             conf, validWriteIdList,
@@ -1106,6 +1107,8 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
           throw new IllegalStateException(delta + " is not delete delta and is not compacting.");
         }
         ReaderKey key = new ReaderKey();
+        //todo: only need to know isRawFormat if compacting for acid V2 and V2 should normally run
+        //in vectorized mode - i.e. this is not a significant perf overhead vs ParsedDeltaLight
         AcidUtils.ParsedDelta deltaDir = AcidUtils.parsedDelta(delta, delta.getFileSystem(conf));
         if(deltaDir.isRawFormat()) {
           assert !deltaDir.isDeleteDelta() : delta.toString();
@@ -1223,14 +1226,11 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
         boolean isDelta = parent.getName().startsWith(AcidUtils.DELTA_PREFIX);
         if(isBase || isDelta) {
           if(isBase) {
-            return new TransactionMetaData(AcidUtils.parseBase(parent), parent);
+            return new TransactionMetaData(AcidUtils.ParsedBase.parseBase(parent).getWriteId(),
+                parent);
           }
           else {
-            AcidUtils.ParsedDelta pd = AcidUtils.parsedDelta(parent, AcidUtils.DELTA_PREFIX,
-              parent.getFileSystem(conf));
-            assert pd.getMinWriteId() == pd.getMaxWriteId() :
-              "This a delta with raw non acid schema, must be result of single write, no compaction: "
-                + splitPath;
+            AcidUtils.ParsedDeltaLight pd = AcidUtils.ParsedDeltaLight.parse(parent);
             return new TransactionMetaData(pd.getMinWriteId(), parent, pd.getStatementId());
           }
         }

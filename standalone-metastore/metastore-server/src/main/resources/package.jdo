@@ -65,6 +65,10 @@
        <field name="ownerType">
         <column name="OWNER_TYPE" length="10" jdbc-type="VARCHAR" allows-null="true"/>
       </field>
+      <field name="createTime">
+        <!-- allows null is true to keep backwards compatibility with old releases -->
+        <column name="CREATE_TIME" jdbc-type="integer" allows-null="true"/>
+      </field>
     </class>
 
     <class name="MCatalog" identity-type="datastore" table="CTLGS" detachable="true">
@@ -80,6 +84,10 @@
       </field>
       <field name="locationUri">
         <column name="LOCATION_URI" length="4000" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="createTime">
+        <!-- allows null is true to keep backwards compatibility with old releases -->
+        <column name="CREATE_TIME" jdbc-type="integer" allows-null="true"/>
       </field>
     </class>
 
@@ -213,6 +221,11 @@
       <field name="writeId">
         <column name="WRITE_ID"/>
       </field>
+      <!-- Make sure that the fetch group names match up with constants in -->
+      <!-- org.apache.hadoop.hive.metastore.model.FetchGroups -->
+      <fetch-group name="fetch_db_mtable">
+          <field name="database"/>
+      </fetch-group>
     </class>
 
     <class name="MCreationMetadata" identity-type="datastore" table="MV_CREATION_METADATA" detachable="true">

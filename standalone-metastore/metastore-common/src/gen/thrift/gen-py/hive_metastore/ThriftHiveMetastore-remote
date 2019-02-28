@@ -107,6 +107,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  PartitionsByExprResult get_partitions_by_expr(PartitionsByExprRequest req)')
   print('  i32 get_num_partitions_by_filter(string db_name, string tbl_name, string filter)')
   print('   get_partitions_by_names(string db_name, string tbl_name,  names)')
+  print('  GetPartitionsByNamesResult get_partitions_by_names_req(GetPartitionsByNamesRequest req)')
   print('  void alter_partition(string db_name, string tbl_name, Partition new_part)')
   print('  void alter_partitions(string db_name, string tbl_name,  new_parts)')
   print('  void alter_partitions_with_environment_context(string db_name, string tbl_name,  new_parts, EnvironmentContext environment_context)')
@@ -190,6 +191,13 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  CompactionResponse compact2(CompactionRequest rqst)')
   print('  ShowCompactResponse show_compact(ShowCompactRequest rqst)')
   print('  void add_dynamic_partitions(AddDynamicPartitions rqst)')
+  print('  OptionalCompactionInfoStruct find_next_compact(string workerId)')
+  print('  void update_compactor_state(CompactionInfoStruct cr, i64 txn_id)')
+  print('   find_columns_with_stats(CompactionInfoStruct cr)')
+  print('  void mark_cleaned(CompactionInfoStruct cr)')
+  print('  void mark_compacted(CompactionInfoStruct cr)')
+  print('  void mark_failed(CompactionInfoStruct cr)')
+  print('  void set_hadoop_jobid(string jobId, i64 cq_id)')
   print('  NotificationEventResponse get_next_notification(NotificationEventRequest rqst)')
   print('  CurrentNotificationEventId get_current_notificationEventId()')
   print('  NotificationEventsCountResponse get_notification_events_count(NotificationEventsCountRequest rqst)')
@@ -806,6 +814,12 @@ elif cmd == 'get_partitions_by_names':
     sys.exit(1)
   pp.pprint(client.get_partitions_by_names(args[0],args[1],eval(args[2]),))
 
+elif cmd == 'get_partitions_by_names_req':
+  if len(args) != 1:
+    print('get_partitions_by_names_req requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_partitions_by_names_req(eval(args[0]),))
+
 elif cmd == 'alter_partition':
   if len(args) != 3:
     print('alter_partition requires 3 args')
@@ -1303,6 +1317,48 @@ elif cmd == 'add_dynamic_partitions':
     print('add_dynamic_partitions requires 1 args')
     sys.exit(1)
   pp.pprint(client.add_dynamic_partitions(eval(args[0]),))
+
+elif cmd == 'find_next_compact':
+  if len(args) != 1:
+    print('find_next_compact requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.find_next_compact(args[0],))
+
+elif cmd == 'update_compactor_state':
+  if len(args) != 2:
+    print('update_compactor_state requires 2 args')
+    sys.exit(1)
+  pp.pprint(client.update_compactor_state(eval(args[0]),eval(args[1]),))
+
+elif cmd == 'find_columns_with_stats':
+  if len(args) != 1:
+    print('find_columns_with_stats requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.find_columns_with_stats(eval(args[0]),))
+
+elif cmd == 'mark_cleaned':
+  if len(args) != 1:
+    print('mark_cleaned requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.mark_cleaned(eval(args[0]),))
+
+elif cmd == 'mark_compacted':
+  if len(args) != 1:
+    print('mark_compacted requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.mark_compacted(eval(args[0]),))
+
+elif cmd == 'mark_failed':
+  if len(args) != 1:
+    print('mark_failed requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.mark_failed(eval(args[0]),))
+
+elif cmd == 'set_hadoop_jobid':
+  if len(args) != 2:
+    print('set_hadoop_jobid requires 2 args')
+    sys.exit(1)
+  pp.pprint(client.set_hadoop_jobid(args[0],eval(args[1]),))
 
 elif cmd == 'get_next_notification':
   if len(args) != 1:

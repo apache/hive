@@ -42,6 +42,10 @@ import org.apache.hadoop.hive.metastore.messaging.DropPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
 import org.apache.hadoop.hive.metastore.messaging.OpenTxnMessage;
+import org.apache.hadoop.hive.metastore.messaging.UpdateTableColumnStatMessage;
+import org.apache.hadoop.hive.metastore.messaging.UpdatePartitionColumnStatMessage;
+import org.apache.hadoop.hive.metastore.messaging.DeleteTableColumnStatMessage;
+import org.apache.hadoop.hive.metastore.messaging.DeletePartitionColumnStatMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -195,5 +199,25 @@ public class DeSerializer extends JSONMessageDeserializer {
   @Override
   public AcidWriteMessage getAcidWriteMessage(String messageBody) {
     return super.getAcidWriteMessage(deCompress(messageBody));
+  }
+
+  @Override
+  public UpdateTableColumnStatMessage getUpdateTableColumnStatMessage(String messageBody) {
+    return super.getUpdateTableColumnStatMessage(deCompress(messageBody));
+  }
+
+  @Override
+  public UpdatePartitionColumnStatMessage getUpdatePartitionColumnStatMessage(String messageBody) {
+    return super.getUpdatePartitionColumnStatMessage(deCompress(messageBody));
+  }
+
+  @Override
+  public DeleteTableColumnStatMessage getDeleteTableColumnStatMessage(String messageBody) {
+    return super.getDeleteTableColumnStatMessage(deCompress(messageBody));
+  }
+
+  @Override
+  public DeletePartitionColumnStatMessage getDeletePartitionColumnStatMessage(String messageBody) {
+    return super.getDeletePartitionColumnStatMessage(deCompress(messageBody));
   }
 }

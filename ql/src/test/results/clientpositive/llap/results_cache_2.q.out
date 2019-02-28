@@ -115,7 +115,7 @@ group by c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-2012-01-01 09:02:03	10
+2012-01-01 01:02:03	10
 test.comment=Queries using non-deterministic functions should not use results cache
 PREHOOK: query: explain
 select c1, count(*)
@@ -178,7 +178,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: TIMESTAMP'2012-01-01 09:02:03' (type: timestamp), _col1 (type: bigint)
+                  expressions: TIMESTAMP'2012-01-01 01:02:03' (type: timestamp), _col1 (type: bigint)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -239,14 +239,14 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
-                  Statistics: Num rows: 500/1 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 500/500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
-                    Statistics: Num rows: 166/1 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 166/10 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: sign(value) (type: double)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 166/1 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 166/10 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         keys: _col0 (type: double)

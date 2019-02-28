@@ -453,11 +453,13 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
   public void debugDumpShort(StringBuilder sb) {
     sb.append("\nORC cache state ");
     int allLocked = 0, allUnlocked = 0, allEvicted = 0, allMoving = 0;
+    long totalUsedSpace = 0;
     for (Map.Entry<Object, FileCache<ConcurrentSkipListMap<Long, LlapDataBuffer>>> e :
       cache.entrySet()) {
       if (!e.getValue().incRef()) continue;
       try {
         int fileLocked = 0, fileUnlocked = 0, fileEvicted = 0, fileMoving = 0;
+        long fileMemoryUsage = 0;
         if (e.getValue().getCache().isEmpty()) continue;
         List<LlapDataBuffer> lockedBufs = null;
         if (LlapIoImpl.LOCKING_LOGGER.isTraceEnabled()) {
@@ -483,6 +485,7 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
               ++fileUnlocked;
             }
           } finally {
+            fileMemoryUsage += e2.getValue().allocSize;
             e2.getValue().decRef();
           }
         }
@@ -490,8 +493,21 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
         allUnlocked += fileUnlocked;
         allEvicted += fileEvicted;
         allMoving += fileMoving;
-        sb.append("\n  file " + e.getKey() + ": " + fileLocked + " locked, " + fileUnlocked
-            + " unlocked, " + fileEvicted + " evicted, " + fileMoving + " being moved");
+        totalUsedSpace += fileMemoryUsage;
+
+        sb.append("\n  file "
+            + e.getKey()
+            + ": "
+            + fileLocked
+            + " locked, "
+            + fileUnlocked
+            + " unlocked, "
+            + fileEvicted
+            + " evicted, "
+            + fileMoving
+            + " being moved,"
+            + fileMemoryUsage
+            + " total used byte");
         if (fileLocked > 0 && LlapIoImpl.LOCKING_LOGGER.isTraceEnabled()) {
           LlapIoImpl.LOCKING_LOGGER.trace("locked-buffers: {}", lockedBufs);
         }
@@ -499,7 +515,16 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
         e.getValue().decRef();
       }
     }
-    sb.append("\nORC cache summary: " + allLocked + " locked, " + allUnlocked + " unlocked, "
-        + allEvicted + " evicted, " + allMoving + " being moved");
+    sb.append("\nORC cache summary: "
+        + allLocked
+        + " locked, "
+        + allUnlocked
+        + " unlocked, "
+        + allEvicted
+        + " evicted, "
+        + allMoving
+        + " being moved,"
+        + totalUsedSpace
+        + "total used space");
   }
 }

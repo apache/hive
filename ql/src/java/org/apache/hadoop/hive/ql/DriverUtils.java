@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql;
 
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -28,14 +29,27 @@ import org.slf4j.LoggerFactory;
 public class DriverUtils {
   private static final Logger LOG = LoggerFactory.getLogger(DriverUtils.class);
 
+  public static void runOnDriver(HiveConf conf, String user, SessionState sessionState,
+      String query) throws HiveException {
+    runOnDriver(conf, user, sessionState, query, null, -1);
+  }
+
+  /**
+   * For Query Based compaction to run the query to generate the compacted data.
+   */
   public static void runOnDriver(HiveConf conf, String user,
-      SessionState sessionState, String query, ValidWriteIdList writeIds) throws HiveException {
+      SessionState sessionState, String query, ValidWriteIdList writeIds, long compactorTxnId)
+      throws HiveException {
+    if(writeIds != null && compactorTxnId < 0) {
+      throw new IllegalArgumentException(JavaUtils.txnIdToString(compactorTxnId) +
+          " is not valid. Context: " + query);
+    }
     SessionState.setCurrentSessionState(sessionState);
     boolean isOk = false;
     try {
       QueryState qs = new QueryState.Builder().withHiveConf(conf).nonIsolated().build();
       Driver driver = new Driver(qs, user, null, null);
-      driver.setCompactionWriteIds(writeIds);
+      driver.setCompactionWriteIds(writeIds, compactorTxnId);
       try {
         CommandProcessorResponse cpr = driver.run(query);
         if (cpr.getResponseCode() != 0) {

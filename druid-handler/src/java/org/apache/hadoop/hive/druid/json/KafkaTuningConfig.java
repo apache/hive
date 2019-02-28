@@ -109,7 +109,7 @@ public class KafkaTuningConfig implements AppenderatorConfig {
   /**
    * Always returns true, doesn't affect the version being built.
    */
-  @Deprecated @JsonProperty public boolean getBuildV9Directly() {
+  @SuppressWarnings("SameReturnValue") @Deprecated @JsonProperty public boolean getBuildV9Directly() {
     return true;
   }
 

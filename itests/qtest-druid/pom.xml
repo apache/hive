@@ -110,6 +110,17 @@
           <version>${druid.version}</version>
         </dependency>
         <dependency>
+          <groupId>io.druid.extensions</groupId>
+          <artifactId>druid-avro-extensions</artifactId>
+          <version>${druid.version}</version>
+          <exclusions>
+            <exclusion>
+              <groupId>org.mortbay.jetty</groupId>
+              <artifactId>servlet-api</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+        <dependency>
           <groupId>org.apache.logging.log4j</groupId>
           <artifactId>log4j-api</artifactId>
           <version>${log4j2.version}</version>

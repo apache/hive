@@ -39,6 +39,8 @@ import org.junit.Test;
 
 public class TestGenericUDFPower {
 
+  private static final double EPSILON = 1E-10;
+
   @Test
   public void testBytePowerShort() throws HiveException {
     GenericUDFPower udf = new GenericUDFPower();
@@ -57,7 +59,7 @@ public class TestGenericUDFPower {
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(TypeInfoFactory.doubleTypeInfo, oi.getTypeInfo());
     DoubleWritable res = (DoubleWritable) udf.evaluate(args);
-    Assert.assertEquals(new Double(16), new Double(res.get()));
+    Assert.assertEquals(16, res.get(), EPSILON);
   }
 
   @Test
@@ -79,7 +81,7 @@ public class TestGenericUDFPower {
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(oi.getTypeInfo(), TypeInfoFactory.doubleTypeInfo);
     DoubleWritable res = (DoubleWritable) udf.evaluate(args);
-    Assert.assertEquals(new Double(3.14 * 3.14), new Double(res.get()));
+    Assert.assertEquals(3.14 * 3.14, res.get(), EPSILON);
   }
 
   @Test
@@ -100,7 +102,7 @@ public class TestGenericUDFPower {
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(TypeInfoFactory.doubleTypeInfo, oi.getTypeInfo());
     DoubleWritable res = (DoubleWritable) udf.evaluate(args);
-    Assert.assertEquals(new Double(4.5 * 4.5 * 4.5 * 4.5), new Double(res.get()));
+    Assert.assertEquals(4.5 * 4.5 * 4.5 * 4.5, res.get(), EPSILON);
   }
 
   @Test
@@ -121,7 +123,7 @@ public class TestGenericUDFPower {
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(TypeInfoFactory.doubleTypeInfo, oi.getTypeInfo());
     DoubleWritable res = (DoubleWritable) udf.evaluate(args);
-    Assert.assertEquals(new Double(1380.3842646028852), new Double(res.get()));
+    Assert.assertEquals(1380.3842646028852, res.get(), EPSILON);
    }
 
   @Test
@@ -142,7 +144,7 @@ public class TestGenericUDFPower {
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(oi.getTypeInfo(), TypeInfoFactory.doubleTypeInfo);
     DoubleWritable res = (DoubleWritable) udf.evaluate(args);
-    Assert.assertEquals(new Double(0.10475656017578482), new Double(res.get()));
+    Assert.assertEquals(0.10475656017578482, res.get(), EPSILON);
   }
 
   @Test
@@ -163,7 +165,7 @@ public class TestGenericUDFPower {
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(oi.getTypeInfo(), TypeInfoFactory.doubleTypeInfo);
     DoubleWritable res = (DoubleWritable) udf.evaluate(args);
-    Assert.assertEquals(new Double(0.009065844089438033), new Double(res.get()));
+    Assert.assertEquals(0.009065844089438033, res.get(), EPSILON);
   }
 
   @Test
@@ -184,7 +186,7 @@ public class TestGenericUDFPower {
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(TypeInfoFactory.doubleTypeInfo, oi.getTypeInfo());
     DoubleWritable res = (DoubleWritable) udf.evaluate(args);
-    Assert.assertEquals("Unexpected result", new Double(-4.52 * 4.52 * 4.52), new Double(res.get()), 1e-6);
+    Assert.assertEquals("Unexpected result", -4.52 * 4.52 * 4.52, res.get(), EPSILON);
   }
 
   @Test
@@ -205,7 +207,7 @@ public class TestGenericUDFPower {
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(TypeInfoFactory.doubleTypeInfo, oi.getTypeInfo());
     DoubleWritable res = (DoubleWritable) udf.evaluate(args);
-    Assert.assertEquals(new Double(1.9214203800477838E-4), new Double(res.get()));
+    Assert.assertEquals(1.9214203800477838E-4, res.get(), EPSILON);
   }
 
 }

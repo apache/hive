@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -87,14 +88,21 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
 @Category(MetastoreUnitTest.class)
@@ -132,6 +140,14 @@ public class TestObjectStore {
     objectStore.setConf(conf);
     dropAllStoreObjects(objectStore);
     HiveMetaStore.HMSHandler.createDefaultCatalog(objectStore, new Warehouse(conf));
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    // Clear the SSL system properties before each test.
+    System.clearProperty(ObjectStore.TRUSTSTORE_PATH_KEY);
+    System.clearProperty(ObjectStore.TRUSTSTORE_PASSWORD_KEY);
+    System.clearProperty(ObjectStore.TRUSTSTORE_TYPE_KEY);
   }
 
   @Test
@@ -823,8 +839,8 @@ public class TestObjectStore {
     localConf.set(key1, value1);
     objectStore = new ObjectStore();
     objectStore.setConf(localConf);
-    Assert.assertEquals(value, objectStore.getProp().getProperty(key));
-    Assert.assertNull(objectStore.getProp().getProperty(key1));
+    Assert.assertEquals(value, PersistenceManagerProvider.getProperty(key));
+    Assert.assertNull(PersistenceManagerProvider.getProperty(key1));
   }
 
   /**
@@ -934,7 +950,7 @@ public class TestObjectStore {
             EventMessage.EventType.CREATE_DATABASE.toString(),
             "CREATE DATABASE DB initial"));
 
-    ExecutorService executorService = Executors.newFixedThreadPool(NUM_THREADS);
+    ExecutorService executorService = newFixedThreadPool(NUM_THREADS);
     for (int i = 0; i < NUM_THREADS; i++) {
       final int n = i;
 
@@ -975,6 +991,130 @@ public class TestObjectStore {
           previousId < event.getEventId());
       Assert.assertTrue(previousId + 1 == event.getEventId());
       previousId = event.getEventId();
+    }
+  }
+
+  /**
+   * This test calls ObjectStore.setConf methods from multiple threads. Each threads uses its
+   * own instance of ObjectStore to simulate thread-local objectstore behaviour.
+   * @throws Exception
+   */
+  @Test
+  public void testConcurrentPMFInitialize() throws Exception {
+    final String dataSourceProp = "datanucleus.connectionPool.maxPoolSize";
+    // Barrier is used to ensure that all threads start race at the same time
+    final int numThreads = 10;
+    final int numIteration = 50;
+    final CyclicBarrier barrier = new CyclicBarrier(numThreads);
+    final AtomicInteger counter = new AtomicInteger(0);
+    ExecutorService executor = newFixedThreadPool(numThreads);
+    List<Future<Void>> results = new ArrayList<>(numThreads);
+    for (int i = 0; i < numThreads; i++) {
+      final Random random = new Random();
+      Configuration conf = MetastoreConf.newMetastoreConf();
+      MetaStoreTestUtils.setConfForStandloneMode(conf);
+      results.add(executor.submit(new Callable<Void>() {
+        @Override
+        public Void call() throws Exception {
+          // each thread gets its own ObjectStore to simulate threadLocal store
+          ObjectStore objectStore = new ObjectStore();
+          barrier.await();
+          for (int j = 0; j < numIteration; j++) {
+            // set connectionPool to a random value to increase the likelihood of pmf
+            // re-initialization
+            int randomNumber = random.nextInt(100);
+            if (randomNumber % 2 == 0) {
+              objectStore.setConf(conf);
+            } else {
+              Assert.assertNotNull(objectStore.getPersistenceManager());
+            }
+            counter.getAndIncrement();
+          }
+          return null;
+        }
+      }));
+    }
+    for (Future<Void> future : results) {
+      future.get(120, TimeUnit.SECONDS);
+    }
+    Assert.assertEquals("Unexpected number of setConf calls", numIteration * numThreads,
+        counter.get());
+  }
+
+  /**
+   * Test the SSL configuration parameters to ensure that they modify the Java system properties correctly.
+   */
+  @Test
+  public void testSSLPropertiesAreSet() {
+    setAndCheckSSLProperties(true, "/tmp/truststore.p12", "password", "pkcs12");
+  }
+
+  /**
+   * Test the property {@link MetastoreConf.ConfVars#DBACCESS_USE_SSL} to ensure that it correctly
+   * toggles whether or not the SSL configuration parameters will be set. Effectively, this is testing whether
+   * SSL can be turned on/off correctly.
+   */
+  @Test
+  public void testUseSSLProperty() {
+    setAndCheckSSLProperties(false, "/tmp/truststore.jks", "password", "jks");
+  }
+
+  /**
+   * Test that the deprecated property {@link MetastoreConf.ConfVars#DBACCESS_SSL_PROPS} is overwritten by the
+   * MetastoreConf.ConfVars#DBACCESS_SSL_* properties if both are set.
+   *
+   * This is not an ideal scenario. It is highly recommend to only set the MetastoreConf#ConfVars.DBACCESS_SSL_* properties.
+   */
+  @Test
+  public void testDeprecatedConfigIsOverwritten() {
+    // Different from the values in the safe config
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.DBACCESS_SSL_PROPS,
+        ObjectStore.TRUSTSTORE_PATH_KEY + "=/tmp/truststore.p12," + ObjectStore.TRUSTSTORE_PASSWORD_KEY + "=pwd," +
+            ObjectStore.TRUSTSTORE_TYPE_KEY + "=pkcs12");
+
+    // Safe config
+    setAndCheckSSLProperties(true, "/tmp/truststore.jks", "password", "jks");
+  }
+
+  /**
+   * Test that providing an empty truststore path and truststore password will not throw an exception.
+   */
+  @Test
+  public void testEmptyTrustStoreProps() {
+    setAndCheckSSLProperties(true, "", "", "jks");
+  }
+
+  /**
+   * Helper method for setting and checking the SSL configuration parameters.
+   * @param useSSL whether or not SSL is enabled
+   * @param trustStorePath truststore path, corresponding to the value for {@link MetastoreConf.ConfVars#DBACCESS_SSL_TRUSTSTORE_PATH}
+   * @param trustStorePassword truststore password, corresponding to the value for {@link MetastoreConf.ConfVars#DBACCESS_SSL_TRUSTSTORE_PASSWORD}
+   * @param trustStoreType truststore type, corresponding to the value for {@link MetastoreConf.ConfVars#DBACCESS_SSL_TRUSTSTORE_TYPE}
+   */
+  private void setAndCheckSSLProperties(boolean useSSL, String trustStorePath, String trustStorePassword, String trustStoreType) {
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.DBACCESS_USE_SSL, useSSL);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.DBACCESS_SSL_TRUSTSTORE_PATH, trustStorePath);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.DBACCESS_SSL_TRUSTSTORE_PASSWORD, trustStorePassword);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.DBACCESS_SSL_TRUSTSTORE_TYPE, trustStoreType);
+    objectStore.setConf(conf); // Calls configureSSL()
+
+    // Check that the properties were set correctly
+    checkSSLProperty(useSSL, ObjectStore.TRUSTSTORE_PATH_KEY, trustStorePath);
+    checkSSLProperty(useSSL, ObjectStore.TRUSTSTORE_PASSWORD_KEY, trustStorePassword);
+    checkSSLProperty(useSSL, ObjectStore.TRUSTSTORE_TYPE_KEY, trustStoreType);
+  }
+
+  /**
+   * Helper method to check whether the Java system properties were set correctly in {@link ObjectStore#configureSSL(Configuration)}
+   * @param useSSL whether or not SSL is enabled
+   * @param key Java system property key
+   * @param value Java system property value indicated by the key
+   */
+  private void checkSSLProperty(boolean useSSL, String key, String value) {
+    if (useSSL && !value.isEmpty()) {
+      Assert.assertEquals(value, System.getProperty(key));
+    } else {
+      Assert.assertNull(System.getProperty(key));
     }
   }
 

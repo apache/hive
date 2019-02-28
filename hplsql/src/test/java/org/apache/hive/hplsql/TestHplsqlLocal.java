@@ -182,6 +182,11 @@ public class TestHplsqlLocal {
   public void testDeclare3() throws Exception {
     run("declare3");
   }
+
+  @Test
+  public void testDeclare4() throws Exception {
+    run("declare4");
+  }
   
   @Test
   public void testDeclareCondition() throws Exception {

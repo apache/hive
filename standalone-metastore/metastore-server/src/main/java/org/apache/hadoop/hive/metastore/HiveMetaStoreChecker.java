@@ -45,6 +45,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -474,10 +475,13 @@ public class HiveMetaStoreChecker {
         throws IOException, MetastoreException {
       final Path currentPath = pd.p;
       final int currentDepth = pd.depth;
+      if (currentDepth == partColNames.size()) {
+        return currentPath;
+      }
       FileStatus[] fileStatuses = fs.listStatus(currentPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
       // found no files under a sub-directory under table base path; it is possible that the table
       // is empty and hence there are no partition sub-directories created under base path
-      if (fileStatuses.length == 0 && currentDepth > 0 && currentDepth < partColNames.size()) {
+      if (fileStatuses.length == 0 && currentDepth > 0) {
         // since maxDepth is not yet reached, we are missing partition
         // columns in currentPath
         logOrThrowExceptionWithMsg(
@@ -485,12 +489,12 @@ public class HiveMetaStoreChecker {
       } else {
         // found files under currentPath add them to the queue if it is a directory
         for (FileStatus fileStatus : fileStatuses) {
-          if (!fileStatus.isDirectory() && currentDepth < partColNames.size()) {
+          if (!fileStatus.isDirectory()) {
             // found a file at depth which is less than number of partition keys
             logOrThrowExceptionWithMsg(
                 "MSCK finds a file rather than a directory when it searches for "
                     + fileStatus.getPath().toString());
-          } else if (fileStatus.isDirectory() && currentDepth < partColNames.size()) {
+          } else {
             // found a sub-directory at a depth less than number of partition keys
             // validate if the partition directory name matches with the corresponding
             // partition colName at currentDepth
@@ -506,9 +510,6 @@ public class HiveMetaStoreChecker {
               pendingPaths.add(new PathDepthInfo(nextPath, currentDepth + 1));
             }
           }
-        }
-        if (currentDepth == partColNames.size()) {
-          return currentPath;
         }
       }
       return null;
@@ -532,7 +533,8 @@ public class HiveMetaStoreChecker {
     }
   }
 
-  private void checkPartitionDirs(final ExecutorService executor,
+  @VisibleForTesting
+  void checkPartitionDirs(final ExecutorService executor,
       final Path basePath, final Set<Path> result,
       final FileSystem fs, final List<String> partColNames) throws MetastoreException {
     try {
@@ -563,7 +565,7 @@ public class HiveMetaStoreChecker {
         nextLevel = tempQueue;
       }
     } catch (InterruptedException | ExecutionException e) {
-      LOG.error(e.getMessage());
+      LOG.error("Exception received while listing partition directories", e);
       executor.shutdownNow();
       throw new MetastoreException(e.getCause());
     }

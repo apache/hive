@@ -40,16 +40,6 @@ POSTHOOK: Lineage: source_table_001_n0.my_date SCRIPT []
 POSTHOOK: Lineage: source_table_001_n0.my_id SCRIPT []
 POSTHOOK: Lineage: source_table_001_n0.my_id2 SCRIPT []
 POSTHOOK: Lineage: source_table_001_n0.up_volume SCRIPT []
-PREHOOK: query: analyze table source_table_001_n0 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@source_table_001_n0
-PREHOOK: Output: default@source_table_001_n0
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table source_table_001_n0 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@source_table_001_n0
-POSTHOOK: Output: default@source_table_001_n0
-#### A masked pattern was here ####
 PREHOOK: query: CREATE MATERIALIZED VIEW source_table_001_mv_n0 AS
 SELECT
 SUM(A.DOWN_VOLUME) AS DOWN_VOLUME_SUM,
@@ -72,16 +62,6 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@source_table_001_n0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@source_table_001_mv_n0
-PREHOOK: query: analyze table source_table_001_mv_n0 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@source_table_001_mv_n0
-PREHOOK: Output: default@source_table_001_mv_n0
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table source_table_001_mv_n0 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@source_table_001_mv_n0
-POSTHOOK: Output: default@source_table_001_mv_n0
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select
 SUM(A.DOWN_VOLUME) AS DOWNLOAD_VOLUME_BYTES,
@@ -194,16 +174,6 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@source_table_001_n0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@source_table_001_mv_n0
-PREHOOK: query: analyze table source_table_001_mv_n0 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@source_table_001_mv_n0
-PREHOOK: Output: default@source_table_001_mv_n0
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table source_table_001_mv_n0 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@source_table_001_mv_n0
-POSTHOOK: Output: default@source_table_001_mv_n0
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select
 SUM(A.DOWN_VOLUME) AS DOWNLOAD_VOLUME_BYTES,

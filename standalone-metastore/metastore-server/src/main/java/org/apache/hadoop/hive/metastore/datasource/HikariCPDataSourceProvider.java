@@ -17,10 +17,12 @@
  */
 package org.apache.hadoop.hive.metastore.datasource;
 
+import com.codahale.metrics.MetricRegistry;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,8 +37,8 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
 
   private static final Logger LOG = LoggerFactory.getLogger(HikariCPDataSourceProvider.class);
 
-  public static final String HIKARI = "hikaricp";
-  private static final String CONNECTION_TIMEOUT_PROPERTY= HIKARI + ".connectionTimeout";
+  static final String HIKARI = "hikaricp";
+  private static final String CONNECTION_TIMEOUT_PROPERTY = HIKARI + ".connectionTimeout";
 
   @Override
   public DataSource create(Configuration hdpConfig) throws SQLException {
@@ -64,7 +66,8 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     config.setPassword(passwd);
     //https://github.com/brettwooldridge/HikariCP
     config.setConnectionTimeout(connectionTimeout);
-    return new HikariDataSource(config);
+
+    return new HikariDataSource(initMetrics(config));
   }
 
   @Override
@@ -74,10 +77,8 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
   }
 
   @Override
-  public boolean supports(Configuration configuration) {
-    String poolingType = MetastoreConf.getVar(configuration,
-            MetastoreConf.ConfVars.CONNECTION_POOLING_TYPE);
-    return HIKARI.equalsIgnoreCase(poolingType);
+  public String getPoolingType() {
+    return HIKARI;
   }
 
   private Properties replacePrefix(Properties props) {
@@ -85,5 +86,13 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     props.forEach((key,value) ->
         newProps.put(key.toString().replaceFirst(HIKARI + ".", ""), value));
     return newProps;
+  }
+
+  private static HikariConfig initMetrics(final HikariConfig config) {
+    final MetricRegistry registry = Metrics.getRegistry();
+    if (registry != null) {
+      config.setMetricRegistry(registry);
+    }
+    return config;
   }
 }

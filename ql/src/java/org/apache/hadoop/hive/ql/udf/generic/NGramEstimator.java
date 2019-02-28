@@ -102,6 +102,7 @@ public class NGramEstimator {
     ArrayList<Object[]> result = new ArrayList<Object[]>();
     ArrayList<Map.Entry<ArrayList<String>, Double>> list = new ArrayList(ngrams.entrySet());
     Collections.sort(list, new Comparator<Map.Entry<ArrayList<String>, Double>>() {
+      @Override
       public int compare(Map.Entry<ArrayList<String>, Double> o1,
                          Map.Entry<ArrayList<String>, Double> o2) {
         int result = o2.getValue().compareTo(o1.getValue());
@@ -155,7 +156,7 @@ public class NGramEstimator {
     Double curFreq = ngrams.get(ng);
     if(curFreq == null) {
       // new n-gram
-      curFreq = new Double(1.0);
+      curFreq = Double.valueOf(1.0);
     } else {
       // existing n-gram, just increment count
       curFreq++;
@@ -192,6 +193,7 @@ public class NGramEstimator {
   private void trim(boolean finalTrim) throws HiveException {
     ArrayList<Map.Entry<ArrayList<String>,Double>> list = new ArrayList(ngrams.entrySet());
     Collections.sort(list, new Comparator<Map.Entry<ArrayList<String>,Double>>() {
+      @Override
       public int compare(Map.Entry<ArrayList<String>,Double> o1,
                          Map.Entry<ArrayList<String>,Double> o2) {
         return o1.getValue().compareTo(o2.getValue());
@@ -246,7 +248,7 @@ public class NGramEstimator {
       double val = Double.parseDouble( other.get(i).toString() );
       Double myval = ngrams.get(key);
       if(myval == null) {
-        myval = new Double(val);
+        myval = Double.valueOf(val);
       } else {
         myval += val;
       }

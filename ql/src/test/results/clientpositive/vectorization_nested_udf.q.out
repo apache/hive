@@ -22,7 +22,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
                 vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -34,7 +34,7 @@ STAGE PLANS:
                   native: true
                   projectedOutputColumnNums: [13]
                   selectExpressions: FuncAbsLongToLong(col 0:tinyint) -> 13:int
-              Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: sum(_col0)
                 Group By Vectorization:
@@ -46,7 +46,7 @@ STAGE PLANS:
                     projectedOutputColumnNums: [0]
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
                   Reduce Sink Vectorization:
@@ -54,7 +54,7 @@ STAGE PLANS:
                       native: false
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: bigint)
       Execution mode: vectorized
       Map Vectorization:
@@ -81,10 +81,10 @@ STAGE PLANS:
           aggregations: sum(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

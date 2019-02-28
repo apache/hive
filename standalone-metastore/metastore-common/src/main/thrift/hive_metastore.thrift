@@ -340,9 +340,10 @@ struct GrantRevokeRoleResponse {
 struct Catalog {
   1: string name,                    // Name of the catalog
   2: optional string description,    // description of the catalog
-  3: string locationUri              // default storage location.  When databases are created in
-                                     // this catalog, if they do not specify a location, they will
-                                     // be placed in this location.
+  3: string locationUri,              // default storage location.  When databases are created in
+                                      // this catalog, if they do not specify a location, they will
+                                      // be placed in this location.
+  4: optional i32 createTime          // creation time of catalog in seconds since epoch
 }
 
 struct CreateCatalogRequest {
@@ -379,7 +380,8 @@ struct Database {
   5: optional PrincipalPrivilegeSet privileges,
   6: optional string ownerName,
   7: optional PrincipalType ownerType,
-  8: optional string catalogName
+  8: optional string catalogName,
+  9: optional i32 createTime               // creation time of database in seconds since epoch
 }
 
 // This object holds the information needed by SerDes
@@ -445,7 +447,8 @@ struct Table {
   18: optional string catName,          // Name of the catalog the table is in
   19: optional PrincipalType ownerType = PrincipalType.USER, // owner type of this table (default to USER for backward compatibility)
   20: optional i64 writeId=-1,
-  21: optional bool isStatsCompliant
+  21: optional bool isStatsCompliant,
+  22: optional ColumnStatistics colStats // column statistics for table
 }
 
 struct Partition {
@@ -459,7 +462,8 @@ struct Partition {
   8: optional PrincipalPrivilegeSet privileges,
   9: optional string catName,
   10: optional i64 writeId=-1,
-  11: optional bool isStatsCompliant
+  11: optional bool isStatsCompliant,
+  12: optional ColumnStatistics colStats // column statistics for partition
 }
 
 struct PartitionWithoutSD {
@@ -823,6 +827,17 @@ struct PartitionValuesResponse {
   1: required list<PartitionValuesRow> partitionValues;
 }
 
+struct GetPartitionsByNamesRequest {
+  1: required string db_name,
+  2: required string tbl_name,
+  3: optional list<string> names,
+  4: optional bool get_col_stats
+}
+
+struct GetPartitionsByNamesResult {
+  1: required list<Partition> partitions
+}
+
 enum FunctionType {
   JAVA = 1,
 }
@@ -831,6 +846,13 @@ enum ResourceType {
   JAR     = 1,
   FILE    = 2,
   ARCHIVE = 3,
+}
+
+enum TxnType {
+    DEFAULT      = 0,
+    REPL_CREATED = 1,
+    READ_ONLY    = 2,
+    COMPACTION   = 3
 }
 
 struct ResourceUri {
@@ -883,6 +905,7 @@ struct OpenTxnRequest {
     4: optional string agentInfo = "Unknown",
     5: optional string replPolicy,
     6: optional list<i64> replSrcTxnIds,
+    7: optional TxnType txn_type = TxnType.DEFAULT,
 }
 
 struct OpenTxnsResponse {
@@ -912,6 +935,18 @@ struct CommitTxnRequest {
 
     // An optional key/value to store atomically with the transaction
     4: optional CommitTxnKeyValue keyValue,
+
+    // Information to update the last repl id of table/partition along with commit txn (replication from 2.6 to 3.0)
+    5: optional ReplLastIdInfo replLastIdInfo,
+}
+
+struct ReplLastIdInfo {
+    1: required string database,
+    2: required i64    lastReplId,
+    3: optional string table,
+    4: optional string catalog,
+    5: optional list<string> partitionList,
+    6: optional bool needUpdateDBReplId,
 }
 
 struct WriteEventInfo {
@@ -1064,6 +1099,25 @@ struct CompactionRequest {
     6: optional map<string, string> properties
 }
 
+struct OptionalCompactionInfoStruct {
+    1: optional CompactionInfoStruct ci,
+}
+
+struct CompactionInfoStruct {
+    1: required i64 id,
+    2: required string dbname,
+    3: required string tablename,
+    4: optional string partitionname,
+    5: required CompactionType type,
+    6: optional string runas,
+    7: optional string properties
+    8: optional bool toomanyaborts
+    9: optional string state
+    10: optional string workerId
+    11: optional i64 start
+    12: optional i64 highestWriteId
+}
+
 struct CompactionResponse {
     1: required i64 id,
     2: required string state,
@@ -1123,6 +1177,7 @@ struct CreationMetadata {
 struct NotificationEventRequest {
     1: required i64 lastEvent,
     2: optional i32 maxEvents,
+    3: optional list<string> eventTypeSkipList,
 }
 
 struct NotificationEvent {
@@ -1284,7 +1339,8 @@ struct GetTableRequest {
   2: required string tblName,
   3: optional ClientCapabilities capabilities,
   4: optional string catName,
-  6: optional string validWriteIdList
+  6: optional string validWriteIdList,
+  7: optional bool getColumnStats
 }
 
 struct GetTableResult {
@@ -2059,6 +2115,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // get partitions give a list of partition names
   list<Partition> get_partitions_by_names(1:string db_name 2:string tbl_name 3:list<string> names)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
+  GetPartitionsByNamesResult get_partitions_by_names_req(1:GetPartitionsByNamesRequest req)
+                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   // changes the partition to the new partition object. partition is identified from the part values
   // in the new_part
@@ -2306,6 +2364,13 @@ service ThriftHiveMetastore extends fb303.FacebookService
   CompactionResponse compact2(1:CompactionRequest rqst) 
   ShowCompactResponse show_compact(1:ShowCompactRequest rqst)
   void add_dynamic_partitions(1:AddDynamicPartitions rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
+  OptionalCompactionInfoStruct find_next_compact(1: string workerId) throws(1:MetaException o1)
+  void update_compactor_state(1: CompactionInfoStruct cr, 2: i64 txn_id)
+  list<string> find_columns_with_stats(1: CompactionInfoStruct cr)
+  void mark_cleaned(1:CompactionInfoStruct cr) throws(1:MetaException o1)
+  void mark_compacted(1: CompactionInfoStruct cr) throws(1:MetaException o1)
+  void mark_failed(1: CompactionInfoStruct cr) throws(1:MetaException o1)
+  void set_hadoop_jobid(1: string jobId, 2: i64 cq_id)
 
   // Notification logging calls
   NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst) 
@@ -2457,4 +2522,6 @@ const string TABLE_IS_TRANSACTIONAL = "transactional",
 const string TABLE_NO_AUTO_COMPACT = "no_auto_compaction",
 const string TABLE_TRANSACTIONAL_PROPERTIES = "transactional_properties",
 const string TABLE_BUCKETING_VERSION = "bucketing_version",
+const string DRUID_CONFIG_PREFIX = "druid.",
+const string JDBC_CONFIG_PREFIX = "hive.sql.",
 

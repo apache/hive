@@ -28,7 +28,7 @@ import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLClassLoader;
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -55,11 +55,16 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.common.log.ProgressMonitor;
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -175,9 +180,9 @@ public class SessionState {
    * Streams to read/write from.
    */
   public InputStream in;
-  public PrintStream out;
-  public PrintStream info;
-  public PrintStream err;
+  public SessionStream out;
+  public SessionStream info;
+  public SessionStream err;
   /**
    * Standard output from any child process(es).
    */
@@ -304,7 +309,7 @@ public class SessionState {
   /**
    * CURRENT_TIMESTAMP value for query
    */
-  private Timestamp queryCurrentTimestamp;
+  private Instant queryCurrentTimestamp;
 
   private final ResourceMaps resourceMaps;
 
@@ -1819,7 +1824,7 @@ public class SessionState {
         }
         Class<?> clazz = Class.forName(realStoreImpl);
         if (ObjectStore.class.isAssignableFrom(clazz)) {
-          ObjectStore.unCacheDataNucleusClassLoaders();
+          PersistenceManagerProvider.clearOutPmfClassLoaderCache();
         }
       }
     } catch (Exception e) {
@@ -1959,14 +1964,16 @@ public class SessionState {
    * Initialize current timestamp, other necessary query initialization.
    */
   public void setupQueryCurrentTimestamp() {
-    queryCurrentTimestamp = new Timestamp(System.currentTimeMillis());
+    queryCurrentTimestamp = Instant.now();
 
     // Provide a facility to set current timestamp during tests
     if (sessionConf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
       String overrideTimestampString =
           HiveConf.getVar(sessionConf, HiveConf.ConfVars.HIVETESTCURRENTTIMESTAMP, (String)null);
       if (overrideTimestampString != null && overrideTimestampString.length() > 0) {
-        queryCurrentTimestamp = Timestamp.valueOf(overrideTimestampString);
+        TimestampTZ zonedDateTime = TimestampTZUtil.convert(
+            Timestamp.valueOf(overrideTimestampString), sessionConf.getLocalTimeZone());
+        queryCurrentTimestamp = zonedDateTime.getZonedDateTime().toInstant();
       }
     }
   }
@@ -1975,7 +1982,7 @@ public class SessionState {
    * Get query current timestamp
    * @return
    */
-  public Timestamp getQueryCurrentTimestamp() {
+  public Instant getQueryCurrentTimestamp() {
     return queryCurrentTimestamp;
   }
 
@@ -2066,7 +2073,7 @@ public class SessionState {
   }
 
   public String getNewSparkSessionId() {
-    return Long.toString(this.sparkSessionId.getAndIncrement());
+    return getSessionId() + "_" + Long.toString(this.sparkSessionId.getAndIncrement());
   }
 }
 

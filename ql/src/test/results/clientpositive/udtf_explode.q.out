@@ -86,6 +86,8 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                       tag: -1
+                      TopN: 3
+                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: int)
                       auto parallelism: false
       Path -> Alias:
@@ -362,6 +364,8 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                       tag: -1
+                      TopN: 3
+                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: int), _col1 (type: string)
                       auto parallelism: false
       Path -> Alias:

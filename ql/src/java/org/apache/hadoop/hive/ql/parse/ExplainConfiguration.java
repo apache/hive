@@ -42,7 +42,8 @@ public class ExplainConfiguration {
   private boolean formatted = false;
   private boolean dependency = false;
   private boolean cbo = false;
-  private boolean cboExtended = false;
+  private boolean cboCost = false;
+  private boolean cboJoinCost = false;
   private boolean logical = false;
   private boolean authorize = false;
   private boolean userLevelExplain = false;
@@ -94,12 +95,20 @@ public class ExplainConfiguration {
     this.cbo = cbo;
   }
 
-  public boolean isCboExtended() {
-    return cboExtended;
+  public boolean isCboCost() {
+    return cboCost;
   }
 
-  public void setCboExtended(boolean cboExtended) {
-    this.cboExtended = cboExtended;
+  public void setCboCost(boolean cboExtended) {
+    this.cboCost = cboExtended;
+  }
+
+  public boolean isCboJoinCost() {
+    return cboJoinCost;
+  }
+
+  public void setCboJoinCost(boolean cboJoinCost) {
+    this.cboJoinCost = cboJoinCost;
   }
 
   public boolean isLogical() {

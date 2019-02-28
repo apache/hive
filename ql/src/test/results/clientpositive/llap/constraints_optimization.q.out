@@ -2742,3 +2742,66 @@ HiveAggregate(group=[{1}])
       HiveFilter(condition=[IS NOT NULL($3)])
         HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
 
+PREHOOK: query: create table web_sales(ws_order_number int, ws_item_sk int, ws_price float,
+    constraint pk1 primary key(ws_order_number, ws_item_sk) disable rely)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@web_sales
+POSTHOOK: query: create table web_sales(ws_order_number int, ws_item_sk int, ws_price float,
+    constraint pk1 primary key(ws_order_number, ws_item_sk) disable rely)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@web_sales
+PREHOOK: query: insert into web_sales values(1, 1, 1.2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@web_sales
+POSTHOOK: query: insert into web_sales values(1, 1, 1.2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@web_sales
+POSTHOOK: Lineage: web_sales.ws_item_sk SCRIPT []
+POSTHOOK: Lineage: web_sales.ws_order_number SCRIPT []
+POSTHOOK: Lineage: web_sales.ws_price SCRIPT []
+PREHOOK: query: insert into web_sales values(1, 1, 1.2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@web_sales
+POSTHOOK: query: insert into web_sales values(1, 1, 1.2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@web_sales
+POSTHOOK: Lineage: web_sales.ws_item_sk SCRIPT []
+POSTHOOK: Lineage: web_sales.ws_order_number SCRIPT []
+POSTHOOK: Lineage: web_sales.ws_price SCRIPT []
+PREHOOK: query: explain cbo select count(distinct ws_order_number) from web_sales
+PREHOOK: type: QUERY
+PREHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select count(distinct ws_order_number) from web_sales
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[count()])
+  HiveProject(ws_order_number=[$0])
+    HiveAggregate(group=[{0}])
+      HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+
+PREHOOK: query: select count(distinct ws_order_number) from web_sales
+PREHOOK: type: QUERY
+PREHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct ws_order_number) from web_sales
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+1
+PREHOOK: query: drop table web_sales
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@web_sales
+PREHOOK: Output: default@web_sales
+POSTHOOK: query: drop table web_sales
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@web_sales
+POSTHOOK: Output: default@web_sales

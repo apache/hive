@@ -243,14 +243,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       typeName = varcharTypeInfo.getQualifiedName();
       break;
     case HiveParser.TOK_TIMESTAMPLOCALTZ:
-      HiveConf conf;
-      try {
-        conf = Hive.get().getConf();
-      } catch (HiveException e) {
-        throw new SemanticException(e);
-      }
-      TimestampLocalTZTypeInfo timestampLocalTZTypeInfo = TypeInfoFactory.getTimestampTZTypeInfo(
-          conf.getLocalTimeZone());
+      TimestampLocalTZTypeInfo timestampLocalTZTypeInfo =
+          TypeInfoFactory.getTimestampTZTypeInfo(null);
       typeName = timestampLocalTZTypeInfo.getQualifiedName();
       break;
     case HiveParser.TOK_DECIMAL:
@@ -2203,6 +2197,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     String type = unescapeSQLString(ast.getChild(0).getText()).toLowerCase();
 
+    if (type.equalsIgnoreCase("minor") && HiveConf.getBoolVar(conf, ConfVars.COMPACTOR_CRUD_QUERY_BASED)) {
+      throw new SemanticException(
+          "Minor compaction is not currently supported for query based compaction (enabled by setting: "
+              + ConfVars.COMPACTOR_CRUD_QUERY_BASED + " to true).");
+    }
+
     if (!type.equals("minor") && !type.equals("major")) {
       throw new SemanticException(ErrorMsg.INVALID_COMPACTION_TYPE.getMsg());
     }
@@ -2666,33 +2666,32 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     ShowTablesDesc showTblsDesc;
     String dbName = SessionState.get().getCurrentDatabase();
     String tableNames = null;
+    TableType tableTypeFilter = null;
+    boolean isExtended = false;
 
-    if (ast.getChildCount() > 3) {
+    if (ast.getChildCount() > 4) {
       throw new SemanticException(ErrorMsg.INVALID_AST_TREE.getMsg(ast.toStringTree()));
     }
 
-    switch (ast.getChildCount()) {
-    case 1: // Uses a pattern
-      tableNames = unescapeSQLString(ast.getChild(0).getText());
-      showTblsDesc = new ShowTablesDesc(ctx.getResFile(), dbName, tableNames);
-      break;
-    case 2: // Specifies a DB
-      assert (ast.getChild(0).getType() == HiveParser.TOK_FROM);
-      dbName = unescapeIdentifier(ast.getChild(1).getText());
-      validateDatabase(dbName);
-      showTblsDesc = new ShowTablesDesc(ctx.getResFile(), dbName);
-      break;
-    case 3: // Uses a pattern and specifies a DB
-      assert (ast.getChild(0).getType() == HiveParser.TOK_FROM);
-      dbName = unescapeIdentifier(ast.getChild(1).getText());
-      tableNames = unescapeSQLString(ast.getChild(2).getText());
-      validateDatabase(dbName);
-      showTblsDesc = new ShowTablesDesc(ctx.getResFile(), dbName, tableNames);
-      break;
-    default: // No pattern or DB
-      showTblsDesc = new ShowTablesDesc(ctx.getResFile(), dbName);
-      break;
+    for (int i = 0; i < ast.getChildCount(); i++) {
+      ASTNode child = (ASTNode) ast.getChild(i);
+      if (child.getType() == HiveParser.TOK_FROM) { // Specifies a DB
+        dbName = unescapeIdentifier(ast.getChild(++i).getText());
+        validateDatabase(dbName);
+      } else if (child.getType() == HiveParser.TOK_TABLE_TYPE) { // Filter on table type
+        String tableType = unescapeIdentifier(child.getChild(0).getText());
+        if (!tableType.equalsIgnoreCase("table_type")) {
+          throw new SemanticException("SHOW TABLES statement only allows equality filter on table_type value");
+        }
+        tableTypeFilter = TableType.valueOf(unescapeSQLString(child.getChild(1).getText()));
+      } else if (child.getType() == HiveParser.KW_EXTENDED) { // Include table type
+        isExtended = true;
+      } else { // Uses a pattern
+        tableNames = unescapeSQLString(child.getText());
+      }
     }
+
+    showTblsDesc = new ShowTablesDesc(ctx.getResFile(), dbName, tableNames, tableTypeFilter, isExtended);
     inputs.add(new ReadEntity(getDatabase(dbName)));
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         showTblsDesc)));
@@ -3599,7 +3598,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       // Compile internal query to capture underlying table partition dependencies
       StringBuilder cmd = new StringBuilder();
       cmd.append("SELECT * FROM ");
-      cmd.append(HiveUtils.unparseIdentifier(getDotName(qualified)));
+      cmd.append(HiveUtils.unparseIdentifier(qualified[0]));
+      cmd.append(".");
+      cmd.append(HiveUtils.unparseIdentifier(qualified[1]));
       cmd.append(" WHERE ");
       boolean firstOr = true;
       for (int i = 0; i < addPartitionDesc.getPartitionCount(); ++i) {
@@ -3651,6 +3652,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     for (int index = 0; index < addPartitionDesc.getPartitionCount(); index++) {
       OnePartitionDesc desc = addPartitionDesc.getPartition(index);
       if (desc.getLocation() != null) {
+        AcidUtils.validateAcidPartitionLocation(desc.getLocation(), conf);
         if(addPartitionDesc.isIfNotExists()) {
           //Don't add partition data if it already exists
           Partition oldPart = getPartition(tab, desc.getPartSpec(), false);

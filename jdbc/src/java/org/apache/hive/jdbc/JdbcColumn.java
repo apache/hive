@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.thrift.Type;
 
-
 /**
  * Column metadata.
  */
@@ -121,52 +120,57 @@ public class JdbcColumn {
   }
 
   static Type typeStringToHiveType(String type) throws SQLException {
-    if ("string".equalsIgnoreCase(type)) {
+    final String t = type.toLowerCase();
+    switch (t) {
+    case "string":
       return Type.STRING_TYPE;
-    } else if ("varchar".equalsIgnoreCase(type)) {
+    case "varchar":
       return Type.VARCHAR_TYPE;
-    } else if ("char".equalsIgnoreCase(type)) {
+    case "char":
       return Type.CHAR_TYPE;
-    } else if ("float".equalsIgnoreCase(type)) {
+    case "float":
       return Type.FLOAT_TYPE;
-    } else if ("double".equalsIgnoreCase(type)) {
+    case "double":
       return Type.DOUBLE_TYPE;
-    } else if ("boolean".equalsIgnoreCase(type)) {
+    case "boolean":
       return Type.BOOLEAN_TYPE;
-    } else if ("tinyint".equalsIgnoreCase(type)) {
+    case "tinyint":
       return Type.TINYINT_TYPE;
-    } else if ("smallint".equalsIgnoreCase(type)) {
+    case "smallint":
       return Type.SMALLINT_TYPE;
-    } else if ("int".equalsIgnoreCase(type)) {
+    case "int":
       return Type.INT_TYPE;
-    } else if ("bigint".equalsIgnoreCase(type)) {
+    case "bigint":
       return Type.BIGINT_TYPE;
-    } else if ("date".equalsIgnoreCase(type)) {
+    case "date":
       return Type.DATE_TYPE;
-    } else if ("timestamp".equalsIgnoreCase(type)) {
+    case "timestamp":
       return Type.TIMESTAMP_TYPE;
-    } else if (serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME.equalsIgnoreCase(type)) {
+    case serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME:
       return Type.TIMESTAMPLOCALTZ_TYPE;
-    } else if ("interval_year_month".equalsIgnoreCase(type)) {
+    case "interval_year_month":
       return Type.INTERVAL_YEAR_MONTH_TYPE;
-    } else if ("interval_day_time".equalsIgnoreCase(type)) {
+    case "interval_day_time":
       return Type.INTERVAL_DAY_TIME_TYPE;
-    } else if ("decimal".equalsIgnoreCase(type)) {
+    case "decimal":
       return Type.DECIMAL_TYPE;
-    } else if ("binary".equalsIgnoreCase(type)) {
+    case "binary":
       return Type.BINARY_TYPE;
-    } else if ("map".equalsIgnoreCase(type)) {
+    case "map":
       return Type.MAP_TYPE;
-    } else if ("array".equalsIgnoreCase(type)) {
+    case "array":
       return Type.ARRAY_TYPE;
-    } else if ("struct".equalsIgnoreCase(type)) {
+    case "struct":
       return Type.STRUCT_TYPE;
-    } else if ("uniontype".equalsIgnoreCase(type)) {
+    case "uniontype":
       return Type.UNION_TYPE;
-    } else if ("void".equalsIgnoreCase(type) || "null".equalsIgnoreCase(type)) {
+    case "void":
+      /* fall through */
+    case "null":
       return Type.NULL_TYPE;
+    default:
+      throw new SQLException("Unrecognized column type: " + type);
     }
-    throw new SQLException("Unrecognized column type: " + type);
   }
 
   public static int hiveTypeToSqlType(Type hiveType) throws SQLException {
@@ -180,51 +184,55 @@ public class JdbcColumn {
   static String getColumnTypeName(String type) throws SQLException {
     // we need to convert the Hive type to the SQL type name
     // TODO: this would be better handled in an enum
-    if ("string".equalsIgnoreCase(type)) {
+    final String t = type.toLowerCase();
+    switch (t) {
+    case "string":
       return serdeConstants.STRING_TYPE_NAME;
-    } else if ("varchar".equalsIgnoreCase(type)) {
+    case "varchar":
       return serdeConstants.VARCHAR_TYPE_NAME;
-    } else if ("char".equalsIgnoreCase(type)) {
+    case "char":
       return serdeConstants.CHAR_TYPE_NAME;
-    } else if ("float".equalsIgnoreCase(type)) {
+    case "float":
       return serdeConstants.FLOAT_TYPE_NAME;
-    } else if ("double".equalsIgnoreCase(type)) {
+    case "double":
       return serdeConstants.DOUBLE_TYPE_NAME;
-    } else if ("boolean".equalsIgnoreCase(type)) {
+    case "boolean":
       return serdeConstants.BOOLEAN_TYPE_NAME;
-    } else if ("tinyint".equalsIgnoreCase(type)) {
+    case "tinyint":
       return serdeConstants.TINYINT_TYPE_NAME;
-    } else if ("smallint".equalsIgnoreCase(type)) {
+    case "smallint":
       return serdeConstants.SMALLINT_TYPE_NAME;
-    } else if ("int".equalsIgnoreCase(type)) {
+    case "int":
       return serdeConstants.INT_TYPE_NAME;
-    } else if ("bigint".equalsIgnoreCase(type)) {
+    case "bigint":
       return serdeConstants.BIGINT_TYPE_NAME;
-    } else if ("timestamp".equalsIgnoreCase(type)) {
+    case "timestamp":
       return serdeConstants.TIMESTAMP_TYPE_NAME;
-    } else if (serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME.equalsIgnoreCase(type)) {
+    case serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME:
       return serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME;
-    } else if ("date".equalsIgnoreCase(type)) {
+    case "date":
       return serdeConstants.DATE_TYPE_NAME;
-    } else if ("interval_year_month".equalsIgnoreCase(type)) {
+    case "interval_year_month":
       return serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME;
-    } else if ("interval_day_time".equalsIgnoreCase(type)) {
+    case "interval_day_time":
       return serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME;
-    } else if ("decimal".equalsIgnoreCase(type)) {
+    case "decimal":
       return serdeConstants.DECIMAL_TYPE_NAME;
-    } else if ("binary".equalsIgnoreCase(type)) {
+    case "binary":
       return serdeConstants.BINARY_TYPE_NAME;
-    } else if ("void".equalsIgnoreCase(type) || "null".equalsIgnoreCase(type)) {
+    case "void":
+      /* fall through */
+    case "null":
       return serdeConstants.VOID_TYPE_NAME;
-    } else if (type.equalsIgnoreCase("map")) {
+    case "map":
       return serdeConstants.MAP_TYPE_NAME;
-    } else if (type.equalsIgnoreCase("array")) {
+    case "array":
       return serdeConstants.LIST_TYPE_NAME;
-    } else if (type.equalsIgnoreCase("struct")) {
+    case "struct":
       return serdeConstants.STRUCT_TYPE_NAME;
+    default:
+      throw new SQLException("Unrecognized column type: " + type);
     }
-
-    throw new SQLException("Unrecognized column type: " + type);
   }
 
   static int columnDisplaySize(Type hiveType, JdbcColumnAttributes columnAttributes)
@@ -365,21 +373,17 @@ public class JdbcColumn {
   }
 
   public Integer getNumPrecRadix() {
-    if (type.equalsIgnoreCase("tinyint")) {
+    final String t = type.toLowerCase();
+    switch (t) {
+    case "tinyint":
+    case "smallint":
+    case "int":
+    case "bigint":
+    case "float":
+    case "double":
+    case "decimal":
       return 10;
-    } else if (type.equalsIgnoreCase("smallint")) {
-      return 10;
-    } else if (type.equalsIgnoreCase("int")) {
-      return 10;
-    } else if (type.equalsIgnoreCase("bigint")) {
-      return 10;
-    } else if (type.equalsIgnoreCase("float")) {
-      return 10;
-    } else if (type.equalsIgnoreCase("double")) {
-      return 10;
-    } else if (type.equalsIgnoreCase("decimal")) {
-      return 10;
-    } else { // anything else including boolean and string is null
+    default:
       return null;
     }
   }

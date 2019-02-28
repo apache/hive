@@ -146,7 +146,7 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
 
   @Override
   public Long getWriteId() {
-    return writeId;
+    return writeId == null ? 0 : writeId;
   }
 
   @Override

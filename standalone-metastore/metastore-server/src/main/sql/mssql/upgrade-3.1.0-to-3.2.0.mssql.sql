@@ -20,6 +20,10 @@ INSERT INTO SEQUENCE_TABLE (SEQUENCE_NAME, NEXT_VAL) VALUES ('org.apache.hadoop.
 -- HIVE-20221
 ALTER TABLE "SERDE_PARAMS" ALTER COLUMN "PARAM_VALUE" nvarchar(MAX);
 
+-- HIVE-21077
+ALTER TABLE DBS ADD CREATE_TIME INT;
+ALTER TABLE CTLGS ADD CREATE_TIME INT;
+
 -- These lines need to be last.  Insert any changes above.
 UPDATE VERSION SET SCHEMA_VERSION='3.2.0', VERSION_COMMENT='Hive release version 3.2.0' where VER_ID=1;
 SELECT 'Finished upgrading MetaStore schema from 3.1.0 to 3.2.0' AS MESSAGE;

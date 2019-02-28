@@ -190,9 +190,6 @@ public class PartitionManagementTask implements MetastoreTaskThread {
     // when invalid path is encountered as these are background threads. We just want to skip and move on. Users will
     // have to fix the invalid paths via external means.
     conf.set(MetastoreConf.ConfVars.MSCK_PATH_VALIDATION.getVarname(), "skip");
-    // since msck runs in thread pool and each of them create their own metastore client, we don't want explosion of
-    // connections to metastore for embedded mode. Also we don't need too many db connections anyway.
-    conf.setInt(MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS.getVarname(), 2);
   }
 
   private static class MsckThread implements Runnable {

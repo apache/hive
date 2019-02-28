@@ -269,26 +269,6 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.merge_tmp_table
-                    Select Operator
-                      expressions: _col0 (type: int)
-                      outputColumnNames: val
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                      Group By Operator
-                        aggregations: compute_stats(val, 'hll')
-                        mode: complete
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
-                        Select Operator
-                          expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>)
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
-                            table:
-                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
@@ -365,10 +345,6 @@ STAGE PLANS:
   Stage: Stage-6
     Stats Work
       Basic Stats Work:
-      Column Stats Desc:
-          Columns: val
-          Column Types: int
-          Table: default.merge_tmp_table
 
   Stage: Stage-0
     Move Operator
@@ -820,26 +796,6 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.merge_tmp_table
-                    Select Operator
-                      expressions: _col0 (type: int)
-                      outputColumnNames: val
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                      Group By Operator
-                        aggregations: compute_stats(val, 'hll')
-                        mode: complete
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
-                        Select Operator
-                          expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>)
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
-                            table:
-                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
@@ -916,10 +872,6 @@ STAGE PLANS:
   Stage: Stage-6
     Stats Work
       Basic Stats Work:
-      Column Stats Desc:
-          Columns: val
-          Column Types: int
-          Table: default.merge_tmp_table
 
   Stage: Stage-0
     Move Operator
@@ -1123,26 +1075,6 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.merge_tmp_table
-                    Select Operator
-                      expressions: _col0 (type: int)
-                      outputColumnNames: val
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                      Group By Operator
-                        aggregations: compute_stats(val, 'hll')
-                        mode: complete
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
-                        Select Operator
-                          expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>)
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
-                            table:
-                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1219,10 +1151,6 @@ STAGE PLANS:
   Stage: Stage-6
     Stats Work
       Basic Stats Work:
-      Column Stats Desc:
-          Columns: val
-          Column Types: int
-          Table: default.merge_tmp_table
 
   Stage: Stage-0
     Move Operator
@@ -1426,26 +1354,6 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.merge_tmp_table
-                    Select Operator
-                      expressions: _col0 (type: int)
-                      outputColumnNames: val
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                      Group By Operator
-                        aggregations: compute_stats(val, 'hll')
-                        mode: complete
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
-                        Select Operator
-                          expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>)
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
-                            table:
-                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1522,10 +1430,6 @@ STAGE PLANS:
   Stage: Stage-6
     Stats Work
       Basic Stats Work:
-      Column Stats Desc:
-          Columns: val
-          Column Types: int
-          Table: default.merge_tmp_table
 
   Stage: Stage-0
     Move Operator
@@ -1729,26 +1633,6 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.merge_tmp_table
-                    Select Operator
-                      expressions: _col0 (type: int)
-                      outputColumnNames: val
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                      Group By Operator
-                        aggregations: compute_stats(val, 'hll')
-                        mode: complete
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
-                        Select Operator
-                          expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>)
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
-                            table:
-                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1825,10 +1709,6 @@ STAGE PLANS:
   Stage: Stage-6
     Stats Work
       Basic Stats Work:
-      Column Stats Desc:
-          Columns: val
-          Column Types: int
-          Table: default.merge_tmp_table
 
   Stage: Stage-0
     Move Operator
@@ -2083,26 +1963,6 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.merge_tmp_table
-                    Select Operator
-                      expressions: _col0 (type: int)
-                      outputColumnNames: val
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                      Group By Operator
-                        aggregations: compute_stats(val, 'hll')
-                        mode: complete
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
-                        Select Operator
-                          expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>)
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
-                            table:
-                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
@@ -2179,10 +2039,6 @@ STAGE PLANS:
   Stage: Stage-6
     Stats Work
       Basic Stats Work:
-      Column Stats Desc:
-          Columns: val
-          Column Types: int
-          Table: default.merge_tmp_table
 
   Stage: Stage-1
     Move Operator
@@ -2431,26 +2287,6 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.merge_tmp_table
-                    Select Operator
-                      expressions: _col0 (type: int)
-                      outputColumnNames: val
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                      Group By Operator
-                        aggregations: compute_stats(val, 'hll')
-                        mode: complete
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
-                        Select Operator
-                          expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>)
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
-                            table:
-                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
@@ -2527,10 +2363,6 @@ STAGE PLANS:
   Stage: Stage-6
     Stats Work
       Basic Stats Work:
-      Column Stats Desc:
-          Columns: val
-          Column Types: int
-          Table: default.merge_tmp_table
 
   Stage: Stage-0
     Move Operator

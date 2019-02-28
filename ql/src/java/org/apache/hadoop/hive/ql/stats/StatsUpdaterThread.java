@@ -448,7 +448,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     }
     // TODO: we should probably skip updating if writeId is from an active txn
     boolean isTxnValid = (writeIdString == null) || ObjectStore.isCurrentStatsValidForTheQuery(
-        conf, params, statsWriteId , writeIdString, false);
+        params, statsWriteId, writeIdString, false);
     return getExistingStatsToUpdate(existingStats, params, isTxnValid);
   }
 
@@ -473,7 +473,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     }
     // TODO: we should probably skip updating if writeId is from an active txn
     if (writeIdString != null && !ObjectStore.isCurrentStatsValidForTheQuery(
-        conf, params, statsWriteId, writeIdString, false)) {
+        params, statsWriteId, writeIdString, false)) {
       return allCols;
     }
     List<String> colsToUpdate = new ArrayList<>();
@@ -616,7 +616,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
       if (doWait) {
         SessionState.start(ss); // This is the first call, open the session
       }
-      DriverUtils.runOnDriver(conf, user, ss, cmd, null);
+      DriverUtils.runOnDriver(conf, user, ss, cmd);
     } catch (Exception e) {
       LOG.error("Analyze command failed: " + cmd, e);
       try {

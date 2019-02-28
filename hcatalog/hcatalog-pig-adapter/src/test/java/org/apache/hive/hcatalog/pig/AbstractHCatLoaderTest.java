@@ -78,6 +78,8 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
   private static final String COMPLEX_TABLE = "junit_unparted_complex";
   private static final String PARTITIONED_TABLE = "junit_parted_basic";
   private static final String SPECIFIC_SIZE_TABLE = "junit_specific_size";
+  private static final String SPECIFIC_DATABASE = "junit_specific_db";
+  private static final String SPECIFIC_SIZE_TABLE_2 = "junit_specific_size2";
   private static final String PARTITIONED_DATE_TABLE = "junit_parted_date";
 
   private Map<Integer, Pair<Integer, String>> basicInputData;
@@ -98,11 +100,23 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
     driver.run("drop table if exists " + tablename);
   }
 
-  private void createTable(String tablename, String schema, String partitionedBy) throws Exception {
-    createTable(tablename, schema, partitionedBy, driver, storageFormat);
+  private void createTable(String db, String tablename, String schema, String partitionedBy) throws
+          Exception {
+    createTable(db, tablename, schema, partitionedBy, driver, storageFormat);
   }
 
-  static void createTable(String tablename, String schema, String partitionedBy, IDriver driver, String storageFormat)
+  private void createTableDefaultDB(String tablename, String schema, String partitionedBy) throws
+          Exception {
+    createTable(null, tablename, schema, partitionedBy, driver, storageFormat);
+  }
+
+  static void createTableDefaultDB(String tablename, String schema, String partitionedBy, IDriver
+          driver, String storageFormat) throws Exception {
+    createTable(null, tablename, schema, partitionedBy, driver, storageFormat);
+  }
+
+  static void createTable(String db, String tablename, String schema, String partitionedBy, IDriver
+          driver, String storageFormat)
       throws Exception {
     String createTable;
     createTable = "create table " + tablename + "(" + schema + ") ";
@@ -112,11 +126,21 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
     createTable = createTable + "stored as " +storageFormat;
     //HCat doesn't support transactional tables
     createTable += " TBLPROPERTIES ('transactional'='false')";
+    if (db != null) {
+      executeStatementOnDriver("create database if not exists " + db, driver);
+      executeStatementOnDriver("use " + db + "", driver);
+    } else {
+      executeStatementOnDriver("use default", driver);
+    }
     executeStatementOnDriver(createTable, driver);
   }
 
-  private void createTable(String tablename, String schema) throws Exception {
-    createTable(tablename, schema, null);
+  private void createTable(String db, String tablename, String schema) throws Exception {
+    createTable(db, tablename, schema, null);
+  }
+
+  private void createTableDefaultDB(String tablename, String schema) throws Exception {
+    createTable(null, tablename, schema, null);
   }
 
   /**
@@ -139,17 +163,18 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
 
   @Before
   public void setUpTest() throws Exception {
-    createTable(BASIC_TABLE, "a int, b string");
-    createTable(COMPLEX_TABLE,
+    createTableDefaultDB(BASIC_TABLE, "a int, b string");
+    createTableDefaultDB(COMPLEX_TABLE,
       "name string, studentid int, "
         + "contact struct<phno:string,email:string>, "
         + "currently_registered_courses array<string>, "
         + "current_grades map<string,string>, "
         + "phnos array<struct<phno:string,type:string>>");
 
-    createTable(PARTITIONED_TABLE, "a int, b string", "bkt string");
-    createTable(SPECIFIC_SIZE_TABLE, "a int, b string");
-    createTable(PARTITIONED_DATE_TABLE, "b string", "dt date");
+    createTableDefaultDB(PARTITIONED_TABLE, "a int, b string", "bkt string");
+    createTableDefaultDB(SPECIFIC_SIZE_TABLE, "a int, b string");
+    createTable(SPECIFIC_DATABASE, SPECIFIC_SIZE_TABLE_2, "a int, b string");
+    createTableDefaultDB(PARTITIONED_DATE_TABLE, "b string", "dt date");
     AllTypesTable.setupAllTypesTable(driver);
 
     int LOOP_SIZE = 3;
@@ -185,6 +210,8 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
 
     server.registerQuery("store A into '" + BASIC_TABLE + "' using org.apache.hive.hcatalog.pig.HCatStorer();", ++i);
     server.registerQuery("store A into '" + SPECIFIC_SIZE_TABLE + "' using org.apache.hive.hcatalog.pig.HCatStorer();", ++i);
+    server.registerQuery("store A into '" + SPECIFIC_DATABASE + "." +SPECIFIC_SIZE_TABLE_2 + "' " +
+            "using org.apache.hive" +".hcatalog.pig.HCatStorer();", ++i);
     server.registerQuery("B = foreach A generate a,b;", ++i);
     server.registerQuery("B2 = filter B by a < 2;", ++i);
     server.registerQuery("store B2 into '" + PARTITIONED_TABLE + "' using org.apache.hive.hcatalog.pig.HCatStorer('bkt=0');", ++i);
@@ -213,6 +240,8 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
         dropTable(SPECIFIC_SIZE_TABLE);
         dropTable(PARTITIONED_DATE_TABLE);
         dropTable(AllTypesTable.ALL_PRIMITIVE_TYPES_TABLE);
+        executeStatementOnDriver("drop database if exists " + SPECIFIC_DATABASE + " cascade",
+                driver);
       }
     } finally {
       FileUtils.deleteDirectory(new File(TEST_DATA_DIR));
@@ -560,9 +589,65 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
     HCatLoader hCatLoader = new HCatLoader();
     hCatLoader.setUDFContextSignature("testGetInputBytes");
     hCatLoader.setLocation(SPECIFIC_SIZE_TABLE, job);
-    ResourceStatistics statistics = hCatLoader.getStatistics(file.getAbsolutePath(), job);
+    ResourceStatistics statistics = hCatLoader.getStatistics(SPECIFIC_SIZE_TABLE, job);
     assertEquals(2048, (long) statistics.getmBytes());
   }
+
+  /**
+   * Simulates Pig relying on HCatLoader to inform about input size of multiple tables.
+   * @throws Exception
+   */
+  @Test
+  public void testGetInputBytesMultipleTables() throws Exception {
+    File file = new File(TEST_WAREHOUSE_DIR + "/" + SPECIFIC_SIZE_TABLE + "/part-m-00000");
+    file.deleteOnExit();
+    RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");
+    randomAccessFile.setLength(987654321L);
+    randomAccessFile.close();
+    file = new File(TEST_WAREHOUSE_DIR + "/" + SPECIFIC_DATABASE + ".db/" +
+            SPECIFIC_SIZE_TABLE_2 + "/part-m-00000");
+    file.deleteOnExit();
+    randomAccessFile = new RandomAccessFile(file, "rw");
+    randomAccessFile.setLength(12345678L);
+    randomAccessFile.close();
+    Job job = new Job();
+    HCatLoader hCatLoader = new HCatLoader();
+
+    //Mocking that Pig would assign different signature for each POLoad operator
+    hCatLoader.setUDFContextSignature("testGetInputBytesMultipleTables" + SPECIFIC_SIZE_TABLE);
+    hCatLoader.setLocation(SPECIFIC_SIZE_TABLE, job);
+
+    HCatLoader hCatLoader2 = new HCatLoader();
+    hCatLoader2.setUDFContextSignature("testGetInputBytesMultipleTables" + SPECIFIC_SIZE_TABLE_2);
+    hCatLoader2.setLocation(SPECIFIC_DATABASE + "." + SPECIFIC_SIZE_TABLE_2, job);
+
+    HCatLoader hCatLoader3 = new HCatLoader();
+    hCatLoader3.setUDFContextSignature("testGetInputBytesMultipleTables" + PARTITIONED_TABLE);
+    hCatLoader3.setLocation(PARTITIONED_TABLE, job);
+
+    long specificTableSize = -1;
+    long specificTableSize2 = -1;
+    long partitionedTableSize = -1;
+
+    ResourceStatistics statistics = hCatLoader.getStatistics(SPECIFIC_SIZE_TABLE, job);
+    specificTableSize=statistics.getSizeInBytes();
+    assertEquals(987654321, specificTableSize);
+
+    statistics = hCatLoader2.getStatistics(SPECIFIC_SIZE_TABLE_2, job);
+    specificTableSize2=statistics.getSizeInBytes();
+    assertEquals(12345678, specificTableSize2);
+
+    statistics = hCatLoader3.getStatistics(PARTITIONED_TABLE, job);
+    partitionedTableSize=statistics.getSizeInBytes();
+    //Partitioned table size here is dependent on underlying storage format, it's ~ 20<x<2000
+    assertTrue(20 < partitionedTableSize && partitionedTableSize < 2000);
+
+    //No-op here, just a reminder that Pig would do the calculation of the sum itself
+    //e.g. when joining the 3 tables is requested
+    assertTrue(Math.abs((specificTableSize + specificTableSize2 + partitionedTableSize) -
+        (987654321+12345678+1010)) < 1010);
+  }
+
 
   @Test
   public void testConvertBooleanToInt() throws Exception {

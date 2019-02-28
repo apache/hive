@@ -71,22 +71,22 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: inputtbl1_n13
-            Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string)
               outputColumnNames: key
-              Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
                 keys: key (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -95,10 +95,10 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -122,22 +122,22 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: inputtbl1_n13
-            Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string)
               outputColumnNames: key
-              Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
                 keys: key (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -146,10 +146,10 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -269,17 +269,17 @@ STAGE PLANS:
           TableScan
             alias: srcpart
             filterExpr: (ds = '2008-04-08') (type: boolean)
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string), value (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
               Limit
                 Number of rows: 500
-                Statistics: Num rows: 500 Data size: 5000 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 500 Data size: 5000 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: string), _col1 (type: string)
       Execution mode: vectorized
@@ -287,17 +287,17 @@ STAGE PLANS:
         Select Operator
           expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 500 Data size: 5000 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
             Number of rows: 500
-            Statistics: Num rows: 500 Data size: 5000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: string), UDFToLong(_col1) (type: bigint), '2008-04-08' (type: string)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 500 Data size: 5000 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 94500 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 500 Data size: 5000 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 94500 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -322,17 +322,17 @@ STAGE PLANS:
           TableScan
             alias: srcpart
             filterExpr: (ds = '2008-04-08') (type: boolean)
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string), value (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
               Limit
                 Number of rows: 500
-                Statistics: Num rows: 500 Data size: 5000 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 500 Data size: 5000 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: string), _col1 (type: string)
       Execution mode: vectorized
@@ -340,17 +340,17 @@ STAGE PLANS:
         Select Operator
           expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 500 Data size: 5000 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
             Number of rows: 500
-            Statistics: Num rows: 500 Data size: 5000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: string), UDFToLong(_col1) (type: bigint), '2008-04-08' (type: string)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 500 Data size: 5000 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 94500 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 500 Data size: 5000 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 94500 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -459,17 +459,17 @@ STAGE PLANS:
           TableScan
             alias: srcpart
             filterExpr: (ds = '2008-04-08') (type: boolean)
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string), value (type: string), hr (type: string)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
               Limit
                 Number of rows: 1000
-                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
                   TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
       Execution mode: vectorized
@@ -477,17 +477,17 @@ STAGE PLANS:
         Select Operator
           expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string)
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
             Number of rows: 1000
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: string), UDFToLong(_col1) (type: bigint), '2008-04-08' (type: string), _col2 (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1000 Data size: 373000 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1000 Data size: 373000 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -513,17 +513,17 @@ STAGE PLANS:
           TableScan
             alias: srcpart
             filterExpr: (ds = '2008-04-08') (type: boolean)
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string), value (type: string), hr (type: string)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
               Limit
                 Number of rows: 1000
-                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
                   TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
       Execution mode: vectorized
@@ -531,17 +531,17 @@ STAGE PLANS:
         Select Operator
           expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string)
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
             Number of rows: 1000
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: string), UDFToLong(_col1) (type: bigint), '2008-04-08' (type: string), _col2 (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1000 Data size: 373000 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1000 Data size: 373000 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

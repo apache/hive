@@ -896,8 +896,8 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [8, 1, 2, 10, 4, 9, 6, 12]
-                      selectExpressions: ConstantVectorExpression(val 1) -> 8:int, DoubleColDivideLongColumn(col 9:double, col 3:bigint)(children: CastLongToDouble(col 2:bigint) -> 9:double) -> 10:double, DoubleColDivideLongColumn(col 4:double, col 5:bigint) -> 9:double, DecimalColDivideDecimalColumn(col 6:decimal(38,18), col 11:decimal(19,0))(children: CastLongToDecimal(col 7:bigint) -> 11:decimal(19,0)) -> 12:decimal(38,18)
+                      projectedOutputColumnNums: [8, 1, 2, 10, 4, 11, 6, 13]
+                      selectExpressions: ConstantVectorExpression(val 1) -> 8:int, DoubleColDivideLongColumn(col 9:double, col 3:bigint)(children: CastLongToDouble(col 2:bigint) -> 9:double) -> 10:double, DoubleColDivideLongColumn(col 4:double, col 5:bigint) -> 11:double, DecimalColDivideDecimalColumn(col 6:decimal(38,18), col 12:decimal(19,0))(children: CastLongToDecimal(col 7:bigint) -> 12:decimal(19,0)) -> 13:decimal(38,18)
                   Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -1091,8 +1091,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0, 1, 2, 9, 4, 8, 6, 11]
-                          selectExpressions: DoubleColDivideLongColumn(col 8:double, col 3:bigint)(children: CastLongToDouble(col 2:bigint) -> 8:double) -> 9:double, DoubleColDivideLongColumn(col 4:double, col 5:bigint) -> 8:double, DecimalColDivideDecimalColumn(col 6:decimal(38,18), col 10:decimal(19,0))(children: CastLongToDecimal(col 7:bigint) -> 10:decimal(19,0)) -> 11:decimal(38,18)
+                          projectedOutputColumnNums: [0, 1, 2, 9, 4, 10, 6, 12]
+                          selectExpressions: DoubleColDivideLongColumn(col 8:double, col 3:bigint)(children: CastLongToDouble(col 2:bigint) -> 8:double) -> 9:double, DoubleColDivideLongColumn(col 4:double, col 5:bigint) -> 10:double, DecimalColDivideDecimalColumn(col 6:decimal(38,18), col 11:decimal(19,0))(children: CastLongToDecimal(col 7:bigint) -> 11:decimal(19,0)) -> 12:decimal(38,18)
                       Statistics: Num rows: 500 Data size: 132000 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)

@@ -62,17 +62,17 @@ STAGE PLANS:
           TableScan
             alias: infertypes
             filterExpr: ((ti = 127Y) and (si = 32767S) and (i = 12345) and (bi = -12345L) and (fl = 906.0) and (db = -307.0D) and (UDFToDouble(str) = 1234.0D)) (type: boolean)
-            Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((UDFToDouble(str) = 1234.0D) and (bi = -12345L) and (db = -307.0D) and (fl = 906.0) and (i = 12345) and (si = 32767S) and (ti = 127Y)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: 127Y (type: tinyint), 32767S (type: smallint), 12345 (type: int), -12345L (type: bigint), 906.0 (type: float), -307.0D (type: double), str (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -108,7 +108,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@infertypes
 #### A masked pattern was here ####
 127	32767	12345	-12345	906.0	-307.0	1234
-WARNING: Comparing a bigint and a string may result in a loss of precision.
 PREHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   ti  = '128' OR
   si  = 32768 OR
@@ -139,18 +138,17 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: infertypes
-            filterExpr: ((UDFToDouble(ti) = 128.0D) or (UDFToInteger(si) = 32768) or (UDFToDouble(i) = 2.147483648E9D) or (UDFToDouble(bi) = 9.223372036854776E18D) or null) (type: boolean)
-            Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(bi) = 9.223372036854776E18D) or (UDFToDouble(i) = 2.147483648E9D) or (UDFToDouble(ti) = 128.0D) or (UDFToInteger(si) = 32768) or null) (type: boolean)
-              Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
+              predicate: false (type: boolean)
+              Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ti (type: tinyint), si (type: smallint), i (type: int), bi (type: bigint), fl (type: float), db (type: double), str (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -163,7 +161,6 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-WARNING: Comparing a bigint and a string may result in a loss of precision.
 PREHOOK: query: SELECT * FROM infertypes WHERE
   ti  = '128' OR
   si  = 32768 OR
@@ -208,18 +205,18 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: infertypes
-            filterExpr: ((UDFToDouble(ti) = 127.0D) or (CAST( si AS decimal(5,0)) = 327) or (UDFToDouble(i) = -100.0D)) (type: boolean)
-            Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: ((ti = 127Y) or (CAST( si AS decimal(5,0)) = 327) or (i = -100)) (type: boolean)
+            Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((CAST( si AS decimal(5,0)) = 327) or (UDFToDouble(i) = -100.0D) or (UDFToDouble(ti) = 127.0D)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((CAST( si AS decimal(5,0)) = 327) or (i = -100) or (ti = 127Y)) (type: boolean)
+              Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ti (type: tinyint), si (type: smallint), i (type: int), bi (type: bigint), fl (type: float), db (type: double), str (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -271,18 +268,18 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: infertypes
-            filterExpr: ((UDFToDouble(ti) < 127.0D) and (UDFToDouble(i) > 100.0D) and (UDFToDouble(str) = 1.57D)) (type: boolean)
-            Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: ((ti < 127Y) and (i > 100) and (UDFToDouble(str) = 1.57D)) (type: boolean)
+            Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(i) > 100.0D) and (UDFToDouble(str) = 1.57D) and (UDFToDouble(ti) < 127.0D)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((UDFToDouble(str) = 1.57D) and (i > 100) and (ti < 127Y)) (type: boolean)
+              Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ti (type: tinyint), si (type: smallint), i (type: int), bi (type: bigint), fl (type: float), db (type: double), str (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

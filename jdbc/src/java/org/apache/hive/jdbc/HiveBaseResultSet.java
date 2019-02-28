@@ -21,10 +21,10 @@ package org.apache.hive.jdbc;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.Clob;
@@ -162,14 +162,7 @@ public abstract class HiveBaseResultSet implements ResultSet {
       return is;
     } else if (obj instanceof String) {
       String str = (String)obj;
-      InputStream is = null;
-      try {
-        is = new ByteArrayInputStream(str.getBytes("UTF-8"));
-      } catch (UnsupportedEncodingException e) {
-        throw new SQLException("Illegal conversion to binary stream from column " +
-            columnIndex + " - Unsupported encoding exception");
-      }
-      return is;
+      return new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8));
     }
     throw new SQLException("Illegal conversion to binary stream from column " + columnIndex);
   }

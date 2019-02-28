@@ -67,7 +67,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -122,7 +121,8 @@ import org.junit.rules.ExpectedException;
           + "    \"name\": \"sample_divide\",  "
           + "    \"fn\": \"/\",  "
           + "    \"fields\": [   "
-          + "     { \"type\": \"fieldAccess\", \"name\": \"postAgg__sample_name1\", \"fieldName\": \"sample_name1\" },   "
+          + "     { \"type\": \"fieldAccess\", \"name\": \"postAgg__sample_name1\", \"fieldName\": \"sample_name1\" "
+          + "},   "
           + "     { \"type\": \"fieldAccess\", \"name\": \"postAgg__sample_name2\", \"fieldName\": \"sample_name2\" }  "
           + "    ]  "
           + "  } "
@@ -151,13 +151,17 @@ import org.junit.rules.ExpectedException;
   private byte[] scanQueryResults;
 
   // Timeseries query results as records
-  private static final Object[][]
-      TIMESERIES_QUERY_RESULTS_RECORDS =
-      new Object[][] { new Object[] {
-          new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1325376000000L).atZone(ZoneOffset.UTC))),
-          new LongWritable(0), new FloatWritable(1.0F), new FloatWritable(2.2222F) }, new Object[] {
-          new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1325462400000L).atZone(ZoneOffset.UTC))),
-          new LongWritable(2), new FloatWritable(3.32F), new FloatWritable(4F) } };
+  private static final Object[][] TIMESERIES_QUERY_RESULTS_RECORDS = new Object[][]{
+      new Object[]{
+          new TimestampTZ(Instant.ofEpochMilli(1325376000000L).atZone(ZoneOffset.UTC)),
+          0L,
+          1.0F,
+          2.2222F },
+      new Object[]{
+          new TimestampTZ(Instant.ofEpochMilli(1325462400000L).atZone(ZoneOffset.UTC)),
+          2L,
+          3.32F,
+          4F } };
 
   // Timeseries query results as records (types defined by metastore)
   private static final String TIMESERIES_COLUMN_NAMES = "timestamp,sample_name1,sample_name2,sample_divide";
@@ -262,23 +266,22 @@ import org.junit.rules.ExpectedException;
           + " }]";
 
   // TopN query results as records
-  private static final Object[][]
-      TOPN_QUERY_RESULTS_RECORDS =
-      new Object[][] { new Object[] {
-          new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1377907200000L).atZone(ZoneOffset.UTC))),
-          new Text("dim1_val"), new LongWritable(111), new FloatWritable(10669F),
-          new FloatWritable(96.11711711711712F) }, new Object[] {
-          new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1377907200000L).atZone(ZoneOffset.UTC))),
-          new Text("another_dim1_val"), new LongWritable(88), new FloatWritable(28344F),
-          new FloatWritable(322.09090909090907F) }, new Object[] {
-          new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1377907200000L).atZone(ZoneOffset.UTC))),
-          new Text("dim1_val3"), new LongWritable(70), new FloatWritable(871F),
-          new FloatWritable(12.442857142857143F) }, new Object[] {
-          new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1377907200000L).atZone(ZoneOffset.UTC))),
-          new Text("dim1_val4"), new LongWritable(62), new FloatWritable(815F), new FloatWritable(13.14516129032258F) },
-          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1377907200000L)
-              .atZone(ZoneOffset.UTC))), new Text("dim1_val5"), new LongWritable(60), new FloatWritable(2787F),
-              new FloatWritable(46.45F) } };
+  private static final Object[][] TOPN_QUERY_RESULTS_RECORDS = new Object[][]{
+      new Object[]{
+          new TimestampTZ(Instant.ofEpochMilli(1377907200000L).atZone(ZoneOffset.UTC)),
+          "dim1_val", 111L, 10669F, 96.11711711711712F },
+      new Object[]{
+          (new TimestampTZ(Instant.ofEpochMilli(1377907200000L).atZone(ZoneOffset.UTC))),
+          "another_dim1_val", 88L, 28344F, 322.09090909090907F },
+      new Object[]{
+          (new TimestampTZ(Instant.ofEpochMilli(1377907200000L).atZone(ZoneOffset.UTC))),
+          "dim1_val3", 70L, 871F, 12.442857142857143F },
+      new Object[]{
+          new TimestampTZ(Instant.ofEpochMilli(1377907200000L).atZone(ZoneOffset.UTC)),
+          "dim1_val4", 62L, 815F, 13.14516129032258F },
+      new Object[]{
+          (new TimestampTZ(Instant.ofEpochMilli(1377907200000L).atZone(ZoneOffset.UTC))),
+          "dim1_val5", 60L, 2787F, 46.45F } };
 
   // TopN query results as records (types defined by metastore)
   private static final String TOPN_COLUMN_NAMES = "timestamp,sample_dim,count,some_metric,sample_divide";
@@ -406,7 +409,7 @@ import org.junit.rules.ExpectedException;
           + "  }  "
           + " }]";
 
-  private final static String
+  private static final String
       GB_MONTH_EXTRACTIONS =
       "{\"queryType\":\"groupBy\",\"dataSource\":\"sample_datasource\","
           + "\"granularity\":\"all\","
@@ -416,33 +419,27 @@ import org.junit.rules.ExpectedException;
           + "\"intervals\":[\"1900-01-01T00:00:00.000/3000-01-01T00:00:00.000\"]}";
 
   // GroupBy query results as records
-  private static final Object[][]
-      GROUP_BY_QUERY_EXTRACTION_RESULTS_RECORDS =
-      new Object[][] { new Object[] {
-          new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1325376000000L).atZone(ZoneOffset.UTC))),
-          new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1325376000000L).atZone(ZoneOffset.UTC))),
-          new LongWritable(200) }, new Object[] {
-          new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1325376012000L).atZone(ZoneOffset.UTC))),
-          new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1325376012000L).atZone(ZoneOffset.UTC))),
-          new LongWritable(400) } };
+  private static final Object[][] GROUP_BY_QUERY_EXTRACTION_RESULTS_RECORDS = new Object[][]{
+      new Object[]{
+          (new TimestampTZ(Instant.ofEpochMilli(1325376000000L).atZone(ZoneOffset.UTC))),
+          (new TimestampTZ(Instant.ofEpochMilli(1325376000000L).atZone(ZoneOffset.UTC))), 200L },
+      new Object[]{
+          (new TimestampTZ(Instant.ofEpochMilli(1325376012000L).atZone(ZoneOffset.UTC))),
+          (new TimestampTZ(Instant.ofEpochMilli(1325376012000L).atZone(ZoneOffset.UTC))), 400L } };
 
-  private static final Object[][]
-      GROUP_BY_QUERY_RESULTS_RECORDS =
-      new Object[][] { new Object[] {
-          new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1325376000000L).atZone(ZoneOffset.UTC))),
-          new Text("India"), new Text("phone"), new LongWritable(88), new DoubleWritable(29.91233453),
-          new FloatWritable(60.32F) }, new Object[] {
-          new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1325376012000L).atZone(ZoneOffset.UTC))),
-          new Text("Spain"), new Text("pc"), new LongWritable(16), new DoubleWritable(172.93494959),
-          new FloatWritable(6.333333F) } };
+  private static final Object[][] GROUP_BY_QUERY_RESULTS_RECORDS = new Object[][]{
+      new Object[]{
+          (new TimestampTZ(Instant.ofEpochMilli(1325376000000L).atZone(ZoneOffset.UTC))), "India",
+          "phone", 88L, 29.91233453, 60.32F },
+      new Object[]{
+          (new TimestampTZ(Instant.ofEpochMilli(1325376012000L).atZone(ZoneOffset.UTC))),
+          "Spain", "pc", 16L, 172.93494959, 6.333333F } };
 
-  private static final Object[][]
-      GB_MONTH_EXTRACTION_RESULTS_RECORDS =
-      new Object[][] { new Object[] {
-          new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1325376000000L).atZone(ZoneOffset.UTC))),
-          new IntWritable(1), new LongWritable(200) }, new Object[] {
-          new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1325376012000L).atZone(ZoneOffset.UTC))),
-          new IntWritable(1), new LongWritable(400) } };
+  private static final Object[][] GB_MONTH_EXTRACTION_RESULTS_RECORDS = new Object[][]{
+      new Object[]{
+          (new TimestampTZ(Instant.ofEpochMilli(1325376000000L).atZone(ZoneOffset.UTC))), 1, 200L },
+      new Object[]{
+          (new TimestampTZ(Instant.ofEpochMilli(1325376012000L).atZone(ZoneOffset.UTC))), 1, 400L } };
 
   // GroupBy query results as records (types defined by metastore)
   private static final String GROUP_BY_COLUMN_NAMES = "timestamp,country,device,total_usage,data_transfer,avg_usage";
@@ -463,7 +460,8 @@ import org.junit.rules.ExpectedException;
       SELECT_QUERY =
       "{   \"queryType\": \"select\",  "
           + " \"dataSource\": \"wikipedia\",   \"descending\": \"false\",  "
-          + " \"dimensions\":[\"robot\",\"namespace\",\"anonymous\",\"unpatrolled\",\"page\",\"language\",\"newpage\",\"user\"],  "
+          + " \"dimensions\":[\"robot\",\"namespace\",\"anonymous\",\"unpatrolled\",\"page\",\"language\","
+          + "\"newpage\",\"user\"],  "
           + " \"metrics\":[\"count\",\"added\",\"delta\",\"variation\",\"deleted\"],  "
           + " \"granularity\": \"all\",  "
           + " \"intervals\": [     \"2013-01-01/2013-01-02\"   ],  "
@@ -478,7 +476,8 @@ import org.junit.rules.ExpectedException;
           + "  \"pagingIdentifiers\" : {   "
           + "   \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47.830Z_v9\" : 4    }, "
           + "   \"events\" : [ {  "
-          + "    \"segmentId\" : \"wikipedia_editstream_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47.830Z_v9\",  "
+          + "    \"segmentId\" : \"wikipedia_editstream_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00"
+          + ".000Z_2013-01-10T08:13:47.830Z_v9\",  "
           + "    \"offset\" : 0,  "
           + "    \"event\" : {   "
           + "     \"timestamp\" : \"2013-01-01T00:00:00.000Z\",   "
@@ -497,7 +496,8 @@ import org.junit.rules.ExpectedException;
           + "     \"deleted\" : 0.0  "
           + "    } "
           + "   }, {  "
-          + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47.830Z_v9\",  "
+          + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47"
+          + ".830Z_v9\",  "
           + "    \"offset\" : 1,  "
           + "    \"event\" : {   "
           + "     \"timestamp\" : \"2013-01-01T00:00:00.000Z\",   "
@@ -516,7 +516,8 @@ import org.junit.rules.ExpectedException;
           + "     \"deleted\" : 0.0  "
           + "    } "
           + "   }, {  "
-          + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47.830Z_v9\",  "
+          + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47"
+          + ".830Z_v9\",  "
           + "    \"offset\" : 2,  "
           + "    \"event\" : {   "
           + "     \"timestamp\" : \"2013-01-01T00:00:12.000Z\",   "
@@ -535,7 +536,8 @@ import org.junit.rules.ExpectedException;
           + "     \"deleted\" : 0.0  "
           + "    } "
           + "   }, {  "
-          + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47.830Z_v9\",  "
+          + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47"
+          + ".830Z_v9\",  "
           + "    \"offset\" : 3,  "
           + "    \"event\" : {   "
           + "     \"timestamp\" : \"2013-01-01T00:00:12.000Z\",   "
@@ -554,7 +556,8 @@ import org.junit.rules.ExpectedException;
           + "     \"deleted\" : 0.0  "
           + "    } "
           + "   }, {  "
-          + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47.830Z_v9\",  "
+          + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47"
+          + ".830Z_v9\",  "
           + "    \"offset\" : 4,  "
           + "    \"event\" : {   "
           + "     \"timestamp\" : \"2013-01-01T00:00:12.000Z\",   "
@@ -580,37 +583,62 @@ import org.junit.rules.ExpectedException;
       "__time,robot,namespace,anonymous,unpatrolled,page,language,newpage,user,count,added,delta,variation,deleted";
   private static final String
       SELECT_COLUMN_TYPES =
-      "timestamp with local time zone,boolean,string,string,string,string,string,string,string,double,double,float,float,float";
-  private static final Object[][]
-      SELECT_QUERY_RESULTS_RECORDS =
-      new Object[][] { new Object[] {
-          new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998400000L).atZone(ZoneOffset.UTC))),
-          new BooleanWritable(true), new Text("article"), new Text("0"), new Text("0"), new Text("11._korpus_(NOVJ)"),
-          new Text("sl"), new Text("0"), new Text("EmausBot"), new DoubleWritable(1.0d), new DoubleWritable(39.0d),
-          new FloatWritable(39.0F), new FloatWritable(39.0F), new FloatWritable(0.0F) }, new Object[] {
-          new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998400000L).atZone(ZoneOffset.UTC))),
-          new BooleanWritable(false), new Text("article"), new Text("0"), new Text("0"), new Text("112_U.S._580"),
-          new Text("en"), new Text("1"), new Text("MZMcBride"), new DoubleWritable(1.0d), new DoubleWritable(70.0d),
-          new FloatWritable(70.0F), new FloatWritable(70.0F), new FloatWritable(0.0F) }, new Object[] {
-          new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))),
-          new BooleanWritable(false), new Text("article"), new Text("0"), new Text("0"), new Text("113_U.S._243"),
-          new Text("en"), new Text("1"), new Text("MZMcBride"), new DoubleWritable(1.0d), new DoubleWritable(77.0d),
-          new FloatWritable(77.0F), new FloatWritable(77.0F), new FloatWritable(0.0F) }, new Object[] {
-          new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))),
-          new BooleanWritable(false), new Text("article"), new Text("0"), new Text("0"), new Text("113_U.S._73"),
-          new Text("en"), new Text("1"), new Text("MZMcBride"), new DoubleWritable(1.0d), new DoubleWritable(70.0d),
-          new FloatWritable(70.0F), new FloatWritable(70.0F), new FloatWritable(0.0F) }, new Object[] {
-          new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))),
-          new BooleanWritable(false), new Text("article"), new Text("0"), new Text("0"), new Text("113_U.S._756"),
-          new Text("en"), new Text("1"), new Text("MZMcBride"), new DoubleWritable(1.0d), new DoubleWritable(68.0d),
-          new FloatWritable(68.0F), new FloatWritable(68.0F), new FloatWritable(0.0F) } };
+      "timestamp with local time zone,boolean,string,string,string,string,string,string,string,double,double,float,"
+          + "float,float";
+  private static final Object[][] SELECT_QUERY_RESULTS_RECORDS = new Object[][]{
+      new Object[]{
+          (new TimestampTZ(Instant.ofEpochMilli(1356998400000L).atZone(ZoneOffset.UTC))), Boolean.TRUE,
+          "article",
+          "0",
+          "0",
+          "11._korpus_(NOVJ)",
+          "sl",
+          "0",
+          "EmausBot", 1.0d, 39.0d, 39.0F, 39.0F, 0.0F },
+      new Object[]{
+          (new TimestampTZ(Instant.ofEpochMilli(1356998400000L).atZone(ZoneOffset.UTC))), Boolean.FALSE,
+          "article",
+          "0",
+          "0",
+          "112_U.S._580",
+          "en",
+          "1",
+          "MZMcBride", 1.0d, 70.0d, 70.0F, 70.0F, 0.0F },
+      new Object[]{
+          (new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))), Boolean.FALSE,
+          "article",
+          "0",
+          "0",
+          "113_U.S._243",
+          "en",
+          "1",
+          "MZMcBride", 1.0d, 77.0d, 77.0F, 77.0F, 0.0F },
+      new Object[]{
+          (new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))), Boolean.FALSE,
+          "article",
+          "0",
+          "0",
+          "113_U.S._73",
+          "en",
+          "1",
+          "MZMcBride", 1.0d, 70.0d, 70.0F, 70.0F, 0.0F },
+      new Object[]{
+          (new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))), Boolean.FALSE,
+          "article",
+          "0",
+          "0",
+          "113_U.S._756",
+          "en",
+          "1",
+          "MZMcBride", 1.0d, 68.0d, 68.0F, 68.0F, 0.0F } };
 
   // Scan query
   private static final String
       SCAN_QUERY =
       "{   \"queryType\": \"scan\",  "
           + " \"dataSource\": \"wikipedia\",   \"descending\": \"false\",  "
-          + " \"columns\":[\"robot\",\"namespace\",\"anonymous\",\"unpatrolled\",\"page\",\"language\",\"newpage\",\"user\",\"count\",\"added\",\"delta\",\"variation\",\"deleted\"],  "
+          + " \"columns\":[\"robot\",\"namespace\",\"anonymous\",\"unpatrolled\",\"page\",\"language\","
+          + "\"newpage\",\"user\",\"count\",\"added\",\"delta\",\"variation\",\"deleted\"],  "
           + " \"granularity\": \"all\",  "
           + " \"intervals\": [     \"2013-01-01/2013-01-02\"   ],"
           + " \"resultFormat\": \"compactedList\","
@@ -624,11 +652,16 @@ import org.junit.rules.ExpectedException;
           + "\"columns\":[\"__time\",\"robot\",\"namespace\",\"anonymous\",\"unpatrolled\",\"page\",\"language\","
           + "\"newpage\",\"user\",\"count\",\"added\",\"delta\",\"variation\",\"deleted\"],"
           + "\"events\":["
-          + "[\"2013-01-01T00:00:00.000Z\", 1,\"article\",\"0\",\"0\",\"11._korpus_(NOVJ)\",\"sl\",\"0\",\"EmausBot\",1.0,39.0,39.0,39.0,0.0],"
-          + "[\"2013-01-01T00:00:00.000Z\", 0,\"article\",\"0\",\"0\",\"112_U.S._580\",\"en\",\"1\",\"MZMcBride\",1.0,70.0,70.0,70.0,0.0],"
-          + "[\"2013-01-01T00:00:12.000Z\", 0,\"article\",\"0\",\"0\",\"113_U.S._243\",\"en\",\"1\",\"MZMcBride\",1.0,77.0,77.0,77.0,0.0],"
-          + "[\"2013-01-01T00:00:12.000Z\", 0,\"article\",\"0\",\"0\",\"113_U.S._73\",\"en\",\"1\",\"MZMcBride\",1.0,70.0,70.0,70.0,0.0],"
-          + "[\"2013-01-01T00:00:12.000Z\", 0,\"article\",\"0\",\"0\",\"113_U.S._756\",\"en\",\"1\",\"MZMcBride\",1.0,68.0,68.0,68.0,0.0]"
+          + "[\"2013-01-01T00:00:00.000Z\", 1,\"article\",\"0\",\"0\",\"11._korpus_(NOVJ)\",\"sl\",\"0\","
+          + "\"EmausBot\",1.0,39.0,39.0,39.0,0.0],"
+          + "[\"2013-01-01T00:00:00.000Z\", 0,\"article\",\"0\",\"0\",\"112_U.S._580\",\"en\",\"1\",\"MZMcBride\",1"
+          + ".0,70.0,70.0,70.0,0.0],"
+          + "[\"2013-01-01T00:00:12.000Z\", 0,\"article\",\"0\",\"0\",\"113_U.S._243\",\"en\",\"1\",\"MZMcBride\",1"
+          + ".0,77.0,77.0,77.0,0.0],"
+          + "[\"2013-01-01T00:00:12.000Z\", 0,\"article\",\"0\",\"0\",\"113_U.S._73\",\"en\",\"1\",\"MZMcBride\",1.0,"
+          + "70.0,70.0,70.0,0.0],"
+          + "[\"2013-01-01T00:00:12.000Z\", 0,\"article\",\"0\",\"0\",\"113_U.S._756\",\"en\",\"1\",\"MZMcBride\",1"
+          + ".0,68.0,68.0,68.0,0.0]"
           + "]}]";
 
   @Before public void setup() throws IOException {
@@ -774,14 +807,9 @@ import org.junit.rules.ExpectedException;
     when(httpClient.go(anyObject(), any(HttpResponseHandler.class))).thenReturn(futureResult);
     DruidQueryRecordReader<?> reader = DruidQueryBasedInputFormat.getDruidQueryReader(queryType);
 
-    final HiveDruidSplit split = new HiveDruidSplit(jsonQuery, new Path("empty"), new String[] { "testing_host" });
+    final HiveDruidSplit split = new HiveDruidSplit(jsonQuery, new Path("empty"), new String[]{"testing_host"});
 
-    assert reader != null;
-    reader.initialize(split,
-        new Configuration(),
-        DruidStorageHandlerUtils.JSON_MAPPER,
-        DruidStorageHandlerUtils.SMILE_MAPPER,
-        httpClient);
+    reader.initialize(split, DruidStorageHandlerUtils.JSON_MAPPER, DruidStorageHandlerUtils.SMILE_MAPPER, httpClient);
     StructObjectInspector oi = (StructObjectInspector) serDe.getObjectInspector();
     List<? extends StructField> fieldRefs = oi.getAllStructFieldRefs();
 
@@ -806,12 +834,7 @@ import org.junit.rules.ExpectedException;
     futureResult.set(new ByteArrayInputStream(resultString));
     when(httpClient.go(anyObject(), any(HttpResponseHandler.class))).thenReturn(futureResult);
     reader = DruidQueryBasedInputFormat.getDruidQueryReader(queryType);
-    assert reader != null;
-    reader.initialize(split,
-        new Configuration(),
-        DruidStorageHandlerUtils.JSON_MAPPER,
-        DruidStorageHandlerUtils.SMILE_MAPPER,
-        httpClient);
+    reader.initialize(split, DruidStorageHandlerUtils.JSON_MAPPER, DruidStorageHandlerUtils.SMILE_MAPPER, httpClient);
 
     pos = 0;
     while (reader.nextKeyValue()) {
@@ -832,16 +855,20 @@ import org.junit.rules.ExpectedException;
   private static final String
       COLUMN_TYPES =
       "timestamp with local time zone,string,char(6),varchar(8),double,float,bigint,int,smallint,tinyint";
-  private static final Object[]
-      ROW_OBJECT =
-      new Object[] {
-          new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1377907200000L).atZone(ZoneOffset.UTC))),
-          new Text("dim1_val"), new HiveCharWritable(new HiveChar("dim2_v", 6)),
-          new HiveVarcharWritable(new HiveVarchar("dim3_val", 8)), new DoubleWritable(10669.3D),
-          new FloatWritable(10669.45F), new LongWritable(1113939), new IntWritable(1112123),
-          new ShortWritable((short) 12), new ByteWritable((byte) 0),
-          new TimestampWritableV2(Timestamp.ofEpochSecond(1377907200L)) // granularity
-      };
+  private static final Object[] ROW_OBJECT = new Object[]{
+      new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1377907200000L).atZone(ZoneOffset.UTC))),
+      new Text("dim1_val"),
+      new HiveCharWritable(new HiveChar("dim2_v", 6)),
+      new HiveVarcharWritable(new HiveVarchar("dim3_val", 8)),
+      new DoubleWritable(10669.3D),
+      new FloatWritable(10669.45F),
+      new LongWritable(1113939),
+      new IntWritable(1112123),
+      new ShortWritable((short) 12),
+      new ByteWritable((byte) 0),
+      new TimestampWritableV2(Timestamp.ofEpochSecond(1377907200L))
+      // granularity
+  };
   private static final DruidWritable
       DRUID_WRITABLE =
       new DruidWritable(ImmutableMap.<String, Object>builder().put("__time", 1377907200000L)
@@ -880,13 +907,20 @@ import org.junit.rules.ExpectedException;
     // Mixed source (all types)
     tbl = createPropertiesSource(COLUMN_NAMES, COLUMN_TYPES);
     SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
-    Object[]
-        row =
-        new Object[] { null, new Text("dim1_val"), new HiveCharWritable(new HiveChar("dim2_v", 6)),
-            new HiveVarcharWritable(new HiveVarchar("dim3_val", 8)), new DoubleWritable(10669.3D),
-            new FloatWritable(10669.45F), new LongWritable(1113939), new IntWritable(1112123),
-            new ShortWritable((short) 12), new ByteWritable((byte) 0), null // granularity
-        };
+    Object[] row = new Object[]{
+        null,
+        new Text("dim1_val"),
+        new HiveCharWritable(new HiveChar("dim2_v", 6)),
+        new HiveVarcharWritable(new HiveVarchar("dim3_val", 8)),
+        new DoubleWritable(10669.3D),
+        new FloatWritable(10669.45F),
+        new LongWritable(1113939),
+        new IntWritable(1112123),
+        new ShortWritable((short) 12),
+        new ByteWritable((byte) 0),
+        null
+        // granularity
+    };
     expectedEx.expect(NullPointerException.class);
     expectedEx.expectMessage("Timestamp column cannot have null value");
     // should fail as timestamp is null
@@ -931,14 +965,16 @@ import org.junit.rules.ExpectedException;
     }
   }
 
-  private static final Object[]
-      ROW_OBJECT_2 =
-      new Object[] {
-          new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1377907200000L).atZone(ZoneOffset.UTC))),
-          new Text("dim1_val"), new HiveCharWritable(new HiveChar("dim2_v", 6)),
-          new HiveVarcharWritable(new HiveVarchar("dim3_val", 8)), new DoubleWritable(10669.3D),
-          new FloatWritable(10669.45F), new LongWritable(1113939), new IntWritable(1112123),
-          new ShortWritable((short) 12), new ByteWritable((byte) 0) };
+  private static final Object[] ROW_OBJECT_2 = new Object[]{
+      new TimestampTZ(Instant.ofEpochMilli(1377907200000L).atZone(ZoneOffset.UTC)), "dim1_val",
+      new HiveChar("dim2_v", 6),
+      new HiveVarchar("dim3_val", 8),
+      10669.3D,
+      10669.45F,
+      1113939L,
+      1112123,
+      ((short) 12),
+      ((byte) 0)};
   private static final DruidWritable
       DRUID_WRITABLE_2 =
       new DruidWritable(ImmutableMap.<String, Object>builder().put("__time", 1377907200000L)

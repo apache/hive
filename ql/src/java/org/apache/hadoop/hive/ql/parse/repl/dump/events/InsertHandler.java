@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -53,8 +54,11 @@ class InsertHandler extends AbstractEventHandler<InsertMessage> {
       return;
     }
     org.apache.hadoop.hive.ql.metadata.Table qlMdTable = tableObject(eventMessage);
+    if (TableType.EXTERNAL_TABLE.equals(qlMdTable.getTableType())) {
+      withinContext.replicationSpec.setNoop(true);
+    }
 
-    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, withinContext.hiveConf)) {
+    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, true, withinContext.hiveConf)) {
       return;
     }
 

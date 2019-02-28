@@ -592,4 +592,23 @@ public class OperatorUtils {
     }
     return currRS;
   }
+
+  /***
+   * Given group by operator on reduce side, this tries to get to the group by on map side (partial/merge).
+   * @param reduceSideGbOp Make sure this is group by side reducer
+   * @return map side gb if any, else null
+   */
+  public static GroupByOperator findMapSideGb(final GroupByOperator reduceSideGbOp) {
+    Operator<? extends OperatorDesc> parentOp = reduceSideGbOp;
+    while(parentOp.getParentOperators() != null && parentOp.getParentOperators().size() > 0) {
+      if(parentOp.getParentOperators().size() > 1) {
+        return null;
+      }
+      parentOp = parentOp.getParentOperators().get(0);
+      if(parentOp instanceof GroupByOperator) {
+        return (GroupByOperator)parentOp;
+      }
+    }
+    return null;
+  }
 }

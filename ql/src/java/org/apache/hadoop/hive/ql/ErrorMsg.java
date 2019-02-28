@@ -461,7 +461,7 @@ public enum ErrorMsg {
     "Grouping sets size cannot be greater than 64"),
   REBUILD_NO_MATERIALIZED_VIEW(10412, "Rebuild command only valid for materialized views"),
   LOAD_DATA_ACID_FILE(10413,
-      "\"{0}\" was created created by Acid write - it cannot be loaded into anther Acid table",
+      "\"{0}\" was created by Acid write - it cannot be loaded into anther Acid table",
       true),
   ACID_OP_ON_INSERTONLYTRAN_TABLE(10414, "Attempt to do update or delete on table {0} that is " +
     "insert-only transactional", true),
@@ -470,6 +470,7 @@ public enum ErrorMsg {
   RESOURCE_PLAN_ALREADY_EXISTS(10417, "Resource plan {0} already exists", true),
   RESOURCE_PLAN_NOT_EXISTS(10418, "Resource plan {0} does not exist", true),
   INCOMPATIBLE_STRUCT(10419, "Incompatible structs.", true),
+  OBJECTNAME_CONTAINS_DOT(10420, "Table or database name may not contain dot(.) character", true),
 
   //========================== 20000 range starts here ========================//
 

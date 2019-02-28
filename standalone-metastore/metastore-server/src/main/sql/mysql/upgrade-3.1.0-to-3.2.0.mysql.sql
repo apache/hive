@@ -19,6 +19,10 @@ INSERT INTO `SEQUENCE_TABLE` (`SEQUENCE_NAME`, `NEXT_VAL`) VALUES ('org.apache.h
 -- HIVE-20221
 ALTER TABLE PARTITION_PARAMS MODIFY PARAM_VALUE MEDIUMTEXT;
 
+-- HIVE-21077
+ALTER TABLE `DBS` ADD `CREATE_TIME` INT(11);
+ALTER TABLE `CTLGS` ADD `CREATE_TIME` INT(11);
+
 -- These lines need to be last.  Insert any changes above.
 UPDATE VERSION SET SCHEMA_VERSION='3.2.0', VERSION_COMMENT='Hive release version 3.2.0' where VER_ID=1;
 SELECT 'Finished upgrading MetaStore schema from 3.1.0 to 3.2.0' AS ' ';

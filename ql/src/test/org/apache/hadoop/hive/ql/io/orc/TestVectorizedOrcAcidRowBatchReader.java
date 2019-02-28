@@ -19,12 +19,15 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 import java.util.Properties;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -32,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
@@ -56,6 +60,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+import com.google.common.collect.Lists;
 
 /**
  * This class tests the VectorizedOrcAcidRowBatchReader by creating an actual split and a set
@@ -272,6 +278,8 @@ public class TestVectorizedOrcAcidRowBatchReader {
         new DummyRow(-1, 2, 3, bucket));
     updater.close(false);
 
+    conf.set(ValidTxnList.VALID_TXNS_KEY,
+        new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
     //HWM is not important - just make sure deltas created above are read as
     // if committed
     conf.set(ValidWriteIdList.VALID_WRITEIDS_KEY,
@@ -363,10 +371,18 @@ public class TestVectorizedOrcAcidRowBatchReader {
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.FILTER_DELETE_EVENTS, true);
     testDeleteEventFiltering2();
   }
+  @Test
+  public void testDeleteEventFilteringOnWithoutIdx2() throws Exception {
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.FILTER_DELETE_EVENTS, true);
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVETESTMODEACIDKEYIDXSKIP, true);
+    testDeleteEventFiltering2();
+  }
 
   private void testDeleteEventFiltering2() throws Exception {
     boolean filterOn =
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.FILTER_DELETE_EVENTS);
+    boolean skipKeyIdx =
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVETESTMODEACIDKEYIDXSKIP);
     int bucket = 1;
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
         .filesystem(fs)
@@ -402,6 +418,8 @@ public class TestVectorizedOrcAcidRowBatchReader {
         new DummyRow(-1, 5, 10000003, bucket));
     updater.close(false);
 
+    conf.set(ValidTxnList.VALID_TXNS_KEY,
+        new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
     //HWM is not important - just make sure deltas created above are read as
     // if committed
     conf.set(ValidWriteIdList.VALID_WRITEIDS_KEY,
@@ -430,10 +448,18 @@ public class TestVectorizedOrcAcidRowBatchReader {
         vectorizedReader.getKeyInterval();
     SearchArgument sarg = vectorizedReader.getDeleteEventSarg();
     if(filterOn) {
-      assertEquals(new OrcRawRecordMerger.KeyInterval(
-              new RecordIdentifier(0, bucketProperty, 0),
-              new RecordIdentifier(10000001, bucketProperty, 0)),
-          keyInterval);
+      if (skipKeyIdx) {
+        // If key index is not present, the min max key interval uses stripe stats instead
+        assertEquals(new OrcRawRecordMerger.KeyInterval(
+                new RecordIdentifier(0, bucketProperty, 0),
+                new RecordIdentifier(10000001, bucketProperty, 2)),
+            keyInterval);
+      } else {
+        assertEquals(new OrcRawRecordMerger.KeyInterval(
+                new RecordIdentifier(0, bucketProperty, 0),
+                new RecordIdentifier(10000001, bucketProperty, 0)),
+            keyInterval);
+      }
       //key point is that in leaf-5 is (rowId <= 2) even though maxKey has
       //rowId 0.  more in VectorizedOrcAcidRowBatchReader.findMinMaxKeys
       assertEquals( "leaf-0 = (LESS_THAN originalTransaction 0)," +
@@ -526,7 +552,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     OrcSplit split = new OrcSplit(acidFilePath, null,
         stripe.getOffset() + 50,
         stripe.getLength() - 100,
-        new String[] {"localhost"}, null, false, true, new ArrayList<>(),
+        new String[] {"localhost"}, null, false, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
         fileLength, fileLength, root, null);
 
     validateKeyInterval(split, new RecordIdentifier(1, 1, 1),
@@ -537,7 +563,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     split = new OrcSplit(acidFilePath, null,
         stripe.getOffset() + 50,
         stripe.getLength() - 100,
-        new String[] {"localhost"}, null, false, true, new ArrayList<>(),
+        new String[] {"localhost"}, null, false, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
         fileLength, fileLength, root, null);
 
     validateKeyInterval(split, new RecordIdentifier(1, 1, 1),
@@ -549,7 +575,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     split = new OrcSplit(acidFilePath, null,
         stripe.getOffset(),
         stripe.getLength() - 50,
-        new String[] {"localhost"}, null, false, true, new ArrayList<>(),
+        new String[] {"localhost"}, null, false, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
         fileLength, fileLength, root, null);
 
     // The key interval for the 1st stripe
@@ -565,7 +591,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     split = new OrcSplit(acidFilePath, null,
         stripe.getOffset(),
         stripe.getLength() + 50,
-        new String[] {"localhost"}, null, false, true, new ArrayList<>(),
+        new String[] {"localhost"}, null, false, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
         fileLength, fileLength, root, null);
 
     // The key interval for the last 2 stripes
@@ -578,7 +604,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     split = new OrcSplit(acidFilePath, null,
         stripe.getOffset() - 50,
         stripe.getLength() + 50,
-        new String[] {"localhost"}, null, false, true, new ArrayList<>(),
+        new String[] {"localhost"}, null, false, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
         fileLength, fileLength, root, null);
 
     // The key interval for the last stripe
@@ -589,7 +615,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     split = new OrcSplit(acidFilePath, null,
         stripes.get(0).getOffset() + 50,
         reader.getContentLength() - 50,
-        new String[] {"localhost"}, null, false, true, new ArrayList<>(),
+        new String[] {"localhost"}, null, false, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
         fileLength, fileLength, root, null);
 
     // The key interval for the last 2 stripes
@@ -600,7 +626,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     split = new OrcSplit(acidFilePath, null,
         stripes.get(0).getOffset(),
         reader.getContentLength(),
-        new String[] {"localhost"}, null, false, true, new ArrayList<>(),
+        new String[] {"localhost"}, null, false, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
         fileLength, fileLength, root, null);
 
     // The key interval for all 3 stripes
@@ -679,6 +705,8 @@ public class TestVectorizedOrcAcidRowBatchReader {
     writer.close();
 
     conf.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
+    conf.set(ValidTxnList.VALID_TXNS_KEY,
+        new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
 
     int bucket = 0;
 
@@ -849,7 +877,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     OrcSplit split = new OrcSplit(originalFilePath, null,
         stripe.getOffset() + 50,
         stripe.getLength() - 100,
-        new String[] {"localhost"}, null, true, true, new ArrayList<>(),
+        new String[] {"localhost"}, null, true, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
         fileLength, fileLength, root, syntheticProps);
 
     validateKeyInterval(split, new RecordIdentifier(0, bucketProperty, 2),
@@ -860,7 +888,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     split = new OrcSplit(originalFilePath, null,
         stripe.getOffset() + 50,
         stripe.getLength() - 100,
-        new String[] {"localhost"}, null, true, true, new ArrayList<>(),
+        new String[] {"localhost"}, null, true, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
         fileLength, fileLength, root, syntheticProps);
 
     validateKeyInterval(split, new RecordIdentifier(0, bucketProperty, 3),
@@ -872,7 +900,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     split = new OrcSplit(originalFilePath, null,
         stripe.getOffset(),
         stripe.getLength() - 50,
-        new String[] {"localhost"}, null, true, true, new ArrayList<>(),
+        new String[] {"localhost"}, null, true, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
         fileLength, fileLength, root, syntheticProps);
 
     // The key interval for the 1st stripe
@@ -884,7 +912,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     split = new OrcSplit(originalFilePath, null,
         stripe.getOffset(),
         stripe.getLength() + 50,
-        new String[] {"localhost"}, null, true, true, new ArrayList<>(),
+        new String[] {"localhost"}, null, true, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
         fileLength, fileLength, root, syntheticProps);
 
     // The key interval for the last 2 stripes
@@ -897,7 +925,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     split = new OrcSplit(originalFilePath, null,
         stripe.getOffset() - 50,
         stripe.getLength() + 50,
-        new String[] {"localhost"}, null, true, true, new ArrayList<>(),
+        new String[] {"localhost"}, null, true, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
         fileLength, fileLength, root, syntheticProps);
 
     // The key interval for the last stripe
@@ -908,7 +936,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     split = new OrcSplit(originalFilePath, null,
         stripes.get(0).getOffset() + 50,
         reader.getContentLength() - 50,
-        new String[] {"localhost"}, null, true, true, new ArrayList<>(),
+        new String[] {"localhost"}, null, true, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
         fileLength, fileLength, root, syntheticProps);
 
     // The key interval for the last 2 stripes
@@ -919,7 +947,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     split = new OrcSplit(originalFilePath, null,
         stripes.get(0).getOffset(),
         reader.getContentLength(),
-        new String[] {"localhost"}, null, true, true, new ArrayList<>(),
+        new String[] {"localhost"}, null, true, true, Lists.newArrayList(new AcidInputFormat.DeltaMetaData()),
         fileLength, fileLength, root, syntheticProps);
 
     // The key interval for all 3 stripes
@@ -930,6 +958,8 @@ public class TestVectorizedOrcAcidRowBatchReader {
     @Test
   public void testVectorizedOrcAcidRowBatchReader() throws Exception {
     conf.set("bucket_count", "1");
+      conf.set(ValidTxnList.VALID_TXNS_KEY,
+          new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
 
     int bucket = 0;
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)

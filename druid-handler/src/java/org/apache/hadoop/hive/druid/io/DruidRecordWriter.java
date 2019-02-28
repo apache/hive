@@ -45,6 +45,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
+import org.apache.hadoop.hive.druid.conf.DruidConstants;
 import org.apache.hadoop.hive.druid.serde.DruidWritable;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.io.NullWritable;
@@ -174,7 +175,7 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
   private void pushSegments(List<SegmentIdentifier> segmentsToPush) {
     try {
       SegmentsAndMetadata segmentsAndMetadata = appenderator.push(segmentsToPush, committerSupplier.get(), false).get();
-      final HashSet<String> pushedSegmentIdentifierHashSet = new HashSet<>();
+      final Set<String> pushedSegmentIdentifierHashSet = new HashSet<>();
 
       for (DataSegment pushedSegment : segmentsAndMetadata.getSegments()) {
         pushedSegmentIdentifierHashSet.add(SegmentIdentifier.fromDataSegment(pushedSegment).getIdentifierAsString());
@@ -215,7 +216,7 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
 
   @Override public void write(Writable w) throws IOException {
     DruidWritable record = (DruidWritable) w;
-    final long timestamp = (long) record.getValue().get(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN);
+    final long timestamp = (long) record.getValue().get(DruidConstants.DEFAULT_TIMESTAMP_COLUMN);
     final int
         partitionNumber =
         Math.toIntExact((long) record.getValue().getOrDefault(Constants.DRUID_SHARD_KEY_COL_NAME, -1L));

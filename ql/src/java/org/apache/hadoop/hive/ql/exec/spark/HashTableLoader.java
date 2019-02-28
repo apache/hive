@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -159,22 +160,20 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
       MapJoinTableContainerSerDe mapJoinTableSerde) throws HiveException {
     LOG.info("\tLoad back all hashtable files from tmp folder uri:" + path);
     if (!SparkUtilities.isDedicatedCluster(hconf)) {
-      return useFastContainer ? mapJoinTableSerde.loadFastContainer(desc, fs, path, hconf) :
-          mapJoinTableSerde.load(fs, path, hconf);
+      return loadMapJoinTableContainer(fs, path, mapJoinTableSerde);
     }
-    MapJoinTableContainer mapJoinTable = SmallTableCache.get(path);
-    if (mapJoinTable == null) {
-      synchronized (path.toString().intern()) {
-        mapJoinTable = SmallTableCache.get(path);
-        if (mapJoinTable == null) {
-          mapJoinTable = useFastContainer ?
-              mapJoinTableSerde.loadFastContainer(desc, fs, path, hconf) :
-              mapJoinTableSerde.load(fs, path, hconf);
-          SmallTableCache.cache(path, mapJoinTable);
-        }
-      }
+
+    try {
+      return SmallTableCache.get(path.toString(), () -> loadMapJoinTableContainer(fs, path, mapJoinTableSerde));
+    } catch (ExecutionException e) {
+      throw new HiveException(e);
     }
-    return mapJoinTable;
+  }
+
+  private MapJoinTableContainer loadMapJoinTableContainer(
+          FileSystem fs, Path path, MapJoinTableContainerSerDe mapJoinTableSerde) throws HiveException {
+    return useFastContainer ? mapJoinTableSerde.loadFastContainer(desc, fs, path, hconf) :
+        mapJoinTableSerde.load(fs, path, hconf);
   }
 
   private void loadDirectly(MapJoinTableContainer[] mapJoinTables, String inputFileName)

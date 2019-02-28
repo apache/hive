@@ -22,6 +22,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -44,6 +48,7 @@ import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.slf4j.Logger;
@@ -59,13 +64,19 @@ import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 
 /**
- * This optimization attempts to identify and close expanded INs.
+ * This optimization attempts to identify and close expanded INs and BETWEENs
  *
  * Basically:
  * <pre>
  * (c) IN ( v1, v2, ...) &lt;=&gt; c1=v1 || c1=v2 || ...
  * </pre>
  * If c is struct; then c=v1 is a group of anded equations.
+ *
+ * Similarily
+ * <pre>
+ * v1 <= c1 and c1 <= v2
+ * <pre>
+ * is rewritten to <p>c1 between v1 and v2</p>
  */
 public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
@@ -174,9 +185,271 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     // 2. We merge IN expressions
     RexMergeInClause mergeInClause = new RexMergeInClause(rexBuilder);
     newCondition = mergeInClause.apply(newCondition);
+
+    // 3. Close BETWEEN expressions if possible
+    RexTranformIntoBetween t = new RexTranformIntoBetween(rexBuilder);
+    newCondition = t.apply(newCondition);
     return newCondition;
   }
 
+  /**
+   * Transforms inequality candidates into [NOT] BETWEEN calls.
+   *
+   */
+  protected static class RexTranformIntoBetween extends RexShuttle {
+    private final RexBuilder rexBuilder;
+
+    static class DiGraph<V, E> {
+      static class Edge<V, E> {
+        final Node<V, E> s;
+        final Node<V, E> t;
+        final E e;
+
+        public Edge(Node<V, E> s, Node<V, E> t, E e) {
+          this.s = s;
+          this.t = t;
+          this.e = e;
+        }
+      }
+
+      static class Node<V, E> {
+        final Set<Edge<V, E>> edges;
+        final V v;
+
+        public Node(V v) {
+          edges = new LinkedHashSet<>();
+          this.v = v;
+        }
+
+        public void addEdge(Edge<V, E> edge) {
+          edges.add(edge);
+        }
+
+        public E removeEdge(V s, V t) {
+          Iterator<Edge<V, E>> it = edges.iterator();
+          while (it.hasNext()) {
+            Edge<V, E> edge = it.next();
+            if (edge.s.v.equals(s) && edge.t.v.equals(t)) {
+              it.remove();
+              return edge.e;
+            }
+          }
+          return null;
+        }
+
+      }
+
+      private final Map<V, Node<V, E>> nodes;
+
+      public DiGraph() {
+        nodes = new LinkedHashMap<>();
+      }
+
+      public void putEdgeValue(V s, V t, E e) {
+        Node<V, E> nodeS = nodeOf(s);
+        Node<V, E> nodeT = nodeOf(t);
+        Edge<V, E> edge = new Edge<V, E>(nodeS, nodeT, e);
+        nodeS.addEdge(edge);
+        nodeT.addEdge(edge);
+      }
+
+      private Node<V, E> nodeOf(V s) {
+        Node<V, E> node = nodes.get(s);
+        if (node == null) {
+          nodes.put(s, node = new Node<V, E>(s));
+        }
+        return node;
+      }
+
+      public Set<V> nodes() {
+        return nodes.keySet();
+      }
+
+      public Set<V> predecessors(V n) {
+        Set<V> ret = new LinkedHashSet<>();
+        Node<V, E> node = nodes.get(n);
+        if (node == null) {
+          return ret;
+        }
+
+        for (Edge<V, E> edge : node.edges) {
+          if (edge.t.v.equals(n)) {
+            ret.add(edge.s.v);
+          }
+        }
+        return ret;
+      }
+
+      public Set<V> successors(V n) {
+        Set<V> ret = new LinkedHashSet<>();
+        Node<V, E> node = nodes.get(n);
+        if (node == null) {
+          return ret;
+        }
+
+        for (Edge<V, E> edge : node.edges) {
+          if (edge.s.v.equals(n)) {
+            ret.add(edge.t.v);
+          }
+        }
+        return ret;
+      }
+
+      public E removeEdge(V s, V t) {
+        nodeOf(s).removeEdge(s, t);
+        return nodeOf(t).removeEdge(s, t);
+      }
+
+    }
+
+    RexTranformIntoBetween(RexBuilder rexBuilder) {
+      this.rexBuilder = rexBuilder;
+    }
+
+    @Override
+    public RexNode visitCall(RexCall inputCall) {
+      RexNode node = super.visitCall(inputCall);
+      if (node instanceof RexCall) {
+        RexCall call = (RexCall) node;
+        switch (call.getKind()) {
+        case AND:
+          return processComparisions(call, SqlKind.LESS_THAN_OR_EQUAL, false);
+        case OR:
+          return processComparisions(call, SqlKind.GREATER_THAN, true);
+        default:
+          break;
+        }
+      }
+      return node;
+    }
+
+    /**
+     * Represents a replacement candidate.
+     */
+    static class BetweenCandidate {
+
+      private final RexNode newNode;
+      private final RexNode[] oldNodes;
+      // keeps track if this candidate was already used during replacement
+      private boolean used;
+
+      public BetweenCandidate(RexNode newNode, RexNode... oldNodes) {
+        this.newNode = newNode;
+        this.oldNodes = oldNodes;
+      }
+    }
+
+    private RexNode processComparisions(RexCall call, SqlKind forwardEdge, boolean invert) {
+      DiGraph<RexNodeRef, RexCall> g =
+          buildComparisionGraph(call.getOperands(), forwardEdge);
+      Map<RexNode, BetweenCandidate> replacedNodes = new IdentityHashMap<>();
+      for (RexNodeRef n : g.nodes()) {
+        Set<RexNodeRef> pred = g.predecessors(n);
+        Set<RexNodeRef> succ = g.successors(n);
+        if (pred.size() > 0 && succ.size() > 0) {
+          RexNodeRef p = pred.iterator().next();
+          RexNodeRef s = succ.iterator().next();
+
+          RexNode between = rexBuilder.makeCall(HiveBetween.INSTANCE,
+              rexBuilder.makeLiteral(invert), n.node, p.node, s.node);
+          BetweenCandidate bc = new BetweenCandidate(
+              between,
+              g.removeEdge(p, n),
+              g.removeEdge(n, s));
+
+          for (RexNode node : bc.oldNodes) {
+            replacedNodes.put(node, bc);
+          }
+        }
+      }
+      if (replacedNodes.isEmpty()) {
+        // no effect
+        return call;
+      }
+      List<RexNode> newOperands = new ArrayList<>();
+      for (RexNode o : call.getOperands()) {
+        BetweenCandidate candidate = replacedNodes.get(o);
+        if (candidate == null) {
+          newOperands.add(o);
+        } else {
+          if (!candidate.used) {
+            newOperands.add(candidate.newNode);
+            candidate.used = true;
+          }
+        }
+      }
+
+      if (newOperands.size() == 1) {
+        return newOperands.get(0);
+      } else {
+        return rexBuilder.makeCall(call.getOperator(), newOperands);
+      }
+    }
+
+    /**
+     * Builds a graph of the given comparision type.
+     *
+     * The graph edges are annotated with the RexNodes representing the comparision.
+     */
+    private DiGraph<RexNodeRef, RexCall> buildComparisionGraph(List<RexNode> operands, SqlKind cmpForward) {
+      DiGraph<RexNodeRef, RexCall> g = new DiGraph<>();
+      for (RexNode node : operands) {
+        if(!(node instanceof RexCall) ) {
+          continue;
+        }
+        RexCall rexCall = (RexCall) node;
+        SqlKind kind = rexCall.getKind();
+        if (kind == cmpForward) {
+          RexNode opA = rexCall.getOperands().get(0);
+          RexNode opB = rexCall.getOperands().get(1);
+          g.putEdgeValue(new RexNodeRef(opA), new RexNodeRef(opB), rexCall);
+        } else if (kind == cmpForward.reverse()) {
+          RexNode opA = rexCall.getOperands().get(1);
+          RexNode opB = rexCall.getOperands().get(0);
+          g.putEdgeValue(new RexNodeRef(opA), new RexNodeRef(opB), rexCall);
+        }
+      }
+      return g;
+    }
+  }
+
+  /**
+   * This class just wraps around a RexNode enables equals/hashCode based on toString.
+   *
+   * After CALCITE-2632 this might not be needed anymore */
+  static class RexNodeRef {
+
+    public static Comparator<RexNodeRef> COMPARATOR =
+        (RexNodeRef o1, RexNodeRef o2) -> o1.node.toString().compareTo(o2.node.toString());
+    private RexNode node;
+
+    public RexNodeRef(RexNode node) {
+      this.node = node;
+    }
+
+    public RexNode getRexNode() {
+      return node;
+    }
+
+    @Override
+    public int hashCode() {
+      return node.toString().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (o instanceof RexNodeRef) {
+        RexNodeRef otherRef = (RexNodeRef) o;
+        return node.toString().equals(otherRef.node.toString());
+      }
+      return false;
+    }
+
+    @Override
+    public String toString() {
+      return "ref for:" + node.toString();
+    }
+  }
 
   /**
    * Transforms OR clauses into IN clauses, when possible.
@@ -214,43 +487,6 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       return node;
     }
 
-    /**
-     * This class just wraps around a RexNode enables equals/hashCode based on toString.
-     *
-     * After CALCITE-2632 this might not be needed anymore */
-    static class RexNodeRef {
-
-      public static Comparator<RexNodeRef> COMPARATOR =
-          (RexNodeRef o1, RexNodeRef o2) -> o1.node.toString().compareTo(o2.node.toString());
-      private RexNode node;
-
-      public RexNodeRef(RexNode node) {
-        this.node = node;
-      }
-
-      public RexNode getRexNode() {
-        return node;
-      }
-
-      @Override
-      public int hashCode() {
-        return node.toString().hashCode();
-      }
-
-      @Override
-      public boolean equals(Object o) {
-        if (o instanceof RexNodeRef) {
-          RexNodeRef otherRef = (RexNodeRef) o;
-          return node.toString().equals(otherRef.node.toString());
-        }
-        return false;
-      }
-
-      @Override
-      public String toString() {
-        return "ref for:" + node.toString();
-      }
-    }
     /**
      * Represents a contraint.
      *

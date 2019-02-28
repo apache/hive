@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import io.druid.query.Result;
 import io.druid.query.timeseries.TimeseriesResultValue;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
+import org.apache.hadoop.hive.druid.conf.DruidConstants;
 import org.apache.hadoop.io.NullWritable;
 
 import java.io.IOException;
@@ -59,7 +60,7 @@ public class DruidTimeseriesQueryRecordReader
   public DruidWritable getCurrentValue() throws IOException, InterruptedException {
     // Create new value
     DruidWritable value = new DruidWritable(false);
-    value.getValue().put(DruidStorageHandlerUtils.EVENT_TIMESTAMP_COLUMN,
+    value.getValue().put(DruidConstants.EVENT_TIMESTAMP_COLUMN,
         current.getTimestamp() == null ? null : current.getTimestamp().getMillis()
     );
     value.getValue().putAll(current.getValue().getBaseObject());
@@ -71,7 +72,7 @@ public class DruidTimeseriesQueryRecordReader
     if (nextKeyValue()) {
       // Update value
       value.getValue().clear();
-      value.getValue().put(DruidStorageHandlerUtils.EVENT_TIMESTAMP_COLUMN,
+      value.getValue().put(DruidConstants.EVENT_TIMESTAMP_COLUMN,
           current.getTimestamp() == null ? null : current.getTimestamp().getMillis()
       );
       value.getValue().putAll(current.getValue().getBaseObject());

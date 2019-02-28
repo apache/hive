@@ -125,7 +125,7 @@ public class CryptoProcessor implements CommandProcessor {
     String bitLength = args.getOptionValue("bitLength", Integer.toString(DEFAULT_BIT_LENGTH));
 
     try {
-      encryptionShim.createKey(keyName, new Integer(bitLength));
+      encryptionShim.createKey(keyName, Integer.parseInt(bitLength));
     } catch (Exception e) {
       throw new Exception("Cannot create encryption key: " + e.getMessage());
     }
@@ -143,11 +143,11 @@ public class CryptoProcessor implements CommandProcessor {
     CommandLine args = parseCommandArgs(CREATE_ZONE_OPTIONS, params);
 
     String keyName = args.getOptionValue("keyName");
-    Path cryptoZone = new Path(args.getOptionValue("path"));
-    if (cryptoZone == null) {
-      throw new Exception("Cannot create encryption zone: Invalid path '"
-          + args.getOptionValue("path") + "'");
+    String cryptoZoneStr = args.getOptionValue("path");
+    if (cryptoZoneStr == null) {
+      throw new Exception("Cannot create encryption zone: Invalid path 'null'");
     }
+    Path cryptoZone = new Path(cryptoZoneStr);
 
     try {
       encryptionShim.createEncryptionZone(cryptoZone, keyName);

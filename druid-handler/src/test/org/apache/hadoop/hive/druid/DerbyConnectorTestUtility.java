@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -32,6 +32,9 @@ import java.sql.SQLException;
 import java.util.UUID;
 import java.util.function.Supplier;
 
+/**
+ * Derby test class.
+ */
 public class DerbyConnectorTestUtility extends DerbyConnector {
   private final String jdbcUri;
 
@@ -71,6 +74,9 @@ public class DerbyConnectorTestUtility extends DerbyConnector {
     return jdbcUri;
   }
 
+  /**
+   * Derby connector rule.
+   */
   public static class DerbyConnectorRule extends ExternalResource {
     private DerbyConnectorTestUtility connector;
 

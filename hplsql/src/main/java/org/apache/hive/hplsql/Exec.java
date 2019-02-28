@@ -160,7 +160,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   }
 
   public Var setVariable(String name, int value) {
-    return setVariable(name, new Var(new Long(value)));
+    return setVariable(name, new Var(Long.valueOf(value)));
   }
 
   /** 
@@ -654,9 +654,9 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   void initOptions() {
     Iterator<Map.Entry<String,String>> i = exec.conf.iterator();
     while (i.hasNext()) {
-      Entry<String,String> item = (Entry<String,String>)i.next();
-      String key = (String)item.getKey();
-      String value = (String)item.getValue();
+      Entry<String, String> item = i.next();
+      String key = item.getKey();
+      String value = item.getValue();
       if (key == null || value == null || !key.startsWith("hplsql.")) {
         continue;
       }
@@ -682,7 +682,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    * Set SQLCODE
    */
   public void setSqlCode(int sqlcode) {
-    Long code = new Long(sqlcode);
+    Long code = Long.valueOf(sqlcode);
     Var var = findVariable(SQLCODE);
     if (var != null) {
       var.setValue(code);
@@ -720,7 +720,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   public void setHostCode(int code) {
     Var var = findVariable(HOSTCODE);
     if (var != null) {
-      var.setValue(new Long(code));
+      var.setValue(Long.valueOf(code));
     }
   }
   
@@ -2129,12 +2129,26 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    * Identifier
    */
   @Override 
-  public Integer visitIdent(HplsqlParser.IdentContext ctx) { 
+  public Integer visitIdent(HplsqlParser.IdentContext ctx) {
+    boolean hasSub = false;
     String ident = ctx.getText();
-    Var var = findVariable(ident);
+    String actualIdent = ident;
+    if (ident.startsWith("-")) {
+      hasSub = true;
+      actualIdent = ident.substring(1, ident.length());
+    }
+
+    Var var = findVariable(actualIdent);
     if (var != null) {
       if (!exec.buildSql) {
-        exec.stackPush(var);
+        if (hasSub) {
+          Var var1 = new Var(var);
+          var1.negate();
+          exec.stackPush(var1);
+        }
+        else {
+          exec.stackPush(var);
+        }
       }
       else {
         exec.stackPush(new Var(ident, Var.Type.STRING, var.toSqlString()));
@@ -2170,7 +2184,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    */
   @Override 
   public Integer visitInt_number(HplsqlParser.Int_numberContext ctx) {
-    exec.stack.push(new Var(new Long(ctx.getText())));  	  
+    exec.stack.push(new Var(Long.valueOf(ctx.getText())));
 	  return 0; 
   }
  
@@ -2203,7 +2217,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     if (ctx.T_FALSE() != null) {
       val = false;
     }
-    stackPush(new Var(new Boolean(val)));     
+    stackPush(new Var(Boolean.valueOf(val)));
     return 0; 
   }
 

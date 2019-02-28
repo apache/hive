@@ -71,6 +71,12 @@ public interface MetaDataFormatter {
       throws HiveException;
 
   /**
+   * Show a list of tables including table types.
+   */
+  public void showTablesExtended(DataOutputStream out, List<Table> tables)
+      throws HiveException;
+
+  /**
    * Show a list of materialized views.
    */
   public void showMaterializedViews(DataOutputStream out, List<Table> materializedViews)

@@ -156,8 +156,7 @@ import java.util.stream.Collectors;
     int firstMetadataColumnIndex = data.size() - MetadataColumn.values().length;
     if (delegateSerializerOI == null) {
       //@TODO check if i can cache this if it is the same.
-      delegateSerializerOI =
-          new SubStructObjectInspector(structObjectInspector, firstMetadataColumnIndex);
+      delegateSerializerOI = new SubStructObjectInspector(structObjectInspector, firstMetadataColumnIndex);
     }
     // We always append the metadata columns to the end of the row.
     final List<Object> row = data.subList(0, firstMetadataColumnIndex);
@@ -198,24 +197,30 @@ import java.util.stream.Collectors;
   }
 
   @Override public Object deserialize(Writable blob) throws SerDeException {
-    return deserializeKWritable((KafkaWritable) blob);
+    Object[] rowBoat = new Object[columnNames.size()];
+    deserializeKWritable((KafkaWritable) blob, rowBoat);
+    return rowBoat;
   }
 
-  ArrayList<Object> deserializeKWritable(KafkaWritable kafkaWritable) throws SerDeException {
-    ArrayList<Object> resultRow = new ArrayList<>(columnNames.size());
+  /**
+   * @param kafkaWritable Kafka writable object containing the row plus kafka metadata
+   * @param rowBoat Boat sized to width of the kafka row plus metadata to carry the row to operator upstream.
+   *
+   * @throws SerDeException in case of any serde issue.
+   */
+  void deserializeKWritable(KafkaWritable kafkaWritable, Object[] rowBoat) throws SerDeException {
+
     final Object row = delegateSerDe.deserialize(bytesConverter.getWritable(kafkaWritable.getValue()));
     //first add the value payload elements
-
     for (int i = 0; i < metadataStartIndex; i++) {
-      resultRow.add(delegateDeserializerOI.getStructFieldData(row,
-          delegateDeserializerOI.getStructFieldRef(columnNames.get(i))));
+      rowBoat[i] =
+          delegateDeserializerOI.getStructFieldData(row, delegateDeserializerOI.getStructFieldRef(columnNames.get(i)));
     }
     //add the metadata columns
     for (int i = metadataStartIndex; i < columnNames.size(); i++) {
       final MetadataColumn metadataColumn = MetadataColumn.forName(columnNames.get(i));
-      resultRow.add(kafkaWritable.getHiveWritable(metadataColumn));
+      rowBoat[i] = (kafkaWritable.getHiveWritable(metadataColumn));
     }
-    return resultRow;
   }
 
   @Override public ObjectInspector getObjectInspector() {
@@ -233,7 +238,8 @@ import java.util.stream.Collectors;
 
     /**
      * Returns a live view of the base Object inspector starting form 0 to {@code toIndex} exclusive.
-     * @param baseOI base Object Inspector.
+     *
+     * @param baseOI  base Object Inspector.
      * @param toIndex toIndex.
      */
     private SubStructObjectInspector(StructObjectInspector baseOI, int toIndex) {
@@ -250,6 +256,7 @@ import java.util.stream.Collectors;
 
     /**
      * Look up a field.
+     *
      * @param fieldName fieldName to be looked up.
      */
     @SuppressWarnings("OptionalGetWithoutIsPresent") @Override public StructField getStructFieldRef(String fieldName) {
@@ -262,7 +269,8 @@ import java.util.stream.Collectors;
 
     /**
      * returns null for data = null.
-     * @param data input.
+     *
+     * @param data     input.
      * @param fieldRef field to extract.
      */
     @Override public Object getStructFieldData(Object data, StructField fieldRef) {
@@ -271,6 +279,7 @@ import java.util.stream.Collectors;
 
     /**
      * returns null for data = null.
+     *
      * @param data input data.
      */
     @Override public List<Object> getStructFieldsDataAsList(Object data) {
@@ -288,7 +297,7 @@ import java.util.stream.Collectors;
     /**
      * Returns the name of the data type that is inspected by this
      * ObjectInspector. This is used to display the type information to the user.
-     *
+     * <p>
      * For primitive types, the type name is standardized. For other types, the
      * type name can be something like "list&lt;int&gt;", "map&lt;int,string&gt;", java class
      * names, or user-defined type names similar to typedef.
@@ -309,6 +318,7 @@ import java.util.stream.Collectors;
 
   /**
    * Class that encapsulate the logic of serialize and deserialize bytes array to/from the delegate writable format.
+   *
    * @param <K> delegate writable class.
    */
   private interface BytesConverter<K extends Writable> {

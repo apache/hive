@@ -52,7 +52,7 @@ public class LimitDesc extends AbstractOperatorDesc {
    */
   @Explain(displayName = "Offset of rows", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Integer getOffset() {
-    return (offset == 0) ? null : new Integer(offset);
+    return (offset == 0) ? null : Integer.valueOf(offset);
   }
 
   public void setOffset(Integer offset) {

@@ -48,17 +48,17 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: tstparttbl_n0
-            Statistics: Num rows: 120 Data size: 58120 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 120 Data size: 59080 Basic stats: PARTIAL Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 120 Data size: 58120 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 120 Data size: 59080 Basic stats: PARTIAL Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                   value expressions: _col0 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -66,10 +66,10 @@ STAGE PLANS:
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -144,17 +144,17 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: tstparttbl2_n0
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                   value expressions: _col0 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -162,10 +162,10 @@ STAGE PLANS:
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -248,17 +248,17 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: tstparttbl_n0
-            Statistics: Num rows: 120 Data size: 58120 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 120 Data size: 59080 Basic stats: PARTIAL Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 120 Data size: 58120 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 120 Data size: 59080 Basic stats: PARTIAL Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                   value expressions: _col0 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -266,10 +266,10 @@ STAGE PLANS:
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -352,17 +352,17 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: tstparttbl2_n0
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                   value expressions: _col0 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -370,10 +370,10 @@ STAGE PLANS:
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

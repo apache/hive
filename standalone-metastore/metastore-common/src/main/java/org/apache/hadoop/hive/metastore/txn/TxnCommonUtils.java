@@ -89,7 +89,7 @@ public class TxnCommonUtils {
    * {@link org.apache.hadoop.hive.common.ValidTxnWriteIdList}.  This assumes that the caller intends to
    * read the files, and thus treats both open and aborted transactions as invalid.
    * @param currentTxnId current txn ID for which we get the valid write ids list
-   * @param list valid write ids list from the metastore
+   * @param validIds valid write ids list from the metastore
    * @return a valid write IDs list for the whole transaction.
    */
   public static ValidTxnWriteIdList createValidTxnWriteIdList(Long currentTxnId,

@@ -305,10 +305,10 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
       for (int retryCount = 0; retryCount <= MAX_RETRIES; ++retryCount) {
         try {
           if (eventPerFile) {
-            LOG.debug("Event per file enabled. Closing proto event file: {}", writer.getPath());
             if (!maybeRolloverWriterForDay()) {
               writer = logger.getWriter(logFileName + "_" + ++logFileCount);
             }
+            LOG.debug("Event per file enabled. New proto event file: {}", writer.getPath());
             writer.writeProto(event);
             IOUtils.closeQuietly(writer);
             writer = null;
@@ -512,7 +512,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
           config, // explainConfig
           plan.getCboInfo(), // cboInfo,
           plan.getOptimizedQueryString(),
-          null
+          plan.getOptimizedCBOPlan()
       );
       ExplainTask explain = (ExplainTask) TaskFactory.get(work, conf);
       explain.initialize(hookContext.getQueryState(), plan, null, null);

@@ -28,16 +28,6 @@ POSTHOOK: Lineage: cmv_basetable_n100.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n100.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n100.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n100.d SCRIPT []
-PREHOOK: query: analyze table cmv_basetable_n100 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@cmv_basetable_n100
-PREHOOK: Output: default@cmv_basetable_n100
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table cmv_basetable_n100 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@cmv_basetable_n100
-POSTHOOK: Output: default@cmv_basetable_n100
-#### A masked pattern was here ####
 PREHOOK: query: create table cmv_basetable_2_n100 (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -62,16 +52,6 @@ POSTHOOK: Lineage: cmv_basetable_2_n100.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n100.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n100.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n100.d SCRIPT []
-PREHOOK: query: analyze table cmv_basetable_2_n100 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@cmv_basetable_2_n100
-PREHOOK: Output: default@cmv_basetable_2_n100
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table cmv_basetable_2_n100 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@cmv_basetable_2_n100
-POSTHOOK: Output: default@cmv_basetable_2_n100
-#### A masked pattern was here ####
 PREHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view_n300 AS
   SELECT cmv_basetable_n100.a, cmv_basetable_2_n100.c
   FROM cmv_basetable_n100 JOIN cmv_basetable_2_n100 ON (cmv_basetable_n100.a = cmv_basetable_2_n100.a)
@@ -109,7 +89,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	2                   
 	numRows             	2                   
@@ -151,16 +131,6 @@ POSTHOOK: Lineage: cmv_basetable_2_n100.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n100.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n100.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n100.d SCRIPT []
-PREHOOK: query: analyze table cmv_basetable_2_n100 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@cmv_basetable_2_n100
-PREHOOK: Output: default@cmv_basetable_2_n100
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table cmv_basetable_2_n100 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@cmv_basetable_2_n100
-POSTHOOK: Output: default@cmv_basetable_2_n100
-#### A masked pattern was here ####
 PREHOOK: query: DESCRIBE FORMATTED cmv_mat_view_n300
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@cmv_mat_view_n300
@@ -178,7 +148,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	2                   
 	numRows             	2                   

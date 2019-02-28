@@ -111,12 +111,12 @@ STAGE PLANS:
           TableScan
             alias: a
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 1 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: string)
@@ -136,12 +136,12 @@ STAGE PLANS:
           TableScan
             alias: b
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 112 Data size: 55000 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 112 Data size: 74872 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 112 Data size: 55000 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 107 Data size: 71529 Basic stats: PARTIAL Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -149,7 +149,7 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
                 Position of Big Table: 1
-                Statistics: Num rows: 123 Data size: 60500 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 117 Data size: 78681 Basic stats: PARTIAL Column stats: NONE
                 BucketMapJoin: true
                 Group By Operator
                   aggregations: count()
@@ -348,12 +348,12 @@ STAGE PLANS:
           TableScan
             alias: b
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 112 Data size: 55000 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 112 Data size: 74872 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 112 Data size: 55000 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 107 Data size: 71529 Basic stats: PARTIAL Column stats: NONE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1

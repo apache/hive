@@ -28,8 +28,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpTask.ConstraintFileType;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
-import org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer;
 
 public class ConstraintEventsIterator implements Iterator<FSConstraintEvent> {
   private FileStatus[] dbDirs;
@@ -47,7 +47,7 @@ public class ConstraintEventsIterator implements Iterator<FSConstraintEvent> {
 
   private FileStatus[] listConstraintFilesInDBDir(FileSystem fs, Path dbDir, String prefix) {
     try {
-      return fs.listStatus(new Path(dbDir, ReplicationSemanticAnalyzer.CONSTRAINTS_ROOT_DIR_NAME), new PathFilter() {
+      return fs.listStatus(new Path(dbDir, ReplUtils.CONSTRAINTS_ROOT_DIR_NAME), new PathFilter() {
         public boolean accept(Path p) {
           return p.getName().startsWith(prefix);
         }

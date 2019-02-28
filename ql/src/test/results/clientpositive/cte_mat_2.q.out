@@ -26,27 +26,27 @@ STAGE PLANS:
           TableScan
             alias: src
             filterExpr: (key = '5') (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key = '5') (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: src
             filterExpr: (key = '5') (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key = '5') (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -54,14 +54,14 @@ STAGE PLANS:
           keys:
             0 
             1 
-          Statistics: Num rows: 62500 Data size: 1390500 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: '5' (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 62500 Data size: 1390500 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 62500 Data size: 1390500 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

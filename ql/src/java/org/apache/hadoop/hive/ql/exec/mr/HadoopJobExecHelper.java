@@ -631,7 +631,7 @@ public class HadoopJobExecHelper {
 
     for (TaskCompletionEvent taskCompletion : taskCompletions) {
       if (!taskCompletion.isMapTask()) {
-        reducersRunTimes.add(new Integer(taskCompletion.getTaskRunTime()));
+        reducersRunTimes.add(Integer.valueOf(taskCompletion.getTaskRunTime()));
       }
     }
     // Compute the reducers run time statistics for the job
@@ -646,7 +646,7 @@ public class HadoopJobExecHelper {
     Map<String, Double> exctractedCounters = new HashMap<String, Double>();
     for (Counters.Group cg : counters) {
       for (Counter c : cg) {
-        exctractedCounters.put(cg.getName() + "::" + c.getName(), new Double(c.getCounter()));
+        exctractedCounters.put(cg.getName() + "::" + c.getName(), Double.valueOf(c.getCounter()));
       }
     }
     return exctractedCounters;

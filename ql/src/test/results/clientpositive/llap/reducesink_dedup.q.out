@@ -1,0 +1,163 @@
+PREHOOK: query: select p_name
+from (select p_name from part distribute by 1 sort by 1) p 
+distribute by 1 sort by 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select p_name
+from (select p_name from part distribute by 1 sort by 1) p 
+distribute by 1 sort by 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique chartreuse lavender yellow
+almond antique salmon chartreuse burlywood
+almond aquamarine burnished black steel
+almond aquamarine pink moccasin thistle
+almond antique violet chocolate turquoise
+almond antique violet turquoise frosted
+almond aquamarine midnight light salmon
+almond aquamarine rose maroon antique
+almond aquamarine sandy cyan gainsboro
+almond antique chartreuse khaki white
+almond antique forest lavender goldenrod
+almond antique metallic orange dim
+almond antique misty red olive
+almond antique olive coral navajo
+almond antique gainsboro frosted violet
+almond antique violet mint lemon
+almond aquamarine floral ivory bisque
+almond aquamarine yellow dodger mint
+almond azure aquamarine papaya violet
+almond antique blue firebrick mint
+almond antique medium spring khaki
+almond antique sky peru orange
+almond aquamarine dodger light gainsboro
+almond azure blanched chiffon midnight
+PREHOOK: query: create temporary table d1 (key int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@d1
+POSTHOOK: query: create temporary table d1 (key int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@d1
+PREHOOK: query: create temporary table d2 (key int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@d2
+POSTHOOK: query: create temporary table d2 (key int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@d2
+PREHOOK: query: explain from (select key from src cluster by key) a
+  insert overwrite table d1 select a.key
+  insert overwrite table d2 select a.key cluster by a.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@d1
+PREHOOK: Output: default@d2
+POSTHOOK: query: explain from (select key from src cluster by key) a
+  insert overwrite table d1 select a.key
+  insert overwrite table d2 select a.key cluster by a.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@d1
+POSTHOOK: Output: default@d2
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-3
+  Stage-5 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: UDFToInteger(_col0) (type: int)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.d1
+                Select Operator
+                  expressions: UDFToInteger(_col0) (type: int)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.d2
+
+  Stage: Stage-3
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.d1
+
+  Stage: Stage-4
+    Stats Work
+      Basic Stats Work:
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.d2
+
+  Stage: Stage-5
+    Stats Work
+      Basic Stats Work:
+

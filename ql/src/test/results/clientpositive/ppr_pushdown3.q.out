@@ -25,17 +25,17 @@ STAGE PLANS:
           TableScan
             alias: srcpart
             filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
-            Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2000 Data size: 1092000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
-              Statistics: Num rows: 666 Data size: 7075 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 666 Data size: 363636 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 666 Data size: 7075 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 666 Data size: 363636 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 666 Data size: 7075 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 666 Data size: 363636 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -130,11 +130,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
-          Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2000 Data size: 1092000 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2000 Data size: 1092000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: select * from srcpart
@@ -2179,11 +2179,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
-          Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: select key from srcpart

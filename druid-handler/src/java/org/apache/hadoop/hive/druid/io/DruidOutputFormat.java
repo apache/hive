@@ -39,6 +39,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
+import org.apache.hadoop.hive.druid.conf.DruidConstants;
 import org.apache.hadoop.hive.druid.serde.DruidWritable;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -95,7 +96,7 @@ public class DruidOutputFormat implements HiveOutputFormat<NullWritable, DruidWr
     final String dataSource = tableProperties.getProperty(Constants.DRUID_DATA_SOURCE) == null
         ? jc.get(Constants.DRUID_DATA_SOURCE)
         : tableProperties.getProperty(Constants.DRUID_DATA_SOURCE);
-    final String segmentDirectory = jc.get(DruidStorageHandlerUtils.DRUID_SEGMENT_INTERMEDIATE_DIRECTORY);
+    final String segmentDirectory = jc.get(DruidConstants.DRUID_SEGMENT_INTERMEDIATE_DIRECTORY);
 
     final GranularitySpec granularitySpec = DruidStorageHandlerUtils.getGranularitySpec(jc, tableProperties);
 
@@ -109,8 +110,8 @@ public class DruidOutputFormat implements HiveOutputFormat<NullWritable, DruidWr
               ));
     }
     ArrayList<String> columnNames = Lists.newArrayList(columnNameProperty.split(","));
-    if (!columnNames.contains(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN)) {
-      throw new IllegalStateException("Timestamp column (' " + DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN +
+    if (!columnNames.contains(DruidConstants.DEFAULT_TIMESTAMP_COLUMN)) {
+      throw new IllegalStateException("Timestamp column (' " + DruidConstants.DEFAULT_TIMESTAMP_COLUMN +
               "') not specified in create table; list of columns is : " +
               tableProperties.getProperty(serdeConstants.LIST_COLUMNS));
     }
@@ -119,7 +120,7 @@ public class DruidOutputFormat implements HiveOutputFormat<NullWritable, DruidWr
     Pair<List<DimensionSchema>, AggregatorFactory[]> dimensionsAndAggregates = DruidStorageHandlerUtils
         .getDimensionsAndAggregates(columnNames, columnTypes);
     final InputRowParser inputRowParser = new MapInputRowParser(new TimeAndDimsParseSpec(
-            new TimestampSpec(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, "auto", null),
+            new TimestampSpec(DruidConstants.DEFAULT_TIMESTAMP_COLUMN, "auto", null),
             new DimensionsSpec(dimensionsAndAggregates.lhs, Lists
                 .newArrayList(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME,
                     Constants.DRUID_SHARD_KEY_COL_NAME
@@ -141,8 +142,8 @@ public class DruidOutputFormat implements HiveOutputFormat<NullWritable, DruidWr
             DruidStorageHandlerUtils.JSON_MAPPER
     );
 
-    final String workingPath = jc.get(DruidStorageHandlerUtils.DRUID_JOB_WORKING_DIRECTORY);
-    final String version = jc.get(DruidStorageHandlerUtils.DRUID_SEGMENT_VERSION);
+    final String workingPath = jc.get(DruidConstants.DRUID_JOB_WORKING_DIRECTORY);
+    final String version = jc.get(DruidConstants.DRUID_SEGMENT_VERSION);
     String basePersistDirectory = HiveConf
             .getVar(jc, HiveConf.ConfVars.HIVE_DRUID_BASE_PERSIST_DIRECTORY);
     if (Strings.isNullOrEmpty(basePersistDirectory)) {

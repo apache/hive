@@ -12,6 +12,9 @@
   <artifactId>hive-standalone-metastore-server</artifactId>
   <name>Hive Metastore Server</name>
 
+  <properties>
+    <standalone.metastore.path.to.root>..</standalone.metastore.path.to.root>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -234,6 +237,11 @@
       <artifactId>postgresql</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.curator</groupId>
+      <artifactId>curator-test</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <profiles>
@@ -358,11 +366,6 @@
           </dependencies>
         </plugin>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-checkstyle-plugin</artifactId>
-          <version>${maven.checkstyle.plugin.version}</version>
-        </plugin>
-        <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>exec-maven-plugin</artifactId>
           <version>${maven.exec.plugin.version}</version>
@@ -425,15 +428,6 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <configuration>
-          <configLocation>${checkstyle.conf.dir}/checkstyle.xml</configLocation>
-          <propertyExpansion>config_loc=${checkstyle.conf.dir}</propertyExpansion>
-          <includeTestSourceDirectory>true</includeTestSourceDirectory>
-        </configuration>
-      </plugin>
-      <plugin>
         <groupId>com.github.os72</groupId>
         <artifactId>protoc-jar-maven-plugin</artifactId>
         <version>3.5.1.1</version>
@@ -469,7 +463,7 @@
               <descriptors>
                 <descriptor>src/assembly/bin.xml</descriptor>
               </descriptors>
-              <tarLongFileMode>gnu</tarLongFileMode>
+              <tarLongFileMode>posix</tarLongFileMode>
             </configuration>
           </execution>
         </executions>
@@ -620,16 +614,13 @@
           <execution>
             <phase>prepare-package</phase>
             <goals>
-              <goal>exec</goal>
+              <goal>java</goal>
             </goals>
           </execution>
         </executions>
         <configuration>
-          <executable>java</executable>
+          <mainClass>org.apache.hadoop.hive.metastore.conf.ConfTemplatePrinter</mainClass>
           <arguments>
-            <argument>-classpath</argument>
-            <classpath/>
-            <argument>org.apache.hadoop.hive.metastore.conf.ConfTemplatePrinter</argument>
             <argument>
               ${project.build.directory}/generated-sources/conf/metastore-site.xml.template
             </argument>

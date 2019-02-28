@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.conf;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -147,6 +148,9 @@ public class MetastoreConf {
       ConfVars.REPLDIR,
       ConfVars.THRIFT_URIS,
       ConfVars.SERVER_PORT,
+      ConfVars.THRIFT_BIND_HOST,
+      ConfVars.THRIFT_ZOOKEEPER_CLIENT_PORT,
+      ConfVars.THRIFT_ZOOKEEPER_NAMESPACE,
       ConfVars.THRIFT_CONNECTION_RETRIES,
       ConfVars.THRIFT_FAILURE_RETRIES,
       ConfVars.CLIENT_CONNECT_RETRY_DELAY,
@@ -212,7 +216,9 @@ public class MetastoreConf {
       ConfVars.AGGREGATE_STATS_CACHE_MAX_FULL,
       ConfVars.AGGREGATE_STATS_CACHE_CLEAN_UNTIL,
       ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
-      ConfVars.FILE_METADATA_THREADS
+      ConfVars.FILE_METADATA_THREADS,
+      ConfVars.METASTORE_CLIENT_FILTER_ENABLED,
+      ConfVars.METASTORE_SERVER_FILTER_ENABLED
   };
 
   /**
@@ -243,7 +249,9 @@ public class MetastoreConf {
       ConfVars.SSL_KEYSTORE_PASSWORD.varname,
       ConfVars.SSL_KEYSTORE_PASSWORD.hiveName,
       ConfVars.SSL_TRUSTSTORE_PASSWORD.varname,
-      ConfVars.SSL_TRUSTSTORE_PASSWORD.hiveName
+      ConfVars.SSL_TRUSTSTORE_PASSWORD.hiveName,
+      ConfVars.DBACCESS_SSL_TRUSTSTORE_PASSWORD.varname,
+      ConfVars.DBACCESS_SSL_TRUSTSTORE_PASSWORD.hiveName
   );
 
   public static ConfVars getMetaConf(String name) {
@@ -448,9 +456,29 @@ public class MetastoreConf {
         "Default transaction isolation level for identity generation."),
     DATANUCLEUS_USE_LEGACY_VALUE_STRATEGY("datanucleus.rdbms.useLegacyNativeValueStrategy",
         "datanucleus.rdbms.useLegacyNativeValueStrategy", true, ""),
-    DBACCESS_SSL_PROPS("metastore.dbaccess.ssl.properties", "hive.metastore.dbaccess.ssl.properties", "",
-        "Comma-separated SSL properties for metastore to access database when JDO connection URL\n" +
-            "enables SSL access. e.g. javax.net.ssl.trustStore=/tmp/truststore,javax.net.ssl.trustStorePassword=pwd."),
+
+    // Parameters for configuring SSL encryption to the database store
+    // If DBACCESS_USE_SSL is false, then all other DBACCESS_SSL_* properties will be ignored
+    DBACCESS_SSL_TRUSTSTORE_PASSWORD("metastore.dbaccess.ssl.truststore.password", "hive.metastore.dbaccess.ssl.truststore.password", "",
+        "Password for the Java truststore file that is used when encrypting the connection to the database store. \n"
+            + "metastore.dbaccess.ssl.use.SSL must be set to true for this property to take effect. \n"
+            + "This directly maps to the javax.net.ssl.trustStorePassword Java system property. Defaults to jssecacerts, if it exists, otherwise uses cacerts. \n"
+            + "It is recommended to specify the password using a credential provider so as to not expose it to discovery by other users. \n"
+            + "One way to do this is by using the Hadoop CredentialProvider API and provisioning credentials for this property. Refer to the Hadoop CredentialProvider API Guide for more details."),
+    DBACCESS_SSL_TRUSTSTORE_PATH("metastore.dbaccess.ssl.truststore.path", "hive.metastore.dbaccess.ssl.truststore.path", "",
+        "Location on disk of the Java truststore file to use when encrypting the connection to the database store. \n"
+            + "This file consists of a collection of certificates trusted by the metastore server. \n"
+            + "metastore.dbaccess.ssl.use.SSL must be set to true for this property to take effect. \n"
+            + "This directly maps to the javax.net.ssl.trustStore Java system property. Defaults to the default Java truststore file. \n"),
+    DBACCESS_SSL_TRUSTSTORE_TYPE("metastore.dbaccess.ssl.truststore.type", "hive.metastore.dbaccess.ssl.truststore.type", "jks",
+        new StringSetValidator("jceks", "jks", "dks", "pkcs11", "pkcs12"),
+        "File type for the Java truststore file that is used when encrypting the connection to the database store. \n"
+            + "metastore.dbaccess.ssl.use.SSL must be set to true for this property to take effect. \n"
+            + "This directly maps to the javax.net.ssl.trustStoreType Java system property. \n"
+            + "Types jceks, jks, dks, pkcs11, and pkcs12 can be read from Java 8 and beyond. Defaults to jks."),
+    DBACCESS_USE_SSL("metastore.dbaccess.ssl.use.SSL", "hive.metastore.dbaccess.ssl.use.SSL", false,
+        "Set this to true to use SSL encryption to the database store."),
+
     DEFAULTPARTITIONNAME("metastore.default.partition.name",
         "hive.exec.default.partition.name", "__HIVE_DEFAULT_PARTITION__",
         "The default partition name in case the dynamic partition column value is null/empty string or any other values that cannot be escaped. \n" +
@@ -516,7 +544,7 @@ public class MetastoreConf {
             "Alternatively, configure hive.metastore.transactional.event.listeners to ensure both are invoked in same JDO transaction."),
     EVENT_MESSAGE_FACTORY("metastore.event.message.factory",
         "hive.metastore.event.message.factory",
-        "org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder",
+        "org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder",
         "Factory class for making encoding and decoding messages in the events generated."),
     EVENT_NOTIFICATION_PARAMETERS_EXCLUDE_PATTERNS("metastore.notification.parameters.exclude.patterns",
         "hive.metastore.notification.parameters.exclude.patterns", "",
@@ -527,6 +555,11 @@ public class MetastoreConf {
     EVENT_DB_LISTENER_TTL("metastore.event.db.listener.timetolive",
         "hive.metastore.event.db.listener.timetolive", 86400, TimeUnit.SECONDS,
         "time after which events will be removed from the database listener queue"),
+    EVENT_CLEAN_MAX_EVENTS("metastore.event.db.clean.maxevents",
+            "hive.metastore.event.db.clean.maxevents", 10000,
+            "Limit on number events to be cleaned at a time in metastore cleanNotificationEvents " +
+                    "call, to avoid OOM. The configuration is not effective when set to zero or " +
+                    "a negative value."),
     EVENT_DB_LISTENER_CLEAN_INTERVAL("metastore.event.db.listener.clean.interval",
             "hive.metastore.event.db.listener.clean.interval", 7200, TimeUnit.SECONDS,
             "sleep interval between each run for cleanup of events from the database listener queue"),
@@ -634,6 +667,10 @@ public class MetastoreConf {
             "metadata being exported to the current user's home directory on HDFS."),
     METASTORE_MAX_EVENT_RESPONSE("metastore.max.event.response", "hive.metastore.max.event.response", 1000000,
         "The parameter will decide the maximum number of events that HMS will respond."),
+    METASTORE_CLIENT_FILTER_ENABLED("metastore.client.filter.enabled", "hive.metastore.client.filter.enabled", true,
+        "Enable filtering the metadata read results at HMS client. Default is true."),
+    METASTORE_SERVER_FILTER_ENABLED("metastore.server.filter.enabled", "hive.metastore.server.filter.enabled", false,
+        "Enable filtering the metadata read results at HMS server. Default is false."),
     MOVE_EXPORTED_METADATA_TO_TRASH("metastore.metadata.move.exported.metadata.to.trash",
         "hive.metadata.move.exported.metadata.to.trash", true,
         "When used in conjunction with the org.apache.hadoop.hive.ql.parse.MetaDataExportListener pre event listener, \n" +
@@ -650,8 +687,15 @@ public class MetastoreConf {
         "hive.service.metrics.file.location", "/tmp/report.json",
         "For metric class json metric reporter, the location of local JSON metrics file.  " +
             "This file will get overwritten at every interval."),
+    METRICS_SLF4J_LOG_FREQUENCY_MINS("metastore.metrics.slf4j.frequency",
+        "hive.service.metrics.slf4j.frequency", 5, TimeUnit.MINUTES,
+        "For SLF4J metric reporter, the frequency of logging metrics events. The default value is 5 mins."),
+    METRICS_SLF4J_LOG_LEVEL("metastore.metrics.slf4j.logging.level",
+        "hive.service.metrics.slf4j.logging.level", "INFO",
+        new StringSetValidator("TRACE", "DEBUG", "INFO", "WARN", "ERROR"),
+        "For SLF4J metric reporter, the logging level to be used for metrics event logs. The default level is INFO."),
     METRICS_REPORTERS("metastore.metrics.reporters", "metastore.metrics.reporters", "json,jmx",
-        new StringSetValidator("json", "jmx", "console", "hadoop"),
+        new StringSetValidator("json", "jmx", "console", "hadoop", "slf4j"),
         "A comma separated list of metrics reporters to start"),
     MSCK_PATH_VALIDATION("msck.path.validation", "hive.msck.path.validation", "throw",
       new StringSetValidator("throw", "skip", "ignore"), "The approach msck should take with HDFS " +
@@ -692,9 +736,10 @@ public class MetastoreConf {
       "metastore.partition.management.table.types", "MANAGED_TABLE,EXTERNAL_TABLE",
       "Comma separated list of table types to use for partition management"),
     PARTITION_MANAGEMENT_TASK_THREAD_POOL_SIZE("metastore.partition.management.task.thread.pool.size",
-      "metastore.partition.management.task.thread.pool.size", 5,
+      "metastore.partition.management.task.thread.pool.size", 3,
       "Partition management uses thread pool on to which tasks are submitted for discovering and retaining the\n" +
-      "partitions. This determines the size of the thread pool."),
+      "partitions. This determines the size of the thread pool. Note: Increasing the thread pool size will cause\n" +
+      "threadPoolSize * maxConnectionPoolSize connections to backend db"),
     PARTITION_MANAGEMENT_CATALOG_NAME("metastore.partition.management.catalog.name",
       "metastore.partition.management.catalog.name", "hive",
       "Automatic partition management will look for tables under the specified catalog name"),
@@ -877,13 +922,50 @@ public class MetastoreConf {
         "Number of retries while opening a connection to metastore"),
     THRIFT_FAILURE_RETRIES("metastore.failure.retries", "hive.metastore.failure.retries", 1,
         "Number of retries upon failure of Thrift metastore calls"),
+    THRIFT_BIND_HOST("metastore.thrift.bind.host", "hive.metastore.thrift.bind.host", "",
+        "Bind host on which to run the metastore thrift service."),
     THRIFT_URIS("metastore.thrift.uris", "hive.metastore.uris", "",
-        "Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore."),
+        "URIs Used by metastore client to connect to remotemetastore\n." +
+                "If dynamic service discovery mode is set, the URIs are used to connect to the" +
+                " corresponding service discovery servers e.g. a zookeeper. Otherwise they are " +
+                "used as URIs for remote metastore."),
+    THRIFT_SERVICE_DISCOVERY_MODE("metastore.service.discovery.mode",
+            "hive.metastore.service.discovery.mode",
+            "",
+            "Specifies which dynamic service discovery method to use. Currently we support only " +
+                    "\"zookeeper\" to specify ZooKeeper based service discovery."),
+    THRIFT_ZOOKEEPER_CLIENT_PORT("metastore.zookeeper.client.port",
+            "hive.metastore.zookeeper.client.port", "2181",
+            "The port of ZooKeeper servers to talk to.\n" +
+                    "If the list of Zookeeper servers specified in hive.metastore.thrift.uris" +
+                    " does not contain port numbers, this value is used."),
+    THRIFT_ZOOKEEPER_SESSION_TIMEOUT("metastore.zookeeper.session.timeout",
+            "hive.metastore.zookeeper.session.timeout", 120000L, TimeUnit.MILLISECONDS,
+            new TimeValidator(TimeUnit.MILLISECONDS),
+            "ZooKeeper client's session timeout (in milliseconds). The client is disconnected\n" +
+                    "if a heartbeat is not sent in the timeout."),
+    THRIFT_ZOOKEEPER_CONNECTION_TIMEOUT("metastore.zookeeper.connection.timeout",
+            "hive.metastore.zookeeper.connection.timeout", 15L, TimeUnit.SECONDS,
+            new TimeValidator(TimeUnit.SECONDS),
+            "ZooKeeper client's connection timeout in seconds. " +
+                    "Connection timeout * hive.metastore.zookeeper.connection.max.retries\n" +
+                    "with exponential backoff is when curator client deems connection is lost to zookeeper."),
+    THRIFT_ZOOKEEPER_NAMESPACE("metastore.zookeeper.namespace",
+            "hive.metastore.zookeeper.namespace", "hive_metastore",
+            "The parent node under which all ZooKeeper nodes for metastores are created."),
+    THRIFT_ZOOKEEPER_CONNECTION_MAX_RETRIES("metastore.zookeeper.connection.max.retries",
+            "hive.metastore.zookeeper.connection.max.retries", 3,
+            "Max number of times to retry when connecting to the ZooKeeper server."),
+    THRIFT_ZOOKEEPER_CONNECTION_BASESLEEPTIME("metastore.zookeeper.connection.basesleeptime",
+            "hive.metastore.zookeeper.connection.basesleeptime", 1000L, TimeUnit.MILLISECONDS,
+            new TimeValidator(TimeUnit.MILLISECONDS),
+            "Initial amount of time (in milliseconds) to wait between retries\n" +
+                    "when connecting to the ZooKeeper server when using ExponentialBackoffRetry policy."),
     THRIFT_URI_SELECTION("metastore.thrift.uri.selection", "hive.metastore.uri.selection", "RANDOM",
         new StringSetValidator("RANDOM", "SEQUENTIAL"),
         "Determines the selection mechanism used by metastore client to connect to remote " +
         "metastore.  SEQUENTIAL implies that the first valid metastore from the URIs specified " +
-        "as part of hive.metastore.uris will be picked.  RANDOM implies that the metastore " +
+        "through hive.metastore.uris will be picked.  RANDOM implies that the metastore " +
         "will be picked randomly"),
     TIMEDOUT_TXN_REAPER_START("metastore.timedout.txn.reaper.start",
         "hive.timedout.txn.reaper.start", 100, TimeUnit.SECONDS,
@@ -893,6 +975,8 @@ public class MetastoreConf {
         "Time interval describing how often the reaper runs"),
     TOKEN_SIGNATURE("metastore.token.signature", "hive.metastore.token.signature", "",
         "The delegation token service name to match when selecting a token from the current user's tokens."),
+    METASTORE_CACHE_CAN_USE_EVENT("metastore.cache.can.use.event", "hive.metastore.cache.can.use.event", false,
+            "Can notification events from notification log table be used for updating the metastore cache."),
     TRANSACTIONAL_EVENT_LISTENERS("metastore.transactional.event.listeners",
         "hive.metastore.transactional.event.listeners", "",
         "A comma separated list of Java classes that implement the org.apache.riven.MetaStoreEventListener" +
@@ -975,6 +1059,10 @@ public class MetastoreConf {
         "Batch size for partition and other object retrieval from the underlying DB in JDO.\n" +
         "The JDO implementation such as DataNucleus may run into issues when the generated queries are\n" +
         "too large. Use this parameter to break the query into multiple batches. -1 means no batching."),
+    HIVE_METASTORE_RUNWORKER_IN("hive.metastore.runworker.in",
+        "hive.metastore.runworker.in", "metastore", new StringSetValidator("metastore", "hs2"),
+        "Chooses where the compactor worker threads should run, Only possible values"
+            + " are \"metastore\" and \"hs2\""),
 
     // Hive values we have copied and use as is
     // These two are used to indicate that we are running tests
@@ -1029,6 +1117,14 @@ public class MetastoreConf {
             "Deprecated, use METRICS_REPORTERS instead. This configuraiton will be"
             + " overridden by HIVE_CODAHALE_METRICS_REPORTER_CLASSES and METRICS_REPORTERS if " +
             "present. Comma separated list of JMX, CONSOLE, JSON_FILE, HADOOP2"),
+    // Planned to be removed in HIVE-21024
+    @Deprecated
+    DBACCESS_SSL_PROPS("metastore.dbaccess.ssl.properties", "hive.metastore.dbaccess.ssl.properties", "",
+        "Deprecated. Use the metastore.dbaccess.ssl.* properties instead. Comma-separated SSL properties for " +
+            "metastore to access database when JDO connection URL enables SSL access. \n"
+            + "e.g. javax.net.ssl.trustStore=/tmp/truststore,javax.net.ssl.trustStorePassword=pwd.\n " +
+            "If both this and the metastore.dbaccess.ssl.* properties are set, then the latter properties \n" +
+            "will overwrite what was set in the deprecated property."),
 
     // These are all values that we put here just for testing
     STR_TEST_ENTRY("test.str", "hive.test.str", "defaultval", "comment"),
@@ -1760,6 +1856,17 @@ public class MetastoreConf {
    */
   public static boolean isEmbeddedMetaStore(String msUri) {
     return (msUri == null) || msUri.trim().isEmpty();
+  }
+
+  public static ZooKeeperHiveHelper getZKConfig(Configuration conf) {
+    return new ZooKeeperHiveHelper(MetastoreConf.getVar(conf, ConfVars.THRIFT_URIS),
+            MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_CLIENT_PORT),
+            MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_NAMESPACE),
+            (int) MetastoreConf.getTimeVar(conf, ConfVars.THRIFT_ZOOKEEPER_SESSION_TIMEOUT,
+                    TimeUnit.MILLISECONDS),
+            (int) MetastoreConf.getTimeVar(conf, ConfVars.THRIFT_ZOOKEEPER_CONNECTION_BASESLEEPTIME,
+                    TimeUnit.MILLISECONDS),
+            MetastoreConf.getIntVar(conf, ConfVars.THRIFT_ZOOKEEPER_CONNECTION_MAX_RETRIES));
   }
 
   /**

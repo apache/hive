@@ -71,7 +71,7 @@ public class HiveRelMdSize extends RelMdSize {
           list.add(columnStatistic.getAvgColLen());
         }
       } else {
-        list.add(new Double(0));
+        list.add(Double.valueOf(0));
       }
     }
 

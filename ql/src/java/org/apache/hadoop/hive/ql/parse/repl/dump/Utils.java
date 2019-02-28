@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.parse.repl.dump;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
@@ -165,8 +166,8 @@ public class Utils {
    * validates if a table can be exported, similar to EximUtil.shouldExport with few replication
    * specific checks.
    */
-  public static Boolean shouldReplicate(ReplicationSpec replicationSpec, Table tableHandle,
-      HiveConf hiveConf) {
+  public static boolean shouldReplicate(ReplicationSpec replicationSpec, Table tableHandle,
+                                        boolean isEventDump, HiveConf hiveConf) {
     if (replicationSpec == null) {
       replicationSpec = new ReplicationSpec();
     }
@@ -181,18 +182,26 @@ public class Utils {
     }
 
     if (replicationSpec.isInReplicationScope()) {
-      if (!hiveConf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES) &&
-              MetaStoreUtils.isExternalTable(tableHandle.getTTable()) && !replicationSpec.isMetadataOnly()) {
+      if (tableHandle.isTemporary()) {
         return false;
       }
 
-      return !tableHandle.isTemporary();
+      if (MetaStoreUtils.isExternalTable(tableHandle.getTTable())) {
+        boolean shouldReplicateExternalTables = hiveConf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)
+                || replicationSpec.isMetadataOnly();
+        if (isEventDump) {
+          // Skip dumping of events related to external tables if bootstrap is enabled on it.
+          shouldReplicateExternalTables = shouldReplicateExternalTables
+                  && !hiveConf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES);
+        }
+        return shouldReplicateExternalTables;
+      }
     }
     return true;
   }
 
   public static boolean shouldReplicate(NotificationEvent tableForEvent,
-      ReplicationSpec replicationSpec, Hive db, HiveConf hiveConf) {
+      ReplicationSpec replicationSpec, Hive db, boolean isEventDump, HiveConf hiveConf) {
     Table table;
     try {
       table = db.getTable(tableForEvent.getDbName(), tableForEvent.getTableName());
@@ -202,13 +211,14 @@ public class Utils {
               .getTableName(), e);
       return false;
     }
-    return shouldReplicate(replicationSpec, table, hiveConf);
+    return shouldReplicate(replicationSpec, table, isEventDump, hiveConf);
   }
 
   static List<Path> getDataPathList(Path fromPath, ReplicationSpec replicationSpec, HiveConf conf)
           throws IOException {
     if (replicationSpec.isTransactionalTableDump()) {
       try {
+        conf.set(ValidTxnList.VALID_TXNS_KEY, replicationSpec.getValidTxnList());
         return AcidUtils.getValidDataPaths(fromPath, conf, replicationSpec.getValidWriteIdList());
       } catch (FileNotFoundException e) {
         throw new IOException(ErrorMsg.FILE_NOT_FOUND.format(e.getMessage()), e);

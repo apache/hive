@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,10 +29,14 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+/**
+ * Test Class for input splits.
+ */
 public class TestHiveDruidSplit {
-  @Test
-  public void testSerDeser() throws IOException {
-    HiveDruidSplit hiveDruidSplit = new HiveDruidSplit("query string", new Path("test-path"), new String []{"host:8080", "host2:8090"});
+  @Test public void testSerDeser() throws IOException {
+    HiveDruidSplit
+        hiveDruidSplit =
+        new HiveDruidSplit("query string", new Path("test-path"), new String[] {"host:8080", "host2:8090"});
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
     DataOutput dataOutput = new DataOutputStream(byteArrayOutputStream);
     hiveDruidSplit.write(dataOutput);
@@ -40,7 +44,6 @@ public class TestHiveDruidSplit {
     HiveDruidSplit actualHiveDruidSplit = new HiveDruidSplit();
     actualHiveDruidSplit.readFields(new DataInputStream(byteArrayInputStream));
     Assert.assertEquals(actualHiveDruidSplit.getDruidQuery(), "query string");
-    Assert.assertArrayEquals(actualHiveDruidSplit.getLocations(),  new String []{"host:8080", "host2:8090"});
+    Assert.assertArrayEquals(actualHiveDruidSplit.getLocations(), new String[] {"host:8080", "host2:8090"});
   }
-
 }

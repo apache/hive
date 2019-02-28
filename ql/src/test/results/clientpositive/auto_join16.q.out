@@ -35,14 +35,14 @@ STAGE PLANS:
           TableScan
             alias: a
             filterExpr: ((UDFToDouble(key) > 20.0D) and (UDFToDouble(value) < 200.0D)) (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((UDFToDouble(key) > 20.0D) and (UDFToDouble(value) < 200.0D)) (type: boolean)
-              Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: string), _col1 (type: string)
@@ -54,14 +54,14 @@ STAGE PLANS:
           TableScan
             alias: tab
             filterExpr: ((UDFToDouble(key) > 20.0D) and (UDFToDouble(value) < 200.0D)) (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((UDFToDouble(key) > 20.0D) and (UDFToDouble(value) < 200.0D)) (type: boolean)
-              Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -69,19 +69,19 @@ STAGE PLANS:
                     0 _col0 (type: string), _col1 (type: string)
                     1 _col0 (type: string), _col1 (type: string)
                   outputColumnNames: _col0, _col3
-                  Statistics: Num rows: 60 Data size: 642 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: hash(_col0,_col3) (type: int)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 60 Data size: 642 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col0)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
       Execution mode: vectorized
       Local Work:
@@ -91,10 +91,10 @@ STAGE PLANS:
           aggregations: sum(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

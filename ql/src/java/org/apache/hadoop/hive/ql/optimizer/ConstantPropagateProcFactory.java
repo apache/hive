@@ -68,7 +68,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCase;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFNvl;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot;
@@ -219,15 +219,15 @@ public final class ConstantPropagateProcFactory {
     // Convert integer related types because converters are not sufficient
     if (convObj instanceof Integer) {
       switch (priti.getPrimitiveCategory()) {
-        case BYTE:
-          convObj = new Byte((byte) (((Integer) convObj).intValue()));
-          break;
-        case SHORT:
-          convObj = new Short((short) ((Integer) convObj).intValue());
-          break;
-        case LONG:
-          convObj = new Long(((Integer) convObj).intValue());
-        default:
+      case BYTE:
+        convObj = Byte.valueOf((((Integer) convObj).byteValue()));
+        break;
+      case SHORT:
+        convObj = Short.valueOf(((Integer) convObj).shortValue());
+        break;
+      case LONG:
+        convObj = Long.valueOf(((Integer) convObj).intValue());
+      default:
       }
     }
     return new ExprNodeConstantDesc(ti, convObj);
@@ -763,7 +763,7 @@ public final class ConstantPropagateProcFactory {
           List<ExprNodeDesc> children = new ArrayList<>();
           children.add(whenExpr);
           children.add(new ExprNodeConstantDesc(false));
-          ExprNodeGenericFuncDesc func = ExprNodeGenericFuncDesc.newInstance(new GenericUDFNvl(),
+          ExprNodeGenericFuncDesc func = ExprNodeGenericFuncDesc.newInstance(new GenericUDFCoalesce(),
               children);
           if (Boolean.TRUE.equals(thenVal)) {
             return func;
@@ -816,7 +816,7 @@ public final class ConstantPropagateProcFactory {
           List<ExprNodeDesc> children = new ArrayList<>();
           children.add(equal);
           children.add(new ExprNodeConstantDesc(false));
-          ExprNodeGenericFuncDesc func = ExprNodeGenericFuncDesc.newInstance(new GenericUDFNvl(),
+          ExprNodeGenericFuncDesc func = ExprNodeGenericFuncDesc.newInstance(new GenericUDFCoalesce(),
               children);
           if (Boolean.TRUE.equals(thenVal)) {
             return func;

@@ -1,0 +1,551 @@
+PREHOOK: query: create table MY_TABLE_0001 (
+  col_1 string,
+  col_3 timestamp,
+  col_7 string,
+  col_20 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@MY_TABLE_0001
+POSTHOOK: query: create table MY_TABLE_0001 (
+  col_1 string,
+  col_3 timestamp,
+  col_7 string,
+  col_20 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@MY_TABLE_0001
+PREHOOK: query: create table MY_TABLE_0001_00 (
+  col_1 string,
+  col_22 string,
+  col_23 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@MY_TABLE_0001_00
+POSTHOOK: query: create table MY_TABLE_0001_00 (
+  col_1 string,
+  col_22 string,
+  col_23 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@MY_TABLE_0001_00
+PREHOOK: query: create table MY_TABLE_0003 (
+  col_24 string,
+  col_21 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@MY_TABLE_0003
+POSTHOOK: query: create table MY_TABLE_0003 (
+  col_24 string,
+  col_21 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@MY_TABLE_0003
+PREHOOK: query: create table MY_TABLE_0001_01 (
+  col_1 string,
+  col_100 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@MY_TABLE_0001_01
+POSTHOOK: query: create table MY_TABLE_0001_01 (
+  col_1 string,
+  col_100 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@MY_TABLE_0001_01
+PREHOOK: query: explain extended SELECT
+  Table__323.col_7,
+  CAST(Table__323.col_3 AS DATE) col_3,
+  Table__323.col_20,  
+  Table__1232.col_21 col_21_1232,
+  Table__323.col_1,
+  Table__133.col_22,
+  Table__879.col_21 col_21_879
+  ,Table__133.col_23
+FROM MY_TABLE_0001 Table__323
+LEFT OUTER JOIN MY_TABLE_0003 Table__1232 ON (Table__323.col_20=Table__1232.col_24)
+LEFT OUTER JOIN MY_TABLE_0001_00 Table__133 ON (Table__323.col_1=Table__133.col_1)
+LEFT OUTER JOIN MY_TABLE_0003 Table__879 ON (Table__133.col_22=Table__879.col_24)
+LEFT OUTER JOIN MY_TABLE_0001_01 Table__1215 ON (Table__323.col_1=Table__1215.col_1 and Table__1215.col_100 = 210)
+WHERE 1=1
+AND  (cast(Table__323.col_7 AS DOUBLE) IS NOT NULL OR Table__323.col_7 IS NULL)
+AND CAST(Table__323.col_3 AS DATE)  BETWEEN  '2018-07-01'  AND  '2019-01-23'
+AND Table__323.col_20  IN  ('part1','part2','part3')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@my_table_0001
+PREHOOK: Input: default@my_table_0001_00
+PREHOOK: Input: default@my_table_0001_01
+PREHOOK: Input: default@my_table_0003
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended SELECT
+  Table__323.col_7,
+  CAST(Table__323.col_3 AS DATE) col_3,
+  Table__323.col_20,  
+  Table__1232.col_21 col_21_1232,
+  Table__323.col_1,
+  Table__133.col_22,
+  Table__879.col_21 col_21_879
+  ,Table__133.col_23
+FROM MY_TABLE_0001 Table__323
+LEFT OUTER JOIN MY_TABLE_0003 Table__1232 ON (Table__323.col_20=Table__1232.col_24)
+LEFT OUTER JOIN MY_TABLE_0001_00 Table__133 ON (Table__323.col_1=Table__133.col_1)
+LEFT OUTER JOIN MY_TABLE_0003 Table__879 ON (Table__133.col_22=Table__879.col_24)
+LEFT OUTER JOIN MY_TABLE_0001_01 Table__1215 ON (Table__323.col_1=Table__1215.col_1 and Table__1215.col_100 = 210)
+WHERE 1=1
+AND  (cast(Table__323.col_7 AS DOUBLE) IS NOT NULL OR Table__323.col_7 IS NULL)
+AND CAST(Table__323.col_3 AS DATE)  BETWEEN  '2018-07-01'  AND  '2019-01-23'
+AND Table__323.col_20  IN  ('part1','part2','part3')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@my_table_0001
+POSTHOOK: Input: default@my_table_0001_00
+POSTHOOK: Input: default@my_table_0001_01
+POSTHOOK: Input: default@my_table_0003
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE)
+        Reducer 3 <- Map 7 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Map 6 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+        Reducer 5 <- Map 8 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: table__323
+                  filterExpr: ((col_20) IN ('part1', 'part2', 'part3') and CAST( col_3 AS DATE) BETWEEN DATE'2018-07-01' AND DATE'2019-01-23') (type: boolean)
+                  Statistics: Num rows: 1 Data size: 592 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: ((col_20) IN ('part1', 'part2', 'part3') and CAST( col_3 AS DATE) BETWEEN DATE'2018-07-01' AND DATE'2019-01-23') (type: boolean)
+                    Statistics: Num rows: 1 Data size: 592 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: col_1 (type: string), col_7 (type: string), col_20 (type: string), CAST( col_3 AS DATE) (type: date)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 1 Data size: 592 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col2 (type: string)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col2 (type: string)
+                        Statistics: Num rows: 1 Data size: 592 Basic stats: COMPLETE Column stats: NONE
+                        tag: 0
+                        value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: date)
+                        auto parallelism: true
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: my_table_0001
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"col_1":"true","col_20":"true","col_3":"true","col_7":"true"}}
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns col_1,col_3,col_7,col_20
+                    columns.comments 
+                    columns.types string:timestamp:string:string
+#### A masked pattern was here ####
+                    name default.my_table_0001
+                    numFiles 0
+                    numRows 0
+                    rawDataSize 0
+                    serialization.ddl struct my_table_0001 { string col_1, timestamp col_3, string col_7, string col_20}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 0
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"col_1":"true","col_20":"true","col_3":"true","col_7":"true"}}
+                      bucket_count -1
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns col_1,col_3,col_7,col_20
+                      columns.comments 
+                      columns.types string:timestamp:string:string
+#### A masked pattern was here ####
+                      name default.my_table_0001
+                      numFiles 0
+                      numRows 0
+                      rawDataSize 0
+                      serialization.ddl struct my_table_0001 { string col_1, timestamp col_3, string col_7, string col_20}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 0
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.my_table_0001
+                  name: default.my_table_0001
+            Truncated Path -> Alias:
+              /my_table_0001 [table__323]
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: table__1232
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (col_24) IN ('part1', 'part2', 'part3') (type: boolean)
+                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: col_24 (type: string), col_21 (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                        tag: 1
+                        value expressions: _col1 (type: string)
+                        auto parallelism: true
+                  Select Operator
+                    expressions: col_24 (type: string), col_21 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      tag: 1
+                      value expressions: _col1 (type: string)
+                      auto parallelism: true
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: my_table_0003
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"col_21":"true","col_24":"true"}}
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns col_24,col_21
+                    columns.comments 
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.my_table_0003
+                    numFiles 0
+                    numRows 0
+                    rawDataSize 0
+                    serialization.ddl struct my_table_0003 { string col_24, string col_21}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 0
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"col_21":"true","col_24":"true"}}
+                      bucket_count -1
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns col_24,col_21
+                      columns.comments 
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.my_table_0003
+                      numFiles 0
+                      numRows 0
+                      rawDataSize 0
+                      serialization.ddl struct my_table_0003 { string col_24, string col_21}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 0
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.my_table_0003
+                  name: default.my_table_0003
+            Truncated Path -> Alias:
+              /my_table_0003 [table__1232]
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: table__133
+                  Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Select Operator
+                    expressions: col_1 (type: string), col_22 (type: string), col_23 (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
+                      tag: 1
+                      value expressions: _col1 (type: string), _col2 (type: int)
+                      auto parallelism: true
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: my_table_0001_00
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"col_1":"true","col_22":"true","col_23":"true"}}
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns col_1,col_22,col_23
+                    columns.comments 
+                    columns.types string:string:int
+#### A masked pattern was here ####
+                    name default.my_table_0001_00
+                    numFiles 0
+                    numRows 0
+                    rawDataSize 0
+                    serialization.ddl struct my_table_0001_00 { string col_1, string col_22, i32 col_23}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 0
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"col_1":"true","col_22":"true","col_23":"true"}}
+                      bucket_count -1
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns col_1,col_22,col_23
+                      columns.comments 
+                      columns.types string:string:int
+#### A masked pattern was here ####
+                      name default.my_table_0001_00
+                      numFiles 0
+                      numRows 0
+                      rawDataSize 0
+                      serialization.ddl struct my_table_0001_00 { string col_1, string col_22, i32 col_23}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 0
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.my_table_0001_00
+                  name: default.my_table_0001_00
+            Truncated Path -> Alias:
+              /my_table_0001_00 [table__133]
+        Map 8 
+            Map Operator Tree:
+                TableScan
+                  alias: table__1215
+                  filterExpr: (UDFToDouble(col_100) = 210.0D) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (UDFToDouble(col_100) = 210.0D) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: col_1 (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                        tag: 1
+                        auto parallelism: true
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: my_table_0001_01
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"col_1":"true","col_100":"true"}}
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns col_1,col_100
+                    columns.comments 
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.my_table_0001_01
+                    numFiles 0
+                    numRows 0
+                    rawDataSize 0
+                    serialization.ddl struct my_table_0001_01 { string col_1, string col_100}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 0
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"col_1":"true","col_100":"true"}}
+                      bucket_count -1
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns col_1,col_100
+                      columns.comments 
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.my_table_0001_01
+                      numFiles 0
+                      numRows 0
+                      rawDataSize 0
+                      serialization.ddl struct my_table_0001_01 { string col_1, string col_100}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 0
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.my_table_0001_01
+                  name: default.my_table_0001_01
+            Truncated Path -> Alias:
+              /my_table_0001_01 [table__1215]
+        Reducer 2 
+            Execution mode: llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 _col2 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col5
+                Position of Big Table: 0
+                Statistics: Num rows: 1 Data size: 651 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  null sort order: a
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 1 Data size: 651 Basic stats: COMPLETE Column stats: NONE
+                  tag: 0
+                  value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: date), _col5 (type: string)
+                  auto parallelism: true
+        Reducer 3 
+            Execution mode: llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col5, _col7, _col8
+                Position of Big Table: 0
+                Statistics: Num rows: 1 Data size: 716 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col7 (type: string)
+                  null sort order: a
+                  sort order: +
+                  Map-reduce partition columns: _col7 (type: string)
+                  Statistics: Num rows: 1 Data size: 716 Basic stats: COMPLETE Column stats: NONE
+                  tag: 0
+                  value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: date), _col5 (type: string), _col8 (type: int)
+                  auto parallelism: true
+        Reducer 4 
+            Execution mode: llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 _col7 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col5, _col7, _col8, _col10
+                Position of Big Table: 0
+                Statistics: Num rows: 1 Data size: 787 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  null sort order: a
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 1 Data size: 787 Basic stats: COMPLETE Column stats: NONE
+                  tag: 0
+                  value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: date), _col5 (type: string), _col7 (type: string), _col8 (type: int), _col10 (type: string)
+                  auto parallelism: true
+        Reducer 5 
+            Execution mode: llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col5, _col7, _col8, _col10
+                Position of Big Table: 0
+                Statistics: Num rows: 1 Data size: 865 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: string), _col3 (type: date), _col2 (type: string), _col5 (type: string), _col0 (type: string), _col7 (type: string), _col10 (type: string), _col8 (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                  Statistics: Num rows: 1 Data size: 865 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 1 Data size: 865 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          columns _col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7
+                          columns.types string:date:string:string:string:string:string:int
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

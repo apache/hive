@@ -83,6 +83,7 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.TaskResult;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.hooks.Entity;
@@ -120,7 +121,6 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
-import org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
@@ -223,6 +223,7 @@ public class Driver implements IDriver {
   private CacheUsage cacheUsage;
   private CacheEntry usedCacheEntry;
   private ValidWriteIdList compactionWriteIds = null;
+  private long compactorTxnId = 0;
 
   private Context backupContext = null;
   private boolean retrial = false;
@@ -691,7 +692,8 @@ public class Driver implements IDriver {
       schema = getSchema(sem, conf);
       plan = new QueryPlan(queryStr, sem, queryDisplay.getQueryStartTime(), queryId,
           queryState.getHiveOperation(), schema);
-      // save the optimized sql for the explain
+      // save the optimized plan and sql for the explain
+      plan.setOptimizedCBOPlan(ctx.getCalcitePlan());
       plan.setOptimizedQueryString(ctx.getOptimizedSql());
 
       conf.set("mapreduce.workflow.id", "hive_" + queryId);
@@ -926,8 +928,8 @@ public class Driver implements IDriver {
     // Last logged notification event id would be the last repl Id for the current REPl DUMP.
     Hive hiveDb = Hive.get();
     Long lastReplId = hiveDb.getMSC().getCurrentNotificationEventId().getEventId();
-    conf.setLong(ReplicationSemanticAnalyzer.LAST_REPL_ID_KEY, lastReplId);
-    LOG.debug("Setting " + ReplicationSemanticAnalyzer.LAST_REPL_ID_KEY + " = " + lastReplId);
+    conf.setLong(ReplUtils.LAST_REPL_ID_KEY, lastReplId);
+    LOG.debug("Setting " + ReplUtils.LAST_REPL_ID_KEY + " = " + lastReplId);
   }
 
   private void openTransaction() throws LockException, CommandProcessorResponse {
@@ -1481,11 +1483,18 @@ public class Driver implements IDriver {
     List<String> txnTables = getTransactionalTableList(plan);
     ValidTxnWriteIdList txnWriteIds = null;
     if (compactionWriteIds != null) {
+      /**
+       * This is kludgy: here we need to read with Compactor's snapshot/txn
+       * rather than the snapshot of the current {@code txnMgr}, in effect
+       * simulating a "flashback query" but can't actually share compactor's
+       * txn since it would run multiple statements.  See more comments in
+       * {@link org.apache.hadoop.hive.ql.txn.compactor.Worker} where it start
+       * the compactor txn*/
       if (txnTables.size() != 1) {
         throw new LockException("Unexpected tables in compaction: " + txnTables);
       }
       String fullTableName = txnTables.get(0);
-      txnWriteIds = new ValidTxnWriteIdList(0L); // No transaction for the compaction for now. todo: Since MM compaction is a query, a txn has been opened at this point
+      txnWriteIds = new ValidTxnWriteIdList(compactorTxnId);
       txnWriteIds.addTableValidWriteIdList(compactionWriteIds);
     } else {
       txnWriteIds = txnMgr.getValidWriteIds(txnTables, txnString);
@@ -1671,6 +1680,9 @@ public class Driver implements IDriver {
       /*It's imperative that {@code acquireLocks()} is called for all commands so that
       HiveTxnManager can transition its state machine correctly*/
       queryTxnMgr.acquireLocks(plan, ctx, userFromUGI, lDrvState);
+      final List<HiveLock> locks = ctx.getHiveLocks();
+      LOG.info("Operation {} obtained {} locks", plan.getOperation(),
+          ((locks == null) ? 0 : locks.size()));
       // This check is for controlling the correctness of the current state
       if (queryTxnMgr.recordSnapshot(plan) && !validTxnListsGenerated) {
         throw new IllegalStateException(
@@ -2027,8 +2039,11 @@ public class Driver implements IDriver {
         }
         else if(plan.getOperation() == HiveOperation.ROLLBACK) {
           releaseLocksAndCommitOrRollback(false);
-        }
-        else {
+        } else if (!queryTxnMgr.isTxnOpen() && queryState.getHiveOperation() == HiveOperation.REPLLOAD) {
+          // repl load during migration, commits the explicit txn and start some internal txns. Call
+          // releaseLocksAndCommitOrRollback to do the clean up.
+          releaseLocksAndCommitOrRollback(false);
+        } else {
           //txn (if there is one started) is not finished
         }
       } catch (LockException e) {
@@ -2681,7 +2696,7 @@ public class Driver implements IDriver {
 
     cxt.launching(tskRun);
     // Launch Task
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.EXECPARALLEL) && tsk.canExecuteInParallel()) {
+    if (HiveConf.getBoolVar(tsk.getConf(), HiveConf.ConfVars.EXECPARALLEL) && tsk.canExecuteInParallel()) {
       // Launch it in the parallel mode, as a separate thread only for MR tasks
       if (LOG.isInfoEnabled()){
         LOG.info("Starting task [" + tsk + "] in parallel");
@@ -3012,7 +3027,8 @@ public class Driver implements IDriver {
     }
   }
 
-  public void setCompactionWriteIds(ValidWriteIdList val) {
+  public void setCompactionWriteIds(ValidWriteIdList val, long compactorTxnId) {
     this.compactionWriteIds = val;
+    this.compactorTxnId = compactorTxnId;
   }
 }

@@ -60,7 +60,7 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: ALTER TABLE src_stat_n0 UPDATE STATISTICS for column key SET ('numDVs'='1111','avgColLen'='1.111')
 PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
 PREHOOK: Input: default@src_stat_n0
@@ -87,7 +87,7 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: ALTER TABLE src_stat_n0 UPDATE STATISTICS for column value SET ('numDVs'='121','numNulls'='122','avgColLen'='1.23','maxColLen'='124')
 PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
 PREHOOK: Input: default@src_stat_n0
@@ -112,7 +112,7 @@ avg_col_len         	1.23
 max_col_len         	124                 	 	 	 	 	 	 	 	 	 	 
 num_trues           	                    	 	 	 	 	 	 	 	 	 	 
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: ANALYZE TABLE src_stat_int_n0 COMPUTE STATISTICS for columns key
@@ -234,7 +234,7 @@ avg_col_len         	2.34
 max_col_len         	235                 	 	 	 	 	 	 	 	 	 	 
 num_trues           	                    	 	 	 	 	 	 	 	 	 	 
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
-bitVector           	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: use default

@@ -33,16 +33,6 @@ POSTHOOK: Lineage: emps_n10.deptno SCRIPT []
 POSTHOOK: Lineage: emps_n10.empid SCRIPT []
 POSTHOOK: Lineage: emps_n10.name SCRIPT []
 POSTHOOK: Lineage: emps_n10.salary SCRIPT []
-PREHOOK: query: analyze table emps_n10 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@emps_n10
-PREHOOK: Output: default@emps_n10
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table emps_n10 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@emps_n10
-POSTHOOK: Output: default@emps_n10
-#### A masked pattern was here ####
 PREHOOK: query: create materialized view mv1_n10 as
 select deptno, sum(salary), count(salary) as a
 from emps_n10 group by deptno
@@ -57,16 +47,6 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n10
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n10
-PREHOOK: query: analyze table mv1_n10 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_n10
-PREHOOK: Output: default@mv1_n10
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_n10 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_n10
-POSTHOOK: Output: default@mv1_n10
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select deptno, avg(salary) as a
 from emps_n10 group by deptno
@@ -132,16 +112,6 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n10
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n10
-PREHOOK: query: analyze table mv1_n10 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_n10
-PREHOOK: Output: default@mv1_n10
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_n10 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_n10
-POSTHOOK: Output: default@mv1_n10
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select salary, avg(salary) as a
 from emps_n10 group by salary
@@ -208,16 +178,6 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n10
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n10
-PREHOOK: query: analyze table mv1_n10 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_n10
-PREHOOK: Output: default@mv1_n10
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_n10 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_n10
-POSTHOOK: Output: default@mv1_n10
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select salary, avg(salary) as a
 from emps_n10 where salary > 0 group by salary
@@ -305,16 +265,6 @@ POSTHOOK: Lineage: emps_n10_2.deptno SCRIPT []
 POSTHOOK: Lineage: emps_n10_2.empid SCRIPT []
 POSTHOOK: Lineage: emps_n10_2.name SCRIPT []
 POSTHOOK: Lineage: emps_n10_2.salary SCRIPT []
-PREHOOK: query: analyze table emps_n10_2 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@emps_n10_2
-PREHOOK: Output: default@emps_n10_2
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table emps_n10_2 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@emps_n10_2
-POSTHOOK: Output: default@emps_n10_2
-#### A masked pattern was here ####
 PREHOOK: query: create materialized view mv1_n10 as
 select salary, sum(salary), count(salary) as a
 from emps_n10_2 where salary > 0 group by salary
@@ -329,16 +279,6 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n10_2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n10
-PREHOOK: query: analyze table mv1_n10 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_n10
-PREHOOK: Output: default@mv1_n10
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_n10 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_n10
-POSTHOOK: Output: default@mv1_n10
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select avg(salary)
 from emps_n10_2 where salary > 0

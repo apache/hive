@@ -16,7 +16,6 @@ create table emps_n00 (
 stored as orc TBLPROPERTIES ('transactional'='true');
 insert into emps_n00 values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
   (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (110, 10, 'Bill', 10000, 250);
-analyze table emps_n00 compute statistics for columns;
 
 create table depts_n00 (
   deptno int,
@@ -24,21 +23,18 @@ create table depts_n00 (
   locationid int)
 stored as orc TBLPROPERTIES ('transactional'='true');
 insert into depts_n00 values (10, 'Sales', 10), (30, 'Marketing', null), (20, 'HR', 20);
-analyze table depts_n00 compute statistics for columns;
 
 create table dependents_n00 (
   empid int,
   name varchar(256))
 stored as orc TBLPROPERTIES ('transactional'='true');
 insert into dependents_n00 values (10, 'Michael'), (10, 'Jane');
-analyze table dependents_n00 compute statistics for columns;
 
 create table locations_n00 (
   locationid int,
   name varchar(256))
 stored as orc TBLPROPERTIES ('transactional'='true');
 insert into locations_n00 values (10, 'San Francisco'), (10, 'San Diego');
-analyze table locations_n00 compute statistics for columns;
 
 alter table emps_n00 add constraint pk1 primary key (empid) disable novalidate rely;
 alter table depts_n00 add constraint pk2 primary key (deptno) disable novalidate rely;
@@ -53,7 +49,6 @@ create materialized view mv1_part_n0 partitioned on (deptno) as
 select empid, depts_n00.deptno as deptno from emps_n00
 join depts_n00 using (deptno) where depts_n00.deptno > 10
 group by empid, depts_n00.deptno;
-analyze table mv1_part_n0 compute statistics for columns;
 
 explain
 select empid from emps_n00
@@ -71,7 +66,6 @@ create materialized view mv1_part_n0 partitioned on (deptno) as
 select depts_n00.deptno as deptno, empid from depts_n00
 join emps_n00 using (deptno) where depts_n00.deptno > 10
 group by empid, depts_n00.deptno;
-analyze table mv1_part_n0 compute statistics for columns;
 
 explain
 select empid from emps_n00
@@ -89,7 +83,6 @@ create materialized view mv1_part_n0 partitioned on (deptno) as
 select empid, depts_n00.deptno as deptno from emps_n00
 join depts_n00 using (deptno) where emps_n00.deptno > 10
 group by empid, depts_n00.deptno;
-analyze table mv1_part_n0 compute statistics for columns;
 
 explain
 select empid from emps_n00
@@ -107,7 +100,6 @@ create materialized view mv1_part_n0 partitioned on (deptno) as
 select depts_n00.deptno as deptno, emps_n00.empid from depts_n00
 join emps_n00 using (deptno) where emps_n00.empid > 10
 group by depts_n00.deptno, emps_n00.empid;
-analyze table mv1_part_n0 compute statistics for columns;
 
 explain
 select depts_n00.deptno from depts_n00
@@ -125,7 +117,6 @@ create materialized view mv1_part_n0 partitioned on (deptno) as
 select depts_n00.deptno as deptno, emps_n00.empid from depts_n00
 join emps_n00 using (deptno) where emps_n00.empid > 10
 group by depts_n00.deptno, emps_n00.empid;
-analyze table mv1_part_n0 compute statistics for columns;
 
 explain
 select depts_n00.deptno from depts_n00
@@ -144,7 +135,6 @@ select depts_n00.name, dependents_n00.name as name2, emps_n00.deptno, depts_n00.
 from depts_n00, dependents_n00, emps_n00
 where depts_n00.deptno > 10
 group by depts_n00.name, dependents_n00.name, emps_n00.deptno, depts_n00.deptno, dependents_n00.empid;
-analyze table mv1_part_n0 compute statistics for columns;
 
 explain
 select dependents_n00.empid

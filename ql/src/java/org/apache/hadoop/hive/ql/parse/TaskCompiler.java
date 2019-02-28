@@ -42,12 +42,14 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
+import org.apache.hadoop.hive.ql.optimizer.NonBlockingOpDeDupProc;
+import org.apache.hadoop.hive.ql.optimizer.SortedDynPartitionOptimizer;
+import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkDeDuplication;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
@@ -386,9 +388,7 @@ public abstract class TaskCompiler {
     TableSpec tableSpec = new TableSpec(table, partitions);
     tableScan.getConf().getTableMetadata().setTableSpec(tableSpec);
 
-    // Note: this should probably use BasicStatsNoJobTask.canUseFooterScan, but it doesn't check
-    //       Parquet for some reason. I'm keeping the existing behavior for now.
-    if (inputFormat.equals(OrcInputFormat.class) && !AcidUtils.isTransactionalTable(table)) {
+    if (BasicStatsNoJobTask.canUseFooterScan(table, inputFormat)) {
       // For ORC, there is no Tez Job for table stats.
       StatsWork columnStatsWork = new StatsWork(table, parseContext.getConf());
       columnStatsWork.setFooterScan();
@@ -653,6 +653,30 @@ public abstract class TaskCompiler {
    */
   protected abstract void generateTaskTree(List<Task<? extends Serializable>> rootTasks, ParseContext pCtx,
       List<Task<MoveWork>> mvTask, Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException;
+
+  /*
+   * Called for dynamic partitioning sort optimization.
+   */
+  protected void runDynPartitionSortOptimizations(ParseContext parseContext, HiveConf hConf) throws SemanticException {
+    // run Sorted dynamic partition optimization
+
+    if(HiveConf.getBoolVar(hConf, HiveConf.ConfVars.DYNAMICPARTITIONING) &&
+        HiveConf.getVar(hConf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE).equals("nonstrict") &&
+        !HiveConf.getBoolVar(hConf, HiveConf.ConfVars.HIVEOPTLISTBUCKETING)) {
+      new SortedDynPartitionOptimizer().transform(parseContext);
+
+      if(HiveConf.getBoolVar(hConf, HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATION)
+          || parseContext.hasAcidWrite()) {
+
+        // Dynamic sort partition adds an extra RS therefore need to de-dup
+        new ReduceSinkDeDuplication().transform(parseContext);
+        // there is an issue with dedup logic wherein SELECT is created with wrong columns
+        // NonBlockingOpDeDupProc fixes that
+        new NonBlockingOpDeDupProc().transform(parseContext);
+
+      }
+    }
+  }
 
   /**
    * Create a clone of the parse context

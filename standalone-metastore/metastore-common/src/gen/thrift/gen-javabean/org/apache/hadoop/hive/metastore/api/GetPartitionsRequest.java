@@ -960,13 +960,13 @@ import org.slf4j.LoggerFactory;
           case 6: // GROUP_NAMES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list992 = iprot.readListBegin();
-                struct.groupNames = new ArrayList<String>(_list992.size);
-                String _elem993;
-                for (int _i994 = 0; _i994 < _list992.size; ++_i994)
+                org.apache.thrift.protocol.TList _list1024 = iprot.readListBegin();
+                struct.groupNames = new ArrayList<String>(_list1024.size);
+                String _elem1025;
+                for (int _i1026 = 0; _i1026 < _list1024.size; ++_i1026)
                 {
-                  _elem993 = iprot.readString();
-                  struct.groupNames.add(_elem993);
+                  _elem1025 = iprot.readString();
+                  struct.groupNames.add(_elem1025);
                 }
                 iprot.readListEnd();
               }
@@ -1040,9 +1040,9 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(GROUP_NAMES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.groupNames.size()));
-            for (String _iter995 : struct.groupNames)
+            for (String _iter1027 : struct.groupNames)
             {
-              oprot.writeString(_iter995);
+              oprot.writeString(_iter1027);
             }
             oprot.writeListEnd();
           }
@@ -1120,9 +1120,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetGroupNames()) {
         {
           oprot.writeI32(struct.groupNames.size());
-          for (String _iter996 : struct.groupNames)
+          for (String _iter1028 : struct.groupNames)
           {
-            oprot.writeString(_iter996);
+            oprot.writeString(_iter1028);
           }
         }
       }
@@ -1160,13 +1160,13 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(5)) {
         {
-          org.apache.thrift.protocol.TList _list997 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.groupNames = new ArrayList<String>(_list997.size);
-          String _elem998;
-          for (int _i999 = 0; _i999 < _list997.size; ++_i999)
+          org.apache.thrift.protocol.TList _list1029 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.groupNames = new ArrayList<String>(_list1029.size);
+          String _elem1030;
+          for (int _i1031 = 0; _i1031 < _list1029.size; ++_i1031)
           {
-            _elem998 = iprot.readString();
-            struct.groupNames.add(_elem998);
+            _elem1030 = iprot.readString();
+            struct.groupNames.add(_elem1030);
           }
         }
         struct.setGroupNamesIsSet(true);

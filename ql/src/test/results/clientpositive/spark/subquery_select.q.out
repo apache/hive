@@ -2931,24 +2931,10 @@ STAGE PLANS:
         Reducer 4 <- Reducer 3 (PARTITION-LEVEL SORT, 1), Reducer 8 (PARTITION-LEVEL SORT, 1)
         Reducer 5 <- Map 9 (PARTITION-LEVEL SORT, 1), Reducer 4 (PARTITION-LEVEL SORT, 1)
         Reducer 6 <- Reducer 5 (SORT, 1)
-        Reducer 8 <- Map 7 (SORT, 1)
+        Reducer 8 <- Map 1 (SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: part
-                  Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: p_size (type: int)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      sort order: +
-                      Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: vectorized
-        Map 7 
             Map Operator Tree:
                 TableScan
                   alias: part
@@ -3647,6 +3633,7 @@ STAGE PLANS:
                     key expressions: _col0 (type: int)
                     sort order: +
                     Statistics: Num rows: 26 Data size: 234 Basic stats: COMPLETE Column stats: NONE
+                    TopN Hash Memory Usage: 0.1
         Reducer 11 
             Execution mode: vectorized
             Reduce Operator Tree:

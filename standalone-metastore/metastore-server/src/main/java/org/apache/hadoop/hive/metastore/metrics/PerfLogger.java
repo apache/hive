@@ -73,7 +73,7 @@ public class PerfLogger {
    */
   public void PerfLogBegin(String callerName, String method) {
     long startTime = System.currentTimeMillis();
-    startTimes.put(method, new Long(startTime));
+    startTimes.put(method, Long.valueOf(startTime));
     if (LOG.isDebugEnabled()) {
       LOG.debug("<PERFLOG method=" + method + " from=" + callerName + ">");
     }
@@ -98,7 +98,7 @@ public class PerfLogger {
   public long PerfLogEnd(String callerName, String method, String additionalInfo) {
     Long startTime = startTimes.get(method);
     long endTime = System.currentTimeMillis();
-    endTimes.put(method, new Long(endTime));
+    endTimes.put(method, Long.valueOf(endTime));
     long duration = startTime == null ? -1 : endTime - startTime.longValue();
 
     if (LOG.isDebugEnabled()) {
@@ -164,21 +164,28 @@ public class PerfLogger {
     return ImmutableMap.copyOf(endTimes);
   }
 
-  //Methods for metrics integration.  Each thread-local PerfLogger will open/close scope during each perf-log method.
-  protected transient Map<String, Timer.Context> timerContexts = new HashMap<>();
+  // Methods for metrics integration.  Each thread-local PerfLogger will open/close scope during each perf-log method.
+  private transient Map<String, Timer.Context> timerContexts = new HashMap<>();
+  private transient Timer.Context totalApiCallsTimerContext = null;
 
   private void beginMetrics(String method) {
     Timer timer = Metrics.getOrCreateTimer(MetricsConstants.API_PREFIX + method);
     if (timer != null) {
       timerContexts.put(method, timer.time());
     }
-
+    timer = Metrics.getOrCreateTimer(MetricsConstants.TOTAL_API_CALLS);
+    if (timer != null) {
+      totalApiCallsTimerContext = timer.time();
+    }
   }
 
   private void endMetrics(String method) {
     Timer.Context context = timerContexts.remove(method);
     if (context != null) {
       context.close();
+    }
+    if (totalApiCallsTimerContext != null) {
+      totalApiCallsTimerContext.close();
     }
   }
 
@@ -190,5 +197,9 @@ public class PerfLogger {
       context.close();
     }
     timerContexts.clear();
+    if (totalApiCallsTimerContext != null) {
+      totalApiCallsTimerContext.close();
+      totalApiCallsTimerContext = null;
+    }
   }
 }

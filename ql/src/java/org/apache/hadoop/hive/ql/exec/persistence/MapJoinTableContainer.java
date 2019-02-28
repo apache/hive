@@ -173,4 +173,14 @@ public interface MapJoinTableContainer extends MemoryEstimate {
 
   void setSerde(MapJoinObjectSerDeContext keyCtx, MapJoinObjectSerDeContext valCtx)
       throws SerDeException;
+
+  /**
+   * Assign a key to the container, which can be used to cache it.
+   */
+  void setKey(String key);
+
+  /**
+   * Return the assigned key.
+   */
+  String getKey();
 }

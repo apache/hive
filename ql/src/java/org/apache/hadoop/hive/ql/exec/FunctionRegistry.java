@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.udf.UDFAsin;
 import org.apache.hadoop.hive.ql.udf.UDFAtan;
 import org.apache.hadoop.hive.ql.udf.UDFBase64;
 import org.apache.hadoop.hive.ql.udf.UDFBin;
+import org.apache.hadoop.hive.ql.udf.UDFBuildVersion;
 import org.apache.hadoop.hive.ql.udf.UDFChr;
 import org.apache.hadoop.hive.ql.udf.UDFConv;
 import org.apache.hadoop.hive.ql.udf.UDFCos;
@@ -283,10 +284,12 @@ public final class FunctionRegistry {
     system.registerUDF("replace", UDFReplace.class, false);
     system.registerUDF("regexp_extract", UDFRegExpExtract.class, false);
     system.registerUDF("parse_url", UDFParseUrl.class, false);
-    system.registerGenericUDF("nvl", GenericUDFNvl.class);
+    system.registerGenericUDF("quote", GenericUDFQuote.class);
+    system.registerGenericUDF("nvl", GenericUDFCoalesce.class); //HIVE-20961
     system.registerGenericUDF("split", GenericUDFSplit.class);
     system.registerGenericUDF("str_to_map", GenericUDFStringToMap.class);
     system.registerGenericUDF("translate", GenericUDFTranslate.class);
+    system.registerGenericUDF("validate_acid_sort_order", GenericUDFValidateAcidSortOrder.class);
 
     system.registerGenericUDF(UNARY_PLUS_FUNC_NAME, GenericUDFOPPositive.class);
     system.registerGenericUDF(UNARY_MINUS_FUNC_NAME, GenericUDFOPNegative.class);
@@ -394,6 +397,7 @@ public final class FunctionRegistry {
 
     // Utility UDFs
     system.registerUDF("version", UDFVersion.class, false);
+    system.registerUDF("buildversion", UDFBuildVersion.class, false);
 
     // Aliases for Java Class Names
     // These are used in getImplicitConvertUDFMethod
@@ -1850,5 +1854,25 @@ public final class FunctionRegistry {
   public static void setupPermissionsForBuiltinUDFs(String whiteListStr,
       String blackListStr) {
     system.setupPermissionsForUDFs(whiteListStr, blackListStr);
+  }
+
+  /**
+   * Function to invert non-equi function texts
+   * @param funcText
+   */
+  public static String invertFuncText(final String funcText) {
+    // Reverse the text
+    switch (funcText) {
+      case "<":
+        return ">";
+      case "<=":
+        return ">=";
+      case ">":
+        return "<";
+      case ">=":
+        return "<=";
+      default:
+        return null; // helps identify unsupported functions
+    }
   }
 }

@@ -636,7 +636,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Full Outer Join 0 to 1

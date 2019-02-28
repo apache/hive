@@ -39,19 +39,19 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
               expressions: key (type: string), value (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
                 Static Partition Specification: ds=2008-04-08/hr=11/
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -79,19 +79,19 @@ STAGE PLANS:
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: string), '2008-04-08' (type: string), '11' (type: string)
                 outputColumnNames: key, value, ds, hr
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 179000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                   keys: ds (type: string), hr (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 1060 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string)
                     null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 1060 Basic stats: COMPLETE Column stats: COMPLETE
                     tag: -1
                     value expressions: _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
                     auto parallelism: false
@@ -155,17 +155,17 @@ STAGE PLANS:
           keys: KEY._col0 (type: string), KEY._col1 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 1060 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string), _col1 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1060 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 1060 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -310,22 +310,22 @@ STAGE PLANS:
           TableScan
             alias: list_bucketing_static_part_n3
             filterExpr: ((ds = '2008-04-08') and (hr = '11') and (value = 'val_466')) (type: boolean)
-            Statistics: Num rows: 500 Data size: 4812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: (value = 'val_466') (type: boolean)
-              Statistics: Num rows: 250 Data size: 2406 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), 'val_466' (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 250 Data size: 2406 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 250 Data size: 2406 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat

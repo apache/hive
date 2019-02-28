@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.BootstrapEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.ReplicationState;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
@@ -38,7 +39,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 
-import static org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer.FUNCTIONS_ROOT_DIR_NAME;
+import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.FUNCTIONS_ROOT_DIR_NAME;
 
 class DatabaseEventsIterator implements Iterator<BootstrapEvent> {
   private static Logger LOG = LoggerFactory.getLogger(DatabaseEventsIterator.class);
@@ -120,6 +121,11 @@ class DatabaseEventsIterator implements Iterator<BootstrapEvent> {
       if (replicationState == null && next == null) {
         while (remoteIterator.hasNext()) {
           LocatedFileStatus next = remoteIterator.next();
+          // we want to skip this file, this also means there cant be a table with name represented
+          // by constant ReplExternalTables.FILE_NAME
+          if(next.getPath().toString().endsWith(ReplExternalTables.FILE_NAME)) {
+            continue;
+          }
           if (next.getPath().toString().endsWith(EximUtil.METADATA_NAME)) {
             String replacedString = next.getPath().toString().replace(dbLevelPath.toString(), "");
             List<String> filteredNames = Arrays.stream(replacedString.split(Path.SEPARATOR))

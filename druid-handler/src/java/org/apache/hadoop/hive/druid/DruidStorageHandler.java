@@ -30,8 +30,6 @@ import com.google.common.collect.Sets;
 import io.druid.data.input.impl.DimensionSchema;
 import io.druid.data.input.impl.DimensionsSpec;
 import io.druid.data.input.impl.InputRowParser;
-import io.druid.data.input.impl.JSONParseSpec;
-import io.druid.data.input.impl.StringInputRowParser;
 import io.druid.data.input.impl.TimestampSpec;
 import io.druid.java.util.common.Pair;
 import io.druid.java.util.common.RetryUtils;
@@ -66,6 +64,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.druid.conf.DruidConstants;
 import org.apache.hadoop.hive.druid.io.DruidOutputFormat;
 import org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat;
 import org.apache.hadoop.hive.druid.io.DruidRecordWriter;
@@ -259,11 +258,11 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
     final String
         kafkaTopic =
         Preconditions.checkNotNull(DruidStorageHandlerUtils.getTableProperty(table,
-            DruidStorageHandlerUtils.KAFKA_TOPIC), "kafka topic is null");
+            DruidConstants.KAFKA_TOPIC), "kafka topic is null");
     final String
         kafkaServers =
         Preconditions.checkNotNull(DruidStorageHandlerUtils.getTableProperty(table,
-            DruidStorageHandlerUtils.KAFKA_BOOTSTRAP_SERVERS), "kafka connect string is null");
+            DruidConstants.KAFKA_BOOTSTRAP_SERVERS), "kafka connect string is null");
 
     Properties tableProperties = new Properties();
     tableProperties.putAll(table.getParameters());
@@ -282,18 +281,26 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
     Pair<List<DimensionSchema>, AggregatorFactory[]>
         dimensionsAndAggregates =
         DruidStorageHandlerUtils.getDimensionsAndAggregates(columnNames, columnTypes);
-    if (!columnNames.contains(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN)) {
+    if (!columnNames.contains(DruidConstants.DEFAULT_TIMESTAMP_COLUMN)) {
       throw new IllegalStateException("Timestamp column (' "
-          + DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN
+          + DruidConstants.DEFAULT_TIMESTAMP_COLUMN
           + "') not specified in create table; list of columns is : "
           + columnNames);
     }
 
-    final InputRowParser
-        inputRowParser =
-        new StringInputRowParser(new JSONParseSpec(new TimestampSpec(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN,
-            "auto",
-            null), new DimensionsSpec(dimensionsAndAggregates.lhs, null, null), null, null), "UTF-8");
+    DimensionsSpec dimensionsSpec = new DimensionsSpec(dimensionsAndAggregates.lhs, null, null);
+    String timestampFormat = DruidStorageHandlerUtils
+            .getTableProperty(table, DruidConstants.DRUID_TIMESTAMP_FORMAT);
+    String timestampColumnName = DruidStorageHandlerUtils
+            .getTableProperty(table, DruidConstants.DRUID_TIMESTAMP_COLUMN);
+    if(timestampColumnName == null) {
+      timestampColumnName = DruidConstants.DEFAULT_TIMESTAMP_COLUMN;
+    }
+    final TimestampSpec timestampSpec = new TimestampSpec(timestampColumnName, timestampFormat,
+            null
+    );
+    final InputRowParser inputRowParser = DruidKafkaUtils
+            .getInputRowParser(table, timestampSpec, dimensionsSpec);
 
     final Map<String, Object>
         inputParser =
@@ -318,7 +325,7 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
     KafkaSupervisorSpec existingSpec = fetchKafkaIngestionSpec(table);
     String
         targetState =
-        DruidStorageHandlerUtils.getTableProperty(table, DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION);
+        DruidStorageHandlerUtils.getTableProperty(table, DruidConstants.DRUID_KAFKA_INGESTION);
     if (targetState == null) {
       // Case when user has not specified any ingestion state in the current command
       // if there is a kafka supervisor running then keep it last known state is START otherwise STOP.
@@ -342,10 +349,10 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
     } else {
       throw new IllegalArgumentException(String.format(
           "Invalid value for property [%s], Valid values are [START, STOP, RESET]",
-          DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION));
+          DruidConstants.DRUID_KAFKA_INGESTION));
     }
     // We do not want to keep state in two separate places so remove from hive table properties.
-    table.getParameters().remove(DruidStorageHandlerUtils.DRUID_KAFKA_INGESTION);
+    table.getParameters().remove(DruidConstants.DRUID_KAFKA_INGESTION);
   }
 
   private void resetKafkaIngestion(String overlordAddress, String dataSourceName) {
@@ -490,8 +497,8 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
     final String dataSourceName = table.getParameters().get(Constants.DRUID_DATA_SOURCE);
     final String
         segmentDirectory =
-        table.getParameters().get(DruidStorageHandlerUtils.DRUID_SEGMENT_DIRECTORY) != null ?
-            table.getParameters().get(DruidStorageHandlerUtils.DRUID_SEGMENT_DIRECTORY) :
+        table.getParameters().get(DruidConstants.DRUID_SEGMENT_DIRECTORY) != null ?
+            table.getParameters().get(DruidConstants.DRUID_SEGMENT_DIRECTORY) :
             HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY);
 
     final HdfsDataSegmentPusherConfig hdfsSegmentPusherConfig = new HdfsDataSegmentPusherConfig();
@@ -665,7 +672,7 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
     String
         dataSourceName =
         Preconditions.checkNotNull(table.getParameters().get(Constants.DRUID_DATA_SOURCE), "DataSource name is null !");
-    // TODO: Move MetaStoreUtils.isExternalTablePurge(table) calls to a common place for all StorageHandlers
+    // Move MetaStoreUtils.isExternalTablePurge(table) calls to a common place for all StorageHandlers
     // deleteData flag passed down to StorageHandler should be true only if
     // MetaStoreUtils.isExternalTablePurge(table) returns true.
     if (deleteData && MetaStoreUtils.isExternalTablePurge(table)) {
@@ -745,10 +752,10 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
 
   @Override public void configureOutputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
     jobProperties.put(Constants.DRUID_DATA_SOURCE, tableDesc.getTableName());
-    jobProperties.put(DruidStorageHandlerUtils.DRUID_SEGMENT_VERSION, new DateTime().toString());
-    jobProperties.put(DruidStorageHandlerUtils.DRUID_JOB_WORKING_DIRECTORY, getStagingWorkingDir().toString());
+    jobProperties.put(DruidConstants.DRUID_SEGMENT_VERSION, new DateTime().toString());
+    jobProperties.put(DruidConstants.DRUID_JOB_WORKING_DIRECTORY, getStagingWorkingDir().toString());
     // DruidOutputFormat will write segments in an intermediate directory
-    jobProperties.put(DruidStorageHandlerUtils.DRUID_SEGMENT_INTERMEDIATE_DIRECTORY,
+    jobProperties.put(DruidConstants.DRUID_SEGMENT_INTERMEDIATE_DIRECTORY,
         getIntermediateSegmentDir().toString());
   }
 
@@ -947,7 +954,7 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
       }
       return new DruidStorageHandlerInfo(kafkaSupervisorReport);
     } else {
-      // TODO: Currently we do not expose any runtime info for non-streaming tables.
+      // Currently we do not expose any runtime info for non-streaming tables.
       // In future extend this add more information regarding table status.
       // e.g. Total size of segments in druid, load status of table on historical nodes etc.
       return null;

@@ -255,10 +255,14 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
       int numHandlers =
           HiveConf.getIntVar(conf, ConfVars.LLAP_TASK_COMMUNICATOR_LISTENER_THREAD_COUNT);
+      int umbilicalPort = HiveConf.getIntVar(conf, ConfVars.LLAP_TASK_UMBILICAL_SERVER_PORT);
+      if (umbilicalPort <= 0) {
+        umbilicalPort = 0;
+      }
       server = new RPC.Builder(conf)
           .setProtocol(LlapTaskUmbilicalProtocol.class)
           .setBindAddress("0.0.0.0")
-          .setPort(0)
+          .setPort(umbilicalPort)
           .setInstance(umbilical)
           .setNumHandlers(numHandlers)
           .setSecretManager(jobTokenSecretManager).build();

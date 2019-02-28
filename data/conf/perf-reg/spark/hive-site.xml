@@ -169,6 +169,12 @@
 </property>
 
 <property>
+  <name>hive.merge.nway.joins</name>
+  <value>true</value>
+</property>
+
+
+<property>
   <name>hive.auto.convert.join</name>
   <value>true</value>
   <description>Whether Hive enable the optimization about converting common join into mapjoin based on the input file size</description>
@@ -283,6 +289,12 @@
 <property>
   <name>yarn.nodemanager.disk-health-checker.max-disk-utilization-per-disk-percentage</name>
   <value>99</value>
+</property>
+
+<!-- remove this after HIVE-18139 and HIVE-20573 -->
+<property>
+  <name>hive.stats.fetch.column.stats</name>
+  <value>false</value>
 </property>
 
 

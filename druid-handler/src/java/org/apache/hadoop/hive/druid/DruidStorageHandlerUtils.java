@@ -92,6 +92,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.druid.conf.DruidConstants;
+import org.apache.hadoop.hive.druid.json.AvroParseSpec;
+import org.apache.hadoop.hive.druid.json.AvroStreamInputRowParser;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -146,34 +149,17 @@ import java.util.stream.Collectors;
  * Utils class for Druid storage handler.
  */
 public final class DruidStorageHandlerUtils {
-  private DruidStorageHandlerUtils () {
-
+  private DruidStorageHandlerUtils() {
   }
 
   private static final Logger LOG = LoggerFactory.getLogger(DruidStorageHandlerUtils.class);
 
-  private static final String DRUID_ROLLUP = "druid.rollup";
-  private static final String DRUID_QUERY_GRANULARITY = "druid.query.granularity";
-  public static final String DRUID_QUERY_FETCH = "druid.query.fetch";
-  static final String DRUID_SEGMENT_DIRECTORY = "druid.storage.storageDirectory";
-  public static final String DRUID_SEGMENT_INTERMEDIATE_DIRECTORY = "druid.storage.storageDirectory.intermediate";
-  public static final String DRUID_SEGMENT_VERSION = "druid.segment.version";
-  public static final String DRUID_JOB_WORKING_DIRECTORY = "druid.job.workingDirectory";
-  static final String KAFKA_TOPIC = "kafka.topic";
-  static final String KAFKA_BOOTSTRAP_SERVERS = "kafka.bootstrap.servers";
-  static final String DRUID_KAFKA_INGESTION_PROPERTY_PREFIX = "druid.kafka.ingestion.";
-  static final String DRUID_KAFKA_CONSUMER_PROPERTY_PREFIX = DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "consumer.";
-  /* Kafka Ingestion state - valid values - START/STOP/RESET */
-  static final String DRUID_KAFKA_INGESTION = "druid.kafka.ingestion";
   private static final int NUM_RETRIES = 8;
   private static final int SECONDS_BETWEEN_RETRIES = 2;
   private static final int DEFAULT_FS_BUFFER_SIZE = 1 << 18; // 256KB
   private static final int DEFAULT_STREAMING_RESULT_SIZE = 100;
   private static final String SMILE_CONTENT_TYPE = "application/x-jackson-smile";
-  //Druid storage timestamp column name
-  public static final String DEFAULT_TIMESTAMP_COLUMN = "__time";
-  //Druid Json timestamp column name
-  public static final String EVENT_TIMESTAMP_COLUMN = "timestamp";
+
   static final String INDEX_ZIP = "index.zip";
   private static final String DESCRIPTOR_JSON = "descriptor.json";
   private static final Interval
@@ -218,6 +204,10 @@ public final class DruidStorageHandlerUtils {
     // Register the shard sub type to be used by the mapper
     JSON_MAPPER.registerSubtypes(new NamedType(LinearShardSpec.class, "linear"));
     JSON_MAPPER.registerSubtypes(new NamedType(NumberedShardSpec.class, "numbered"));
+    JSON_MAPPER.registerSubtypes(new NamedType(AvroParseSpec.class, "avro"));
+    SMILE_MAPPER.registerSubtypes(new NamedType(AvroParseSpec.class, "avro"));
+    JSON_MAPPER.registerSubtypes(new NamedType(AvroStreamInputRowParser.class, "avro_stream"));
+    SMILE_MAPPER.registerSubtypes(new NamedType(AvroStreamInputRowParser.class, "avro_stream"));
     // set the timezone of the object mapper
     // THIS IS NOT WORKING workaround is to set it as part of java opts -Duser.timezone="UTC"
     JSON_MAPPER.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -471,7 +461,7 @@ public final class DruidStorageHandlerUtils {
         if (existingChunks.size() > 1) {
           // Not possible to expand since we have more than one chunk with a single segment.
           // This is the case when user wants to append a segment with coarser granularity.
-          // e.g If metadata storage already has segments for with granularity HOUR and segments to append have DAY granularity.
+          // case metadata storage has segments with granularity HOUR and segments to append have DAY granularity.
           // Druid shard specs does not support multiple partitions for same interval with different granularity.
           throw new IllegalStateException(String.format(
               "Cannot allocate new segment for dataSource[%s], interval[%s], already have [%,d] chunks. "
@@ -628,6 +618,11 @@ public final class DruidStorageHandlerUtils {
     return Boolean.parseBoolean(val);
   }
 
+  static boolean getBooleanProperty(Table table, String propertyName, boolean defaultVal) {
+    Boolean val = getBooleanProperty(table, propertyName);
+    return val == null ? defaultVal : val;
+  }
+
   @Nullable static Integer getIntegerProperty(Table table, String propertyName) {
     String val = getTableProperty(table, propertyName);
     if (val == null) {
@@ -640,6 +635,11 @@ public final class DruidStorageHandlerUtils {
           propertyName,
           val));
     }
+  }
+
+  static int getIntegerProperty(Table table, String propertyName, int defaultVal) {
+    Integer val = getIntegerProperty(table, propertyName);
+    return val == null ? defaultVal : val;
   }
 
   @Nullable static Long getLongProperty(Table table, String propertyName) {
@@ -668,6 +668,21 @@ public final class DruidStorageHandlerUtils {
           propertyName,
           val));
     }
+  }
+
+  @Nullable public static List<String> getListProperty(Table table, String propertyName) {
+    List<String> rv = new ArrayList<>();
+    String values = getTableProperty(table, propertyName);
+    if(values == null) {
+      return null;
+    }
+    String[] vals = values.trim().split(",");
+    for(String val : vals) {
+      if(org.apache.commons.lang.StringUtils.isNotBlank(val)) {
+        rv.add(val);
+      }
+    }
+    return rv;
   }
 
   static String getTableProperty(Table table, String propertyName) {
@@ -799,13 +814,13 @@ public final class DruidStorageHandlerUtils {
             HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_DRUID_INDEXING_GRANULARITY);
     final boolean
         rollup =
-        tableProperties.getProperty(DRUID_ROLLUP) != null ?
+        tableProperties.getProperty(DruidConstants.DRUID_ROLLUP) != null ?
             Boolean.parseBoolean(tableProperties.getProperty(Constants.DRUID_SEGMENT_GRANULARITY)) :
             HiveConf.getBoolVar(configuration, HiveConf.ConfVars.HIVE_DRUID_ROLLUP);
     return new UniformGranularitySpec(Granularity.fromString(segmentGranularity),
-        Granularity.fromString(tableProperties.getProperty(DRUID_QUERY_GRANULARITY) == null ?
+        Granularity.fromString(tableProperties.getProperty(DruidConstants.DRUID_QUERY_GRANULARITY) == null ?
             "NONE" :
-            tableProperties.getProperty(DRUID_QUERY_GRANULARITY)),
+            tableProperties.getProperty(DruidConstants.DRUID_QUERY_GRANULARITY)),
         rollup,
         null);
   }
@@ -853,7 +868,7 @@ public final class DruidStorageHandlerUtils {
         // Granularity column
         String tColumnName = columnNames.get(i);
         if (!tColumnName.equals(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME) && !tColumnName.equals(
-            DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN)) {
+            DruidConstants.DEFAULT_TIMESTAMP_COLUMN)) {
           throw new IllegalArgumentException("Dimension "
               + tColumnName
               + " does not have STRING type: "
@@ -863,7 +878,7 @@ public final class DruidStorageHandlerUtils {
       case TIMESTAMPLOCALTZ:
         // Druid timestamp column
         String tLocalTZColumnName = columnNames.get(i);
-        if (!tLocalTZColumnName.equals(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN)) {
+        if (!tLocalTZColumnName.equals(DruidConstants.DEFAULT_TIMESTAMP_COLUMN)) {
           throw new IllegalArgumentException("Dimension "
               + tLocalTZColumnName
               + " does not have STRING type: "

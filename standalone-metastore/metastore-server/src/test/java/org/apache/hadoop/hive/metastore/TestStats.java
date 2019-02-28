@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Date;
 import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -55,6 +56,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -214,6 +216,19 @@ public class TestStats {
         client.getTableColumnStatistics(dbName, tableName, new ArrayList<>(colMap.keySet())) :
         client.getTableColumnStatistics(catName, dbName, tableName, new ArrayList<>(colMap.keySet()));
     compareStatsForOneTableOrPartition(objs, 0, colMap);
+
+    // Test the statistics obtained through getTable call.
+    Table table = catName.equals(NO_CAT) ?
+            client.getTable(dbName, tableName, true) :
+            client.getTable(catName, dbName, tableName, null, true);
+    Assert.assertTrue(table.isSetColStats());
+    compareStatsForOneTableOrPartition(table.getColStats().getStatsObj(), 0, colMap);
+
+    // Test that getTable call doesn't get the statistics when not explicitly requested.
+    table = catName.equals(NO_CAT) ?
+            client.getTable(dbName, tableName, false) :
+            client.getTable(catName, dbName, tableName, null, false);
+    Assert.assertFalse(table.isSetColStats());
   }
 
   private void compareStatsForPartitions(String catName, String dbName, String tableName,
@@ -231,6 +246,27 @@ public class TestStats {
     Assert.assertEquals(partNames.size(), aggr.getPartsFound());
     Assert.assertEquals(colMap.size(), aggr.getColStatsSize());
     aggr.getColStats().forEach(cso -> colMap.get(cso.getColName()).compareAggr(cso));
+
+    // Test column stats obtained through getPartitions call
+    for (int i = 0; i < partNames.size(); i++) {
+      String partName = partNames.get(i);
+      List<Partition> partitions = catName.equals(NO_CAT) ?
+              client.getPartitionsByNames(dbName, tableName, Collections.singletonList(partName),
+                      true) :
+              client.getPartitionsByNames(catName, dbName, tableName,
+                      Collections.singletonList(partName), true);
+      Partition partition = partitions.get(0);
+      compareStatsForOneTableOrPartition(partition.getColStats().getStatsObj(), i, colMap);
+
+      // Also test that we do not get statistics when not requested
+      partitions = catName.equals(NO_CAT) ?
+              client.getPartitionsByNames(dbName, tableName, Collections.singletonList(partName),
+                      true) :
+              client.getPartitionsByNames(catName, dbName, tableName,
+                      Collections.singletonList(partName), true);
+      partition = partitions.get(0);
+      Assert.assertFalse(partition.isSetColStats());
+    }
   }
 
   private void compareStatsForOneTableOrPartition(List<ColumnStatisticsObj> objs,
@@ -335,12 +371,23 @@ public class TestStats {
     }
 
     abstract ColumnStatisticsObj generate();
-    abstract void compare(ColumnStatisticsObj obj, int offset);
+    abstract void compare(ColumnStatisticsData colstats, int offset);
+
+    void compare(ColumnStatisticsObj obj, int offset) {
+      compareCommon(obj);
+      compare(obj.getStatsData(), offset);
+    }
+
     abstract void compareAggr(ColumnStatisticsObj obj);
 
     void compareCommon(ColumnStatisticsObj obj) {
       Assert.assertEquals(colName, obj.getColName());
       Assert.assertEquals(colType, obj.getColType());
+    }
+
+    void compareCommon(FieldSchema col) {
+      Assert.assertEquals(colName, col.getName());
+      Assert.assertEquals(colType, col.getType());
     }
 
     long genMaxLen() {
@@ -429,12 +476,11 @@ public class TestStats {
     }
 
     @Override
-    void compare(ColumnStatisticsObj obj, int offset) {
-      compareCommon(obj);
+    void compare(ColumnStatisticsData colstats, int offset) {
       Assert.assertEquals("binary max length", maxLens.get(offset),
-          (Long)obj.getStatsData().getBinaryStats().getMaxColLen());
-      Assert.assertEquals("binary min length", avgLens.get(offset), obj.getStatsData().getBinaryStats().getAvgColLen(), 0.01);
-      Assert.assertEquals("binary num nulls", numNulls.get(offset), (Long)obj.getStatsData().getBinaryStats().getNumNulls());
+          (Long) colstats.getBinaryStats().getMaxColLen());
+      Assert.assertEquals("binary min length", avgLens.get(offset), colstats.getBinaryStats().getAvgColLen(), 0.01);
+      Assert.assertEquals("binary num nulls", numNulls.get(offset), (Long) colstats.getBinaryStats().getNumNulls());
     }
 
     @Override
@@ -465,11 +511,10 @@ public class TestStats {
     }
 
     @Override
-    void compare(ColumnStatisticsObj obj, int offset) {
-      compareCommon(obj);
-      Assert.assertEquals("boolean num trues", numTrues.get(offset), (Long)obj.getStatsData().getBooleanStats().getNumTrues());
-      Assert.assertEquals("boolean num falses", numFalses.get(offset), (Long)obj.getStatsData().getBooleanStats().getNumFalses());
-      Assert.assertEquals("boolean num nulls", numNulls.get(offset), (Long)obj.getStatsData().getBooleanStats().getNumNulls());
+    void compare(ColumnStatisticsData colstats, int offset) {
+      Assert.assertEquals("boolean num trues", numTrues.get(offset), (Long) colstats.getBooleanStats().getNumTrues());
+      Assert.assertEquals("boolean num falses", numFalses.get(offset), (Long) colstats.getBooleanStats().getNumFalses());
+      Assert.assertEquals("boolean num nulls", numNulls.get(offset), (Long) colstats.getBooleanStats().getNumNulls());
     }
 
     @Override
@@ -517,12 +562,11 @@ public class TestStats {
     }
 
     @Override
-    void compare(ColumnStatisticsObj obj, int offset) {
-      compareCommon(obj);
-      Assert.assertEquals("date num nulls", numNulls.get(offset), (Long)obj.getStatsData().getDateStats().getNumNulls());
-      Assert.assertEquals("date num dvs", numDvs.get(offset), (Long)obj.getStatsData().getDateStats().getNumDVs());
-      Assert.assertEquals("date low val", lowVals.get(offset), obj.getStatsData().getDateStats().getLowValue());
-      Assert.assertEquals("date high val", highVals.get(offset), obj.getStatsData().getDateStats().getHighValue());
+    void compare(ColumnStatisticsData colstats, int offset) {
+      Assert.assertEquals("date num nulls", numNulls.get(offset), (Long) colstats.getDateStats().getNumNulls());
+      Assert.assertEquals("date num dvs", numDvs.get(offset), (Long) colstats.getDateStats().getNumDVs());
+      Assert.assertEquals("date low val", lowVals.get(offset), colstats.getDateStats().getLowValue());
+      Assert.assertEquals("date high val", highVals.get(offset), colstats.getDateStats().getHighValue());
     }
 
     @Override
@@ -579,16 +623,15 @@ public class TestStats {
     }
 
     @Override
-    void compare(ColumnStatisticsObj obj, int offset) {
-      compareCommon(obj);
+    void compare(ColumnStatisticsData colstats, int offset) {
       Assert.assertEquals("double num nulls", numNulls.get(offset),
-          (Long)obj.getStatsData().getDoubleStats().getNumNulls());
+          (Long) colstats.getDoubleStats().getNumNulls());
       Assert.assertEquals("double num dvs", numDvs.get(offset),
-          (Long)obj.getStatsData().getDoubleStats().getNumDVs());
+          (Long) colstats.getDoubleStats().getNumDVs());
       Assert.assertEquals("double low val", lowVals.get(offset),
-          obj.getStatsData().getDoubleStats().getLowValue(), 0.01);
+          colstats.getDoubleStats().getLowValue(), 0.01);
       Assert.assertEquals("double high val", highVals.get(offset),
-          obj.getStatsData().getDoubleStats().getHighValue(), 0.01);
+          colstats.getDoubleStats().getHighValue(), 0.01);
     }
 
     @Override
@@ -644,16 +687,15 @@ public class TestStats {
     }
 
     @Override
-    void compare(ColumnStatisticsObj obj, int offset) {
-      compareCommon(obj);
+    void compare(ColumnStatisticsData colstats, int offset) {
       Assert.assertEquals("long num nulls", numNulls.get(offset),
-          (Long)obj.getStatsData().getLongStats().getNumNulls());
+          (Long) colstats.getLongStats().getNumNulls());
       Assert.assertEquals("long num dvs", numDvs.get(offset),
-          (Long)obj.getStatsData().getLongStats().getNumDVs());
+          (Long) colstats.getLongStats().getNumDVs());
       Assert.assertEquals("long low val", (long)lowVals.get(offset),
-          obj.getStatsData().getLongStats().getLowValue());
+          colstats.getLongStats().getLowValue());
       Assert.assertEquals("long high val", (long)highVals.get(offset),
-          obj.getStatsData().getLongStats().getHighValue());
+          colstats.getLongStats().getHighValue());
     }
 
     @Override
@@ -703,16 +745,15 @@ public class TestStats {
     }
 
     @Override
-    void compare(ColumnStatisticsObj obj, int offset) {
-      compareCommon(obj);
+    void compare(ColumnStatisticsData colstats, int offset) {
       Assert.assertEquals("str num nulls", numNulls.get(offset),
-          (Long)obj.getStatsData().getStringStats().getNumNulls());
+          (Long) colstats.getStringStats().getNumNulls());
       Assert.assertEquals("str num dvs", numDvs.get(offset),
-          (Long)obj.getStatsData().getStringStats().getNumDVs());
+          (Long) colstats.getStringStats().getNumDVs());
       Assert.assertEquals("str low val", (long)maxLens.get(offset),
-          obj.getStatsData().getStringStats().getMaxColLen());
+          colstats.getStringStats().getMaxColLen());
       Assert.assertEquals("str high val", avgLens.get(offset),
-          obj.getStatsData().getStringStats().getAvgColLen(), 0.01);
+          colstats.getStringStats().getAvgColLen(), 0.01);
     }
 
     @Override

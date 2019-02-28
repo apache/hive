@@ -80,6 +80,7 @@ import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
@@ -188,7 +189,12 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
             // all partitions have been statically removed
             LOG.debug("No partition pruning necessary.");
           }
-        } else {
+        } else if (table.isNonNative() &&
+          table.getStorageHandler().addDynamicSplitPruningEdge(desc.getPredicate())){
+          generateEventOperatorPlan(ctx, parseContext, ts, column,
+            table.getCols().stream().filter(e -> e.getName().equals(column)).
+          map(e -> e.getType()).findFirst().get());
+        } else { // semijoin
           LOG.debug("Column " + column + " is not a partition column");
           if (semiJoin && !disableSemiJoinOptDueToExternalTable(parseContext.getConf(), ts, ctx)
                   && ts.getConf().getFilterExpr() != null) {
@@ -291,7 +297,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
         disableSemiJoin = true;
       } else {
         // Check the other side of the join, using the DynamicListContext
-        ExprNodeDesc exprNodeDesc = ctx.generator.getConf().getKeyCols().get(ctx.desc.getKeyIndex());
+        ExprNodeDesc exprNodeDesc = ctx.getKeyCol();
         ExprNodeColumnDesc colExpr = ExprNodeDescUtils.getColumnExpr(exprNodeDesc);
 
         if (colExpr != null) {
@@ -317,7 +323,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
   // Given a key, find the corresponding column name.
   private boolean getColumnInfo(DynamicListContext ctx, StringBuilder internalColName,
                                 StringBuilder colName, StringBuilder tabAlias) {
-    ExprNodeDesc exprNodeDesc = ctx.generator.getConf().getKeyCols().get(ctx.desc.getKeyIndex());
+    ExprNodeDesc exprNodeDesc = ctx.getKeyCol();
     ExprNodeColumnDesc colExpr = ExprNodeDescUtils.getColumnExpr(exprNodeDesc);
 
     if (colExpr == null) {
@@ -435,7 +441,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     Operator<? extends OperatorDesc> parentOfRS = ctx.generator.getParentOperators().get(0);
 
     // we need the expr that generated the key of the reduce sink
-    ExprNodeDesc key = ctx.generator.getConf().getKeyCols().get(ctx.desc.getKeyIndex());
+    ExprNodeDesc key = ctx.getKeyCol();
 
     // we also need the expr for the partitioned table
     ExprNodeDesc partKey = ctx.parent.getChildren().get(0);
@@ -524,11 +530,18 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
       TableScanOperator ts, String keyBaseAlias, String internalColName,
       String colName, SemiJoinHint sjHint) throws SemanticException {
 
+    // Semijoin reduction for non-equi join not yet supported, check for it
+    ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc) ctx.parent;
+    if (!(funcDesc.getGenericUDF() instanceof GenericUDFIn)) {
+      LOG.info("Semijoin reduction for non-equi joins is currently disabled.");
+      return false;
+    }
+
     // we will put a fork in the plan at the source of the reduce sink
     Operator<? extends OperatorDesc> parentOfRS = ctx.generator.getParentOperators().get(0);
 
     // we need the expr that generated the key of the reduce sink
-    ExprNodeDesc key = ctx.generator.getConf().getKeyCols().get(ctx.desc.getKeyIndex());
+    ExprNodeDesc key = ctx.getKeyCol();
 
     assert colName != null;
     // Fetch the TableScan Operator.

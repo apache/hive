@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -110,6 +111,30 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
   public void showTables(DataOutputStream out, Set<String> tables)
       throws HiveException {
     asJson(out, MapBuilder.create().put("tables", tables).build());
+  }
+
+  /**
+   * Show a list of tables including table types.
+   */
+  @Override
+  public void showTablesExtended(DataOutputStream out, List<Table> tables)
+      throws HiveException {
+    if (tables.isEmpty()) {
+      // Nothing to do
+      return;
+    }
+
+    MapBuilder builder = MapBuilder.create();
+    ArrayList<Map<String, Object>> res = new ArrayList<Map<String, Object>>();
+    for (Table table : tables) {
+      final String tableName = table.getTableName();
+      final String tableType = table.getTableType().toString();
+      res.add(builder
+          .put("Table Name", tableName)
+          .put("Table Type", tableType)
+          .build());
+    }
+    asJson(out, builder.put("tables", res).build());
   }
 
   /**
@@ -405,22 +430,17 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
         makeTablePartions(parts)).build());
   }
 
-  private List<Map<String, Object>> makeTablePartions(List<String> parts)
-      throws HiveException {
-    try {
-      ArrayList<Map<String, Object>> res = new ArrayList<Map<String, Object>>();
-      for (String part : parts) {
-        res.add(makeOneTablePartition(part));
-      }
-      return res;
-    } catch (UnsupportedEncodingException e) {
-      throw new HiveException(e);
+  private List<Map<String, Object>> makeTablePartions(List<String> parts) {
+    ArrayList<Map<String, Object>> res =
+        new ArrayList<Map<String, Object>>(parts.size());
+    for (String part : parts) {
+      res.add(makeOneTablePartition(part));
     }
+    return res;
   }
 
   // This seems like a very wrong implementation.
-  private Map<String, Object> makeOneTablePartition(String partIdent)
-      throws UnsupportedEncodingException {
+  private Map<String, Object> makeOneTablePartition(String partIdent) {
     ArrayList<Map<String, Object>> res = new ArrayList<Map<String, Object>>();
 
     ArrayList<String> names = new ArrayList<String>();
@@ -431,7 +451,10 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
       if (kv != null) {
         name = kv[0];
         if (kv.length > 1) {
-          val = URLDecoder.decode(kv[1], "UTF-8");
+          try {
+            val = URLDecoder.decode(kv[1], StandardCharsets.UTF_8.name());
+          } catch (UnsupportedEncodingException e) {
+          }
         }
       }
       if (val != null) {

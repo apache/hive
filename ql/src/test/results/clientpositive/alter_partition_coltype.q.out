@@ -354,12 +354,12 @@ STAGE PLANS:
         TableScan
           alias: alter_coltype
           filterExpr: dt is not null (type: boolean)
-          Statistics: Num rows: 50 Data size: 382 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 50 Data size: 18350 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: key (type: string), value (type: string), dt (type: string), ts (type: double)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 50 Data size: 382 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 50 Data size: 18350 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: select count(*) from alter_coltype where ts = 3.0
@@ -553,12 +553,12 @@ STAGE PLANS:
         TableScan
           alias: alterdynamic_part_table
           filterExpr: ((partcol1 = 1) and (partcol2 = '1')) (type: boolean)
-          Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: intcol (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: explain extended select intcol from pt.alterdynamic_part_table where (partcol1='2' and partcol2='1')or (partcol1='1' and partcol2='__HIVE_DEFAULT_PARTITION__')
@@ -630,12 +630,12 @@ STAGE PLANS:
         TableScan
           alias: alterdynamic_part_table
           filterExpr: (struct(partcol1,partcol2)) IN (const struct(2,'1'), const struct(1,'__HIVE_DEFAULT_PARTITION__')) (type: boolean)
-          Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: intcol (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: select intcol from pt.alterdynamic_part_table where (partcol1='2' and partcol2='1')or (partcol1='1' and partcol2='__HIVE_DEFAULT_PARTITION__')

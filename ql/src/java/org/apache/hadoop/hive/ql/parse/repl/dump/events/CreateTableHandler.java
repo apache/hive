@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -47,18 +48,25 @@ class CreateTableHandler extends AbstractEventHandler<CreateTableMessage> {
     org.apache.hadoop.hive.metastore.api.Table tobj = eventMessage.getTableObj();
 
     if (tobj == null) {
-      LOG.debug("Event#{} was a CREATE_TABLE_EVENT with no table listed");
+      LOG.debug("Event#{} was a CREATE_TABLE_EVENT with no table listed", fromEventId());
       return;
     }
 
     Table qlMdTable = new Table(tobj);
 
-    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, withinContext.hiveConf)) {
+    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, true, withinContext.hiveConf)) {
       return;
     }
 
     if (qlMdTable.isView()) {
       withinContext.replicationSpec.setIsMetadataOnly(true);
+    }
+
+    // If we are not dumping data about a table, we shouldn't be dumping basic statistics
+    // as well, since that won't be accurate. So reset them to what they would look like for an
+    // empty table.
+    if (withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY)) {
+      qlMdTable.setStatsStateLikeNewTable();
     }
 
     Path metaDataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);

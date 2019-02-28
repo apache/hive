@@ -232,7 +232,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.mapred.InputFormat;
@@ -249,6 +248,8 @@ public class Vectorizer implements PhysicalPlanResolver {
   protected static transient final Logger LOG = LoggerFactory.getLogger(Vectorizer.class);
 
   private static final Pattern supportedDataTypesPattern;
+
+  private static final TypeInfo[] EMPTY_TYPEINFO_ARRAY = new TypeInfo[0];
 
   static {
     StringBuilder patternBuilder = new StringBuilder();
@@ -480,7 +481,6 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(GenericUDFCase.class);
     supportedGenericUDFs.add(GenericUDFWhen.class);
     supportedGenericUDFs.add(GenericUDFCoalesce.class);
-    supportedGenericUDFs.add(GenericUDFNvl.class);
     supportedGenericUDFs.add(GenericUDFElt.class);
     supportedGenericUDFs.add(GenericUDFInitCap.class);
     supportedGenericUDFs.add(GenericUDFInBloomFilter.class);
@@ -714,7 +714,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     public DummyVectorOperator(VectorizationContext vContext) {
       super();
-      this.conf = (DummyRootVectorDesc) new DummyRootVectorDesc();
+      this.conf = new DummyRootVectorDesc();
       this.vContext = vContext;
     }
 
@@ -1374,10 +1374,16 @@ public class Vectorizer implements PhysicalPlanResolver {
         Set<String> inputFileFormatClassNameSet,
         Map<VectorPartitionDesc, VectorPartitionDesc> vectorPartitionDescMap,
         Set<String> enabledConditionsMetSet, ArrayList<String> enabledConditionsNotMetList,
-        Set<Support> newSupportSet) {
+        Set<Support> newSupportSet, List<TypeInfo> dataTypeInfoList) {
 
       Class<? extends InputFormat> inputFileFormatClass = pd.getInputFileFormatClass();
       String inputFileFormatClassName = inputFileFormatClass.getName();
+      final TypeInfo[] dataTypeInfos;
+      if (dataTypeInfoList == null) {
+        dataTypeInfos = EMPTY_TYPEINFO_ARRAY;
+      } else {
+        dataTypeInfos = dataTypeInfoList.toArray(new TypeInfo[dataTypeInfoList.size()]);
+      }
 
       // Always collect input file formats.
       inputFileFormatClassNameSet.add(inputFileFormatClassName);
@@ -1403,7 +1409,9 @@ public class Vectorizer implements PhysicalPlanResolver {
         addVectorPartitionDesc(
             pd,
             VectorPartitionDesc.createVectorizedInputFileFormat(
-                inputFileFormatClassName, Utilities.isInputFileFormatSelfDescribing(pd)),
+                inputFileFormatClassName,
+                Utilities.isInputFileFormatSelfDescribing(pd),
+                dataTypeInfos),
             vectorPartitionDescMap);
 
         enabledConditionsMetSet.add(HiveConf.ConfVars.HIVE_VECTORIZATION_USE_VECTORIZED_INPUT_FILE_FORMAT.varname);
@@ -1429,7 +1437,9 @@ public class Vectorizer implements PhysicalPlanResolver {
           addVectorPartitionDesc(
               pd,
               VectorPartitionDesc.createVectorizedInputFileFormat(
-                  inputFileFormatClassName, Utilities.isInputFileFormatSelfDescribing(pd)),
+                  inputFileFormatClassName,
+                  Utilities.isInputFileFormatSelfDescribing(pd),
+                  dataTypeInfos),
               vectorPartitionDescMap);
 
           enabledConditionsMetSet.add(
@@ -1497,7 +1507,7 @@ public class Vectorizer implements PhysicalPlanResolver {
             addVectorPartitionDesc(
                 pd,
                 VectorPartitionDesc.createVectorDeserialize(
-                    inputFileFormatClassName, VectorDeserializeType.LAZY_SIMPLE),
+                    inputFileFormatClassName, VectorDeserializeType.LAZY_SIMPLE, dataTypeInfos),
                 vectorPartitionDescMap);
 
             enabledConditionsMetSet.add(HiveConf.ConfVars.HIVE_VECTORIZATION_USE_VECTOR_DESERIALIZE.varname);
@@ -1508,7 +1518,7 @@ public class Vectorizer implements PhysicalPlanResolver {
           addVectorPartitionDesc(
               pd,
               VectorPartitionDesc.createVectorDeserialize(
-                  inputFileFormatClassName, VectorDeserializeType.LAZY_BINARY),
+                  inputFileFormatClassName, VectorDeserializeType.LAZY_BINARY, dataTypeInfos),
               vectorPartitionDescMap);
 
           enabledConditionsMetSet.add(HiveConf.ConfVars.HIVE_VECTORIZATION_USE_VECTOR_DESERIALIZE.varname);
@@ -1529,7 +1539,8 @@ public class Vectorizer implements PhysicalPlanResolver {
               VectorPartitionDesc.createRowDeserialize(
                   inputFileFormatClassName,
                   Utilities.isInputFileFormatSelfDescribing(pd),
-                  deserializerClassName),
+                  deserializerClassName,
+                  dataTypeInfos),
               vectorPartitionDescMap);
 
           enabledConditionsMetSet.add(HiveConf.ConfVars.HIVE_VECTORIZATION_USE_ROW_DESERIALIZE.varname);
@@ -1730,29 +1741,16 @@ public class Vectorizer implements PhysicalPlanResolver {
           continue;
         }
         Set<Support> newSupportSet = new TreeSet<Support>();
-        final boolean isVerifiedVectorPartDesc =
-            verifyAndSetVectorPartDesc(
-              partDesc, isFullAcidTable,
-              allTypeInfoList,
-              inputFileFormatClassNameSet,
-              vectorPartitionDescMap,
-              enabledConditionsMetSet, enabledConditionsNotMetList,
-              newSupportSet);
 
-        if (!isVerifiedVectorPartDesc) {
-
-          // Always set these so EXPLAIN can see.
-          setValidateInputFormatAndSchemaEvolutionExplain(
-              mapWork, inputFileFormatClassNameSet, vectorPartitionDescMap,
-              enabledConditionsMetSet, enabledConditionsNotMetList);
-
-          // We consider this an enable issue, not a not vectorized issue.
-          return new ImmutablePair<Boolean,Boolean>(false, true);
+        final List<TypeInfo> nextDataTypeInfoList;
+        final Deserializer deserializer;
+        final StructObjectInspector partObjectInspector;
+        try {
+          deserializer = partDesc.getDeserializer(hiveConf);
+          partObjectInspector = (StructObjectInspector) deserializer.getObjectInspector();
+        } catch (Exception e) {
+          throw new SemanticException(e);
         }
-
-        handleSupport(isFirstPartition, inputFormatSupportSet, newSupportSet);
-
-        VectorPartitionDesc vectorPartDesc = partDesc.getVectorPartitionDesc();
 
         if (isFirst) {
 
@@ -1780,17 +1778,55 @@ public class Vectorizer implements PhysicalPlanResolver {
           isFirst = false;
         }
 
+        if (Utilities.isInputFileFormatSelfDescribing(partDesc)) {
+
+          /*
+           * Self-Describing Input Format will convert its data to the table schema. So, there
+           * will be no VectorMapOperator conversion needed.
+           */
+          nextDataTypeInfoList = tableDataTypeInfoList;
+        } else {
+          String nextDataTypesString = ObjectInspectorUtils.getFieldTypes(partObjectInspector);
+
+          /*
+           * We convert to an array of TypeInfo using a library routine since it parses the
+           * information and can handle use of different separators, etc.  We cannot use the
+           * raw type string for comparison in the map because of the different separators used.
+           */
+          nextDataTypeInfoList =
+              TypeInfoUtils.getTypeInfosFromTypeString(nextDataTypesString);
+        }
+
+        // HIVE-20419: Vectorization: Prevent mutation of VectorPartitionDesc after being used in a
+        // hashmap key
+        final boolean isVerifiedVectorPartDesc =
+            verifyAndSetVectorPartDesc(
+              partDesc, isFullAcidTable,
+              allTypeInfoList,
+              inputFileFormatClassNameSet,
+              vectorPartitionDescMap,
+              enabledConditionsMetSet, enabledConditionsNotMetList,
+              newSupportSet,
+              nextDataTypeInfoList);
+
+        final VectorPartitionDesc vectorPartDesc = partDesc.getVectorPartitionDesc();
+
+        if (!isVerifiedVectorPartDesc) {
+
+          // Always set these so EXPLAIN can see.
+          setValidateInputFormatAndSchemaEvolutionExplain(
+              mapWork, inputFileFormatClassNameSet, vectorPartitionDescMap,
+              enabledConditionsMetSet, enabledConditionsNotMetList);
+
+          // We consider this an enable issue, not a not vectorized issue.
+          return new ImmutablePair<Boolean,Boolean>(false, true);
+        }
+
+        handleSupport(isFirstPartition, inputFormatSupportSet, newSupportSet);
+
         // We need to get the partition's column names from the partition serde.
         // (e.g. Avro provides the table schema and ignores the partition schema..).
         //
-        Deserializer deserializer;
-        StructObjectInspector partObjectInspector;
-        try {
-          deserializer = partDesc.getDeserializer(hiveConf);
-          partObjectInspector = (StructObjectInspector) deserializer.getObjectInspector();
-        } catch (Exception e) {
-          throw new SemanticException(e);
-        }
         String nextDataColumnsString = ObjectInspectorUtils.getFieldNames(partObjectInspector);
         String[] nextDataColumns = nextDataColumnsString.split(",");
         List<String> nextDataColumnList = Arrays.asList(nextDataColumns);
@@ -1835,26 +1871,8 @@ public class Vectorizer implements PhysicalPlanResolver {
         }
 
         boolean isPartitionRowConversion = false;
-        List<TypeInfo> nextDataTypeInfoList;
-        if (vectorPartDesc.getIsInputFileFormatSelfDescribing()) {
 
-          /*
-           * Self-Describing Input Format will convert its data to the table schema. So, there
-           * will be no VectorMapOperator conversion needed.
-           */
-          nextDataTypeInfoList = tableDataTypeInfoList;
-
-        } else {
-          String nextDataTypesString = ObjectInspectorUtils.getFieldTypes(partObjectInspector);
-
-          /*
-           * We convert to an array of TypeInfo using a library routine since it parses the
-           * information and can handle use of different separators, etc.  We cannot use the
-           * raw type string for comparison in the map because of the different separators used.
-           */
-          nextDataTypeInfoList =
-              TypeInfoUtils.getTypeInfosFromTypeString(nextDataTypesString);
-
+        if (!vectorPartDesc.getIsInputFileFormatSelfDescribing()) {
           final int nextDataTypeInfoSize = nextDataTypeInfoList.size();
           if (nextDataTypeInfoSize > tableDataTypeInfoList.size()) {
             enabledConditionsNotMetList.add(
@@ -1893,8 +1911,6 @@ public class Vectorizer implements PhysicalPlanResolver {
               enabledConditionsMetSet, enabledConditionsNotMetList);
           return new ImmutablePair<Boolean,Boolean>(false, true);
         }
-
-        vectorPartDesc.setDataTypeInfos(nextDataTypeInfoList);
       }
 
       // For now, we don't know which virtual columns are going to be included.  We'll add them
@@ -2133,7 +2149,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     private void vectorizeTableScanOperatorInPlace(TableScanOperator tableScanOperator,
         VectorTaskColumnInfo vectorTaskColumnInfo) {
 
-      TableScanDesc tableScanDesc = (TableScanDesc) tableScanOperator.getConf();
+      TableScanDesc tableScanDesc = tableScanOperator.getConf();
       VectorTableScanDesc vectorTableScanDesc = new VectorTableScanDesc();
       tableScanDesc.setVectorDesc(vectorTableScanDesc);
 
@@ -2388,7 +2404,6 @@ public class Vectorizer implements PhysicalPlanResolver {
   @Override
   public PhysicalContext resolve(PhysicalContext physicalContext) throws SemanticException {
 
-    physicalContext = physicalContext;
     hiveConf = physicalContext.getConf();
     planMapper = physicalContext.getContext().getPlanMapper();
 
@@ -2815,7 +2830,7 @@ public class Vectorizer implements PhysicalPlanResolver {
           HiveConf.ConfVars.HIVE_VECTORIZATION_PTF_ENABLED.varname + " IS false)");
       return false;
     }
-    PTFDesc ptfDesc = (PTFDesc) op.getConf();
+    PTFDesc ptfDesc = op.getConf();
     boolean isMapSide = ptfDesc.isMapSide();
     if (isMapSide) {
       setOperatorIssue("PTF Mapper not supported");
@@ -4674,12 +4689,8 @@ public class Vectorizer implements PhysicalPlanResolver {
     int index = 0;
     final int size = colList.size();
 
-    // Since the call to fixDecimalDataTypePhysicalVariations will be done post-vector-expression
-    // creation, it cannot freely use deallocated scratch columns.  Scratch column reuse assumes
-    // sequential execution so it can reuse freed scratch columns from earlier
-    // evaluations.
-    //
-    vContext.clearScratchColumnWasUsedTracking();
+    // this will mark all actual computed columns
+    vContext.markActualScratchColumns();
 
     VectorExpression[] vectorSelectExprs = new VectorExpression[size];
     int[] projectedOutputColumns = new int[size];
@@ -4701,12 +4712,12 @@ public class Vectorizer implements PhysicalPlanResolver {
     // at least one of its children is DECIMAL_64. Some expressions like x % y for example only accepts DECIMAL
     // for x and y (at this time there is only DecimalColModuloDecimalColumn so both x and y has to be DECIMAL).
     // The following method introduces a cast if x or y is DECIMAL_64 and parent expression (x % y) is DECIMAL.
-    vContext.setDontReuseTrackedScratchColumns(true);
     try {
       fixDecimalDataTypePhysicalVariations(vContext, vectorSelectExprs);
     } finally {
-      vContext.setDontReuseTrackedScratchColumns(false);
+      vContext.freeMarkedScratchColumns();
     }
+
 
     vectorSelectDesc.setSelectExpressions(vectorSelectExprs);
     vectorSelectDesc.setProjectedOutputColumns(projectedOutputColumns);

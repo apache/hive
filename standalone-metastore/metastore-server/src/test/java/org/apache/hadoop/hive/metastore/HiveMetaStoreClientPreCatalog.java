@@ -1389,8 +1389,18 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   @Override
   public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
-      List<String> part_names) throws NoSuchObjectException, MetaException, TException {
-    List<Partition> parts = client.get_partitions_by_names(db_name, tbl_name, part_names);
+                                              List<String> part_names) throws NoSuchObjectException, MetaException, TException {
+    return getPartitionsByNames(db_name, tbl_name, part_names, false);
+  }
+
+  @Override
+  public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
+                                              List<String> part_names, boolean get_col_stats)
+          throws NoSuchObjectException, MetaException, TException {
+    GetPartitionsByNamesRequest gpbnr = new GetPartitionsByNamesRequest(db_name, tbl_name);
+    gpbnr.setNames(part_names);
+    gpbnr.setGet_col_stats(get_col_stats);
+    List<Partition> parts = client.get_partitions_by_names_req(gpbnr).getPartitions();
     return fastpath ? parts : deepCopyPartitions(filterHook.filterPartitions(parts));
   }
 
@@ -2227,20 +2237,26 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public long openTxn(String user, TxnType txnType) throws TException {
+    OpenTxnsResponse txns = openTxnsIntr(user, 1, null, null, txnType);
+    return txns.getTxn_ids().get(0);
+  }
+
+  @Override
   public OpenTxnsResponse openTxns(String user, int numTxns) throws TException {
-    return openTxnsIntr(user, numTxns, null, null);
+    return openTxnsIntr(user, numTxns, null, null, null);
   }
 
   @Override
   public List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user) throws TException {
     // As this is called from replication task, the user is the user who has fired the repl command.
     // This is required for standalone metastore authentication.
-    OpenTxnsResponse txns = openTxnsIntr(user, srcTxnIds.size(), replPolicy, srcTxnIds);
+    OpenTxnsResponse txns = openTxnsIntr(user, srcTxnIds.size(), replPolicy, srcTxnIds, null);
     return txns.getTxn_ids();
   }
 
   private OpenTxnsResponse openTxnsIntr(String user, int numTxns, String replPolicy,
-                                        List<Long> srcTxnIds) throws TException {
+                                        List<Long> srcTxnIds, TxnType txnType) throws TException {
     String hostname;
     try {
       hostname = InetAddress.getLocalHost().getHostName();
@@ -2257,6 +2273,9 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
       rqst.setReplSrcTxnIds(srcTxnIds);
     } else {
       assert srcTxnIds == null;
+    }
+    if (txnType != null) {
+      rqst.setTxn_type(txnType);
     }
     return client.open_txns(rqst);
   }
@@ -3093,8 +3112,20 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public Table getTable(String catName, String dbName, boolean getColumnStats) throws MetaException,
+          TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public Table getTable(String catName, String dbName, String tableName,
                         String validWriteIdList) throws TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Table getTable(String catName, String dbName, String tableName,
+                        String validWriteIdList, boolean getColumnStats) throws TException {
     throw new UnsupportedOperationException();
   }
 
@@ -3237,6 +3268,13 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
                                               List<String> part_names) throws NoSuchObjectException,
       MetaException, TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
+                                              List<String> part_names, boolean getColStats)
+          throws NoSuchObjectException, MetaException, TException {
     throw new UnsupportedOperationException();
   }
 
@@ -3570,5 +3608,40 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   public GetPartitionsResponse getPartitionsWithSpecs(GetPartitionsRequest request)
       throws TException {
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public OptionalCompactionInfoStruct findNextCompact(String workerId) throws MetaException, TException {
+    return client.find_next_compact(workerId);
+  }
+
+  @Override
+  public void updateCompactorState(CompactionInfoStruct cr, long txnId) throws TException {
+    client.update_compactor_state(cr, txnId);
+  }
+
+  @Override
+  public List<String> findColumnsWithStats(CompactionInfoStruct cr) throws TException {
+    return client.find_columns_with_stats(cr);
+  }
+
+  @Override
+  public void markCleaned(CompactionInfoStruct cr) throws MetaException, TException {
+    client.mark_cleaned(cr);
+  }
+
+  @Override
+  public void markCompacted(CompactionInfoStruct cr) throws MetaException, TException {
+    client.mark_compacted(cr);
+  }
+
+  @Override
+  public void markFailed(CompactionInfoStruct cr) throws MetaException, TException {
+    client.mark_failed(cr);
+  }
+
+  @Override
+  public void setHadoopJobid(String jobId, long cqId) throws MetaException, TException {
+    client.set_hadoop_jobid(jobId, cqId);
   }
 }

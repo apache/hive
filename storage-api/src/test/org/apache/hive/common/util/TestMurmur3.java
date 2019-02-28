@@ -270,4 +270,51 @@ public class TestMurmur3 {
       assertEquals("Block size " + blockSize, expected, diff.end());
     }
   }
+
+  @Test
+  public void testTwoLongOrdered() {
+    ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES * 2);
+    for (long i = 0; i < 1000; i++) {
+      for (long j = 0; j < 1000; j++) {
+        buffer.putLong(0, i);
+        buffer.putLong(Long.BYTES, j);
+        assertEquals(Murmur3.hash32(buffer.array()), Murmur3.hash32(i, j));
+      }
+    }
+  }
+
+  @Test
+  public void testTwoLongRandom() {
+    ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES * 2);
+    Random random = new Random();
+    for (long i = 0; i < 1000; i++) {
+      for (long j = 0; j < 1000; j++) {
+        long x = random.nextLong();
+        long y = random.nextLong();
+        buffer.putLong(0, x);
+        buffer.putLong(Long.BYTES, y);
+        assertEquals(Murmur3.hash32(buffer.array()), Murmur3.hash32(x, y));
+      }
+    }
+  }
+
+  @Test
+  public void testSingleLongOrdered() {
+    ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+    for (long i = 0; i < 1000; i++) {
+      buffer.putLong(0, i);
+      assertEquals(Murmur3.hash32(buffer.array()), Murmur3.hash32(i));
+    }
+  }
+
+  @Test
+  public void testSingleLongRandom() {
+    ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+    Random random = new Random();
+    for (long i = 0; i < 1000; i++) {
+      long x = random.nextLong();
+      buffer.putLong(0, x);
+      assertEquals(Murmur3.hash32(buffer.array()), Murmur3.hash32(x));
+    }
+  }
 }

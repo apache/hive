@@ -69,7 +69,7 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
   HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3])
-    HiveFilter(condition=[CASE(>($2, 0), BETWEEN(false, /(CAST($3):DOUBLE, CAST($2):DOUBLE), 6.66667E-1, 1.5E0), null)])
+    HiveFilter(condition=[AND(CASE(>($2, 0), <=(6.66667E-1, /(CAST($3):DOUBLE, CAST($2):DOUBLE)), null), CASE(>($2, 0), <=(/(CAST($3):DOUBLE, CAST($2):DOUBLE), 1.5E0), null))])
       HiveAggregate(group=[{0, 1}], agg#0=[sum($2)], agg#1=[sum($3)])
         HiveProject($f0=[$1], $f1=[$10], $f2=[CASE($7, $5, 0)], $f3=[CASE($8, $5, 0)])
           HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])

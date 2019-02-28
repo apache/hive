@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,6 +62,7 @@ import org.apache.hadoop.hive.common.cli.EscapeCRLFHelper;
 import org.apache.hadoop.hive.common.cli.ShellCmdExecutor;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.common.io.FetchConverter;
+import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.Validator;
@@ -722,9 +724,12 @@ public class CliDriver {
     CliSessionState ss = new CliSessionState(new HiveConf(SessionState.class));
     ss.in = System.in;
     try {
-      ss.out = new PrintStream(System.out, true, "UTF-8");
-      ss.info = new PrintStream(System.err, true, "UTF-8");
-      ss.err = new CachingPrintStream(System.err, true, "UTF-8");
+      ss.out =
+          new SessionStream(System.out, true, StandardCharsets.UTF_8.name());
+      ss.info =
+          new SessionStream(System.err, true, StandardCharsets.UTF_8.name());
+      ss.err = new CachingPrintStream(System.err, true,
+          StandardCharsets.UTF_8.name());
     } catch (UnsupportedEncodingException e) {
       return 3;
     }

@@ -80,25 +80,23 @@ public abstract class DruidQueryRecordReader<R extends Comparable<R>> extends Re
     initialize(split, context.getConfiguration());
   }
 
-  public void initialize(InputSplit split,
-      Configuration conf,
-      ObjectMapper mapper,
-      ObjectMapper smileMapper,
-      HttpClient httpClient) throws IOException {
+  public void initialize(InputSplit split, ObjectMapper mapper, ObjectMapper smileMapper, HttpClient httpClient)
+      throws IOException {
     HiveDruidSplit hiveDruidSplit = (HiveDruidSplit) split;
     Preconditions.checkNotNull(hiveDruidSplit, "input split is null ???");
-    ObjectMapper mapper1 = Preconditions.checkNotNull(mapper, "object Mapper can not be null");
+    Preconditions.checkNotNull(httpClient, "need Http Client can not be null");
+    ObjectMapper objectMapper = Preconditions.checkNotNull(mapper, "object Mapper can not be null");
     // Smile mapper is used to read query results that are serialized as binary instead of json
     // Smile mapper is used to read query results that are serialized as binary instead of json
-    ObjectMapper smileMapper1 = Preconditions.checkNotNull(smileMapper, "Smile Mapper can not be null");
+    ObjectMapper smileObjectMapper = Preconditions.checkNotNull(smileMapper, "Smile Mapper can not be null");
     // Create query
-    this.query = mapper1.readValue(Preconditions.checkNotNull(hiveDruidSplit.getDruidQuery()), Query.class);
+    this.query = objectMapper.readValue(Preconditions.checkNotNull(hiveDruidSplit.getDruidQuery()), Query.class);
     Preconditions.checkNotNull(query);
     /*
       Result type definition used to read the rows, this is query dependent.
      */
     JavaType resultsType = getResultTypeDef();
-    HttpClient httpClient1 = Preconditions.checkNotNull(httpClient, "need Http Client");
+
     final String[] locations = hiveDruidSplit.getLocations();
     boolean initialized = false;
     int currentLocationIndex = 0;
@@ -112,10 +110,14 @@ public abstract class DruidQueryRecordReader<R extends Comparable<R>> extends Re
       LOG.debug("Retrieving data from druid location[{}] using query:[{}] ", address, query);
       try {
         Request request = DruidStorageHandlerUtils.createSmileRequest(address, query);
-        Future<InputStream> inputStreamFuture = httpClient1.go(request, new InputStreamResponseHandler());
+        Future<InputStream> inputStreamFuture = httpClient.go(request, new InputStreamResponseHandler());
         //noinspection unchecked
         queryResultsIterator =
-            new JsonParserIterator(smileMapper1, resultsType, inputStreamFuture, request.getUrl().toString(), query);
+            new JsonParserIterator(smileObjectMapper,
+                resultsType,
+                inputStreamFuture,
+                request.getUrl().toString(),
+                query);
         queryResultsIterator.init();
         initialized = true;
       } catch (IOException | ExecutionException | InterruptedException e) {
@@ -146,7 +148,6 @@ public abstract class DruidQueryRecordReader<R extends Comparable<R>> extends Re
 
   public void initialize(InputSplit split, Configuration conf) throws IOException {
     initialize(split,
-        conf,
         DruidStorageHandlerUtils.JSON_MAPPER,
         DruidStorageHandlerUtils.SMILE_MAPPER,
         DruidStorageHandler.getHttpClient());
@@ -175,8 +176,7 @@ public abstract class DruidQueryRecordReader<R extends Comparable<R>> extends Re
 
   @Override public abstract NullWritable getCurrentKey() throws IOException, InterruptedException;
 
-  @Override
-  public abstract DruidWritable getCurrentValue() throws IOException, InterruptedException;
+  @Override public abstract DruidWritable getCurrentValue() throws IOException, InterruptedException;
 
   @Override public abstract float getProgress() throws IOException;
 

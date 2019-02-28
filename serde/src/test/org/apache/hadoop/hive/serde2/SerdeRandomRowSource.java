@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
@@ -32,13 +33,13 @@ import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardMapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
@@ -73,12 +74,12 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
-import org.apache.hive.common.util.DateUtils;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hive.common.util.DateUtils;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
 
 /**
  * Generate object inspector and random row object[].
@@ -341,7 +342,7 @@ public class SerdeRandomRowSource {
   }
 
   private void chooseSchema(SupportedTypes supportedTypes, int maxComplexDepth) {
-    HashSet hashSet = null;
+    Set<Integer> hashSet = null;
     final boolean allTypes;
     final boolean onlyOne = (r.nextInt(100) == 7);
     if (onlyOne) {
@@ -400,7 +401,7 @@ public class SerdeRandomRowSource {
 
             typeNum = r.nextInt(maxTypeNum);
 
-            final Integer typeNumInteger = new Integer(typeNum);
+            final Integer typeNumInteger = Integer.valueOf(typeNum);
             if (!hashSet.contains(typeNumInteger)) {
               hashSet.add(typeNumInteger);
               break;

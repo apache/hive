@@ -58,6 +58,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.druid.DruidStorageHandler;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
+import org.apache.hadoop.hive.druid.conf.DruidConstants;
 import org.apache.hadoop.hive.druid.io.DruidRecordWriter;
 import org.apache.hadoop.hive.druid.serde.DruidWritable;
 import org.joda.time.DateTime;
@@ -86,7 +87,7 @@ import java.util.stream.Collectors;
 
   final List<ImmutableMap<String, Object>>
       expectedRows =
-      ImmutableList.of(ImmutableMap.of(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN,
+      ImmutableList.of(ImmutableMap.of(DruidConstants.DEFAULT_TIMESTAMP_COLUMN,
           DateTime.parse("2014-10-22T00:00:00.000Z").getMillis(),
           "host",
           ImmutableList.of("a.example.com"),
@@ -94,7 +95,7 @@ import java.util.stream.Collectors;
           190L,
           "unique_hosts",
           1.0d),
-          ImmutableMap.of(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN,
+          ImmutableMap.of(DruidConstants.DEFAULT_TIMESTAMP_COLUMN,
               DateTime.parse("2014-10-22T01:00:00.000Z").getMillis(),
               "host",
               ImmutableList.of("b.example.com"),
@@ -102,7 +103,7 @@ import java.util.stream.Collectors;
               175L,
               "unique_hosts",
               1.0d),
-          ImmutableMap.of(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN,
+          ImmutableMap.of(DruidConstants.DEFAULT_TIMESTAMP_COLUMN,
               DateTime.parse("2014-10-22T02:00:00.000Z").getMillis(),
               "host",
               ImmutableList.of("c.example.com"),
@@ -113,7 +114,7 @@ import java.util.stream.Collectors;
 
   @Test public void testTimeStampColumnName() {
     Assert.assertEquals("Time column name need to match to ensure serdeser compatibility",
-        DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN,
+        DruidConstants.DEFAULT_TIMESTAMP_COLUMN,
         DruidTable.DEFAULT_TIMESTAMP_COLUMN);
   }
 
@@ -127,7 +128,7 @@ import java.util.stream.Collectors;
 
     final InputRowParser
         inputRowParser =
-        new MapInputRowParser(new TimeAndDimsParseSpec(new TimestampSpec(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN,
+        new MapInputRowParser(new TimeAndDimsParseSpec(new TimestampSpec(DruidConstants.DEFAULT_TIMESTAMP_COLUMN,
             "auto",
             null), new DimensionsSpec(ImmutableList.of(new StringDimensionSchema("host")), null, null)));
     final Map<String, Object>
@@ -139,7 +140,7 @@ import java.util.stream.Collectors;
         dataSchema =
         new DataSchema(dataSourceName,
             parserMap,
-            new AggregatorFactory[] { new LongSumAggregatorFactory("visited_sum", "visited_sum"),
+            new AggregatorFactory[] {new LongSumAggregatorFactory("visited_sum", "visited_sum"),
                 new HyperUniquesAggregatorFactory("unique_hosts", "unique_hosts") },
             new UniformGranularitySpec(Granularities.DAY, Granularities.NONE, ImmutableList.of(INTERVAL_FULL)),
             null,
@@ -172,18 +173,20 @@ import java.util.stream.Collectors;
     }, objectMapper);
 
     Path
-        segmentDescriptroPath =
+        segmentDescriptorPath =
         new Path(workingDir.getAbsolutePath(), DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME);
     DruidRecordWriter
         druidRecordWriter =
-        new DruidRecordWriter(dataSchema, tuningConfig, dataSegmentPusher, 20, segmentDescriptroPath, localFileSystem);
+        new DruidRecordWriter(dataSchema, tuningConfig, dataSegmentPusher, 20, segmentDescriptorPath, localFileSystem);
 
     List<DruidWritable>
         druidWritables =
         expectedRows.stream()
             .map(input -> new DruidWritable(ImmutableMap.<String, Object>builder().putAll(input)
                 .put(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME,
-                    Granularities.DAY.bucketStart(new DateTime((long) input.get(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN)))
+                    Granularities
+                        .DAY
+                        .bucketStart(new DateTime((long) input.get(DruidConstants.DEFAULT_TIMESTAMP_COLUMN)))
                         .getMillis())
                 .build()))
             .collect(Collectors.toList());
@@ -191,7 +194,7 @@ import java.util.stream.Collectors;
       druidRecordWriter.write(druidWritable);
     }
     druidRecordWriter.close(false);
-    List<DataSegment> dataSegmentList = DruidStorageHandlerUtils.getCreatedSegments(segmentDescriptroPath, config);
+    List<DataSegment> dataSegmentList = DruidStorageHandlerUtils.getCreatedSegments(segmentDescriptorPath, config);
     Assert.assertEquals(1, dataSegmentList.size());
     File tmpUnzippedSegmentDir = temporaryFolder.newFolder();
     new LocalDataSegmentPuller().getSegmentFiles(dataSegmentList.get(0), tmpUnzippedSegmentDir);
@@ -226,7 +229,7 @@ import java.util.stream.Collectors;
 
       Assert.assertEquals(ImmutableList.of("host"), actual.getDimensions());
 
-      Assert.assertEquals(expected.get(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN),
+      Assert.assertEquals(expected.get(DruidConstants.DEFAULT_TIMESTAMP_COLUMN),
           actual.getTimestamp().getMillis());
       Assert.assertEquals(expected.get("host"), actual.getDimension("host"));
       Assert.assertEquals(expected.get("visited_sum"), actual.getMetric("visited_sum"));
@@ -239,7 +242,15 @@ import java.util.stream.Collectors;
   @Test public void testSerDesr() throws IOException {
     String
         segment =
-        "{\"dataSource\":\"datasource2015\",\"interval\":\"2015-06-01T00:00:00.000-04:00/2015-06-02T00:00:00.000-04:00\",\"version\":\"2016-11-04T19:24:01.732-04:00\",\"loadSpec\":{\"type\":\"hdfs\",\"path\":\"hdfs://cn105-10.l42scl.hortonworks.com:8020/apps/hive/warehouse/druid.db/.hive-staging_hive_2016-11-04_19-23-50_168_1550339856804207572-1/_task_tmp.-ext-10002/_tmp.000000_0/datasource2015/20150601T000000.000-0400_20150602T000000.000-0400/2016-11-04T19_24_01.732-04_00/0/index.zip\"},\"dimensions\":\"dimension1\",\"metrics\":\"bigint\",\"shardSpec\":{\"type\":\"linear\",\"partitionNum\":0},\"binaryVersion\":9,\"size\":1765,\"identifier\":\"datasource2015_2015-06-01T00:00:00.000-04:00_2015-06-02T00:00:00.000-04:00_2016-11-04T19:24:01.732-04:00\"}";
+        "{\"dataSource\":\"datasource2015\",\"interval\":\"2015-06-01T00:00:00.000-04:00/"
+            + "2015-06-02T00:00:00.000-04:00\""
+            + ",\"version\":\"2016-11-04T19:24:01.732-04:00\",\"loadSpec\":{\"type\":\"hdfs\","
+            + "\"path\":\"hdfs://cn105-10.l42scl.hortonworks.com:8020/apps/hive/warehouse/druid.db/"
+            + ".hive-staging_hive_2016-11-04_19-23-50_168_1550339856804207572-1/_task_tmp.-ext-10002/_tmp.000000_0/"
+            + "datasource2015/20150601T000000.000-0400_20150602T000000.000-0400/2016-11-04T19_24_01.732-04_00/0/"
+            + "index.zip\"},\"dimensions\":\"dimension1\",\"metrics\":\"bigint\",\"shardSpec\":{\"type\":\"linear\","
+            + "\"partitionNum\":0},\"binaryVersion\":9,\"size\":1765,\"identifier\":\"datasource2015_2015-06-01"
+            + "T00:00:00.000-04:00_2015-06-02T00:00:00.000-04:00_2016-11-04T19:24:01.732-04:00\"}";
     DataSegment dataSegment = objectMapper.readerFor(DataSegment.class).readValue(segment);
     Assert.assertEquals("datasource2015", dataSegment.getDataSource());
   }

@@ -22,6 +22,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -61,7 +62,7 @@ public abstract class Operation {
   private final OperationHandle opHandle;
   public static final FetchOrientation DEFAULT_FETCH_ORIENTATION = FetchOrientation.FETCH_NEXT;
   public static final Logger LOG = LoggerFactory.getLogger(Operation.class.getName());
-  protected boolean hasResultSet;
+  protected Boolean hasResultSet = null;
   protected volatile HiveSQLException operationException;
   protected volatile Future<?> backgroundHandle;
   protected OperationLog operationLog;
@@ -71,6 +72,7 @@ public abstract class Operation {
   private long operationTimeout;
   private volatile long lastAccessTime;
   private final long beginTime;
+  private final CountDownLatch opTerminateMonitorLatch;
 
   protected long operationStart;
   protected long operationComplete;
@@ -89,6 +91,7 @@ public abstract class Operation {
       Map<String, String> confOverlay, OperationType opType) {
     this.parentSession = parentSession;
     this.opHandle = new OperationHandle(opType, parentSession.getProtocolVersion());
+    opTerminateMonitorLatch = new CountDownLatch(1);
     beginTime = System.currentTimeMillis();
     lastAccessTime = beginTime;
     operationTimeout = HiveConf.getTimeVar(parentSession.getHiveConf(),
@@ -143,7 +146,7 @@ public abstract class Operation {
   }
 
   public boolean hasResultSet() {
-    return hasResultSet;
+    return hasResultSet == null ? false : hasResultSet;
   }
 
   protected void setHasResultSet(boolean hasResultSet) {
@@ -207,6 +210,16 @@ public abstract class Operation {
 
   public boolean isDone() {
     return state.isTerminal();
+  }
+
+  /**
+   * Wait until the operation terminates and returns false if timeout.
+   * @param timeOutMs - timeout in milli-seconds
+   * @return true if operation is terminated or false if timed-out
+   * @throws InterruptedException
+   */
+  public boolean waitToTerminate(long timeOutMs) throws InterruptedException {
+    return opTerminateMonitorLatch.await(timeOutMs, TimeUnit.MILLISECONDS);
   }
 
   protected void createOperationLog() {
@@ -399,6 +412,11 @@ public abstract class Operation {
       case CANCELED:
         markOperationCompletedTime();
         break;
+    }
+
+    if (state.isTerminal()) {
+      // Unlock the execution thread as operation is already terminated.
+      opTerminateMonitorLatch.countDown();
     }
   }
 

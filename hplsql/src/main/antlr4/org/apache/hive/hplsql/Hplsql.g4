@@ -227,7 +227,7 @@ create_local_temp_table_stmt :
      ;
      
 create_table_definition :
-      (T_AS? T_OPEN_P select_stmt T_CLOSE_P | T_AS? select_stmt | T_OPEN_P create_table_columns T_CLOSE_P) create_table_options?
+      (T_AS? T_OPEN_P select_stmt T_CLOSE_P | T_AS? select_stmt | T_OPEN_P create_table_columns T_CLOSE_P | T_LIKE table_name) create_table_options?
      ;
      
 create_table_columns :         
@@ -363,6 +363,7 @@ alter_table_add_constraint_item :
      
 dtype :                  // Data types
        T_CHAR
+     | T_CHARACTER
      | T_BIGINT
      | T_BINARY_DOUBLE
      | T_BINARY_FLOAT
@@ -1182,7 +1183,7 @@ timestamp_literal :                       // TIMESTAMP 'YYYY-MM-DD HH:MI:SS.FFF'
      ;
      
 ident :
-       (L_ID | non_reserved_words) ('.' (L_ID | non_reserved_words))* 
+       '-'? (L_ID | non_reserved_words) ('.' (L_ID | non_reserved_words))*
      ;
      
 string :                                   // String literal (single or double quoted)

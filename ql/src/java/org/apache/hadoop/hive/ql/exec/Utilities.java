@@ -18,12 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-
 import java.beans.DefaultPersistenceDelegate;
 import java.beans.Encoder;
 import java.beans.Expression;
@@ -53,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,16 +60,17 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
-
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.collections.CollectionUtils;
@@ -138,7 +134,6 @@ import org.apache.hadoop.hive.ql.io.OneNullRowInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFile;
 import org.apache.hadoop.hive.ql.io.ReworkMapredInputFormat;
 import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
-import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDelta;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileMapper;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
 import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateMapper;
@@ -211,9 +206,12 @@ import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import com.esotericsoftware.kryo.Kryo;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 
 /**
@@ -667,8 +665,11 @@ public final class Utilities {
       // this is the unique conf ID, which is kept in JobConf as part of the plan file name
       String jobID = UUID.randomUUID().toString();
       Path planPath = new Path(hiveScratchDir, jobID);
-      FileSystem fs = planPath.getFileSystem(conf);
-      fs.mkdirs(planPath);
+      if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
+        FileSystem fs = planPath.getFileSystem(conf);
+        // since we are doing RPC creating a directory is un-necessary
+        fs.mkdirs(planPath);
+      }
       HiveConf.setVar(conf, HiveConf.ConfVars.PLAN, planPath.toUri().toString());
     }
   }
@@ -1305,7 +1306,7 @@ public final class Utilities {
    *          filename to extract taskid from
    */
   public static String getTaskIdFromFilename(String filename) {
-    return getIdFromFilename(filename, FILE_NAME_TO_TASK_ID_REGEX);
+    return getTaskIdFromFilename(filename, FILE_NAME_TO_TASK_ID_REGEX);
   }
 
   /**
@@ -1316,10 +1317,19 @@ public final class Utilities {
    *          filename to extract taskid from
    */
   public static String getPrefixedTaskIdFromFilename(String filename) {
-    return getIdFromFilename(filename, FILE_NAME_PREFIXED_TASK_ID_REGEX);
+    return getTaskIdFromFilename(filename, FILE_NAME_PREFIXED_TASK_ID_REGEX);
   }
 
-  private static String getIdFromFilename(String filename, Pattern pattern) {
+  private static String getTaskIdFromFilename(String filename, Pattern pattern) {
+    return getIdFromFilename(filename, pattern, 1);
+  }
+
+  public static int getAttemptIdFromFilename(String filename) {
+    String attemptStr = getIdFromFilename(filename, FILE_NAME_PREFIXED_TASK_ID_REGEX, 3);
+    return Integer.parseInt(attemptStr.substring(1));
+  }
+
+  private static String getIdFromFilename(String filename, Pattern pattern, int group) {
     String taskId = filename;
     int dirEnd = filename.lastIndexOf(Path.SEPARATOR);
     if (dirEnd != -1) {
@@ -1331,7 +1341,7 @@ public final class Utilities {
       LOG.warn("Unable to get task id from file name: {}. Using last component {}"
           + " as task id.", filename, taskId);
     } else {
-      taskId = m.group(1);
+      taskId = m.group(group);
     }
     LOG.debug("TaskId for {} = {}", filename, taskId);
     return taskId;
@@ -1820,10 +1830,10 @@ public final class Utilities {
 
   private static FileStatus compareTempOrDuplicateFiles(FileSystem fs,
       FileStatus file, FileStatus existingFile) throws IOException {
-    // Compare the file sizes of all the attempt files for the same task, the largest win
-    // any attempt files could contain partial results (due to task failures or
-    // speculative runs), but the largest should be the correct one since the result
-    // of a successful run should never be smaller than a failed/speculative run.
+    // Pick the one with mewest attempt ID. For sanity, check the file sizes too.
+    // If the file size of newest attempt is less than that for older one,
+    // Throw an exception as it maybe a correctness issue causing it.
+    // This breaks speculative execution if it ends prematurely.
     FileStatus toDelete = null, toRetain = null;
 
     // "LOAD .. INTO" and "INSERT INTO" commands will generate files with
@@ -1844,12 +1854,26 @@ public final class Utilities {
       return existingFile;
     }
 
-    if (existingFile.getLen() >= file.getLen()) {
-      toDelete = file;
+    int existingFileAttemptId = getAttemptIdFromFilename(existingFile.getPath().getName());
+    int fileAttemptId = getAttemptIdFromFilename(file.getPath().getName());
+
+    long existingFileSz = getFileSizeRecursively(fs, existingFile);
+    long fileSz = getFileSizeRecursively(fs, file);
+    // Files may come in any order irrespective of their attempt IDs
+    if (existingFileAttemptId > fileAttemptId &&
+        existingFileSz >= fileSz) {
+      // keep existing
       toRetain = existingFile;
-    } else {
-      toDelete = existingFile;
+      toDelete = file;
+    } else if (existingFileAttemptId < fileAttemptId &&
+        existingFileSz <= fileSz) {
+      // keep file
       toRetain = file;
+      toDelete = existingFile;
+    } else {
+      throw new IOException(" File " + filePath +
+        " with newer attempt ID " + fileAttemptId + " is smaller than the file "
+        + existingFile.getPath() + " with older attempt ID " + existingFileAttemptId);
     }
     if (!fs.delete(toDelete.getPath(), true)) {
       throw new IOException(
@@ -1860,7 +1884,31 @@ public final class Utilities {
           + toDelete.getLen() + ". Existing file: " + toRetain.getPath() + " with length "
           + toRetain.getLen());
     }
+
     return toRetain;
+  }
+
+  // This function recurisvely fetches the size of all the files in given directory
+  private static long getFileSizeRecursively(FileSystem fs, FileStatus src)
+  throws IOException {
+    long size = 0;
+    if (src.isDirectory()) {
+      LOG.debug(" src " + src.getPath() + " is a directory");
+      // This is a directory.
+      try {
+        FileStatus[] files = fs.listStatus(src.getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
+        // Recursively fetch sizes of each file
+        for (FileStatus file : files) {
+          size += getFileSizeRecursively(fs, file);
+        }
+      } catch (IOException e) {
+        throw new IOException("Unable to fetch files in directory " + src.getPath());
+      }
+    } else {
+      size = src.getLen();
+      LOG.debug("src " + src.getPath() + " is a file of size " + size);
+    }
+    return size;
   }
 
   public static boolean isCopyFile(String filename) {
@@ -2385,36 +2433,32 @@ public final class Utilities {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.INPUT_SUMMARY);
 
-    long[] summary = {0, 0, 0};
-
+    final long[] summary = {0L, 0L, 0L};
     final Set<Path> pathNeedProcess = new HashSet<>();
 
     // Since multiple threads could call this method concurrently, locking
     // this method will avoid number of threads out of control.
     synchronized (INPUT_SUMMARY_LOCK) {
       // For each input path, calculate the total size.
-      for (Path path : work.getPathToAliases().keySet()) {
-        Path p = path;
-
-        if (filter != null && !filter.accept(p)) {
+      for (final Path path : work.getPathToAliases().keySet()) {
+        if (path == null) {
+          continue;
+        }
+        if (filter != null && !filter.accept(path)) {
           continue;
         }
 
         ContentSummary cs = ctx.getCS(path);
-        if (cs == null) {
-          if (path == null) {
-            continue;
-          }
-          pathNeedProcess.add(path);
-        } else {
+        if (cs != null) {
           summary[0] += cs.getLength();
           summary[1] += cs.getFileCount();
           summary[2] += cs.getDirectoryCount();
+        } else {
+          pathNeedProcess.add(path);
         }
       }
 
       // Process the case when name node call is needed
-      final Map<String, ContentSummary> resultMap = new ConcurrentHashMap<String, ContentSummary>();
       final ExecutorService executor;
 
       int numExecutors = getMaxExecutorsForInputListing(ctx.getConf(), pathNeedProcess.size());
@@ -2426,17 +2470,36 @@ public final class Utilities {
       } else {
         executor = null;
       }
-      ContentSummary cs = getInputSummaryWithPool(ctx, pathNeedProcess, work, summary, executor);
+      getInputSummaryWithPool(ctx, Collections.unmodifiableSet(pathNeedProcess),
+          work, summary, executor);
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.INPUT_SUMMARY);
-      return cs;
     }
+    return new ContentSummary.Builder().length(summary[0])
+        .fileCount(summary[1]).directoryCount(summary[2]).build();
   }
 
+  /**
+   * Performs a ContentSummary lookup over a set of paths using 1 or more
+   * threads. The 'summary' argument is directly modified.
+   *
+   * @param ctx
+   * @param pathNeedProcess
+   * @param work
+   * @param summary
+   * @param executor
+   * @throws IOException
+   */
   @VisibleForTesting
-  static ContentSummary getInputSummaryWithPool(final Context ctx, Set<Path> pathNeedProcess, MapWork work,
-                                                long[] summary, ExecutorService executor) throws IOException {
-    List<Future<?>> results = new ArrayList<Future<?>>();
-    final Map<String, ContentSummary> resultMap = new ConcurrentHashMap<String, ContentSummary>();
+  static void getInputSummaryWithPool(final Context ctx,
+      final Set<Path> pathNeedProcess, final MapWork work, final long[] summary,
+      final ExecutorService executor) throws IOException {
+    Preconditions.checkNotNull(ctx);
+    Preconditions.checkNotNull(pathNeedProcess);
+
+    List<Future<?>> futures = new ArrayList<Future<?>>(pathNeedProcess.size());
+    final AtomicLong totalLength = new AtomicLong(0L);
+    final AtomicLong totalFileCount = new AtomicLong(0L);
+    final AtomicLong totalDirectoryCount = new AtomicLong(0L);
 
     HiveInterruptCallback interrup = HiveInterruptUtils.add(new HiveInterruptCallback() {
       @Override
@@ -2456,9 +2519,7 @@ public final class Utilities {
     try {
       Configuration conf = ctx.getConf();
       JobConf jobConf = new JobConf(conf);
-      for (Path path : pathNeedProcess) {
-        final Path p = path;
-        final String pathStr = path.toString();
+      for (final Path path : pathNeedProcess) {
         // All threads share the same Configuration and JobConf based on the
         // assumption that they are thread safe if only read operations are
         // executed. It is not stated in Hadoop's javadoc, the sourcce codes
@@ -2469,7 +2530,7 @@ public final class Utilities {
         final JobConf myJobConf = jobConf;
         final Map<String, Operator<?>> aliasToWork = work.getAliasToWork();
         final Map<Path, ArrayList<String>> pathToAlias = work.getPathToAliases();
-        final PartitionDesc partDesc = work.getPathToPartitionInfo().get(p);
+        final PartitionDesc partDesc = work.getPathToPartitionInfo().get(path);
         Runnable r = new Runnable() {
           @Override
           public void run() {
@@ -2479,11 +2540,11 @@ public final class Utilities {
               InputFormat inputFormatObj = HiveInputFormat.getInputFormatFromCache(
                       inputFormatCls, myJobConf);
               if (inputFormatObj instanceof ContentSummaryInputFormat) {
-                ContentSummaryInputFormat cs = (ContentSummaryInputFormat) inputFormatObj;
-                resultMap.put(pathStr, cs.getContentSummary(p, myJobConf));
+                ContentSummaryInputFormat csif = (ContentSummaryInputFormat) inputFormatObj;
+                final ContentSummary cs = csif.getContentSummary(path, myJobConf);
+                recordSummary(path, cs);
                 return;
               }
-
               String metaTableStorage = null;
               if (partDesc.getTableDesc() != null &&
                       partDesc.getTableDesc().getProperties() != null) {
@@ -2500,7 +2561,7 @@ public final class Utilities {
                 long total = 0;
                 TableDesc tableDesc = partDesc.getTableDesc();
                 InputEstimator estimator = (InputEstimator) handler;
-                for (String alias : HiveFileFormatUtils.doGetAliasesFromPath(pathToAlias, p)) {
+                for (String alias : HiveFileFormatUtils.doGetAliasesFromPath(pathToAlias, path)) {
                   JobConf jobConf = new JobConf(myJobConf);
                   TableScanOperator scanOp = (TableScanOperator) aliasToWork.get(alias);
                   Utilities.setColumnNameList(jobConf, scanOp, true);
@@ -2509,12 +2570,12 @@ public final class Utilities {
                   Utilities.copyTableJobPropertiesToConf(tableDesc, jobConf);
                   total += estimator.estimate(jobConf, scanOp, -1).getTotalLength();
                 }
-                resultMap.put(pathStr, new ContentSummary(total, -1, -1));
+                recordSummary(path, new ContentSummary(total, -1, -1));
               } else {
                 // todo: should nullify summary for non-native tables,
                 // not to be selected as a mapjoin target
-                FileSystem fs = p.getFileSystem(myConf);
-                resultMap.put(pathStr, fs.getContentSummary(p));
+                FileSystem fs = path.getFileSystem(myConf);
+                recordSummary(path, fs.getContentSummary(path));
               }
             } catch (Exception e) {
               // We safely ignore this exception for summary data.
@@ -2522,28 +2583,46 @@ public final class Utilities {
               // usages. The worst case is that IOException will always be
               // retried for another getInputSummary(), which is fine as
               // IOException is not considered as a common case.
-              LOG.info("Cannot get size of {}. Safely ignored.", pathStr);
+              LOG.info("Cannot get size of {}. Safely ignored.", path);
+              LOG.debug("Cannot get size of {}. Safely ignored.", path, e);
             }
+          }
+
+          private void recordSummary(final Path p, final ContentSummary cs) {
+            final long csLength = cs.getLength();
+            final long csFileCount = cs.getFileCount();
+            final long csDirectoryCount = cs.getDirectoryCount();
+
+            totalLength.addAndGet(csLength);
+            totalFileCount.addAndGet(csFileCount);
+            totalDirectoryCount.addAndGet(csDirectoryCount);
+
+            ctx.addCS(p.toString(), cs);
+
+            LOG.debug(
+                "Cache Content Summary for {} length: {} file count: {} "
+                    + "directory count: {}",
+                path, csLength, csFileCount, csDirectoryCount);
           }
         };
 
         if (executor == null) {
           r.run();
         } else {
-          Future<?> result = executor.submit(r);
-          results.add(result);
+          Future<?> future = executor.submit(r);
+          futures.add(future);
         }
       }
 
       if (executor != null) {
-        for (Future<?> result : results) {
+        for (Future<?> future : futures) {
           boolean executorDone = false;
           do {
             try {
-              result.get();
+              future.get();
               executorDone = true;
             } catch (InterruptedException e) {
-              LOG.info("Interrupted when waiting threads: ", e);
+              LOG.info("Interrupted when waiting threads", e);
               Thread.currentThread().interrupt();
               break;
             } catch (ExecutionException e) {
@@ -2554,22 +2633,10 @@ public final class Utilities {
         executor.shutdown();
       }
       HiveInterruptUtils.checkInterrupted();
-      for (Map.Entry<String, ContentSummary> entry : resultMap.entrySet()) {
-        ContentSummary cs = entry.getValue();
 
-        summary[0] += cs.getLength();
-        summary[1] += cs.getFileCount();
-        summary[2] += cs.getDirectoryCount();
-
-        ctx.addCS(entry.getKey(), cs);
-        if (LOG.isInfoEnabled()) {
-          LOG.info("Cache Content Summary for {} length: {} file count: {} " +
-            " directory count: {}", entry.getKey(), cs.getLength(),
-            cs.getFileCount(), cs.getDirectoryCount());
-        }
-      }
-
-      return new ContentSummary(summary[0], summary[1], summary[2]);
+      summary[0] += totalLength.get();
+      summary[1] += totalFileCount.get();
+      summary[2] += totalDirectoryCount.get();
     } finally {
       if (executor != null) {
         executor.shutdownNow();
@@ -2817,8 +2884,7 @@ public final class Utilities {
   }
 
   public static String generateFileName(Byte tag, String bigBucketFileName) {
-    String fileName = new String("MapJoin-" + tag + "-" + bigBucketFileName + suffix);
-    return fileName;
+    return "MapJoin-" + tag + "-" + bigBucketFileName + suffix;
   }
 
   public static Path generateTmpPath(Path basePath, String id) {
@@ -2834,8 +2900,7 @@ public final class Utilities {
   }
 
   public static String generatePath(Path baseURI, String filename) {
-    String path = new String(baseURI + Path.SEPARATOR + filename);
-    return path;
+    return baseURI + Path.SEPARATOR + filename;
   }
 
   public static String now() {

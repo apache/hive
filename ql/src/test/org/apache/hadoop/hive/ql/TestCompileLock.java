@@ -64,6 +64,8 @@ import static org.mockito.Matchers.eq;
 public class TestCompileLock {
 
   private static final int CONCURRENT_COMPILATION = 15151;
+  private static final String SHORT_QUERY = "<SHORT_QUERY>";
+  private static final String LONG_QUERY = "<LONG_QUERY>";
 
   private Driver driver;
   private HiveConf conf;
@@ -90,7 +92,13 @@ public class TestCompileLock {
       Thread.sleep(500);
       verifyThatWaitingCompileOpsCountIsEqualTo(count.decrementAndGet());
       return null;
-    }).when(driver).compile(eq("<QUERY>"), eq(true), eq(false));
+    }).when(driver).compile(eq(SHORT_QUERY), eq(true), eq(false));
+
+    Mockito.doAnswer(invocation -> {
+      Thread.sleep(5000);
+      verifyThatWaitingCompileOpsCountIsEqualTo(count.decrementAndGet());
+      return null;
+    }).when(driver).compile(eq(LONG_QUERY), eq(true), eq(false));
   }
 
   @Test
@@ -161,6 +169,23 @@ public class TestCompileLock {
     verifyThatTimedOutCompileOpsCountIsNotZero(responseList);
   }
 
+  /**
+   * Test that checks that the queries above the quota are timed out, so the compilation quota maximum is honored.
+   * @throws Exception
+   */
+  @Test
+  public void testParallelCompilationTimeoutWithMultipleQuota() throws Exception {
+    conf.setBoolVar(HIVE_SERVER2_PARALLEL_COMPILATION, true);
+    conf.setIntVar(HIVE_SERVER2_PARALLEL_COMPILATION_LIMIT, 4);
+    conf.setTimeVar(HIVE_SERVER2_COMPILE_LOCK_TIMEOUT, 1, TimeUnit.SECONDS);
+
+    initDriver(conf, 10);
+    List<CommandProcessorResponse> responseList = compileAndRespond(LONG_QUERY, 10);
+
+    verifyThatWaitingCompileOpsCountIsEqualTo(0);
+    verifyThatTimedOutCompileOpsCount(responseList, 6);
+  }
+
   @Test
   public void testParallelCompilationWithSingleQuotaAndZeroTimeout() throws Exception {
     conf.setBoolVar(HIVE_SERVER2_PARALLEL_COMPILATION, true);
@@ -220,10 +245,20 @@ public class TestCompileLock {
   }
 
   private List<CommandProcessorResponse> compileAndRespond(int threadCount) throws Exception {
-    return compileAndRespond(false, threadCount);
+    return compileAndRespond(SHORT_QUERY, false, threadCount);
   }
 
   private List<CommandProcessorResponse> compileAndRespond(boolean reuseSession, int threadCount) throws Exception {
+    return compileAndRespond(SHORT_QUERY, reuseSession, threadCount);
+  }
+
+
+  private List<CommandProcessorResponse> compileAndRespond(String query, int threadCount) throws Exception {
+    return compileAndRespond(query, false, threadCount);
+  }
+
+  private List<CommandProcessorResponse> compileAndRespond(String query, boolean reuseSession, int threadCount)
+      throws Exception {
     List<CommandProcessorResponse> responseList = new ArrayList<>();
     SessionState sessionState = new SessionState(conf);
 
@@ -235,7 +270,7 @@ public class TestCompileLock {
 
         CommandProcessorResponse response;
         try{
-          response = driver.compileAndRespond("<QUERY>");
+          response = driver.compileAndRespond(query);
 
         } finally {
           SessionState.detachSession();
@@ -290,6 +325,11 @@ public class TestCompileLock {
   private void verifyThatTimedOutCompileOpsCountIsNotZero(List<CommandProcessorResponse> responseList) {
     verifyErrorCount(ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCode(),
         is(not(equalTo(0))), responseList);
+  }
+
+  private void verifyThatTimedOutCompileOpsCount(List<CommandProcessorResponse> responseList, int count) {
+    verifyErrorCount(ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCode(),
+        is(equalTo(count)), responseList);
   }
 
   private void verifyThatConcurrentCompilationWasIndeed(List<CommandProcessorResponse> responseList){

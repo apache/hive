@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import io.druid.data.input.MapBasedRow;
 import io.druid.data.input.Row;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
+import org.apache.hadoop.hive.druid.conf.DruidConstants;
 import org.apache.hadoop.io.NullWritable;
 
 import java.io.IOException;
@@ -62,7 +63,7 @@ public class DruidGroupByQueryRecordReader extends DruidQueryRecordReader<Row> {
     // Create new value
     DruidWritable value = new DruidWritable(false);
     // 1) The timestamp column
-    value.getValue().put(DruidStorageHandlerUtils.EVENT_TIMESTAMP_COLUMN,
+    value.getValue().put(DruidConstants.EVENT_TIMESTAMP_COLUMN,
         currentRow.getTimestamp() == null ? null : currentRow.getTimestamp().getMillis()
     );
     // 2) The dimension columns
@@ -75,7 +76,7 @@ public class DruidGroupByQueryRecordReader extends DruidQueryRecordReader<Row> {
       // Update value
       value.getValue().clear();
       // 1) The timestamp column
-      value.getValue().put(DruidStorageHandlerUtils.EVENT_TIMESTAMP_COLUMN,
+      value.getValue().put(DruidConstants.EVENT_TIMESTAMP_COLUMN,
           currentRow.getTimestamp() == null ? null : currentRow.getTimestamp().getMillis()
       );
       // 2) The dimension columns

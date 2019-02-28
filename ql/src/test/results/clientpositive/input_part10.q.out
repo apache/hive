@@ -53,6 +53,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: int), _col1 (type: int)
       Execution mode: vectorized
       Reduce Operator Tree:
