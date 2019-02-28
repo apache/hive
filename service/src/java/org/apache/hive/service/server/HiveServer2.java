@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
+import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.session.ClearDanglingScratchDir;
 import org.apache.hadoop.hive.ql.util.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -160,6 +161,9 @@ public class HiveServer2 extends CompositeService {
     if (llapHosts != null && !llapHosts.isEmpty()) {
       LlapRegistryService.getClient(hiveConf);
     }
+
+    // Initialize metadata provider class
+    CalcitePlanner.initializeMetadataProviderClass();
 
     // Create views registry
     try {

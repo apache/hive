@@ -1332,20 +1332,24 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // Create and set MD provider
       HiveDefaultRelMetadataProvider mdProvider = new HiveDefaultRelMetadataProvider(conf);
-      RelMetadataQuery.THREAD_PROVIDERS.set(
-              JaninoRelMetadataProvider.of(mdProvider.getMetadataProvider()));
+      RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider.getMetadataProvider()));
 
       // Create executor
       Executor executorProvider = new HiveRexExecutorImpl(optCluster);
 
       //Remove subquery
-      LOG.debug("Plan before removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Plan before removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
+      }
       calciteGenPlan = hepPlan(calciteGenPlan, false, mdProvider.getMetadataProvider(), null,
               HiveSubQueryRemoveRule.FILTER, HiveSubQueryRemoveRule.PROJECT);
-      LOG.debug("Plan just after removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
-
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Plan just after removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
+      }
       calciteGenPlan = HiveRelDecorrelator.decorrelateQuery(calciteGenPlan);
-      LOG.debug("Plan after decorrelation:\n" + RelOptUtil.toString(calciteGenPlan));
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Plan after decorrelation:\n" + RelOptUtil.toString(calciteGenPlan));
+      }
 
       // 2. Apply pre-join order optimizations
       calcitePreCboPlan = applyPreJoinOrderingTransforms(calciteGenPlan,
@@ -4193,6 +4197,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       return tabAliases;
     }
+  }
+
+  /**
+   * This method can be called at startup time to pre-register all the
+   * additional Hive classes (compared to Calcite core classes) that may
+   * be visited during the planning phase.
+   */
+  public static void initializeMetadataProviderClass() {
+    HiveDefaultRelMetadataProvider.initializeMetadataProviderClass();
   }
 
   private enum TableType {
