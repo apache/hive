@@ -16,93 +16,51 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.database;
 
 import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * DescDatabaseDesc.
- *
+ * DDL task description for DESC DATABASE commands.
  */
 @Explain(displayName = "Describe Database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class DescDatabaseDesc extends DDLDesc implements Serializable {
-
+public class DescDatabaseDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
-  String dbName;
-  String resFile;
-  boolean isExt;
+  public static final String DESC_DATABASE_SCHEMA =
+      "db_name,comment,location,owner_name,owner_type,parameters#string:string:string:string:string:string";
 
-  /**
-   * thrift ddl for the result of describe database.
-   */
-  private static final String schema = "db_name,comment,location,owner_name,owner_type,parameters#string:string:string:string:string:string";
-
-  public DescDatabaseDesc() {
+  static {
+    DDLTask2.registerOperation(DescDatabaseDesc.class, DescDatabaseOperation.class);
   }
 
-  /**
-   * @param resFile
-   * @param dbName
-   * @param isExt
-   */
+  private final String resFile;
+  private final String dbName;
+  private final boolean isExt;
+
   public DescDatabaseDesc(Path resFile, String dbName, boolean isExt) {
     this.isExt = isExt;
     this.resFile = resFile.toString();
     this.dbName = dbName;
   }
 
-  public static String getSchema() {
-    return schema;
-  }
-
-  /**
-   * @return the isExt
-   */
   public boolean isExt() {
     return isExt;
   }
 
-  /**
-   * @param isExt
-   *          the isExt to set
-   */
-  public void setExt(boolean isExt) {
-    this.isExt = isExt;
-  }
-
-  /**
-   * @return the tableName
-   */
   @Explain(displayName = "database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getDatabaseName() {
     return dbName;
   }
 
-  /**
-   * @param db
-   *          the database name to set
-   */
-  public void setDatabaseName(String db) {
-    this.dbName = db;
-  }
-
-  /**
-   * @return the resFile
-   */
   @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
   public String getResFile() {
     return resFile;
-  }
-
-  /**
-   * @param resFile
-   *          the resFile to set
-   */
-  public void setResFile(String resFile) {
-    this.resFile = resFile;
   }
 }
