@@ -268,7 +268,9 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   // Also include partition list key to trigger cost evaluation even if an
   // expression was already generated.
   public String computeDigest() {
-    String digest = super.computeDigest() + "[" + this.isInsideView() + "]";
+    String digest = super.computeDigest() +
+        "[" + this.neededColIndxsFrmReloptHT + "]" +
+        "[" + this.isInsideView() + "]";
     String partitionListKey = ((RelOptHiveTable) table).getPartitionListKey();
     if (partitionListKey != null) {
       return digest + "[" + partitionListKey + "]";
