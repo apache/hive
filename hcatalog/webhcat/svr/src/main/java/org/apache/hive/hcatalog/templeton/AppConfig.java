@@ -163,6 +163,7 @@ public class AppConfig extends Configuration {
    * of escape/unescape methods in {@link org.apache.hadoop.util.StringUtils} in webhcat.
    */
   public static final String HIVE_PROPS_NAME     = "templeton.hive.properties";
+  public static final String HIVE_SERVER2_URL    = "templeton.hive.hs2.url";
   public static final String SQOOP_ARCHIVE_NAME  = "templeton.sqoop.archive";
   public static final String SQOOP_PATH_NAME     = "templeton.sqoop.path";
   public static final String SQOOP_HOME_PATH     = "templeton.sqoop.home";
