@@ -154,7 +154,7 @@ HiveProject(ca_county=[$8], d_year=[CAST(2000):INTEGER], web_q1_q2_increase=[/($
               HiveProject(d_date_sk=[$0])
                 HiveFilter(condition=[AND(=($6, 2000), =($10, 2), IS NOT NULL($0))])
                   HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-    HiveProject(ca_county=[$0], $f1=[$1], ca_county0=[$2], $f10=[$3], ca_county1=[$4], $f11=[$5])
+    HiveProject($f0=[$0], $f1=[$1], $f00=[$2], $f10=[$3], $f01=[$4], $f11=[$5])
       HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveJoin(condition=[=($2, $0)], joinType=[inner], algorithm=[none], cost=[not available])
           HiveProject(ca_county=[$0], $f1=[$1])
