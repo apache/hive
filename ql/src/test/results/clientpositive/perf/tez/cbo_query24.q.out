@@ -116,7 +116,7 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3])
   HiveJoin(condition=[>($3, $4)], joinType=[inner], algorithm=[none], cost=[not available])
-    HiveProject(c_last_name=[$0], c_first_name=[$1], s_store_name=[$2], $f3=[$3])
+    HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3])
       HiveFilter(condition=[IS NOT NULL($3)])
         HiveProject(c_last_name=[$1], c_first_name=[$0], s_store_name=[$2], $f3=[$3])
           HiveAggregate(group=[{4, 5, 7}], agg#0=[sum($9)])

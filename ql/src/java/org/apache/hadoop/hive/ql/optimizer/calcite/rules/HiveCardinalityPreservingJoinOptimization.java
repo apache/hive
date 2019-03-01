@@ -97,11 +97,8 @@ import org.slf4j.LoggerFactory;
 public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimmer {
   private static final Logger LOG = LoggerFactory.getLogger(HiveCardinalityPreservingJoinOptimization.class);
 
-  private final RelOptCluster cluster;
-
-  public HiveCardinalityPreservingJoinOptimization(RelOptCluster cluster) {
+  public HiveCardinalityPreservingJoinOptimization() {
     super(false);
-    this.cluster = cluster;
   }
 
   @Override
@@ -182,6 +179,7 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
 
         // 3.1. Create new TableScan of tables to join back
         RelOptHiveTable relOptTable = tableToJoinBack.joinedBackFields.relOptHiveTable;
+        RelOptCluster cluster = relBuilder.getCluster();
         HiveTableScan tableScan = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
             relOptTable, relOptTable.getHiveTableMD().getTableName(), null, false, false);
         // 3.2. Create Project with the required fields from this table

@@ -83,6 +83,14 @@ public class HiveRelMdSize extends RelMdSize {
         list.add(Double.valueOf(0));
       }
     }
+    for (int i = nNoVirtualColumns; i < nFields; i++) {
+      if (neededcolsLst.contains(i)) {
+        RelDataTypeField field = scan.getRowType().getFieldList().get(i);
+        list.add(averageTypeValueSize(field.getType()));
+      } else {
+        list.add(Double.valueOf(0));
+      }
+    }
 
     return list.build();
   }

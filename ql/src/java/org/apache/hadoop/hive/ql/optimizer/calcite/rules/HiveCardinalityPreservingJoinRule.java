@@ -17,15 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
-import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
-import org.apache.calcite.tools.RelBuilder;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttleImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveDefaultCostModel;
@@ -36,20 +33,19 @@ import org.slf4j.LoggerFactory;
 /**
  * Rule to trigger {@link HiveCardinalityPreservingJoinOptimization} on top of the plan.
  */
-public class HiveCardinalityPreservingJoinRule {
+public class HiveCardinalityPreservingJoinRule extends HiveFieldTrimmerRule {
   private static final Logger LOG = LoggerFactory.getLogger(HiveCardinalityPreservingJoinRule.class);
 
   private final double factor;
-  private final RelOptCluster cluster;
 
-  public HiveCardinalityPreservingJoinRule(RelOptCluster cluster, double factor) {
-    this.cluster = cluster;
+  public HiveCardinalityPreservingJoinRule(double factor) {
+    super(false, "HiveCardinalityPreservingJoinRule");
     this.factor = Math.max(factor, 0.0);
   }
 
-  public RelNode trim(RelNode node) {
-    RelBuilder relBuilder = HiveRelFactories.HIVE_BUILDER.create(cluster, null);
-    RelNode optimized = new HiveCardinalityPreservingJoinOptimization(cluster).trim(relBuilder, node);
+  @Override
+  protected RelNode trim(RelOptRuleCall call, RelNode node) {
+    RelNode optimized = new HiveCardinalityPreservingJoinOptimization().trim(call.builder(), node);
     if (optimized == node) {
       return node;
     }

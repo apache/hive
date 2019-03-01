@@ -679,38 +679,21 @@ public class RelOptHiveTable implements RelOptTable {
   /** Note: DOES NOT CHECK txn stats. */
   public List<ColStatistics> getColStat(List<Integer> projIndxLst, boolean allowMissingStats) {
     List<ColStatistics> colStatsBldr = Lists.newArrayList();
-    Set<Integer> projIndxSet = new HashSet<Integer>(projIndxLst);
-    if (projIndxLst != null) {
-      for (Integer i : projIndxLst) {
-        if (i >= noOfNonVirtualCols) {
-          projIndxSet.remove(i);
-        } else if (hiveColStatsMap.get(i) != null) {
-          colStatsBldr.add(hiveColStatsMap.get(i));
-          projIndxSet.remove(i);
-        }
+    Set<Integer> projIndxSet = new HashSet<>(projIndxLst);
+    for (Integer i : projIndxLst) {
+      if (i >= noOfNonVirtualCols) {
+        projIndxSet.remove(i);
+      } else if (hiveColStatsMap.get(i) != null) {
+        colStatsBldr.add(hiveColStatsMap.get(i));
+        projIndxSet.remove(i);
       }
-      if (!projIndxSet.isEmpty()) {
-        LOG.info("Calculating column statistics for {}, projIndxSet was not empty: {}, allowMissingStats: {}", name,
-            projIndxLst, allowMissingStats);
-        updateColStats(projIndxSet, allowMissingStats);
-        for (Integer i : projIndxSet) {
-          colStatsBldr.add(hiveColStatsMap.get(i));
-        }
-      }
-    } else {
-      List<Integer> pILst = new ArrayList<Integer>();
-      for (Integer i = 0; i < noOfNonVirtualCols; i++) {
-        if (hiveColStatsMap.get(i) == null) {
-          pILst.add(i);
-        }
-      }
-      if (!pILst.isEmpty()) {
-        LOG.info("Calculating column statistics for {}, projIndxSet was empty, calculated: {}, allowMissingStats: {}",
-            name, pILst, allowMissingStats);
-        updateColStats(new HashSet<Integer>(pILst), allowMissingStats);
-        for (Integer pi : pILst) {
-          colStatsBldr.add(hiveColStatsMap.get(pi));
-        }
+    }
+    if (!projIndxSet.isEmpty()) {
+      LOG.info("Calculating column statistics for {}, projIndxSet: {}, allowMissingStats: {}", name,
+          projIndxLst, allowMissingStats);
+      updateColStats(projIndxSet, allowMissingStats);
+      for (Integer i : projIndxSet) {
+        colStatsBldr.add(hiveColStatsMap.get(i));
       }
     }
 
@@ -722,7 +705,6 @@ public class RelOptHiveTable implements RelOptTable {
    * all columns in BitSet are partition columns.
    */
   public boolean containsPartitionColumnsOnly(ImmutableBitSet cols) {
-
     for (int i = cols.nextSetBit(0); i >= 0; i++, i = cols.nextSetBit(i + 1)) {
       if (!hivePartitionColsMap.containsKey(i)) {
         return false;
