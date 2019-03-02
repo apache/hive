@@ -150,6 +150,10 @@ public class JdbcStorageHandler implements HiveStorageHandler {
     } catch (Exception e) {
     }
     try {
+      classesToLoad.add(Class.forName("com.ibm.db2.jcc.DB2Driver"));
+    } catch (Exception e) {
+    } // Adding db2 jdbc driver if exists
+    try {
       JarUtils.addDependencyJars(conf, classesToLoad);
     } catch (IOException e) {
       LOGGER.error("Could not add necessary JDBC storage handler dependencies to classpath", e);
