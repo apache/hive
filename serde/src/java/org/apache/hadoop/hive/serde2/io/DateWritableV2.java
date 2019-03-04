@@ -149,6 +149,6 @@ public class DateWritableV2 implements WritableComparable<DateWritableV2> {
 
   @Override
   public int hashCode() {
-    return date.hashCode();
+    return date.toEpochDay();
   }
 }
