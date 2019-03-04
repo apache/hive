@@ -709,6 +709,7 @@ public class ASTConverter {
       case CAST:
         HiveToken ht = TypeConverter.hiveToken(call.getType());
         if (ht == null && RexUtil.isNull(call)) {
+          // We failed to convert the type; but it's null - let TypeCheckProcFactory deal with it.
           return ASTBuilder.construct(HiveParser.TOK_NULL, "TOK_NULL").node();
         } else {
           ASTBuilder astBldr = ASTBuilder.construct(ht.type, ht.text);
