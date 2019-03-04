@@ -191,7 +191,7 @@ ORDER BY c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14) q
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_test_n1
 #### A masked pattern was here ####
-1506342314829
+1506332844141
 PREHOOK: query: CREATE TABLE decimal_test_small_n0 STORED AS ORC AS SELECT cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(10,3)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(7,2)) AS cdecimal2 FROM alltypesorc
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
@@ -368,4 +368,4 @@ ORDER BY c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14) q
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_test_small_n0
 #### A masked pattern was here ####
-787712777374
+787720091966
