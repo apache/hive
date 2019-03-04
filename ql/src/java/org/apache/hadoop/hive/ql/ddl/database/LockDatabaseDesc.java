@@ -16,45 +16,41 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.database;
 
 import java.io.Serializable;
+
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-
 /**
- * LockDatabaseDesc.
- *
+ * DDL task description for LOCK DATABASE commands.
  */
 @Explain(displayName = "Lock Database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class LockDatabaseDesc extends DDLDesc implements Serializable {
+public class LockDatabaseDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
-  private String databaseName;
-  private String mode;
-  private String queryId;
-  private String queryStr;
-
-  public LockDatabaseDesc() {
+  static {
+    DDLTask2.registerOperation(LockDatabaseDesc.class, LockDatabaseOperation.class);
   }
 
-  public LockDatabaseDesc(String databaseName, String mode, String queryId) {
+  private final String databaseName;
+  private final String mode;
+  private final String queryId;
+  private final String queryStr;
+
+  public LockDatabaseDesc(String databaseName, String mode, String queryId, String queryStr) {
     this.databaseName = databaseName;
     this.mode = mode;
     this.queryId = queryId;
+    this.queryStr = queryStr;
   }
 
   @Explain(displayName = "database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getDatabaseName() {
     return databaseName;
-  }
-
-  public void setDatabaseName(String databaseName) {
-    this.databaseName = databaseName;
-  }
-
-  public void setMode(String mode) {
-    this.mode = mode;
   }
 
   public String getMode() {
@@ -65,15 +61,7 @@ public class LockDatabaseDesc extends DDLDesc implements Serializable {
     return queryId;
   }
 
-  public void setQueryId(String queryId) {
-    this.queryId = queryId;
-  }
-
   public String getQueryStr() {
     return queryStr;
-  }
-
-  public void setQueryStr(String queryStr) {
-    this.queryStr = queryStr;
   }
 }

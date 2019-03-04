@@ -50,6 +50,7 @@ import org.apache.thrift.TException;
 public class SecureProxySupport {
   private Path tokenPath;
   public static final String HCAT_SERVICE = "hcat";
+  public static final String HIVE_SERVICE = "hive";
   private final boolean isEnabled;
   private String user;
 
