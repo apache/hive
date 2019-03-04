@@ -246,8 +246,7 @@ public class TypeConverter {
   public static RelDataType convert(ListTypeInfo lstType,
     RelDataTypeFactory dtFactory) throws CalciteSemanticException {
     RelDataType elemType = convert(lstType.getListElementTypeInfo(), dtFactory);
-    RelDataType type = dtFactory.createArrayType(elemType, -1);
-    return dtFactory.createTypeWithNullability(type, true);
+    return dtFactory.createArrayType(elemType, -1);
   }
 
   public static RelDataType convert(MapTypeInfo mapType, RelDataTypeFactory dtFactory)
@@ -360,18 +359,16 @@ public class TypeConverter {
       return TypeInfoFactory.getDecimalTypeInfo(rType.getPrecision(), rType.getScale());
     case VARCHAR:
       int varcharLength = rType.getPrecision();
-      if (varcharLength < 1 || varcharLength > HiveVarchar.MAX_VARCHAR_LENGTH) {
+      if (varcharLength < 1 || varcharLength > HiveVarchar.MAX_VARCHAR_LENGTH)
         return TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME);
-      } else {
+      else
         return TypeInfoFactory.getVarcharTypeInfo(varcharLength);
-      }
     case CHAR:
       int charLength = rType.getPrecision();
-      if (charLength < 1 || charLength > HiveChar.MAX_CHAR_LENGTH) {
+      if (charLength < 1 || charLength > HiveChar.MAX_CHAR_LENGTH)
         return TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME);
-      } else {
+      else
         return TypeInfoFactory.getCharTypeInfo(charLength);
-      }
     default:
       return TypeInfoFactory.voidTypeInfo;
     }
@@ -388,13 +385,12 @@ public class TypeConverter {
     }
       break;
     case VARCHAR: {
-      if (calciteType.getPrecision() == Integer.MAX_VALUE) {
+      if (calciteType.getPrecision() == Integer.MAX_VALUE)
         ht = new HiveToken(HiveParser.TOK_STRING, "TOK_STRING", String.valueOf(calciteType
             .getPrecision()));
-      } else {
+      else
         ht = new HiveToken(HiveParser.TOK_VARCHAR, "TOK_VARCHAR", String.valueOf(calciteType
             .getPrecision()));
-      }
     }
       break;
     case DECIMAL: {
