@@ -86,7 +86,7 @@ public final class GroupFilterFactory implements FilterFactory {
 
       for (String groupDn : memberOf) {
         String shortName = LdapUtils.getShortName(groupDn);
-        if (groupFilter.contains(shortName)) {
+        if (groupFilter.stream().anyMatch(shortName::equalsIgnoreCase)) {
           LOG.debug("GroupMembershipKeyFilter passes: user '{}' is a member of '{}' group",
               user, groupDn);
           LOG.info("Authentication succeeded based on group membership");

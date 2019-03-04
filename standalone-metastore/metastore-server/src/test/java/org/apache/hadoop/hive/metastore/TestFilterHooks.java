@@ -356,6 +356,7 @@ public class TestFilterHooks {
     }
 
     assertEquals(0, client.getTables(DBNAME1, "*").size());
+    assertEquals(0, client.getTables(DBNAME1, "*", TableType.MANAGED_TABLE).size());
     assertEquals(0, client.getAllTables(DBNAME1).size());
     assertEquals(0, client.getTables(DBNAME1, TAB2).size());
   }

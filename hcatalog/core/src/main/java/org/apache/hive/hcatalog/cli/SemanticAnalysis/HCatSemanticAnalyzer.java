@@ -19,6 +19,12 @@
 package org.apache.hive.hcatalog.cli.SemanticAnalysis;
 
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.database.DescDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.database.DropDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.database.ShowDatabasesDesc;
+import org.apache.hadoop.hive.ql.ddl.database.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -32,16 +38,12 @@ import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
-import org.apache.hadoop.hive.ql.plan.DescDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DescTableDesc;
-import org.apache.hadoop.hive.ql.plan.DropDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
-import org.apache.hadoop.hive.ql.plan.ShowDatabasesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
-import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.common.ErrorType;
@@ -273,37 +275,35 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
   }
 
   @Override
-  protected void authorizeDDLWork(HiveSemanticAnalyzerHookContext cntxt, Hive hive, DDLWork work)
-    throws HiveException {
-    // DB opereations, none of them are enforced by Hive right now.
-
-    ShowDatabasesDesc showDatabases = work.getShowDatabasesDesc();
-    if (showDatabases != null) {
+  protected void authorizeDDLWork2(HiveSemanticAnalyzerHookContext cntxt, Hive hive, DDLWork2 work)
+      throws HiveException {
+    DDLDesc ddlDesc = work.getDDLDesc();
+    if (ddlDesc instanceof ShowDatabasesDesc) {
       authorize(HiveOperation.SHOWDATABASES.getInputRequiredPrivileges(),
-        HiveOperation.SHOWDATABASES.getOutputRequiredPrivileges());
-    }
-
-    DropDatabaseDesc dropDb = work.getDropDatabaseDesc();
-    if (dropDb != null) {
+          HiveOperation.SHOWDATABASES.getOutputRequiredPrivileges());
+    } else if (ddlDesc instanceof DropDatabaseDesc) {
+      DropDatabaseDesc dropDb = (DropDatabaseDesc)ddlDesc;
       Database db = cntxt.getHive().getDatabase(dropDb.getDatabaseName());
       if (db != null){
         // if above returned a null, then the db does not exist - probably a
         // "drop database if exists" clause - don't try to authorize then.
         authorize(db, Privilege.DROP);
       }
-    }
-
-    DescDatabaseDesc descDb = work.getDescDatabaseDesc();
-    if (descDb != null) {
+    } else if (ddlDesc instanceof DescDatabaseDesc) {
+      DescDatabaseDesc descDb = (DescDatabaseDesc)ddlDesc;
       Database db = cntxt.getHive().getDatabase(descDb.getDatabaseName());
       authorize(db, Privilege.SELECT);
-    }
-
-    SwitchDatabaseDesc switchDb = work.getSwitchDatabaseDesc();
-    if (switchDb != null) {
+    } else if (ddlDesc instanceof SwitchDatabaseDesc) {
+      SwitchDatabaseDesc switchDb = (SwitchDatabaseDesc)ddlDesc;
       Database db = cntxt.getHive().getDatabase(switchDb.getDatabaseName());
       authorize(db, Privilege.SELECT);
     }
+  }
+
+  @Override
+  protected void authorizeDDLWork(HiveSemanticAnalyzerHookContext cntxt, Hive hive, DDLWork work)
+    throws HiveException {
+    // DB opereations, none of them are enforced by Hive right now.
 
     ShowTablesDesc showTables = work.getShowTblsDesc();
     if (showTables != null) {

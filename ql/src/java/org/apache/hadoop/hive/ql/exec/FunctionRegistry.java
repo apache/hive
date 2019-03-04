@@ -534,6 +534,7 @@ public final class FunctionRegistry {
     system.registerGenericUDTF("posexplode", GenericUDTFPosExplode.class);
     system.registerGenericUDTF("stack", GenericUDTFStack.class);
     system.registerGenericUDTF("get_splits", GenericUDTFGetSplits.class);
+    system.registerGenericUDTF("get_sql_schema", GenericUDTFGetSQLSchema.class);
 
     //PTF declarations
     system.registerGenericUDF(LEAD_FUNC_NAME, GenericUDFLead.class);

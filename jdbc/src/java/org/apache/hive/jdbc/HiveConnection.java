@@ -18,6 +18,12 @@
 
 package org.apache.hive.jdbc;
 
+import org.apache.hadoop.hive.metastore.security.DelegationTokenIdentifier;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.security.Credentials;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hive.service.rpc.thrift.TSetClientInfoResp;
 
 import org.apache.hive.service.rpc.thrift.TSetClientInfoReq;
@@ -74,6 +80,7 @@ import javax.security.auth.Subject;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -759,7 +766,23 @@ public class HiveConnection implements java.sql.Connection {
     if (JdbcConnectionParams.AUTH_TOKEN.equalsIgnoreCase(jdbcConnConf.get(JdbcConnectionParams.AUTH_TYPE))) {
       // check delegation token in job conf if any
       try {
-        tokenStr = SessionUtils.getTokenStrForm(HiveAuthConstants.HS2_CLIENT_TOKEN);
+        if (System.getenv(UserGroupInformation.HADOOP_TOKEN_FILE_LOCATION) != null) {
+          try {
+            Credentials cred = new Credentials();
+            DataInputStream dis = new DataInputStream(new FileInputStream(System.getenv(UserGroupInformation
+                    .HADOOP_TOKEN_FILE_LOCATION)));
+            cred.readTokenStorageStream(dis);
+            dis.close();
+            Token<? extends TokenIdentifier> token = cred.getToken(new Text("hive"));
+            tokenStr = token.encodeToUrlString();
+          } catch (IOException e) {
+            LOG.warn("Cannot get token from environment variable $HADOOP_TOKEN_FILE_LOCATION=" +
+                    System.getenv(UserGroupInformation.HADOOP_TOKEN_FILE_LOCATION));
+          }
+        }
+        if (tokenStr == null) {
+          tokenStr = SessionUtils.getTokenStrForm(HiveAuthConstants.HS2_CLIENT_TOKEN);
+        }
       } catch (IOException e) {
         throw new SQLException("Error reading token ", e);
       }
@@ -850,6 +873,7 @@ public class HiveConnection implements java.sql.Connection {
 
   private boolean isKerberosAuthMode() {
     return !JdbcConnectionParams.AUTH_SIMPLE.equals(sessConfMap.get(JdbcConnectionParams.AUTH_TYPE))
+        && !JdbcConnectionParams.AUTH_TOKEN.equals(sessConfMap.get(JdbcConnectionParams.AUTH_TYPE))
         && sessConfMap.containsKey(JdbcConnectionParams.AUTH_PRINCIPAL);
   }
 
