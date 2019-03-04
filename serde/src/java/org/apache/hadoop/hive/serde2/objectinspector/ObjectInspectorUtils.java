@@ -31,6 +31,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestampLocalTZObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
@@ -718,9 +719,11 @@ public final class ObjectInspectorUtils {
       case DATE:
         return ((DateObjectInspector) poi).getPrimitiveWritableObject(o).hashCode();
       case TIMESTAMP:
-        TimestampWritableV2 t = ((TimestampObjectInspector) poi)
-            .getPrimitiveWritableObject(o);
-        return t.hashCode();
+        // Use old timestamp writable hash code for backwards compatibility
+        TimestampWritable ts = new TimestampWritable(
+            java.sql.Timestamp.valueOf(
+                ((TimestampObjectInspector) poi).getPrimitiveWritableObject(o).toString()));
+        return ts.hashCode();
       case TIMESTAMPLOCALTZ:
         TimestampLocalTZWritable tstz = ((TimestampLocalTZObjectInspector) poi).getPrimitiveWritableObject(o);
         return tstz.hashCode();

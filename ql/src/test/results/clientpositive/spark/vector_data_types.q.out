@@ -209,7 +209,7 @@ FROM (SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_n1 ORDER BY
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1korc_n1
 #### A masked pattern was here ####
--25838728092
+-17045922556
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_n1 ORDER BY t, si, i LIMIT 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1korc_n1
@@ -457,4 +457,4 @@ FROM (SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_n1 ORDER BY
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1korc_n1
 #### A masked pattern was here ####
--25838728092
+-17045922556
