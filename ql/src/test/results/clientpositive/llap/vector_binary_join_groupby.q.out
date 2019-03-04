@@ -325,7 +325,7 @@ order by k
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hundredorc
 #### A masked pattern was here ####
--8303557760
+-27832781952
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT count(*), bin
 FROM hundredorc
