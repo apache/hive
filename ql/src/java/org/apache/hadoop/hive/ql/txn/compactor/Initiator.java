@@ -95,12 +95,6 @@ public class Initiator extends MetaStoreCompactorThread {
           LOG.debug("Found " + potentials.size() + " potential compactions, " +
               "checking to see if we should compact any of them");
           for (CompactionInfo ci : potentials) {
-            // Disable minor compaction for query based compactor
-            if (!ci.isMajorCompaction() && HiveConf.getBoolVar(conf, HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED)) {
-              LOG.debug("Not compacting: " + ci.getFullPartitionName()
-                  + ", as query based compaction currently does not " + "support minor compactions.");
-              continue;
-            }
             LOG.info("Checking to see if we should compact " + ci.getFullPartitionName());
             try {
               Table t = resolveTable(ci);

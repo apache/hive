@@ -1230,6 +1230,9 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
           else {
             AcidUtils.ParsedDelta pd = AcidUtils.parsedDelta(parent, AcidUtils.DELTA_PREFIX,
               parent.getFileSystem(conf));
+            assert pd.getMinWriteId() == pd.getMaxWriteId() :
+              "This a delta with raw non acid schema, must be result of single write, no compaction: "
+                + splitPath;
             return new TransactionMetaData(pd.getMinWriteId(), parent, pd.getStatementId());
           }
         }

@@ -274,7 +274,6 @@ unhex
 unix_timestamp
 upper
 uuid
-validate_acid_sort_order
 var_pop
 var_samp
 variance
@@ -395,7 +394,6 @@ date_format
 date_sub
 datediff
 to_date
-validate_acid_sort_order
 PREHOOK: query: SHOW FUNCTIONS '***'
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS '***'

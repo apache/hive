@@ -1890,7 +1890,7 @@ public class TestCompactor {
 
   }
 
-  static void runInitiator(HiveConf hiveConf) throws Exception {
+  static void runInitiator(HiveConf hiveConf) throws MetaException {
     AtomicBoolean stop = new AtomicBoolean(true);
     Initiator t = new Initiator();
     t.setThreadId((int) t.getId());
@@ -1900,7 +1900,7 @@ public class TestCompactor {
     t.run();
   }
 
-  static void runWorker(HiveConf hiveConf) throws Exception {
+  static void runWorker(HiveConf hiveConf) throws MetaException {
     AtomicBoolean stop = new AtomicBoolean(true);
     Worker t = new Worker();
     t.setThreadId((int) t.getId());
@@ -1910,7 +1910,7 @@ public class TestCompactor {
     t.run();
   }
 
-  static void runCleaner(HiveConf hiveConf) throws Exception {
+  static void runCleaner(HiveConf hiveConf) throws MetaException {
     AtomicBoolean stop = new AtomicBoolean(true);
     Cleaner t = new Cleaner();
     t.setThreadId((int) t.getId());

@@ -35,7 +35,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FileStatus;
@@ -62,7 +61,6 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
@@ -73,7 +71,6 @@ import org.apache.hadoop.hive.ql.io.AcidUtils.Directory;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -237,23 +234,6 @@ public class CompactorMR {
     if(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION)) {
       throw new RuntimeException(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION.name() + "=true");
     }
-    
-    /**
-     * Run major compaction in a HiveQL query (compaction for MM tables handled in runMmCompaction method).
-     * TODO: 
-     * 1. A good way to run minor compaction (currently disabled when this config is enabled)
-     * 2. More generic approach to collecting files in the same logical bucket to compact within the same task
-     * (currently we're using Tez split grouping).
-     */
-    if (!AcidUtils.isInsertOnlyTable(t.getParameters()) && HiveConf.getBoolVar(conf,
-        ConfVars.COMPACTOR_CRUD_QUERY_BASED)) {
-      if (ci.isMajorCompaction()) {
-        runCrudCompaction(conf, t, p, sd, writeIds, ci);
-        return;
-      } else {
-        throw new RuntimeException("Query based compaction is not currently supported for minor compactions");
-      }
-    }
 
     if (AcidUtils.isInsertOnlyTable(t.getParameters())) {
       if (HiveConf.getBoolVar(conf, ConfVars.HIVE_COMPACTOR_COMPACT_MM)) {
@@ -340,85 +320,6 @@ public class CompactorMR {
     su.gatherStats();
   }
 
-  /**
-   * 
-   * @param conf
-   * @param t
-   * @param p
-   * @param sd (this is the resolved StorageDescriptor, i.e. resolved to table or partition)
-   * @param writeIds (valid write ids used to filter rows while they're being read for compaction)
-   * @param ci
-   * @throws IOException
-   */
-  private void runCrudCompaction(HiveConf hiveConf, Table t, Partition p, StorageDescriptor sd, ValidWriteIdList writeIds,
-      CompactionInfo ci) throws IOException {
-    AcidUtils.setAcidOperationalProperties(hiveConf, true, AcidUtils.getAcidOperationalProperties(t.getParameters()));
-    AcidUtils.Directory dir = AcidUtils.getAcidState(new Path(sd.getLocation()), hiveConf, writeIds, Ref.from(false), false,
-        t.getParameters());
-    int deltaCount = dir.getCurrentDirectories().size();
-    int origCount = dir.getOriginalFiles().size();
-    if ((deltaCount + (dir.getBaseDirectory() == null ? 0 : 1)) + origCount <= 1) {
-      LOG.debug("Not compacting {}; current base is {} and there are {} deltas and {} originals", sd.getLocation(), dir
-          .getBaseDirectory(), deltaCount, origCount);
-      return;
-    }
-    String user = UserGroupInformation.getCurrentUser().getShortUserName();
-    SessionState sessionState = DriverUtils.setUpSessionState(hiveConf, user, false);
-    // Set up the session for driver.
-    HiveConf conf = new HiveConf(hiveConf);
-    conf.set(ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
-    /**
-     * For now, we will group splits on tez so that we end up with all bucket files, 
-     * with same bucket number in one map task.
-     */
-    conf.set(ConfVars.SPLIT_GROUPING_MODE.varname, "compactor");
-    String tmpPrefix = t.getDbName() + "_tmp_compactor_" + t.getTableName() + "_";
-    String tmpTableName = tmpPrefix + System.currentTimeMillis();
-    long compactorTxnId = CompactorMap.getCompactorTxnId(conf);
-    try {
-      // Create a temporary table under the temp location --> db/tbl/ptn/_tmp_1234/db.tmp_compactor_tbl_1234
-      String query = buildCrudMajorCompactionCreateTableQuery(tmpTableName, t, sd);
-      LOG.info("Running major compaction query into temp table with create definition: {}", query);
-      try {
-        DriverUtils.runOnDriver(conf, user, sessionState, query, writeIds);
-      } catch (Exception ex) {
-        Throwable cause = ex;
-        while (cause != null && !(cause instanceof AlreadyExistsException)) {
-          cause = cause.getCause();
-        }
-        if (cause == null) {
-          throw new IOException(ex);
-        }
-      }
-      query = buildCrudMajorCompactionQuery(conf, t, p, tmpTableName);
-      LOG.info("Running major compaction via query: {}", query);
-      /**
-       * This will create bucket files like:
-       * db/db_tmp_compactor_tbl_1234/00000_0
-       * db/db_tmp_compactor_tbl_1234/00001_0
-       */
-      DriverUtils.runOnDriver(conf, user, sessionState, query, writeIds);
-      /**
-       * This achieves a final layout like (wid is the highest valid write id for this major compaction):
-       * db/tbl/ptn/base_wid/bucket_00000
-       * db/tbl/ptn/base_wid/bucket_00001
-       */
-      org.apache.hadoop.hive.ql.metadata.Table tempTable = Hive.get().getTable(tmpTableName);
-      String tmpLocation = tempTable.getSd().getLocation();
-      commitCrudMajorCompaction(t, tmpLocation, tmpTableName, sd.getLocation(), conf, writeIds, compactorTxnId);
-    } catch (HiveException e) {
-      LOG.error("Error doing query based major compaction", e);
-      throw new IOException(e);
-    } finally {
-      try {
-        DriverUtils.runOnDriver(conf, user, sessionState, "drop table if exists " + tmpTableName, writeIds);
-      } catch (HiveException e) {
-        LOG.error("Unable to delete drop temp table {} which was created for running major compaction", tmpTableName);
-        LOG.error(ExceptionUtils.getStackTrace(e));
-      }
-    }
-  }
-
   private void runMmCompaction(HiveConf conf, Table t, Partition p,
       StorageDescriptor sd, ValidWriteIdList writeIds, CompactionInfo ci) throws IOException {
     LOG.debug("Going to delete directories for aborted transactions for MM table "
@@ -491,103 +392,6 @@ public class CompactorMR {
 
   private String generateTmpPath(StorageDescriptor sd) {
     return sd.getLocation() + "/" + TMPDIR + "_" + UUID.randomUUID().toString();
-  }
-  
-  /**
-   * Note on ordering of rows in the temp table:
-   * We need each final bucket file soreted by original write id (ascending), bucket (ascending) and row id (ascending). 
-   * (current write id will be the same as original write id). 
-   * We will be achieving the ordering via a custom split grouper for compactor.
-   * See {@link org.apache.hadoop.hive.conf.HiveConf.ConfVars.SPLIT_GROUPING_MODE} for the config description.
-   * See {@link org.apache.hadoop.hive.ql.exec.tez.SplitGrouper#getCompactorGroups} for details on the mechanism.
-   */
-  private String buildCrudMajorCompactionCreateTableQuery(String fullName, Table t, StorageDescriptor sd) {
-    StringBuilder query = new StringBuilder("create temporary table ").append(fullName).append(" (");
-    // Acid virtual columns
-    query.append(
-        "`operation` int, `originalTransaction` bigint, `bucket` int, `rowId` bigint, `currentTransaction` bigint, `row` struct<");
-    List<FieldSchema> cols = t.getSd().getCols();
-    boolean isFirst = true;
-    // Actual columns
-    for (FieldSchema col : cols) {
-      if (!isFirst) {
-        query.append(", ");
-      }
-      isFirst = false;
-      query.append("`").append(col.getName()).append("` ").append(":").append(col.getType());
-    }
-    query.append(">)");
-    query.append(" stored as orc");
-    query.append(" tblproperties ('transactional'='false')");
-    return query.toString();
-  }
-
-  private String buildCrudMajorCompactionQuery(HiveConf conf, Table t, Partition p, String tmpName) {
-    String fullName = t.getDbName() + "." + t.getTableName();
-    String query = "insert into table " + tmpName + " ";
-    String filter = "";
-    if (p != null) {
-      filter = filter + " where ";
-      List<String> vals = p.getValues();
-      List<FieldSchema> keys = t.getPartitionKeys();
-      assert keys.size() == vals.size();
-      for (int i = 0; i < keys.size(); ++i) {
-        filter += (i == 0 ? "`" : " and `") + (keys.get(i).getName() + "`='" + vals.get(i) + "'");
-      }
-    }
-    query += " select validate_acid_sort_order(ROW__ID.writeId, ROW__ID.bucketId, ROW__ID.rowId), ROW__ID.writeId, "
-        + "ROW__ID.bucketId, ROW__ID.rowId, ROW__ID.writeId, NAMED_STRUCT(";
-    List<FieldSchema> cols = t.getSd().getCols();
-    for (int i = 0; i < cols.size(); ++i) {
-      query += (i == 0 ? "'" : ", '") + cols.get(i).getName() + "', " + cols.get(i).getName();
-    }
-    query += ") from " + fullName + filter;
-    return query;
-  }
-
-  /**
-   * Move and rename bucket files from the temp table (tmpTableName), to the new base path under the source table/ptn.
-   * Since the temp table is a non-transactional table, it has file names in the "original" format.
-   * Also, due to split grouping in {@link org.apache.hadoop.hive.ql.exec.tez.SplitGrouper#getCompactorGroups}, 
-   * we will end up with one file per bucket.
-   */
-  private void commitCrudMajorCompaction(Table t, String from, String tmpTableName, String to, Configuration conf,
-      ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException {
-    Path fromPath = new Path(from);
-    Path toPath = new Path(to);
-    Path tmpTablePath = new Path(fromPath, tmpTableName);
-    FileSystem fs = fromPath.getFileSystem(conf);
-    // Assume the high watermark can be used as maximum transaction ID.
-    long maxTxn = actualWriteIds.getHighWatermark();
-    // Get a base_wid path which will be the new compacted base
-    AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf).writingBase(true).isCompressed(false)
-        .maximumWriteId(maxTxn).bucket(0).statementId(-1);
-    Path newBaseDir = AcidUtils.createFilename(toPath, options).getParent();
-    if (!fs.exists(fromPath)) {
-      LOG.info("{} not found.  Assuming 0 splits. Creating {}", from, newBaseDir);
-      fs.mkdirs(newBaseDir);
-      return;
-    }
-    LOG.info("Moving contents of {} to {}", tmpTablePath, to);
-    /**
-     * Currently mapping file with name 0000_0 to bucket_00000, 0000_1 to bucket_00001 and so on
-     * TODO/ToThink:
-     * Q. Can file with name 0000_0 under temp table be deterministically renamed to bucket_00000 in the destination?
-     */
-    //    List<String> buckCols = t.getSd().getBucketCols();
-    FileStatus[] children = fs.listStatus(fromPath);
-    for (FileStatus filestatus : children) {
-      String originalFileName = filestatus.getPath().getName();
-      // This if() may not be required I think...
-      if (AcidUtils.ORIGINAL_PATTERN.matcher(originalFileName).matches()) {
-        int bucketId = AcidUtils.parseBucketId(filestatus.getPath());
-        options = new AcidOutputFormat.Options(conf).writingBase(true).isCompressed(false).maximumWriteId(maxTxn)
-            .bucket(bucketId).statementId(-1).visibilityTxnId(compactorTxnId);
-        Path finalBucketFile = AcidUtils.createFilename(toPath, options);
-        fs.rename(filestatus.getPath(), finalBucketFile);
-      }
-    }
-    fs.delete(fromPath, true);
   }
 
   private String buildMmCompactionCtQuery(
@@ -1200,8 +1004,7 @@ public class CompactorMR {
         deleteEventWriter.close(false);
       }
     }
-    
-    private static long getCompactorTxnId(Configuration jobConf) {
+    private long getCompactorTxnId() {
       String snapshot = jobConf.get(ValidTxnList.VALID_TXNS_KEY);
       if(Strings.isNullOrEmpty(snapshot)) {
         throw new IllegalStateException(ValidTxnList.VALID_TXNS_KEY + " not found for writing to "
@@ -1212,7 +1015,6 @@ public class CompactorMR {
       //this is id of the current txn
       return validTxnList.getHighWatermark();
     }
-    
     private void getWriter(Reporter reporter, ObjectInspector inspector,
                            int bucket) throws IOException {
       if (writer == null) {
@@ -1226,7 +1028,7 @@ public class CompactorMR {
             .maximumWriteId(jobConf.getLong(MAX_TXN, Long.MIN_VALUE))
             .bucket(bucket)
             .statementId(-1)//setting statementId == -1 makes compacted delta files use
-            .visibilityTxnId(getCompactorTxnId(jobConf));
+            .visibilityTxnId(getCompactorTxnId());
       //delta_xxxx_yyyy format
 
         // Instantiate the underlying output format
@@ -1250,7 +1052,7 @@ public class CompactorMR {
           .maximumWriteId(jobConf.getLong(MAX_TXN, Long.MIN_VALUE)).bucket(bucket)
           .statementId(-1)//setting statementId == -1 makes compacted delta files use
           // delta_xxxx_yyyy format
-          .visibilityTxnId(getCompactorTxnId(jobConf));
+          .visibilityTxnId(getCompactorTxnId());
 
       // Instantiate the underlying output format
       @SuppressWarnings("unchecked")//since there is no way to parametrize instance of Class
