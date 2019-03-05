@@ -21,7 +21,9 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -83,7 +85,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   // the sub-queries write to sub-directories of a common directory. So, the file sink
   // descriptors for subq1 and subq2 are linked.
   private boolean linkedFileSink = false;
-  transient private List<FileSinkDesc> linkedFileSinkDesc;
+  private transient List<FileSinkDesc> linkedFileSinkDesc;
 
   private boolean statsReliable;
   private ListBucketingCtx lbCtx;
@@ -101,6 +103,8 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   private boolean isMerge;
   private boolean isMmCtas;
 
+  private Set<FileStatus> filesToFetch = null;
+
   /**
    * Whether is a HiveServer query, and the destination table is
    * indeed written using a row batching SerDe
@@ -108,6 +112,8 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   private boolean isUsingBatchingSerDe = false;
 
   private boolean isInsertOverwrite = false;
+
+  private boolean isQuery = false;
 
   public FileSinkDesc() {
   }
@@ -119,7 +125,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
       final boolean compressed, final int destTableId, final boolean multiFileSpray,
       final boolean canBeMerged, final int numFiles, final int totalFiles,
       final ArrayList<ExprNodeDesc> partitionCols, final DynamicPartitionCtx dpCtx, Path destPath,
-      Long mmWriteId, boolean isMmCtas, boolean isInsertOverwrite) {
+      Long mmWriteId, boolean isMmCtas, boolean isInsertOverwrite, boolean isQuery) {
 
     this.dirName = dirName;
     this.tableInfo = tableInfo;
@@ -136,6 +142,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     this.mmWriteId = mmWriteId;
     this.isMmCtas = isMmCtas;
     this.isInsertOverwrite = isInsertOverwrite;
+    this.isQuery = isQuery;
   }
 
   public FileSinkDesc(final Path dirName, final TableDesc tableInfo,
@@ -157,7 +164,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   public Object clone() throws CloneNotSupportedException {
     FileSinkDesc ret = new FileSinkDesc(dirName, tableInfo, compressed,
         destTableId, multiFileSpray, canBeMerged, numFiles, totalFiles,
-        partitionCols, dpCtx, destPath, mmWriteId, isMmCtas, isInsertOverwrite);
+        partitionCols, dpCtx, destPath, mmWriteId, isMmCtas, isInsertOverwrite, isQuery);
     ret.setCompressCodec(compressCodec);
     ret.setCompressType(compressType);
     ret.setGatherStats(gatherStats);
@@ -172,15 +179,33 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     ret.setStatementId(statementId);
     ret.setStatsTmpDir(statsTmpDir);
     ret.setIsMerge(isMerge);
+    ret.setFilesToFetch(filesToFetch);
+    ret.setIsQuery(isQuery);
     return ret;
   }
 
+  public void setFilesToFetch(Set<FileStatus> filesToFetch) {
+    this.filesToFetch = filesToFetch;
+  }
+
+  public void setIsQuery(boolean isQuery) {
+    this.isQuery = isQuery;
+  }
+
+  public boolean getIsQuery() {
+    return this.isQuery;
+  }
+
+  public Set<FileStatus> getFilesToFetch() {
+    return filesToFetch;
+  }
+
   public boolean isHiveServerQuery() {
-	  return this.isHiveServerQuery;
+    return this.isHiveServerQuery;
   }
 
   public void setHiveServerQuery(boolean isHiveServerQuery) {
-	  this.isHiveServerQuery = isHiveServerQuery;
+    this.isHiveServerQuery = isHiveServerQuery;
   }
 
   public boolean isUsingBatchingSerDe() {
@@ -303,8 +328,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   public boolean isFullAcidTable() {
     if(getTable() != null) {
       return AcidUtils.isFullAcidTable(table);
-    }
-    else {
+    } else {
       return AcidUtils.isTablePropertyTransactional(getTableInfo().getProperties()) &&
           !AcidUtils.isInsertOnlyTable(getTableInfo().getProperties());
     }
