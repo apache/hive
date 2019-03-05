@@ -20,8 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptRuleOperand;
-import org.apache.calcite.rel.metadata.RelMetadataQuery;
-import org.apache.calcite.rex.RexLiteral;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 
@@ -32,17 +31,12 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
  */
 public class HiveSortLimitRemoveRule extends RelOptRule {
 
-  //~ Constructors -----------------------------------------------------------
+  public static final HiveSortLimitRemoveRule INSTANCE  =
+      new HiveSortLimitRemoveRule();
 
-  public HiveSortLimitRemoveRule() {
-    this(operand(HiveSortLimit.class, any()));
+  private HiveSortLimitRemoveRule() {
+    super(operand(HiveSortLimit.class, any()), HiveRelFactories.HIVE_BUILDER, null);
   }
-
-  private HiveSortLimitRemoveRule(RelOptRuleOperand operand) {
-    super(operand);
-  }
-
-  //~ Methods ----------------------------------------------------------------
 
   @Override
   public boolean matches(RelOptRuleCall call) {

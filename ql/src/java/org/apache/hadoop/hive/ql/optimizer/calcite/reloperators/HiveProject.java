@@ -198,14 +198,4 @@ public class HiveProject extends Project implements HiveRelNode {
     }
     return shuttle.visit(this);
   }
-
-  public boolean hasWindowingExpr() {
-    for (RexNode expr : this.getChildExps()) {
-      if (expr instanceof RexOver) {
-        // Bail out as it may change cardinality
-        return true;
-      }
-    }
-    return false;
-  }
 }

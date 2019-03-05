@@ -1052,16 +1052,17 @@ public class HiveRelOptUtil extends RelOptUtil {
     return planWriter.asString();
   }
 
+
+  /**
+   * Utility method to answer if given a rel plan it will produce at most
+   *  one row.
+   */
   public static boolean produceAtmostOneRow(RelNode rel) {
     if(rel instanceof HepRelVertex) {
       rel = ((HepRelVertex)rel).getCurrentRel();
     }
     if(rel instanceof HiveProject) {
-      if( ((HiveProject)rel).hasWindowingExpr()) {
-        return false;
-      } else {
-        return produceAtmostOneRow(((HiveProject)rel).getInput());
-      }
+      return produceAtmostOneRow(((HiveProject)rel).getInput());
     } else if (rel instanceof HiveAggregate) {
       // if there is no group by keys and only aggregate
       // TODO: group by keys are constant
@@ -1071,7 +1072,7 @@ public class HiveRelOptUtil extends RelOptUtil {
       RexNode fetch = ((HiveSortLimit)rel).getFetchExpr();
       if(fetch != null) {
         int limit = RexLiteral.intValue(fetch);
-        if(limit <=1 ) {
+        if(limit <=1) {
           return true;
         }
       }
