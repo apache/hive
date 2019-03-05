@@ -413,6 +413,10 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
       }
     }
 
+    if (ownerName != null) {
+      tbl.setOwner(ownerName);
+    }
+
     // Sets the column state for the create view statement (false since it is a creation).
     // Similar to logic in CreateTableDesc.
     StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(), null,
@@ -423,5 +427,9 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
 
   public void setOwnerName(String ownerName) {
     this.ownerName = ownerName;
+  }
+
+  public String getOwnerName() {
+    return this.ownerName;
   }
 }
