@@ -1911,11 +1911,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       // 8. convert SemiJoin + GBy to SemiJoin
-        perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
-        calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
-            HiveRemoveGBYSemiJoinRule.INSTANCE);
-        perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Removal of gby from semijoin");
-
+      perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+      calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
+          HiveRemoveGBYSemiJoinRule.INSTANCE);
+      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Removal of gby from semijoin");
 
       // 9. Run rule to fix windowing issue when it is done over
       // aggregation columns (HIVE-10627)
@@ -1948,17 +1947,22 @@ public class CalcitePlanner extends SemanticAnalyzer {
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Druid transformation rules");
 
       if (conf.getBoolVar(ConfVars.HIVE_ENABLE_JDBC_PUSHDOWN)) {
+        List<RelOptRule> rules = Lists.newArrayList();
+        rules.add(JDBCExtractJoinFilterRule.INSTANCE);
+        rules.add(JDBCAbstractSplitFilterRule.SPLIT_FILTER_ABOVE_JOIN);
+        rules.add(JDBCAbstractSplitFilterRule.SPLIT_FILTER_ABOVE_CONVERTER);
+        rules.add(JDBCFilterJoinRule.INSTANCE);
+        rules.add(JDBCFilterPushDownRule.INSTANCE);
+        rules.add(JDBCProjectPushDownRule.INSTANCE);
+        if (!conf.getBoolVar(ConfVars.HIVE_ENABLE_JDBC_SAFE_PUSHDOWN)) {
+          rules.add(JDBCJoinPushDownRule.INSTANCE);
+          rules.add(JDBCUnionPushDownRule.INSTANCE);
+          rules.add(JDBCAggregationPushDownRule.INSTANCE);
+          rules.add(JDBCSortPushDownRule.INSTANCE);
+        }
         perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
         calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, true, mdProvider.getMetadataProvider(), null,
-            HepMatchOrder.TOP_DOWN,
-            JDBCExtractJoinFilterRule.INSTANCE,
-            JDBCAbstractSplitFilterRule.SPLIT_FILTER_ABOVE_JOIN,
-            JDBCAbstractSplitFilterRule.SPLIT_FILTER_ABOVE_CONVERTER,
-            JDBCFilterJoinRule.INSTANCE,
-            JDBCJoinPushDownRule.INSTANCE, JDBCUnionPushDownRule.INSTANCE,
-            JDBCFilterPushDownRule.INSTANCE, JDBCProjectPushDownRule.INSTANCE,
-            JDBCAggregationPushDownRule.INSTANCE, JDBCSortPushDownRule.INSTANCE
-        );
+            HepMatchOrder.TOP_DOWN, rules.toArray(new RelOptRule[rules.size()]));
         perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: JDBC transformation rules");
       }
 
