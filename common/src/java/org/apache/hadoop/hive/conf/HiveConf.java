@@ -1691,7 +1691,10 @@ public class HiveConf extends Configuration {
 
     HIVE_ENABLE_JDBC_PUSHDOWN("hive.jdbc.pushdown.enable", true,
         "Flag to control enabling pushdown of operators into JDBC connection and subsequent SQL generation\n" +
-        "using Calcite."),
+        "using Calcite"),
+    HIVE_ENABLE_JDBC_SAFE_PUSHDOWN("hive.jdbc.pushdown.safe.enable", false,
+        "Flag to control enabling pushdown of operators using Calcite that prevent splitting results\n" +
+        "retrieval in the JDBC storage handler"),
 
     // hive.mapjoin.bucket.cache.size has been replaced by hive.smbjoin.cache.row,
     // need to remove by hive .13. Also, do not change default (see SMB operator)
