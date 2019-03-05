@@ -44,8 +44,8 @@ public class ReplLoadWork implements Serializable {
   final String dbNameToLoadIn;
   final String tableNameToLoadIn;
   final String dumpDirectory;
-  final String bootstrapDumpToRollback;
-  boolean isNeedBootstrapRollback;
+  final String bootstrapDumpToCleanTables;
+  boolean needCleanTablesFromBootstrap;
 
   private final ConstraintEventsIterator constraintsIterator;
   private int loadTaskRunCount = 0;
@@ -69,8 +69,8 @@ public class ReplLoadWork implements Serializable {
     sessionStateLineageState = lineageState;
     this.dumpDirectory = dumpDirectory;
     this.dbNameToLoadIn = dbNameToLoadIn;
-    this.bootstrapDumpToRollback = hiveConf.get(ReplUtils.REPL_ROLLBACK_BOOTSTRAP_LOAD_CONFIG);
-    this.isNeedBootstrapRollback = StringUtils.isNotBlank(this.bootstrapDumpToRollback);
+    this.bootstrapDumpToCleanTables = hiveConf.get(ReplUtils.REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG);
+    this.needCleanTablesFromBootstrap = StringUtils.isNotBlank(this.bootstrapDumpToCleanTables);
 
     rootTask = null;
     if (isIncrementalDump) {

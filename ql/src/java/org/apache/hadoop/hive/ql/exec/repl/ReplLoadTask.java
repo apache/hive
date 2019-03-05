@@ -298,25 +298,26 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
    * @throws IOException File operations failure.
    * @throws InvalidInputException Invalid input dump directory.
    */
-  private void bootstrapRollbackTask() throws HiveException, IOException, InvalidInputException {
-    Path bootstrapDirectory = new PathBuilder(work.bootstrapDumpToRollback)
+  private void cleanTablesFromBootstrap() throws HiveException, IOException, InvalidInputException {
+    Path bootstrapDirectory = new PathBuilder(work.bootstrapDumpToCleanTables)
             .addDescendant(ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME).build();
     FileSystem fs = bootstrapDirectory.getFileSystem(conf);
 
     if (!fs.exists(bootstrapDirectory)) {
-      throw new InvalidInputException("Input bootstrap dump directory to rollback doesn't exist: "
+      throw new InvalidInputException("Input bootstrap dump directory to clean tables is invalid: "
               + bootstrapDirectory);
     }
 
     FileStatus[] fileStatuses = fs.listStatus(bootstrapDirectory, EximUtil.getDirectoryFilter(fs));
     if ((fileStatuses == null) || (fileStatuses.length == 0)) {
-      throw new InvalidInputException("Input bootstrap dump directory to rollback is empty: "
+      throw new InvalidInputException("Input bootstrap dump directory to clean tables is empty: "
               + bootstrapDirectory);
     }
 
     if (StringUtils.isNotBlank(work.dbNameToLoadIn) && (fileStatuses.length > 1)) {
-      throw new InvalidInputException("Multiple DB dirs in the dump: " + bootstrapDirectory
-                      + " is not allowed to load to single target DB: " + work.dbNameToLoadIn);
+      throw new InvalidInputException("Input bootstrap dump directory to clean tables has multiple"
+              + " DB dirs in the dump: " + bootstrapDirectory
+              + " which is not allowed on single target DB: " + work.dbNameToLoadIn);
     }
 
     for (FileStatus dbDir : fileStatuses) {
@@ -446,9 +447,9 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   private int executeIncrementalLoad(DriverContext driverContext) {
     try {
       // If user has requested to cleanup any bootstrap dump, then just do it before incremental load.
-      if (work.isNeedBootstrapRollback) {
-        bootstrapRollbackTask();
-        work.isNeedBootstrapRollback = false;
+      if (work.needCleanTablesFromBootstrap) {
+        cleanTablesFromBootstrap();
+        work.needCleanTablesFromBootstrap = false;
       }
 
       IncrementalLoadTasksBuilder builder = work.incrementalLoadTasksBuilder();
