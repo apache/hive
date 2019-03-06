@@ -675,6 +675,7 @@ STAGE PLANS:
           Group By Operator
             aggregations: sum(_col4), sum(_col5)
             keys: _col3 (type: int)
+            minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0, _col2, _col3
             Statistics: Num rows: 1 Data size: 385 Basic stats: COMPLETE Column stats: NONE
@@ -854,6 +855,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: _col1 (type: int)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -1024,6 +1026,7 @@ STAGE PLANS:
           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
             keys: _col13 (type: int)
+            minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE

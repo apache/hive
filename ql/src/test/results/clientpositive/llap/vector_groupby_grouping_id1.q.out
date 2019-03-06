@@ -79,6 +79,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
                       keys: _col0 (type: string), _col1 (type: string), 0L (type: bigint)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 12 Data size: 2148 Basic stats: COMPLETE Column stats: COMPLETE
@@ -241,6 +242,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
                       keys: _col0 (type: string), _col1 (type: string), 0L (type: bigint)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 12 Data size: 2148 Basic stats: COMPLETE Column stats: COMPLETE
@@ -403,6 +405,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
                       keys: _col0 (type: string), _col1 (type: string), 0L (type: bigint)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 9 Data size: 1611 Basic stats: COMPLETE Column stats: COMPLETE
@@ -559,6 +562,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
                       keys: _col0 (type: string), _col1 (type: string), 0L (type: bigint)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 9 Data size: 1611 Basic stats: COMPLETE Column stats: COMPLETE
@@ -715,6 +719,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
                       keys: _col0 (type: string), _col1 (type: string), 0L (type: bigint)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 12 Data size: 2148 Basic stats: COMPLETE Column stats: COMPLETE
@@ -878,6 +883,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
                       keys: _col0 (type: string), _col1 (type: string), 0L (type: bigint)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 12 Data size: 2148 Basic stats: COMPLETE Column stats: COMPLETE

@@ -55,6 +55,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE

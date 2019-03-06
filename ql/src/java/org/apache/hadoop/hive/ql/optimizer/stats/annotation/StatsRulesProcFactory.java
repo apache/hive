@@ -1342,34 +1342,11 @@ public class StatsRulesProcFactory {
 
         stats = parentStats.clone();
         stats.setColumnStats(colStats);
-        long ndvProduct = 1;
         final long parentNumRows = stats.getNumRows();
 
         // compute product of distinct values of grouping columns
-        for (ColStatistics cs : colStats) {
-          if (cs != null) {
-            long ndv = cs.getCountDistint();
-            if (cs.getNumNulls() > 0) {
-              ndv = StatsUtils.safeAdd(ndv, 1);
-            }
-            ndvProduct = StatsUtils.safeMult(ndvProduct, ndv);
-          } else {
-            if (parentStats.getColumnStatsState().equals(Statistics.State.COMPLETE)) {
-              // the column must be an aggregate column inserted by GBY. We
-              // don't have to account for this column when computing product
-              // of NDVs
-              continue;
-            } else {
-              // partial column statistics on grouping attributes case.
-              // if column statistics on grouping attribute is missing, then
-              // assume worst case.
-              // GBY rule will emit half the number of rows if ndvProduct is 0
-              ndvProduct = 0;
-            }
-            break;
-          }
-        }
-
+        long ndvProduct =
+            StatsUtils.computeNDVGroupingColumns(colStats, parentStats, false);
         // if ndvProduct is 0 then column stats state must be partial and we are missing
         // column stats for a group by column
         if (ndvProduct == 0) {

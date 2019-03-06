@@ -216,6 +216,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
@@ -398,6 +399,7 @@ STAGE PLANS:
                   Group By Operator
                     aggregations: count(cstring2), sum($f3)
                     keys: extract (type: timestamp with local time zone), cstring1 (type: string)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 9173 Data size: 3625856 Basic stats: COMPLETE Column stats: NONE
@@ -469,6 +471,7 @@ STAGE PLANS:
                   Group By Operator
                     aggregations: count(cdouble), sum($f3)
                     keys: extract (type: timestamp with local time zone), cstring1 (type: string)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 9173 Data size: 2091840 Basic stats: COMPLETE Column stats: NONE
@@ -540,6 +543,7 @@ STAGE PLANS:
                   Group By Operator
                     aggregations: count(cstring2), sum($f3)
                     keys: extract (type: timestamp with local time zone), cstring1 (type: string)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 9173 Data size: 3625856 Basic stats: COMPLETE Column stats: NONE
@@ -611,6 +615,7 @@ STAGE PLANS:
                   Group By Operator
                     aggregations: count(vc), sum($f3)
                     keys: extract (type: timestamp with local time zone), cstring1 (type: string)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 9173 Data size: 3625856 Basic stats: COMPLETE Column stats: NONE
@@ -681,6 +686,7 @@ STAGE PLANS:
                   Statistics: Num rows: 9173 Data size: 1603744 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count(cstring2)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
@@ -744,6 +750,7 @@ STAGE PLANS:
                   Statistics: Num rows: 9173 Data size: 1673472 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count(cstring2), sum($f1)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
@@ -807,6 +814,7 @@ STAGE PLANS:
                   Statistics: Num rows: 9173 Data size: 1708336 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count(vc), sum($f1), min($f2)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
@@ -872,6 +880,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
@@ -962,6 +971,7 @@ STAGE PLANS:
                   Statistics: Num rows: 9173 Data size: 1603744 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count(cstring1)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
@@ -2042,6 +2052,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
@@ -2322,6 +2333,7 @@ STAGE PLANS:
                   Statistics: Num rows: 9173 Data size: 1603744 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count(cstring1)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
@@ -2398,6 +2410,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 69728 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: max(_col0)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -2465,6 +2478,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9173 Data size: 34864 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(cint)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE

@@ -77,6 +77,7 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 29480 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
+              minReductionHashAggr: 0.99
               mode: hash
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 1 Data size: 3560 Basic stats: COMPLETE Column stats: NONE

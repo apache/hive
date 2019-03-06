@@ -134,6 +134,7 @@ STAGE PLANS:
                               native: false
                               vectorProcessingMode: HASH
                               projectedOutputColumnNums: [0, 1, 2]
+                          minReductionHashAggr: 0.0
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -453,6 +454,7 @@ STAGE PLANS:
                         Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count()
+                          minReductionHashAggr: 0.0
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -1557,6 +1559,7 @@ STAGE PLANS:
                       Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
+                        minReductionHashAggr: 0.0
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -1690,6 +1693,7 @@ STAGE PLANS:
                       Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
+                        minReductionHashAggr: 0.0
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -1898,6 +1902,7 @@ STAGE PLANS:
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.0
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -2115,6 +2120,7 @@ STAGE PLANS:
                               native: false
                               vectorProcessingMode: HASH
                               projectedOutputColumnNums: [0, 1, 2]
+                          minReductionHashAggr: 0.0
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -2218,6 +2224,7 @@ STAGE PLANS:
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=25)
+                    minReductionHashAggr: 0.0
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -2240,6 +2247,7 @@ STAGE PLANS:
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.0
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -2535,6 +2543,7 @@ STAGE PLANS:
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.0
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -2804,6 +2813,7 @@ STAGE PLANS:
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.0
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -3010,6 +3020,7 @@ STAGE PLANS:
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.0
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -3225,6 +3236,7 @@ STAGE PLANS:
                               native: false
                               vectorProcessingMode: HASH
                               projectedOutputColumnNums: [0, 1, 2]
+                          minReductionHashAggr: 0.0
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -3328,6 +3340,7 @@ STAGE PLANS:
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=25)
+                    minReductionHashAggr: 0.0
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -3350,6 +3363,7 @@ STAGE PLANS:
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.0
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -3695,6 +3709,7 @@ STAGE PLANS:
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.0
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
@@ -3920,6 +3935,7 @@ STAGE PLANS:
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count()
+                    minReductionHashAggr: 0.0
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE

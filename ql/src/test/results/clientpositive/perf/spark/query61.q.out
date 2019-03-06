@@ -268,6 +268,7 @@ STAGE PLANS:
                 Statistics: Num rows: 843315281 Data size: 74397518956 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: sum(_col7)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
@@ -513,6 +514,7 @@ STAGE PLANS:
                 Statistics: Num rows: 927646829 Data size: 81837272625 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: sum(_col8)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE

@@ -67,6 +67,7 @@ STAGE PLANS:
                   1 key (type: int)
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Reduce Output Operator
