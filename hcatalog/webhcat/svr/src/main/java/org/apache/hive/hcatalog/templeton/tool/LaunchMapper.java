@@ -63,7 +63,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Note that this class is used in a different JVM than WebHCat server.  Thus it should not call 
+ * Note that this class is used in a different JVM than WebHCat server.  Thus it should not call
  * any classes not available on every node in the cluster (outside webhcat jar).
  * TempletonControllerJob#run() calls Job.setJarByClass(LaunchMapper.class) which
  * causes webhcat jar to be shipped to target node, but not it's transitive closure.
@@ -74,7 +74,7 @@ import java.util.concurrent.TimeUnit;
 public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text> implements
         JobSubmissionConstants {
   /**
-   * This class currently sends everything to stderr, but it should probably use Log4J - 
+   * This class currently sends everything to stderr, but it should probably use Log4J -
    * it will end up in 'syslog' of this Map task.  For example, look for KeepAlive heartbeat msgs.
    */
   private static final Logger LOG = LoggerFactory.getLogger(LaunchMapper.class);
@@ -173,7 +173,7 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
     Map<String, String> env = TempletonUtils.hadoopUserEnv(user, overrideClasspath);
     handlePigEnvVars(conf, env);
     handleSqoop(conf, env);
-    handleHadoopClasspathExtras(conf, env);    
+    handleHadoopClasspathExtras(conf, env);
     List<String> jarArgsList = new LinkedList<String>(Arrays.asList(jarArgs));
     handleTokenFile(jarArgsList, JobSubmissionConstants.TOKEN_FILE_ARG_PLACEHOLDER, "mapreduce.job.credentials.binary");
     handleTokenFile(jarArgsList, JobSubmissionConstants.TOKEN_FILE_ARG_PLACEHOLDER_TEZ, "tez.credentials.path");
@@ -515,7 +515,7 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
     return k;
   }
 
-  private void writeExitValue(Configuration conf, int exitValue, String statusdir) 
+  private void writeExitValue(Configuration conf, int exitValue, String statusdir)
     throws IOException {
     if (TempletonUtils.isset(statusdir)) {
       Path p = new Path(statusdir, EXIT_FNAME);
@@ -576,7 +576,7 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
         }
         writer.flush();
         if(out != System.err && out != System.out) {
-          //depending on FileSystem implementation flush() may or may not do anything 
+          //depending on FileSystem implementation flush() may or may not do anything
           writer.close();
         }
       } catch (IOException e) {

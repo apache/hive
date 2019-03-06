@@ -76,6 +76,7 @@ import org.slf4j.LoggerFactory;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
+import javax.security.auth.Subject;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
 import java.io.BufferedReader;
@@ -88,6 +89,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.security.AccessControlContext;
+import java.security.AccessController;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.sql.Array;
@@ -147,6 +150,7 @@ public class HiveConnection implements java.sql.Connection {
   private String initFile = null;
   private String wmPool = null, wmApp = null;
   private Properties clientInfo;
+  private Subject loggedInSubject;
 
   /**
    * Get all direct HiveServer2 URLs from a ZooKeeper based HiveServer2 URL
@@ -495,15 +499,24 @@ public class HiveConnection implements java.sql.Connection {
     }
     // Configure http client for kerberos/password based authentication
     if (isKerberosAuthMode()) {
+      if (assumeSubject) {
+        // With this option, we're assuming that the external application,
+        // using the JDBC driver has done a JAAS kerberos login already
+        AccessControlContext context = AccessController.getContext();
+        loggedInSubject = Subject.getSubject(context);
+        if (loggedInSubject == null) {
+          throw new SQLException("The Subject is not set");
+        }
+      }
       /**
        * Add an interceptor which sets the appropriate header in the request.
        * It does the kerberos authentication and get the final service ticket,
        * for sending to the server before every request.
        * In https mode, the entire information is encrypted
        */
-      requestInterceptor = new HttpKerberosRequestInterceptor(
-          sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL), host, getServerHttpUrl(useSsl),
-          assumeSubject, cookieStore, cookieName, useSsl, additionalHttpHeaders, customCookies);
+      requestInterceptor = new HttpKerberosRequestInterceptor(sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL),
+          host, getServerHttpUrl(useSsl), loggedInSubject, cookieStore, cookieName, useSsl, additionalHttpHeaders,
+          customCookies);
     } else {
       // Check for delegation token, if present add it in the header
       String tokenStr = getClientDelegationToken(sessConfMap);

@@ -71,7 +71,7 @@ public class HiveDelegator extends LauncherDelegator {
           enablelog, enableJobReconnect));
       args.add("--");
       addHiveMetaStoreTokenArg();
-      
+
       args.add(appConf.hivePath());
 
       args.add("-n");
@@ -141,7 +141,7 @@ public class HiveDelegator extends LauncherDelegator {
     }
 
     //ship additional artifacts, for example for Tez
-    String extras = appConf.get(AppConfig.HIVE_EXTRA_FILES); 
+    String extras = appConf.get(AppConfig.HIVE_EXTRA_FILES);
     if(extras != null && extras.length() > 0) {
       boolean foundFiles = false;
       for(int i = 0; i < args.size(); i++) {

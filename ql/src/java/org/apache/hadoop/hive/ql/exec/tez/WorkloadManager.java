@@ -468,7 +468,7 @@ public class WorkloadManager extends AbstractTriggerValidator
             addKillQueryResult(toKill, true);
             killCtx.killSessionFuture.set(true);
             wmEvent.endEvent(toKill);
-            
+
           } catch (HiveException|IOException ex) {
             LOG.error("Failed to kill " + queryId + "; will try to restart AM instead" , ex);
           }
