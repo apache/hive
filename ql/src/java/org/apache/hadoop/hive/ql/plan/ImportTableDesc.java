@@ -366,4 +366,17 @@ public class ImportTableDesc {
       this.createTblDesc.setReplWriteId(replWriteId);
     }
   }
+
+  public void setOwnerName(String ownerName) {
+    switch (getDescType()) {
+      case TABLE:
+        createTblDesc.setOwnerName(ownerName);
+        break;
+      case VIEW:
+        createViewDesc.setOwnerName(ownerName);
+        break;
+      default:
+        throw new RuntimeException("Invalid table type : " + getDescType());
+    }
+  }
 }
