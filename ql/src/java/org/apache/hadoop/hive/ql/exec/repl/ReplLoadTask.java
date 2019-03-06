@@ -20,9 +20,7 @@ package org.apache.hadoop.hive.ql.exec.repl;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
@@ -38,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.PartitionEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.BootstrapEventsIterator;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.ConstraintEventsIterator;
+import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.FSTableEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadConstraint;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadDatabase;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadFunction;
@@ -304,58 +303,62 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     FileSystem fs = bootstrapDirectory.getFileSystem(conf);
 
     if (!fs.exists(bootstrapDirectory)) {
-      throw new InvalidInputException("Input bootstrap dump directory to clean tables is invalid: "
+      throw new InvalidInputException("Input bootstrap dump directory specified to clean tables from is invalid: "
               + bootstrapDirectory);
     }
 
     FileStatus[] fileStatuses = fs.listStatus(bootstrapDirectory, EximUtil.getDirectoryFilter(fs));
     if ((fileStatuses == null) || (fileStatuses.length == 0)) {
-      throw new InvalidInputException("Input bootstrap dump directory to clean tables is empty: "
+      throw new InvalidInputException("Input bootstrap dump directory specified to clean tables from is empty: "
               + bootstrapDirectory);
     }
 
     if (StringUtils.isNotBlank(work.dbNameToLoadIn) && (fileStatuses.length > 1)) {
-      throw new InvalidInputException("Input bootstrap dump directory to clean tables has multiple"
+      throw new InvalidInputException("Input bootstrap dump directory specified to clean tables from has multiple"
               + " DB dirs in the dump: " + bootstrapDirectory
               + " which is not allowed on single target DB: " + work.dbNameToLoadIn);
     }
 
-    for (FileStatus dbDir : fileStatuses) {
-      Path dbLevelPath = dbDir.getPath();
-      String dbNameInDump = dbLevelPath.getName();
+    // Iterate over the DBs and tables listed in the input bootstrap dump directory to clean tables from.
+    BootstrapEventsIterator bootstrapEventsIterator
+            = new BootstrapEventsIterator(bootstrapDirectory.toString(), work.dbNameToLoadIn, false, conf);
 
-      List<String> tableNames = new ArrayList<>();
-      RemoteIterator<LocatedFileStatus> filesIterator = fs.listFiles(dbLevelPath, true);
-      while (filesIterator.hasNext()) {
-        Path nextFile = filesIterator.next().getPath();
-        String filePath = nextFile.toString();
-        if (filePath.endsWith(EximUtil.METADATA_NAME)) {
-          // Remove dbLevelPath from the current path to check if this _metadata file is under DB or
-          // table level directory.
-          String replacedString = filePath.replace(dbLevelPath.toString(), "");
-          if (!replacedString.equalsIgnoreCase(EximUtil.METADATA_NAME)) {
-            tableNames.add(nextFile.getParent().getName());
-          }
+    // This map will have only one entry if target database is renamed using input DB name from REPL LOAD.
+    // For multiple DBs case, this map maintains the table names list against each DB.
+    Map<String, List<String>> dbToTblsListMap = new HashMap<>();
+    while (bootstrapEventsIterator.hasNext()) {
+      BootstrapEvent event = bootstrapEventsIterator.next();
+      if (event.eventType().equals(BootstrapEvent.EventType.Table)) {
+        FSTableEvent tableEvent = (FSTableEvent) event;
+        String dbName = (StringUtils.isBlank(work.dbNameToLoadIn) ? tableEvent.getDbName() : work.dbNameToLoadIn);
+        List<String> tableNames;
+        if (dbToTblsListMap.containsKey(dbName)) {
+          tableNames = dbToTblsListMap.get(dbName);
+        } else {
+          tableNames = new ArrayList<>();
+          dbToTblsListMap.put(dbName, tableNames);
         }
+        tableNames.add(tableEvent.getTableName());
       }
+    }
 
-      // No tables listed in the DB level directory to be dropped.
-      if (tableNames.isEmpty()) {
-        LOG.info("No tables are listed to be dropped for Database: {} in bootstrap dump: {}",
-                dbNameInDump, bootstrapDirectory);
-        continue;
-      }
+    // No tables listed in the given bootstrap dump directory specified to clean tables.
+    if (dbToTblsListMap.isEmpty()) {
+      LOG.info("No DB/tables are listed in the bootstrap dump: {} specified to clean tables.",
+              bootstrapDirectory);
+      return;
+    }
 
-      // Drop all tables bootstrapped from previous dump.
-      // Get the target DB in which previously bootstrapped tables to be dropped. If user specified
-      // DB name as input in REPL LOAD command, then use it.
-      String dbName = (StringUtils.isNotBlank(work.dbNameToLoadIn) ? work.dbNameToLoadIn : dbNameInDump);
+    Hive db = getHive();
+    for (Map.Entry<String, List<String>> dbEntry : dbToTblsListMap.entrySet()) {
+      String dbName = dbEntry.getKey();
+      List<String> tableNames = dbEntry.getValue();
 
-      Hive db = getHive();
       for (String table : tableNames) {
         db.dropTable(dbName + "." + table, true);
       }
-      LOG.info("Database: {} is cleaned for the bootstrap dump: {}", dbName, bootstrapDirectory);
+      LOG.info("Tables listed in the Database: {} in the bootstrap dump: {} are cleaned",
+              dbName, bootstrapDirectory);
     }
   }
 

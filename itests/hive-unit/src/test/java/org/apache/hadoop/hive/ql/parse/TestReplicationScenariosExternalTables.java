@@ -594,7 +594,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     };
 
     // Fail repl load before the ckpt property is set for t4 and after it is set for t2.
-    // In the retry, these half baked tables should be dropped and bootstrap should ve successful.
+    // In the retry, these half baked tables should be dropped and bootstrap should be successful.
     InjectableBehaviourObjectStore.setAlterTableModifier(callerVerifier);
     try {
       replica.loadFailure(replicatedDbName, tupleIncWithExternalBootstrap.dumpLocation, loadWithClause);
@@ -642,27 +642,6 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
       loadWithClause.remove("'" + REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG + "'='"
               + tupleIncWithExternalBootstrap.dumpLocation + "'");
     }
-
-    // Re-bootstrapping from different bootstrap dump should fail.
-    tupleNewIncWithExternalBootstrap = primary.run("use " + primaryDbName)
-            .dump(primaryDbName, tupleIncWithExternalBootstrap.lastReplicationId, dumpWithClause);
-    loadWithClause.clear();
-    loadWithClause.addAll(externalTableBasePathWithClause());
-    replica.loadFailure(replicatedDbName, tupleNewIncWithExternalBootstrap.dumpLocation, loadWithClause);
-  }
-
-  private List<String> externalTableBasePathWithClause() throws IOException, SemanticException {
-    Path externalTableLocation = new Path(REPLICA_EXTERNAL_BASE);
-    DistributedFileSystem fileSystem = replica.miniDFSCluster.getFileSystem();
-    externalTableLocation = PathBuilder.fullyQualifiedHDFSUri(externalTableLocation, fileSystem);
-    fileSystem.mkdirs(externalTableLocation);
-
-    // this is required since the same filesystem is used in both source and target
-    return Arrays.asList(
-            "'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'='"
-                    + externalTableLocation.toString() + "'",
-            "'distcp.options.pugpb'=''"
-    );
   }
 
   @Test
@@ -692,6 +671,20 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     // Re-bootstrapping from different bootstrap dump without clean tables config should fail.
     replica.loadFailure(replicatedDbName, tupleNewIncWithExternalBootstrap.dumpLocation, loadWithClause,
             ErrorMsg.REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID.getErrorCode());
+  }
+
+  private List<String> externalTableBasePathWithClause() throws IOException, SemanticException {
+    Path externalTableLocation = new Path(REPLICA_EXTERNAL_BASE);
+    DistributedFileSystem fileSystem = replica.miniDFSCluster.getFileSystem();
+    externalTableLocation = PathBuilder.fullyQualifiedHDFSUri(externalTableLocation, fileSystem);
+    fileSystem.mkdirs(externalTableLocation);
+
+    // this is required since the same filesystem is used in both source and target
+    return Arrays.asList(
+            "'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'='"
+                    + externalTableLocation.toString() + "'",
+            "'distcp.options.pugpb'=''"
+    );
   }
 
   private void assertExternalFileInfo(List<String> expected, Path externalTableInfoFile)
