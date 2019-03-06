@@ -88,6 +88,9 @@ public class CreateViewOperation extends DDLOperation<CreateViewDesc> {
         oldview.setOutputFormatClass(desc.getOutputFormat());
       }
       oldview.checkValidity(null);
+      if (desc.getOwnerName() != null) {
+        oldview.setOwner(desc.getOwnerName());
+      }
       context.getDb().alterTable(desc.getViewName(), oldview, false, null, true);
       DDLUtils.addIfAbsentByName(new WriteEntity(oldview, WriteEntity.WriteType.DDL_NO_LOCK),
           context.getWork().getOutputs());
