@@ -392,6 +392,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count()
                       keys: key (type: string)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
@@ -1433,6 +1434,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: count()
                   keys: _col0 (type: string)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 113 Data size: 543 Basic stats: COMPLETE Column stats: NONE

@@ -152,6 +152,7 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: sum(ss_net_profit), count(ss_net_profit)
                         keys: ss_item_sk (type: int)
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 287997817 Data size: 25407250999 Basic stats: COMPLETE Column stats: NONE
@@ -178,6 +179,7 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: sum(_col1), count(_col1)
                         keys: true (type: boolean)
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 143998908 Data size: 12703625455 Basic stats: COMPLETE Column stats: NONE

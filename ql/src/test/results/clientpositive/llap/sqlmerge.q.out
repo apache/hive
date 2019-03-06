@@ -133,6 +133,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count()
                       keys: _col4 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
@@ -232,6 +233,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: compute_stats(a, 'hll'), compute_stats(b, 'hll')
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 848 Basic stats: COMPLETE Column stats: NONE
@@ -419,6 +421,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: compute_stats(a, 'hll'), compute_stats(b, 'hll')
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 848 Basic stats: COMPLETE Column stats: NONE

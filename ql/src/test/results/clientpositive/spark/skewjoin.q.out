@@ -595,6 +595,7 @@ STAGE PLANS:
                 Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: sum(hash(_col0)), sum(hash(_col1)), sum(hash(_col5))
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
@@ -717,6 +718,7 @@ STAGE PLANS:
                 Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: sum(hash(_col2)), sum(hash(_col3))
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
@@ -760,6 +762,7 @@ STAGE PLANS:
                     outputColumnNames: _col2, _col3
                     Group By Operator
                       aggregations: sum(hash(_col2)), sum(hash(_col3))
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
@@ -908,6 +911,7 @@ STAGE PLANS:
                 Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: sum(hash(_col2)), sum(hash(_col3))
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
@@ -951,6 +955,7 @@ STAGE PLANS:
                     outputColumnNames: _col2, _col3
                     Group By Operator
                       aggregations: sum(hash(_col2)), sum(hash(_col3))
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
@@ -1129,6 +1134,7 @@ STAGE PLANS:
                 Statistics: Num rows: 121 Data size: 1284 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: sum(hash(_col0)), sum(hash(_col3))
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
@@ -1185,6 +1191,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col3
                     Group By Operator
                       aggregations: sum(hash(_col0)), sum(hash(_col3))
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
@@ -1268,6 +1275,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col3
                     Group By Operator
                       aggregations: sum(hash(_col0)), sum(hash(_col3))
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
@@ -1366,6 +1374,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 330 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(hash(_col0)), sum(hash(_col6))
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE

@@ -122,6 +122,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   keys: _col0 (type: int), _col1 (type: string)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
@@ -171,6 +172,7 @@ STAGE PLANS:
           Group By Operator
             aggregations: count(), sum(if(_col3 is not null, 1, 0))
             keys: _col0 (type: int)
+            minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 1 Data size: 211 Basic stats: COMPLETE Column stats: NONE
@@ -244,6 +246,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   keys: _col0 (type: int), _col1 (type: string)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE

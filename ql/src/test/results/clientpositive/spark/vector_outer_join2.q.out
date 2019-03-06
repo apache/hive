@@ -414,6 +414,7 @@ STAGE PLANS:
                               native: false
                               vectorProcessingMode: HASH
                               projectedOutputColumnNums: [0, 1]
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0, _col1
                           Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE

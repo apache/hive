@@ -420,6 +420,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: count()
                   keys: y (type: string)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 428 Basic stats: PARTIAL Column stats: NONE
@@ -568,6 +569,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: count()
                   keys: true (type: boolean)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 244 Basic stats: PARTIAL Column stats: NONE
