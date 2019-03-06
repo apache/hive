@@ -276,8 +276,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     // Create table associated with the import
     // Executed if relevant, and used to contain all the other details about the table if not.
     ImportTableDesc tblDesc;
+    org.apache.hadoop.hive.metastore.api.Table tblObj = rv.getTable();
     try {
-      org.apache.hadoop.hive.metastore.api.Table tblObj = rv.getTable();
       // The table can be non acid in case of replication from a cluster with STRICT_MANAGED set to false.
       if (!TxnUtils.isTransactionalTable(tblObj) && replicationSpec.isInReplicationScope() &&
               x.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES) &&
@@ -317,6 +317,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       inReplicationScope = true;
       tblDesc.setReplWriteId(writeId);
+      tblDesc.setOwnerName(tblObj.getOwner());
     }
 
     if (isExternalSet) {
