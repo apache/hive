@@ -537,7 +537,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 if (!explainConfig.isCboJoinCost()) {
                   // Include cost as provided by Calcite
                   newPlan.getCluster().invalidateMetadataQuery();
-                  RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(DefaultRelMetadataProvider.INSTANCE));
+                  RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
                 }
                 if (explainConfig.isFormatted()) {
                   this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
@@ -1768,17 +1768,21 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // Create and set MD provider
       HiveDefaultRelMetadataProvider mdProvider = new HiveDefaultRelMetadataProvider(conf);
-      RelMetadataQuery.THREAD_PROVIDERS.set(
-              JaninoRelMetadataProvider.of(mdProvider.getMetadataProvider()));
+      RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider.getMetadataProvider()));
 
       //Remove subquery
-      LOG.debug("Plan before removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Plan before removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
+      }
       calciteGenPlan = hepPlan(calciteGenPlan, false, mdProvider.getMetadataProvider(), null,
               new HiveSubQueryRemoveRule(conf));
-      LOG.debug("Plan just after removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
-
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Plan just after removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
+      }
       calciteGenPlan = HiveRelDecorrelator.decorrelateQuery(calciteGenPlan);
-      LOG.debug("Plan after decorrelation:\n" + RelOptUtil.toString(calciteGenPlan));
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Plan after decorrelation:\n" + RelOptUtil.toString(calciteGenPlan));
+      }
 
       // Validate query materialization for query results caching. This check needs
       // to occur before constant folding, which may remove some function calls
@@ -2243,7 +2247,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         // Use Calcite cost model for view rewriting
         optCluster.invalidateMetadataQuery();
-        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(DefaultRelMetadataProvider.INSTANCE));
+        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
 
         // Add materializations to planner
         for (RelOptMaterialization materialization : materializations) {
@@ -2941,12 +2945,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
               String key = tabMetaData.getProperty(Constants.JDBC_KEY);
               pswd = Utilities.getPasswdFromKeystore(keystore, key);
             }
+            final String catalogName = tabMetaData.getProperty(Constants.JDBC_CATALOG);
+            final String schemaName = tabMetaData.getProperty(Constants.JDBC_SCHEMA);
             final String tableName = tabMetaData.getProperty(Constants.JDBC_TABLE);
 
             DataSource ds = JdbcSchema.dataSource(url, driver, user, pswd);
             SqlDialect jdbcDialect = JdbcSchema.createDialect(SqlDialectFactoryImpl.INSTANCE, ds);
             JdbcConvention jc = JdbcConvention.of(jdbcDialect, null, dataBaseType);
-            JdbcSchema schema = new JdbcSchema(ds, jc.dialect, jc, null/*catalog */, null/*schema */);
+            JdbcSchema schema = new JdbcSchema(ds, jc.dialect, jc, catalogName, schemaName);
             JdbcTable jt = (JdbcTable) schema.getTable(tableName);
             if (jt == null) {
               throw new SemanticException("Table " + tableName + " was not found in the database");
@@ -5146,6 +5152,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       return tabAliases;
     }
+  }
+
+  /**
+   * This method can be called at startup time to pre-register all the
+   * additional Hive classes (compared to Calcite core classes) that may
+   * be visited during the planning phase.
+   */
+  public static void initializeMetadataProviderClass() {
+    HiveDefaultRelMetadataProvider.initializeMetadataProviderClass();
   }
 
   private enum TableType {

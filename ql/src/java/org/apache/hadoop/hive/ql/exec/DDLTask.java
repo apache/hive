@@ -4699,6 +4699,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         oldview.setOutputFormatClass(crtView.getOutputFormat());
       }
       oldview.checkValidity(null);
+      if (crtView.getOwnerName() != null) {
+        oldview.setOwner(crtView.getOwnerName());
+      }
       db.alterTable(crtView.getViewName(), oldview, false, null, true);
       addIfAbsentByName(new WriteEntity(oldview, WriteEntity.WriteType.DDL_NO_LOCK));
     } else {

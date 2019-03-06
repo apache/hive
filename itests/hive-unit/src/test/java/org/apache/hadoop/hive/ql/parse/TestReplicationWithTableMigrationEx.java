@@ -348,4 +348,71 @@ public class TestReplicationWithTableMigrationEx {
     replica.load(replicatedDbName, tuple.dumpLocation, withClause);
     assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
   }
+
+  private void verifyUserName(String userName) throws Throwable {
+    assertTrue(userName.equalsIgnoreCase(primary.getTable(primaryDbName, "tbl_own").getOwner()));
+    assertTrue(userName.equalsIgnoreCase(replica.getTable(replicatedDbName, "tbl_own").getOwner()));
+    assertTrue(userName.equalsIgnoreCase(primary.getTable(primaryDbName, "tacid").getOwner()));
+    assertTrue(userName.equalsIgnoreCase(replica.getTable(replicatedDbName, "tacid").getOwner()));
+    assertTrue(userName.equalsIgnoreCase(primary.getTable(primaryDbName, "tacidpart").getOwner()));
+    assertTrue(userName.equalsIgnoreCase(replica.getTable(replicatedDbName, "tacidpart").getOwner()));
+    assertTrue(userName.equalsIgnoreCase(primary.getTable(primaryDbName, "tbl_part").getOwner()));
+    assertTrue(userName.equalsIgnoreCase(replica.getTable(replicatedDbName, "tbl_part").getOwner()));
+    assertTrue(userName.equalsIgnoreCase(primary.getTable(primaryDbName, "view_own").getOwner()));
+    assertTrue(userName.equalsIgnoreCase(replica.getTable(replicatedDbName, "view_own").getOwner()));
+  }
+
+  private void alterUserName(String userName) throws Throwable {
+    primary.run("use " + primaryDbName)
+            .run("alter table tbl_own set owner USER " + userName)
+            .run("alter table tacid set owner USER " + userName)
+            .run("alter table tacidpart set owner USER " + userName)
+            .run("alter table tbl_part set owner USER " + userName)
+            .run("alter table view_own set owner USER " + userName);
+  }
+
+  @Test
+  public void testOnwerPropagation() throws Throwable {
+    primary.run("use " + primaryDbName)
+            .run("create table tbl_own (fld int)")
+            .run("create table tacid (id int) clustered by(id) into 3 buckets stored as orc ")
+            .run("create table tacidpart (place string) partitioned by (country string) clustered by(place) "
+                    + "into 3 buckets stored as orc ")
+            .run("create table tbl_part (fld int) partitioned by (country string)")
+            .run("insert into tbl_own values (1)")
+            .run("create view view_own as select * from tbl_own");
+
+    // test bootstrap
+    alterUserName("hive");
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
+    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
+    verifyUserName("hive");
+
+    // test incremental
+    alterUserName("hive1");
+    tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
+    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
+    verifyUserName("hive1");
+  }
+
+  @Test
+  public void testOnwerPropagationInc() throws Throwable {
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
+    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
+
+    primary.run("use " + primaryDbName)
+            .run("create table tbl_own (fld int)")
+            .run("create table tacid (id int) clustered by(id) into 3 buckets stored as orc ")
+            .run("create table tacidpart (place string) partitioned by (country string) clustered by(place) "
+                    + "into 3 buckets stored as orc ")
+            .run("create table tbl_part (fld int) partitioned by (country string)")
+            .run("insert into tbl_own values (1)")
+            .run("create view view_own as select * from tbl_own");
+
+    // test incremental when table is getting created in the same load
+    alterUserName("hive");
+    tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
+    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
+    verifyUserName("hive");
+  }
 }

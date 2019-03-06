@@ -2931,11 +2931,11 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(p_partkey=[$0])
-  HiveSemiJoin(condition=[=($1, $3)], joinType=[inner])
+  HiveSemiJoin(condition=[=($1, $2)], joinType=[inner])
     HiveProject(p_partkey=[$0], p_name=[$1])
       HiveFilter(condition=[IS NOT NULL($1)])
         HiveTableScan(table=[[default, part]], table:alias=[pp])
-    HiveProject(p_partkey=[$0], p_name=[$1], p_mfgr=[$2], p_brand=[$3], p_type=[$4], p_size=[$5], p_container=[$6], p_retailprice=[$7], p_comment=[$8], BLOCK__OFFSET__INSIDE__FILE=[$9], INPUT__FILE__NAME=[$10], ROW__ID=[$11])
+    HiveProject(p_name=[$1])
       HiveFilter(condition=[IS NOT NULL($1)])
         HiveTableScan(table=[[default, part]], table:alias=[part])
 
@@ -2973,3 +2973,50 @@ POSTHOOK: Input: default@part
 85768
 86428
 90681
+PREHOOK: query: explain cbo
+with ss as
+(select count(1), p_partkey, p_name from
+            part group by p_partkey ,p_name
+            having count(1) > 1)
+select count(1) from part pp where pp.p_partkey IN (select p_partkey from ss)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+with ss as
+(select count(1), p_partkey, p_name from
+            part group by p_partkey ,p_name
+            having count(1) > 1)
+select count(1) from part pp where pp.p_partkey IN (select p_partkey from ss)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[count()])
+  HiveSemiJoin(condition=[=($0, $1)], joinType=[inner])
+    HiveProject(p_partkey=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, part]], table:alias=[pp])
+    HiveProject(p_partkey=[$0])
+      HiveFilter(condition=[>($2, 1)])
+        HiveAggregate(group=[{0, 1}], agg#0=[count()])
+          HiveFilter(condition=[IS NOT NULL($0)])
+            HiveTableScan(table=[[default, part]], table:alias=[part])
+
+PREHOOK: query: with ss as
+(select count(1), p_partkey, p_name from
+            part group by p_partkey ,p_name
+            having count(1) > 1)
+select count(1) from part pp where pp.p_partkey IN (select p_partkey from ss)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: with ss as
+(select count(1), p_partkey, p_name from
+            part group by p_partkey ,p_name
+            having count(1) > 1)
+select count(1) from part pp where pp.p_partkey IN (select p_partkey from ss)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+2

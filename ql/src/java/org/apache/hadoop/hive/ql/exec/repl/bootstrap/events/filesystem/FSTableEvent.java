@@ -123,6 +123,9 @@ public class FSTableEvent implements TableEvent {
         tableDesc.setExternal(true);
       }
       tableDesc.setReplicationSpec(replicationSpec());
+      if (table.getOwner() != null) {
+        tableDesc.setOwnerName(table.getOwner());
+      }
       return tableDesc;
     } catch (Exception e) {
       throw new SemanticException(e);
