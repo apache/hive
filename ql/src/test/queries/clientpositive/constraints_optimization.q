@@ -428,6 +428,17 @@ GROUP BY
 ,	C_LOGIN
 ;
 
+-- group by keys with columns from multiple table
+explain cbo select c_customer_sk from
+ (select c_first_name, c_customer_sk ,d_date solddate,count(*) cnt
+  from store_sales
+      ,date_dim
+      ,customer
+  where ss_sold_date_sk = d_date_sk
+    and ss_item_sk = c_customer_sk
+  group by c_first_name,c_customer_sk,d_date
+  having count(*) >4) subq;
+
 create table web_sales(ws_order_number int, ws_item_sk int, ws_price float,
     constraint pk1 primary key(ws_order_number, ws_item_sk) disable rely);
 insert into web_sales values(1, 1, 1.2);
@@ -435,3 +446,14 @@ insert into web_sales values(1, 1, 1.2);
  explain cbo select count(distinct ws_order_number) from web_sales;
  select count(distinct ws_order_number) from web_sales;
  drop table web_sales;
+
+-- UNION
+create table t1(i int primary key disable rely, j int);
+insert into t1 values(1,100),(2,200);
+create table t2(i int primary key disable rely, j int);
+insert into t2 values(2,1000),(4,500);
+
+explain cbo select i from (select i, j from t1 union all select i,j from t2) subq group by i,j;
+select i from (select i, j from t1 union all select i,j from t2) subq group by i,j;
+drop table t1;
+drop table t2;

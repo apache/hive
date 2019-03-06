@@ -2742,6 +2742,50 @@ HiveAggregate(group=[{1}])
       HiveFilter(condition=[IS NOT NULL($3)])
         HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
 
+PREHOOK: query: explain cbo select c_customer_sk from
+ (select c_first_name, c_customer_sk ,d_date solddate,count(*) cnt
+  from store_sales
+      ,date_dim
+      ,customer
+  where ss_sold_date_sk = d_date_sk
+    and ss_item_sk = c_customer_sk
+  group by c_first_name,c_customer_sk,d_date
+  having count(*) >4) subq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select c_customer_sk from
+ (select c_first_name, c_customer_sk ,d_date solddate,count(*) cnt
+  from store_sales
+      ,date_dim
+      ,customer
+  where ss_sold_date_sk = d_date_sk
+    and ss_item_sk = c_customer_sk
+  group by c_first_name,c_customer_sk,d_date
+  having count(*) >4) subq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(c_customer_sk=[$0])
+  HiveFilter(condition=[>($2, 4)])
+    HiveProject(c_customer_sk=[$1], d_date=[$0], $f2=[$2])
+      HiveAggregate(group=[{3, 4}], agg#0=[count()])
+        HiveJoin(condition=[=($1, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$2])
+              HiveFilter(condition=[IS NOT NULL($0)])
+                HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+            HiveProject(d_date_sk=[$0], d_date=[$2])
+              HiveFilter(condition=[IS NOT NULL($0)])
+                HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+          HiveProject(c_customer_sk=[$0], c_first_name=[$8])
+            HiveTableScan(table=[[default, customer]], table:alias=[customer])
+
 PREHOOK: query: create table web_sales(ws_order_number int, ws_item_sk int, ws_price float,
     constraint pk1 primary key(ws_order_number, ws_item_sk) disable rely)
 PREHOOK: type: CREATETABLE
@@ -2805,3 +2849,89 @@ POSTHOOK: query: drop table web_sales
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@web_sales
 POSTHOOK: Output: default@web_sales
+PREHOOK: query: create table t1(i int primary key disable rely, j int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1(i int primary key disable rely, j int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: insert into t1 values(1,100),(2,200)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1 values(1,100),(2,200)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.i SCRIPT []
+POSTHOOK: Lineage: t1.j SCRIPT []
+PREHOOK: query: create table t2(i int primary key disable rely, j int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2
+POSTHOOK: query: create table t2(i int primary key disable rely, j int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2
+PREHOOK: query: insert into t2 values(2,1000),(4,500)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t2
+POSTHOOK: query: insert into t2 values(2,1000),(4,500)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t2
+POSTHOOK: Lineage: t2.i SCRIPT []
+POSTHOOK: Lineage: t2.j SCRIPT []
+PREHOOK: query: explain cbo select i from (select i, j from t1 union all select i,j from t2) subq group by i,j
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select i from (select i, j from t1 union all select i,j from t2) subq group by i,j
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(i=[$0])
+  HiveAggregate(group=[{0, 1}])
+    HiveProject(i=[$0], j=[$1])
+      HiveUnion(all=[true])
+        HiveProject(i=[$0], j=[$1])
+          HiveTableScan(table=[[default, t1]], table:alias=[t1])
+        HiveProject(i=[$0], j=[$1])
+          HiveTableScan(table=[[default, t2]], table:alias=[t2])
+
+PREHOOK: query: select i from (select i, j from t1 union all select i,j from t2) subq group by i,j
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: select i from (select i, j from t1 union all select i,j from t2) subq group by i,j
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+2
+2
+4
+1
+PREHOOK: query: drop table t1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
+POSTHOOK: query: drop table t1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t1
+PREHOOK: query: drop table t2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t2
+PREHOOK: Output: default@t2
+POSTHOOK: query: drop table t2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t2
+POSTHOOK: Output: default@t2

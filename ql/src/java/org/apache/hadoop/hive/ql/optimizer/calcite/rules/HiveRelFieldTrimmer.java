@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +48,7 @@ import org.apache.calcite.rex.RexFieldAccess;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexPermuteInputsShuttle;
+import org.apache.calcite.rex.RexTableInputRef;
 import org.apache.calcite.rex.RexVisitor;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.validate.SqlValidator;
@@ -320,43 +323,79 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
   // if those are columns are not being used further up
   private ImmutableBitSet generateGroupSetIfCardinalitySame(final Aggregate aggregate,
                                         final ImmutableBitSet originalGroupSet, final ImmutableBitSet fieldsUsed) {
-    Pair<RelOptTable, List<Integer>> tabToOrgCol = HiveRelOptUtil.getColumnOriginSet(aggregate.getInput(),
-                                                                                     originalGroupSet);
-    if(tabToOrgCol == null) {
-      return originalGroupSet;
-    }
-    RelOptHiveTable tbl = (RelOptHiveTable)tabToOrgCol.left;
-    List<Integer> backtrackedGBList = tabToOrgCol.right;
-    ImmutableBitSet backtrackedGBSet = ImmutableBitSet.builder().addAll(backtrackedGBList).build();
 
-    List<ImmutableBitSet> allKeys = tbl.getNonNullableKeys();
-    ImmutableBitSet currentKey = null;
-    for(ImmutableBitSet key:allKeys) {
-      if(backtrackedGBSet.contains(key)) {
-        // only if grouping sets consist of keys
-        currentKey = key;
-        break;
+    RexBuilder rexBuilder = aggregate.getCluster().getRexBuilder();
+    RelMetadataQuery mq = aggregate.getCluster().getMetadataQuery();
+
+    Iterator<Integer> iterator = originalGroupSet.iterator();
+    Map<Pair<RelOptTable, Integer>, Pair<List<Integer>, List<Integer>>> mapGBKeysLineage= new HashMap<>();
+
+    while(iterator.hasNext()) {
+      Integer key = iterator.next();
+      RexNode inputRef = rexBuilder.makeInputRef(aggregate.getInput(), key.intValue());
+      Set<RexNode> exprLineage = mq.getExpressionLineage(aggregate, inputRef);
+      if(exprLineage != null && exprLineage.size() == 1){
+        RexNode expr = exprLineage.iterator().next();
+        if(expr instanceof RexTableInputRef) {
+          //TODO: what if expression
+          RexTableInputRef tblRef = (RexTableInputRef)expr;
+          Pair<RelOptTable, Integer> baseTable = Pair.of(tblRef.getTableRef().getTable(), tblRef.getTableRef().getEntityNumber());
+          if(mapGBKeysLineage.containsKey(baseTable)) {
+            List<Integer> baseCol = mapGBKeysLineage.get(baseTable).left;
+            baseCol.add(tblRef.getIndex());
+            List<Integer> gbKey = mapGBKeysLineage.get(baseTable).right;
+            gbKey.add(key);
+          } else {
+            List<Integer> baseCol = new ArrayList<>();
+            baseCol.add(tblRef.getIndex());
+            List<Integer> gbKey = new ArrayList<>();
+            gbKey.add(key);
+            mapGBKeysLineage.put(baseTable, Pair.of(baseCol, gbKey));
+          }
+        }
       }
-    }
-    if(currentKey == null || currentKey.isEmpty()) {
-      return originalGroupSet;
     }
 
     // we want to delete all columns in original GB set except the key
     ImmutableBitSet.Builder builder = ImmutableBitSet.builder();
 
-    // we have established that this gb set contains keys and it is safe to remove rest of the columns
-    for(int i=0; i<backtrackedGBList.size(); i++) {
-      Integer backtrackedCol = backtrackedGBList.get(i);
-      int orgCol = originalGroupSet.nth(i);
-      if(fieldsUsed.get((orgCol))
-          || currentKey.get(backtrackedCol)) {
-        // keep the columns which are being used or are part of keys
-        builder.set(orgCol);
+    for(Map.Entry<Pair<RelOptTable, Integer>, Pair<List<Integer>, List<Integer>>> entry:mapGBKeysLineage.entrySet()) {
+      RelOptHiveTable tbl = (RelOptHiveTable)entry.getKey().left;
+      List<Integer> backtrackedGBList = entry.getValue().left;
+      List<Integer> gbKeys = entry.getValue().right;
+
+      ImmutableBitSet backtrackedGBSet = ImmutableBitSet.builder().addAll(backtrackedGBList).build();
+
+      List<ImmutableBitSet> allKeys = tbl.getNonNullableKeys();
+      ImmutableBitSet currentKey = null;
+      for(ImmutableBitSet key:allKeys) {
+        if(backtrackedGBSet.contains(key)) {
+          // only if grouping sets consist of keys
+          currentKey = key;
+          break;
+        }
+      }
+      if(currentKey == null || currentKey.isEmpty()) {
+        continue;
+      }
+
+
+      // we have established that this gb set contains keys and it is safe to remove rest of the columns
+      for(int i=0; i<backtrackedGBList.size(); i++) {
+        Integer backtrackedCol = backtrackedGBList.get(i);
+        int orgCol = gbKeys.get(i);
+        if(!fieldsUsed.get((orgCol))
+            && !currentKey.get(backtrackedCol)) {
+          // keep the columns which are being used or are part of keys
+          builder.set(orgCol);
+        }
       }
     }
-    return builder.build();
+
+    ImmutableBitSet keysToRemove = builder.build();
+    return originalGroupSet.except(keysToRemove);
   }
+
   // if gby keys consist of pk/uk non-pk/non-uk columns are removed if they are not being used
   private ImmutableBitSet generateNewGroupset(Aggregate aggregate, ImmutableBitSet fieldsUsed) {
 
