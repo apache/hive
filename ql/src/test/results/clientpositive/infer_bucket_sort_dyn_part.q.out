@@ -442,6 +442,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations: count()
                 keys: key (type: string)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 198 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
@@ -478,6 +479,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                 keys: ds (type: string), hr (type: string)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 99 Data size: 58120 Basic stats: PARTIAL Column stats: NONE

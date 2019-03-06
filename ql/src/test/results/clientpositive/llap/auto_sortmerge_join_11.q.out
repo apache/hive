@@ -356,6 +356,7 @@ STAGE PLANS:
                 Statistics: Num rows: 250 Data size: 165502 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
@@ -547,6 +548,7 @@ STAGE PLANS:
                         Statistics: Num rows: 250 Data size: 165502 Basic stats: PARTIAL Column stats: NONE
                         Group By Operator
                           aggregations: count()
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
@@ -828,6 +830,7 @@ STAGE PLANS:
                       Statistics: Num rows: 250 Data size: 165502 Basic stats: PARTIAL Column stats: NONE
                       Group By Operator
                         aggregations: count()
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
@@ -1224,6 +1227,7 @@ STAGE PLANS:
                       Statistics: Num rows: 501 Data size: 331005 Basic stats: PARTIAL Column stats: NONE
                       Group By Operator
                         aggregations: count()
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE

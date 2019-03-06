@@ -87,6 +87,7 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 18 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: fkey (type: int), id (type: int)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 2 Data size: 18 Basic stats: COMPLETE Column stats: NONE
@@ -231,6 +232,7 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 18 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: id (type: int), fkey (type: int)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 2 Data size: 18 Basic stats: COMPLETE Column stats: NONE
@@ -395,6 +397,7 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 18 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: fkey (type: int), id (type: int)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 2 Data size: 18 Basic stats: COMPLETE Column stats: NONE

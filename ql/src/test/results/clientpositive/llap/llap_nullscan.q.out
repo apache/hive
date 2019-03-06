@@ -284,6 +284,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(key)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
@@ -304,6 +305,7 @@ STAGE PLANS:
                     Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(key)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE

@@ -659,6 +659,7 @@ STAGE PLANS:
                   outputColumnNames: k1, v1, k2, v2
                   Group By Operator
                     aggregations: compute_stats(k1, 'hll'), compute_stats(v1, 'hll'), compute_stats(k2, 'hll'), compute_stats(v2, 'hll')
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Reduce Output Operator

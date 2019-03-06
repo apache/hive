@@ -87,6 +87,7 @@ STAGE PLANS:
                   Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: compute_stats(key, 'hll'), compute_stats(count, 'hll')
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: NONE
@@ -123,6 +124,7 @@ STAGE PLANS:
                   Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: compute_stats(key, 'hll'), compute_stats(count, 'hll')
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: NONE
@@ -361,6 +363,7 @@ STAGE PLANS:
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: compute_stats(key, 'hll'), compute_stats(count, 'hll')
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: NONE
@@ -397,6 +400,7 @@ STAGE PLANS:
                   Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: compute_stats(key, 'hll'), compute_stats(count, 'hll')
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: NONE

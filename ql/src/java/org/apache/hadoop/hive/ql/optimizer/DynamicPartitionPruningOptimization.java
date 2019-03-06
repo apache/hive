@@ -454,10 +454,13 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     ArrayList<String> outputNames = new ArrayList<String>();
     outputNames.add(HiveConf.getColumnInternalName(0));
 
+    ArrayList<ColumnInfo> selectColInfos = new ArrayList<ColumnInfo>();
+    selectColInfos.add(new ColumnInfo(outputNames.get(0), key.getTypeInfo(), "", false));
+
     // project the relevant key column
     SelectDesc select = new SelectDesc(keyExprs, outputNames);
     SelectOperator selectOp =
-        (SelectOperator) OperatorFactory.getAndMakeChild(select, parentOfRS);
+        (SelectOperator) OperatorFactory.getAndMakeChild(select, new RowSchema(selectColInfos), parentOfRS);
 
     // do a group by on the list to dedup
     float groupByMemoryUsage =
@@ -465,6 +468,9 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     float memoryThreshold =
         HiveConf.getFloatVar(parseContext.getConf(),
             HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
+    float minReductionHashAggr =
+        HiveConf.getFloatVar(parseContext.getConf(),
+            ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
 
     ArrayList<ExprNodeDesc> groupByExprs = new ArrayList<ExprNodeDesc>();
     ExprNodeDesc groupByExpr =
@@ -474,10 +480,13 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     GroupByDesc groupBy =
         new GroupByDesc(GroupByDesc.Mode.HASH, outputNames, groupByExprs,
             new ArrayList<AggregationDesc>(), false, groupByMemoryUsage, memoryThreshold,
-            null, false, -1, true);
+            minReductionHashAggr, null, false, -1, true);
+
+    ArrayList<ColumnInfo> groupbyColInfos = new ArrayList<ColumnInfo>();
+    groupbyColInfos.add(new ColumnInfo(outputNames.get(0), key.getTypeInfo(), "", false));
 
     GroupByOperator groupByOp = (GroupByOperator) OperatorFactory.getAndMakeChild(
-        groupBy, selectOp);
+        groupBy, new RowSchema(groupbyColInfos), selectOp);
 
     Map<String, ExprNodeDesc> colMap = new HashMap<String, ExprNodeDesc>();
     colMap.put(outputNames.get(0), groupByExpr);
@@ -601,6 +610,9 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     float memoryThreshold =
             HiveConf.getFloatVar(parseContext.getConf(),
                     HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
+    float minReductionHashAggr =
+        HiveConf.getFloatVar(parseContext.getConf(),
+            ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
 
     // Add min/max and bloom filter aggregations
     List<ObjectInspector> aggFnOIs = new ArrayList<ObjectInspector>();
@@ -647,8 +659,8 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     gbOutputNames.add(SemanticAnalyzer.getColumnInternalName(1));
     gbOutputNames.add(SemanticAnalyzer.getColumnInternalName(2));
     GroupByDesc groupBy = new GroupByDesc(GroupByDesc.Mode.HASH,
-            gbOutputNames, new ArrayList<ExprNodeDesc>(), aggs, false,
-        groupByMemoryUsage, memoryThreshold, null, false, -1, false);
+        gbOutputNames, new ArrayList<ExprNodeDesc>(), aggs, false,
+        groupByMemoryUsage, memoryThreshold, minReductionHashAggr, null, false, -1, false);
 
     ArrayList<ColumnInfo> groupbyColInfos = new ArrayList<ColumnInfo>();
     groupbyColInfos.add(new ColumnInfo(gbOutputNames.get(0), key.getTypeInfo(), "", false));
@@ -747,7 +759,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
 
     GroupByDesc groupByDescFinal = new GroupByDesc(GroupByDesc.Mode.FINAL,
             gbOutputNames, new ArrayList<ExprNodeDesc>(), aggsFinal, false,
-            groupByMemoryUsage, memoryThreshold, null, false, 0, false);
+            groupByMemoryUsage, memoryThreshold, minReductionHashAggr, null, false, 0, false);
     GroupByOperator groupByOpFinal = (GroupByOperator)OperatorFactory.getAndMakeChild(
             groupByDescFinal, new RowSchema(rsOp.getSchema()), rsOp);
     groupByOpFinal.setColumnExprMap(new HashMap<String, ExprNodeDesc>());

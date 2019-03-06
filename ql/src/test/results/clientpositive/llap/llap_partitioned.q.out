@@ -2010,9 +2010,10 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
                       keys: _col0 (type: tinyint)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Dynamic Partitioning Event Operator
                         Target column: ctinyint (tinyint)
                         App Master Event Vectorization:
@@ -2020,7 +2021,7 @@ STAGE PLANS:
                             native: true
                         Target Input: oft
                         Partition key expr: ctinyint
-                        Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Target Vertex: Map 1
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -2394,6 +2395,7 @@ STAGE PLANS:
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 694 Basic stats: COMPLETE Column stats: NONE

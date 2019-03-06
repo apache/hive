@@ -328,7 +328,7 @@ PREHOOK: Input: default@partitioned_table2
 PREHOOK: Input: default@partitioned_table2@part_col=2
 PREHOOK: Input: default@partitioned_table2@part_col=3
 PREHOOK: Input: default@regular_table1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: -- ensure the partitioned tables are treated as big tables
 
 
@@ -343,7 +343,7 @@ POSTHOOK: Input: default@partitioned_table2
 POSTHOOK: Input: default@partitioned_table2@part_col=2
 POSTHOOK: Input: default@partitioned_table2@part_col=3
 POSTHOOK: Input: default@regular_table1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3
@@ -377,6 +377,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: int)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
@@ -414,6 +415,7 @@ STAGE PLANS:
                         Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: int)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
@@ -427,6 +429,7 @@ STAGE PLANS:
                             Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                             Group By Operator
                               keys: _col0 (type: int)
+                              minReductionHashAggr: 0.99
                               mode: hash
                               outputColumnNames: _col0
                               Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
@@ -462,6 +465,7 @@ STAGE PLANS:
                       Statistics: Num rows: 13 Data size: 13 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -507,7 +511,7 @@ PREHOOK: Input: default@partitioned_table2
 PREHOOK: Input: default@partitioned_table2@part_col=2
 PREHOOK: Input: default@partitioned_table2@part_col=3
 PREHOOK: Input: default@regular_table1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT count(*)
 FROM   partitioned_table1
 WHERE  partitioned_table1.part_col IN (SELECT regular_table1.col1
@@ -523,7 +527,7 @@ POSTHOOK: Input: default@partitioned_table2
 POSTHOOK: Input: default@partitioned_table2@part_col=2
 POSTHOOK: Input: default@partitioned_table2@part_col=3
 POSTHOOK: Input: default@regular_table1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 6
 PREHOOK: query: EXPLAIN SELECT count(*) FROM partitioned_table1, regular_table1 rt1,
 regular_table1 rt2 WHERE rt1.col1 = partitioned_table1.part_col AND rt2.col1 =
@@ -534,7 +538,7 @@ PREHOOK: Input: default@partitioned_table1@part_col=1
 PREHOOK: Input: default@partitioned_table1@part_col=2
 PREHOOK: Input: default@partitioned_table1@part_col=3
 PREHOOK: Input: default@regular_table1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT count(*) FROM partitioned_table1, regular_table1 rt1,
 regular_table1 rt2 WHERE rt1.col1 = partitioned_table1.part_col AND rt2.col1 =
 partitioned_table1.part_col AND rt1.col2 > 0 AND rt2.col2 > 1
@@ -544,7 +548,7 @@ POSTHOOK: Input: default@partitioned_table1@part_col=1
 POSTHOOK: Input: default@partitioned_table1@part_col=2
 POSTHOOK: Input: default@partitioned_table1@part_col=3
 POSTHOOK: Input: default@regular_table1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -578,6 +582,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: int)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
@@ -609,6 +614,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: int)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
@@ -647,6 +653,7 @@ STAGE PLANS:
                       Statistics: Num rows: 39 Data size: 39 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -691,7 +698,7 @@ PREHOOK: Input: default@partitioned_table1@part_col=1
 PREHOOK: Input: default@partitioned_table1@part_col=2
 PREHOOK: Input: default@partitioned_table1@part_col=3
 PREHOOK: Input: default@regular_table1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT count(*)
 FROM   partitioned_table1,
        regular_table1 rt1,
@@ -706,7 +713,7 @@ POSTHOOK: Input: default@partitioned_table1@part_col=1
 POSTHOOK: Input: default@partitioned_table1@part_col=2
 POSTHOOK: Input: default@partitioned_table1@part_col=3
 POSTHOOK: Input: default@regular_table1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 6
 Warning: Shuffle Join JOIN[21][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN SELECT count(*) FROM partitioned_table1, partitioned_table2, regular_table1 rt1 
@@ -722,7 +729,7 @@ PREHOOK: Input: default@partitioned_table2@part_col=1
 PREHOOK: Input: default@partitioned_table2@part_col=2
 PREHOOK: Input: default@partitioned_table2@part_col=3
 PREHOOK: Input: default@regular_table1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT count(*) FROM partitioned_table1, partitioned_table2, regular_table1 rt1 
 , regular_table1 rt2 WHERE rt1.col1 = partitioned_table1.part_col AND rt2.col1 = 
 partitioned_table2.part_col AND rt1.col2 > 0 AND rt2.col2 > 1
@@ -736,7 +743,7 @@ POSTHOOK: Input: default@partitioned_table2@part_col=1
 POSTHOOK: Input: default@partitioned_table2@part_col=2
 POSTHOOK: Input: default@partitioned_table2@part_col=3
 POSTHOOK: Input: default@regular_table1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -770,6 +777,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: int)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
@@ -805,6 +813,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: int)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
@@ -878,6 +887,7 @@ STAGE PLANS:
                 Statistics: Num rows: 361 Data size: 1083 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -926,7 +936,7 @@ PREHOOK: Input: default@partitioned_table2@part_col=1
 PREHOOK: Input: default@partitioned_table2@part_col=2
 PREHOOK: Input: default@partitioned_table2@part_col=3
 PREHOOK: Input: default@regular_table1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT count(*)
 FROM   partitioned_table1,
 	   partitioned_table2,
@@ -946,7 +956,7 @@ POSTHOOK: Input: default@partitioned_table2@part_col=1
 POSTHOOK: Input: default@partitioned_table2@part_col=2
 POSTHOOK: Input: default@partitioned_table2@part_col=3
 POSTHOOK: Input: default@regular_table1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 72
 PREHOOK: query: EXPLAIN SELECT count(*) FROM regular_table1, partitioned_table1 WHERE regular_table1.col1
 = partitioned_table1.part_col AND regular_table1.col2 BETWEEN 1 AND 3
@@ -956,7 +966,7 @@ PREHOOK: Input: default@partitioned_table1@part_col=1
 PREHOOK: Input: default@partitioned_table1@part_col=2
 PREHOOK: Input: default@partitioned_table1@part_col=3
 PREHOOK: Input: default@regular_table1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT count(*) FROM regular_table1, partitioned_table1 WHERE regular_table1.col1
 = partitioned_table1.part_col AND regular_table1.col2 BETWEEN 1 AND 3
 POSTHOOK: type: QUERY
@@ -965,7 +975,7 @@ POSTHOOK: Input: default@partitioned_table1@part_col=1
 POSTHOOK: Input: default@partitioned_table1@part_col=2
 POSTHOOK: Input: default@partitioned_table1@part_col=3
 POSTHOOK: Input: default@regular_table1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -998,6 +1008,7 @@ STAGE PLANS:
                         Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: int)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
@@ -1033,6 +1044,7 @@ STAGE PLANS:
                       Statistics: Num rows: 19 Data size: 19 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -1074,7 +1086,7 @@ PREHOOK: Input: default@partitioned_table1@part_col=1
 PREHOOK: Input: default@partitioned_table1@part_col=2
 PREHOOK: Input: default@partitioned_table1@part_col=3
 PREHOOK: Input: default@regular_table1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT count(*)
 FROM   regular_table1,
        partitioned_table1
@@ -1086,7 +1098,7 @@ POSTHOOK: Input: default@partitioned_table1@part_col=1
 POSTHOOK: Input: default@partitioned_table1@part_col=2
 POSTHOOK: Input: default@partitioned_table1@part_col=3
 POSTHOOK: Input: default@regular_table1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 12
 PREHOOK: query: EXPLAIN WITH q1 AS (SELECT regular_table1.col1 AS col FROM regular_table1 WHERE
 regular_table1.col2 > 1), q2 AS (SELECT partitioned_table1.part_col AS col FROM
@@ -1098,7 +1110,7 @@ PREHOOK: Input: default@partitioned_table1@part_col=1
 PREHOOK: Input: default@partitioned_table1@part_col=2
 PREHOOK: Input: default@partitioned_table1@part_col=3
 PREHOOK: Input: default@regular_table1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN WITH q1 AS (SELECT regular_table1.col1 AS col FROM regular_table1 WHERE
 regular_table1.col2 > 1), q2 AS (SELECT partitioned_table1.part_col AS col FROM
 partitioned_table1 WHERE partitioned_table1.col > 1) SELECT count(*) FROM q1 JOIN q2 ON
@@ -1109,7 +1121,7 @@ POSTHOOK: Input: default@partitioned_table1@part_col=1
 POSTHOOK: Input: default@partitioned_table1@part_col=2
 POSTHOOK: Input: default@partitioned_table1@part_col=3
 POSTHOOK: Input: default@regular_table1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1142,6 +1154,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: int)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
@@ -1180,6 +1193,7 @@ STAGE PLANS:
                         Statistics: Num rows: 6 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count()
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -1228,7 +1242,7 @@ PREHOOK: Input: default@partitioned_table1@part_col=1
 PREHOOK: Input: default@partitioned_table1@part_col=2
 PREHOOK: Input: default@partitioned_table1@part_col=3
 PREHOOK: Input: default@regular_table1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: WITH q1
      AS (SELECT regular_table1.col1 AS col
          FROM   regular_table1
@@ -1247,7 +1261,7 @@ POSTHOOK: Input: default@partitioned_table1@part_col=1
 POSTHOOK: Input: default@partitioned_table1@part_col=2
 POSTHOOK: Input: default@partitioned_table1@part_col=3
 POSTHOOK: Input: default@regular_table1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 5
 PREHOOK: query: EXPLAIN SELECT count(*) FROM partitioned_table1, partitioned_table2 WHERE
 partitioned_table1.part_col = partitioned_table2.part_col AND partitioned_table2.col > 1
@@ -1260,7 +1274,7 @@ PREHOOK: Input: default@partitioned_table2
 PREHOOK: Input: default@partitioned_table2@part_col=1
 PREHOOK: Input: default@partitioned_table2@part_col=2
 PREHOOK: Input: default@partitioned_table2@part_col=3
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT count(*) FROM partitioned_table1, partitioned_table2 WHERE
 partitioned_table1.part_col = partitioned_table2.part_col AND partitioned_table2.col > 1
 POSTHOOK: type: QUERY
@@ -1272,7 +1286,7 @@ POSTHOOK: Input: default@partitioned_table2
 POSTHOOK: Input: default@partitioned_table2@part_col=1
 POSTHOOK: Input: default@partitioned_table2@part_col=2
 POSTHOOK: Input: default@partitioned_table2@part_col=3
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1305,6 +1319,7 @@ STAGE PLANS:
                         Statistics: Num rows: 6 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: int)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 6 Data size: 6 Basic stats: COMPLETE Column stats: NONE
@@ -1340,6 +1355,7 @@ STAGE PLANS:
                       Statistics: Num rows: 19 Data size: 19 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -1384,7 +1400,7 @@ PREHOOK: Input: default@partitioned_table2
 PREHOOK: Input: default@partitioned_table2@part_col=1
 PREHOOK: Input: default@partitioned_table2@part_col=2
 PREHOOK: Input: default@partitioned_table2@part_col=3
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT count(*)
 FROM   partitioned_table1,
        partitioned_table2
@@ -1399,7 +1415,7 @@ POSTHOOK: Input: default@partitioned_table2
 POSTHOOK: Input: default@partitioned_table2@part_col=1
 POSTHOOK: Input: default@partitioned_table2@part_col=2
 POSTHOOK: Input: default@partitioned_table2@part_col=3
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 90
 PREHOOK: query: -- set auto convert size to a higher value so map-joins are triggered for the partitioned tables
 
@@ -1415,7 +1431,7 @@ PREHOOK: Input: default@partitioned_table5
 PREHOOK: Input: default@partitioned_table5@part_col1=1/part_col2=1
 PREHOOK: Input: default@partitioned_table5@part_col1=2/part_col2=2
 PREHOOK: Input: default@partitioned_table5@part_col1=3/part_col2=3
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: -- set auto convert size to a higher value so map-joins are triggered for the partitioned tables
 
 EXPLAIN SELECT count(*) FROM partitioned_table4, partitioned_table5 WHERE
@@ -1430,7 +1446,7 @@ POSTHOOK: Input: default@partitioned_table5
 POSTHOOK: Input: default@partitioned_table5@part_col1=1/part_col2=1
 POSTHOOK: Input: default@partitioned_table5@part_col1=2/part_col2=2
 POSTHOOK: Input: default@partitioned_table5@part_col1=3/part_col2=3
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1460,6 +1476,7 @@ STAGE PLANS:
                       Statistics: Num rows: 18 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: int)
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 18 Data size: 18 Basic stats: COMPLETE Column stats: NONE
@@ -1472,6 +1489,7 @@ STAGE PLANS:
                       Statistics: Num rows: 18 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: int)
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 18 Data size: 18 Basic stats: COMPLETE Column stats: NONE
@@ -1507,6 +1525,7 @@ STAGE PLANS:
                       Statistics: Num rows: 19 Data size: 19 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -1551,7 +1570,7 @@ PREHOOK: Input: default@partitioned_table5
 PREHOOK: Input: default@partitioned_table5@part_col1=1/part_col2=1
 PREHOOK: Input: default@partitioned_table5@part_col1=2/part_col2=2
 PREHOOK: Input: default@partitioned_table5@part_col1=3/part_col2=3
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT count(*)
 FROM   partitioned_table4,
        partitioned_table5
@@ -1566,7 +1585,7 @@ POSTHOOK: Input: default@partitioned_table5
 POSTHOOK: Input: default@partitioned_table5@part_col1=1/part_col2=1
 POSTHOOK: Input: default@partitioned_table5@part_col1=2/part_col2=2
 POSTHOOK: Input: default@partitioned_table5@part_col1=3/part_col2=3
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 108
 PREHOOK: query: EXPLAIN SELECT count(*) FROM partitioned_table1 JOIN regular_table1 ON
 partitioned_table1.part_col = regular_table1.col1 JOIN regular_table2 ON
@@ -1578,7 +1597,7 @@ PREHOOK: Input: default@partitioned_table1@part_col=2
 PREHOOK: Input: default@partitioned_table1@part_col=3
 PREHOOK: Input: default@regular_table1
 PREHOOK: Input: default@regular_table2
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT count(*) FROM partitioned_table1 JOIN regular_table1 ON
 partitioned_table1.part_col = regular_table1.col1 JOIN regular_table2 ON
 regular_table1.col1 = regular_table2.col1
@@ -1589,7 +1608,7 @@ POSTHOOK: Input: default@partitioned_table1@part_col=2
 POSTHOOK: Input: default@partitioned_table1@part_col=3
 POSTHOOK: Input: default@regular_table1
 POSTHOOK: Input: default@regular_table2
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1623,6 +1642,7 @@ STAGE PLANS:
                         Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: int)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
@@ -1654,6 +1674,7 @@ STAGE PLANS:
                         Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: int)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
@@ -1692,6 +1713,7 @@ STAGE PLANS:
                       Statistics: Num rows: 39 Data size: 39 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -1735,7 +1757,7 @@ PREHOOK: Input: default@partitioned_table1@part_col=2
 PREHOOK: Input: default@partitioned_table1@part_col=3
 PREHOOK: Input: default@regular_table1
 PREHOOK: Input: default@regular_table2
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT count(*)
 FROM   partitioned_table1
        JOIN regular_table1
@@ -1749,7 +1771,7 @@ POSTHOOK: Input: default@partitioned_table1@part_col=2
 POSTHOOK: Input: default@partitioned_table1@part_col=3
 POSTHOOK: Input: default@regular_table1
 POSTHOOK: Input: default@regular_table2
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 12
 PREHOOK: query: -- reset auto convert size to previous value
 

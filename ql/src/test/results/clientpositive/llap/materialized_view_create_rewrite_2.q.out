@@ -86,6 +86,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: a (type: int), b (type: varchar(256))
+                        minReductionHashAggr: 0.0
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
@@ -180,6 +181,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: a (type: int), b (type: varchar(256))
+                        minReductionHashAggr: 0.0
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
@@ -276,6 +278,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 456 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: a (type: int), b (type: varchar(256))
+                        minReductionHashAggr: 0.0
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 1 Data size: 456 Basic stats: COMPLETE Column stats: NONE
@@ -371,6 +374,7 @@ STAGE PLANS:
                     Statistics: Num rows: 5 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: b (type: varchar(256))
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 5 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
@@ -575,6 +579,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: a (type: int)
+                        minReductionHashAggr: 0.0
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE

@@ -300,6 +300,7 @@ STAGE PLANS:
                         Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: string)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
@@ -431,6 +432,7 @@ STAGE PLANS:
                       Statistics: Num rows: 100 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 100 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
@@ -573,6 +575,7 @@ STAGE PLANS:
                         Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: string)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
@@ -616,6 +619,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: key (type: string)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE

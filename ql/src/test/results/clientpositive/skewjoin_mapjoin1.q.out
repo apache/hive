@@ -405,6 +405,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2 Data size: 660 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -433,6 +434,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2 Data size: 660 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -556,6 +558,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2 Data size: 660 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -584,6 +587,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2 Data size: 660 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE

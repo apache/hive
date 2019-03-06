@@ -1426,6 +1426,7 @@ STAGE PLANS:
                   Group By Operator
                     aggregations: compute_stats(si, 'hll'), compute_stats(i, 'hll'), compute_stats(b, 'hll'), compute_stats(f, 'hll')
                     keys: ds (type: string), t (type: tinyint)
+                    minReductionHashAggr: 0.0
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                     Statistics: Num rows: 5 Data size: 8935 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1697,6 +1698,7 @@ STAGE PLANS:
                     Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: t (type: tinyint), si (type: smallint), i (type: int), b (type: bigint), f (type: float)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4
                       Statistics: Num rows: 5 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1734,6 +1736,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: compute_stats(si, 'hll'), compute_stats(i, 'hll'), compute_stats(b, 'hll'), compute_stats(f, 'hll')
                       keys: ds (type: string), t (type: tinyint)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                       Statistics: Num rows: 2 Data size: 3574 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1819,6 +1822,7 @@ STAGE PLANS:
                     Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: t (type: tinyint), si (type: smallint), i (type: int), b (type: bigint), f (type: float)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4
                       Statistics: Num rows: 5 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2243,6 +2247,7 @@ STAGE PLANS:
                   Group By Operator
                     aggregations: compute_stats(si, 'hll'), compute_stats(i, 'hll'), compute_stats(b, 'hll'), compute_stats(f, 'hll')
                     keys: t (type: tinyint)
+                    minReductionHashAggr: 0.0
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4
                     Statistics: Num rows: 5 Data size: 8500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2563,6 +2568,7 @@ STAGE PLANS:
                     Statistics: Num rows: 19 Data size: 645 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2793,6 +2799,7 @@ STAGE PLANS:
                     Statistics: Num rows: 19 Data size: 645 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE

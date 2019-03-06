@@ -1,0 +1,584 @@
+PREHOOK: query: create database tpch_test
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:tpch_test
+POSTHOOK: query: create database tpch_test
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:tpch_test
+PREHOOK: query: use tpch_test
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:tpch_test
+POSTHOOK: query: use tpch_test
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:tpch_test
+PREHOOK: query: CREATE TABLE `customer`(
+  `c_custkey` bigint, 
+  `c_name` string, 
+  `c_address` string, 
+  `c_nationkey` bigint, 
+  `c_phone` string, 
+  `c_acctbal` double, 
+  `c_mktsegment` string, 
+  `c_comment` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'transactional'='true', 
+  'transactional_properties'='default', 
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:tpch_test
+PREHOOK: Output: tpch_test@customer
+POSTHOOK: query: CREATE TABLE `customer`(
+  `c_custkey` bigint, 
+  `c_name` string, 
+  `c_address` string, 
+  `c_nationkey` bigint, 
+  `c_phone` string, 
+  `c_acctbal` double, 
+  `c_mktsegment` string, 
+  `c_comment` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'transactional'='true', 
+  'transactional_properties'='default', 
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:tpch_test
+POSTHOOK: Output: tpch_test@customer
+PREHOOK: query: CREATE TABLE `lineitem`(
+  `l_orderkey` bigint, 
+  `l_partkey` bigint, 
+  `l_suppkey` bigint, 
+  `l_linenumber` int, 
+  `l_quantity` double, 
+  `l_extendedprice` double, 
+  `l_discount` double, 
+  `l_tax` double, 
+  `l_returnflag` string, 
+  `l_linestatus` string, 
+  `l_shipdate` string, 
+  `l_commitdate` string, 
+  `l_receiptdate` string, 
+  `l_shipinstruct` string, 
+  `l_shipmode` string, 
+  `l_comment` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'transactional'='true', 
+  'transactional_properties'='default', 
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:tpch_test
+PREHOOK: Output: tpch_test@lineitem
+POSTHOOK: query: CREATE TABLE `lineitem`(
+  `l_orderkey` bigint, 
+  `l_partkey` bigint, 
+  `l_suppkey` bigint, 
+  `l_linenumber` int, 
+  `l_quantity` double, 
+  `l_extendedprice` double, 
+  `l_discount` double, 
+  `l_tax` double, 
+  `l_returnflag` string, 
+  `l_linestatus` string, 
+  `l_shipdate` string, 
+  `l_commitdate` string, 
+  `l_receiptdate` string, 
+  `l_shipinstruct` string, 
+  `l_shipmode` string, 
+  `l_comment` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'transactional'='true', 
+  'transactional_properties'='default', 
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:tpch_test
+POSTHOOK: Output: tpch_test@lineitem
+PREHOOK: query: CREATE TABLE `orders`(
+  `o_orderkey` bigint, 
+  `o_custkey` bigint, 
+  `o_orderstatus` string, 
+  `o_totalprice` double, 
+  `o_orderdate` string, 
+  `o_orderpriority` string, 
+  `o_clerk` string, 
+  `o_shippriority` int, 
+  `o_comment` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'transactional'='true', 
+  'transactional_properties'='default', 
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:tpch_test
+PREHOOK: Output: tpch_test@orders
+POSTHOOK: query: CREATE TABLE `orders`(
+  `o_orderkey` bigint, 
+  `o_custkey` bigint, 
+  `o_orderstatus` string, 
+  `o_totalprice` double, 
+  `o_orderdate` string, 
+  `o_orderpriority` string, 
+  `o_clerk` string, 
+  `o_shippriority` int, 
+  `o_comment` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'transactional'='true', 
+  'transactional_properties'='default', 
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:tpch_test
+POSTHOOK: Output: tpch_test@orders
+PREHOOK: query: alter table customer update statistics set('numRows'='150000000','rawDataSize'='8633707142')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: tpch_test@customer
+PREHOOK: Output: tpch_test@customer
+POSTHOOK: query: alter table customer update statistics set('numRows'='150000000','rawDataSize'='8633707142')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: tpch_test@customer
+POSTHOOK: Output: tpch_test@customer
+PREHOOK: query: alter table lineitem update statistics set('numRows'='5999989709','rawDataSize'='184245066955')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: tpch_test@lineitem
+PREHOOK: Output: tpch_test@lineitem
+POSTHOOK: query: alter table lineitem update statistics set('numRows'='5999989709','rawDataSize'='184245066955')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: tpch_test@lineitem
+POSTHOOK: Output: tpch_test@lineitem
+PREHOOK: query: alter table orders update statistics set('numRows'='1500000000','rawDataSize'='46741318253')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: tpch_test@orders
+PREHOOK: Output: tpch_test@orders
+POSTHOOK: query: alter table orders update statistics set('numRows'='1500000000','rawDataSize'='46741318253')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: tpch_test@orders
+POSTHOOK: Output: tpch_test@orders
+PREHOOK: query: create view q18_tmp_cached as
+select l_orderkey, sum(l_quantity) as t_sum_quantity
+from lineitem
+where l_orderkey is not null
+group by l_orderkey
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: tpch_test@lineitem
+PREHOOK: Output: database:tpch_test
+PREHOOK: Output: tpch_test@q18_tmp_cached
+POSTHOOK: query: create view q18_tmp_cached as
+select l_orderkey, sum(l_quantity) as t_sum_quantity
+from lineitem
+where l_orderkey is not null
+group by l_orderkey
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: tpch_test@lineitem
+POSTHOOK: Output: database:tpch_test
+POSTHOOK: Output: tpch_test@q18_tmp_cached
+POSTHOOK: Lineage: q18_tmp_cached.l_orderkey SIMPLE [(lineitem)lineitem.FieldSchema(name:l_orderkey, type:bigint, comment:null), ]
+POSTHOOK: Lineage: q18_tmp_cached.t_sum_quantity EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_quantity, type:double, comment:null), ]
+PREHOOK: query: explain
+create table q18_large_volume_customer_cached stored as orc tblproperties ('transactional'='true', 'transactional_properties'='default') as
+select c_name, c_custkey, o_orderkey, o_orderdate, o_totalprice, sum(l_quantity)
+from customer, orders, q18_tmp_cached t, lineitem l
+where
+  c_custkey = o_custkey and o_orderkey = t.l_orderkey
+  and o_orderkey is not null and t.t_sum_quantity > 300
+  and o_orderkey = l.l_orderkey and l.l_orderkey is not null
+group by c_name, c_custkey, o_orderkey, o_orderdate, o_totalprice
+order by o_totalprice desc, o_orderdate
+limit 100
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: tpch_test@customer
+PREHOOK: Input: tpch_test@lineitem
+PREHOOK: Input: tpch_test@orders
+PREHOOK: Input: tpch_test@q18_tmp_cached
+PREHOOK: Output: database:tpch_test
+PREHOOK: Output: tpch_test@q18_large_volume_customer_cached
+POSTHOOK: query: explain
+create table q18_large_volume_customer_cached stored as orc tblproperties ('transactional'='true', 'transactional_properties'='default') as
+select c_name, c_custkey, o_orderkey, o_orderdate, o_totalprice, sum(l_quantity)
+from customer, orders, q18_tmp_cached t, lineitem l
+where
+  c_custkey = o_custkey and o_orderkey = t.l_orderkey
+  and o_orderkey is not null and t.t_sum_quantity > 300
+  and o_orderkey = l.l_orderkey and l.l_orderkey is not null
+group by c_name, c_custkey, o_orderkey, o_orderdate, o_totalprice
+order by o_totalprice desc, o_orderdate
+limit 100
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: tpch_test@customer
+POSTHOOK: Input: tpch_test@lineitem
+POSTHOOK: Input: tpch_test@orders
+POSTHOOK: Input: tpch_test@q18_tmp_cached
+POSTHOOK: Output: database:tpch_test
+POSTHOOK: Output: tpch_test@q18_large_volume_customer_cached
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-0, Stage-2
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 9 (ONE_TO_ONE_EDGE)
+        Reducer 4 <- Map 10 (SIMPLE_EDGE), Reducer 3 (ONE_TO_ONE_EDGE)
+        Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 5 (CUSTOM_SIMPLE_EDGE)
+        Reducer 9 <- Map 8 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: orders
+                  filterExpr: (o_orderkey is not null and o_custkey is not null) (type: boolean)
+                  Statistics: Num rows: 1500000000 Data size: 296399999792 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (o_custkey is not null and o_orderkey is not null) (type: boolean)
+                    Statistics: Num rows: 1349999996 Data size: 266759999022 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: o_orderkey (type: bigint), o_custkey (type: bigint), o_totalprice (type: double), o_orderdate (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 1349999996 Data size: 266759999022 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: bigint)
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: bigint)
+                        Statistics: Num rows: 1349999996 Data size: 266759999022 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: bigint), _col2 (type: double), _col3 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Map 10 
+            Map Operator Tree:
+                TableScan
+                  alias: l
+                  filterExpr: l_orderkey is not null (type: boolean)
+                  Statistics: Num rows: 5999989709 Data size: 91199843728 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: l_orderkey is not null (type: boolean)
+                    Statistics: Num rows: 5699990232 Data size: 86639851670 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: l_orderkey (type: bigint), l_quantity (type: double)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 5699990232 Data size: 86639851670 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 5699990232 Data size: 86639851670 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: double)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: customer
+                  filterExpr: c_custkey is not null (type: boolean)
+                  Statistics: Num rows: 150000000 Data size: 27360000192 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: c_custkey is not null (type: boolean)
+                    Statistics: Num rows: 142500000 Data size: 25992000182 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: c_custkey (type: bigint), c_name (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 142500000 Data size: 25992000182 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 142500000 Data size: 25992000182 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Map 8 
+            Map Operator Tree:
+                TableScan
+                  alias: lineitem
+                  filterExpr: l_orderkey is not null (type: boolean)
+                  properties:
+                    insideView TRUE
+                  Statistics: Num rows: 5999989709 Data size: 91199843728 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: l_orderkey is not null (type: boolean)
+                    Statistics: Num rows: 5699990232 Data size: 86639851670 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: sum(l_quantity)
+                      keys: l_orderkey (type: bigint)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 5699990232 Data size: 86639851670 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 5699990232 Data size: 86639851670 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: double)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: bigint)
+                  1 _col0 (type: bigint)
+                outputColumnNames: _col0, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 1485000027 Data size: 293436005284 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: bigint)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: bigint)
+                  Statistics: Num rows: 1485000027 Data size: 293436005284 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col2 (type: double), _col3 (type: string), _col4 (type: bigint), _col5 (type: string)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: bigint)
+                  1 _col0 (type: bigint)
+                outputColumnNames: _col0, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 1633500065 Data size: 322779612808 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: bigint)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: bigint)
+                  Statistics: Num rows: 1633500065 Data size: 322779612808 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col2 (type: double), _col3 (type: string), _col4 (type: bigint), _col5 (type: string)
+        Reducer 4 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: bigint)
+                  1 _col0 (type: bigint)
+                outputColumnNames: _col0, _col2, _col3, _col4, _col5, _col8
+                Statistics: Num rows: 6269989391 Data size: 95303838902 Basic stats: COMPLETE Column stats: NONE
+                Top N Key Operator
+                  sort order: -++++
+                  keys: _col2 (type: double), _col3 (type: string), _col0 (type: bigint), _col4 (type: bigint), _col5 (type: string)
+                  Statistics: Num rows: 6269989391 Data size: 95303838902 Basic stats: COMPLETE Column stats: NONE
+                  top n: 100
+                  Group By Operator
+                    aggregations: sum(_col8)
+                    keys: _col2 (type: double), _col3 (type: string), _col0 (type: bigint), _col4 (type: bigint), _col5 (type: string)
+                    minReductionHashAggr: 0.99
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Statistics: Num rows: 6269989391 Data size: 95303838902 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: double), _col1 (type: string), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: string)
+                      sort order: -++++
+                      Map-reduce partition columns: _col0 (type: double), _col1 (type: string), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: string)
+                      Statistics: Num rows: 6269989391 Data size: 95303838902 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
+                      value expressions: _col5 (type: double)
+        Reducer 5 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: double), KEY._col1 (type: string), KEY._col2 (type: bigint), KEY._col3 (type: bigint), KEY._col4 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 3134994695 Data size: 47651919443 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col4 (type: string), _col3 (type: bigint), _col2 (type: bigint), _col1 (type: string), _col0 (type: double), _col5 (type: double)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Statistics: Num rows: 3134994695 Data size: 47651919443 Basic stats: COMPLETE Column stats: NONE
+                  Limit
+                    Number of rows: 100
+                    Statistics: Num rows: 100 Data size: 1500 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 100 Data size: 1500 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                          serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                          name: tpch_test.q18_large_volume_customer_cached
+                      Write Type: INSERT
+                    Select Operator
+                      expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: string), _col4 (type: double), _col5 (type: double)
+                      outputColumnNames: col1, col2, col3, col4, col5, col6
+                      Statistics: Num rows: 100 Data size: 1500 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll'), compute_stats(col3, 'hll'), compute_stats(col4, 'hll'), compute_stats(col5, 'hll'), compute_stats(col6, 'hll')
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                        Statistics: Num rows: 1 Data size: 2576 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 2576 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col4 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>), _col5 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>)
+        Reducer 6 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3), compute_stats(VALUE._col4), compute_stats(VALUE._col5)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 1 Data size: 2640 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 2640 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 9 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: bigint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 2849995116 Data size: 43319925835 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: (_col1 > 300.0D) (type: boolean)
+                  Statistics: Num rows: 949998372 Data size: 14439975278 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: bigint)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 949998372 Data size: 14439975278 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: bigint)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: bigint)
+                      Statistics: Num rows: 949998372 Data size: 14439975278 Basic stats: COMPLETE Column stats: NONE
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-4
+    Create Table
+      columns: c_name string, c_custkey bigint, o_orderkey bigint, o_orderdate string, o_totalprice double, _c5 double
+      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+      serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+      name: tpch_test.q18_large_volume_customer_cached
+      table properties:
+        transactional true
+        transactional_properties default
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: c_name, c_custkey, o_orderkey, o_orderdate, o_totalprice, _c5
+          Column Types: string, bigint, bigint, string, double, double
+          Table: tpch_test.q18_large_volume_customer_cached
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+          Write Type: INSERT
+
+PREHOOK: query: create table q18_large_volume_customer_cached stored as orc tblproperties ('transactional'='true', 'transactional_properties'='default') as
+select c_name, c_custkey, o_orderkey, o_orderdate, o_totalprice, sum(l_quantity)
+from customer, orders, q18_tmp_cached t, lineitem l
+where
+  c_custkey = o_custkey and o_orderkey = t.l_orderkey
+  and o_orderkey is not null and t.t_sum_quantity > 300
+  and o_orderkey = l.l_orderkey and l.l_orderkey is not null
+group by c_name, c_custkey, o_orderkey, o_orderdate, o_totalprice
+order by o_totalprice desc, o_orderdate
+limit 100
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: tpch_test@customer
+PREHOOK: Input: tpch_test@lineitem
+PREHOOK: Input: tpch_test@orders
+PREHOOK: Input: tpch_test@q18_tmp_cached
+PREHOOK: Output: database:tpch_test
+PREHOOK: Output: tpch_test@q18_large_volume_customer_cached
+POSTHOOK: query: create table q18_large_volume_customer_cached stored as orc tblproperties ('transactional'='true', 'transactional_properties'='default') as
+select c_name, c_custkey, o_orderkey, o_orderdate, o_totalprice, sum(l_quantity)
+from customer, orders, q18_tmp_cached t, lineitem l
+where
+  c_custkey = o_custkey and o_orderkey = t.l_orderkey
+  and o_orderkey is not null and t.t_sum_quantity > 300
+  and o_orderkey = l.l_orderkey and l.l_orderkey is not null
+group by c_name, c_custkey, o_orderkey, o_orderdate, o_totalprice
+order by o_totalprice desc, o_orderdate
+limit 100
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: tpch_test@customer
+POSTHOOK: Input: tpch_test@lineitem
+POSTHOOK: Input: tpch_test@orders
+POSTHOOK: Input: tpch_test@q18_tmp_cached
+POSTHOOK: Output: database:tpch_test
+POSTHOOK: Output: tpch_test@q18_large_volume_customer_cached
+POSTHOOK: Lineage: q18_large_volume_customer_cached._c5 EXPRESSION [(lineitem)l.FieldSchema(name:l_quantity, type:double, comment:null), ]
+POSTHOOK: Lineage: q18_large_volume_customer_cached.c_custkey SIMPLE [(customer)customer.FieldSchema(name:c_custkey, type:bigint, comment:null), ]
+POSTHOOK: Lineage: q18_large_volume_customer_cached.c_name SIMPLE [(customer)customer.FieldSchema(name:c_name, type:string, comment:null), ]
+POSTHOOK: Lineage: q18_large_volume_customer_cached.o_orderdate SIMPLE [(orders)orders.FieldSchema(name:o_orderdate, type:string, comment:null), ]
+POSTHOOK: Lineage: q18_large_volume_customer_cached.o_orderkey SIMPLE [(orders)orders.FieldSchema(name:o_orderkey, type:bigint, comment:null), ]
+POSTHOOK: Lineage: q18_large_volume_customer_cached.o_totalprice SIMPLE [(orders)orders.FieldSchema(name:o_totalprice, type:double, comment:null), ]
+PREHOOK: query: drop database tpch_test cascade
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:tpch_test
+PREHOOK: Output: database:tpch_test
+PREHOOK: Output: tpch_test@customer
+PREHOOK: Output: tpch_test@lineitem
+PREHOOK: Output: tpch_test@orders
+PREHOOK: Output: tpch_test@q18_large_volume_customer_cached
+PREHOOK: Output: tpch_test@q18_tmp_cached
+POSTHOOK: query: drop database tpch_test cascade
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:tpch_test
+POSTHOOK: Output: database:tpch_test
+POSTHOOK: Output: tpch_test@customer
+POSTHOOK: Output: tpch_test@lineitem
+POSTHOOK: Output: tpch_test@orders
+POSTHOOK: Output: tpch_test@q18_large_volume_customer_cached
+POSTHOOK: Output: tpch_test@q18_tmp_cached

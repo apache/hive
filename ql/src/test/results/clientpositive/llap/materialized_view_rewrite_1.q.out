@@ -874,6 +874,7 @@ STAGE PLANS:
                     Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: name (type: varchar(256))
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
@@ -985,6 +986,7 @@ STAGE PLANS:
                     Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: name (type: varchar(256))
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1097,6 +1099,7 @@ STAGE PLANS:
                     Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: name (type: varchar(256))
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE

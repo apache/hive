@@ -2387,6 +2387,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0, 1]
                       keys: value (type: int)
+                      minReductionHashAggr: 0.055555582
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 18 Data size: 2232 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3360,6 +3361,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0, 1, 2]
                       keys: _col0 (type: int)
+                      minReductionHashAggr: 0.055555582
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 18 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3528,6 +3530,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0, 1, 2]
                       keys: _col0 (type: int)
+                      minReductionHashAggr: 0.055555582
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 18 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3679,6 +3682,7 @@ STAGE PLANS:
                     Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: histogram_numeric(_col0, 3)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3781,6 +3785,7 @@ STAGE PLANS:
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3916,6 +3921,7 @@ STAGE PLANS:
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
@@ -4051,6 +4057,7 @@ STAGE PLANS:
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6496,6 +6503,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0, 1]
                       keys: value (type: int)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
@@ -7469,6 +7477,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0, 1, 2]
                       keys: _col0 (type: int)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
@@ -7637,6 +7646,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0, 1, 2]
                       keys: _col0 (type: int)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
@@ -7788,6 +7798,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: histogram_numeric(_col0, 3)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 272 Basic stats: COMPLETE Column stats: NONE
@@ -7890,6 +7901,7 @@ STAGE PLANS:
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
@@ -8025,6 +8037,7 @@ STAGE PLANS:
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
@@ -8160,6 +8173,7 @@ STAGE PLANS:
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE

@@ -37,6 +37,7 @@ STAGE PLANS:
                       Statistics: Num rows: 4096 Data size: 969331 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: sum(cbigint), count(cbigint)
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE

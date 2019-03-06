@@ -147,7 +147,7 @@ PREHOOK: Input: default@part_table_2
 PREHOOK: Input: default@part_table_2@part_col=1
 PREHOOK: Input: default@part_table_2@part_col=2
 PREHOOK: Input: default@regular_table
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from regular_table, part_table_1, part_table_2
 where regular_table.col = part_table_1.part_col and regular_table.col = part_table_2.part_col
@@ -160,7 +160,7 @@ POSTHOOK: Input: default@part_table_2
 POSTHOOK: Input: default@part_table_2@part_col=1
 POSTHOOK: Input: default@part_table_2@part_col=2
 POSTHOOK: Input: default@regular_table
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -186,6 +186,7 @@ STAGE PLANS:
                       Statistics: Num rows: 8 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: int)
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 8 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -210,6 +211,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: int)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
@@ -220,7 +222,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 3 (PARTITION-LEVEL SORT, 4), Map 4 (PARTITION-LEVEL SORT, 4)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -311,7 +313,7 @@ PREHOOK: Input: default@part_table_2
 PREHOOK: Input: default@part_table_2@part_col=1
 PREHOOK: Input: default@part_table_2@part_col=2
 PREHOOK: Input: default@regular_table
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from regular_table, part_table_1, part_table_2
 where regular_table.col = part_table_1.part_col and regular_table.col = part_table_2.part_col
 POSTHOOK: type: QUERY
@@ -323,7 +325,7 @@ POSTHOOK: Input: default@part_table_2
 POSTHOOK: Input: default@part_table_2@part_col=1
 POSTHOOK: Input: default@part_table_2@part_col=2
 POSTHOOK: Input: default@regular_table
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	1	1	1	1
 1	1	1	2	1
 1	1	1	3	1
@@ -352,7 +354,7 @@ PREHOOK: Input: default@part_table_2
 PREHOOK: Input: default@part_table_2@part_col=1
 PREHOOK: Input: default@part_table_2@part_col=2
 PREHOOK: Input: default@regular_table
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from regular_table, part_table_1, part_table_2
 where regular_table.col = part_table_1.part_col and regular_table.col = part_table_2.part_col
@@ -365,7 +367,7 @@ POSTHOOK: Input: default@part_table_2
 POSTHOOK: Input: default@part_table_2@part_col=1
 POSTHOOK: Input: default@part_table_2@part_col=2
 POSTHOOK: Input: default@regular_table
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -396,6 +398,7 @@ STAGE PLANS:
                       Statistics: Num rows: 8 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: int)
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 8 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -427,6 +430,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: int)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
@@ -493,7 +497,7 @@ PREHOOK: Input: default@part_table_2
 PREHOOK: Input: default@part_table_2@part_col=1
 PREHOOK: Input: default@part_table_2@part_col=2
 PREHOOK: Input: default@regular_table
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from regular_table, part_table_1, part_table_2
 where regular_table.col = part_table_1.part_col and regular_table.col = part_table_2.part_col
 POSTHOOK: type: QUERY
@@ -505,7 +509,7 @@ POSTHOOK: Input: default@part_table_2
 POSTHOOK: Input: default@part_table_2@part_col=1
 POSTHOOK: Input: default@part_table_2@part_col=2
 POSTHOOK: Input: default@regular_table
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	1	1	1	1
 1	1	1	2	1
 1	1	1	3	1
@@ -529,7 +533,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@part_table_3
 PREHOOK: Input: default@part_table_3@part_col1=1/part_col2=1
 PREHOOK: Input: default@regular_table
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from regular_table, part_table_3
 where regular_table.col=part_table_3.part_col1 and regular_table.col=part_table_3.part_col2
@@ -537,7 +541,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_table_3
 POSTHOOK: Input: default@part_table_3@part_col1=1/part_col2=1
 POSTHOOK: Input: default@regular_table
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -570,6 +574,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: int)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
@@ -624,14 +629,14 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@part_table_3
 PREHOOK: Input: default@part_table_3@part_col1=1/part_col2=1
 PREHOOK: Input: default@regular_table
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from regular_table, part_table_3
 where regular_table.col=part_table_3.part_col1 and regular_table.col=part_table_3.part_col2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_table_3
 POSTHOOK: Input: default@part_table_3@part_col1=1/part_col2=1
 POSTHOOK: Input: default@regular_table
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	1	1	1
 1	2	1	1
 1	3	1	1

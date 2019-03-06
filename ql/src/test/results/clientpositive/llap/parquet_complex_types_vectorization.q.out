@@ -78,20 +78,20 @@ POSTHOOK: Lineage: parquet_complex_types.st1 SIMPLE [(parquet_complex_types_stag
 PREHOOK: query: select count(*) from parquet_complex_types
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from parquet_complex_types
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1023
 PREHOOK: query: explain vectorization expression select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -158,11 +158,11 @@ STAGE PLANS:
 PREHOOK: query: select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 [100,101]	100	101	100	0
 [102,103]	102	103	103	1
 [104,105]	104	105	104	0
@@ -176,11 +176,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain vectorization expression select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -232,6 +232,7 @@ STAGE PLANS:
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: [0]
                         keys: _col0 (type: int)
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 341 Data size: 38920 Basic stats: COMPLETE Column stats: NONE
@@ -341,11 +342,11 @@ STAGE PLANS:
 PREHOOK: query: select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] desc limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] desc limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 2144	2145
 2142	2143
 2140	2141
@@ -374,20 +375,20 @@ POSTHOOK: Lineage: parquet_complex_types.st1 SIMPLE [(parquet_complex_types_stag
 PREHOOK: query: select count(*) from parquet_complex_types
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from parquet_complex_types
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1024
 PREHOOK: query: explain vectorization expression select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -454,11 +455,11 @@ STAGE PLANS:
 PREHOOK: query: select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 [100,101]	100	101	100	0
 [102,103]	102	103	103	1
 [104,105]	104	105	104	0
@@ -472,11 +473,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain vectorization expression select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -528,6 +529,7 @@ STAGE PLANS:
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: [0]
                         keys: _col0 (type: int)
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 341 Data size: 38921 Basic stats: COMPLETE Column stats: NONE
@@ -637,11 +639,11 @@ STAGE PLANS:
 PREHOOK: query: select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] desc limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] desc limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 2146	2147
 2144	2145
 2142	2143
@@ -670,20 +672,20 @@ POSTHOOK: Lineage: parquet_complex_types.st1 SIMPLE [(parquet_complex_types_stag
 PREHOOK: query: select count(*) from parquet_complex_types
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from parquet_complex_types
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1025
 PREHOOK: query: explain vectorization expression select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -750,11 +752,11 @@ STAGE PLANS:
 PREHOOK: query: select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 [100,101]	100	101	100	0
 [102,103]	102	103	103	1
 [104,105]	104	105	104	0
@@ -768,11 +770,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain vectorization expression select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -824,6 +826,7 @@ STAGE PLANS:
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: [0]
                         keys: _col0 (type: int)
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 341 Data size: 38923 Basic stats: COMPLETE Column stats: NONE
@@ -933,11 +936,11 @@ STAGE PLANS:
 PREHOOK: query: select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] desc limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] desc limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 2148	2149
 2146	2147
 2144	2145

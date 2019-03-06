@@ -119,6 +119,7 @@ STAGE PLANS:
               Group By Operator
                 bucketGroup: true
                 keys: key (type: string)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 8 Data size: 60 Basic stats: COMPLETE Column stats: NONE

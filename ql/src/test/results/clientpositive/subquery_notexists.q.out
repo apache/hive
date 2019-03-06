@@ -37,6 +37,7 @@ STAGE PLANS:
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: key (type: string), value (type: string)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
@@ -293,6 +294,7 @@ STAGE PLANS:
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: value (type: string), key (type: string)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
@@ -560,6 +562,7 @@ STAGE PLANS:
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: key (type: string), value (type: string)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
@@ -799,6 +802,7 @@ STAGE PLANS:
           Statistics: Num rows: 676 Data size: 85202 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
             keys: _col1 (type: string)
+            minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0
             Statistics: Num rows: 676 Data size: 85202 Basic stats: COMPLETE Column stats: NONE
@@ -868,6 +872,7 @@ STAGE PLANS:
           Statistics: Num rows: 371 Data size: 46861 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
             keys: _col1 (type: string)
+            minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0
             Statistics: Num rows: 371 Data size: 46861 Basic stats: COMPLETE Column stats: NONE
