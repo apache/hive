@@ -221,7 +221,7 @@ public abstract class RewriteSemanticAnalyzer extends SemanticAnalyzer {
    *  For updates, we need to set the column access info so that it contains information on
    *  the columns we are updating.
    *  (But not all the columns of the target table even though the rewritten query writes
-   *  all columns of target table since that is an implmentation detail).
+   *  all columns of target table since that is an implementation detail).
    */
   protected void setUpAccessControlInfoForUpdate(Table mTable, Map<String, ASTNode> setCols) {
     ColumnAccessInfo cai = new ColumnAccessInfo();
