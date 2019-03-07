@@ -1552,9 +1552,13 @@ public class AcidUtils {
   }
 
   public static boolean isFullAcidScan(Configuration conf) {
-    if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN)) return false;
+    if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN)) {
+      return false;
+    }
     int propInt = conf.getInt(ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname, -1);
-    if (propInt == -1) return true;
+    if (propInt == -1) {
+      return true;
+    }
     AcidOperationalProperties props = AcidOperationalProperties.parseInt(propInt);
     return !props.isInsertOnly();
   }
