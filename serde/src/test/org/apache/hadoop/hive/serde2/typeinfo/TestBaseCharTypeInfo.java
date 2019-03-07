@@ -18,29 +18,33 @@
 
 package org.apache.hadoop.hive.serde2.typeinfo;
 
-import org.apache.hadoop.hive.serde.serdeConstants;
+import org.junit.Assert;
+import org.junit.Test;
 
-public class CharTypeInfo  extends BaseCharTypeInfo {
-  private static final long serialVersionUID = 1L;
+/**
+ * Test suite for BaseCharTypes.
+ */
+public class TestBaseCharTypeInfo {
 
-  // no-arg constructor to make kyro happy.
-  public CharTypeInfo() {
-    super(serdeConstants.CHAR_TYPE_NAME);
+  /**
+   * Test that VARCHAR and CHAR are not considered to be the same.
+   */
+  @Test
+  public void testVarCharToCharEqualityDefault() {
+    VarcharTypeInfo vcharTypeInfo = new VarcharTypeInfo();
+    CharTypeInfo charTypeInfo = new CharTypeInfo();
+
+    Assert.assertNotEquals(vcharTypeInfo, charTypeInfo);
   }
 
-  public CharTypeInfo(int length) {
-    super(serdeConstants.CHAR_TYPE_NAME, length);
-    BaseCharUtils.validateCharParameter(length);
-  }
+  /**
+   * Test that VARCHAR(10) and CHAR(10) are not considered to be the same.
+   */
+  @Test
+  public void testVarCharToCharEqualitySize() {
+    VarcharTypeInfo vcharTypeInfo = new VarcharTypeInfo(10);
+    CharTypeInfo charTypeInfo = new CharTypeInfo(10);
 
-  @Override
-  public String getTypeName() {
-    return getQualifiedName();
+    Assert.assertNotEquals(vcharTypeInfo, charTypeInfo);
   }
-
-  @Override
-  public String toString() {
-    return getQualifiedName();
-  }
-
 }

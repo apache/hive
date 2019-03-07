@@ -39,28 +39,6 @@ public class VarcharTypeInfo extends BaseCharTypeInfo {
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (this == other) {
-      return true;
-    }
-    if (other == null || getClass() != other.getClass()) {
-      return false;
-    }
-
-    VarcharTypeInfo pti = (VarcharTypeInfo) other;
-
-    return this.getLength() == pti.getLength();
-  }
-
-  /**
-   * Generate the hashCode for this TypeInfo.
-   */
-  @Override
-  public int hashCode() {
-    return getLength();
-  }
-
-  @Override
   public String toString() {
     return getQualifiedName();
   }
