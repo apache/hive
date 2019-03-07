@@ -35,7 +35,6 @@ import java.util.Set;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelOptUtil;
-import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelReferentialConstraint;
 import org.apache.calcite.rel.core.Aggregate;
@@ -55,7 +54,6 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexFieldAccess;
 import org.apache.calcite.rex.RexInputRef;
-import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexTableInputRef;
@@ -68,9 +66,6 @@ import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -1052,33 +1047,4 @@ public class HiveRelOptUtil extends RelOptUtil {
     return planWriter.asString();
   }
 
-
-  /**
-   * Utility method to answer if given a rel plan it will produce at most
-   *  one row.
-   */
-  public static boolean produceAtmostOneRow(RelNode rel) {
-    if(rel instanceof HepRelVertex) {
-      rel = ((HepRelVertex)rel).getCurrentRel();
-    }
-    if(rel instanceof HiveProject) {
-      return produceAtmostOneRow(((HiveProject)rel).getInput());
-    } else if (rel instanceof HiveAggregate) {
-      // if there is no group by keys and only aggregate
-      // TODO: group by keys are constant
-      return ((HiveAggregate)rel).getGroupCount() == 0 ? true: false;
-    } else if (rel instanceof HiveSortLimit) {
-      // if LIMIT is less than equal to 1
-      RexNode fetch = ((HiveSortLimit)rel).getFetchExpr();
-      if(fetch != null) {
-        int limit = RexLiteral.intValue(fetch);
-        if(limit <=1) {
-          return true;
-        }
-      }
-    } else {
-      return false;
-    }
-    return false;
-  }
 }

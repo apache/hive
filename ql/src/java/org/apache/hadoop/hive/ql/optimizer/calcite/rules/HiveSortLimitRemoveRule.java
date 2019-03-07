@@ -19,9 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
-import org.apache.calcite.plan.RelOptRuleOperand;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 
 /**
@@ -29,9 +27,9 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
  * a {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit}.
  * Note that this is different from HiveSortRemoveRule because this is not based on statistics
  */
-public class HiveSortLimitRemoveRule extends RelOptRule {
+ public class HiveSortLimitRemoveRule extends RelOptRule {
 
-  public static final HiveSortLimitRemoveRule INSTANCE  =
+  public static final HiveSortLimitRemoveRule INSTANCE =
       new HiveSortLimitRemoveRule();
 
   private HiveSortLimitRemoveRule() {
@@ -42,7 +40,11 @@ public class HiveSortLimitRemoveRule extends RelOptRule {
   public boolean matches(RelOptRuleCall call) {
     final HiveSortLimit sortLimit = call.rel(0);
 
-    return HiveRelOptUtil.produceAtmostOneRow(sortLimit.getInput());
+    Double maxRowCount = call.getMetadataQuery().getMaxRowCount(sortLimit.getInput());
+    if (maxRowCount <= 1) {
+      return true;
+    }
+    return false;
   }
 
   @Override
@@ -52,5 +54,4 @@ public class HiveSortLimitRemoveRule extends RelOptRule {
     // We remove the limit operator
     call.transformTo(sortLimit.getInput());
   }
-
 }

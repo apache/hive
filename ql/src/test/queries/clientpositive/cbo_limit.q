@@ -30,7 +30,6 @@ select count(*) cs from cbo_t1 where c_int > 1 order by cs ;
 explain cbo select count(*) cs from cbo_t1 where c_int > 1 LIMIT 100;
 select count(*) cs from cbo_t1 where c_int > 1 LIMIT 100;
 
--- windowing
-explain cbo select count(*) over (partition by c_int) cs from cbo_t1 where c_float > 1.0 ORDER BY cs LIMIT 100;
-select count(*) over (partition by c_int) cs from cbo_t1 where c_float > 1.0 ORDER BY cs LIMIT 100;
-
+-- LIMIT 1
+explain cbo select c_int from (select c_int from cbo_t1 where c_float > 1.0 limit 1) subq  where c_int > 1 order by c_int;
+select c_int from (select c_int from cbo_t1 where c_float > 1.0 limit 1) subq  where c_int > 1 order by c_int;
