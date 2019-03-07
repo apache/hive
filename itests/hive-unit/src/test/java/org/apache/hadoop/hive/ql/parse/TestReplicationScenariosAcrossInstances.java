@@ -1237,9 +1237,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     assertEquals(0, replica.getForeignKeyList(replicatedDbName, "t2").size());
 
     // Retry with different dump should fail.
-    CommandProcessorResponse ret = replica.runCommand("REPL LOAD " + replicatedDbName +
-            " FROM '" + tuple2.dumpLocation + "'");
-    Assert.assertEquals(ret.getResponseCode(), ErrorMsg.REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID.getErrorCode());
+    replica.loadFailure(replicatedDbName, tuple2.dumpLocation, null,
+            ErrorMsg.REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID.getErrorCode());
 
     // Verify if create table is not called on table t1 but called for t2 and t3.
     // Also, allow constraint creation only on t1 and t3. Foreign key creation on t2 fails.

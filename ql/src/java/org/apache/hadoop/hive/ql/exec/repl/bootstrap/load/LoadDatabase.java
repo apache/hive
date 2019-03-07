@@ -60,30 +60,26 @@ public class LoadDatabase {
     isTableLevelLoad = tblNameToLoadIn != null && !tblNameToLoadIn.isEmpty();
   }
 
-  public TaskTracker tasks() throws SemanticException {
-    try {
-      Database dbInMetadata = readDbMetadata();
-      String dbName = dbInMetadata.getName();
-      Task<? extends Serializable> dbRootTask = null;
-      ReplLoadOpType loadDbType = getLoadDbType(dbName);
-      switch (loadDbType) {
-        case LOAD_NEW:
-          dbRootTask = createDbTask(dbInMetadata);
-          break;
-        case LOAD_REPLACE:
-          dbRootTask = alterDbTask(dbInMetadata);
-          break;
-        default:
-          break;
-      }
-      if (dbRootTask != null) {
-        dbRootTask.addDependentTask(setOwnerInfoTask(dbInMetadata));
-        tracker.addTask(dbRootTask);
-      }
-      return tracker;
-    } catch (Exception e) {
-      throw new SemanticException(e.getMessage(), e);
+  public TaskTracker tasks() throws Exception {
+    Database dbInMetadata = readDbMetadata();
+    String dbName = dbInMetadata.getName();
+    Task<? extends Serializable> dbRootTask = null;
+    ReplLoadOpType loadDbType = getLoadDbType(dbName);
+    switch (loadDbType) {
+      case LOAD_NEW:
+        dbRootTask = createDbTask(dbInMetadata);
+        break;
+      case LOAD_REPLACE:
+        dbRootTask = alterDbTask(dbInMetadata);
+        break;
+      default:
+        break;
     }
+    if (dbRootTask != null) {
+      dbRootTask.addDependentTask(setOwnerInfoTask(dbInMetadata));
+      tracker.addTask(dbRootTask);
+    }
+    return tracker;
   }
 
   Database readDbMetadata() throws SemanticException {

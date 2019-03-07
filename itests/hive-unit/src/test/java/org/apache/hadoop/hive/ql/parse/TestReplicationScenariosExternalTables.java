@@ -24,6 +24,7 @@ import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -546,6 +547,37 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
                     + externalTableLocation.toString() + "'",
             "'distcp.options.pugpb'=''"
     );
+  }
+
+  @Test
+  public void retryIncBootstrapExternalTablesFromDifferentDumpWithoutCleanTablesConfig() throws Throwable {
+    List<String> dumpWithClause = Collections.singletonList(
+            "'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'"
+    );
+    List<String> loadWithClause = externalTableBasePathWithClause();
+
+    WarehouseInstance.Tuple tupleBootstrapWithoutExternal = primary
+            .run("use " + primaryDbName)
+            .run("create external table t1 (id int)")
+            .run("insert into table t1 values (1)")
+            .run("create table t2 as select * from t1")
+            .dump(primaryDbName, null, dumpWithClause);
+
+    replica.load(replicatedDbName, tupleBootstrapWithoutExternal.dumpLocation, loadWithClause);
+
+    dumpWithClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
+            "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'");
+    WarehouseInstance.Tuple tupleIncWithExternalBootstrap = primary.run("use " + primaryDbName)
+            .run("create table t3 as select * from t1")
+            .dump(primaryDbName, tupleBootstrapWithoutExternal.lastReplicationId, dumpWithClause);
+    WarehouseInstance.Tuple tupleNewIncWithExternalBootstrap
+            = primary.dump(primaryDbName, tupleBootstrapWithoutExternal.lastReplicationId, dumpWithClause);
+
+    replica.load(replicatedDbName, tupleIncWithExternalBootstrap.dumpLocation, loadWithClause);
+
+    // Re-bootstrapping from different bootstrap dump without clean tables config should fail.
+    replica.loadFailure(replicatedDbName, tupleNewIncWithExternalBootstrap.dumpLocation, loadWithClause,
+            ErrorMsg.REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID.getErrorCode());
   }
 
   private void assertExternalFileInfo(List<String> expected, Path externalTableInfoFile)
