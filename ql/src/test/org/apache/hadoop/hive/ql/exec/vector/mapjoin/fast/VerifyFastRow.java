@@ -599,8 +599,6 @@ public class VerifyFastRow {
     return getComplexField(deserializeRead, typeInfo);
   }
 
-  static int fake = 0;
-
   private static Object getComplexField(DeserializeRead deserializeRead,
                                         TypeInfo typeInfo) throws IOException {
     switch (typeInfo.getCategory()) {

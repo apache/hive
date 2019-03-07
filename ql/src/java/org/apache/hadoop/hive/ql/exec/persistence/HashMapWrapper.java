@@ -32,6 +32,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.NonMatchedSmallTableIterator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBase;
 import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBatch;
@@ -113,6 +114,7 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
   public int size() {
     return mHash.size();
   }
+
   @Override
   public Set<Entry<MapJoinKey, MapJoinRowContainer>> entrySet() {
     return mHash.entrySet();
@@ -138,6 +140,12 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
   @Override
   public ReusableGetAdaptor createGetter(MapJoinKey keyTypeFromLoader) {
     return new GetAdaptor(keyTypeFromLoader);
+  }
+
+  @Override
+  public NonMatchedSmallTableIterator createNonMatchedSmallTableIterator(
+      MatchTracker matchTracker) {
+    throw new RuntimeException("Not applicable");
   }
 
   @Override
@@ -188,6 +196,14 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
     }
 
     @Override
+    public JoinUtil.JoinResult setFromVectorNoNulls(VectorHashKeyWrapperBase kw,
+        VectorExpressionWriter[] keyOutputWriters, VectorHashKeyWrapperBatch keyWrapperBatch,
+        MatchTracker matchTracer)
+        throws HiveException {
+      throw new RuntimeException("Not supported");
+    }
+
+    @Override
     public JoinUtil.JoinResult setFromRow(Object row, List<ExprNodeEvaluator> fields,
         List<ObjectInspector> ois) throws HiveException {
       if (currentKey == null) {
@@ -205,6 +221,12 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
       else {
         return JoinUtil.JoinResult.MATCH;
       }
+    }
+
+    @Override
+    public JoinUtil.JoinResult setFromRowNoNulls(Object row, List<ExprNodeEvaluator> fields,
+        List<ObjectInspector> ois, MatchTracker matchTracker) throws HiveException {
+      throw new RuntimeException("Not supported");
     }
 
     @Override

@@ -22,3 +22,9 @@ select a.*
 from alltypesorc a left outer join src b
 on a.cint = cast(b.key as int) and (a.cint < 100)
 limit 1;
+
+explain
+select a.*
+from alltypesorc a left outer join src b
+on a.cint = cast(b.key as int)
+limit 1;

@@ -292,10 +292,9 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: decimal(10,1))
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
-                            keyColumnNums: [1]
+                            keyColumns: 1:decimal(10,1)
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: []
                         Statistics: Num rows: 100 Data size: 11200 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -343,10 +342,9 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: decimal(10,1))
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
-                            keyColumnNums: [1]
+                            keyColumns: 1:decimal(10,1)
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: []
                         Statistics: Num rows: 20 Data size: 2240 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: decimal(10,1))
@@ -373,10 +371,9 @@ STAGE PLANS:
                             sort order: 
                             Reduce Sink Vectorization:
                                 className: VectorReduceSinkEmptyKeyOperator
-                                keyColumnNums: []
                                 native: true
                                 nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                                valueColumnNums: [0, 1, 2]
+                                valueColumns: 0:decimal(10,1), 1:decimal(10,1), 2:binary
                             Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: decimal(10,1)), _col1 (type: decimal(10,1)), _col2 (type: binary)
             Execution mode: vectorized, llap
@@ -416,6 +413,9 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint)
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -486,10 +486,9 @@ STAGE PLANS:
                   sort order: 
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkEmptyKeyOperator
-                      keyColumnNums: []
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      valueColumnNums: [0, 1, 2]
+                      valueColumns: 0:decimal(10,1), 1:decimal(10,1), 2:binary
                   Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: decimal(10,1)), _col1 (type: decimal(10,1)), _col2 (type: binary)
 

@@ -235,6 +235,7 @@ STAGE PLANS:
                             className: VectorMapJoinInnerBigOnlyMultiKeyOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                            hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col0, _col1, _col2
                         input vertices:
                           1 Map 2

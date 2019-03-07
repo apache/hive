@@ -1720,7 +1720,15 @@ public class HiveConf extends Configuration {
         "joins unnecessary memory will be allocated and then trimmed."),
     HIVEHYBRIDGRACEHASHJOINBLOOMFILTER("hive.mapjoin.hybridgrace.bloomfilter", true, "Whether to " +
         "use BloomFilter in Hybrid grace hash join to minimize unnecessary spilling."),
-
+    HIVEMAPJOINFULLOUTER("hive.mapjoin.full.outer", true,
+        "Whether to use MapJoin for FULL OUTER JOINs."),
+    HIVE_TEST_MAPJOINFULLOUTER_OVERRIDE(
+        "hive.test.mapjoin.full.outer.override",
+        "none", new StringSet("none", "enable", "disable"),
+        "internal use only, used to override the hive.mapjoin.full.outer\n" +
+        "setting.  Using enable will force it on and disable will force it off.\n" +
+        "The default none is do nothing, of course",
+        true),
     HIVESMBJOINCACHEROWS("hive.smbjoin.cache.rows", 10000,
         "How many rows with the same key value should be cached in memory per smb joined table."),
     HIVEGROUPBYMAPINTERVAL("hive.groupby.mapaggr.checkinterval", 100000,

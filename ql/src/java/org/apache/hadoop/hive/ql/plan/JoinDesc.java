@@ -291,7 +291,7 @@ public class JoinDesc extends AbstractOperatorDesc {
 
           first = false;
           sb.append("{");
-          sb.append(expr.getExprString());
+          sb.append(expr == null ? "NULL" : expr.getExprString());
           sb.append("}");
         }
       }

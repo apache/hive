@@ -91,7 +91,7 @@ public class VectorMapJoinOptimizedHashMultiSet
     JoinUtil.JoinResult joinResult =
         doLookup(keyBytes, keyOffset, keyLength,
             implementationHashMultiSetResult.bytesBytesMultiHashMapResult(),
-            (VectorMapJoinHashTableResult) hashMultiSetResult);
+            (VectorMapJoinHashTableResult) hashMultiSetResult, null);
 
     return joinResult;
   }

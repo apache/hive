@@ -295,7 +295,7 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
             Sorted Merge Bucket Map Join Operator
               condition map:
-                   Outer Join 0 to 1
+                   Full Outer Join 0 to 1
               keys:
                 0 key (type: int)
                 1 key (type: int)
@@ -540,7 +540,7 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
             Sorted Merge Bucket Map Join Operator
               condition map:
-                   Outer Join 0 to 1
+                   Full Outer Join 0 to 1
               keys:
                 0 key (type: int)
                 1 key (type: int)

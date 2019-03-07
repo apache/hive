@@ -322,15 +322,16 @@ STAGE PLANS:
                         0 _col2 (type: int)
                         1 _col2 (type: int)
                       Map Join Vectorization:
-                          bigTableKeyColumnNums: [2]
-                          bigTableOuterKeyMapping: 2 -> 15
-                          bigTableRetainedColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 15]
-                          bigTableValueColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                          bigTableKeyColumns: 2:int
+                          bigTableRetainColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                          bigTableValueColumns: 0:tinyint, 1:smallint, 2:int, 3:bigint, 4:float, 5:double, 6:string, 7:string, 8:timestamp, 9:timestamp, 10:boolean, 11:boolean
                           className: VectorMapJoinOuterLongOperator
                           native: true
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
-                          projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
-                          smallTableMapping: [13, 14, 16, 17, 18, 19, 20, 21, 22, 23, 24]
+                          outerSmallTableKeyMapping: 2 -> 15
+                          projectedOutput: 0:tinyint, 1:smallint, 2:int, 3:bigint, 4:float, 5:double, 6:string, 7:string, 8:timestamp, 9:timestamp, 10:boolean, 11:boolean, 13:tinyint, 14:smallint, 15:int, 16:bigint, 17:float, 18:double, 19:string, 20:string, 21:timestamp, 22:timestamp, 23:boolean, 24:boolean
+                          smallTableValueMapping: 13:tinyint, 14:smallint, 16:bigint, 17:float, 18:double, 19:string, 20:string, 21:timestamp, 22:timestamp, 23:boolean, 24:boolean
+                          hashTableImplementationType: OPTIMIZED
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23
                       input vertices:
                         1 Map 2
@@ -509,13 +510,14 @@ STAGE PLANS:
                         0 _col0 (type: tinyint)
                         1 _col0 (type: tinyint)
                       Map Join Vectorization:
-                          bigTableKeyColumnNums: [0]
-                          bigTableRetainedColumnNums: [0]
-                          bigTableValueColumnNums: [0]
+                          bigTableKeyColumns: 0:tinyint
+                          bigTableRetainColumnNums: [0]
+                          bigTableValueColumns: 0:tinyint
                           className: VectorMapJoinOuterLongOperator
                           native: true
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
-                          projectedOutputColumnNums: [0]
+                          projectedOutput: 0:tinyint
+                          hashTableImplementationType: OPTIMIZED
                       outputColumnNames: _col0
                       input vertices:
                         1 Map 2
@@ -836,13 +838,14 @@ STAGE PLANS:
                         0 _col1 (type: int)
                         1 _col0 (type: int)
                       Map Join Vectorization:
-                          bigTableKeyColumnNums: [2]
-                          bigTableRetainedColumnNums: [0]
-                          bigTableValueColumnNums: [0]
+                          bigTableKeyColumns: 2:int
+                          bigTableRetainColumnNums: [0]
+                          bigTableValueColumns: 0:tinyint
                           className: VectorMapJoinOuterLongOperator
                           native: true
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
-                          projectedOutputColumnNums: [0]
+                          projectedOutput: 0:tinyint
+                          hashTableImplementationType: OPTIMIZED
                       outputColumnNames: _col0
                       input vertices:
                         1 Map 3
@@ -854,13 +857,14 @@ STAGE PLANS:
                           0 _col0 (type: tinyint)
                           1 _col0 (type: tinyint)
                         Map Join Vectorization:
-                            bigTableKeyColumnNums: [0]
-                            bigTableRetainedColumnNums: [0]
-                            bigTableValueColumnNums: [0]
+                            bigTableKeyColumns: 0:tinyint
+                            bigTableRetainColumnNums: [0]
+                            bigTableValueColumns: 0:tinyint
                             className: VectorMapJoinOuterLongOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
-                            projectedOutputColumnNums: [0]
+                            projectedOutput: 0:tinyint
+                            hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 4
@@ -882,10 +886,9 @@ STAGE PLANS:
                             sort order: 
                             Reduce Sink Vectorization:
                                 className: VectorReduceSinkEmptyKeyOperator
-                                keyColumnNums: []
                                 native: true
                                 nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                                valueColumnNums: [0, 1]
+                                valueColumns: 0:bigint, 1:bigint
                             Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint), _col1 (type: bigint)
             Execution mode: vectorized

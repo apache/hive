@@ -113,6 +113,7 @@ STAGE PLANS:
                 input vertices:
                   1 Map 4
                 Statistics: Num rows: 32 Data size: 2848 Basic stats: COMPLETE Column stats: COMPLETE
+                DynamicPartitionHashJoin: true
                 HybridGraceHashJoin: true
                 Group By Operator
                   keys: _col0 (type: string)
@@ -151,6 +152,7 @@ STAGE PLANS:
                 input vertices:
                   0 Reducer 3
                 Statistics: Num rows: 26 Data size: 6942 Basic stats: COMPLETE Column stats: COMPLETE
+                DynamicPartitionHashJoin: true
                 HybridGraceHashJoin: true
                 File Output Operator
                   compressed: false
@@ -350,6 +352,7 @@ STAGE PLANS:
                 input vertices:
                   1 Reducer 5
                 Statistics: Num rows: 26 Data size: 6942 Basic stats: COMPLETE Column stats: COMPLETE
+                DynamicPartitionHashJoin: true
                 HybridGraceHashJoin: true
                 File Output Operator
                   compressed: false
@@ -371,6 +374,7 @@ STAGE PLANS:
                 input vertices:
                   1 Map 6
                 Statistics: Num rows: 32 Data size: 2848 Basic stats: COMPLETE Column stats: COMPLETE
+                DynamicPartitionHashJoin: true
                 HybridGraceHashJoin: true
                 Group By Operator
                   keys: _col0 (type: string)

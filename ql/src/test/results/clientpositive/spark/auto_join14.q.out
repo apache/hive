@@ -137,4 +137,4 @@ POSTHOOK: query: SELECT sum(hash(dest1_n83.c1,dest1_n83.c2)) FROM dest1_n83
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1_n83
 #### A masked pattern was here ####
-404554174174
+404540072956

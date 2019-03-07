@@ -130,10 +130,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: float), _col2 (type: double), _col3 (type: timestamp), _col4 (type: boolean)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkMultiKeyOperator
-                              keyColumnNums: [0, 1, 2, 3, 4]
+                              keyColumns: 0:string, 1:float, 2:double, 3:timestamp, 4:boolean
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                              valueColumnNums: [5, 6, 7, 8, 9, 10, 11]
+                              valueColumns: 5:double, 6:double, 7:bigint, 8:float, 9:double, 10:double, 11:bigint
                           Statistics: Num rows: 303 Data size: 52846 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col5 (type: double), _col6 (type: double), _col7 (type: bigint), _col8 (type: float), _col9 (type: double), _col10 (type: double), _col11 (type: bigint)
             Execution mode: vectorized, llap
@@ -197,10 +197,10 @@ STAGE PLANS:
                     sort order: ++++
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [0, 1, 2, 3]
+                        keyColumns: 0:string, 1:float, 2:double, 3:timestamp
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: [4, 12, 14, 22, 23, 8, 24, 25, 28, 33, 11, 37, 46, 47, 51, 56, 63, 65]
+                        valueColumns: 4:boolean, 12:double, 14:double, 22:double, 23:float, 8:float, 24:float, 25:float, 28:double, 33:double, 11:bigint, 37:double, 46:double, 47:double, 51:double, 56:double, 63:double, 65:double
                     Statistics: Num rows: 151 Data size: 36700 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col3 (type: boolean), _col5 (type: double), _col6 (type: double), _col7 (type: double), _col8 (type: float), _col9 (type: float), _col10 (type: float), _col11 (type: float), _col12 (type: double), _col13 (type: double), _col14 (type: bigint), _col15 (type: double), _col16 (type: double), _col17 (type: double), _col18 (type: double), _col19 (type: double), _col20 (type: double), _col21 (type: double)
         Reducer 3 

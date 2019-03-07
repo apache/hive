@@ -137,6 +137,9 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: int), _col3 (type: bigint), _col4 (type: bigint)
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Vectorization:

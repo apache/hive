@@ -1552,6 +1552,9 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
 
   Stage: Stage-0
     Fetch Operator
@@ -1700,6 +1703,9 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
 
   Stage: Stage-0
     Fetch Operator
@@ -1876,6 +1882,9 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
 
   Stage: Stage-0
     Fetch Operator
@@ -2018,6 +2027,9 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
 
   Stage: Stage-0
     Fetch Operator
@@ -2181,6 +2193,9 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
 
   Stage: Stage-0
     Fetch Operator

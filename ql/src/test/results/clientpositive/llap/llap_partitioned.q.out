@@ -1927,13 +1927,15 @@ STAGE PLANS:
                       0 ctinyint (type: tinyint)
                       1 ctinyint (type: tinyint)
                     Map Join Vectorization:
-                        bigTableKeyColumnNums: [10]
-                        bigTableRetainedColumnNums: [1, 6, 7, 10]
-                        bigTableValueColumnNums: [1, 6, 7, 10]
+                        bigTableKeyColumns: 10:tinyint
+                        bigTableRetainColumnNums: [1, 6, 7, 10]
+                        bigTableValueColumns: 1:int, 6:char(255), 7:varchar(255), 10:tinyint
                         className: VectorMapJoinInnerBigOnlyLongOperator
                         native: true
                         nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
-                        projectedOutputColumnNums: [1, 6, 7, 10]
+                        nonOuterSmallTableKeyMapping: []
+                        projectedOutput: 1:int, 6:char(255), 7:varchar(255), 10:tinyint
+                        hashTableImplementationType: OPTIMIZED
                     outputColumnNames: _col1, _col6, _col7, _col10
                     input vertices:
                       1 Map 2
@@ -1988,10 +1990,9 @@ STAGE PLANS:
                     Map-reduce partition columns: ctinyint (type: tinyint)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
-                        keyColumnNums: [10]
+                        keyColumns: 10:tinyint
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: []
                     Statistics: Num rows: 10 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ctinyint (type: tinyint)
@@ -2374,7 +2375,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: llap_temp_table_n0
-                  Statistics: Num rows: 1509 Data size: 250448 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1509 Data size: 984410 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:cint:int, 2:cchar1:char(255), 3:cvchar1:varchar(255), 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -2385,7 +2386,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 1, 2, 3]
-                    Statistics: Num rows: 1509 Data size: 250448 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1509 Data size: 984410 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(hash(ctinyint,cint,cchar1,cvchar1))
                       Group By Vectorization:
@@ -2398,16 +2399,15 @@ STAGE PLANS:
                       minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 694 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
-                            keyColumnNums: []
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0]
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                            valueColumns: 0:bigint
+                        Statistics: Num rows: 1 Data size: 694 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -2453,13 +2453,13 @@ STAGE PLANS:
                     projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 694 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 694 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

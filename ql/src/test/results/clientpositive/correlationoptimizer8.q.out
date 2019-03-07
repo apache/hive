@@ -1141,7 +1141,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Outer Join 0 to 1
+               Full Outer Join 0 to 1
           keys:
             0 UDFToDouble(_col0) (type: double)
             1 UDFToDouble(_col0) (type: double)

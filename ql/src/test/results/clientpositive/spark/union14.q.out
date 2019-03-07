@@ -24,7 +24,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 2), Reducer 4 (GROUP, 2)
+        Reducer 2 <- Map 1 (GROUP, 8), Reducer 4 (GROUP, 8)
         Reducer 4 <- Map 3 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
@@ -135,20 +135,20 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
-278	1
-273	1
+	10
 128	1
-255	1
-tst1	1
 146	1
-369	1
+150	1
 213	1
-311	1
 224	1
 238	1
-150	1
-	10
+255	1
+273	1
+278	1
+311	1
+369	1
+401	1
 406	1
 66	1
-401	1
 98	1
+tst1	1

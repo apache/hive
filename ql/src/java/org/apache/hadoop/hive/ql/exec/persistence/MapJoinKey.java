@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 
 /**
@@ -170,5 +171,19 @@ public abstract class MapJoinKey {
       throw new HiveException("Serialization error", e);
     }
     return byteStream;
+  }
+
+  /*
+   * Deserializes a key.  Needed for FULL OUTER MapJoin to unpack the Small Table key when
+   * adding the non matched key to the join output result.
+   */
+  public static List<Object> deserializeRow(byte[] keyBytes, int keyOffset, int keyLength,
+      BytesWritable bytesWritable, AbstractSerDe serde) throws HiveException {
+    try {
+      bytesWritable.set(keyBytes, keyOffset, keyLength);
+      return (List<Object>) serde.deserialize(bytesWritable);
+    } catch (SerDeException e) {
+      throw new HiveException("Serialization error", e);
+    }
   }
 }

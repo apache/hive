@@ -236,6 +236,7 @@ STAGE PLANS:
                 input vertices:
                   1 Map 3
                 Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
+                DynamicPartitionHashJoin: true
                 HybridGraceHashJoin: true
                 File Output Operator
                   compressed: false
@@ -326,6 +327,7 @@ STAGE PLANS:
                 input vertices:
                   1 Map 3
                 Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
+                DynamicPartitionHashJoin: true
                 HybridGraceHashJoin: true
                 File Output Operator
                   compressed: false
@@ -417,6 +419,7 @@ STAGE PLANS:
                 input vertices:
                   1 Map 3
                 Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
+                DynamicPartitionHashJoin: true
                 HybridGraceHashJoin: true
                 File Output Operator
                   compressed: false
@@ -507,6 +510,7 @@ STAGE PLANS:
                 input vertices:
                   1 Map 3
                 Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
+                DynamicPartitionHashJoin: true
                 HybridGraceHashJoin: true
                 File Output Operator
                   compressed: false
@@ -598,6 +602,7 @@ STAGE PLANS:
                 input vertices:
                   1 Map 3
                 Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
+                DynamicPartitionHashJoin: true
                 HybridGraceHashJoin: true
                 File Output Operator
                   compressed: false
@@ -688,6 +693,7 @@ STAGE PLANS:
                 input vertices:
                   1 Map 3
                 Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
+                DynamicPartitionHashJoin: true
                 HybridGraceHashJoin: true
                 File Output Operator
                   compressed: false

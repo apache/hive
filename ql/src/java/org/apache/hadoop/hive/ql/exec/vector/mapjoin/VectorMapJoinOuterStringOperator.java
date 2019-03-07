@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-
 import org.apache.hadoop.hive.ql.plan.VectorDesc;
 // Single-Column String hash table import.
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinBytesHashMap;
@@ -65,14 +64,14 @@ public class VectorMapJoinOuterStringOperator extends VectorMapJoinOuterGenerate
   //---------------------------------------------------------------------------
 
   // The hash map for this specialized class.
-  private transient VectorMapJoinBytesHashMap hashMap;
+  protected transient VectorMapJoinBytesHashMap hashMap;
 
   //---------------------------------------------------------------------------
   // Single-Column String specific members.
   //
 
   // The column number for this one column join specialization.
-  private transient int singleJoinColumn;
+  protected transient int singleJoinColumn;
 
   //---------------------------------------------------------------------------
   // Pass-thru constructors.
@@ -97,49 +96,34 @@ public class VectorMapJoinOuterStringOperator extends VectorMapJoinOuterGenerate
   //
 
   @Override
-  public void process(Object row, int tag) throws HiveException {
+  protected void commonSetup() throws HiveException {
+    super.commonSetup();
+
+    /*
+     * Initialize Single-Column String members for this specialized class.
+     */
+
+    singleJoinColumn = bigTableKeyColumnMap[0];
+  }
+
+  @Override
+  public void hashTableSetup() throws HiveException {
+    super.hashTableSetup();
+
+    /*
+     * Get our Single-Column String hash map information for this specialized class.
+     */
+
+    hashMap = (VectorMapJoinBytesHashMap) vectorMapJoinHashTable;
+
+  }
+
+  @Override
+  public void processBatch(VectorizedRowBatch batch) throws HiveException {
 
     try {
-      VectorizedRowBatch batch = (VectorizedRowBatch) row;
-
-      alias = (byte) tag;
-
-      if (needCommonSetup) {
-        // Our one time process method initialization.
-        commonSetup(batch);
-
-        /*
-         * Initialize Single-Column String members for this specialized class.
-         */
-
-        singleJoinColumn = bigTableKeyColumnMap[0];
-
-        needCommonSetup = false;
-      }
-
-      if (needHashTableSetup) {
-        // Setup our hash table specialization.  It will be the first time the process
-        // method is called, or after a Hybrid Grace reload.
-
-        /*
-         * Get our Single-Column String hash map information for this specialized class.
-         */
-
-        hashMap = (VectorMapJoinBytesHashMap) vectorMapJoinHashTable;
-
-        needHashTableSetup = false;
-      }
-
-      batchCounter++;
 
       final int inputLogicalSize = batch.size;
-
-      if (inputLogicalSize == 0) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug(CLASS_NAME + " batch #" + batchCounter + " empty");
-        }
-        return;
-      }
 
       // Do the per-batch setup for an outer join.
 
@@ -150,33 +134,17 @@ public class VectorMapJoinOuterStringOperator extends VectorMapJoinOuterGenerate
       // later.
       boolean inputSelectedInUse = batch.selectedInUse;
       if (inputSelectedInUse) {
-        // if (!verifyMonotonicallyIncreasing(batch.selected, batch.size)) {
-        //   throw new HiveException("batch.selected is not in sort order and unique");
-        // }
         System.arraycopy(batch.selected, 0, inputSelected, 0, inputLogicalSize);
       }
 
       // Filtering for outer join just removes rows available for hash table matching.
-      boolean someRowsFilteredOut =  false;
+      boolean someRowsFilteredOut = false;
       if (bigTableFilterExpressions.length > 0) {
         // Since the input
         for (VectorExpression ve : bigTableFilterExpressions) {
           ve.evaluate(batch);
         }
         someRowsFilteredOut = (batch.size != inputLogicalSize);
-        if (LOG.isDebugEnabled()) {
-          if (batch.selectedInUse) {
-            if (inputSelectedInUse) {
-              LOG.debug(CLASS_NAME +
-                  " inputSelected " + intArrayToRangesString(inputSelected, inputLogicalSize) +
-                  " filtered batch.selected " + intArrayToRangesString(batch.selected, batch.size));
-            } else {
-              LOG.debug(CLASS_NAME +
-                " inputLogicalSize " + inputLogicalSize +
-                " filtered batch.selected " + intArrayToRangesString(batch.selected, batch.size));
-            }
-          }
-        }
       }
 
       // Perform any key expressions.  Results will go into scratch columns.
@@ -228,7 +196,8 @@ public class VectorMapJoinOuterStringOperator extends VectorMapJoinOuterGenerate
           byte[] keyBytes = vector[0];
           int keyStart = start[0];
           int keyLength = length[0];
-          joinResult = hashMap.lookup(keyBytes, keyStart, keyLength, hashMapResults[0]);
+          joinResult = hashMap.lookup(
+              keyBytes, keyStart, keyLength, hashMapResults[0], matchTracker);
         }
 
         /*
@@ -245,10 +214,6 @@ public class VectorMapJoinOuterStringOperator extends VectorMapJoinOuterGenerate
         /*
          * NOT Repeating.
          */
-
-        if (LOG.isDebugEnabled()) {
-          LOG.debug(CLASS_NAME + " batch #" + batchCounter + " non-repeated");
-        }
 
         int selected[] = batch.selected;
         boolean selectedInUse = batch.selectedInUse;
@@ -274,8 +239,6 @@ public class VectorMapJoinOuterStringOperator extends VectorMapJoinOuterGenerate
         for (int logical = 0; logical < batch.size; logical++) {
           int batchIndex = (selectedInUse ? selected[logical] : logical);
 
-          // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, taskName + ", " + getOperatorId() + " candidate " + CLASS_NAME + " batch");
-
           /*
            * Single-Column String outer null detection.
            */
@@ -293,7 +256,6 @@ public class VectorMapJoinOuterStringOperator extends VectorMapJoinOuterGenerate
 
             atLeastOneNonMatch = true;
 
-            // LOG.debug(CLASS_NAME + " logical " + logical + " batchIndex " + batchIndex + " NULL");
           } else {
 
             /*
@@ -343,7 +305,8 @@ public class VectorMapJoinOuterStringOperator extends VectorMapJoinOuterGenerate
               byte[] keyBytes = vector[batchIndex];
               int keyStart = start[batchIndex];
               int keyLength = length[batchIndex];
-              saveJoinResult = hashMap.lookup(keyBytes, keyStart, keyLength, hashMapResults[hashMapResultCount]);
+              saveJoinResult = hashMap.lookup(keyBytes, keyStart, keyLength,
+                  hashMapResults[hashMapResultCount], matchTracker);
 
               /*
                * Common outer join result processing.
@@ -356,7 +319,6 @@ public class VectorMapJoinOuterStringOperator extends VectorMapJoinOuterGenerate
                 equalKeySeriesIsSingleValue[equalKeySeriesCount] = hashMapResults[hashMapResultCount].isSingleRow();
                 equalKeySeriesDuplicateCounts[equalKeySeriesCount] = 1;
                 allMatchs[allMatchCount++] = batchIndex;
-                // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, CLASS_NAME + " MATCH isSingleValue " + equalKeySeriesIsSingleValue[equalKeySeriesCount] + " currentKey " + currentKey);
                 break;
 
               case SPILL:
@@ -367,11 +329,9 @@ public class VectorMapJoinOuterStringOperator extends VectorMapJoinOuterGenerate
 
               case NOMATCH:
                 atLeastOneNonMatch = true;
-                // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, CLASS_NAME + " NOMATCH" + " currentKey " + currentKey);
                 break;
               }
             } else {
-              // LOG.debug(CLASS_NAME + " logical " + logical + " batchIndex " + batchIndex + " Key Continues " + saveKey + " " + saveJoinResult.name());
 
               // Series of equal keys.
 
@@ -379,7 +339,6 @@ public class VectorMapJoinOuterStringOperator extends VectorMapJoinOuterGenerate
               case MATCH:
                 equalKeySeriesDuplicateCounts[equalKeySeriesCount]++;
                 allMatchs[allMatchCount++] = batchIndex;
-                // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, CLASS_NAME + " MATCH duplicate");
                 break;
 
               case SPILL:
@@ -389,13 +348,9 @@ public class VectorMapJoinOuterStringOperator extends VectorMapJoinOuterGenerate
                 break;
 
               case NOMATCH:
-                // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, CLASS_NAME + " NOMATCH duplicate");
                 break;
               }
             }
-            // if (!verifyMonotonicallyIncreasing(allMatchs, allMatchCount)) {
-            //   throw new HiveException("allMatchs is not in sort order and unique");
-            // }
           }
         }
 
@@ -437,7 +392,9 @@ public class VectorMapJoinOuterStringOperator extends VectorMapJoinOuterGenerate
       }
 
       if (batch.size > 0) {
-        // Forward any remaining selected rows.
+
+        // Forward any rows in the Big Table batch that had results added (they will be selected).
+        // NOTE: Other result rows may have been generated in the overflowBatch.
         forwardBigTableBatch(batch);
       }
 

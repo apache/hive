@@ -1,4 +1,4 @@
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT cboolean1,
        cbigint,
        csmallint,
@@ -27,7 +27,7 @@ LIMIT 25
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT cboolean1,
        cbigint,
        csmallint,
@@ -78,7 +78,6 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -100,10 +99,8 @@ STAGE PLANS:
                         sort order: +++++++++++++++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
-                            keyColumnNums: [10, 3, 1, 0, 8, 6, 15, 16, 17, 18, 20, 22, 23, 24, 26]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: []
                         Statistics: Num rows: 5461 Data size: 65532 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.1
             Execution mode: vectorized
@@ -116,27 +113,14 @@ STAGE PLANS:
                 allNative: true
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 12
-                    includeColumns: [0, 1, 2, 3, 5, 6, 7, 8, 9, 10]
-                    dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, double, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint]
         Reducer 2 
             Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                reduceColumnNullOrder: aaaaaaaaaaaaaaa
-                reduceColumnSortOrder: +++++++++++++++
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 15
-                    dataColumns: KEY.reducesinkkey0:boolean, KEY.reducesinkkey1:bigint, KEY.reducesinkkey2:smallint, KEY.reducesinkkey3:tinyint, KEY.reducesinkkey4:timestamp, KEY.reducesinkkey5:string, KEY.reducesinkkey6:bigint, KEY.reducesinkkey7:int, KEY.reducesinkkey8:smallint, KEY.reducesinkkey9:tinyint, KEY.reducesinkkey10:int, KEY.reducesinkkey11:bigint, KEY.reducesinkkey12:int, KEY.reducesinkkey13:tinyint, KEY.reducesinkkey14:tinyint
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: boolean), KEY.reducesinkkey1 (type: bigint), KEY.reducesinkkey2 (type: smallint), KEY.reducesinkkey3 (type: tinyint), KEY.reducesinkkey4 (type: timestamp), KEY.reducesinkkey5 (type: string), KEY.reducesinkkey6 (type: bigint), KEY.reducesinkkey7 (type: int), KEY.reducesinkkey8 (type: smallint), KEY.reducesinkkey9 (type: tinyint), KEY.reducesinkkey10 (type: int), KEY.reducesinkkey11 (type: bigint), KEY.reducesinkkey12 (type: int), KEY.reducesinkkey9 (type: tinyint), KEY.reducesinkkey14 (type: tinyint)

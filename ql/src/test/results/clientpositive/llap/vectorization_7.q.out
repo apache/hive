@@ -101,10 +101,9 @@ STAGE PLANS:
                         sort order: +++++++++++++++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
-                            keyColumnNums: [10, 3, 1, 0, 8, 6, 15, 16, 17, 18, 20, 22, 23, 24, 26]
+                            keyColumns: 10:boolean, 3:bigint, 1:smallint, 0:tinyint, 8:timestamp, 6:string, 15:bigint, 16:int, 17:smallint, 18:tinyint, 20:int, 22:bigint, 23:int, 24:tinyint, 26:tinyint
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: []
                         Statistics: Num rows: 5461 Data size: 923616 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap

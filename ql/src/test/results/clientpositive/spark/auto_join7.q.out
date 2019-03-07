@@ -59,7 +59,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 8), Map 3 (PARTITION-LEVEL SORT, 8), Map 4 (PARTITION-LEVEL SORT, 8)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -123,7 +123,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Outer Join 0 to 1
+                     Full Outer Join 0 to 1
                      Left Outer Join 0 to 2
                 keys:
                   0 _col0 (type: string)

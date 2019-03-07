@@ -27,5 +27,4 @@ public interface VectorMapJoinLongHashTable extends VectorMapJoinHashTable {
   boolean useMinMax();
   long min();
   long max();
-
 }

@@ -1,4 +1,4 @@
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT MIN(ctinyint) as c1,
        MAX(ctinyint),
        COUNT(ctinyint),
@@ -8,7 +8,7 @@ ORDER BY c1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT MIN(ctinyint) as c1,
        MAX(ctinyint),
        COUNT(ctinyint),
@@ -41,7 +41,6 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: ctinyint (type: tinyint)
                     outputColumnNames: ctinyint
@@ -66,10 +65,8 @@ STAGE PLANS:
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
-                            keyColumnNums: []
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0, 1, 2, 3]
                         Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: tinyint), _col1 (type: tinyint), _col2 (type: bigint), _col3 (type: bigint)
             Execution mode: vectorized
@@ -82,27 +79,14 @@ STAGE PLANS:
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 12
-                    includeColumns: [0]
-                    dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
         Reducer 2 
             Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                reduceColumnNullOrder: 
-                reduceColumnSortOrder: 
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 4
-                    dataColumns: VALUE._col0:tinyint, VALUE._col1:tinyint, VALUE._col2:bigint, VALUE._col3:bigint
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3)
@@ -121,10 +105,8 @@ STAGE PLANS:
                   sort order: +
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator
-                      keyColumnNums: [0]
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      valueColumnNums: [1, 2, 3]
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: tinyint), _col2 (type: bigint), _col3 (type: bigint)
         Reducer 3 
@@ -132,16 +114,9 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                reduceColumnNullOrder: a
-                reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 4
-                    dataColumns: KEY.reducesinkkey0:tinyint, VALUE._col0:tinyint, VALUE._col1:bigint, VALUE._col2:bigint
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: tinyint), VALUE._col0 (type: tinyint), VALUE._col1 (type: bigint), VALUE._col2 (type: bigint)
@@ -187,14 +162,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 -64	62	9173	12288
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT SUM(ctinyint) as c1
 FROM   alltypesparquet
 ORDER BY c1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT SUM(ctinyint) as c1
 FROM   alltypesparquet
 ORDER BY c1
@@ -224,7 +199,6 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: ctinyint (type: tinyint)
                     outputColumnNames: ctinyint
@@ -250,10 +224,8 @@ STAGE PLANS:
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
-                            keyColumnNums: []
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0]
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized
@@ -266,27 +238,14 @@ STAGE PLANS:
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 12
-                    includeColumns: [0]
-                    dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
         Reducer 2 
             Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                reduceColumnNullOrder: 
-                reduceColumnSortOrder: 
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 1
-                    dataColumns: VALUE._col0:bigint
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -305,26 +264,17 @@ STAGE PLANS:
                   sort order: +
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator
-                      keyColumnNums: [0]
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      valueColumnNums: []
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                reduceColumnNullOrder: a
-                reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 1
-                    dataColumns: KEY.reducesinkkey0:bigint
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: bigint)
@@ -518,7 +468,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 -4.344925324321378	1158.3003004768175	1158.3003004768175	1158.426587033782	34.03381113652741	34.03381113652741	34.03381113652741	34.03566639620535
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT MIN(cbigint) as c1,
        MAX(cbigint),
        COUNT(cbigint),
@@ -528,7 +478,7 @@ ORDER BY c1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT MIN(cbigint) as c1,
        MAX(cbigint),
        COUNT(cbigint),
@@ -561,7 +511,6 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: cbigint (type: bigint)
                     outputColumnNames: cbigint
@@ -586,10 +535,8 @@ STAGE PLANS:
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
-                            keyColumnNums: []
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0, 1, 2, 3]
                         Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint)
             Execution mode: vectorized
@@ -602,27 +549,14 @@ STAGE PLANS:
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 12
-                    includeColumns: [3]
-                    dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
         Reducer 2 
             Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                reduceColumnNullOrder: 
-                reduceColumnSortOrder: 
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 4
-                    dataColumns: VALUE._col0:bigint, VALUE._col1:bigint, VALUE._col2:bigint, VALUE._col3:bigint
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3)
@@ -641,10 +575,8 @@ STAGE PLANS:
                   sort order: +
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator
-                      keyColumnNums: [0]
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      valueColumnNums: [1, 2, 3]
                   Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint)
         Reducer 3 
@@ -652,16 +584,9 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                reduceColumnNullOrder: a
-                reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 4
-                    dataColumns: KEY.reducesinkkey0:bigint, VALUE._col0:bigint, VALUE._col1:bigint, VALUE._col2:bigint
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: bigint), VALUE._col0 (type: bigint), VALUE._col1 (type: bigint), VALUE._col2 (type: bigint)
@@ -707,14 +632,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 -2147311592	2145498388	9173	12288
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT SUM(cbigint) as c1
 FROM   alltypesparquet
 ORDER BY c1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT SUM(cbigint) as c1
 FROM   alltypesparquet
 ORDER BY c1
@@ -744,7 +669,6 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: cbigint (type: bigint)
                     outputColumnNames: cbigint
@@ -770,10 +694,8 @@ STAGE PLANS:
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
-                            keyColumnNums: []
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0]
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized
@@ -786,27 +708,14 @@ STAGE PLANS:
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 12
-                    includeColumns: [3]
-                    dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
         Reducer 2 
             Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                reduceColumnNullOrder: 
-                reduceColumnSortOrder: 
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 1
-                    dataColumns: VALUE._col0:bigint
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -825,26 +734,17 @@ STAGE PLANS:
                   sort order: +
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator
-                      keyColumnNums: [0]
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      valueColumnNums: []
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                reduceColumnNullOrder: a
-                reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 1
-                    dataColumns: KEY.reducesinkkey0:bigint
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: bigint)
@@ -1038,7 +938,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 -1.8515862077935246E8	2.07689300543066035E18	2.07689300543066035E18	2.07711944383072922E18	1.441142951074133E9	1.441142951074133E9	1.441142951074133E9	1.4412215110213728E9
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT MIN(cfloat) as c1,
        MAX(cfloat),
        COUNT(cfloat),
@@ -1048,7 +948,7 @@ ORDER BY c1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT MIN(cfloat) as c1,
        MAX(cfloat),
        COUNT(cfloat),
@@ -1081,7 +981,6 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: cfloat (type: float)
                     outputColumnNames: cfloat
@@ -1106,10 +1005,8 @@ STAGE PLANS:
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
-                            keyColumnNums: []
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0, 1, 2, 3]
                         Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: float), _col1 (type: float), _col2 (type: bigint), _col3 (type: bigint)
             Execution mode: vectorized
@@ -1122,27 +1019,14 @@ STAGE PLANS:
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 12
-                    includeColumns: [4]
-                    dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
         Reducer 2 
             Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                reduceColumnNullOrder: 
-                reduceColumnSortOrder: 
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 4
-                    dataColumns: VALUE._col0:float, VALUE._col1:float, VALUE._col2:bigint, VALUE._col3:bigint
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3)
@@ -1161,10 +1045,8 @@ STAGE PLANS:
                   sort order: +
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator
-                      keyColumnNums: [0]
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      valueColumnNums: [1, 2, 3]
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: float), _col2 (type: bigint), _col3 (type: bigint)
         Reducer 3 
@@ -1172,16 +1054,9 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                reduceColumnNullOrder: a
-                reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 4
-                    dataColumns: KEY.reducesinkkey0:float, VALUE._col0:float, VALUE._col1:bigint, VALUE._col2:bigint
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: float), VALUE._col0 (type: float), VALUE._col1 (type: bigint), VALUE._col2 (type: bigint)
@@ -1227,14 +1102,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 -64.0	79.553	9173	12288
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT SUM(cfloat) as c1
 FROM   alltypesparquet
 ORDER BY c1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT SUM(cfloat) as c1
 FROM   alltypesparquet
 ORDER BY c1
@@ -1264,7 +1139,6 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: cfloat (type: float)
                     outputColumnNames: cfloat
@@ -1290,10 +1164,8 @@ STAGE PLANS:
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
-                            keyColumnNums: []
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0]
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: double)
             Execution mode: vectorized
@@ -1306,27 +1178,14 @@ STAGE PLANS:
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 12
-                    includeColumns: [4]
-                    dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
         Reducer 2 
             Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                reduceColumnNullOrder: 
-                reduceColumnSortOrder: 
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 1
-                    dataColumns: VALUE._col0:double
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -1345,26 +1204,17 @@ STAGE PLANS:
                   sort order: +
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator
-                      keyColumnNums: [0]
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      valueColumnNums: []
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                reduceColumnNullOrder: a
-                reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 1
-                    dataColumns: KEY.reducesinkkey0:double
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: double)
@@ -1559,7 +1409,7 @@ POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 -4.303895780321011	1163.8972588605056	1163.8972588605056	1164.0241556397098	34.11593848717203	34.11593848717203	34.11593848717203	34.11779822379677
 WARNING: Comparing a bigint and a double may result in a loss of precision.
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT AVG(cbigint),
        (-(AVG(cbigint))),
        (-6432 + AVG(cbigint)),
@@ -1588,7 +1438,7 @@ WHERE  (((cstring2 LIKE '%b%')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT AVG(cbigint),
        (-(AVG(cbigint))),
        (-6432 + AVG(cbigint)),
@@ -1639,7 +1489,6 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1673,10 +1522,8 @@ STAGE PLANS:
                           sort order: 
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkEmptyKeyOperator
-                              keyColumnNums: []
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                              valueColumnNums: [0, 1, 2, 3, 4, 5, 6]
                           Statistics: Num rows: 1 Data size: 52 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: double), _col3 (type: double), _col4 (type: bigint), _col5 (type: double), _col6 (type: tinyint)
             Execution mode: vectorized
@@ -1689,27 +1536,14 @@ STAGE PLANS:
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 12
-                    includeColumns: [0, 1, 2, 3, 4, 5, 7, 11]
-                    dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(13,3), double, double, double, double, double]
         Reducer 2 
             Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                reduceColumnNullOrder: 
-                reduceColumnSortOrder: 
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 7
-                    dataColumns: VALUE._col0:bigint, VALUE._col1:bigint, VALUE._col2:double, VALUE._col3:double, VALUE._col4:bigint, VALUE._col5:double, VALUE._col6:tinyint
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0), count(VALUE._col1), sum(VALUE._col2), sum(VALUE._col3), count(VALUE._col4), sum(VALUE._col5), min(VALUE._col6)
@@ -31020,7 +30854,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 2)
+        Reducer 2 <- Map 1 (GROUP, 8)
         Reducer 3 <- Reducer 2 (SORT, 1)
 #### A masked pattern was here ####
       Vertices:

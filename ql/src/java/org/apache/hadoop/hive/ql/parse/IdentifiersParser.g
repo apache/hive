@@ -828,6 +828,7 @@ nonReserved
     | KW_OPERATOR
     | KW_EXPRESSION
     | KW_DETAIL
+    | KW_DEBUG
     | KW_WAIT
     | KW_ZONE
     | KW_TIMESTAMPTZ

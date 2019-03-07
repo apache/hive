@@ -29,7 +29,9 @@ import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.plan.BaseWork.BaseExplainVectorization;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.mapred.JobConf;
 
 public class MergeJoinWork extends BaseWork {
@@ -179,5 +181,60 @@ public class MergeJoinWork extends BaseWork {
   @Override
   public void addDummyOp(HashTableDummyOperator dummyOp) {
     getMainWork().addDummyOp(dummyOp);
+  }
+
+  /**
+   * For now, this class just says in EXPLAIN VECTORIZATION we don't support vectorization of the
+   * Merge Join vertex instead of being silent about it.
+   */
+  public class MergeJoinExplainVectorization extends BaseExplainVectorization {
+
+    private final MergeJoinWork mergeJoinWork;
+
+    private VectorizationCondition[] mergeWorkVectorizationConditions;
+
+    public MergeJoinExplainVectorization(MergeJoinWork mergeJoinWork) {
+      super(mergeJoinWork);
+      this.mergeJoinWork = mergeJoinWork;
+    }
+
+    private VectorizationCondition[] createMergeWorkExplainVectorizationConditions() {
+
+      boolean enabled = false;
+
+      VectorizationCondition[] conditions = new VectorizationCondition[] {
+          new VectorizationCondition(
+              enabled,
+              "Vectorizing MergeJoin Supported")
+      };
+      return conditions;
+    }
+
+    @Explain(vectorization = Vectorization.SUMMARY, displayName = "enableConditionsMet",
+        explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public List<String> getEnableConditionsMet() {
+      if (mergeWorkVectorizationConditions == null) {
+        mergeWorkVectorizationConditions = createMergeWorkExplainVectorizationConditions();
+      }
+      return VectorizationCondition.getConditionsMet(mergeWorkVectorizationConditions);
+    }
+
+    @Explain(vectorization = Vectorization.SUMMARY, displayName = "enableConditionsNotMet",
+        explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public List<String> getEnableConditionsNotMet() {
+      if (mergeWorkVectorizationConditions == null) {
+        mergeWorkVectorizationConditions = createMergeWorkExplainVectorizationConditions();
+      }
+      return VectorizationCondition.getConditionsNotMet(mergeWorkVectorizationConditions);
+    }
+  }
+
+  @Explain(vectorization = Vectorization.SUMMARY, displayName = "MergeJoin Vectorization",
+      explainLevels = { Level.DEFAULT, Level.EXTENDED })
+  public MergeJoinExplainVectorization getReduceExplainVectorization() {
+    if (!getVectorizationExamined()) {
+      return null;
+    }
+    return new MergeJoinExplainVectorization(this);
   }
 }

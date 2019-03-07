@@ -133,7 +133,7 @@ public class VectorFilterOperator extends FilterOperator
         // All are selected, do nothing
     }
     if (vrg.size > 0) {
-      forward(vrg, null, true);
+      vectorForward(vrg);
     }
 
     // Restore the original selected vector

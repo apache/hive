@@ -140,7 +140,7 @@ public class JoinUtil {
         if (key == (byte) posBigTableAlias) {
           valueFields.add(null);
         } else {
-          valueFields.add(ExprNodeEvaluatorFactory.get(expr, conf));
+          valueFields.add(expr == null ? null : ExprNodeEvaluatorFactory.get(expr, conf));
         }
       }
       outMap[key] = valueFields;

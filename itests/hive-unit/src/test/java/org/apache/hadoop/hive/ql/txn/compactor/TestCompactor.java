@@ -1699,6 +1699,35 @@ public class TestCompactor {
 
   }
 
+  static void runInitiator(HiveConf hiveConf) throws Exception {
+    AtomicBoolean stop = new AtomicBoolean(true);
+    Initiator t = new Initiator();
+    t.setThreadId((int) t.getId());
+    t.setConf(hiveConf);
+    AtomicBoolean looped = new AtomicBoolean();
+    t.init(stop, looped);
+    t.run();
+  }
+
+  static void runWorker(HiveConf hiveConf) throws Exception {
+    AtomicBoolean stop = new AtomicBoolean(true);
+    Worker t = new Worker();
+    t.setThreadId((int) t.getId());
+    t.setConf(hiveConf);
+    AtomicBoolean looped = new AtomicBoolean();
+    t.init(stop, looped);
+    t.run();
+  }
+
+  static void runCleaner(HiveConf hiveConf) throws Exception {
+    AtomicBoolean stop = new AtomicBoolean(true);
+    Cleaner t = new Cleaner();
+    t.setThreadId((int) t.getId());
+    t.setConf(hiveConf);
+    AtomicBoolean looped = new AtomicBoolean();
+    t.init(stop, looped);
+    t.run();
+  }
   private static String toString(FileStatus[] stat) {
     StringBuilder sb = new StringBuilder("stat{");
     if(stat == null) {

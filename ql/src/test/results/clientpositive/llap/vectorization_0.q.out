@@ -67,10 +67,9 @@ STAGE PLANS:
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
-                            keyColumnNums: []
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0, 1, 2, 3]
+                            valueColumns: 0:tinyint, 1:tinyint, 2:bigint, 3:bigint
                         Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: tinyint), _col1 (type: tinyint), _col2 (type: bigint), _col3 (type: bigint)
             Execution mode: vectorized, llap
@@ -123,10 +122,10 @@ STAGE PLANS:
                   sort order: +
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator
-                      keyColumnNums: [0]
+                      keyColumns: 0:tinyint
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      valueColumnNums: [1, 2, 3]
+                      valueColumns: 1:tinyint, 2:bigint, 3:bigint
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: tinyint), _col2 (type: bigint), _col3 (type: bigint)
         Reducer 3 
@@ -253,10 +252,9 @@ STAGE PLANS:
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
-                            keyColumnNums: []
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0]
+                            valueColumns: 0:bigint
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
@@ -309,10 +307,9 @@ STAGE PLANS:
                   sort order: +
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator
-                      keyColumnNums: [0]
+                      keyColumns: 0:bigint
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      valueColumnNums: []
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
             Execution mode: vectorized, llap
@@ -593,10 +590,9 @@ STAGE PLANS:
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
-                            keyColumnNums: []
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0, 1, 2, 3]
+                            valueColumns: 0:bigint, 1:bigint, 2:bigint, 3:bigint
                         Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint)
             Execution mode: vectorized, llap
@@ -649,10 +645,10 @@ STAGE PLANS:
                   sort order: +
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator
-                      keyColumnNums: [0]
+                      keyColumns: 0:bigint
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      valueColumnNums: [1, 2, 3]
+                      valueColumns: 1:bigint, 2:bigint, 3:bigint
                   Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint)
         Reducer 3 
@@ -779,10 +775,9 @@ STAGE PLANS:
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
-                            keyColumnNums: []
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0]
+                            valueColumns: 0:bigint
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
@@ -835,10 +830,9 @@ STAGE PLANS:
                   sort order: +
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator
-                      keyColumnNums: [0]
+                      keyColumns: 0:bigint
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      valueColumnNums: []
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
             Execution mode: vectorized, llap
@@ -1119,10 +1113,9 @@ STAGE PLANS:
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
-                            keyColumnNums: []
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0, 1, 2, 3]
+                            valueColumns: 0:float, 1:float, 2:bigint, 3:bigint
                         Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: float), _col1 (type: float), _col2 (type: bigint), _col3 (type: bigint)
             Execution mode: vectorized, llap
@@ -1175,10 +1168,10 @@ STAGE PLANS:
                   sort order: +
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator
-                      keyColumnNums: [0]
+                      keyColumns: 0:float
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      valueColumnNums: [1, 2, 3]
+                      valueColumns: 1:float, 2:bigint, 3:bigint
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: float), _col2 (type: bigint), _col3 (type: bigint)
         Reducer 3 
@@ -1305,10 +1298,9 @@ STAGE PLANS:
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
-                            keyColumnNums: []
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0]
+                            valueColumns: 0:double
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: double)
             Execution mode: vectorized, llap
@@ -1361,10 +1353,9 @@ STAGE PLANS:
                   sort order: +
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator
-                      keyColumnNums: [0]
+                      keyColumns: 0:double
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      valueColumnNums: []
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
             Execution mode: vectorized, llap
@@ -1692,10 +1683,9 @@ STAGE PLANS:
                           sort order: 
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkEmptyKeyOperator
-                              keyColumnNums: []
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                              valueColumnNums: [0, 1, 2, 3, 4, 5, 6]
+                              valueColumns: 0:bigint, 1:bigint, 2:double, 3:double, 4:bigint, 5:double, 6:tinyint
                           Statistics: Num rows: 1 Data size: 52 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: double), _col3 (type: double), _col4 (type: bigint), _col5 (type: double), _col6 (type: tinyint)
             Execution mode: vectorized, llap

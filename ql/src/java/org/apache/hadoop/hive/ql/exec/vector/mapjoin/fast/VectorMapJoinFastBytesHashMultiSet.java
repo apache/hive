@@ -162,8 +162,11 @@ public abstract class VectorMapJoinFastBytesHashMultiSet
   }
 
   public VectorMapJoinFastBytesHashMultiSet(
+      boolean isFullOuter,
       int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
-    super(initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
+    super(
+        isFullOuter,
+        initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
     hashMultiSetStore = new VectorMapJoinFastBytesHashMultiSetStore(writeBuffersSize);
     writeBuffers = hashMultiSetStore.getWriteBuffers();
   }

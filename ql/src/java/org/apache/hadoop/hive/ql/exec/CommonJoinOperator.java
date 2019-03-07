@@ -790,7 +790,16 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   }
 
   private boolean hasAnyFiltered(int alias, List<Object> row) {
-    return row == dummyObj[alias] || hasFilter(alias) && JoinUtil.hasAnyFiltered(getFilterTag(row));
+    if (row == dummyObj[alias]) {
+      return true;
+    }
+    if (hasFilter(alias) && row != null) {
+      ShortWritable shortWritable = (ShortWritable) row.get(row.size() - 1);
+      if (shortWritable != null) {
+        return JoinUtil.hasAnyFiltered(shortWritable.get());
+      }
+    }
+    return false;
   }
 
   protected final boolean hasFilter(int alias) {

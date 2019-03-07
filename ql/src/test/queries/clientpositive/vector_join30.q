@@ -10,7 +10,7 @@ SET hive.auto.convert.join.noconditionaltask.size=1000000000;
 
 CREATE TABLE orcsrc_n0 STORED AS ORC AS SELECT * FROM src;
 
-explain vectorization expression
+explain vectorization detail
 FROM 
 (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 JOIN
@@ -18,14 +18,24 @@ JOIN
 ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value));
 
-FROM 
-(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
-JOIN 
-(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
-ON (x.key = Y.key)
-select sum(hash(Y.key,Y.value));
+-- FROM 
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
+-- JOIN 
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
+-- ON (x.key = Y.key)
+-- select sum(hash(Y.key,Y.value));
 
-explain vectorization expression
+-- FROM
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
+-- LEFT OUTER JOIN
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
+-- ON (x.key = Y.key)
+-- FULL OUTER JOIN
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
+-- ON (x.key = Z.key)
+-- select sum(hash(Y.key,Y.value));
+
+explain vectorization detail
 FROM 
 (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 LEFT OUTER JOIN
@@ -33,14 +43,14 @@ LEFT OUTER JOIN
 ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value));
 
-FROM 
-(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
-LEFT OUTER JOIN 
-(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
-ON (x.key = Y.key)
-select sum(hash(Y.key,Y.value));
+-- FROM 
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
+-- FULL OUTER JOIN 
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
+-- ON (x.key = Y.key)
+-- select sum(hash(Y.key,Y.value));
 
-explain vectorization expression
+explain vectorization detail
 FROM 
 (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 RIGHT OUTER JOIN
@@ -48,14 +58,32 @@ RIGHT OUTER JOIN
 ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value));
 
+-- FROM
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
+-- FULL OUTER JOIN
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
+-- ON (x.key = Y.key)
+-- FULL OUTER JOIN
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
+-- ON (x.key = Z.key)
+-- select sum(hash(Y.key,Y.value));
+
+explain vectorization detail
 FROM 
 (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
-RIGHT OUTER JOIN 
+FULL OUTER JOIN
 (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value));
 
-explain vectorization expression
+-- FROM 
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
+-- LEFT OUTER JOIN 
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
+-- ON (x.key = Y.key)
+-- select sum(hash(Y.key,Y.value));
+
+explain vectorization detail
 FROM 
 (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 JOIN
@@ -66,38 +94,14 @@ JOIN
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value));
 
-FROM
-(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
-JOIN
-(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
-ON (x.key = Y.key)
-JOIN
-(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
-ON (x.key = Z.key)
-select sum(hash(Y.key,Y.value));
+-- FROM 
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
+-- RIGHT OUTER JOIN 
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
+-- ON (x.key = Y.key)
+-- select sum(hash(Y.key,Y.value));
 
-explain vectorization expression
-FROM 
-(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
-JOIN
-(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
-ON (x.key = Y.key)
-LEFT OUTER JOIN
-(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
-ON (x.key = Z.key)
-select sum(hash(Y.key,Y.value));
-
-FROM
-(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
-JOIN
-(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
-ON (x.key = Y.key)
-LEFT OUTER JOIN
-(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
-ON (x.key = Z.key)
-select sum(hash(Y.key,Y.value));
-
-explain vectorization expression
+explain vectorization detail
 FROM 
 (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 LEFT OUTER JOIN
@@ -108,9 +112,20 @@ LEFT OUTER JOIN
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value));
 
-FROM
+-- FROM
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
+-- FULL OUTER JOIN
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
+-- ON (x.key = Y.key)
+-- LEFT OUTER JOIN
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
+-- ON (x.key = Z.key)
+-- select sum(hash(Y.key,Y.value));
+
+explain vectorization detail
+FROM 
 (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
-LEFT OUTER JOIN
+JOIN
 (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 LEFT OUTER JOIN
@@ -118,28 +133,38 @@ LEFT OUTER JOIN
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value));
 
-explain vectorization expression
+-- FROM
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
+-- JOIN
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
+-- ON (x.key = Y.key)
+-- JOIN
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
+-- ON (x.key = Z.key)
+-- select sum(hash(Y.key,Y.value));
+
+explain vectorization detail
 FROM 
 (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 LEFT OUTER JOIN
 (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
-RIGHT OUTER JOIN
+FULL OUTER JOIN
 (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value));
 
-FROM
-(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
-LEFT OUTER JOIN
-(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
-ON (x.key = Y.key)
-RIGHT OUTER JOIN
-(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
-ON (x.key = Z.key)
-select sum(hash(Y.key,Y.value));
+-- FROM
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
+-- JOIN
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
+-- ON (x.key = Y.key)
+-- LEFT OUTER JOIN
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
+-- ON (x.key = Z.key)
+-- select sum(hash(Y.key,Y.value));
 
-explain vectorization expression
+explain vectorization detail
 FROM 
 (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 RIGHT OUTER JOIN
@@ -150,12 +175,130 @@ RIGHT OUTER JOIN
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value));
 
-FROM
+explain vectorization detail
+FROM 
 (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
-RIGHT OUTER JOIN
+FULL OUTER JOIN
 (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 RIGHT OUTER JOIN
 (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value));
+
+-- FROM
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
+-- LEFT OUTER JOIN
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
+-- ON (x.key = Y.key)
+-- RIGHT OUTER JOIN
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
+-- ON (x.key = Z.key)
+-- select sum(hash(Y.key,Y.value));
+
+explain vectorization detail
+FROM 
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
+LEFT OUTER JOIN
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
+ON (x.key = Y.key)
+FULL OUTER JOIN
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
+ON (x.key = Z.key)
+select sum(hash(Y.key,Y.value));
+
+-- FROM
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
+-- LEFT OUTER JOIN
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
+-- ON (x.key = Y.key)
+-- LEFT OUTER JOIN
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
+-- ON (x.key = Z.key)
+-- select sum(hash(Y.key,Y.value));
+
+explain vectorization detail
+FROM 
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
+JOIN
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
+ON (x.key = Y.key)
+FULL OUTER JOIN
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
+ON (x.key = Z.key)
+select sum(hash(Y.key,Y.value));
+
+-- FROM
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
+-- JOIN
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
+-- ON (x.key = Y.key)
+-- FULL OUTER JOIN
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
+-- ON (x.key = Z.key)
+-- select sum(hash(Y.key,Y.value));
+
+explain vectorization detail
+FROM 
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
+FULL OUTER JOIN
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
+ON (x.key = Y.key)
+LEFT OUTER JOIN
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
+ON (x.key = Z.key)
+select sum(hash(Y.key,Y.value));
+
+-- FROM
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
+-- RIGHT OUTER JOIN
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
+-- ON (x.key = Y.key)
+-- RIGHT OUTER JOIN
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
+-- ON (x.key = Z.key)
+-- select sum(hash(Y.key,Y.value));
+
+-----------------
+
+explain vectorization detail
+FROM 
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
+FULL OUTER JOIN
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
+ON (x.key = Y.key)
+RIGHT OUTER JOIN
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
+ON (x.key = Z.key)
+select sum(hash(Y.key,Y.value));
+
+-- FROM
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
+-- FULL OUTER JOIN
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
+-- ON (x.key = Y.key)
+-- RIGHT OUTER JOIN
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
+-- ON (x.key = Z.key)
+-- select sum(hash(Y.key,Y.value));
+
+explain vectorization detail
+FROM 
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
+RIGHT OUTER JOIN
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
+ON (x.key = Y.key)
+FULL OUTER JOIN
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
+ON (x.key = Z.key)
+select sum(hash(Y.key,Y.value));
+
+-- FROM
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
+-- RIGHT OUTER JOIN
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
+-- ON (x.key = Y.key)
+-- FULL OUTER JOIN
+-- (SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
+-- ON (x.key = Z.key)
+-- select sum(hash(Y.key,Y.value));

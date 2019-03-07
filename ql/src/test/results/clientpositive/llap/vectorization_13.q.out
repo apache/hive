@@ -130,10 +130,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkMultiKeyOperator
-                              keyColumnNums: [0, 1, 2, 3, 4]
+                              keyColumns: 0:boolean, 1:tinyint, 2:timestamp, 3:float, 4:string
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                              valueColumnNums: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+                              valueColumns: 5:tinyint, 6:double, 7:double, 8:double, 9:bigint, 10:double, 11:double, 12:bigint, 13:float, 14:tinyint
                           Statistics: Num rows: 2730 Data size: 510974 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col5 (type: tinyint), _col6 (type: double), _col7 (type: double), _col8 (type: double), _col9 (type: bigint), _col10 (type: double), _col11 (type: double), _col12 (type: bigint), _col13 (type: float), _col14 (type: tinyint)
             Execution mode: vectorized, llap
@@ -197,10 +197,9 @@ STAGE PLANS:
                     sort order: +++++++++++++++++++++
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [0, 1, 2, 3, 4, 15, 5, 17, 6, 21, 22, 23, 28, 29, 34, 38, 40, 43, 13, 49, 14]
+                        keyColumns: 0:boolean, 1:tinyint, 2:timestamp, 3:float, 4:string, 15:tinyint, 5:tinyint, 17:tinyint, 6:double, 21:double, 22:double, 23:float, 28:double, 29:double, 34:double, 38:decimal(7,3), 40:double, 43:double, 13:float, 49:double, 14:tinyint
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: []
                     Statistics: Num rows: 1365 Data size: 446640 Basic stats: COMPLETE Column stats: COMPLETE
                     TopN Hash Memory Usage: 0.1
         Reducer 3 

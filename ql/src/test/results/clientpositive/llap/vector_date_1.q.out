@@ -132,10 +132,10 @@ STAGE PLANS:
                       sort order: +
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
-                          keyColumnNums: [0]
+                          keyColumns: 0:date
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumnNums: [1, 3, 4, 5, 6, 7, 8, 9, 10]
+                          valueColumns: 1:date, 3:boolean, 4:boolean, 5:boolean, 6:boolean, 7:boolean, 8:boolean, 9:boolean, 10:boolean
                       Statistics: Num rows: 3 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: date), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean), _col6 (type: boolean), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: boolean)
             Execution mode: vectorized, llap
@@ -301,10 +301,10 @@ STAGE PLANS:
                       sort order: +
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
-                          keyColumnNums: [0]
+                          keyColumns: 0:date
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumnNums: [1, 3, 4, 5, 6, 7, 8, 9, 10]
+                          valueColumns: 1:date, 3:boolean, 4:boolean, 5:boolean, 6:boolean, 7:boolean, 8:boolean, 9:boolean, 10:boolean
                       Statistics: Num rows: 3 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: date), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean), _col6 (type: boolean), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: boolean)
             Execution mode: vectorized, llap
@@ -470,10 +470,10 @@ STAGE PLANS:
                       sort order: +
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
-                          keyColumnNums: [0]
+                          keyColumns: 0:date
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumnNums: [3, 4, 5, 6, 7]
+                          valueColumns: 3:boolean, 4:boolean, 5:boolean, 6:boolean, 7:boolean
                       Statistics: Num rows: 3 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: boolean), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean)
             Execution mode: vectorized, llap
@@ -639,10 +639,10 @@ STAGE PLANS:
                       sort order: +
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
-                          keyColumnNums: [0]
+                          keyColumns: 0:date
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumnNums: [3, 4, 5, 6, 7]
+                          valueColumns: 3:boolean, 4:boolean, 5:boolean, 6:boolean, 7:boolean
                       Statistics: Num rows: 3 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: boolean), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean)
             Execution mode: vectorized, llap
@@ -812,10 +812,10 @@ STAGE PLANS:
                         sort order: +
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
-                            keyColumnNums: [0]
+                            keyColumns: 0:date
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [1]
+                            valueColumns: 1:date
                         Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: date)
             Execution mode: vectorized, llap

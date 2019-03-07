@@ -66,7 +66,7 @@ public class VectorMapJoinOptimizedHashSet
     JoinUtil.JoinResult joinResult =
         doLookup(keyBytes, keyOffset, keyLength,
             implementationHashSetResult.bytesBytesMultiHashMapResult(),
-            (VectorMapJoinHashTableResult) hashSetResult);
+            (VectorMapJoinHashTableResult) hashSetResult, null);
 
     return joinResult;
   }

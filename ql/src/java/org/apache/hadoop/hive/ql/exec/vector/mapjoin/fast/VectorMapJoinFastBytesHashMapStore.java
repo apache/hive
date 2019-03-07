@@ -205,8 +205,7 @@ public class VectorMapJoinFastBytesHashMapStore implements MemoryEstimate {
     /**
      * Setup for reading the key of an entry with the equalKey method.
      * @param hashMapStore
-     * @param part1Word
-     * @param part2Word
+     * @param refWord
      */
     public void setKey(VectorMapJoinFastBytesHashMapStore hashMapStore, long refWord) {
 
@@ -278,6 +277,16 @@ public class VectorMapJoinFastBytesHashMapStore implements MemoryEstimate {
       readIndex = 0;
       isNextEof = false;
       setJoinResult(JoinResult.MATCH);
+    }
+
+    /**
+     * Setup for a match outright.
+     * @param hashMapStore
+     * @param refWord
+     */
+    public void set(VectorMapJoinFastBytesHashMapStore hashMapStore, long refWord) {
+      setKey(hashMapStore, refWord);
+      setMatch();
     }
 
     @Override
@@ -544,6 +553,23 @@ public class VectorMapJoinFastBytesHashMapStore implements MemoryEstimate {
     writeBuffers.writeFiveByteULong(referenceAbsoluteOffset, newRelativeOffset);
 
     return refWord;
+  }
+
+  public void getKey(long refWord, ByteSegmentRef keyByteSegmentRef,
+      WriteBuffers.Position readPos) {
+
+    final long absoluteOffset = KeyRef.getAbsoluteOffset(refWord);
+
+    writeBuffers.setReadPoint(absoluteOffset, readPos);
+
+    int keyLength = KeyRef.getSmallKeyLength(refWord);
+    boolean isKeyLengthSmall = (keyLength != KeyRef.SmallKeyLength.allBitsOn);
+    if (!isKeyLengthSmall) {
+
+      // Read big key length we wrote with the key.
+      keyLength = writeBuffers.readVInt(readPos);
+    }
+    writeBuffers.getByteSegmentRefToCurrent(keyByteSegmentRef, keyLength, readPos);
   }
 
   public VectorMapJoinFastBytesHashMapStore(int writeBuffersSize) {
