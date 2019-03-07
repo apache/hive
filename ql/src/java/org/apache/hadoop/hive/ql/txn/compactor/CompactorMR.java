@@ -348,12 +348,13 @@ public class CompactorMR {
       Path baseLocation = new Path(tmpLocation, "_base");
 
       // Set up the session for driver.
-      conf = new HiveConf(conf);
-      conf.set(ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
-      conf.unset(ValidTxnList.VALID_TXNS_KEY);//so Driver doesn't get confused
+      HiveConf driverConf = new HiveConf(conf);
+      driverConf.set(ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
+      driverConf.unset(ValidTxnList.VALID_TXNS_KEY); //so Driver doesn't get confused
+      //thinking it already has a txn opened
 
       String user = UserGroupInformation.getCurrentUser().getShortUserName();
-      SessionState sessionState = DriverUtils.setUpSessionState(conf, user, false);
+      SessionState sessionState = DriverUtils.setUpSessionState(driverConf, user, false);
 
       // Note: we could skip creating the table and just add table type stuff directly to the
       //       "insert overwrite directory" command if there were no bucketing or list bucketing.
@@ -365,7 +366,7 @@ public class CompactorMR {
             p == null ? t.getSd() : p.getSd(), baseLocation.toString());
         LOG.info("Compacting a MM table into " + query);
         try {
-          DriverUtils.runOnDriver(conf, user, sessionState, query, null);
+          DriverUtils.runOnDriver(driverConf, user, sessionState, query);
           break;
         } catch (Exception ex) {
           Throwable cause = ex;
@@ -378,12 +379,13 @@ public class CompactorMR {
         }
       }
 
-      String query = buildMmCompactionQuery(conf, t, p, tmpTableName);
+      String query = buildMmCompactionQuery(driverConf, t, p, tmpTableName);
       LOG.info("Compacting a MM table via " + query);
-      DriverUtils.runOnDriver(conf, user, sessionState, query, writeIds);
-      commitMmCompaction(tmpLocation, sd.getLocation(), conf, writeIds);
-      DriverUtils.runOnDriver(conf, user, sessionState,
-          "drop table if exists " + tmpTableName, null);
+      long compactorTxnId = CompactorMap.getCompactorTxnId(conf);
+      DriverUtils.runOnDriver(driverConf, user, sessionState, query, writeIds, compactorTxnId);
+      commitMmCompaction(tmpLocation, sd.getLocation(), conf, writeIds, compactorTxnId);
+      DriverUtils.runOnDriver(driverConf, user, sessionState,
+          "drop table if exists " + tmpTableName);
     } catch (HiveException e) {
       LOG.error("Error compacting a MM table", e);
       throw new IOException(e);
@@ -1004,7 +1006,7 @@ public class CompactorMR {
         deleteEventWriter.close(false);
       }
     }
-    private long getCompactorTxnId() {
+    private static long getCompactorTxnId(Configuration jobConf) {
       String snapshot = jobConf.get(ValidTxnList.VALID_TXNS_KEY);
       if(Strings.isNullOrEmpty(snapshot)) {
         throw new IllegalStateException(ValidTxnList.VALID_TXNS_KEY + " not found for writing to "
@@ -1012,7 +1014,7 @@ public class CompactorMR {
       }
       ValidTxnList validTxnList = new ValidReadTxnList();
       validTxnList.readFromString(snapshot);
-      //this is id of the current txn
+      //this is id of the current (compactor) txn
       return validTxnList.getHighWatermark();
     }
     private void getWriter(Reporter reporter, ObjectInspector inspector,
@@ -1028,7 +1030,7 @@ public class CompactorMR {
             .maximumWriteId(jobConf.getLong(MAX_TXN, Long.MIN_VALUE))
             .bucket(bucket)
             .statementId(-1)//setting statementId == -1 makes compacted delta files use
-            .visibilityTxnId(getCompactorTxnId());
+            .visibilityTxnId(getCompactorTxnId(jobConf));
       //delta_xxxx_yyyy format
 
         // Instantiate the underlying output format
@@ -1052,7 +1054,7 @@ public class CompactorMR {
           .maximumWriteId(jobConf.getLong(MAX_TXN, Long.MIN_VALUE)).bucket(bucket)
           .statementId(-1)//setting statementId == -1 makes compacted delta files use
           // delta_xxxx_yyyy format
-          .visibilityTxnId(getCompactorTxnId());
+          .visibilityTxnId(getCompactorTxnId(jobConf));
 
       // Instantiate the underlying output format
       @SuppressWarnings("unchecked")//since there is no way to parametrize instance of Class
@@ -1173,19 +1175,17 @@ public class CompactorMR {
             .minimumWriteId(conf.getLong(MIN_TXN, Long.MAX_VALUE))
             .maximumWriteId(conf.getLong(MAX_TXN, Long.MIN_VALUE))
             .bucket(0)
-            .statementId(-1);
+            .statementId(-1)
+            .visibilityTxnId(CompactorMap.getCompactorTxnId(conf));
         Path newDeltaDir = AcidUtils.createFilename(finalLocation, options).getParent();
         LOG.info(context.getJobID() + ": " + tmpLocation +
             " not found.  Assuming 0 splits.  Creating " + newDeltaDir);
         fs.mkdirs(newDeltaDir);
-        createCompactorMarker(conf, newDeltaDir, fs);
         AcidUtils.OrcAcidVersion.writeVersionFile(newDeltaDir, fs);
         return;
       }
-      FileStatus[] contents = fs.listStatus(tmpLocation);//expect 1 base or delta dir in this list
-      //we have MIN_TXN, MAX_TXN and IS_MAJOR in JobConf so we could figure out exactly what the dir
-      //name is that we want to rename; leave it for another day
-      //todo: may actually have delta_x_y and delete_delta_x_y
+      FileStatus[] contents = fs.listStatus(tmpLocation);
+      //minor compaction may actually have delta_x_y and delete_delta_x_y
       for (FileStatus fileStatus : contents) {
         //newPath is the base/delta dir
         Path newPath = new Path(finalLocation, fileStatus.getPath().getName());
@@ -1195,15 +1195,8 @@ public class CompactorMR {
         * meta files which will create base_x/ (i.e. B)...*/
         fs.rename(fileStatus.getPath(), newPath);
         AcidUtils.OrcAcidVersion.writeVersionFile(newPath, fs);
-        createCompactorMarker(conf, newPath, fs);
       }
       fs.delete(tmpLocation, true);
-    }
-    private void createCompactorMarker(JobConf conf, Path finalLocation, FileSystem fs)
-        throws IOException {
-      if(conf.getBoolean(IS_MAJOR, false)) {
-        AcidUtils.MetaDataFile.createCompactorMarker(finalLocation, fs);
-      }
     }
 
     @Override
@@ -1220,22 +1213,23 @@ public class CompactorMR {
    * Note: similar logic to the main committer; however, no ORC versions and stuff like that.
    * @param from The temp directory used for compactor output. Not the actual base/delta.
    * @param to The final directory; basically a SD directory. Not the actual base/delta.
+   * @param compactorTxnId txn that the compactor started
    */
   private void commitMmCompaction(String from, String to, Configuration conf,
-      ValidWriteIdList actualWriteIds) throws IOException {
+      ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException {
     Path fromPath = new Path(from), toPath = new Path(to);
     FileSystem fs = fromPath.getFileSystem(conf);
-    //todo: is that true?  can it be aborted? does it matter for compaction? probably OK since
-    //getAcidState() doesn't check if X is valid in base_X_cY for compacted base dirs.
     // Assume the high watermark can be used as maximum transaction ID.
+    //todo: is that true?  can it be aborted? does it matter for compaction? probably OK since
+    //getAcidState() doesn't check if X is valid in base_X_vY for compacted base dirs.
     long maxTxn = actualWriteIds.getHighWatermark();
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
-      .writingBase(true).isCompressed(false).maximumWriteId(maxTxn).bucket(0).statementId(-1);
+        .writingBase(true).isCompressed(false).maximumWriteId(maxTxn).bucket(0).statementId(-1)
+        .visibilityTxnId(compactorTxnId);
     Path newBaseDir = AcidUtils.createFilename(toPath, options).getParent();
     if (!fs.exists(fromPath)) {
       LOG.info(from + " not found.  Assuming 0 splits. Creating " + newBaseDir);
       fs.mkdirs(newBaseDir);
-      AcidUtils.MetaDataFile.createCompactorMarker(toPath, fs);
       return;
     }
     LOG.info("Moving contents of " + from + " to " + to);
@@ -1245,7 +1239,6 @@ public class CompactorMR {
     }
     FileStatus dirPath = children[0];
     fs.rename(dirPath.getPath(), newBaseDir);
-    AcidUtils.MetaDataFile.createCompactorMarker(newBaseDir, fs);
     fs.delete(fromPath, true);
   }
 }

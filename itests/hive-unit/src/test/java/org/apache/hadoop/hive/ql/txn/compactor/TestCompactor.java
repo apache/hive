@@ -55,7 +55,6 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
@@ -97,12 +96,10 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@RunWith(Parameterized.class)
 public class TestCompactor {
   private static final AtomicInteger salt = new AtomicInteger(new Random().nextInt());
   private static final Logger LOG = LoggerFactory.getLogger(TestCompactor.class);
@@ -115,12 +112,6 @@ public class TestCompactor {
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][]{{true}, {false}});
-  }
-
-  private boolean newStreamingAPI;
-
-  public TestCompactor(boolean newStreamingAPI) {
-    this.newStreamingAPI = newStreamingAPI;
   }
 
   @Rule
@@ -366,6 +357,13 @@ public class TestCompactor {
    */
   @Test
   public void testStatsAfterCompactionPartTbl() throws Exception {
+    testStatsAfterCompactionPartTbl(false);
+  }
+  @Test
+  public void testStatsAfterCompactionPartTblNew() throws Exception {
+    testStatsAfterCompactionPartTbl(true);
+  }
+  private void testStatsAfterCompactionPartTbl(boolean newStreamingAPI) throws Exception {
     //as of (8/27/2014) Hive 0.14, ACID/Orc requires HiveInputFormat
     String tblName = "compaction_test";
     String tblNameStg = tblName + "_stg";
@@ -710,6 +708,13 @@ public class TestCompactor {
 
   @Test
   public void minorCompactAfterAbort() throws Exception {
+    minorCompactAfterAbort(false);
+  }
+  @Test
+  public void minorCompactAfterAbortNew() throws Exception {
+    minorCompactAfterAbort(true);
+  }
+  private void minorCompactAfterAbort(boolean newStreamingAPI) throws Exception {
     String dbName = "default";
     String tblName = "cws";
     String columnNamesProperty = "a,b";
@@ -719,7 +724,7 @@ public class TestCompactor {
       " CLUSTERED BY(a) INTO 1 BUCKETS" + //currently ACID requires table to be bucketed
       " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
 
-    processStreamingAPI(dbName, tblName);
+    processStreamingAPI(dbName, tblName, newStreamingAPI);
     // Now, compact
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MINOR));
@@ -750,6 +755,13 @@ public class TestCompactor {
 
   @Test
   public void majorCompactAfterAbort() throws Exception {
+    majorCompactAfterAbort(false);
+  }
+  @Test
+  public void majorCompactAfterAbortNew() throws Exception {
+    majorCompactAfterAbort(true);
+  }
+  private void majorCompactAfterAbort(boolean newStreamingAPI) throws Exception {
     String dbName = "default";
     String tblName = "cws";
     String columnNamesProperty = "a,b";
@@ -759,7 +771,7 @@ public class TestCompactor {
       " CLUSTERED BY(a) INTO 1 BUCKETS" + //currently ACID requires table to be bucketed
       " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
 
-    processStreamingAPI(dbName, tblName);
+    processStreamingAPI(dbName, tblName, newStreamingAPI);
     runMajorCompaction(dbName, tblName);
 
     // Find the location of the table
@@ -805,12 +817,12 @@ public class TestCompactor {
 
     runMajorCompaction(dbName, tblName);
     verifyFooBarResult(tblName, 1);
-    verifyHasBase(table.getSd(), fs, "base_0000002");
+    verifyHasBase(table.getSd(), fs, "base_0000002_v0000006");
 
     // Make sure we don't compact if we don't need to compact.
     runMajorCompaction(dbName, tblName);
     verifyFooBarResult(tblName, 1);
-    verifyHasBase(table.getSd(), fs, "base_0000002");
+    verifyHasBase(table.getSd(), fs, "base_0000002_v0000006");
   }
 
   @Test
@@ -849,7 +861,7 @@ public class TestCompactor {
 
     runMajorCompaction(dbName, tblName);
     verifyFooBarResult(tblName, 3);
-    verifyHasBase(table.getSd(), fs, "base_0000001");
+    verifyHasBase(table.getSd(), fs, "base_0000001_v0000009");
 
     // Try with an extra delta.
     executeStatementOnDriver("drop table if exists " + tblName, driver);
@@ -875,7 +887,7 @@ public class TestCompactor {
 
     runMajorCompaction(dbName, tblName);
     verifyFooBarResult(tblName, 9);
-    verifyHasBase(table.getSd(), fs, "base_0000002");
+    verifyHasBase(table.getSd(), fs, "base_0000002_v0000023");
 
     // Try with an extra base.
     executeStatementOnDriver("drop table if exists " + tblName, driver);
@@ -926,7 +938,7 @@ public class TestCompactor {
 
     runMajorCompaction(dbName, tblName);
     verifyFooBarResult(tblName, 1);
-    String baseDir = "base_0000002";
+    String baseDir = "base_0000002_v0000006";
     verifyHasBase(table.getSd(), fs, baseDir);
 
     FileStatus[] files = fs.listStatus(new Path(table.getSd().getLocation(), baseDir),
@@ -962,7 +974,7 @@ public class TestCompactor {
 
     runMajorCompaction(dbName, tblName); // Don't compact 4 and 5; 3 is opened.
     FileSystem fs = FileSystem.get(conf);
-    verifyHasBase(table.getSd(), fs, "base_0000002");
+    verifyHasBase(table.getSd(), fs, "base_0000002_v0000010");
     verifyDirCount(table.getSd(), fs, 1, AcidUtils.baseFileFilter);
     verifyFooBarResult(tblName, 2);
 
@@ -974,7 +986,7 @@ public class TestCompactor {
     msClient.abortTxns(Lists.newArrayList(openTxnId)); // Now abort 3.
     runMajorCompaction(dbName, tblName); // Compact 4 and 5.
     verifyFooBarResult(tblName, 2);
-    verifyHasBase(table.getSd(), fs, "base_0000005");
+    verifyHasBase(table.getSd(), fs, "base_0000005_v0000016");
     runCleaner(conf);
     verifyDeltaCount(table.getSd(), fs, 0);
   }
@@ -1038,8 +1050,8 @@ public class TestCompactor {
 
     verifyFooBarResult(tblName, 3);
     verifyDeltaCount(p3.getSd(), fs, 1);
-    verifyHasBase(p1.getSd(), fs, "base_0000006");
-    verifyHasBase(p2.getSd(), fs, "base_0000006");
+    verifyHasBase(p1.getSd(), fs, "base_0000006_v0000010");
+    verifyHasBase(p2.getSd(), fs, "base_0000006_v0000014");
 
     executeStatementOnDriver("INSERT INTO " + tblName + " partition (ds) VALUES(1, 'foo', 2)", driver);
     executeStatementOnDriver("INSERT INTO " + tblName + " partition (ds) VALUES(2, 'bar', 2)", driver);
@@ -1049,8 +1061,8 @@ public class TestCompactor {
     // Make sure we don't compact if we don't need to compact; but do if we do.
     verifyFooBarResult(tblName, 4);
     verifyDeltaCount(p3.getSd(), fs, 1);
-    verifyHasBase(p1.getSd(), fs, "base_0000006");
-    verifyHasBase(p2.getSd(), fs, "base_0000008");
+    verifyHasBase(p1.getSd(), fs, "base_0000006_v0000010");
+    verifyHasBase(p2.getSd(), fs, "base_0000008_v0000023");
 
   }
 
@@ -1095,6 +1107,13 @@ public class TestCompactor {
 
   @Test
   public void majorCompactWhileStreamingForSplitUpdate() throws Exception {
+    majorCompactWhileStreamingForSplitUpdate(false);
+  }
+  @Test
+  public void majorCompactWhileStreamingForSplitUpdateNew() throws Exception {
+    majorCompactWhileStreamingForSplitUpdate(true);
+  }
+  private void majorCompactWhileStreamingForSplitUpdate(boolean newStreamingAPI) throws Exception {
     String dbName = "default";
     String tblName = "cws";
     String columnNamesProperty = "a,b";
@@ -1283,6 +1302,13 @@ public class TestCompactor {
 
   @Test
   public void minorCompactWhileStreamingWithSplitUpdate() throws Exception {
+    minorCompactWhileStreamingWithSplitUpdate(true);
+  }
+  @Test
+  public void minorCompactWhileStreamingWithSplitUpdateNew() throws Exception {
+    minorCompactWhileStreamingWithSplitUpdate(true);
+  }
+  private void minorCompactWhileStreamingWithSplitUpdate(boolean newStreamingAPI) throws Exception {
     String dbName = "default";
     String tblName = "cws";
     String columnNamesProperty = "a,b";
@@ -1695,9 +1721,9 @@ public class TestCompactor {
   }
 
 
-  private void processStreamingAPI(String dbName, String tblName)
-      throws StreamingException, ClassNotFoundException, org.apache.hive.hcatalog.streaming.StreamingException,
-      InterruptedException {
+  private void processStreamingAPI(String dbName, String tblName, boolean newStreamingAPI)
+      throws StreamingException, ClassNotFoundException,
+      org.apache.hive.hcatalog.streaming.StreamingException, InterruptedException {
     if (newStreamingAPI) {
       StreamingConnection connection = null;
       try {

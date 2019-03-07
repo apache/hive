@@ -221,6 +221,7 @@ public class Driver implements IDriver {
   private CacheUsage cacheUsage;
   private CacheEntry usedCacheEntry;
   private ValidWriteIdList compactionWriteIds = null;
+  private long compactorTxnId = 0;
 
   private Context backupContext = null;
   private boolean retrial = false;
@@ -1461,11 +1462,18 @@ public class Driver implements IDriver {
     List<String> txnTables = getTransactionalTableList(plan);
     ValidTxnWriteIdList txnWriteIds = null;
     if (compactionWriteIds != null) {
+      /**
+       * This is kludgy: here we need to read with Compactor's snapshot/txn
+       * rather than the snapshot of the current {@code txnMgr}, in effect
+       * simulating a "flashback query" but can't actually share compactor's
+       * txn since it would run multiple statements.  See more comments in
+       * {@link org.apache.hadoop.hive.ql.txn.compactor.Worker} where it start
+       * the compactor txn*/
       if (txnTables.size() != 1) {
         throw new LockException("Unexpected tables in compaction: " + txnTables);
       }
       String fullTableName = txnTables.get(0);
-      txnWriteIds = new ValidTxnWriteIdList(0L); // No transaction for the compaction for now. todo: Since MM compaction is a query, a txn has been opened at this point
+      txnWriteIds = new ValidTxnWriteIdList(compactorTxnId);
       txnWriteIds.addTableValidWriteIdList(compactionWriteIds);
     } else {
       txnWriteIds = txnMgr.getValidWriteIds(txnTables, txnString);
@@ -3036,7 +3044,8 @@ public class Driver implements IDriver {
     }
   }
 
-  public void setCompactionWriteIds(ValidWriteIdList val) {
+  public void setCompactionWriteIds(ValidWriteIdList val, long compactorTxnId) {
     this.compactionWriteIds = val;
+    this.compactorTxnId = compactorTxnId;
   }
 }

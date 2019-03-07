@@ -27,7 +27,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -775,18 +774,23 @@ public class AcidUtils {
   public static final class ParsedBase {
     private final long writeId;
     private final long visibilityTxnId;
-    ParsedBase(long writeId) {
-      this(writeId, 0);
+    private final Path baseDirPath;
+    ParsedBase(long writeId, Path baseDirPath) {
+      this(writeId, 0, baseDirPath);
     }
-    ParsedBase(long writeId, long visibilityTxnId) {
+    ParsedBase(long writeId, long visibilityTxnId, Path baseDirPath) {
       this.writeId = writeId;
       this.visibilityTxnId = visibilityTxnId;
+      this.baseDirPath = baseDirPath;
     }
     public long getWriteId() {
       return writeId;
     }
     public long getVisibilityTxnId() {
       return visibilityTxnId;
+    }
+    public Path getBaseDirPath() {
+      return baseDirPath;
     }
     public static ParsedBase parseBase(Path path) {
       String filename = path.getName();
@@ -795,10 +799,10 @@ public class AcidUtils {
       }
       int idxOfv = filename.indexOf(VISIBILITY_PREFIX);
       if(idxOfv < 0) {
-        return new ParsedBase(Long.parseLong(filename.substring(BASE_PREFIX.length())));
+        return new ParsedBase(Long.parseLong(filename.substring(BASE_PREFIX.length())), path);
       }
       return new ParsedBase(Long.parseLong(filename.substring(BASE_PREFIX.length(), idxOfv)),
-          Long.parseLong(filename.substring(idxOfv + VISIBILITY_PREFIX.length())));
+          Long.parseLong(filename.substring(idxOfv + VISIBILITY_PREFIX.length())), path);
     }
   }
   /**
@@ -1228,7 +1232,7 @@ public class AcidUtils {
     }
 
     if(bestBase.oldestBase != null && bestBase.status == null &&
-        MetaDataFile.isCompacted(bestBase.oldestBase, fs)) {
+        isCompactedBase(ParsedBase.parseBase(bestBase.oldestBase), fs)) {
       /**
        * If here, it means there was a base_x (> 1 perhaps) but none were suitable for given
        * {@link writeIdList}.  Note that 'original' files are logically a base_Long.MIN_VALUE and thus
@@ -1275,23 +1279,33 @@ public class AcidUtils {
    * Note that such base is NOT obsolete.  Obsolete files are those that are "covered" by other
    * files within the snapshot.
    * A base produced by Insert Overwrite is different.  Logically it's a delta file but one that
-   * causes anything written previously is ignored (hence the overwrite).  In this case, base_x
+   * causes anything written previously to be ignored (hence the overwrite).  In this case, base_x
    * is visible if writeid:x is committed for current reader.
    */
-  private static boolean isValidBase(long baseWriteId, ValidWriteIdList writeIdList, Path baseDir,
+  private static boolean isValidBase(ParsedBase parsedBase, ValidWriteIdList writeIdList,
             FileSystem fs) throws IOException {
-    if(baseWriteId == Long.MIN_VALUE) {
+    if(parsedBase.getWriteId() == Long.MIN_VALUE) {
       //such base is created by 1st compaction in case of non-acid to acid table conversion
       //By definition there are no open txns with id < 1.
       return true;
     }
-    if(!MetaDataFile.isCompacted(baseDir, fs)) {
-      //this is the IOW case
-      return writeIdList.isWriteIdValid(baseWriteId);
+    if(isCompactedBase(parsedBase, fs)) {
+      return writeIdList.isValidBase(parsedBase.getWriteId());
     }
-    return writeIdList.isValidBase(baseWriteId);
+    //if here, it's a result of IOW
+    return writeIdList.isWriteIdValid(parsedBase.getWriteId());
   }
+  /**
+   * Returns {@code true} if {@code parsedBase} was created by compaction.
+   * As of Hive 4.0 we can tell if a directory is a result of compaction based on the
+   * presence of {@link AcidUtils#VISIBILITY_PATTERN} suffix.  Base directories written prior to
+   * that, have to rely on the {@link MetaDataFile} in the directory. So look at the filename first
+   * since that is the cheaper test.*/
+  private static boolean isCompactedBase(ParsedBase parsedBase, FileSystem fs) throws IOException {
+    return parsedBase.getVisibilityTxnId() > 0 ||
+        MetaDataFile.isCompacted(parsedBase.getBaseDirPath(), fs);
 
+  }
   private static void getChildState(FileStatus child, HdfsFileStatusWithId childWithId,
       ValidWriteIdList writeIdList, List<ParsedDelta> working, List<FileStatus> originalDirectories,
       List<HdfsFileStatusWithId> original, List<FileStatus> obsolete, TxnBase bestBase,
@@ -1306,23 +1320,23 @@ public class AcidUtils {
       return;
     }
     if (fn.startsWith(BASE_PREFIX)) {
-      ParsedBase  parsedBase = ParsedBase.parseBase(p);
+      ParsedBase parsedBase = ParsedBase.parseBase(p);
       if(!isDirUsable(child, parsedBase.getVisibilityTxnId(), aborted, validTxnList)) {
         return;
       }
-      long writeId = parsedBase.getWriteId();
+      final long writeId = parsedBase.getWriteId();
       if(bestBase.oldestBaseWriteId > writeId) {
         //keep track for error reporting
         bestBase.oldestBase = p;
         bestBase.oldestBaseWriteId = writeId;
       }
       if (bestBase.status == null) {
-        if(isValidBase(writeId, writeIdList, p, fs)) {
+        if(isValidBase(parsedBase, writeIdList, fs)) {
           bestBase.status = child;
           bestBase.writeId = writeId;
         }
       } else if (bestBase.writeId < writeId) {
-        if(isValidBase(writeId, writeIdList, p, fs)) {
+        if(isValidBase(parsedBase, writeIdList, fs)) {
           obsolete.add(bestBase.status);
           bestBase.status = child;
           bestBase.writeId = writeId;
@@ -1942,30 +1956,12 @@ public class AcidUtils {
       String COMPACTED = "compacted";
     }
 
-    /**
-     * @param baseOrDeltaDir detla or base dir, must exist
-     */
-    public static void createCompactorMarker(Path baseOrDeltaDir, FileSystem fs) throws IOException {
-      /**
-       * create _meta_data json file in baseOrDeltaDir
-       * write thisFileVersion, dataFormat
-       *
-       * on read if the file is not there, assume version 0 and dataFormat=acid
-       */
-      Path formatFile = new Path(baseOrDeltaDir, METADATA_FILE);
-      Map<String, String> metaData = new HashMap<>();
-      metaData.put(Field.VERSION, CURRENT_VERSION);
-      metaData.put(Field.DATA_FORMAT, Value.COMPACTED);
-      try (FSDataOutputStream strm = fs.create(formatFile, false)) {
-        new ObjectMapper().writeValue(strm, metaData);
-      } catch (IOException ioe) {
-        String msg = "Failed to create " + baseOrDeltaDir + "/" + METADATA_FILE
-            + ": " + ioe.getMessage();
-        LOG.error(msg, ioe);
-        throw ioe;
-      }
-    }
     static boolean isCompacted(Path baseOrDeltaDir, FileSystem fs) throws IOException {
+      /**
+       * this file was written by Hive versions before 4.0 into a base_x/ dir
+       * created by compactor so that it can be distinguished from the one
+       * created by Insert Overwrite
+       */
       Path formatFile = new Path(baseOrDeltaDir, METADATA_FILE);
       if(!fs.exists(formatFile)) {
         return false;
@@ -1994,7 +1990,7 @@ public class AcidUtils {
     }
 
     /**
-     * Chooses 1 representantive file from {@code baseOrDeltaDir}
+     * Chooses 1 representative file from {@code baseOrDeltaDir}
      * This assumes that all files in the dir are of the same type: either written by an acid
      * write or Load Data.  This should always be the case for an Acid table.
      */
