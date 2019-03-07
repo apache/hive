@@ -226,7 +226,7 @@ public class Cleaner extends MetaStoreCompactorThread {
           throws IOException, NoSuchObjectException {
     Path locPath = new Path(location);
     AcidUtils.Directory dir = AcidUtils.getAcidState(locPath, conf, writeIdList);
-    List<FileStatus> obsoleteDirs = dir.getObsolete();
+    List<Path> obsoleteDirs = dir.getObsolete();
     /**
      * add anything in 'dir'  that only has data from aborted transactions - no one should be
      * trying to read anything in that dir (except getAcidState() that only reads the name of
@@ -239,11 +239,11 @@ public class Cleaner extends MetaStoreCompactorThread {
     obsoleteDirs.addAll(dir.getAbortedDirectories());
     List<Path> filesToDelete = new ArrayList<>(obsoleteDirs.size());
     StringBuilder extraDebugInfo = new StringBuilder("[");
-    for (FileStatus stat : obsoleteDirs) {
-      filesToDelete.add(stat.getPath());
-      extraDebugInfo.append(stat.getPath().getName()).append(",");
-      if(!FileUtils.isPathWithinSubtree(stat.getPath(), locPath)) {
-        LOG.info(idWatermark(ci) + " found unexpected file: " + stat.getPath());
+    for (Path stat : obsoleteDirs) {
+      filesToDelete.add(stat);
+      extraDebugInfo.append(stat.getName()).append(",");
+      if(!FileUtils.isPathWithinSubtree(stat, locPath)) {
+        LOG.info(idWatermark(ci) + " found unexpected file: " + stat);
       }
     }
     extraDebugInfo.setCharAt(extraDebugInfo.length() - 1, ']');
