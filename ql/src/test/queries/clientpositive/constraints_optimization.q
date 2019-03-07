@@ -439,6 +439,17 @@ explain cbo select c_customer_sk from
   group by c_first_name,c_customer_sk,d_date
   having count(*) >4) subq;
 
+-- group by keys from multiple table with expression
+explain cbo select c_customer_sk from
+ (select substr(c_first_name, 1,30), c_customer_sk ,d_date solddate,count(*) cnt
+  from store_sales
+      ,date_dim
+      ,customer
+  where ss_sold_date_sk = d_date_sk
+    and ss_item_sk = c_customer_sk
+  group by substr(c_first_name, 1, 30),c_customer_sk,d_date
+  having count(*) >4) subq;
+
 create table web_sales(ws_order_number int, ws_item_sk int, ws_price float,
     constraint pk1 primary key(ws_order_number, ws_item_sk) disable rely);
 insert into web_sales values(1, 1, 1.2);
