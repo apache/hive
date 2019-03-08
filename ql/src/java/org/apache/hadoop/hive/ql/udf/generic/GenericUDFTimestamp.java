@@ -42,7 +42,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  * GenericUDFTimestamp
  *
  * Example usage:
- * ... CAST(<Timestamp string> as TIMESTAMP) ...
+ * ... CAST(&lt;Timestamp string&gt; as TIMESTAMP) ...
  *
  * Creates a TimestampWritableV2 object using PrimitiveObjectInspectorConverter
  *

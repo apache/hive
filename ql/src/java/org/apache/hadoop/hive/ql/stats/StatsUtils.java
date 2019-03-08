@@ -787,7 +787,7 @@ public class StatsUtils {
   }
 
   /**
-   * Get sum of all values in the list that are >0
+   * Get sum of all values in the list that are &gt;0
    * @param vals
    *          - list of values
    * @return sum

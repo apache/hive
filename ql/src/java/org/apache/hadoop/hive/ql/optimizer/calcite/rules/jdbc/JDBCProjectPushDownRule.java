@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * JDBCProjectPushDownRule convert a {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject}
- * into a {@link org.apache.calcite.adapter.jdbc.JdbcRules.JdbcAggregateRule.JdbcProject}
+ * into a {@link JdbcProject}
  * and pushes it down below the {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter}}
  * operator so it will be sent to the external table.
  */

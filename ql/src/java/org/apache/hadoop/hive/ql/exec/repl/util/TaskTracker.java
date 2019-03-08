@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * This class will be responsible to track how many tasks have been created,
  * organization of tasks such that after the number of tasks for next execution are created
- * we create a dependency collection task(DCT) -> another bootstrap task,
+ * we create a dependency collection task(DCT) -&gt; another bootstrap task,
  * and then add DCT as dependent to all existing tasks that are created so the cycle can continue.
  */
 public class TaskTracker {

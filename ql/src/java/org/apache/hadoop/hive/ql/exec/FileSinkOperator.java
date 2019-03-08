@@ -383,8 +383,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
      * FileSink, in ways similar to the multi file spray, but without knowing the total number of
      * buckets ahead of time.
      *
-     * ROW__ID (1,2[0],3) => bucket_00002
-     * ROW__ID (1,3[0],4) => bucket_00003 etc
+     * ROW__ID (1,2[0],3) =&gt; bucket_00002
+     * ROW__ID (1,3[0],4) =&gt; bucket_00003 etc
      *
      * A new FSP is created for each partition, so this only requires the bucket numbering and that
      * is mapped in directly as an index.

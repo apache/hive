@@ -2228,7 +2228,7 @@ public final class Utilities {
    * If there is no db name part, set the current sessions default db
    * @param dbtable
    * @return String array with two elements, first is db name, second is table name
-   * @throws HiveException
+   * @throws SemanticException
    */
   public static String[] getDbTableName(String dbtable) throws SemanticException {
     return getDbTableName(SessionState.get().getCurrentDatabase(), dbtable);
@@ -3941,9 +3941,9 @@ public final class Utilities {
   }
 
   /**
-   * Checks if the current HiveServer2 logging operation level is >= PERFORMANCE.
+   * Checks if the current HiveServer2 logging operation level is &gt;= PERFORMANCE.
    * @param conf Hive configuration.
-   * @return true if current HiveServer2 logging operation level is >= PERFORMANCE.
+   * @return true if current HiveServer2 logging operation level is &gt;= PERFORMANCE.
    * Else, false.
    */
   public static boolean isPerfOrAboveLogging(HiveConf conf) {

@@ -86,12 +86,11 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
    * @param tblProps
    * @param partColNames
    * @param ifNotExists
-   * @param orReplace
+   * @param replace
    * @param isAlterViewAs
    * @param inputFormat
    * @param outputFormat
    * @param location
-   * @param serName
    * @param serde
    * @param storageHandler
    * @param serdeProps

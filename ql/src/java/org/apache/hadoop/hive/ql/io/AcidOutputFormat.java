@@ -199,7 +199,7 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
      * Multiple inserts into legacy (pre-acid) tables can generate multiple copies of each bucket
      * file.
      * @see org.apache.hadoop.hive.ql.exec.Utilities#COPY_KEYWORD
-     * @param copyNumber the number of the copy ( > 0)
+     * @param copyNumber the number of the copy ( &gt; 0)
      * @return this
      */
     public Options copyNumber(int copyNumber) {

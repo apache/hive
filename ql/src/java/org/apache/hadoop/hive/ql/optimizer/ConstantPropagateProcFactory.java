@@ -120,7 +120,7 @@ public final class ConstantPropagateProcFactory {
   /**
    * Get ColumnInfo from column expression.
    *
-   * @param rr
+   * @param rs
    * @param desc
    * @return
    */

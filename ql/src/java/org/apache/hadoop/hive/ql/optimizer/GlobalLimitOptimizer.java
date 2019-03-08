@@ -50,11 +50,11 @@ import com.google.common.collect.Multimap;
 /**
  * This optimizer is used to reduce the input size for the query for queries which are
  * specifying a limit.
- * <p/>
+ * <br>
  * For eg. for a query of type:
- * <p/>
- * select expr from T where <filter> limit 100;
- * <p/>
+ * <br>
+ * select expr from T where &lt;filter&lt; limit 100;
+ * <br>
  * Most probably, the whole table T need not be scanned.
  * Chances are that even if we scan the first file of T, we would get the 100 rows
  * needed by this query.

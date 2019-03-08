@@ -27,8 +27,8 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 
 /**
- * All member variables should have a setters and getters of the form get<member
- * name> and set<member name> or else they won't be recreated properly at run
+ * All member variables should have a setters and getters of the form get&lt;member
+ * name&gt; and set&lt;member name&gt; or else they won't be recreated properly at run
  * time.
  *
  */

@@ -36,7 +36,7 @@ import java.util.Arrays;
 
 /**
  * This class processes HADOOP commands used for HDFS encryption. It is meant to be run
- * only by Hive unit & queries tests.
+ * only by Hive unit &amp; queries tests.
  */
 public class CryptoProcessor implements CommandProcessor {
   public static final Logger LOG = LoggerFactory.getLogger(CryptoProcessor.class.getName());

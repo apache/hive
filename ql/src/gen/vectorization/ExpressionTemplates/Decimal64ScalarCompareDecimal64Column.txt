@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 /**
  * Generated from template Decimal64ScalarCompareDecimal64Column.txt, which covers decimal64
  * comparison expressions between a scalar and a column, however output is not produced in a
- * separate column. The selected vector of the input {@link VectorizedRowBatch} is updated for
+ * separate column. The selected vector of the input {@link org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch VectorizedRowBatch} is updated for
  * in-place filtering.
  */
 public class <ClassName> extends <BaseClassName> {

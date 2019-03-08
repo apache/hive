@@ -104,7 +104,7 @@ public class PhysicalOptimizer {
    * invoke all the resolvers one-by-one, and alter the physical plan.
    *
    * @return PhysicalContext
-   * @throws HiveException
+   * @throws SemanticException
    */
   public PhysicalContext optimize() throws SemanticException {
     for (PhysicalPlanResolver r : resolvers) {

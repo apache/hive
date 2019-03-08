@@ -323,7 +323,6 @@ public class VectorizedRowBatchCtx {
    * Creates a Vectorized row batch and the column vectors.
    *
    * @return VectorizedRowBatch
-   * @throws HiveException
    */
   public VectorizedRowBatch createVectorizedRowBatch()
   {
@@ -381,7 +380,6 @@ public class VectorizedRowBatchCtx {
    *
    * @param batch
    * @param partitionValues
-   * @throws HiveException
    */
   public void addPartitionColsToBatch(VectorizedRowBatch batch, Object[] partitionValues)
   {

@@ -57,7 +57,7 @@ public class VectorMapJoinFastBytesHashSetStore implements MemoryEstimate {
    *      |
    *      |
    *      v
-   *      <Key Bytes>
+   *      &lt;Key Bytes&gt;
    *        KEY
    *
    *  2) One element, general: shows optional big key length.
@@ -68,7 +68,7 @@ public class VectorMapJoinFastBytesHashSetStore implements MemoryEstimate {
    *      |
    *      |
    *      v
-   *      [Big Key Length] <Key Bytes>
+   *      [Big Key Length] &lt;Key Bytes&gt;
    *        optional           KEY
    */
 

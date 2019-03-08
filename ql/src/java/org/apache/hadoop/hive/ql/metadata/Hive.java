@@ -433,7 +433,7 @@ public class Hive {
 
   /**
    * Gets the allowClose flag which determines if it is allowed to close metastore connections.
-   * @returns allowClose flag
+   * @return allowClose flag
    */
   public boolean allowClose() {
     return isAllowClose;
@@ -649,9 +649,7 @@ public class Hive {
    *          new name of the table. could be the old name
    * @param transactional
    *          Need to generate and save a table snapshot into the metastore?
-   * @throws InvalidOperationException
-   *           if the changes in metadata is not acceptable
-   * @throws TException
+   * @throws HiveException
    */
   public void alterTable(String fullyQlfdTblName, Table newTbl, EnvironmentContext environmentContext,
                          boolean transactional)
@@ -738,7 +736,7 @@ public class Hive {
    *          new partition
    * @throws InvalidOperationException
    *           if the changes in metadata is not acceptable
-   * @throws TException
+   * @throws HiveException
    */
   @Deprecated
   public void alterPartition(String tblName, Partition newPart,
@@ -763,7 +761,7 @@ public class Hive {
    *          indicates this call is for transaction stats
    * @throws InvalidOperationException
    *           if the changes in metadata is not acceptable
-   * @throws TException
+   * @throws HiveException
    */
   public void alterPartition(String catName, String dbName, String tblName, Partition newPart,
                              EnvironmentContext environmentContext, boolean transactional)
@@ -820,7 +818,7 @@ public class Hive {
    *          Need to generate and save a table snapshot into the metastore?
    * @throws InvalidOperationException
    *           if the changes in metadata is not acceptable
-   * @throws TException
+   * @throws HiveException
    */
   public void alterPartitions(String tblName, List<Partition> newParts,
                               EnvironmentContext environmentContext, boolean transactional)
@@ -863,9 +861,7 @@ public class Hive {
    *          spec of old partition
    * @param newPart
    *          new partition
-   * @throws InvalidOperationException
-   *           if the changes in metadata is not acceptable
-   * @throws TException
+   * @throws HiveException
    */
   public void renamePartition(Table tbl, Map<String, String> oldPartSpec, Partition newPart)
       throws HiveException {

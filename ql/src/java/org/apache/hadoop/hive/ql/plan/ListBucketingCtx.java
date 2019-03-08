@@ -184,7 +184,6 @@ public class ListBucketingCtx implements Serializable {
   /**
    * check if list bucketing is enabled.
    *
-   * @param ctx
    * @return
    */
   public  boolean isSkewedStoredAsDir() {
@@ -201,7 +200,6 @@ public class ListBucketingCtx implements Serializable {
    * 0: not list bucketing
    * int: no. of skewed columns
    *
-   * @param ctx
    * @return
    */
   public  int calculateListBucketingLevel() {

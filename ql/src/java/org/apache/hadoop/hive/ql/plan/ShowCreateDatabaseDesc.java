@@ -85,7 +85,7 @@ public class ShowCreateDatabaseDesc extends DDLDesc implements Serializable {
   }
 
   /**
-   * @param databaseName
+   * @param dbName
    *          the dbName to set
    */
   public void setDatabaseName(String dbName) {

@@ -434,8 +434,8 @@ public final class GenMapRedUtils {
    *          current alias
    * @param topOp
    *          the top operator of the stack
-   * @param plan
-   *          current plan
+   * @param task
+   *          current task
    * @param local
    *          whether you need to add to map-reduce or local work
    * @param opProcCtx
@@ -454,8 +454,8 @@ public final class GenMapRedUtils {
    *          current alias
    * @param topOp
    *          the top operator of the stack
-   * @param plan
-   *          current plan
+   * @param task
+   *          current task
    * @param local
    *          whether you need to add to map-reduce or local work
    * @param opProcCtx
@@ -476,13 +476,11 @@ public final class GenMapRedUtils {
    *
    * @param alias_id
    *          current alias
-   * @param topOp
-   *          the top operator of the stack
    * @param plan
    *          map work to initialize
    * @param local
    *          whether you need to add to map-reduce or local work
-   * @param pList
+   * @param partsList
    *          pruned partition list. If it is null it will be computed on-the-fly.
    * @param inputs
    *          read entities for the map work
@@ -764,7 +762,7 @@ public final class GenMapRedUtils {
    *          whether you need to add to map-reduce or local work
    * @param tt_desc
    *          table descriptor
-   * @throws SerDeException
+   * @throws SemanticException
    */
   public static void setTaskPlan(Path path, String alias,
       Operator<? extends OperatorDesc> topOp, MapWork plan, boolean local,
@@ -1254,11 +1252,11 @@ public final class GenMapRedUtils {
    *          v
    *          FileSinkOperator (fsMerge)
    *
-   *          Here the pathToPartitionInfo & pathToAlias will remain the same, which means the paths
+   *          Here the pathToPartitionInfo &amp; pathToAlias will remain the same, which means the paths
    *          do
    *          not contain the dynamic partitions (their parent). So after the dynamic partitions are
    *          created (after the first job finished before the moveTask or ConditionalTask start),
-   *          we need to change the pathToPartitionInfo & pathToAlias to include the dynamic
+   *          we need to change the pathToPartitionInfo &amp; pathToAlias to include the dynamic
    *          partition
    *          directories.
    *
@@ -1616,8 +1614,8 @@ public final class GenMapRedUtils {
    *
    * @param fsInputDesc
    * @param finalName
+   * @param hasDynamicPartitions
    * @param ctx
-   * @param inputFormatClass
    * @return MergeWork if table is stored as RCFile or ORCFile,
    *         null otherwise
    */

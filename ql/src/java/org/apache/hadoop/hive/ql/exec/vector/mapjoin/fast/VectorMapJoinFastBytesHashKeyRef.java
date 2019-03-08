@@ -169,7 +169,6 @@ public class VectorMapJoinFastBytesHashKeyRef {
 
   /**
    * Get partial hash code from the reference word.
-   * @param hashCode
    * @return
    */
   public static long getPartialHashCodeFromRefWord(long refWord) {
