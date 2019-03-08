@@ -557,10 +557,6 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     List<String> loadWithClause = externalTableBasePathWithClause();
 
     WarehouseInstance.Tuple tupleBootstrapWithoutExternal = primary
-            .run("use " + primaryDbName)
-            .run("create external table t1 (id int)")
-            .run("insert into table t1 values (1)")
-            .run("create table t2 as select * from t1")
             .dump(primaryDbName, null, dumpWithClause);
 
     replica.load(replicatedDbName, tupleBootstrapWithoutExternal.dumpLocation, loadWithClause);
@@ -568,7 +564,9 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     dumpWithClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
             "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'");
     WarehouseInstance.Tuple tupleIncWithExternalBootstrap = primary.run("use " + primaryDbName)
-            .run("create table t3 as select * from t1")
+            .run("create external table t1 (id int)")
+            .run("insert into table t1 values (1)")
+            .run("create table t2 as select * from t1")
             .dump(primaryDbName, tupleBootstrapWithoutExternal.lastReplicationId, dumpWithClause);
     WarehouseInstance.Tuple tupleNewIncWithExternalBootstrap
             = primary.dump(primaryDbName, tupleBootstrapWithoutExternal.lastReplicationId, dumpWithClause);
