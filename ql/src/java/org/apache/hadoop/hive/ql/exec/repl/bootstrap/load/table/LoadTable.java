@@ -84,83 +84,79 @@ public class LoadTable {
     this.tracker = new TaskTracker(limiter);
   }
 
-  public TaskTracker tasks() throws SemanticException {
+  public TaskTracker tasks() throws Exception {
     // Path being passed to us is a table dump location. We go ahead and load it in as needed.
     // If tblName is null, then we default to the table name specified in _metadata, which is good.
     // or are both specified, in which case, that's what we are intended to create the new table as.
-    try {
-      if (event.shouldNotReplicate()) {
-        return tracker;
-      }
-      String dbName = tableContext.dbNameToLoadIn; //this can never be null or empty;
-      // Create table associated with the import
-      // Executed if relevant, and used to contain all the other details about the table if not.
-      ImportTableDesc tableDesc = tableContext.overrideProperties(event.tableDesc(dbName));
-      Table table = ImportSemanticAnalyzer.tableIfExists(tableDesc, context.hiveDb);
-
-      // Normally, on import, trying to create a table or a partition in a db that does not yet exist
-      // is a error condition. However, in the case of a REPL LOAD, it is possible that we are trying
-      // to create tasks to create a table inside a db that as-of-now does not exist, but there is
-      // a precursor Task waiting that will create it before this is encountered. Thus, we instantiate
-      // defaults and do not error out in that case.
-      // the above will change now since we are going to split replication load in multiple execution
-      // tasks and hence we could have created the database earlier in which case the waitOnPrecursor will
-      // be false and hence if db Not found we should error out.
-      Database parentDb = context.hiveDb.getDatabase(tableDesc.getDatabaseName());
-      if (parentDb == null) {
-        if (!tableContext.waitOnPrecursor()) {
-          throw new SemanticException(
-              ErrorMsg.DATABASE_NOT_EXISTS.getMsg(tableDesc.getDatabaseName()));
-        }
-      }
-
-      Task<?> tblRootTask = null;
-      ReplLoadOpType loadTblType = getLoadTableType(table);
-      switch (loadTblType) {
-        case LOAD_NEW:
-          break;
-        case LOAD_REPLACE:
-          tblRootTask = dropTableTask(table);
-          break;
-        case LOAD_SKIP:
-          return tracker;
-        default:
-          break;
-      }
-
-      TableLocationTuple
-          tableLocationTuple = tableLocation(tableDesc, parentDb, tableContext, context);
-      tableDesc.setLocation(tableLocationTuple.location);
-
-  /* Note: In the following section, Metadata-only import handling logic is
-     interleaved with regular repl-import logic. The rule of thumb being
-     followed here is that MD-only imports are essentially ALTERs. They do
-     not load data, and should not be "creating" any metadata - they should
-     be replacing instead. The only place it makes sense for a MD-only import
-     to create is in the case of a table that's been dropped and recreated,
-     or in the case of an unpartitioned table. In all other cases, it should
-     behave like a noop or a pure MD alter.
-  */
-      newTableTasks(tableDesc, tblRootTask, tableLocationTuple);
-
-      // Set Checkpoint task as dependant to create table task. So, if same dump is retried for
-      // bootstrap, we skip current table update.
-      Task<?> ckptTask = ReplUtils.getTableCheckpointTask(
-              tableDesc,
-              null,
-              context.dumpDirectory,
-              context.hiveConf
-      );
-      if (!isPartitioned(tableDesc)) {
-        Task<? extends Serializable> replLogTask
-                = ReplUtils.getTableReplLogTask(tableDesc, replLogger, context.hiveConf);
-        ckptTask.addDependentTask(replLogTask);
-      }
-      tracker.addDependentTask(ckptTask);
+    if (event.shouldNotReplicate()) {
       return tracker;
-    } catch (Exception e) {
-      throw new SemanticException(e);
     }
+    String dbName = tableContext.dbNameToLoadIn; //this can never be null or empty;
+    // Create table associated with the import
+    // Executed if relevant, and used to contain all the other details about the table if not.
+    ImportTableDesc tableDesc = tableContext.overrideProperties(event.tableDesc(dbName));
+    Table table = ImportSemanticAnalyzer.tableIfExists(tableDesc, context.hiveDb);
+
+    // Normally, on import, trying to create a table or a partition in a db that does not yet exist
+    // is a error condition. However, in the case of a REPL LOAD, it is possible that we are trying
+    // to create tasks to create a table inside a db that as-of-now does not exist, but there is
+    // a precursor Task waiting that will create it before this is encountered. Thus, we instantiate
+    // defaults and do not error out in that case.
+    // the above will change now since we are going to split replication load in multiple execution
+    // tasks and hence we could have created the database earlier in which case the waitOnPrecursor will
+    // be false and hence if db Not found we should error out.
+    Database parentDb = context.hiveDb.getDatabase(tableDesc.getDatabaseName());
+    if (parentDb == null) {
+      if (!tableContext.waitOnPrecursor()) {
+        throw new SemanticException(
+            ErrorMsg.DATABASE_NOT_EXISTS.getMsg(tableDesc.getDatabaseName()));
+      }
+    }
+
+    Task<?> tblRootTask = null;
+    ReplLoadOpType loadTblType = getLoadTableType(table);
+    switch (loadTblType) {
+      case LOAD_NEW:
+        break;
+      case LOAD_REPLACE:
+        tblRootTask = dropTableTask(table);
+        break;
+      case LOAD_SKIP:
+        return tracker;
+      default:
+        break;
+    }
+
+    TableLocationTuple
+        tableLocationTuple = tableLocation(tableDesc, parentDb, tableContext, context);
+    tableDesc.setLocation(tableLocationTuple.location);
+
+    /* Note: In the following section, Metadata-only import handling logic is
+       interleaved with regular repl-import logic. The rule of thumb being
+       followed here is that MD-only imports are essentially ALTERs. They do
+       not load data, and should not be "creating" any metadata - they should
+       be replacing instead. The only place it makes sense for a MD-only import
+       to create is in the case of a table that's been dropped and recreated,
+       or in the case of an unpartitioned table. In all other cases, it should
+       behave like a noop or a pure MD alter.
+    */
+    newTableTasks(tableDesc, tblRootTask, tableLocationTuple);
+
+    // Set Checkpoint task as dependant to create table task. So, if same dump is retried for
+    // bootstrap, we skip current table update.
+    Task<?> ckptTask = ReplUtils.getTableCheckpointTask(
+            tableDesc,
+            null,
+            context.dumpDirectory,
+            context.hiveConf
+    );
+    if (!isPartitioned(tableDesc)) {
+      Task<? extends Serializable> replLogTask
+              = ReplUtils.getTableReplLogTask(tableDesc, replLogger, context.hiveConf);
+      ckptTask.addDependentTask(replLogTask);
+    }
+    tracker.addDependentTask(ckptTask);
+    return tracker;
   }
 
   private ReplLoadOpType getLoadTableType(Table table) throws InvalidOperationException, HiveException {
