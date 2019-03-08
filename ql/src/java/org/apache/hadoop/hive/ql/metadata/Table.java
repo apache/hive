@@ -681,7 +681,7 @@ public class Table implements Serializable {
    * Returns a list of all the columns of the table (data columns + partition
    * columns in that order.
    *
-   * @return List<FieldSchema>
+   * @return List&lt;FieldSchema&gt;
    */
   public List<FieldSchema> getAllCols() {
     ArrayList<FieldSchema> f_list = new ArrayList<FieldSchema>();
@@ -919,7 +919,7 @@ public class Table implements Serializable {
   }
 
   /**
-   * Creates a partition name -> value spec map object
+   * Creates a partition name -&gt; value spec map object
    *
    * @param tp
    *          Use the information from this partition.

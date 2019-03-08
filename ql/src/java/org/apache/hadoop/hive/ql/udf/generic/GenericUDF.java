@@ -64,7 +64,7 @@ import org.apache.hadoop.io.LongWritable;
  * accept arguments of complex types, and return complex types. 2. It can accept
  * variable length of arguments. 3. It can accept an infinite number of function
  * signature - for example, it's easy to write a GenericUDF that accepts
- * array<int>, array<array<int>> and so on (arbitrary levels of nesting). 4. It
+ * array&lt;int&gt;, array&lt;array&lt;int&gt;&gt; and so on (arbitrary levels of nesting). 4. It
  * can do short-circuit evaluations using DeferedObject.
  */
 @InterfaceAudience.Public
@@ -222,7 +222,7 @@ public abstract class GenericUDF implements Closeable {
 
   /**
    * Some functions like comparisons may be affected by appearing order of arguments.
-   * This is to convert a function, such as 3 > x to x < 3. The flip function of
+   * This is to convert a function, such as 3 &gt; x to x &lt; 3. The flip function of
    * GenericUDFOPGreaterThan is GenericUDFOPLessThan.
    */
   public GenericUDF flip() {
@@ -233,7 +233,6 @@ public abstract class GenericUDF implements Closeable {
    * Gets the negative function of the current one. E.g., GenericUDFOPNotEqual for
    * GenericUDFOPEqual, or GenericUDFOPNull for GenericUDFOPNotNull.
    * @return Negative function
-   * @throws UDFArgumentException
    */
   public GenericUDF negative() {
     throw new UnsupportedOperationException("Negative function doesn't exist for " + getFuncName());

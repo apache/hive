@@ -203,7 +203,7 @@ public class CorrelationOptimizer extends Transform {
   /**
    * Detect correlations and transform the query tree.
    *
-   * @param pactx
+   * @param pctx
    *          current parse context
    * @throws SemanticException
    */

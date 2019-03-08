@@ -17,7 +17,7 @@ package org.apache.hadoop.hive.ql.wm;
 
 /**
  * Expression that is defined in triggers.
- * Most expressions will get triggered only after exceeding a limit. As a result, only greater than (>) expression
+ * Most expressions will get triggered only after exceeding a limit. As a result, only greater than (&gt;) expression
  * is supported.
  */
 public interface Expression {
@@ -43,7 +43,7 @@ public interface Expression {
   }
 
   /**
-   * Evaluate current value against this expression. Return true if expression evaluates to true (current > limit)
+   * Evaluate current value against this expression. Return true if expression evaluates to true (current &gt; limit)
    * else false otherwise
    *
    * @param current - current value against which expression will be evaluated

@@ -62,7 +62,7 @@ public enum PrivilegeType {
 
   /**
    * Do case lookup of PrivilegeType associated with this antlr token
-   * @param privilegeName
+   * @param token
    * @return corresponding PrivilegeType
    */
   public static PrivilegeType getPrivTypeByToken(int token) {

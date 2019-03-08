@@ -613,7 +613,7 @@ public class HiveCalciteUtil {
 
   /**
    * Get top level select starting from root. Assumption here is root can only
-   * be Sort & Project. Also the top project should be at most 2 levels below
+   * be Sort &amp; Project. Also the top project should be at most 2 levels below
    * Sort; i.e Sort(Limit)-Sort(OB)-Select
    *
    * @param rootRel

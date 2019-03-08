@@ -416,7 +416,7 @@ public class ExprNodeDescUtils {
   /**
    * Join keys are expressions based on the select operator. Resolve the expressions so they
    * are based on the ReduceSink operator
-   *   SEL -> RS -> JOIN
+   *   SEL -&gt; RS -&gt; JOIN
    * @param source
    * @param reduceSinkOp
    * @return
@@ -666,10 +666,10 @@ public class ExprNodeDescUtils {
    * @param inputOp
    *          Input Hive Operator
    * @param startPos
-   *          starting position in the input operator schema; must be >=0 and <=
+   *          starting position in the input operator schema; must be &gt;=0 and &lt;=
    *          endPos
    * @param endPos
-   *          end position in the input operator schema; must be >=0.
+   *          end position in the input operator schema; must be &gt;=0.
    * @return List of ExprNodeDesc
    */
   public static ArrayList<ExprNodeDesc> genExprNodeDesc(Operator inputOp, int startPos, int endPos,

@@ -69,9 +69,9 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
  * <p>Sub-queries are represented by {@link RexSubQuery} expressions.
  *
  * <p>A sub-query may or may not be correlated. If a sub-query is correlated,
- * the wrapped {@link RelNode} will contain a {@link RexCorrelVariable} before
- * the rewrite, and the product of the rewrite will be a {@link Correlate}.
- * The Correlate can be removed using {@link RelDecorrelator}.
+ * the wrapped {@link RelNode} will contain a {@link org.apache.calcite.rex.RexCorrelVariable} before
+ * the rewrite, and the product of the rewrite will be a {@link org.apache.calcite.rel.core.Correlate}.
+ * The Correlate can be removed using {@link org.apache.calcite.sql2rel.RelDecorrelator}.
  */
 public class HiveSubQueryRemoveRule extends RelOptRule {
 

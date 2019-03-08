@@ -37,8 +37,8 @@ import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.hadoop.util.Progressable;
 
 /**
- * HiveIgnoreKeyTextOutputFormat replaces key with null before feeding the <key,
- * value> to TextOutputFormat.RecordWriter.
+ * HiveIgnoreKeyTextOutputFormat replaces key with null before feeding the &lt;key,
+ * value&gt; to TextOutputFormat.RecordWriter.
  *
  */
 public class HiveIgnoreKeyTextOutputFormat<K extends WritableComparable, V extends Writable>

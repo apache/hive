@@ -93,7 +93,7 @@ public abstract class PrunerOperatorFactory {
     /**
      * Generate predicate.
      *
-     * Subclass should implement the function. Please refer to {@link OpProcFactory.FilterPPR}
+     * Subclass should implement the function. Please refer to {@link org.apache.hadoop.hive.ql.optimizer.ppr.OpProcFactory.FilterPPR}
      *
      * @param procCtx
      * @param fop

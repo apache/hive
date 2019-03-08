@@ -69,7 +69,7 @@ import com.google.common.collect.ImmutableList;
  * 1. Change the output col/ExprNodeColumn names to external names.<br>
  * 2. Verify if we need to use the "KEY."/"VALUE." in RS cols; switch to
  * external names if possible.<br>
- * 3. In ExprNode & in ColumnInfo the tableAlias/VirtualColumn is specified
+ * 3. In ExprNode &amp; in ColumnInfo the tableAlias/VirtualColumn is specified
  * differently for different GB/RS in pipeline. Remove the different treatments.
  * 4. VirtualColMap needs to be maintained
  *

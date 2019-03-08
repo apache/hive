@@ -44,7 +44,7 @@ import com.google.common.base.Preconditions;
  * A hash map key wrapper for vectorized processing.
  * It stores the key values as primitives in arrays for each supported primitive type.
  * This works in conjunction with
- * {@link org.apache.hadoop.hive.ql.exec.VectorHashKeyWrapperBatch VectorHashKeyWrapperBatch}
+ * {@link VectorHashKeyWrapperBatch}
  * to hash vectorized processing units (batches).
  */
 public class VectorHashKeyWrapperGeneral extends VectorHashKeyWrapperBase {

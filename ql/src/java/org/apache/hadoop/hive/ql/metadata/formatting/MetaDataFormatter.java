@@ -92,7 +92,6 @@ public interface MetaDataFormatter {
    * @param cols
    * @param isFormatted - describe with formatted keyword
    * @param isExt
-   * @param isPretty
    * @param isOutputPadded - if true, add spacing and indentation
    * @param colStats
    * @param fkInfo  foreign keys information

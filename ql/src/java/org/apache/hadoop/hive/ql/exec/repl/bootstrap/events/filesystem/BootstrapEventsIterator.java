@@ -61,7 +61,7 @@ import java.util.stream.Collectors;
  * 2. Table before partition is not explicitly required as table and partition metadata are in the same file.
  *
  *
- * For future integrations other sources of events like kafka, would require to implement an Iterator<BootstrapEvent>
+ * For future integrations other sources of events like kafka, would require to implement an Iterator&lt;BootstrapEvent&gt;
  *
  */
 public class BootstrapEventsIterator implements Iterator<BootstrapEvent> {
