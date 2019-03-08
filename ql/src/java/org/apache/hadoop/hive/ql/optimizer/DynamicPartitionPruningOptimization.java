@@ -167,7 +167,8 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
 
         Table table = ts.getConf().getTableMetadata();
 
-        if (table != null && table.isPartitionKey(column)) {
+        boolean nonEquiJoin = isNonEquiJoin(ctx.parent);
+        if (table != null && table.isPartitionKey(column) && !nonEquiJoin) {
           String columnType = table.getPartColByName(column).getType();
           String alias = ts.getConf().getAlias();
           PrunedPartitionList plist = parseContext.getPrunedPartitions(alias, ts);
@@ -197,7 +198,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
         } else { // semijoin
           LOG.debug("Column " + column + " is not a partition column");
           if (semiJoin && !disableSemiJoinOptDueToExternalTable(parseContext.getConf(), ts, ctx)
-                  && ts.getConf().getFilterExpr() != null) {
+                  && ts.getConf().getFilterExpr() != null && !nonEquiJoin) {
             LOG.debug("Initiate semijoin reduction for " + column + " ("
                 + ts.getConf().getFilterExpr().getExprString());
 
@@ -434,6 +435,18 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     }
   }
 
+  private boolean isNonEquiJoin(ExprNodeDesc predicate)  {
+    Preconditions.checkArgument(predicate instanceof ExprNodeGenericFuncDesc);
+
+    ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc) predicate;
+    if (funcDesc.getGenericUDF() instanceof GenericUDFIn) {
+      return false;
+    }
+
+    return true;
+  }
+
+
   private void generateEventOperatorPlan(DynamicListContext ctx, ParseContext parseContext,
       TableScanOperator ts, String column, String columnType) {
 
@@ -529,13 +542,6 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
   private boolean generateSemiJoinOperatorPlan(DynamicListContext ctx, ParseContext parseContext,
       TableScanOperator ts, String keyBaseAlias, String internalColName,
       String colName, SemiJoinHint sjHint) throws SemanticException {
-
-    // Semijoin reduction for non-equi join not yet supported, check for it
-    ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc) ctx.parent;
-    if (!(funcDesc.getGenericUDF() instanceof GenericUDFIn)) {
-      LOG.info("Semijoin reduction for non-equi joins is currently disabled.");
-      return false;
-    }
 
     // we will put a fork in the plan at the source of the reduce sink
     Operator<? extends OperatorDesc> parentOfRS = ctx.generator.getParentOperators().get(0);
