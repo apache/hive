@@ -446,7 +446,7 @@ public class CompactorMR {
       //thinking it already has a txn opened
 
       String user = UserGroupInformation.getCurrentUser().getShortUserName();
-      SessionState sessionState = DriverUtils.setUpSessionState(driverConf, user, false);
+      SessionState sessionState = DriverUtils.setUpSessionState(driverConf, user, true);
 
       // Note: we could skip creating the table and just add table type stuff directly to the
       //       "insert overwrite directory" command if there were no bucketing or list bucketing.
