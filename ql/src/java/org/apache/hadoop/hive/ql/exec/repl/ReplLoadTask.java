@@ -17,13 +17,17 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.repl.util.AddDependencyToLeaves;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.BootstrapEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.ConstraintEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.DatabaseEvent;
@@ -32,21 +36,29 @@ import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.PartitionEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.BootstrapEventsIterator;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.ConstraintEventsIterator;
+import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.FSTableEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadConstraint;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadDatabase;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadFunction;
-import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
-import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table.LoadPartitions;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table.LoadTable;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table.TableContext;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.Context;
+import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
+import org.apache.hadoop.hive.ql.exec.repl.util.AddDependencyToLeaves;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -279,6 +291,77 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     return 0;
   }
 
+  /**
+   * Cleanup/drop tables from the given database which are bootstrapped by input dump dir.
+   * @throws HiveException Failed to drop the tables.
+   * @throws IOException File operations failure.
+   * @throws InvalidInputException Invalid input dump directory.
+   */
+  private void cleanTablesFromBootstrap() throws HiveException, IOException, InvalidInputException {
+    Path bootstrapDirectory = new PathBuilder(work.bootstrapDumpToCleanTables)
+            .addDescendant(ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME).build();
+    FileSystem fs = bootstrapDirectory.getFileSystem(conf);
+
+    if (!fs.exists(bootstrapDirectory)) {
+      throw new InvalidInputException("Input bootstrap dump directory specified to clean tables from is invalid: "
+              + bootstrapDirectory);
+    }
+
+    FileStatus[] fileStatuses = fs.listStatus(bootstrapDirectory, EximUtil.getDirectoryFilter(fs));
+    if ((fileStatuses == null) || (fileStatuses.length == 0)) {
+      throw new InvalidInputException("Input bootstrap dump directory specified to clean tables from is empty: "
+              + bootstrapDirectory);
+    }
+
+    if (StringUtils.isNotBlank(work.dbNameToLoadIn) && (fileStatuses.length > 1)) {
+      throw new InvalidInputException("Input bootstrap dump directory specified to clean tables from has multiple"
+              + " DB dirs in the dump: " + bootstrapDirectory
+              + " which is not allowed on single target DB: " + work.dbNameToLoadIn);
+    }
+
+    // Iterate over the DBs and tables listed in the input bootstrap dump directory to clean tables from.
+    BootstrapEventsIterator bootstrapEventsIterator
+            = new BootstrapEventsIterator(bootstrapDirectory.toString(), work.dbNameToLoadIn, false, conf);
+
+    // This map will have only one entry if target database is renamed using input DB name from REPL LOAD.
+    // For multiple DBs case, this map maintains the table names list against each DB.
+    Map<String, List<String>> dbToTblsListMap = new HashMap<>();
+    while (bootstrapEventsIterator.hasNext()) {
+      BootstrapEvent event = bootstrapEventsIterator.next();
+      if (event.eventType().equals(BootstrapEvent.EventType.Table)) {
+        FSTableEvent tableEvent = (FSTableEvent) event;
+        String dbName = (StringUtils.isBlank(work.dbNameToLoadIn) ? tableEvent.getDbName() : work.dbNameToLoadIn);
+        List<String> tableNames;
+        if (dbToTblsListMap.containsKey(dbName)) {
+          tableNames = dbToTblsListMap.get(dbName);
+        } else {
+          tableNames = new ArrayList<>();
+          dbToTblsListMap.put(dbName, tableNames);
+        }
+        tableNames.add(tableEvent.getTableName());
+      }
+    }
+
+    // No tables listed in the given bootstrap dump directory specified to clean tables.
+    if (dbToTblsListMap.isEmpty()) {
+      LOG.info("No DB/tables are listed in the bootstrap dump: {} specified to clean tables.",
+              bootstrapDirectory);
+      return;
+    }
+
+    Hive db = getHive();
+    for (Map.Entry<String, List<String>> dbEntry : dbToTblsListMap.entrySet()) {
+      String dbName = dbEntry.getKey();
+      List<String> tableNames = dbEntry.getValue();
+
+      for (String table : tableNames) {
+        db.dropTable(dbName + "." + table, true);
+      }
+      LOG.info("Tables listed in the Database: {} in the bootstrap dump: {} are cleaned",
+              dbName, bootstrapDirectory);
+    }
+  }
+
   private void createEndReplLogTask(Context context, Scope scope,
                                     ReplLogger replLogger) throws SemanticException {
     Map<String, String> dbProps;
@@ -366,6 +449,12 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
 
   private int executeIncrementalLoad(DriverContext driverContext) {
     try {
+      // If user has requested to cleanup any bootstrap dump, then just do it before incremental load.
+      if (work.needCleanTablesFromBootstrap) {
+        cleanTablesFromBootstrap();
+        work.needCleanTablesFromBootstrap = false;
+      }
+
       IncrementalLoadTasksBuilder builder = work.incrementalLoadTasksBuilder();
 
       // If incremental events are already applied, then check and perform if need to bootstrap any tables.

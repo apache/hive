@@ -63,6 +63,13 @@ public class FSTableEvent implements TableEvent {
     }
   }
 
+  public String getDbName() {
+    return metadata.getTable().getDbName();
+  }
+  public String getTableName() {
+    return metadata.getTable().getTableName();
+  }
+
   public boolean shouldNotReplicate() {
     ReplicationSpec spec = replicationSpec();
     return spec.isNoop() || !spec.isInReplicationScope();
