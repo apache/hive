@@ -133,6 +133,10 @@ public class TestStreaming {
       return NAME;
     }
 
+    @Override
+    public String getScheme() {
+      return "raw";
+    }
 
     @Override
     public FileStatus getFileStatus(Path path) throws IOException {
