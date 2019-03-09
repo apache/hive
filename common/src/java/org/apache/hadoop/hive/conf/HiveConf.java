@@ -1984,6 +1984,9 @@ public class HiveConf extends Configuration {
         " ETL strategy is used when spending little more time in split generation is acceptable" +
         " (split generation reads and caches file footers). HYBRID chooses between the above strategies" +
         " based on heuristics."),
+    HIVE_ORC_BLOB_STORAGE_SPLIT_SIZE("hive.exec.orc.blob.storage.split.size", 128L * 1024 * 1024,
+      "When blob storage is used, BI split strategy does not have block locations for splitting orc files.\n" +
+        "In such cases, split generation will use this config to split orc file"),
     HIVE_ORC_WRITER_LLAP_MEMORY_MANAGER_ENABLED("hive.exec.orc.writer.llap.memory.manager.enabled", true,
       "Whether orc writers should use llap-aware memory manager. LLAP aware memory manager will use memory\n" +
         "per executor instead of entire heap memory when concurrent orc writers are involved. This will let\n" +
