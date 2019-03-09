@@ -33,3 +33,7 @@ select count(*) cs from cbo_t1 where c_int > 1 LIMIT 100;
 -- LIMIT 1
 explain cbo select c_int from (select c_int from cbo_t1 where c_float > 1.0 limit 1) subq  where c_int > 1 order by c_int;
 select c_int from (select c_int from cbo_t1 where c_float > 1.0 limit 1) subq  where c_int > 1 order by c_int;
+
+-- prune un-necessary aggregates
+explain cbo select count(*) from cbo_t1 order by sum(c_int), count(*);
+select count(*) from cbo_t1 order by sum(c_int), count(*);

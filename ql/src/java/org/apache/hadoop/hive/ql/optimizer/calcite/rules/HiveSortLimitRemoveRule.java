@@ -41,7 +41,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
     final HiveSortLimit sortLimit = call.rel(0);
 
     Double maxRowCount = call.getMetadataQuery().getMaxRowCount(sortLimit.getInput());
-    if (maxRowCount <= 1) {
+    if (maxRowCount != null &&(maxRowCount <= 1)) {
       return true;
     }
     return false;
