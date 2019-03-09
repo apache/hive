@@ -1108,9 +1108,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           }
           if (BlobStorageUtils.isBlobStorageFileSystem(conf, fs)) {
             final long splitSize = HiveConf.getLongVar(conf, HiveConf.ConfVars.HIVE_ORC_BLOB_STORAGE_SPLIT_SIZE);
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Blob storage detected for BI split strategy. Splitting files at boundary {}..", splitSize);
-            }
+            LOG.debug("Blob storage detected for BI split strategy. Splitting files at boundary {}..", splitSize);
             long start;
             for (start = 0; start < logicalLen; start = start + splitSize) {
               OrcSplit orcSplit = new OrcSplit(fileStatus.getPath(), fileKey, start,
