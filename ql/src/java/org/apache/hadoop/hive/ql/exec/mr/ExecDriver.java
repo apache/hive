@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
@@ -305,7 +306,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
     if (noName) {
       // This is for a special case to ensure unit tests pass
-      job.set(MRJobConfig.JOB_NAME, "JOB" + Utilities.randGen.nextInt());
+      job.set(MRJobConfig.JOB_NAME,
+          "JOB" + ThreadLocalRandom.current().nextInt());
     }
 
     try{
@@ -802,8 +804,10 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     // working dirs and system dirs
     // Workaround is to rename map red working dir to a temp dir in such cases
     if (hadoopLocalMode) {
-      tempConf.set(hadoopSysDir, hconf.get(hadoopSysDir) + "/" + Utilities.randGen.nextInt());
-      tempConf.set(hadoopWorkDir, hconf.get(hadoopWorkDir) + "/" + Utilities.randGen.nextInt());
+      tempConf.set(hadoopSysDir, hconf.get(hadoopSysDir) + "/"
+          + ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE));
+      tempConf.set(hadoopWorkDir, hconf.get(hadoopWorkDir) + "/"
+          + ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE));
     }
 
     try {
