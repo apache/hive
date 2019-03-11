@@ -22,11 +22,11 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.messaging.UpdateTableColumnStatMessage;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -52,11 +52,11 @@ public class UpdateTableColStatHandler extends AbstractMessageHandler {
                     context.tableName, null);
         }
 
-      // TODO: For txn stats update, ColumnStatsUpdateTask.execute()->Hive
-      // .setPartitionColumnStatistics expects a valid writeId allocated by the current txn and
-      // also, there should be a table snapshot. But, it won't be there as update from
-      // ReplLoadTask which doesn't have a write id allocated. Need to check this further.
-        return Collections.singletonList(TaskFactory.get(new ColumnStatsUpdateWork(colStats),
-                context.hiveConf));
+        try {
+            return ReplUtils.addTasksForLoadingColStats(colStats, context.hiveConf, updatedMetadata,
+                    utcsm.getTableObject(), utcsm.getWriteId());
+        } catch(Exception e) {
+            throw new SemanticException(e);
+        }
     }
 }

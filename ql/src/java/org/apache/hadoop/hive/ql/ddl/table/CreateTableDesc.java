@@ -118,7 +118,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
   List<SQLNotNullConstraint> notNullConstraints;
   List<SQLDefaultConstraint> defaultConstraints;
   List<SQLCheckConstraint> checkConstraints;
-  private ColumnStatistics colStats;
+  private ColumnStatistics colStats;  // For the sake of replication
   private Long initialMmWriteId; // Initial MM write ID for CTAS and import.
   // The FSOP configuration for the FSOP that is going to write initial data during ctas.
   // This is not needed beyond compilation, so it is transient.
@@ -142,7 +142,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
       List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
       List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints,
       List<SQLDefaultConstraint> defaultConstraints, List<SQLCheckConstraint> checkConstraints,
-      ColumnStatistics colStats) {
+      ColumnStatistics colStats, long writeId) {
 
     this(tableName, isExternal, isTemporary, cols, partCols,
         bucketCols, sortCols, numBuckets, fieldDelim, fieldEscape,
@@ -153,6 +153,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
 
     this.databaseName = databaseName;
     this.colStats = colStats;
+    this.replWriteId = writeId;
   }
 
   public CreateTableDesc(String databaseName, String tableName, boolean isExternal, boolean isTemporary,
@@ -174,7 +175,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
         outputFormat, location, serName, storageHandler, serdeProps,
         tblProps, ifNotExists, skewedColNames, skewedColValues,
         primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints,
-       null);
+       null, -1);
     this.partColNames = partColNames;
     this.isCTAS = isCTAS;
   }
@@ -900,14 +901,16 @@ public class CreateTableDesc implements DDLDesc, Serializable {
       colStatsDesc.setDbName(getTableName());
       colStatsDesc.setDbName(getDatabaseName());
       tbl.getTTable().setColStats(new ColumnStatistics(colStatsDesc, colStats.getStatsObj()));
+      // Statistics will have an associated write Id for a transactional table. We need it to
+      // update column statistics.
+      if (replWriteId > 0) {
+        tbl.getTTable().setWriteId(replWriteId);
+      }
     }
 
-    // The statistics for non-transactional tables will be obtained from the source. Do not
-    // reset those on replica.
-    if (replicationSpec != null && replicationSpec.isInReplicationScope() &&
-        !TxnUtils.isTransactionalTable(tbl.getTTable())) {
-      // Do nothing to the table statistics.
-    } else {
+    // When replicating the statistics for a table will be obtained from the source. Do not
+    // reset it on replica.
+    if (replicationSpec == null || !replicationSpec.isInReplicationScope()) {
       if (!this.isCTAS && (tbl.getPath() == null || (tbl.isEmpty() && !isExternal()))) {
         if (!tbl.isPartitioned() && conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
           StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(),

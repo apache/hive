@@ -21,6 +21,8 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
@@ -61,8 +63,13 @@ public class RenameTableHandler extends AbstractMessageHandler {
 
       String oldName = StatsUtils.getFullyQualifiedTableName(oldDbName, tableObjBefore.getTableName());
       String newName = StatsUtils.getFullyQualifiedTableName(newDbName, tableObjAfter.getTableName());
+      ReplicationSpec replicationSpec = context.eventOnlyReplicationSpec();
+      if (ReplUtils.isTableMigratingToTransactional(context.hiveConf, tableObjAfter)) {
+        replicationSpec.setMigratingToTxnTable();
+      }
       AlterTableDesc renameTableDesc = new AlterTableDesc(
-              oldName, newName, false, context.eventOnlyReplicationSpec());
+              oldName, newName, false, replicationSpec);
+      renameTableDesc.setWriteId(msg.getWriteId());
       Task<DDLWork> renameTableTask = TaskFactory.get(
           new DDLWork(readEntitySet, writeEntitySet, renameTableDesc), context.hiveConf);
       context.log.debug("Added rename table task : {}:{}->{}",
@@ -75,7 +82,8 @@ public class RenameTableHandler extends AbstractMessageHandler {
       // Note : edge-case here in interaction with table-level REPL LOAD, where that nukes out
       // tablesUpdated. However, we explicitly don't support repl of that sort, and error out above
       // if so. If that should ever change, this will need reworking.
-      return Collections.singletonList(renameTableTask);
+      return ReplUtils.addOpenTxnTaskForMigration(oldDbName, tableObjBefore.getTableName(),
+              context.hiveConf, updatedMetadata, renameTableTask, tableObjAfter);
     } catch (Exception e) {
       throw (e instanceof SemanticException)
           ? (SemanticException) e

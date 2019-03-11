@@ -127,6 +127,8 @@ public class RenamePartitionDesc extends DDLDesc implements Serializable, DDLDes
     this.writeId = writeId;
   }
 
+  public long getWriteId() { return writeId; }
+
   @Override
   public String getFullTableName() {
     return fqTableName;

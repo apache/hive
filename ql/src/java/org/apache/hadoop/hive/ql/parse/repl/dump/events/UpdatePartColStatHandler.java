@@ -53,12 +53,6 @@ class UpdatePartColStatHandler extends AbstractEventHandler<UpdatePartitionColum
       return;
     }
 
-    // For now we do not dump statistics for a transactional table since replicating the same is
-    // not supported.
-    if (AcidUtils.isTransactionalTable(tableObj)) {
-      return;
-    }
-
     if (!Utils.shouldReplicate(withinContext.replicationSpec, new Table(tableObj), true,
                               withinContext.hiveConf)) {
       return;

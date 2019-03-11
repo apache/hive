@@ -60,6 +60,7 @@ public class AddPartitionDesc extends DDLDesc implements Serializable {
     List<String> bucketCols = null;
     List<Order> sortCols = null;
     ColumnStatistics colStats = null;
+    long writeId = -1;
 
     public Map<String, String> getPartSpec() {
       return partSpec;
@@ -151,6 +152,10 @@ public class AddPartitionDesc extends DDLDesc implements Serializable {
     public ColumnStatistics getColStats() { return colStats; }
 
     public void setColStats(ColumnStatistics colStats) { this.colStats = colStats; }
+
+    public long getWriteId() { return writeId; }
+
+    public void setWriteId(long writeId) { this.writeId = writeId; }
   }
 
   private static final long serialVersionUID = 1L;

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.junit.BeforeClass;
@@ -29,21 +30,25 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Tests statistics replication when statistics are collected using ANALYZE command.
+ * Tests statistics replication for ACID tables.
  */
-public class TestStatsReplicationScenariosNoAutogather extends TestStatsReplicationScenarios {
+public class TestStatsReplicationScenariosMM extends TestStatsReplicationScenarios {
   @Rule
   public final TestName testName = new TestName();
-
-  protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
-  static WarehouseInstance primary;
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
     Map<String, String> overrides = new HashMap<>();
     overrides.put(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
         GzipJSONMessageEncoder.class.getCanonicalName());
+    overrides.put(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "true");
+    overrides.put(HiveConf.ConfVars.HIVE_TXN_MANAGER.varname,
+              "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+    overrides.put(MetastoreConf.ConfVars.CAPABILITY_CHECK.getHiveName(),"false");
+    overrides.put(HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT.varname,"1s");
+    overrides.put(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE.varname, "nonstrict");
 
-    internalBeforeClassSetup(overrides, overrides, TestReplicationScenarios.class, false, null);
+
+    internalBeforeClassSetup(overrides, overrides, TestReplicationScenarios.class, true, "mm");
   }
 }

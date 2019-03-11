@@ -109,16 +109,8 @@ public class TableExport {
           if (replicationSpec.isMetadataOnly()) {
             return null;
           } else {
-            // For transactional tables, we do not replicate statistics right now, so don't
-            // include statistics in Partition object as well.
-            boolean getColStats;
-            if (AcidUtils.isTransactionalTable(tableSpec.tableHandle)) {
-              getColStats = false;
-            } else {
-              getColStats = true;
-            }
             return new PartitionIterable(db, tableSpec.tableHandle, null, conf.getIntVar(
-                HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX), getColStats);
+                HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX), true);
           }
         } else {
           // PARTITIONS specified - partitions inside tableSpec

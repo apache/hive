@@ -46,10 +46,6 @@ class UpdateTableColStatHandler extends AbstractEventHandler<UpdateTableColumnSt
     if (withinContext.replicationSpec.isMetadataOnly()) {
       return;
     }
-    // For now we do not replicate the statistics for transactional tables.
-    if (AcidUtils.isTransactionalTable(qlMdTable)) {
-      return;
-    }
 
     DumpMetaData dmd = withinContext.createDmd(this);
     dmd.setPayload(eventMessageAsJSON);

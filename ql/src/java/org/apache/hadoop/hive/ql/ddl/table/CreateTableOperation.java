@@ -93,27 +93,23 @@ public class CreateTableOperation extends DDLOperation {
 
   private void createTableReplaceMode(Table tbl, boolean replDataLocationChanged) throws HiveException {
     ReplicationSpec replicationSpec = desc.getReplicationSpec();
-    long writeId = 0;
+    Long writeId = 0L;
     EnvironmentContext environmentContext = null;
     if (replicationSpec != null && replicationSpec.isInReplicationScope()) {
       if (replicationSpec.isMigratingToTxnTable()) {
         // for migration we start the transaction and allocate write id in repl txn task for migration.
-        String writeIdPara = context.getConf().get(ReplUtils.REPL_CURRENT_TBL_WRITE_ID);
-        if (writeIdPara == null) {
+        writeId = ReplUtils.getMigrationCurrentTblWriteId(context.getConf());
+        if (writeId == null) {
           throw new HiveException("DDLTask : Write id is not set in the config by open txn task for migration");
         }
-        writeId = Long.parseLong(writeIdPara);
       } else {
         writeId = desc.getReplWriteId();
       }
 
       // In case of replication statistics is obtained from the source, so do not update those
-      // on replica. Since we are not replicating statisics for transactional tables, do not do
-      // so for transactional tables right now.
-      if (!AcidUtils.isTransactionalTable(desc)) {
-        environmentContext = new EnvironmentContext();
-        environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
-      }
+      // on replica.
+      environmentContext = new EnvironmentContext();
+      environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
     }
 
     // In replication flow, if table's data location is changed, then set the corresponding flag in

@@ -18,9 +18,12 @@
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
@@ -44,26 +47,34 @@ public class RenamePartitionHandler extends AbstractMessageHandler {
     Map<String, String> newPartSpec = new LinkedHashMap<>();
     Map<String, String> oldPartSpec = new LinkedHashMap<>();
     String tableName = actualDbName + "." + actualTblName;
+    Table tableObj;
+    ReplicationSpec replicationSpec = context.eventOnlyReplicationSpec();
     try {
       Iterator<String> beforeIterator = msg.getPtnObjBefore().getValuesIterator();
       Iterator<String> afterIterator = msg.getPtnObjAfter().getValuesIterator();
-      for (FieldSchema fs : msg.getTableObj().getPartitionKeys()) {
+      tableObj = msg.getTableObj();
+      for (FieldSchema fs : tableObj.getPartitionKeys()) {
         oldPartSpec.put(fs.getName(), beforeIterator.next());
         newPartSpec.put(fs.getName(), afterIterator.next());
       }
+      if (ReplUtils.isTableMigratingToTransactional(context.hiveConf, tableObj)) {
+        replicationSpec.setMigratingToTxnTable();
+      }
+
+      RenamePartitionDesc renamePtnDesc = new RenamePartitionDesc(
+              tableName, oldPartSpec, newPartSpec, replicationSpec, null);
+      renamePtnDesc.setWriteId(msg.getWriteId());
+      Task<DDLWork> renamePtnTask = TaskFactory.get(
+          new DDLWork(readEntitySet, writeEntitySet, renamePtnDesc), context.hiveConf);
+      context.log.debug("Added rename ptn task : {}:{}->{}",
+                        renamePtnTask.getId(), oldPartSpec, newPartSpec);
+      updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, newPartSpec);
+      return ReplUtils.addOpenTxnTaskForMigration(actualDbName, actualTblName,
+              context.hiveConf, updatedMetadata, renamePtnTask, tableObj);
     } catch (Exception e) {
       throw (e instanceof SemanticException)
-          ? (SemanticException) e
-          : new SemanticException("Error reading message members", e);
+              ? (SemanticException) e
+              : new SemanticException("Error reading message members", e);
     }
-
-    RenamePartitionDesc renamePtnDesc = new RenamePartitionDesc(
-            tableName, oldPartSpec, newPartSpec, context.eventOnlyReplicationSpec(), null);
-    Task<DDLWork> renamePtnTask = TaskFactory.get(
-        new DDLWork(readEntitySet, writeEntitySet, renamePtnDesc), context.hiveConf);
-    context.log.debug("Added rename ptn task : {}:{}->{}",
-                      renamePtnTask.getId(), oldPartSpec, newPartSpec);
-    updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, newPartSpec);
-    return Collections.singletonList(renamePtnTask);
   }
 }
