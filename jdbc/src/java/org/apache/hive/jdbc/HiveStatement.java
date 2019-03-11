@@ -1007,8 +1007,17 @@ public class HiveStatement implements java.sql.Statement {
     this.inPlaceUpdateStream = stream;
   }
 
-  @VisibleForTesting
+  /**
+   * Returns the Query ID if it is running.
+   * This method is a public API for usage outside of Hive, although it is not part of the
+   * interface java.sql.Statement.
+   * @return Valid query ID if it is running else returns NULL.
+   * @throws SQLException If any internal failures.
+   */
   public String getQueryId() throws SQLException {
+    if (stmtHandle == null) {
+      return null;
+    }
     try {
       return client.GetQueryId(new TGetQueryIdReq(stmtHandle)).getQueryId();
     } catch (TException e) {
