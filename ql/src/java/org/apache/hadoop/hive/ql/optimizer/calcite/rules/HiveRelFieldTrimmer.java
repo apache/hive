@@ -322,7 +322,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
   }
 
 
-  private class TableRefFinder extends RexVisitorImpl<Void> {
+  private static class TableRefFinder extends RexVisitorImpl<Void> {
     private Set<RexTableInputRef> tableRefs = null;
     TableRefFinder() {
       super(true);
