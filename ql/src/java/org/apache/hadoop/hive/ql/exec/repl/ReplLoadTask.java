@@ -130,7 +130,16 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       if (!iterator.hasNext() && constraintIterator.hasNext()) {
         loadingConstraint = true;
       }
-      while ((iterator.hasNext() || (loadingConstraint && constraintIterator.hasNext())) && loadTaskTracker.canAddMoreTasks()) {
+      while ((iterator.hasNext() || (loadingConstraint && constraintIterator.hasNext()) ||
+              (work.getPathsToCopyIterator().hasNext())) && loadTaskTracker.canAddMoreTasks()) {
+        // First start the distcp tasks to copy the files related to external table. The distcp tasks should be
+        // started first to avoid ddl task trying to create table/partition directory. Distcp task creates these
+        // directory with proper permission and owner.
+        if (work.getPathsToCopyIterator().hasNext()) {
+          scope.rootTasks.addAll(new ExternalTableCopyTaskBuilder(work, conf).tasks(loadTaskTracker));
+          break;
+        }
+
         BootstrapEvent next;
         if (!loadingConstraint) {
           next = iterator.next();
@@ -249,10 +258,6 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         }
       }
 
-      if (loadTaskTracker.canAddMoreTasks()) {
-        scope.rootTasks.addAll(new ExternalTableCopyTaskBuilder(work, conf).tasks(loadTaskTracker));
-      }
-
       boolean addAnotherLoadTask = iterator.hasNext()
           || loadTaskTracker.hasReplicationState()
           || constraintIterator.hasNext()
@@ -265,7 +270,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       // Update last repl ID of the database only if the current dump is not incremental. If bootstrap
       // is combined with incremental dump, it contains only tables to bootstrap. So, needn't change
       // last repl ID of the database.
-      if (!iterator.hasNext() && !constraintIterator.hasNext() && !work.isIncrementalLoad()) {
+      if (!iterator.hasNext() && !constraintIterator.hasNext() && !work.getPathsToCopyIterator().hasNext()
+              && !work.isIncrementalLoad()) {
         loadTaskTracker.update(updateDatabaseLastReplID(maxTasks, context, scope));
         work.updateDbEventState(null);
       }
@@ -470,34 +476,17 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       }
 
       List<Task<? extends Serializable>> childTasks = new ArrayList<>();
-      int parallelism = conf.getIntVar(HiveConf.ConfVars.EXECPARALLETHREADNUMBER);
-      // during incremental we will have no parallelism from replication tasks since they are event based
-      // and hence are linear. To achieve parallelism we have to use copy tasks(which have no DAG) for
-      // all threads except one, in execution phase.
       int maxTasks = conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS);
 
-      // If the total number of tasks that can be created are less than the parallelism we can achieve
-      // do nothing since someone is working on 1950's machine. else try to achieve max parallelism
-      int calculatedMaxNumOfTasks = 0, maxNumOfHDFSTasks = 0;
-      if (maxTasks <= parallelism) {
-        if (builder.hasMoreWork()) {
-          calculatedMaxNumOfTasks = maxTasks;
-        } else {
-          maxNumOfHDFSTasks = maxTasks;
-        }
+      // First start the distcp tasks to copy the files related to external table. The distcp tasks should be
+      // started first to avoid ddl task trying to create table/partition directory. Distcp task creates these
+      // directory with proper permission and owner.
+      TaskTracker tracker = new TaskTracker(maxTasks);
+      if (work.getPathsToCopyIterator().hasNext()) {
+        childTasks.addAll(new ExternalTableCopyTaskBuilder(work, conf).tasks(tracker));
       } else {
-        calculatedMaxNumOfTasks = maxTasks - parallelism + 1;
-        maxNumOfHDFSTasks = parallelism - 1;
+        childTasks.add(builder.build(driverContext, getHive(), LOG, tracker));
       }
-      TaskTracker trackerForReplIncremental = new TaskTracker(calculatedMaxNumOfTasks);
-      Task<? extends Serializable> incrementalLoadTaskRoot =
-              builder.build(driverContext, getHive(), LOG, trackerForReplIncremental);
-      // we are adding the incremental task first so that its always processed first,
-      // followed by dir copy tasks if capacity allows.
-      childTasks.add(incrementalLoadTaskRoot);
-
-      TaskTracker trackerForCopy = new TaskTracker(maxNumOfHDFSTasks);
-      childTasks.addAll(new ExternalTableCopyTaskBuilder(work, conf).tasks(trackerForCopy));
 
       // Either the incremental has more work or the external table file copy has more paths to process.
       // Once all the incremental events are applied and external tables file copies are done, enable

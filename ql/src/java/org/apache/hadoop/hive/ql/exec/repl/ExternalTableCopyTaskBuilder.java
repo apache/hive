@@ -33,8 +33,13 @@ import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import java.security.PrivilegedExceptionAction;
 
 import java.io.Serializable;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,6 +73,83 @@ public class ExternalTableCopyTaskBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(DirCopyTask.class);
     private static final int MAX_COPY_RETRY = 5;
 
+    private boolean createAndSetPathOwner(Path destPath, Path sourcePath) throws IOException {
+      FileSystem targetFs = destPath.getFileSystem(conf);
+      boolean createdDir = false;
+      if (!targetFs.exists(destPath)) {
+        // target path is created even if the source path is missing, so that ddl task does not try to create it.
+        if (!targetFs.mkdirs(destPath)) {
+          throw new IOException(destPath + " is not a directory or unable to create one");
+        }
+        createdDir = true;
+      }
+
+      FileStatus status;
+      try {
+        status = sourcePath.getFileSystem(conf).getFileStatus(sourcePath);
+      } catch (FileNotFoundException e) {
+        // Don't delete target path created else ddl task will try to create it using user hive and may fail.
+        LOG.warn("source path missing " + sourcePath);
+        return false;
+      }
+      LOG.info("Setting permission for path dest {} from source {} owner {} : {} : {}",
+              destPath, sourcePath, status.getOwner(), status.getGroup(), status.getPermission());
+      destPath.getFileSystem(conf).setOwner(destPath, status.getOwner(), status.getGroup());
+      destPath.getFileSystem(conf).setPermission(destPath, status.getPermission());
+      return createdDir;
+    }
+
+    private boolean setTargetPathOwner(Path targetPath, Path sourcePath, String distCpDoAsUser)
+            throws IOException {
+      if (distCpDoAsUser == null) {
+        return createAndSetPathOwner(targetPath, sourcePath);
+      }
+      UserGroupInformation proxyUser = UserGroupInformation.createProxyUser(
+              distCpDoAsUser, UserGroupInformation.getLoginUser());
+      try {
+        Path finalTargetPath = targetPath;
+        Path finalSourcePath = sourcePath;
+        return proxyUser.doAs((PrivilegedExceptionAction<Boolean>) () ->
+                createAndSetPathOwner(finalTargetPath, finalSourcePath));
+      } catch (InterruptedException e) {
+        throw new IOException(e);
+      }
+    }
+
+    private int handleException(Exception e, Path sourcePath, Path targetPath, int currentRetry) {
+      try {
+        if (!sourcePath.getFileSystem(conf).exists(sourcePath)) {
+          LOG.warn("Source path missing " + sourcePath, e);
+          return 0;
+        }
+      } catch (Exception ex) {
+        LOG.warn("Source path missing check failed" + sourcePath, ex);
+      }
+
+      if (currentRetry <= MAX_COPY_RETRY) {
+        LOG.warn("unable to copy {} to {}", sourcePath, targetPath, e);
+      } else {
+        LOG.error("unable to copy {} to {}", sourcePath, targetPath, e);
+        setException(e);
+        return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+      }
+
+      int sleepTime = FileUtils.getSleepTime(currentRetry);
+      LOG.info("Sleep for " + sleepTime + " milliseconds before retry " + (currentRetry));
+      try {
+        Thread.sleep(sleepTime);
+      } catch (InterruptedException timerEx) {
+        LOG.info("sleep interrupted", timerEx.getMessage());
+      }
+
+      try {
+        FileSystem.closeAllForUGI(Utils.getUGI());
+      } catch (Exception ex) {
+        LOG.error("unable to closeAllForUGI", ex);
+      }
+      return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+    }
+
     @Override
     protected int execute(DriverContext driverContext) {
       String distCpDoAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
@@ -79,12 +161,15 @@ public class ExternalTableCopyTaskBuilder {
         targetPath = reservedRawPath(work.fullyQualifiedTargetPath.toUri());
       }
       int currentRetry = 0;
-      while (currentRetry < MAX_COPY_RETRY) {
+      int error = 0;
+      while (currentRetry <= MAX_COPY_RETRY) {
         try {
           UserGroupInformation ugi = Utils.getUGI();
           String currentUser = ugi.getShortUserName();
           boolean usePrivilegedUser =
               distCpDoAsUser != null && !currentUser.equals(distCpDoAsUser);
+
+          setTargetPathOwner(targetPath, sourcePath, usePrivilegedUser ? distCpDoAsUser : null);
 
           // do we create a new conf and only here provide this additional option so that we get away from
           // differences of data in two location for the same directories ?
@@ -99,17 +184,14 @@ public class ExternalTableCopyTaskBuilder {
               ShimLoader.getHadoopShims());
           return 0;
         } catch (Exception e) {
-          if (++currentRetry < MAX_COPY_RETRY) {
-            LOG.warn("unable to copy", e);
-          } else {
-            LOG.error("unable to copy {} to {}", sourcePath, targetPath, e);
-            setException(e);
-            return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+          currentRetry++;
+          error = handleException(e, sourcePath, targetPath, currentRetry);
+          if (error == 0) {
+            return 0;
           }
         }
       }
-      LOG.error("should never come here ");
-      return -1;
+      return error;
     }
 
     private static Path reservedRawPath(URI uri) {
@@ -119,12 +201,17 @@ public class ExternalTableCopyTaskBuilder {
 
     @Override
     public StageType getType() {
-      return StageType.REPL_INCREMENTAL_LOAD;
+      return StageType.COPY;
     }
 
     @Override
     public String getName() {
       return "DIR_COPY_TASK";
+    }
+
+    @Override
+    public boolean canExecuteInParallel(){
+      return true;
     }
   }
 
