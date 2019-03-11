@@ -47,7 +47,6 @@ public class PartExprEvalUtils {
    * Evaluate expression with partition columns
    *
    * @param expr
-   * @param partSpec
    * @param rowObjectInspector
    * @return value returned by the expression
    * @throws HiveException

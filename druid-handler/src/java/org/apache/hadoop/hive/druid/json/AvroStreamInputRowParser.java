@@ -20,9 +20,9 @@ package org.apache.hadoop.hive.druid.json;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
-import io.druid.data.input.ByteBufferInputRowParser;
-import io.druid.data.input.InputRow;
-import io.druid.data.input.impl.ParseSpec;
+import org.apache.druid.data.input.ByteBufferInputRowParser;
+import org.apache.druid.data.input.InputRow;
+import org.apache.druid.data.input.impl.ParseSpec;
 
 import javax.validation.constraints.NotNull;
 import java.nio.ByteBuffer;

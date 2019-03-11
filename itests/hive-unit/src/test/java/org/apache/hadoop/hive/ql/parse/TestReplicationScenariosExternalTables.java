@@ -22,8 +22,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
+import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
+import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArguments;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -37,6 +41,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -44,9 +49,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.FILE_NAME;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME;
+import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -532,6 +539,138 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .verifyResults(Arrays.asList("10", "20"))
             .run("select id from t4 order by id")
             .verifyResults(Arrays.asList("10", "20"));
+  }
+
+  @Test
+  public void retryBootstrapExternalTablesFromDifferentDump() throws Throwable {
+    List<String> loadWithClause = new ArrayList<>();
+    loadWithClause.addAll(externalTableBasePathWithClause());
+
+    List<String> dumpWithClause = Collections.singletonList(
+            "'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'"
+    );
+
+    WarehouseInstance.Tuple tupleBootstrapWithoutExternal = primary
+            .run("use " + primaryDbName)
+            .run("create external table t1 (id int)")
+            .run("insert into table t1 values (1)")
+            .run("create external table t2 (place string) partitioned by (country string)")
+            .run("insert into table t2 partition(country='india') values ('bangalore')")
+            .run("insert into table t2 partition(country='us') values ('austin')")
+            .run("create table t3 as select * from t1")
+            .dump(primaryDbName, null, dumpWithClause);
+
+    replica.load(replicatedDbName, tupleBootstrapWithoutExternal.dumpLocation, loadWithClause)
+            .status(replicatedDbName)
+            .verifyResult(tupleBootstrapWithoutExternal.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResult("t3")
+            .run("select id from t3")
+            .verifyResult("1");
+
+    dumpWithClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
+            "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'");
+    WarehouseInstance.Tuple tupleIncWithExternalBootstrap = primary.run("use " + primaryDbName)
+            .run("drop table t1")
+            .run("create external table t4 (id int)")
+            .run("insert into table t4 values (10)")
+            .run("create table t5 as select * from t4")
+            .dump(primaryDbName, tupleBootstrapWithoutExternal.lastReplicationId, dumpWithClause);
+
+    // Fail setting ckpt property for table t4 but success for t2.
+    BehaviourInjection<CallerArguments, Boolean> callerVerifier
+            = new BehaviourInjection<CallerArguments, Boolean>() {
+      @Nullable
+      @Override
+      public Boolean apply(@Nullable CallerArguments args) {
+        if (args.tblName.equalsIgnoreCase("t4") && args.dbName.equalsIgnoreCase(replicatedDbName)) {
+          injectionPathCalled = true;
+          LOG.warn("Verifier - DB : " + args.dbName + " TABLE : " + args.tblName);
+          return false;
+        }
+        return true;
+      }
+    };
+
+    // Fail repl load before the ckpt property is set for t4 and after it is set for t2.
+    // In the retry, these half baked tables should be dropped and bootstrap should be successful.
+    InjectableBehaviourObjectStore.setAlterTableModifier(callerVerifier);
+    try {
+      replica.loadFailure(replicatedDbName, tupleIncWithExternalBootstrap.dumpLocation, loadWithClause);
+      callerVerifier.assertInjectionsPerformed(true, false);
+    } finally {
+      InjectableBehaviourObjectStore.resetAlterTableModifier();
+    }
+
+    // Insert into existing external table and then Drop it, add another managed table with same name
+    // and dump another bootstrap dump for external tables.
+    WarehouseInstance.Tuple tupleNewIncWithExternalBootstrap = primary.run("use " + primaryDbName)
+            .run("insert into table t2 partition(country='india') values ('chennai')")
+            .run("drop table t2")
+            .run("create table t2 as select * from t4")
+            .run("insert into table t4 values (20)")
+            .dump(primaryDbName, tupleIncWithExternalBootstrap.lastReplicationId, dumpWithClause);
+
+    // Set incorrect bootstrap dump to clean tables. Here, used the full bootstrap dump which is invalid.
+    // So, REPL LOAD fails.
+    loadWithClause.add("'" + REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG + "'='"
+            + tupleBootstrapWithoutExternal.dumpLocation + "'");
+    replica.loadFailure(replicatedDbName, tupleNewIncWithExternalBootstrap.dumpLocation, loadWithClause);
+    loadWithClause.remove("'" + REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG + "'='"
+            + tupleBootstrapWithoutExternal.dumpLocation + "'");
+
+    // Set previously failed bootstrap dump to clean-up. Now, new bootstrap should overwrite the old one.
+    loadWithClause.add("'" + REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG + "'='"
+            + tupleIncWithExternalBootstrap.dumpLocation + "'");
+
+    // Verify if bootstrapping with same dump is idempotent and return same result
+    for (int i = 0; i < 2; i++) {
+      replica.load(replicatedDbName, tupleNewIncWithExternalBootstrap.dumpLocation, loadWithClause)
+              .run("use " + replicatedDbName)
+              .run("show tables like 't1'")
+              .verifyFailure(new String[]{"t1"})
+              .run("select id from t2")
+              .verifyResult("10")
+              .run("select id from t4")
+              .verifyResults(Arrays.asList("10", "20"))
+              .run("select id from t5")
+              .verifyResult("10");
+
+      // Once the REPL LOAD is successful, the this config should be unset or else, the subsequent REPL LOAD
+      // will also drop those tables which will cause data loss.
+      loadWithClause.remove("'" + REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG + "'='"
+              + tupleIncWithExternalBootstrap.dumpLocation + "'");
+    }
+  }
+
+  @Test
+  public void retryIncBootstrapExternalTablesFromDifferentDumpWithoutCleanTablesConfig() throws Throwable {
+    List<String> dumpWithClause = Collections.singletonList(
+            "'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'"
+    );
+    List<String> loadWithClause = externalTableBasePathWithClause();
+
+    WarehouseInstance.Tuple tupleBootstrapWithoutExternal = primary
+            .dump(primaryDbName, null, dumpWithClause);
+
+    replica.load(replicatedDbName, tupleBootstrapWithoutExternal.dumpLocation, loadWithClause);
+
+    dumpWithClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
+            "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'");
+    WarehouseInstance.Tuple tupleIncWithExternalBootstrap = primary.run("use " + primaryDbName)
+            .run("create external table t1 (id int)")
+            .run("insert into table t1 values (1)")
+            .run("create table t2 as select * from t1")
+            .dump(primaryDbName, tupleBootstrapWithoutExternal.lastReplicationId, dumpWithClause);
+    WarehouseInstance.Tuple tupleNewIncWithExternalBootstrap
+            = primary.dump(primaryDbName, tupleBootstrapWithoutExternal.lastReplicationId, dumpWithClause);
+
+    replica.load(replicatedDbName, tupleIncWithExternalBootstrap.dumpLocation, loadWithClause);
+
+    // Re-bootstrapping from different bootstrap dump without clean tables config should fail.
+    replica.loadFailure(replicatedDbName, tupleNewIncWithExternalBootstrap.dumpLocation, loadWithClause,
+            ErrorMsg.REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID.getErrorCode());
   }
 
   private List<String> externalTableBasePathWithClause() throws IOException, SemanticException {

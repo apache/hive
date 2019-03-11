@@ -54,7 +54,7 @@ import org.apache.hadoop.hive.ql.plan.LimitDesc;
  * If RS is only for limiting rows, RSHash counts row with same key separately.
  * But if RS is for GBY, RSHash should forward all the rows with the same key.
  *
- * Legend : A(a) --> key A, value a, row A(a)
+ * Legend : A(a) --&gt; key A, value a, row A(a)
  *
  * If each RS in mapper tasks is forwarded rows like this
  *

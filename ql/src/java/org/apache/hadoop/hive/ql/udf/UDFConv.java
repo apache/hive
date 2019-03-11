@@ -139,7 +139,7 @@ public class UDFConv extends UDF {
   }
 
   /**
-   * Convert numbers between different number bases. If toBase>0 the result is
+   * Convert numbers between different number bases. If toBase&gt;0 the result is
    * unsigned, otherwise it is signed.
    *
    */

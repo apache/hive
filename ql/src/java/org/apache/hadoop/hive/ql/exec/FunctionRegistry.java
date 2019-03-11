@@ -726,8 +726,8 @@ public final class FunctionRegistry {
    * return a TypeInfo corresponding to the common PrimitiveCategory, and with type qualifiers
    * (if applicable) that match the 2 TypeInfo types.
    * Examples:
-   *   varchar(10), varchar(20), primitive category varchar => varchar(20)
-   *   date, string, primitive category string => string
+   *   varchar(10), varchar(20), primitive category varchar =&gt; varchar(20)
+   *   date, string, primitive category string =&gt; string
    * @param a  TypeInfo of the first type
    * @param b  TypeInfo of the second type
    * @param typeCategory PrimitiveCategory of the designated common type between a and b
@@ -1382,7 +1382,6 @@ public final class FunctionRegistry {
   /**
    * A shortcut to get the "index" GenericUDF. This is used for getting elements
    * out of array and getting values out of map.
-   * @throws SemanticException
    */
   public static GenericUDF getGenericUDFForIndex() {
     try {
@@ -1394,7 +1393,6 @@ public final class FunctionRegistry {
 
   /**
    * A shortcut to get the "and" GenericUDF.
-   * @throws SemanticException
    */
   public static GenericUDF getGenericUDFForAnd() {
     try {

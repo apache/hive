@@ -66,6 +66,10 @@ public class ReplUtils {
   // tasks.
   public static final String REPL_CURRENT_TBL_WRITE_ID = "hive.repl.current.table.write.id";
 
+  // Configuration to be received via WITH clause of REPL LOAD to clean tables from any previously failed
+  // bootstrap load.
+  public static final String REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG = "hive.repl.clean.tables.from.bootstrap";
+
   public static final String FUNCTIONS_ROOT_DIR_NAME = "_functions";
   public static final String CONSTRAINTS_ROOT_DIR_NAME = "_constraints";
 

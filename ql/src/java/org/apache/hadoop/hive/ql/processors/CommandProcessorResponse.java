@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
  * <code>CommandProcessor</code> interface. Typically <code>errorMessage</code>
  * and <code>SQLState</code> will only be set if the <code>responseCode</code>
  * is not 0.  Note that often {@code responseCode} ends up the exit value of
- * command shell process so should keep it to < 127.
+ * command shell process so should keep it to &lt; 127.
  */
 public class CommandProcessorResponse extends Exception {
   private final int responseCode;

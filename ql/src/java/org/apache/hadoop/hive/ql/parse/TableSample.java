@@ -120,7 +120,7 @@ public class TableSample {
   /**
    * Gets the ON part's expression list.
    * 
-   * @return ArrayList<ASTNode>
+   * @return ArrayList&lt;ASTNode&gt;
    */
   public ArrayList<ASTNode> getExprs() {
     return exprs;

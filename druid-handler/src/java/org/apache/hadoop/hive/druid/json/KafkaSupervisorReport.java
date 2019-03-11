@@ -17,19 +17,17 @@
  */
 package org.apache.hadoop.hive.druid.json;
 
-import io.druid.indexing.overlord.supervisor.SupervisorReport;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
-
+import org.apache.druid.indexing.overlord.supervisor.SupervisorReport;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.Nullable;
+import java.util.Objects;
 
 /**
  * This class is copied from druid source code
@@ -149,7 +147,7 @@ public class KafkaSupervisorReport extends SupervisorReport {
   @JsonCreator public KafkaSupervisorReport(@JsonProperty("id") String id,
       @JsonProperty("generationTime") DateTime generationTime,
       @JsonProperty("payload") KafkaSupervisorReportPayload payload) {
-    super(id, generationTime);
+    super(id, generationTime, payload);
     this.payload = payload;
   }
 
@@ -182,5 +180,23 @@ public class KafkaSupervisorReport extends SupervisorReport {
 
   @Override public String toString() {
     return "{" + "id='" + getId() + '\'' + ", generationTime=" + getGenerationTime() + ", payload=" + payload + '}';
+  }
+
+  @Override public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    if (!super.equals(o)) {
+      return false;
+    }
+    KafkaSupervisorReport that = (KafkaSupervisorReport) o;
+    return Objects.equals(payload, that.payload);
+  }
+
+  @Override public int hashCode() {
+    return Objects.hash(super.hashCode(), payload);
   }
 }

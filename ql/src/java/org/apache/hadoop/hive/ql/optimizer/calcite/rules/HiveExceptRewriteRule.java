@@ -68,8 +68,8 @@ import com.google.common.collect.Lists;
  * have m+n=a, 2m+n=b where m is the #row in R1 and n is the #row in R2 then
  * m=b-a, n=2a-b, m-n=2b-3a
  * if it is except (distinct)
- * then R5 = Fil (b-a>0 && 2a-b=0) R6 = select only keys from R5
- * else R5 = Fil (2b-3a>0) R6 = UDTF (R5) which will explode the tuples based on 2b-3a.
+ * then R5 = Fil (b-a&gt;0 &amp;&amp; 2a-b=0) R6 = select only keys from R5
+ * else R5 = Fil (2b-3a&gt; 0) R6 = UDTF (R5) which will explode the tuples based on 2b-3a.
  * Note that NULLs are handled the same as other values. Please refer to the test cases.
  */
 public class HiveExceptRewriteRule extends RelOptRule {

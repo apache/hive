@@ -4699,6 +4699,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         oldview.setOutputFormatClass(crtView.getOutputFormat());
       }
       oldview.checkValidity(null);
+      if (crtView.getOwnerName() != null) {
+        oldview.setOwner(crtView.getOwnerName());
+      }
       db.alterTable(crtView.getViewName(), oldview, false, null, true);
       addIfAbsentByName(new WriteEntity(oldview, WriteEntity.WriteType.DDL_NO_LOCK));
     } else {
@@ -4805,10 +4808,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    *
    * @param databaseName
    *          Database name.
-   * @param sd
-   *          Storage descriptor.
-   * @param name
-   *          Object name.
    */
   public static void makeLocationQualified(String databaseName, Table table, HiveConf conf) throws HiveException {
     Path path = null;

@@ -31,9 +31,6 @@ public interface StatsAggregator {
   /**
    * This method connects to the temporary storage.
    *
-   * @param hconf
-   *          HiveConf that contains the connection parameters.
-   * @param sourceTask
    * @return true if connection is successful, false otherwise.
    */
   public boolean connect(StatsCollectionContext scc);

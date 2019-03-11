@@ -76,7 +76,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprVarCharScalarStri
 
 /**
  * IF(expr1,expr2,expr3) <br>
- * If expr1 is TRUE (expr1 <> 0 and expr1 <> NULL) then IF() returns expr2;
+ * If expr1 is TRUE (expr1 &lt;&gt; 0 and expr1 &lt;&gt; NULL) then IF() returns expr2;
  * otherwise it returns expr3. IF() returns a numeric or string value, depending
  * on the context in which it is used.
  */

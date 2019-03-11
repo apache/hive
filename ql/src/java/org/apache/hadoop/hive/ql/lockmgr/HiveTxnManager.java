@@ -177,7 +177,7 @@ public interface HiveTxnManager {
    * {@link ValidTxnWriteIdList} object can be passed as string to the processing
    * tasks for use in the reading the data.  This call will return same results as long as validTxnString
    * passed is same.
-   * @param tableList list of tables (<db_name>.<table_name>) read/written by current transaction.
+   * @param tableList list of tables (&lt;db_name&gt;.&lt;table_name&gt;) read/written by current transaction.
    * @param validTxnList snapshot of valid txns for the current txn
    * @return list of valid table write Ids.
    * @throws LockException
