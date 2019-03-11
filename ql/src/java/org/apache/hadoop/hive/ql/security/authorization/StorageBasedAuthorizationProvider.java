@@ -26,7 +26,10 @@ import java.util.List;
 
 import javax.security.auth.login.LoginException;
 
+import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -152,6 +155,20 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     }
 
     authorize(path, readRequiredPriv, writeRequiredPriv);
+  }
+
+  private static boolean userHasProxyPrivilege(String user, Configuration conf) {
+    try {
+      if (MetaStoreServerUtils.checkUserHasHostProxyPrivileges(user, conf,
+              HiveMetaStore.HMSHandler.getIPAddress())) {
+        LOG.info("user {} has host proxy privilege.", user);
+        return true;
+      }
+    } catch (Exception ex) {
+      // if can not decide on the proxy privilege status, then proceed with authorization check.
+      LOG.warn("Cannot obtain username to check for host proxy privilege", ex);
+    }
+    return false;
   }
 
   @Override
@@ -364,6 +381,11 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
 
     if (path == null) {
       throw new IllegalArgumentException("path is null");
+    }
+
+    if (userHasProxyPrivilege(authenticator.getUserName(), conf)) {
+      LOG.info("Path authorization is skipped for path {}.", path);
+      return;
     }
 
     final FileSystem fs = path.getFileSystem(conf);

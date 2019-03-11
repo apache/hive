@@ -358,7 +358,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       auditLog.info("ugi={}	ip={}	cmd={}	", ugi.getUserName(), address, cmd);
     }
 
-    private static String getIPAddress() {
+    public static String getIPAddress() {
       if (useSasl) {
         if (saslServer != null && saslServer.getRemoteAddress() != null) {
           return saslServer.getRemoteAddress().getHostAddress();

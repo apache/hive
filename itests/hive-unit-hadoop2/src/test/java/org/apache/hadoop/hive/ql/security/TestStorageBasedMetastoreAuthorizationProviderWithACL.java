@@ -49,7 +49,12 @@ public class TestStorageBasedMetastoreAuthorizationProviderWithACL
   protected static Path warehouseDir = null;
   protected UserGroupInformation userUgi = null;
   protected String testUserName = "test_user";
+  protected String proxyUserName = null;
 
+  @Override
+  protected String getProxyUserName() {
+    return proxyUserName;
+  }
 
   @Override
   protected boolean isTestEnabled() {
@@ -74,10 +79,10 @@ public class TestStorageBasedMetastoreAuthorizationProviderWithACL
 
     // Hadoop FS ACLs do not work with LocalFileSystem, so set up MiniDFS.
     HiveConf conf = super.createHiveConf();
-    String currentUserName = Utils.getUGI().getShortUserName();
+    proxyUserName = Utils.getUGI().getShortUserName();
     conf.set("dfs.namenode.acls.enabled", "true");
-    conf.set("hadoop.proxyuser." + currentUserName + ".groups", "*");
-    conf.set("hadoop.proxyuser." + currentUserName + ".hosts", "*");
+    conf.set("hadoop.proxyuser." + proxyUserName + ".groups", "*");
+    conf.set("hadoop.proxyuser." + proxyUserName + ".hosts", "*");
     dfs = ShimLoader.getHadoopShims().getMiniDfs(conf, 4, true, null);
     FileSystem fs = dfs.getFileSystem();
 
