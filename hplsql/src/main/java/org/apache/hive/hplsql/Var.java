@@ -273,6 +273,12 @@ public class Var {
     else if (type == java.sql.Types.FLOAT || type == java.sql.Types.DOUBLE) {
       cast(new Var(Double.valueOf(rs.getDouble(idx))));
     }
+    else if (type == java.sql.Types.DATE ) {
+      cast(new Var(rs.getDate(idx)));
+    }
+    else if (type == java.sql.Types.TIMESTAMP ) {
+      cast(new Var(rs.getTimestamp(idx), rsm.getScale(idx)));
+    }
     return this;
   }
   

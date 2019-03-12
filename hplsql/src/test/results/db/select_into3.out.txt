@@ -1,0 +1,16 @@
+Ln:1 DECLARE v_date date
+Ln:2 DECLARE v_timestamp timestamp
+Ln:4 SELECT
+Ln:4 select
+  cast('2019-02-20 12:23:45.678' as date), cast('2019-02-20 12:23:45.678' as timestamp)
+from src LIMIT 1
+Ln:4 SELECT completed successfully
+Ln:4 SELECT INTO statement executed
+Ln:4 COLUMN: ?column?, Date
+Ln:4 SET v_date = 2019-02-20
+Ln:4 COLUMN: ?column?, Timestamp
+Ln:4 SET v_timestamp = 2019-02-20 12:23:45.678
+Ln:12 PRINT
+date: 2019-02-20
+Ln:13 PRINT
+timestamp: 2019-02-20 12:23:45.678
