@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
  * a {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit}.
  * Note that this is different from HiveSortRemoveRule because this is not based on statistics
  */
- public class HiveSortLimitRemoveRule extends RelOptRule {
+public final class HiveSortLimitRemoveRule extends RelOptRule {
 
   public static final HiveSortLimitRemoveRule INSTANCE =
       new HiveSortLimitRemoveRule();
