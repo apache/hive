@@ -18,8 +18,8 @@
 
 package org.apache.hive.jdbc;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hive.jdbc.logs.InPlaceUpdateStream;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
@@ -37,7 +37,6 @@ import org.apache.hive.service.rpc.thrift.TGetOperationStatusReq;
 import org.apache.hive.service.rpc.thrift.TGetOperationStatusResp;
 import org.apache.hive.service.rpc.thrift.TGetQueryIdReq;
 import org.apache.hive.service.rpc.thrift.TOperationHandle;
-import org.apache.hive.service.rpc.thrift.TOperationState;
 import org.apache.hive.service.rpc.thrift.TSessionHandle;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -1007,12 +1006,26 @@ public class HiveStatement implements java.sql.Statement {
     this.inPlaceUpdateStream = stream;
   }
 
-  @VisibleForTesting
+  /**
+   * Returns the Query ID if it is running.
+   * This method is a public API for usage outside of Hive, although it is not part of the
+   * interface java.sql.Statement.
+   * @return Valid query ID if it is running else returns NULL.
+   * @throws SQLException If any internal failures.
+   */
+  @LimitedPrivate(value={"Hive and closely related projects."})
   public String getQueryId() throws SQLException {
+    if (stmtHandle == null) {
+      // If query is not running or already closed.
+      return null;
+    }
     try {
       return client.GetQueryId(new TGetQueryIdReq(stmtHandle)).getQueryId();
     } catch (TException e) {
       throw new SQLException(e);
+    } catch (Exception e) {
+      // If concurrently the query is closed before we fetch queryID.
+      return null;
     }
   }
 }
