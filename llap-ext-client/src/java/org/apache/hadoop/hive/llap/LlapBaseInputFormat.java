@@ -171,7 +171,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
           submitWorkInfo.getToken(), umbilicalResponder, llapToken);
 
     int attemptNum = 0;
-    int taskNum = llapSplit.getSplitNum();
+    final int taskNum;
     // Use task attempt number, task number from conf if provided
     TaskAttemptID taskAttemptId = TaskAttemptID.forName(job.get(MRJobConfig.TASK_ATTEMPT_ID));
     if (taskAttemptId != null) {
@@ -181,6 +181,8 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
         LOG.debug("Setting attempt number to: {}, task number to: {} from given taskAttemptId: {} in conf",
             attemptNum, taskNum, taskAttemptId);
       }
+    } else {
+      taskNum = llapSplit.getSplitNum();
     }
 
     SubmitWorkRequestProto request = constructSubmitWorkRequestProto(
