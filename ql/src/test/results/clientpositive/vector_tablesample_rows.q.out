@@ -383,15 +383,14 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-8
-      Create Table Operator:
-        Create Table
-          columns: _c0 int
-          input format: org.apache.hadoop.mapred.TextInputFormat
+    Create Table
+      columns: _c0 int
+      input format: org.apache.hadoop.mapred.TextInputFormat
 #### A masked pattern was here ####
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.dual
-          isTemporary: true
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.dual
+      isTemporary: true
 
   Stage: Stage-2
     Stats Work

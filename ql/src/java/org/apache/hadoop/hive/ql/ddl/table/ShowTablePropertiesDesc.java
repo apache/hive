@@ -16,65 +16,41 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.table;
 
 import java.io.Serializable;
-import java.util.HashMap;
 
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-
 /**
- * ShowTblPropertiesDesc.
- *
+ * DDL task description for SHOW TABLE PROPERTIES commands.
  */
 @Explain(displayName = "Show Table Properties", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class ShowTblPropertiesDesc extends DDLDesc implements Serializable {
+public class ShowTablePropertiesDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
-  String resFile;
-  String tableName;
-  String propertyName;
 
-  /**
-   * table name for the result of showtblproperties.
-   */
-  private static final String table = "show_tableproperties";
-  /**
-   * thrift ddl for the result of showtblproperties.
-   */
-  private static final String schema = "prpt_name,prpt_value#string:string";
-
-  public String getTable() {
-    return table;
-  }
-
-  public String getSchema() {
-    return schema;
+  static {
+    DDLTask2.registerOperation(ShowTablePropertiesDesc.class, ShowTablePropertiesOperation.class);
   }
 
   /**
-   * For serialization use only.
+   * Thrift ddl for the result of showtblproperties.
    */
-  public ShowTblPropertiesDesc() {
-  }
+  public static final String SCHEMA = "prpt_name,prpt_value#string:string";
 
-  /**
-   * @param resFile
-   * @param tableName
-   *          name of table to show
-   * @param propertyName
-   *          name of property to show
-   */
-  public ShowTblPropertiesDesc(String resFile, String tableName, String propertyName) {
+  private final String resFile;
+  private final String tableName;
+  private final String propertyName;
+
+  public ShowTablePropertiesDesc(String resFile, String tableName, String propertyName) {
     this.resFile = resFile;
     this.tableName = tableName;
     this.propertyName = propertyName;
   }
 
-  /**
-   * @return the resFile
-   */
   public String getResFile() {
     return resFile;
   }
@@ -84,43 +60,13 @@ public class ShowTblPropertiesDesc extends DDLDesc implements Serializable {
     return getResFile();
   }
 
-  /**
-   * @param resFile
-   *          the resFile to set
-   */
-  public void setResFile(String resFile) {
-    this.resFile = resFile;
-  }
-
-  /**
-   * @return the tableName
-   */
   @Explain(displayName = "table name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTableName() {
     return tableName;
   }
 
-  /**
-   * @param tableName
-   *          the tableName to set
-   */
-  public void setTableName(String tableName) {
-    this.tableName = tableName;
-  }
-
-  /**
-   * @return the propertyName
-   */
   @Explain(displayName = "property name")
   public String getPropertyName() {
     return propertyName;
-  }
-
-  /**
-   * @param propertyName
-   *          the propertyName to set
-   */
-  public void setPropertyName(String propertyName) {
-    this.propertyName = propertyName;
   }
 }

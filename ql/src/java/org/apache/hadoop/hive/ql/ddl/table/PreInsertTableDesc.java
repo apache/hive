@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,16 +16,25 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.parse;
+package org.apache.hadoop.hive.ql.ddl.table;
 
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.plan.DDLDesc;
 import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-@Explain(displayName = "Pre-Insert task", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT, Explain.Level.EXTENDED })
-public class PreInsertTableDesc extends DDLDesc {
-  private final boolean isOverwrite;
+/**
+ * DDL task description for PRE INSERT commands.
+ */
+@Explain(displayName = "Pre-Insert task", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class PreInsertTableDesc implements DDLDesc {
+  static {
+    DDLTask2.registerOperation(PreInsertTableDesc.class, PreInsertTableOperation.class);
+  }
+
   private final Table table;
+  private final boolean isOverwrite;
 
   public PreInsertTableDesc(Table table, boolean overwrite) {
     this.table = table;

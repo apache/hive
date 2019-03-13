@@ -20,9 +20,8 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Describe Table Operator:
-        Describe Table
-          table: TEST1_n6
+    Describe Table
+      table: TEST1_n6
 
   Stage: Stage-1
     Fetch Operator

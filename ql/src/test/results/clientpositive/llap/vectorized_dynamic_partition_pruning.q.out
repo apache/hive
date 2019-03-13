@@ -165,13 +165,12 @@ STAGE PLANS:
     Dependency Collection
 
   Stage: Stage-4
-      Create Table Operator:
-        Create Table
-          columns: ds string, date string
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.srcpart_date_n8
+    Create Table
+      columns: ds string, date string
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.srcpart_date_n8
 
   Stage: Stage-3
     Stats Work

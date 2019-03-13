@@ -612,13 +612,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-3
-      Create Table Operator:
-        Create Table
-          columns: k decimal(11,5), v int
-          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-          serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-          name: default.DECIMAL_6_3
+    Create Table
+      columns: k decimal(11,5), v int
+      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+      serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+      name: default.DECIMAL_6_3
 
   Stage: Stage-2
     Stats Work

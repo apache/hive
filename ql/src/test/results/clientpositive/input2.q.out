@@ -84,10 +84,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Show Table Operator:
-        Show Tables
-          database name: default
-          pattern: TEST2*
+    Show Tables
+      database name: default
+      pattern: TEST2*
 
   Stage: Stage-1
     Fetch Operator

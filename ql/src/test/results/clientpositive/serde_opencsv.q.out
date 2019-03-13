@@ -41,17 +41,16 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Create Table Operator:
-        Create Table
-          columns: words string, int1 int, tinyint1 tinyint, smallint1 smallint, bigint1 bigint, boolean1 boolean, float1 float, double1 double
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.OpenCSVSerde
-          serde properties:
-            escapeChar \
-            quoteChar '
-            separatorChar ,
-          name: default.serde_opencsv
+    Create Table
+      columns: words string, int1 int, tinyint1 tinyint, smallint1 smallint, bigint1 bigint, boolean1 boolean, float1 float, double1 double
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.OpenCSVSerde
+      serde properties:
+        escapeChar \
+        quoteChar '
+        separatorChar ,
+      name: default.serde_opencsv
 
 PREHOOK: query: CREATE TABLE serde_opencsv(
                           words STRING,

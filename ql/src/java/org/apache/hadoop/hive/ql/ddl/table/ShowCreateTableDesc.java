@@ -16,84 +16,46 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.table;
 
 import java.io.Serializable;
+
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-
 /**
- * ShowCreateTableDesc.
- *
+ * DDL task description for SHOW CREATE TABLE commands.
  */
 @Explain(displayName = "Show Create Table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class ShowCreateTableDesc extends DDLDesc implements Serializable {
+public class ShowCreateTableDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
-  String resFile;
-  String tableName;
 
-  /**
-   * table name for the result of showcreatetable.
-   */
-  private static final String table = "show_create_table";
-  /**
-   * thrift ddl for the result of showcreatetable.
-   */
-  private static final String schema = "createtab_stmt#string";
-
-  public String getTable() {
-    return table;
-  }
-
-  public String getSchema() {
-    return schema;
+  static {
+    DDLTask2.registerOperation(ShowCreateTableDesc.class, ShowCreateTableOperation.class);
   }
 
   /**
-   * For serialization use only.
+   * Thrift ddl for the result of showcreatetable.
    */
-  public ShowCreateTableDesc() {
-  }
+  public static final String SCHEMA = "createtab_stmt#string";
 
-  /**
-   * @param resFile
-   * @param tableName
-   *          name of table to show
-   */
+  private final String resFile;
+  private final String tableName;
+
   public ShowCreateTableDesc(String tableName, String resFile) {
     this.tableName = tableName;
     this.resFile = resFile;
   }
 
-  /**
-   * @return the resFile
-   */
   @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
   public String getResFile() {
     return resFile;
   }
 
-  /**
-   * @param resFile
-   *          the resFile to set
-   */
-  public void setResFile(String resFile) {
-    this.resFile = resFile;
-  }
-
-  /**
-   * @return the tableName
-   */
   @Explain(displayName = "table name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTableName() {
     return tableName;
-  }
-
-  /**
-   * @param tableName
-   *          the tableName to set
-   */
-  public void setTableName(String tableName) {
-    this.tableName = tableName;
   }
 }

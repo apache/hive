@@ -21,12 +21,11 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Create Table Operator:
-        Create Table
-          columns: key int, value string
-          input format: org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextInputFormat
-          output format: org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextOutputFormat
-          name: default.base64_test
+    Create Table
+      columns: key int, value string
+      input format: org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextInputFormat
+      output format: org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextOutputFormat
+      name: default.base64_test
 
 PREHOOK: query: CREATE TABLE base64_test(key INT, value STRING) STORED AS
   INPUTFORMAT 'org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextInputFormat'
