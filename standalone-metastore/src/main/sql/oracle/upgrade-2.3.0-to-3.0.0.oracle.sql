@@ -1,5 +1,8 @@
 SELECT 'Upgrading MetaStore schema from 2.3.0 to 3.0.0' AS Status from dual;
 
+-- HIVE-21336 safeguards from failures from indices being too long
+ALTER SESSION SET NLS_LENGTH_SEMANTICS=BYTE;
+
 --@041-HIVE-16556.oracle.sql;
 CREATE TABLE METASTORE_DB_PROPERTIES
 (
