@@ -171,18 +171,20 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
           submitWorkInfo.getToken(), umbilicalResponder, llapToken);
 
     int attemptNum = 0;
-    // Use task attempt number from conf if provided
+    int taskNum = llapSplit.getSplitNum();
+    // Use task attempt number, task number from conf if provided
     TaskAttemptID taskAttemptId = TaskAttemptID.forName(job.get(MRJobConfig.TASK_ATTEMPT_ID));
     if (taskAttemptId != null) {
       attemptNum = taskAttemptId.getId();
+      taskNum = taskAttemptId.getTaskID().getId();
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Setting attempt number to " + attemptNum + " from task attempt ID in conf: " +
-            job.get(MRJobConfig.TASK_ATTEMPT_ID));
+        LOG.debug("Setting attempt number to: {}, task number to: {} from given taskAttemptId: {} in conf",
+            attemptNum, taskNum, taskAttemptId);
       }
     }
 
     SubmitWorkRequestProto request = constructSubmitWorkRequestProto(
-        submitWorkInfo, llapSplit.getSplitNum(), attemptNum, llapClient.getAddress(),
+        submitWorkInfo, taskNum, attemptNum, llapClient.getAddress(),
         submitWorkInfo.getToken(), llapSplit.getFragmentBytes(),
         llapSplit.getFragmentBytesSignature(), job);
     llapClient.submitWork(request, host, llapSubmitPort);
