@@ -181,7 +181,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAugmentMaterializationRule;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
-import org.apache.hadoop.hive.ql.plan.DropTableDesc;
+import org.apache.hadoop.hive.ql.plan.DropPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -3183,7 +3183,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public List<Partition> dropPartitions(Table table, List<String>partDirNames,
       boolean deleteData, boolean ifExists) throws HiveException {
     // partitions to be dropped in this batch
-    List<DropTableDesc.PartSpec> partSpecs = new ArrayList<>(partDirNames.size());
+    List<DropPartitionDesc.PartSpec> partSpecs = new ArrayList<>(partDirNames.size());
 
     // parts of the partition
     String[] parts = null;
@@ -3233,7 +3233,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
 
       // Add the expression to partition specification
-      partSpecs.add(new DropTableDesc.PartSpec(expr, partSpecKey));
+      partSpecs.add(new DropPartitionDesc.PartSpec(expr, partSpecKey));
 
       // Increment dropKey to get a new key for hash map
       ++partSpecKey;
@@ -3243,14 +3243,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return dropPartitions(names[0], names[1], partSpecs, deleteData, ifExists);
   }
 
-  public List<Partition> dropPartitions(String tblName, List<DropTableDesc.PartSpec> partSpecs,
+  public List<Partition> dropPartitions(String tblName, List<DropPartitionDesc.PartSpec> partSpecs,
       boolean deleteData, boolean ifExists) throws HiveException {
     String[] names = Utilities.getDbTableName(tblName);
     return dropPartitions(names[0], names[1], partSpecs, deleteData, ifExists);
   }
 
   public List<Partition> dropPartitions(String dbName, String tblName,
-      List<DropTableDesc.PartSpec> partSpecs,  boolean deleteData,
+      List<DropPartitionDesc.PartSpec> partSpecs,  boolean deleteData,
       boolean ifExists) throws HiveException {
     return dropPartitions(dbName, tblName, partSpecs,
                           PartitionDropOptions.instance()
@@ -3258,19 +3258,19 @@ private void constructOneLBLocationMap(FileStatus fSta,
                                               .ifExists(ifExists));
   }
 
-  public List<Partition> dropPartitions(String tblName, List<DropTableDesc.PartSpec> partSpecs,
+  public List<Partition> dropPartitions(String tblName, List<DropPartitionDesc.PartSpec> partSpecs,
                                         PartitionDropOptions dropOptions) throws HiveException {
     String[] names = Utilities.getDbTableName(tblName);
     return dropPartitions(names[0], names[1], partSpecs, dropOptions);
   }
 
   public List<Partition> dropPartitions(String dbName, String tblName,
-      List<DropTableDesc.PartSpec> partSpecs, PartitionDropOptions dropOptions) throws HiveException {
+      List<DropPartitionDesc.PartSpec> partSpecs, PartitionDropOptions dropOptions) throws HiveException {
     try {
       Table tbl = getTable(dbName, tblName);
       List<org.apache.hadoop.hive.metastore.utils.ObjectPair<Integer, byte[]>> partExprs =
           new ArrayList<>(partSpecs.size());
-      for (DropTableDesc.PartSpec partSpec : partSpecs) {
+      for (DropPartitionDesc.PartSpec partSpec : partSpecs) {
         partExprs.add(new org.apache.hadoop.hive.metastore.utils.ObjectPair<>(partSpec.getPrefixLength(),
             SerializationUtilities.serializeExpressionToKryo(partSpec.getPartSpec())));
       }

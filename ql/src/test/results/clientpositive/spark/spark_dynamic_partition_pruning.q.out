@@ -111,13 +111,12 @@ STAGE PLANS:
           destination: hdfs://### HDFS PATH ###
 
   Stage: Stage-3
-      Create Table Operator:
-        Create Table
-          columns: ds string, date string
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.srcpart_date_n4
+    Create Table
+      columns: ds string, date string
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.srcpart_date_n4
 
   Stage: Stage-2
     Stats Work

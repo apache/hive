@@ -94,13 +94,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-3
-      Create Table Operator:
-        Create Table
-          columns: k string, value string
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.nzhang_CTAS1
+    Create Table
+      columns: k string, value string
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.nzhang_CTAS1
 
   Stage: Stage-2
     Stats Work
@@ -251,13 +250,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-3
-      Create Table Operator:
-        Create Table
-          columns: key string, value string
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.nzhang_ctas2
+    Create Table
+      columns: key string, value string
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.nzhang_ctas2
 
   Stage: Stage-2
     Stats Work
@@ -408,13 +406,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-3
-      Create Table Operator:
-        Create Table
-          columns: half_key double, conb string
-          input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
-          output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-          name: default.nzhang_ctas3
+    Create Table
+      columns: half_key double, conb string
+      input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+      output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+      name: default.nzhang_ctas3
 
   Stage: Stage-2
     Stats Work
@@ -629,14 +626,13 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-3
-      Create Table Operator:
-        Create Table
-          columns: key string, value string
-          field delimiter: ,
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.nzhang_ctas4
+    Create Table
+      columns: key string, value string
+      field delimiter: ,
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.nzhang_ctas4
 
   Stage: Stage-2
     Stats Work
@@ -788,16 +784,15 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-3
-      Create Table Operator:
-        Create Table
-          columns: key string, value string
-          field delimiter: ,
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          line delimiter: 
+    Create Table
+      columns: key string, value string
+      field delimiter: ,
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      line delimiter: 
 
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.nzhang_ctas5
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.nzhang_ctas5
 
   Stage: Stage-2
     Stats Work

@@ -27,7 +27,9 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.exec.DDLTask;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.ddl.table.CreateTableDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -39,7 +41,6 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.StorageFormat;
-import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.common.HCatUtil;
@@ -135,18 +136,19 @@ final class CreateTableHook extends HCatSemanticAnalyzerBase {
     throws SemanticException {
 
     if (rootTasks.size() == 0) {
-      // There will be no DDL task created in case if its CREATE TABLE IF
-      // NOT EXISTS
+      // There will be no DDL task created in case if its CREATE TABLE IF NOT EXISTS
       return;
     }
-    CreateTableDesc desc = ((DDLTask) rootTasks.get(rootTasks.size() - 1))
-      .getWork().getCreateTblDesc();
-    if (desc == null) {
-      // Desc will be null if its CREATE TABLE LIKE. Desc will be
-      // contained in CreateTableLikeDesc. Currently, HCat disallows CTLT in
-      // pre-hook. So, desc can never be null.
+    Task<?> t = rootTasks.get(rootTasks.size() - 1);
+    if (!(t instanceof DDLTask2)) {
       return;
     }
+    DDLTask2 task = (DDLTask2)t;
+    DDLDesc d = task.getWork().getDDLDesc();
+    if (!(d instanceof CreateTableDesc)) {
+      return;
+    }
+    CreateTableDesc desc = (CreateTableDesc)d;
     Map<String, String> tblProps = desc.getTblProps();
     if (tblProps == null) {
       // tblProps will be null if user didnt use tblprops in his CREATE
@@ -157,8 +159,7 @@ final class CreateTableHook extends HCatSemanticAnalyzerBase {
 
     // first check if we will allow the user to create table.
     String storageHandler = desc.getStorageHandler();
-    if (StringUtils.isEmpty(storageHandler)) {
-    } else {
+    if (StringUtils.isNotEmpty(storageHandler)) {
       try {
         HiveStorageHandler storageHandlerInst = HCatUtil
           .getStorageHandler(context.getConf(),
@@ -173,33 +174,31 @@ final class CreateTableHook extends HCatSemanticAnalyzerBase {
       }
     }
 
-    if (desc != null) {
-      try {
-        Table table = context.getHive().newTable(desc.getTableName());
-        if (desc.getLocation() != null) {
-          table.setDataLocation(new Path(desc.getLocation()));
-        }
-        if (desc.getStorageHandler() != null) {
-          table.setProperty(
+    try {
+      Table table = context.getHive().newTable(desc.getTableName());
+      if (desc.getLocation() != null) {
+        table.setDataLocation(new Path(desc.getLocation()));
+      }
+      if (desc.getStorageHandler() != null) {
+        table.setProperty(
             org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE,
             desc.getStorageHandler());
-        }
-        for (Map.Entry<String, String> prop : tblProps.entrySet()) {
-          table.setProperty(prop.getKey(), prop.getValue());
-        }
-        for (Map.Entry<String, String> prop : desc.getSerdeProps().entrySet()) {
-          table.setSerdeParam(prop.getKey(), prop.getValue());
-        }
-        //TODO: set other Table properties as needed
-
-        //authorize against the table operation so that location permissions can be checked if any
-
-        if (HCatAuthUtil.isAuthorizationEnabled(context.getConf())) {
-          authorize(table, Privilege.CREATE);
-        }
-      } catch (HiveException ex) {
-        throw new SemanticException(ex);
       }
+      for (Map.Entry<String, String> prop : tblProps.entrySet()) {
+        table.setProperty(prop.getKey(), prop.getValue());
+      }
+      for (Map.Entry<String, String> prop : desc.getSerdeProps().entrySet()) {
+        table.setSerdeParam(prop.getKey(), prop.getValue());
+      }
+      //TODO: set other Table properties as needed
+
+      //authorize against the table operation so that location permissions can be checked if any
+
+      if (HCatAuthUtil.isAuthorizationEnabled(context.getConf())) {
+        authorize(table, Privilege.CREATE);
+      }
+    } catch (HiveException ex) {
+      throw new SemanticException(ex);
     }
 
     desc.setTblProps(tblProps);

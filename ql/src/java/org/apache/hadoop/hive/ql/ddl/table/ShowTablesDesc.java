@@ -16,27 +16,27 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.table;
 
 import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-
 /**
- * ShowTablesDesc.
- *
+ * DDL task description for SHOW TABLES commands.
  */
 @Explain(displayName = "Show Tables", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class ShowTablesDesc extends DDLDesc implements Serializable {
+public class ShowTablesDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
-  /**
-   * table name for the result of show tables.
-   */
-  private static final String table = "show";
+  static {
+    DDLTask2.registerOperation(ShowTablesDesc.class, ShowTablesOperation.class);
+  }
 
   /**
    * thrift ddl for the result of show tables.
@@ -49,14 +49,52 @@ public class ShowTablesDesc extends DDLDesc implements Serializable {
   private static final String MATERIALIZED_VIEWS_SCHEMA =
       "mv_name,rewrite_enabled,mode#string:string:string";
 
+  private final String resFile;
+  private final String dbName;
+  private final String pattern;
+  private final TableType type;
 
-  String pattern;
-  String dbName;
-  String resFile;
-  TableType type;
+  public ShowTablesDesc(Path resFile) {
+    this(resFile, null, null, null);
+  }
 
-  public String getTable() {
-    return table;
+  public ShowTablesDesc(Path resFile, String dbName) {
+    this(resFile, dbName, null, null);
+  }
+
+  public ShowTablesDesc(Path resFile, String dbName, TableType type) {
+    this(resFile, dbName, null, type);
+  }
+
+  public ShowTablesDesc(Path resFile, String dbName, String pattern) {
+    this(resFile, dbName, pattern, null);
+  }
+
+  public ShowTablesDesc(Path resFile, String dbName, String pattern, TableType type) {
+    this.resFile = resFile.toString();
+    this.dbName = dbName;
+    this.pattern = pattern;
+    this.type = type;
+  }
+
+  @Explain(displayName = "pattern")
+  public String getPattern() {
+    return pattern;
+  }
+
+  @Explain(displayName = "type")
+  public TableType getType() {
+    return type;
+  }
+
+  @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
+  public String getResFile() {
+    return resFile;
+  }
+
+  @Explain(displayName = "database name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getDbName() {
+    return dbName;
   }
 
   public String getSchema() {
@@ -64,110 +102,5 @@ public class ShowTablesDesc extends DDLDesc implements Serializable {
       return MATERIALIZED_VIEWS_SCHEMA;
     }
     return TABLES_VIEWS_SCHEMA;
-  }
-
-  public ShowTablesDesc() {
-  }
-
-  /**
-   * @param resFile
-   */
-  public ShowTablesDesc(Path resFile) {
-    this.resFile = resFile.toString();
-    pattern = null;
-  }
-
-  /**
-   * @param dbName
-   *          name of database to show tables of
-   */
-  public ShowTablesDesc(Path resFile, String dbName) {
-    this.resFile = resFile.toString();
-    this.dbName = dbName;
-  }
-
-  /**
-   * @param pattern
-   *          names of tables to show
-   */
-  public ShowTablesDesc(Path resFile, String dbName, String pattern) {
-    this.resFile = resFile.toString();
-    this.dbName = dbName;
-    this.pattern = pattern;
-  }
-
-  /**
-   * @param type
-   *          type of the tables to show
-   */
-  public ShowTablesDesc(Path resFile, String dbName, String pattern, TableType type) {
-    this.resFile = resFile.toString();
-    this.dbName = dbName;
-    this.pattern = pattern;
-    this.type    = type;
-  }
-
-  /**
-   * @return the pattern
-   */
-  @Explain(displayName = "pattern")
-  public String getPattern() {
-    return pattern;
-  }
-
-  /**
-   * @param pattern
-   *          the pattern to set
-   */
-  public void setPattern(String pattern) {
-    this.pattern = pattern;
-  }
-
-  /**
-   * @return the table type to be fetched
-   */
-  @Explain(displayName = "type")
-  public TableType getType() {
-    return type;
-  }
-
-  /**
-   * @param type
-   *          the table type to set
-   */
-  public void setType(TableType type) {
-    this.type = type;
-  }
-
-  /**
-   * @return the resFile
-   */
-  @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
-  public String getResFile() {
-    return resFile;
-  }
-
-  /**
-   * @param resFile
-   *          the resFile to set
-   */
-  public void setResFile(String resFile) {
-    this.resFile = resFile;
-  }
-
-  /**
-   * @return the dbName
-   */
-  @Explain(displayName = "database name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getDbName() {
-    return dbName;
-  }
-
-  /**
-   * @param dbName
-   *          the dbName to set
-   */
-  public void setDbName(String dbName) {
-    this.dbName = dbName;
   }
 }

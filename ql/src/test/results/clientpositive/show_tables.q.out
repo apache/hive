@@ -28,10 +28,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Show Table Operator:
-        Show Tables
-          database name: default
-          pattern: shtb_*
+    Show Tables
+      database name: default
+      pattern: shtb_*
 
   Stage: Stage-1
     Fetch Operator
@@ -61,10 +60,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Show Table Operator:
-        Show Tables
-          database name: default
-          pattern: shtb_test1_n0|shtb_test2_n0
+    Show Tables
+      database name: default
+      pattern: shtb_test1_n0|shtb_test2_n0
 
   Stage: Stage-1
     Fetch Operator

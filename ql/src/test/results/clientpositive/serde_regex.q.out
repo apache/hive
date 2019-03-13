@@ -41,15 +41,14 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Create Table Operator:
-        Create Table
-          columns: host string, identity string, user string, time string, request string, status string, size int, referer string, agent string
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.RegexSerDe
-          serde properties:
-            input.regex ([^ ]*) ([^ ]*) ([^ ]*) (-|\[[^\]]*\]) ([^ "]*|"[^"]*") (-|[0-9]*) (-|[0-9]*)(?: ([^ "]*|"[^"]*") ([^ "]*|"[^"]*"))?
-          name: default.serde_regex
+    Create Table
+      columns: host string, identity string, user string, time string, request string, status string, size int, referer string, agent string
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.RegexSerDe
+      serde properties:
+        input.regex ([^ ]*) ([^ ]*) ([^ ]*) (-|\[[^\]]*\]) ([^ "]*|"[^"]*") (-|[0-9]*) (-|[0-9]*)(?: ([^ "]*|"[^"]*") ([^ "]*|"[^"]*"))?
+      name: default.serde_regex
 
 PREHOOK: query: CREATE TABLE serde_regex(
   host STRING,
@@ -160,15 +159,14 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Create Table Operator:
-        Create Table
-          columns: key decimal(38,18), value int
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.RegexSerDe
-          serde properties:
-            input.regex ([^ ]*) ([^ ]*)
-          name: default.serde_regex1
+    Create Table
+      columns: key decimal(38,18), value int
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.RegexSerDe
+      serde properties:
+        input.regex ([^ ]*) ([^ ]*)
+      name: default.serde_regex1
 
 PREHOOK: query: CREATE TABLE serde_regex1(
   key decimal(38,18),

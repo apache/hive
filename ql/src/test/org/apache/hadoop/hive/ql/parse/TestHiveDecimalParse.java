@@ -22,9 +22,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryPlan;
-import org.apache.hadoop.hive.ql.exec.DDLTask;
-import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.table.CreateTableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Assert;
 import org.junit.Test;
@@ -149,9 +149,9 @@ public class TestHiveDecimalParse {
     }
 
     QueryPlan plan = driver.getPlan();
-    DDLTask task = (DDLTask) plan.getRootTasks().get(0);
-    DDLWork work = task.getWork();
-    CreateTableDesc spec = work.getCreateTblDesc();
+    DDLTask2 task = (DDLTask2) plan.getRootTasks().get(0);
+    DDLWork2 work = task.getWork();
+    CreateTableDesc spec = (CreateTableDesc)work.getDDLDesc();
     FieldSchema fs = spec.getCols().get(0);
     return fs.getType();
   }

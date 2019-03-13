@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.IOUtils;
 
@@ -53,7 +54,7 @@ public class ShowDatabasesOperation extends DDLOperation {
     LOG.info("Found {} database(s) matching the SHOW DATABASES statement.", databases.size());
 
     // write the results in the file
-    DataOutputStream outStream = getOutputStream(new Path(desc.getResFile()));
+    DataOutputStream outStream = DDLUtils.getOutputStream(new Path(desc.getResFile()), context);
     try {
       context.getFormatter().showDatabases(outStream, databases);
     } catch (Exception e) {

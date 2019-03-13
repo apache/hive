@@ -16,47 +16,59 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.table;
 
 import java.io.Serializable;
 import java.util.Map;
 
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 
 /**
- * UnlockTableDesc.
- *
+ * DDL task description for LOCK TABLE commands.
  */
-@Explain(displayName = "Unlock Table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class UnlockTableDesc extends DDLDesc implements Serializable {
+@Explain(displayName = "Lock Table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class LockTableDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
-  private String tableName;
-  private Map<String, String> partSpec;
-
-  public UnlockTableDesc() {
+  static {
+    DDLTask2.registerOperation(LockTableDesc.class, LockTableOperation.class);
   }
 
-  public UnlockTableDesc(String tableName, Map<String, String> partSpec) {
+  private final String tableName;
+  private final String mode;
+  private final Map<String, String> partSpec;
+  private final String queryId;
+  private final String queryStr;
+
+  public LockTableDesc(String tableName, String mode, Map<String, String> partSpec, String queryId, String queryStr) {
     this.tableName = tableName;
+    this.mode      = mode;
     this.partSpec  = partSpec;
+    this.queryId   = queryId;
+    this.queryStr  = queryStr;
   }
 
   public String getTableName() {
     return tableName;
   }
 
-  public void setTableName(String tableName) {
-    this.tableName = tableName;
+  public String getMode() {
+    return mode;
   }
 
   public Map<String, String> getPartSpec() {
     return partSpec;
   }
 
-  public void setPartSpec(Map<String, String> partSpec) {
-    this.partSpec = partSpec;
+  public String getQueryId() {
+    return queryId;
+  }
+
+  public String getQueryStr() {
+    return queryStr;
   }
 }

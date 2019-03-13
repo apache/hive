@@ -613,11 +613,11 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   public void shutdown() {
   }
 
-  Throwable getException() {
+  public Throwable getException() {
     return exception;
   }
 
-  protected void setException(Throwable ex) {
+  public void setException(Throwable ex) {
     exception = ex;
   }
 
