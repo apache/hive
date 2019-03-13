@@ -125,13 +125,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-8
-      Create Table Operator:
-        Create Table
-          columns: key string, value string
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.M1
+    Create Table
+      columns: key string, value string
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.M1
 
   Stage: Stage-2
     Stats Work
@@ -254,13 +253,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-8
-      Create Table Operator:
-        Create Table
-          columns: key string, value string
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.M1
+    Create Table
+      columns: key string, value string
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.M1
 
   Stage: Stage-2
     Stats Work
@@ -387,13 +385,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-8
-      Create Table Operator:
-        Create Table
-          columns: key string, value string
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.M1
+    Create Table
+      columns: key string, value string
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.M1
 
   Stage: Stage-2
     Stats Work
@@ -516,13 +513,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-8
-      Create Table Operator:
-        Create Table
-          columns: key string, value string
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.V1_n0
+    Create Table
+      columns: key string, value string
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.V1_n0
 
   Stage: Stage-2
     Stats Work
@@ -597,13 +593,12 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Create Table Operator:
-        Create Table
-          default input format: org.apache.hadoop.mapred.TextInputFormat
-          default output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          default serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          like: src
-          name: default.M1
+    Create Table
+      default input format: org.apache.hadoop.mapred.TextInputFormat
+      default output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      default serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      like: src
+      name: default.M1
 
 PREHOOK: query: EXPLAIN CREATE TABLE M1 LIKE M1
 PREHOOK: type: CREATETABLE
@@ -618,13 +613,12 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Create Table Operator:
-        Create Table
-          default input format: org.apache.hadoop.mapred.TextInputFormat
-          default output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          default serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          like: M1
-          name: default.M1
+    Create Table
+      default input format: org.apache.hadoop.mapred.TextInputFormat
+      default output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      default serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      like: M1
+      name: default.M1
 
 PREHOOK: query: EXPLAIN DROP TABLE M1
 PREHOOK: type: DROPTABLE
@@ -639,9 +633,8 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Drop Table Operator:
-        Drop Table
-          table: M1
+    Drop Table
+      table: M1
 
 PREHOOK: query: select count(*) from M1 where key > 0
 PREHOOK: type: QUERY
@@ -793,9 +786,8 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Truncate Table Operator:
-        Truncate Table or Partition
-          TableName: M1
+    Truncate Table or Partition
+      TableName: M1
 
 PREHOOK: query: select count(*) from M1 where key > 0
 PREHOOK: type: QUERY

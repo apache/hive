@@ -57,8 +57,7 @@ STAGE PLANS:
             COLUMN_STATS_ACCURATE 
 
   Stage: Stage-1
-      Pre Insert operator:
-        Pre-Insert task
+    Pre-Insert task
 
   Stage: Stage-2
     Map Reduce
@@ -543,8 +542,7 @@ STAGE PLANS:
             COLUMN_STATS_ACCURATE 
 
   Stage: Stage-1
-      Pre Insert operator:
-        Pre-Insert task
+    Pre-Insert task
 
   Stage: Stage-3
     Map Reduce

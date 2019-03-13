@@ -129,13 +129,12 @@ STAGE PLANS:
     Dependency Collection
 
   Stage: Stage-4
-      Create Table Operator:
-        Create Table
-          columns: key int, value string, part int
-          input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
-          output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-          name: default.rcfile_createas1b
+    Create Table
+      columns: key int, value string, part int
+      input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+      output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+      name: default.rcfile_createas1b
 
   Stage: Stage-3
     Stats Work

@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
-import org.apache.hadoop.hive.ql.plan.DropTableDesc;
+import org.apache.hadoop.hive.ql.plan.DropPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
@@ -349,8 +349,8 @@ public class LoadPartitions {
     Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecsExpr =
             ReplUtils.genPartSpecs(table, Collections.singletonList(partSpec));
     if (partSpecsExpr.size() > 0) {
-      DropTableDesc dropPtnDesc = new DropTableDesc(table.getFullyQualifiedName(),
-              partSpecsExpr, null, true, event.replicationSpec());
+      DropPartitionDesc dropPtnDesc = new DropPartitionDesc(table.getFullyQualifiedName(), partSpecsExpr, true,
+          event.replicationSpec());
       dropPtnTask = TaskFactory.get(
               new DDLWork(new HashSet<>(), new HashSet<>(), dropPtnDesc), context.hiveConf
       );

@@ -131,13 +131,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-8
-      Create Table Operator:
-        Create Table
-          columns: key string, value string
-          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-          serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-          name: default.orc_createas1b
+    Create Table
+      columns: key string, value string
+      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+      serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+      name: default.orc_createas1b
 
   Stage: Stage-2
     Stats Work
@@ -342,13 +341,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-8
-      Create Table Operator:
-        Create Table
-          columns: key int, value string, part int
-          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-          serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-          name: default.orc_createas1c
+    Create Table
+      columns: key int, value string, part int
+      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+      serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+      name: default.orc_createas1c
 
   Stage: Stage-2
     Stats Work

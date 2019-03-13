@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.table;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -43,8 +43,10 @@ import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -54,6 +56,10 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
+import org.apache.hadoop.hive.ql.plan.ValidationUtility;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -62,15 +68,18 @@ import org.apache.hadoop.mapred.OutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
- * CreateTableDesc.
- *
+ * DDL task description for CREATE TABLE commands.
  */
 @Explain(displayName = "Create Table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class CreateTableDesc extends DDLDesc implements Serializable {
+public class CreateTableDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
-  private static Logger LOG = LoggerFactory.getLogger(CreateTableDesc.class);
+  private static final Logger LOG = LoggerFactory.getLogger(CreateTableDesc.class);
+
+  static {
+    DDLTask2.registerOperation(CreateTableDesc.class, CreateTableOperation.class);
+  }
+
   String databaseName;
   String tableName;
   boolean isExternal;
@@ -303,7 +312,9 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     return defaultConstraints;
   }
 
-  public List<SQLCheckConstraint> getCheckConstraints() { return checkConstraints; }
+  public List<SQLCheckConstraint> getCheckConstraints() {
+    return checkConstraints;
+  }
 
   @Explain(displayName = "bucket columns")
   public List<String> getBucketCols() {
@@ -536,13 +547,10 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
 
     if (this.getStorageHandler() == null) {
       try {
-        Class<?> origin = Class.forName(this.getOutputFormat(), true,
-          Utilities.getSessionSpecifiedClassLoader());
-        Class<? extends OutputFormat> replaced = HiveFileFormatUtils
-          .getOutputFormatSubstitute(origin);
+        Class<?> origin = Class.forName(this.getOutputFormat(), true, Utilities.getSessionSpecifiedClassLoader());
+        Class<? extends OutputFormat> replaced = HiveFileFormatUtils.getOutputFormatSubstitute(origin);
         if (!HiveOutputFormat.class.isAssignableFrom(replaced)) {
-          throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE
-            .getMsg());
+          throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE.getMsg());
         }
       } catch (ClassNotFoundException e) {
         throw new SemanticException(ErrorMsg.CLASSPATH_ERROR.getMsg(), e);
@@ -766,7 +774,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     } else {
       // let's validate that the serde exists
       serDeClassName = getSerName();
-      DDLTask.validateSerDe(serDeClassName, conf);
+      DDLUtils.validateSerDe(serDeClassName, conf);
     }
     tbl.setSerializationLib(serDeClassName);
 
@@ -838,9 +846,9 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
       tbl.getTTable().getSd().setOutputFormat(tbl.getOutputFormatClass().getName());
     }
 
-    if (DDLTask.doesTableNeedLocation(tbl)) {
+    if (CreateTableOperation.doesTableNeedLocation(tbl)) {
       // If location is specified - ensure that it is a full qualified name
-      DDLTask.makeLocationQualified(tbl.getDbName(), tbl, conf);
+      CreateTableOperation.makeLocationQualified(tbl, conf);
     }
 
     if (isExternal()) {
@@ -924,8 +932,6 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   public Long getInitialMmWriteId() {
     return initialMmWriteId;
   }
-
-  
 
   public FileSinkDesc getAndUnsetWriter() {
     FileSinkDesc fsd = writer;

@@ -76,13 +76,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-4
-      Create Table Operator:
-        Create Table
-          columns: key string, value string, _c1 double, _c2 string
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.summary
+    Create Table
+      columns: key string, value string, _c1 double, _c2 string
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.summary
 
   Stage: Stage-2
     Stats Work
@@ -287,13 +286,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-4
-      Create Table Operator:
-        Create Table
-          columns: key string, value string, rr int
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.x4
+    Create Table
+      columns: key string, value string, rr int
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.x4
 
   Stage: Stage-2
     Stats Work
@@ -530,13 +528,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-5
-      Create Table Operator:
-        Create Table
-          columns: key string, value string, lead1 string
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.x5
+    Create Table
+      columns: key string, value string, lead1 string
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.x5
 
   Stage: Stage-3
     Stats Work
@@ -731,13 +728,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-8
-      Create Table Operator:
-        Create Table
-          columns: key string, value string, _c1 double
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.x6
+    Create Table
+      columns: key string, value string, _c1 double
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.x6
 
   Stage: Stage-2
     Stats Work
@@ -940,13 +936,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-4
-      Create Table Operator:
-        Create Table
-          columns: _col0 string, _col1 string, _c1 bigint
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.x7
+    Create Table
+      columns: _col0 string, _col1 string, _c1 bigint
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.x7
 
   Stage: Stage-2
     Stats Work
@@ -1426,13 +1421,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-4
-      Create Table Operator:
-        Create Table
-          columns: _col0 string, _col1 string, _c1 bigint
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.x8
+    Create Table
+      columns: _col0 string, _col1 string, _c1 bigint
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.x8
 
   Stage: Stage-2
     Stats Work
@@ -1615,13 +1609,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-4
-      Create Table Operator:
-        Create Table
-          columns: _c0 string, key string
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.x9
+    Create Table
+      columns: _c0 string, key string
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.x9
 
   Stage: Stage-2
     Stats Work

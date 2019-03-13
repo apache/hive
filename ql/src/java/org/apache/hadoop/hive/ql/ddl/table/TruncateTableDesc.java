@@ -16,56 +16,59 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.table;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
+import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 /**
- * Truncates managed table or partition
+ * DDL task description for TRUNCATE TABLE commands.
  */
 @Explain(displayName = "Truncate Table or Partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class TruncateTableDesc extends DDLDesc implements DDLDesc.DDLDescWithWriteId {
-  private final static Logger LOG = LoggerFactory.getLogger(TruncateTableDesc.class);
-
+public class TruncateTableDesc implements DDLDesc, Serializable, DDLDescWithWriteId {
   private static final long serialVersionUID = 1L;
 
-  private String tableName;
-  private String fullTableName;
-  private Map<String, String> partSpec;
+  static {
+    DDLTask2.registerOperation(TruncateTableDesc.class, TruncateTableOperation.class);
+  }
+
+  private final String tableName;
+  private final String fullTableName;
+  private final Map<String, String> partSpec;
+  private final ReplicationSpec replicationSpec;
+  private final boolean isTransactional;
+
   private List<Integer> columnIndexes;
   private Path inputDir;
   private Path outputDir;
   private ListBucketingCtx lbCtx;
-  private ReplicationSpec replicationSpec;
+
   private long writeId = 0;
-  private boolean isTransactional;
-
-  public TruncateTableDesc() {
-  }
-
 
   public TruncateTableDesc(String tableName, Map<String, String> partSpec, ReplicationSpec replicationSpec) {
     this(tableName, partSpec, replicationSpec, null);
   }
 
-  public TruncateTableDesc(String tableName, Map<String, String> partSpec,
-      ReplicationSpec replicationSpec, Table table) {
+  public TruncateTableDesc(String tableName, Map<String, String> partSpec, ReplicationSpec replicationSpec,
+      Table table) {
     this.tableName = tableName;
+    this.fullTableName = table == null ? tableName : TableName.getDbTable(table.getDbName(), table.getTableName());
     this.partSpec = partSpec;
     this.replicationSpec = replicationSpec;
     this.isTransactional = AcidUtils.isTransactionalTable(table);
-    this.fullTableName = table == null ? tableName : Warehouse.getQualifiedName(table.getTTable());
   }
 
   @Explain(displayName = "TableName", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -73,8 +76,9 @@ public class TruncateTableDesc extends DDLDesc implements DDLDesc.DDLDescWithWri
     return tableName;
   }
 
-  public void setTableName(String tableName) {
-    this.tableName = tableName;
+  @Override
+  public String getFullTableName() {
+    return fullTableName;
   }
 
   @Explain(displayName = "Partition Spec", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -82,8 +86,12 @@ public class TruncateTableDesc extends DDLDesc implements DDLDesc.DDLDescWithWri
     return partSpec;
   }
 
-  public void setPartSpec(Map<String, String> partSpec) {
-    this.partSpec = partSpec;
+  /**
+   * @return what kind of replication scope this truncate is running under.
+   * This can result in a "TRUNCATE IF NEWER THAN" kind of semantic
+   */
+  public ReplicationSpec getReplicationSpec() {
+    return replicationSpec;
   }
 
   @Explain(displayName = "Column Indexes")
@@ -119,22 +127,10 @@ public class TruncateTableDesc extends DDLDesc implements DDLDesc.DDLDescWithWri
     this.lbCtx = lbCtx;
   }
 
-  /**
-   * @return what kind of replication scope this truncate is running under.
-   * This can result in a "TRUNCATE IF NEWER THAN" kind of semantic
-   */
-  public ReplicationSpec getReplicationSpec() { return this.replicationSpec; }
-
   @Override
   public void setWriteId(long writeId) {
     this.writeId = writeId;
   }
-
-  @Override
-  public String getFullTableName() {
-    return fullTableName;
-  }
-
 
   @Override
   public boolean mayNeedWriteId() {

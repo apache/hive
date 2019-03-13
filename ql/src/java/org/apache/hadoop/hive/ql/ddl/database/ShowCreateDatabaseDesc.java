@@ -16,79 +16,47 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.database;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 
 /**
- * ShowCreateDatabaseDesc.
- *
+ * DDL task description for SHOW CREATE DATABASE commands.
  */
-@Explain(displayName = "Show Create Database",
-    explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class ShowCreateDatabaseDesc extends DDLDesc implements Serializable {
+@Explain(displayName = "Show Create Database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class ShowCreateDatabaseDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
-  String resFile;
-  String dbName;
 
-  /**
-   * thrift ddl for the result of showcreatedatabase.
-   */
-  private static final String schema = "createdb_stmt#string";
-
-  public String getSchema() {
-    return schema;
+  static {
+    DDLTask2.registerOperation(ShowCreateDatabaseDesc.class, ShowCreateDatabaseOperation.class);
   }
 
-  /**
-   * For serialization use only.
-   */
-  public ShowCreateDatabaseDesc() {
-  }
+  private final String resFile;
+  private final String dbName;
 
   /**
-   * @param resFile
-   * @param dbName
-   *          name of database to show
+   * Thrift ddl for the result of showcreatedatabase.
    */
+  public static final String SCHEMA = "createdb_stmt#string";
+
   public ShowCreateDatabaseDesc(String dbName, String resFile) {
     this.dbName = dbName;
     this.resFile = resFile;
   }
 
-  /**
-   * @return the resFile
-   */
   @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
   public String getResFile() {
     return resFile;
   }
 
-  /**
-   * @param resFile
-   *          the resFile to set
-   */
-  public void setResFile(String resFile) {
-    this.resFile = resFile;
-  }
-
-  /**
-   * @return the databaseName
-   */
-  @Explain(displayName = "database name",
-      explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "database name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getDatabaseName() {
     return dbName;
-  }
-
-  /**
-   * @param dbName
-   *          the dbName to set
-   */
-  public void setDatabaseName(String dbName) {
-    this.dbName = dbName;
   }
 }

@@ -16,47 +16,50 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.table;
 
 import java.io.Serializable;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * CreateTableLikeDesc.
- *
+ * DDL task description for CREATE TABLE LIKE commands.
  */
 @Explain(displayName = "Create Table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class CreateTableLikeDesc extends DDLDesc implements Serializable {
+public class CreateTableLikeDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
-  String tableName;
-  boolean isExternal;
-  String defaultInputFormat;
-  String defaultOutputFormat;
-  String defaultSerName;
-  Map<String, String> defaultSerdeProps;
-  String location;
-  Map<String, String> tblProps;
-  boolean ifNotExists;
-  String likeTableName;
-  boolean isTemporary = false;
-  boolean isUserStorageFormat = false;
 
-  public CreateTableLikeDesc() {
+  static {
+    DDLTask2.registerOperation(CreateTableLikeDesc.class, CreateTableLikeOperation.class);
   }
 
-  public CreateTableLikeDesc(String tableName, boolean isExternal, boolean isTemporary,
-      String defaultInputFormat, String defaultOutputFormat, String location,
-      String defaultSerName, Map<String, String> defaultSerdeProps, Map<String, String> tblProps,
-      boolean ifNotExists, String likeTableName, boolean isUserStorageFormat) {
+  private final String tableName;
+  private final boolean isExternal;
+  private final boolean isTemporary;
+  private final String defaultInputFormat;
+  private final String defaultOutputFormat;
+  private final String location;
+  private final String defaultSerName;
+  private final Map<String, String> defaultSerdeProps;
+  private final Map<String, String> tblProps;
+  private final boolean ifNotExists;
+  private final String likeTableName;
+  private final boolean isUserStorageFormat;
+
+  public CreateTableLikeDesc(String tableName, boolean isExternal, boolean isTemporary, String defaultInputFormat,
+      String defaultOutputFormat, String location, String defaultSerName, Map<String, String> defaultSerdeProps,
+      Map<String, String> tblProps, boolean ifNotExists, String likeTableName, boolean isUserStorageFormat) {
     this.tableName = tableName;
     this.isExternal = isExternal;
     this.isTemporary = isTemporary;
-    this.defaultInputFormat=defaultInputFormat;
-    this.defaultOutputFormat=defaultOutputFormat;
-    this.defaultSerName=defaultSerName;
-    this.defaultSerdeProps=defaultSerdeProps;
+    this.defaultInputFormat = defaultInputFormat;
+    this.defaultOutputFormat = defaultOutputFormat;
+    this.defaultSerName = defaultSerName;
+    this.defaultSerdeProps = defaultSerdeProps;
     this.location = location;
     this.tblProps = tblProps;
     this.ifNotExists = ifNotExists;
@@ -69,17 +72,9 @@ public class CreateTableLikeDesc extends DDLDesc implements Serializable {
     return ifNotExists;
   }
 
-  public void setIfNotExists(boolean ifNotExists) {
-    this.ifNotExists = ifNotExists;
-  }
-
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTableName() {
     return tableName;
-  }
-
-  public void setTableName(String tableName) {
-    this.tableName = tableName;
   }
 
   @Explain(displayName = "default input format")
@@ -87,17 +82,9 @@ public class CreateTableLikeDesc extends DDLDesc implements Serializable {
     return defaultInputFormat;
   }
 
-  public void setInputFormat(String inputFormat) {
-    this.defaultInputFormat = inputFormat;
-  }
-
   @Explain(displayName = "default output format")
   public String getDefaultOutputFormat() {
     return defaultOutputFormat;
-  }
-
-  public void setOutputFormat(String outputFormat) {
-    this.defaultOutputFormat = outputFormat;
   }
 
   @Explain(displayName = "location")
@@ -105,49 +92,19 @@ public class CreateTableLikeDesc extends DDLDesc implements Serializable {
     return location;
   }
 
-  public void setLocation(String location) {
-    this.location = location;
-  }
-
   @Explain(displayName = "isExternal", displayOnlyOnTrue = true)
   public boolean isExternal() {
     return isExternal;
   }
 
-  public void setExternal(boolean isExternal) {
-    this.isExternal = isExternal;
-  }
-
-  /**
-   * @return the default serDeName
-   */
   @Explain(displayName = "default serde name")
   public String getDefaultSerName() {
     return defaultSerName;
   }
 
-  /**
-   * @param serName
-   *          the serName to set
-   */
-  public void setDefaultSerName(String serName) {
-    this.defaultSerName = serName;
-  }
-
-  /**
-   * @return the default serDe properties
-   */
   @Explain(displayName = "serde properties")
   public Map<String, String> getDefaultSerdeProps() {
     return defaultSerdeProps;
-  }
-
-  /**
-   * @param serdeProps
-   *          the default serde properties to set
-   */
-  public void setDefaultSerdeProps(Map<String, String> serdeProps) {
-    this.defaultSerdeProps = serdeProps;
   }
 
   @Explain(displayName = "like")
@@ -155,45 +112,16 @@ public class CreateTableLikeDesc extends DDLDesc implements Serializable {
     return likeTableName;
   }
 
-  public void setLikeTableName(String likeTableName) {
-    this.likeTableName = likeTableName;
-  }
-
-  /**
-   * @return the table properties
-   */
   @Explain(displayName = "table properties")
   public Map<String, String> getTblProps() {
     return tblProps;
   }
 
-  /**
-   * @param tblProps
-   *          the table properties to set
-   */
-  public void setTblProps(Map<String, String> tblProps) {
-    this.tblProps = tblProps;
-  }
-
-  /**
-   * @return the isTemporary
-   */
   @Explain(displayName = "isTemporary", displayOnlyOnTrue = true)
   public boolean isTemporary() {
     return isTemporary;
   }
 
-  /**
-   * @param isTemporary table is Temporary or not.
-   */
-  public void setTemporary(boolean isTemporary) {
-    this.isTemporary = isTemporary;
-  }
-
-  /**
-   * True if user has specified storage format in query
-   * @return boolean
-   */
   public boolean isUserStorageFormat() {
     return this.isUserStorageFormat;
   }

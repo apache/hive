@@ -98,6 +98,10 @@ import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
+import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.table.CreateTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.CreateTableLikeDesc;
+import org.apache.hadoop.hive.ql.ddl.table.PreInsertTableDesc;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -190,8 +194,6 @@ import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
-import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
-import org.apache.hadoop.hive.ql.plan.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
@@ -8079,7 +8081,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private void createPreInsertDesc(Table table, boolean overwrite) {
     PreInsertTableDesc preInsertTableDesc = new PreInsertTableDesc(table, overwrite);
     this.rootTasks
-        .add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), preInsertTableDesc)));
+        .add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), preInsertTableDesc)));
 
   }
 
@@ -12488,10 +12490,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (optionalTezTask.isPresent()) {
       final TezTask tezTask = optionalTezTask.get();
       rootTasks.stream()
-          .filter(task -> task.getWork() instanceof DDLWork)
-          .map(task -> (DDLWork) task.getWork())
-          .filter(ddlWork -> ddlWork.getPreInsertTableDesc() != null)
-          .map(ddlWork -> ddlWork.getPreInsertTableDesc())
+          .filter(task -> task.getWork() instanceof DDLWork2)
+          .map(task -> (DDLWork2) task.getWork())
+          .filter(ddlWork -> ddlWork.getDDLDesc() != null)
+          .map(ddlWork -> (PreInsertTableDesc)ddlWork.getDDLDesc())
           .map(ddlPreInsertTask -> new InsertCommitHookDesc(ddlPreInsertTask.getTable(),
               ddlPreInsertTask.isOverwrite()))
           .forEach(insertCommitHookDesc -> tezTask.addDependentTask(
@@ -13434,8 +13436,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       crtTblDesc.validate(conf);
       // outputs is empty, which means this create table happens in the current
       // database.
-      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-            crtTblDesc)));
+      rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), crtTblDesc)));
       break;
     case ctt: // CREATE TRANSACTIONAL TABLE
       if (isExt) {
@@ -13459,7 +13460,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       crtTranTblDesc.validate(conf);
       // outputs is empty, which means this create table happens in the current
       // database.
-      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), crtTranTblDesc)));
+      rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), crtTranTblDesc)));
       break;
 
     case CTLT: // create table like <tbl_name>
@@ -13478,8 +13479,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           storageFormat.getInputFormat(), storageFormat.getOutputFormat(), location,
           storageFormat.getSerde(), storageFormat.getSerdeProps(), tblProps, ifNotExists,
           likeTableName, isUserStorageFormat);
-      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-            crtTblLikeDesc)));
+      rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), crtTblLikeDesc)));
       break;
 
     case CTAS: // create table as select

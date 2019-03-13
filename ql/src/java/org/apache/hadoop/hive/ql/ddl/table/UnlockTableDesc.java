@@ -16,76 +16,40 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.table;
 
 import java.io.Serializable;
 import java.util.Map;
 
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-
 /**
- * LockTableDesc.
- *
+ * DDL task description for UNLOCK TABLE commands.
  */
-@Explain(displayName = "Lock Table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class LockTableDesc extends DDLDesc implements Serializable {
+@Explain(displayName = "Unlock Table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class UnlockTableDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
-  private String tableName;
-  private String mode;
-  private Map<String, String> partSpec;
-  private String queryId;
-  private String queryStr;
-
-  public LockTableDesc() {
+  static {
+    DDLTask2.registerOperation(UnlockTableDesc.class, UnlockTableOperation.class);
   }
 
-  public LockTableDesc(String tableName, String mode, Map<String, String> partSpec, String queryId) {
+  private final String tableName;
+  private final Map<String, String> partSpec;
+
+  public UnlockTableDesc(String tableName, Map<String, String> partSpec) {
     this.tableName = tableName;
-    this.mode      = mode;
     this.partSpec  = partSpec;
-    this.queryId   = queryId;
   }
 
   public String getTableName() {
     return tableName;
   }
 
-  public void setTableName(String tableName) {
-    this.tableName = tableName;
-  }
-
-  public void setMode(String mode) {
-    this.mode = mode;
-  }
-
-  public String getMode() {
-    return mode;
-  }
-
   public Map<String, String> getPartSpec() {
     return partSpec;
-  }
-
-  public void setPartSpec(Map<String, String> partSpec) {
-    this.partSpec = partSpec;
-  }
-
-  public String getQueryId() {
-    return queryId;
-  }
-
-  public void setQueryId(String queryId) {
-    this.queryId = queryId;
-  }
-
-  public String getQueryStr() {
-    return queryStr;
-  }
-
-  public void setQueryStr(String queryStr) {
-    this.queryStr = queryStr;
   }
 }

@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
@@ -490,7 +491,7 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
    */
   @Override
   public void showDatabaseDescription(DataOutputStream out, String database, String comment,
-      String location, String ownerName, String ownerType, Map<String, String> params)
+      String location, String ownerName, PrincipalType ownerType, Map<String, String> params)
           throws HiveException {
     MapBuilder builder = MapBuilder.create().put("database", database).put("comment", comment)
         .put("location", location);
@@ -498,7 +499,7 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
       builder.put("owner", ownerName);
     }
     if (null != ownerType) {
-      builder.put("ownerType", ownerType);
+      builder.put("ownerType", ownerType.name());
     }
     if (null != params && !params.isEmpty()) {
       builder.put("params", params);
