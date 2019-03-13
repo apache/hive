@@ -235,7 +235,6 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
-                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: decimal(17,2))
         Reducer 3 
             Execution mode: vectorized
@@ -245,16 +244,13 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
-                Limit
-                  Number of rows: 100
+                File Output Operator
+                  compressed: false
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 6 
             Execution mode: vectorized
             Reduce Operator Tree:
@@ -293,7 +289,7 @@ STAGE PLANS:
 
   Stage: Stage-0
     Fetch Operator
-      limit: 100
+      limit: -1
       Processor Tree:
         ListSink
 

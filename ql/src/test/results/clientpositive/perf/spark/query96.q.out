@@ -48,7 +48,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 4 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: time_dim
@@ -67,7 +67,7 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 5 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: household_demographics
@@ -86,7 +86,7 @@ STAGE PLANS:
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Map 6 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: store
@@ -110,7 +110,6 @@ STAGE PLANS:
     Spark
       Edges:
         Reducer 2 <- Map 1 (GROUP, 1)
-        Reducer 3 <- Reducer 2 (SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -133,7 +132,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         outputColumnNames: _col1, _col2
                         input vertices:
-                          1 Map 4
+                          1 Map 3
                         Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
                         Map Join Operator
                           condition map:
@@ -143,7 +142,7 @@ STAGE PLANS:
                             1 _col0 (type: int)
                           outputColumnNames: _col2
                           input vertices:
-                            1 Map 5
+                            1 Map 4
                           Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
                           Map Join Operator
                             condition map:
@@ -152,7 +151,7 @@ STAGE PLANS:
                               0 _col2 (type: int)
                               1 _col0 (type: int)
                             input vertices:
-                              1 Map 6
+                              1 Map 5
                             Statistics: Num rows: 766650239 Data size: 67634106676 Basic stats: COMPLETE Column stats: NONE
                             Group By Operator
                               aggregations: count()
@@ -174,32 +173,13 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: bigint)
-                  outputColumnNames: _col1
+                File Output Operator
+                  compressed: false
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col1 (type: bigint)
-                    sort order: +
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    TopN Hash Memory Usage: 0.1
-        Reducer 3 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: bigint)
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                Limit
-                  Number of rows: 100
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator

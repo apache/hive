@@ -23,9 +23,8 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
-        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -70,7 +69,7 @@ STAGE PLANS:
                 allNative: true
                 usesVectorUDFAdaptor: false
                 vectorized: true
-        Map 5 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: t2
@@ -166,42 +165,16 @@ STAGE PLANS:
                       projectedOutputColumnNums: [0, 1, 2, 6]
                       selectExpressions: DoubleColDivideLongColumn(col 5:double, col 4:bigint)(children: CastLongToDouble(col 3:bigint) -> 5:double) -> 6:double
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: bigint)
-                    sort order: +
-                    Reduce Sink Vectorization:
-                        className: VectorReduceSinkObjectHashOperator
-                        native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  File Output Operator
+                    compressed: false
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
                     Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: double)
-        Reducer 4 
-            Execution mode: vectorized, llap
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: bigint), VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: double)
-                outputColumnNames: _col0, _col1, _col2, _col3
-                Select Vectorization:
-                    className: VectorSelectOperator
-                    native: true
-                    projectedOutputColumnNums: [0, 1, 2, 3]
-                Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  File Sink Vectorization:
-                      className: VectorFileSinkOperator
-                      native: false
-                  Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator

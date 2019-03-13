@@ -86,3 +86,130 @@ POSTHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
 1	12	6
 1	2	6
+PREHOOK: query: explain cbo select count(*) cs from cbo_t1 where c_int > 1 order by cs limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select count(*) cs from cbo_t1 where c_int > 1 order by cs limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[count()])
+  HiveFilter(condition=[>($2, 1)])
+    HiveTableScan(table=[[default, cbo_t1]], table:alias=[cbo_t1])
+
+PREHOOK: query: select count(*) cs from cbo_t1 where c_int > 1 order by cs limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) cs from cbo_t1 where c_int > 1 order by cs limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+0
+PREHOOK: query: explain cbo select count(*) cs from cbo_t1 where c_int > 1 order by cs
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select count(*) cs from cbo_t1 where c_int > 1 order by cs
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[count()])
+  HiveFilter(condition=[>($2, 1)])
+    HiveTableScan(table=[[default, cbo_t1]], table:alias=[cbo_t1])
+
+PREHOOK: query: select count(*) cs from cbo_t1 where c_int > 1 order by cs
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) cs from cbo_t1 where c_int > 1 order by cs
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+0
+PREHOOK: query: explain cbo select count(*) cs from cbo_t1 where c_int > 1 LIMIT 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select count(*) cs from cbo_t1 where c_int > 1 LIMIT 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[count()])
+  HiveFilter(condition=[>($2, 1)])
+    HiveTableScan(table=[[default, cbo_t1]], table:alias=[cbo_t1])
+
+PREHOOK: query: select count(*) cs from cbo_t1 where c_int > 1 LIMIT 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) cs from cbo_t1 where c_int > 1 LIMIT 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+0
+PREHOOK: query: explain cbo select c_int from (select c_int from cbo_t1 where c_float > 1.0 limit 1) subq  where c_int > 1 order by c_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select c_int from (select c_int from cbo_t1 where c_float > 1.0 limit 1) subq  where c_int > 1 order by c_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+CBO PLAN:
+HiveFilter(condition=[>($0, 1)])
+  HiveProject(c_int=[$0])
+    HiveSortLimit(fetch=[1])
+      HiveProject(c_int=[$2])
+        HiveFilter(condition=[>($3, 1.0E0)])
+          HiveTableScan(table=[[default, cbo_t1]], table:alias=[cbo_t1])
+
+PREHOOK: query: select c_int from (select c_int from cbo_t1 where c_float > 1.0 limit 1) subq  where c_int > 1 order by c_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select c_int from (select c_int from cbo_t1 where c_float > 1.0 limit 1) subq  where c_int > 1 order by c_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+PREHOOK: query: explain cbo select count(*) from cbo_t1 order by sum(c_int), count(*)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select count(*) from cbo_t1 order by sum(c_int), count(*)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[count()])
+  HiveTableScan(table=[[default, cbo_t1]], table:alias=[cbo_t1])
+
+PREHOOK: query: select count(*) from cbo_t1 order by sum(c_int), count(*)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from cbo_t1 order by sum(c_int), count(*)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+#### A masked pattern was here ####
+20
