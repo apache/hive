@@ -226,7 +226,9 @@ public class TransactionBatch extends AbstractStreamingTransaction {
         + "..."
         + txnToWriteIds.get(txnToWriteIds.size() - 1).getTxnId()
         + "/" + txnToWriteIds.get(txnToWriteIds.size() - 1).getWriteId()
-        + "] on connection = " + conn + "; " + sb;
+        + "] on connection = { metaStoreUri: " + conn.getMetastoreUri()
+        + ", database: " + conn.getDatabase()
+        + ", table: " + conn.getTable() + " }" + "; " + sb;
   }
 
   public void beginNextTransaction() throws StreamingException {

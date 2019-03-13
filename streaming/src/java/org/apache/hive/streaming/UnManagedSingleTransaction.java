@@ -122,7 +122,9 @@ public class UnManagedSingleTransaction extends AbstractStreamingTransaction {
       return "{}";
     }
     return "TxnId/WriteIds=[" + txnToWriteIds.get(0).getWriteId()
-        + "] on connection = " + conn + "; " + "status=" + state;
+        + "] on connection = { metaStoreUri: " + conn.getMetastoreUri()
+        + ", database: " + conn.getDatabase()
+        + ", table: " + conn.getTable() + " }; " + "status=" + state;
   }
 
   /**

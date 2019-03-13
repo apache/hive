@@ -407,7 +407,12 @@ public class HiveStreamingConnection implements StreamingConnection {
 
   @Override
   public String toString() {
-    return "{ metaStoreUri: " + metastoreUri + ", database: " + database + ", table: " + table + " }";
+    return "{ metaStoreUri: " + metastoreUri
+            + ", database: " + database
+            + ", table: " + table
+            + ", currentTransactionBatch: " + currentTransactionBatch
+            + ", staticPartitionValues: " + staticPartitionValues
+            + " }";
   }
 
   private String toConnectionInfoString() {
