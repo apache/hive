@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +50,6 @@ import org.apache.calcite.rex.RexPermuteInputsShuttle;
 import org.apache.calcite.rex.RexTableInputRef;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitor;
-import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.validate.SqlValidator;
 import org.apache.calcite.sql2rel.CorrelationReferenceFinder;
@@ -66,13 +63,11 @@ import org.apache.calcite.util.mapping.MappingType;
 import org.apache.calcite.util.mapping.Mappings;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
-import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -322,24 +317,6 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
   }
 
 
-  private static class TableRefFinder extends RexVisitorImpl<Void> {
-    private Set<RexTableInputRef> tableRefs = null;
-    TableRefFinder() {
-      super(true);
-      this.tableRefs = new HashSet<>();
-    }
-
-    public Set<RexTableInputRef> getTableRefs() {
-      return this.tableRefs;
-    }
-
-    @Override
-    public Void visitTableInputRef(RexTableInputRef ref) {
-      this.tableRefs.add(ref);
-      return null;
-    }
-  }
-
   // Given a groupset this tries to find out if the cardinality of the grouping columns could have changed
   // because if not and it consist of keys (unique + not null OR pk), we can safely remove rest of the columns
   // if those are columns are not being used further up
@@ -349,48 +326,39 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     RexBuilder rexBuilder = aggregate.getCluster().getRexBuilder();
     RelMetadataQuery mq = aggregate.getCluster().getMetadataQuery();
 
-    Iterator<Integer> iterator = originalGroupSet.iterator();
-    Map<Pair<RelOptTable, Integer>, Pair<List<Integer>, List<Integer>>> mapGBKeysLineage= new HashMap<>();
+    // map from backtracked table ref to list of gb keys and list of corresponding backtracked columns
+    Map<RexTableInputRef.RelTableRef, List<Pair<Integer, Integer>>> mapGBKeysLineage= new HashMap<>();
 
-    Map<Pair<RelOptTable, Integer>, List<Integer>> candidateKeys = new HashMap<>();
+    // map from table ref to list of columns (from gb keys) which are candidate to be removed
+    Map<RexTableInputRef.RelTableRef, List<Integer>> candidateKeys = new HashMap<>();
 
-    while(iterator.hasNext()) {
-      Integer key = iterator.next();
-      RexNode inputRef = rexBuilder.makeInputRef(aggregate.getInput(), key.intValue());
-      Set<RexNode> exprLineage = mq.getExpressionLineage(aggregate, inputRef);
+    for(int key:originalGroupSet) {
+      RexNode inputRef = rexBuilder.makeInputRef(aggregate.getInput(), key);
+      Set<RexNode> exprLineage = mq.getExpressionLineage(aggregate.getInput(), inputRef);
       if(exprLineage != null && exprLineage.size() == 1){
         RexNode expr = exprLineage.iterator().next();
         if(expr instanceof RexTableInputRef) {
           RexTableInputRef tblRef = (RexTableInputRef)expr;
-          Pair<RelOptTable, Integer> baseTable = Pair.of(tblRef.getTableRef().getTable(), tblRef.getTableRef().getEntityNumber());
-          if(mapGBKeysLineage.containsKey(baseTable)) {
-            List<Integer> baseCol = mapGBKeysLineage.get(baseTable).left;
-            baseCol.add(tblRef.getIndex());
-            List<Integer> gbKey = mapGBKeysLineage.get(baseTable).right;
-            gbKey.add(key);
+          if(mapGBKeysLineage.containsKey(tblRef.getTableRef())) {
+            mapGBKeysLineage.get(tblRef.getTableRef()).add(Pair.of(tblRef.getIndex(), key));
           } else {
-            List<Integer> baseCol = new ArrayList<>();
-            baseCol.add(tblRef.getIndex());
-            List<Integer> gbKey = new ArrayList<>();
-            gbKey.add(key);
-            mapGBKeysLineage.put(baseTable, Pair.of(baseCol, gbKey));
+            List<Pair<Integer, Integer>> newList = new ArrayList<>();
+            newList.add(Pair.of(tblRef.getIndex(), key));
+            mapGBKeysLineage.put(tblRef.getTableRef(), newList);
           }
         } else if(RexUtil.isDeterministic(expr)){
           // even though we weren't able to backtrack this key it could still be candidate for removal
           // if rest of the columns contain pk/unique
-          TableRefFinder finder = new TableRefFinder();
-          expr.accept(finder);
-          Set<RexTableInputRef> tableRefs = finder.getTableRefs();
+          Set<RexTableInputRef.RelTableRef> tableRefs = RexUtil.gatherTableReferences(Lists.newArrayList(expr));
           if(tableRefs.size() == 1) {
-            RexTableInputRef tblRef = tableRefs.iterator().next();
-            Pair<RelOptTable, Integer> baseTable = Pair.of(tblRef.getTableRef().getTable(), tblRef.getTableRef().getEntityNumber());
-            if(candidateKeys.containsKey(baseTable)) {
-              List<Integer> candidateGBKeys = candidateKeys.get(baseTable);
+            RexTableInputRef.RelTableRef tblRef = tableRefs.iterator().next();
+            if(candidateKeys.containsKey(tblRef)) {
+              List<Integer> candidateGBKeys = candidateKeys.get(tblRef);
               candidateGBKeys.add(key);
             } else {
               List<Integer> candidateGBKeys =  new ArrayList<>();
               candidateGBKeys.add(key);
-              candidateKeys.put(baseTable, candidateGBKeys);
+              candidateKeys.put(tblRef, candidateGBKeys);
             }
           }
         }
@@ -400,12 +368,13 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     // we want to delete all columns in original GB set except the key
     ImmutableBitSet.Builder builder = ImmutableBitSet.builder();
 
-    for(Map.Entry<Pair<RelOptTable, Integer>, Pair<List<Integer>, List<Integer>>> entry:mapGBKeysLineage.entrySet()) {
-      RelOptHiveTable tbl = (RelOptHiveTable)entry.getKey().left;
-      List<Integer> backtrackedGBList = entry.getValue().left;
-      List<Integer> gbKeys = entry.getValue().right;
+    for(Map.Entry<RexTableInputRef.RelTableRef, List<Pair<Integer, Integer>>> entry:mapGBKeysLineage.entrySet()) {
+      RelOptHiveTable tbl = (RelOptHiveTable)entry.getKey().getTable();
+      List<Pair<Integer, Integer>> gbKeyCols = entry.getValue();
 
-      ImmutableBitSet backtrackedGBSet = ImmutableBitSet.builder().addAll(backtrackedGBList).build();
+      ImmutableBitSet.Builder btBuilder = ImmutableBitSet.builder();
+      gbKeyCols.forEach(pair -> btBuilder.set(pair.left));
+      ImmutableBitSet backtrackedGBSet = btBuilder.build();
 
       List<ImmutableBitSet> allKeys = tbl.getNonNullableKeys();
       ImmutableBitSet currentKey = null;
@@ -421,19 +390,19 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
       }
 
       // we have established that this gb set contains keys and it is safe to remove rest of the columns
-      for(int i=0; i<backtrackedGBList.size(); i++) {
-        Integer backtrackedCol = backtrackedGBList.get(i);
-        int orgCol = gbKeys.get(i);
-        if(!fieldsUsed.get((orgCol))
+      for(Pair<Integer, Integer> gbKeyColPair:gbKeyCols) {
+        Integer backtrackedCol = gbKeyColPair.left;
+        Integer orgCol =  gbKeyColPair.right;
+        if(!fieldsUsed.get(orgCol)
             && !currentKey.get(backtrackedCol)) {
-          // keep the columns which are being used or are part of keys
+          // this could could be removed
           builder.set(orgCol);
         }
       }
       // remove candidate keys if possible
       if(candidateKeys.containsKey(entry.getKey())) {
-        List<Integer> candiateGbKeys = candidateKeys.get(entry.getKey());
-        for(Integer keyToRemove:candiateGbKeys) {
+        List<Integer> candidateGbKeys= candidateKeys.get(entry.getKey());
+        for(Integer keyToRemove:candidateGbKeys) {
           if(!fieldsUsed.get(keyToRemove)) {
             builder.set(keyToRemove);
           }
@@ -441,7 +410,9 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
       }
     }
     ImmutableBitSet keysToRemove = builder.build();
-    return originalGroupSet.except(keysToRemove);
+    ImmutableBitSet newGroupSet = originalGroupSet.except(keysToRemove);
+    assert(!newGroupSet.isEmpty());
+    return newGroupSet;
   }
 
   // if gby keys consist of pk/uk non-pk/non-uk columns are removed if they are not being used
