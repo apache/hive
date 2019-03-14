@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer.stats.annotation;
 
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -634,6 +635,14 @@ public class StatsRulesProcFactory {
             return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
           }
           default:
+            if (colType.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
+              BigDecimal value = new BigDecimal(boundValue);
+              BigDecimal maxValue = new BigDecimal(range.maxValue.toString());
+              BigDecimal minValue = new BigDecimal(range.minValue.toString());
+              int minComparison = value.compareTo(minValue);
+              int maxComparison = value.compareTo(maxValue);
+              return RangeResult.of(minComparison < 0, maxComparison < 0, minComparison == 0, maxComparison == 0);
+            }
             return null;
           }
         } catch (Exception e) {
@@ -1057,6 +1066,27 @@ public class StatsRulesProcFactory {
                 return numRows;
               }
               if (maxValue < value) {
+                return 0;
+              }
+            }
+          } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
+            BigDecimal value = new BigDecimal(boundValue);
+            BigDecimal maxValue = new BigDecimal(cs.getRange().maxValue.toString());
+            BigDecimal minValue = new BigDecimal(cs.getRange().minValue.toString());
+            int minComparison = value.compareTo(minValue);
+            int maxComparison = value.compareTo(maxValue);
+            if (upperBound) {
+              if (maxComparison > 0) {
+                return numRows;
+              }
+              if (minComparison < 0) {
+                return 0;
+              }
+            } else {
+              if (minComparison <= 0) {
+                return numRows;
+              }
+              if (maxComparison > 0) {
                 return 0;
               }
             }
