@@ -153,14 +153,13 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         Map Join Vectorization:
                             bigTableKeyColumns: 1:int
-                            bigTableRetainColumnNums: [3]
-                            bigTableValueColumns: 3:decimal(8,1)
-                            bigTableValueExpressions: ConvertDecimal64ToDecimal(col 0:decimal(8,1)/DECIMAL_64) -> 3:decimal(8,1)
+                            bigTableRetainColumnNums: [0]
+                            bigTableValueColumns: 0:decimal(8,1)
                             className: VectorMapJoinInnerBigOnlyLongOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                             nonOuterSmallTableKeyMapping: []
-                            projectedOutput: 3:decimal(8,1)
+                            projectedOutput: 0:decimal(8,1)
                             hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col0
                         input vertices:
@@ -192,7 +191,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: decimal0801_col:decimal(8,1)/DECIMAL_64, int_col_1:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(8,1)]
+                    scratchColumnTypeNames: []
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -364,14 +363,13 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         Map Join Vectorization:
                             bigTableKeyColumns: 1:int
-                            bigTableRetainColumnNums: [3]
-                            bigTableValueColumns: 3:decimal(8,1)
-                            bigTableValueExpressions: ConvertDecimal64ToDecimal(col 0:decimal(8,1)/DECIMAL_64) -> 3:decimal(8,1)
+                            bigTableRetainColumnNums: [0]
+                            bigTableValueColumns: 0:decimal(8,1)
                             className: VectorMapJoinInnerBigOnlyLongOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                             nonOuterSmallTableKeyMapping: []
-                            projectedOutput: 3:decimal(8,1)
+                            projectedOutput: 0:decimal(8,1)
                             hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col0
                         input vertices:
@@ -403,7 +401,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: decimal0801_col:decimal(8,1)/DECIMAL_64, int_col_1:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(8,1)]
+                    scratchColumnTypeNames: []
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -575,14 +573,13 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         Map Join Vectorization:
                             bigTableKeyColumns: 1:int
-                            bigTableRetainColumnNums: [3]
-                            bigTableValueColumns: 3:decimal(8,1)
-                            bigTableValueExpressions: ConvertDecimal64ToDecimal(col 0:decimal(8,1)/DECIMAL_64) -> 3:decimal(8,1)
+                            bigTableRetainColumnNums: [0]
+                            bigTableValueColumns: 0:decimal(8,1)
                             className: VectorMapJoinInnerBigOnlyLongOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                             nonOuterSmallTableKeyMapping: []
-                            projectedOutput: 3:decimal(8,1)
+                            projectedOutput: 0:decimal(8,1)
                             hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col0
                         input vertices:
@@ -614,7 +611,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: decimal0801_col:decimal(8,1)/DECIMAL_64, int_col_1:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(8,1)]
+                    scratchColumnTypeNames: []
         Map 2 
             Map Operator Tree:
                 TableScan
