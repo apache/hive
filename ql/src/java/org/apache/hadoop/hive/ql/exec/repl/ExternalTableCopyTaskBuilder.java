@@ -90,7 +90,7 @@ public class ExternalTableCopyTaskBuilder {
       } catch (FileNotFoundException e) {
         // Don't delete target path created else ddl task will try to create it using user hive and may fail.
         LOG.warn("source path missing " + sourcePath);
-        return false;
+        return createdDir;
       }
       LOG.info("Setting permission for path dest {} from source {} owner {} : {} : {}",
               destPath, sourcePath, status.getOwner(), status.getGroup(), status.getPermission());
@@ -99,39 +99,48 @@ public class ExternalTableCopyTaskBuilder {
       return createdDir;
     }
 
-    private boolean setTargetPathOwner(Path targetPath, Path sourcePath, String distCpDoAsUser)
-            throws IOException {
-      if (distCpDoAsUser == null) {
+    private boolean setTargetPathOwner(Path targetPath, Path sourcePath, UserGroupInformation proxyUser)
+            throws IOException, InterruptedException {
+      if (proxyUser == null) {
         return createAndSetPathOwner(targetPath, sourcePath);
       }
-      UserGroupInformation proxyUser = UserGroupInformation.createProxyUser(
-              distCpDoAsUser, UserGroupInformation.getLoginUser());
-      try {
-        Path finalTargetPath = targetPath;
-        Path finalSourcePath = sourcePath;
-        return proxyUser.doAs((PrivilegedExceptionAction<Boolean>) () ->
-                createAndSetPathOwner(finalTargetPath, finalSourcePath));
-      } catch (InterruptedException e) {
-        throw new IOException(e);
-      }
+      return proxyUser.doAs((PrivilegedExceptionAction<Boolean>) () ->
+                createAndSetPathOwner(targetPath, sourcePath));
     }
 
-    private int handleException(Exception e, Path sourcePath, Path targetPath, int currentRetry) {
+    private boolean checkIfPathExist(Path sourcePath, UserGroupInformation proxyUser) throws Exception {
+      if (proxyUser == null) {
+        return sourcePath.getFileSystem(conf).exists(sourcePath);
+      }
+      return proxyUser.doAs((PrivilegedExceptionAction<Boolean>) () ->
+              sourcePath.getFileSystem(conf).exists(sourcePath));
+    }
+
+    private int handleException(Exception e, Path sourcePath, Path targetPath,
+                                int currentRetry, UserGroupInformation proxyUser) {
       try {
-        if (!sourcePath.getFileSystem(conf).exists(sourcePath)) {
-          LOG.warn("Source path missing " + sourcePath, e);
+        LOG.warn("Checking if source path " + sourcePath + " is missing for exception ", e);
+        if (!checkIfPathExist(sourcePath, proxyUser)) {
+          LOG.warn("Source path is missing. Ignoring exception.");
           return 0;
         }
       } catch (Exception ex) {
-        LOG.warn("Source path missing check failed" + sourcePath, ex);
+        LOG.warn("Source path missing check failed. ", ex);
+      }
+
+      // retry logic only for i/o exception
+      if (!(e instanceof IOException)) {
+        LOG.error("Unable to copy {} to {}", sourcePath, targetPath, e);
+        setException(e);
+        return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
       }
 
       if (currentRetry <= MAX_COPY_RETRY) {
-        LOG.warn("unable to copy {} to {}", sourcePath, targetPath, e);
+        LOG.warn("Unable to copy {} to {}", sourcePath, targetPath, e);
       } else {
-        LOG.error("unable to copy {} to {}", sourcePath, targetPath, e);
+        LOG.error("Unable to copy {} to {}", sourcePath, targetPath, e);
         setException(e);
-        return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+        return ErrorMsg.REPL_FILE_SYSTEM_OPERATION_RETRY.getErrorCode();
       }
 
       int sleepTime = FileUtils.getSleepTime(currentRetry);
@@ -139,13 +148,16 @@ public class ExternalTableCopyTaskBuilder {
       try {
         Thread.sleep(sleepTime);
       } catch (InterruptedException timerEx) {
-        LOG.info("sleep interrupted", timerEx.getMessage());
+        LOG.info("Sleep interrupted", timerEx.getMessage());
       }
 
       try {
-        FileSystem.closeAllForUGI(Utils.getUGI());
+        if (proxyUser == null) {
+          proxyUser = Utils.getUGI();
+        }
+        FileSystem.closeAllForUGI(proxyUser);
       } catch (Exception ex) {
-        LOG.error("unable to closeAllForUGI", ex);
+        LOG.warn("Unable to closeAllForUGI for user " + proxyUser, ex);
       }
       return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     }
@@ -162,14 +174,17 @@ public class ExternalTableCopyTaskBuilder {
       }
       int currentRetry = 0;
       int error = 0;
+      UserGroupInformation proxyUser = null;
       while (currentRetry <= MAX_COPY_RETRY) {
         try {
           UserGroupInformation ugi = Utils.getUGI();
           String currentUser = ugi.getShortUserName();
-          boolean usePrivilegedUser =
-              distCpDoAsUser != null && !currentUser.equals(distCpDoAsUser);
+          if (distCpDoAsUser != null && !currentUser.equals(distCpDoAsUser)) {
+            proxyUser = UserGroupInformation.createProxyUser(
+                    distCpDoAsUser, UserGroupInformation.getLoginUser());
+          }
 
-          setTargetPathOwner(targetPath, sourcePath, usePrivilegedUser ? distCpDoAsUser : null);
+          setTargetPathOwner(targetPath, sourcePath, proxyUser);
 
           // do we create a new conf and only here provide this additional option so that we get away from
           // differences of data in two location for the same directories ?
@@ -179,15 +194,28 @@ public class ExternalTableCopyTaskBuilder {
               Collections.singletonList(sourcePath),  // list of source paths
               targetPath,
               false,
-              usePrivilegedUser ? distCpDoAsUser : null,
+              proxyUser,
               conf,
               ShimLoader.getHadoopShims());
           return 0;
         } catch (Exception e) {
           currentRetry++;
-          error = handleException(e, sourcePath, targetPath, currentRetry);
+          error = handleException(e, sourcePath, targetPath, currentRetry, proxyUser);
           if (error == 0) {
             return 0;
+          }
+        } finally {
+          if (proxyUser != null) {
+            try {
+              FileSystem.closeAllForUGI(proxyUser);
+            } catch (IOException e) {
+              LOG.error("Unable to closeAllForUGI for user " + proxyUser, e);
+              if (error == 0) {
+                setException(e);
+                error = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+              }
+              break;
+            }
           }
         }
       }
