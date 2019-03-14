@@ -1,0 +1,162 @@
+PREHOOK: query: create temporary table foo(x int , y decimal(7,2))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@foo
+POSTHOOK: query: create temporary table foo(x int , y decimal(7,2))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@foo
+PREHOOK: query: create temporary table bar(x int , y decimal(7,2))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@bar
+POSTHOOK: query: create temporary table bar(x int , y decimal(7,2))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@bar
+PREHOOK: query: explain vectorization detail select sum(foo.y) from foo, bar where foo.x = bar.x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bar
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail select sum(foo.y) from foo, bar where foo.x = bar.x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bar
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-5 is a root stage
+  Stage-2 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_0:foo 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_0:foo 
+          TableScan
+            alias: foo
+            filterExpr: x is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: x is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: x (type: int), y (type: decimal(7,2))
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: bar
+            filterExpr: x is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:x:int, 1:y:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+            Filter Operator
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: SelectColumnIsNotNull(col 0:int)
+              predicate: x is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: x (type: int)
+                outputColumnNames: _col0
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0]
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+                  Map Join Vectorization:
+                      bigTableKeyExpressions: col 0:int
+                      className: VectorMapJoinOperator
+                      native: false
+                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+                  outputColumnNames: _col1
+                  Statistics: Num rows: 1 Data size: 127 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: sum(_col1)
+                    Group By Vectorization:
+                        aggregators: VectorUDAFSumDecimal(col 0:decimal(7,2)) -> decimal(17,2)
+                        className: VectorGroupByOperator
+                        groupByMode: HASH
+                        native: false
+                        vectorProcessingMode: HASH
+                        projectedOutputColumnNums: [0]
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Reduce Sink Vectorization:
+                          className: VectorReduceSinkOperator
+                          native: false
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: decimal(17,2))
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
+          inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 2
+              includeColumns: [0]
+              dataColumns: x:int, y:decimal(7,2)/DECIMAL_64
+              partitionColumnCount: 0
+              scratchColumnTypeNames: [decimal(7,2)]
+      Local Work:
+        Map Reduce Local Work
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
