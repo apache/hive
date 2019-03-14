@@ -48,6 +48,7 @@ import java.util.stream.Stream;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
@@ -191,6 +192,7 @@ public final class QueryResultsCache {
     private QueryInfo queryInfo;
     private FetchWork fetchWork;
     private Path cachedResultsPath;
+    private Set<FileStatus> cachedResultPaths;
 
     // Cache administration
     private long size;
@@ -275,8 +277,9 @@ public final class QueryResultsCache {
 
     public FetchWork getFetchWork() {
       // FetchWork's sink is used to hold results, so each query needs a separate copy of FetchWork
-      FetchWork fetch = new FetchWork(cachedResultsPath, fetchWork.getTblDesc(), fetchWork.getLimit());
+      FetchWork fetch = new FetchWork(fetchWork.getTblDir(), fetchWork.getTblDesc(), fetchWork.getLimit());
       fetch.setCachedResult(true);
+      fetch.setFilesToFetch(this.cachedResultPaths);
       return fetch;
     }
 
@@ -409,6 +412,10 @@ public final class QueryResultsCache {
     return instance;
   }
 
+  public Path getCacheDirPath() {
+    return cacheDirPath;
+  }
+
   /**
    * Check if the cache contains an entry for the requested LookupInfo.
    * @param request
@@ -523,24 +530,29 @@ public final class QueryResultsCache {
     Path cachedResultsPath = null;
 
     try {
-      boolean requiresMove = true;
-      queryResultsPath = fetchWork.getTblDir();
-      FileSystem resultsFs = queryResultsPath.getFileSystem(conf);
-      long resultSize;
-      if (resultsFs.exists(queryResultsPath)) {
-        ContentSummary cs = resultsFs.getContentSummary(queryResultsPath);
-        resultSize = cs.getLength();
-      } else {
-        // No actual result directory, no need to move anything.
-        cachedResultsPath = zeroRowsPath;
-        // Even if there are no results to move, at least check that we have permission
-        // to check the existence of zeroRowsPath, or the read using the cache will fail.
-        // A failure here will cause this query to not be added to the cache.
-        FileSystem cacheFs = cachedResultsPath.getFileSystem(conf);
-        boolean fakePathExists = cacheFs.exists(zeroRowsPath);
+      // if we are here file sink op should have created files to fetch from
+      assert(fetchWork.getFilesToFetch() != null );
 
-        resultSize = 0;
-        requiresMove = false;
+      boolean requiresMove = true;
+      queryResultsPath = Utilities.toTempPath(fetchWork.getTblDir());
+      FileSystem resultsFs = queryResultsPath.getFileSystem(conf);
+
+      long resultSize = 0;
+      for(FileStatus fs:fetchWork.getFilesToFetch()) {
+        if(resultsFs.exists(fs.getPath())) {
+          resultSize +=  fs.getLen();
+        } else {
+          // No actual result directory, no need to move anything.
+          cachedResultsPath = zeroRowsPath;
+          // Even if there are no results to move, at least check that we have permission
+          // to check the existence of zeroRowsPath, or the read using the cache will fail.
+          // A failure here will cause this query to not be added to the cache.
+          FileSystem cacheFs = cachedResultsPath.getFileSystem(conf);
+          boolean fakePathExists = cacheFs.exists(zeroRowsPath);
+          resultSize = 0;
+          requiresMove = false;
+          break;
+        }
       }
 
       if (!shouldEntryBeAdded(cacheEntry, resultSize)) {
@@ -557,18 +569,26 @@ public final class QueryResultsCache {
 
         if (requiresMove) {
           // Move the query results to the query cache directory.
-          cachedResultsPath = moveResultsToCacheDirectory(queryResultsPath);
+          //Set<Path> queryResultFiles = new HashSet<>();
+          //if(fetchWork.getFilesToFetch() != null && !fetchWork.getFilesToFetch().isEmpty()) {
+          cacheEntry.cachedResultPaths = new HashSet<>();
+            for(FileStatus fs:fetchWork.getFilesToFetch()) {
+              cacheEntry.cachedResultPaths.add(fs);
+            }
+          //}
+          //cachedResultsPath = moveResultsToCacheDirectory(queryResultFiles);
           dataDirMoved = true;
         }
-        LOG.info("Moved query results from {} to {} (size {}) for query '{}'",
-            queryResultsPath, cachedResultsPath, resultSize, queryText);
+        //LOG.info("Moved query results from {} to {} (size {}) for query '{}'",
+         //   queryResultsPath, cachedResultsPath, resultSize, queryText);
 
         // Create a new FetchWork to reference the new cache location.
         FetchWork fetchWorkForCache =
-            new FetchWork(cachedResultsPath, fetchWork.getTblDesc(), fetchWork.getLimit());
+            new FetchWork(fetchWork.getTblDir(), fetchWork.getTblDesc(), fetchWork.getLimit());
         fetchWorkForCache.setCachedResult(true);
+        fetchWorkForCache.setFilesToFetch(fetchWork.getFilesToFetch());
         cacheEntry.fetchWork = fetchWorkForCache;
-        cacheEntry.cachedResultsPath = cachedResultsPath;
+        //cacheEntry.cachedResultsPath = cachedResultsPath;
         cacheEntry.size = resultSize;
         this.cacheSize += resultSize;
 
@@ -783,14 +803,17 @@ public final class QueryResultsCache {
     return true;
   }
 
-  private Path moveResultsToCacheDirectory(Path queryResultsPath) throws IOException {
+  private Path moveResultsToCacheDirectory(Set<Path> queryResultsPath) throws IOException {
     String dirName = UUID.randomUUID().toString();
     Path cachedResultsPath = new Path(cacheDirPath, dirName);
     FileSystem fs = cachedResultsPath.getFileSystem(conf);
+    fs.mkdirs(cachedResultsPath);
     try {
-      boolean resultsMoved = Hive.moveFile(conf, queryResultsPath, cachedResultsPath, false, false, false);
-      if (!resultsMoved) {
-        throw new IOException("Failed to move " + queryResultsPath + " to " + cachedResultsPath);
+      for(Path resultPath:queryResultsPath) {
+        boolean resultsMoved = Hive.moveFile(conf, resultPath, cachedResultsPath, false, false, false);
+        if (!resultsMoved) {
+          throw new IOException("Failed to move " + queryResultsPath + " to " + cachedResultsPath);
+        }
       }
     } catch (IOException err) {
       throw err;

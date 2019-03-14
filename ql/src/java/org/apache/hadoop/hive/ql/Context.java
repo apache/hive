@@ -780,7 +780,8 @@ public class Context {
       subContext.clear();
     }
     // Then clear this context
-    if (resDir != null) {
+    // TODO: should only be deleted if results weren't cached
+    /*if (resDir != null) {
       try {
         FileSystem fs = resDir.getFileSystem(conf);
         LOG.debug("Deleting result dir: {}",  resDir);
@@ -788,7 +789,7 @@ public class Context {
       } catch (IOException e) {
         LOG.info("Context clear error: " + StringUtils.stringifyException(e));
       }
-    }
+    } */
 
     if (resFile != null) {
       try {
@@ -800,7 +801,7 @@ public class Context {
       }
     }
     removeMaterializedCTEs();
-    removeScratchDir();
+    //removeScratchDir();
     originalTracker = null;
     setNeedLockMgr(false);
   }

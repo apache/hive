@@ -42,6 +42,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
@@ -2339,7 +2340,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           } else {
             // This is the only place where isQuery is set to true; it defaults to false.
             qb.setIsQuery(true);
-            Path stagingPath = getStagingDirectoryPathname(qb);
+            Path stagingPath = getStagingPath(qb);
             fname = stagingPath.toString();
             ctx.setResDir(stagingPath);
           }
@@ -7173,6 +7174,66 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       constraintIdx++;
     }
     return currUDF;
+  }
+
+  private Path getStagingPath(final QB qb) throws HiveException{
+    Path queryPath = null;
+    if (this.isResultsCacheEnabled() && this.queryTypeCanUseCache()) {
+      try {
+        // In case this has not been initialized elsewhere.
+        QueryResultsCache.initialize(conf);
+      } catch (Exception err) {
+        throw new IllegalStateException(err);
+      }
+      QueryResultsCache instance = QueryResultsCache.getInstance();
+
+      // QueryResultsCache should have been initialized by now
+      //assert (instance != null);
+      Path resultCacheTopDir = instance.getCacheDirPath();
+      String dirName = UUID.randomUUID().toString();
+      queryPath = new Path(resultCacheTopDir, dirName);
+    } else {
+      queryPath = getStagingDirectoryPathname(qb);
+    }
+    return queryPath;
+  }
+
+  private Path getQueryTempPath(final Path destinationPath, boolean isMmTable)
+      throws SemanticException {
+    Path fdesinationPath = destinationPath;
+    Path queryTmpdir = null;
+    try {
+      if (this.isResultsCacheEnabled() && this.queryTypeCanUseCache()) {
+        assert (!isMmTable);
+        QueryResultsCache instance = QueryResultsCache.getInstance();
+
+        // QueryResultsCache should have been initialized by now
+        assert (instance != null);
+        Path resultCacheTopDir = instance.getCacheDirPath();
+        String dirName = UUID.randomUUID().toString();
+        fdesinationPath = new Path(resultCacheTopDir, dirName);
+      }
+
+        //FileSystem fs = queryTmpdir.getFileSystem(conf);
+        //TODO: better catch handling
+        //FileUtils.mkdir(fs, queryTmpdir, conf);
+        //if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+         // Utilities.FILE_OP_LOGGER.trace("Setting query directory to result cache dir: " + queryTmpdir);
+        //}
+      //} else {
+        // otherwise write to the file system implied by the directory
+        // no copy is required. we may want to revisit this policy in future
+        Path qPath = FileUtils.makeQualified(fdesinationPath, conf);
+        queryTmpdir = isMmTable ? qPath : ctx.getTempDirForFinalJobPath(qPath);
+        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+          Utilities.FILE_OP_LOGGER.trace("Setting query directory " + queryTmpdir
+                                             + " from " + destinationPath + " (" + isMmTable + ")");
+        }
+    } catch (Exception e) {
+      throw new SemanticException("Error creating temporary folder on: "
+                                      + destinationPath, e);
+    }
+    return queryTmpdir;
   }
 
   @SuppressWarnings("nls")
@@ -15062,6 +15123,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Some initial checks for a query to see if we can look this query up in the results cache.
    */
   private boolean queryTypeCanUseCache() {
+    if(this.qb == null || this.qb.getParseInfo() == null) {
+      return false;
+    }
     if (this instanceof ColumnStatsSemanticAnalyzer) {
       // Column stats generates "select compute_stats() .." queries.
       // Disable caching for these.
@@ -15072,13 +15136,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return false;
     }
 
-    if (qb.getParseInfo().isAnalyzeCommand()) {
-      return false;
-    }
+      if (qb.getParseInfo().isAnalyzeCommand()) {
+        return false;
+      }
 
-    if (qb.getParseInfo().hasInsertTables()) {
-      return false;
-    }
+      if (qb.getParseInfo().hasInsertTables()) {
+        return false;
+      }
 
     // HIVE-19096 - disable for explain analyze
     if (ctx.getExplainAnalyze() != null) {
