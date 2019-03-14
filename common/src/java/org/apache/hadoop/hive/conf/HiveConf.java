@@ -1390,7 +1390,7 @@ public class HiveConf extends Configuration {
      * @deprecated Use MetastoreConf.AGGREGATE_STATS_CACHE_ENABLED
      */
     @Deprecated
-    METASTORE_AGGREGATE_STATS_CACHE_ENABLED("hive.metastore.aggregate.stats.cache.enabled", true,
+    METASTORE_AGGREGATE_STATS_CACHE_ENABLED("hive.metastore.aggregate.stats.cache.enabled", false,
         "Whether aggregate stats caching is enabled or not."),
     /**
      * @deprecated Use MetastoreConf.AGGREGATE_STATS_CACHE_SIZE

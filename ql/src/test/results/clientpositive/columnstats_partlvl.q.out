@@ -813,11 +813,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: employee_part
-            Statistics: Num rows: 26 Data size: 2388 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 26 Data size: 2300 Basic stats: COMPLETE Column stats: PARTIAL
             Select Operator
               expressions: employeeid (type: int), employeename (type: string)
               outputColumnNames: employeeid, employeename
-              Statistics: Num rows: 26 Data size: 2388 Basic stats: COMPLETE Column stats: PARTIAL
+              Statistics: Num rows: 26 Data size: 2300 Basic stats: COMPLETE Column stats: PARTIAL
               Group By Operator
                 aggregations: compute_stats(employeeid, 'hll'), compute_stats(employeename, 'hll')
                 mode: hash
@@ -885,7 +885,7 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"employeename\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"employeeid\":\"true\",\"employeename\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: create database if not exists dummydb
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:dummydb
