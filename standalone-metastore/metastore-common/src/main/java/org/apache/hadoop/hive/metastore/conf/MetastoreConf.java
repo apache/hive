@@ -266,7 +266,7 @@ public class MetastoreConf {
         "hive.metastore.aggregate.stats.cache.clean.until", 0.8,
         "The cleaner thread cleans until cache reaches this % full size."),
     AGGREGATE_STATS_CACHE_ENABLED("metastore.aggregate.stats.cache.enabled",
-        "hive.metastore.aggregate.stats.cache.enabled", true,
+        "hive.metastore.aggregate.stats.cache.enabled", false,
         "Whether aggregate stats caching is enabled or not."),
     AGGREGATE_STATS_CACHE_FPP("metastore.aggregate.stats.cache.fpp",
         "hive.metastore.aggregate.stats.cache.fpp", 0.01,
