@@ -17,7 +17,7 @@
  */
 
 /**
- * This package contains the HiveMetaTool program and the classes used by it.
+ * This package contains contributed input format.
  */
-package org.apache.hadoop.hive.metastore.tools.metatool;
+package org.apache.hadoop.hive.contrib.input;
 
