@@ -663,11 +663,7 @@ public class SessionState {
     }
 
     if (HiveConf.getBoolVar(startSs.getConf(), ConfVars.HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS)) {
-      try {
-        externalSessions = TezExternalSessionsRegistryClient.getClient(startSs.getConf());
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
+      externalSessions = TezExternalSessionsRegistryClient.getClient(startSs.getConf());
     } else {
       externalSessions = null;
     }

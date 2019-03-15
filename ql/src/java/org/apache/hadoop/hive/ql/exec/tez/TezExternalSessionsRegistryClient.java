@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,18 +19,16 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
-import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.client.registry.AMRecord;
+import org.apache.tez.client.registry.AMRegistryClientListener;
 import org.apache.tez.client.registry.zookeeper.ZkAMRegistryClient;
+import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +42,7 @@ public class TezExternalSessionsRegistryClient {
 
   private static Map<String, TezExternalSessionsRegistryClient> INSTANCES = new HashMap<>();
 
-  public static synchronized TezExternalSessionsRegistryClient getClient(final Configuration conf) throws Exception {
+  public static synchronized TezExternalSessionsRegistryClient getClient(final Configuration conf) {
     String namespace = conf.get(TezConfiguration.TEZ_AM_REGISTRY_NAMESPACE);
     TezExternalSessionsRegistryClient registry = INSTANCES.get(namespace);
     if (registry == null) {
@@ -56,52 +54,68 @@ public class TezExternalSessionsRegistryClient {
     return registry;
   }
 
-  private TezExternalSessionsRegistryClient(final Configuration conf) throws Exception {
+  private TezExternalSessionsRegistryClient(final Configuration conf) {
     this.maxAttempts = HiveConf.getIntVar(conf,
       ConfVars.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_WAIT_MAX_ATTEMPTS);
-    this.tezRegistryClient = new ZkAMRegistryClient(conf);
-    long delay = HiveConf.getTimeVar(conf, ConfVars.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_REFRESH_INTERVAL,
-      TimeUnit.SECONDS);
-    final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-    executorService.scheduleWithFixedDelay(new AMRefresher(tezRegistryClient, lock, available, taken), 5, delay,
-      TimeUnit.SECONDS);
+    this.tezRegistryClient = ZkAMRegistryClient.getClient(conf);
+    // add listener before init to get events from the beginning (path children build initial cache)
+    this.tezRegistryClient.addListener(new AMStateListener(available, taken, lock));
+    try {
+      this.tezRegistryClient.start();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+    List<AMRecord> initialSessions = this.tezRegistryClient.getAllRecords();
+    for (AMRecord amRecord : initialSessions) {
+      if (amRecord != null && amRecord.getApplicationId() != null) {
+        this.available.add(amRecord.getApplicationId().toString());
+      }
+    }
+    LOG.info("Found {} initial external sessions.", this.available.size());
+  }
+
+  private static class AMStateListener implements AMRegistryClientListener {
+    private final HashSet<String> available;
+    private final HashSet<String> taken;
+    private final Object lock;
+
+    AMStateListener(final HashSet<String> available, final HashSet<String> taken, final Object lock) {
+      this.available = available;
+      this.taken = taken;
+      this.lock = lock;
+    }
+
+    @Override
+    public void onAdd(final AMRecord amRecord) {
+      if (amRecord != null && amRecord.getApplicationId() != null) {
+        final String appId = amRecord.getApplicationId().toString();
+        synchronized (lock) {
+          // this is just a safeguard, if an appId is already taken, then new AM with the same appId cannot appear.
+          if (!taken.contains(appId) && !available.contains(appId)) {
+            available.add(appId);
+            LOG.info("Adding external session with applicationId: {}", appId);
+            lock.notifyAll();
+          }
+        }
+      }
+    }
+
+    @Override
+    public void onRemove(final AMRecord amRecord) {
+      if (amRecord != null && amRecord.getApplicationId() != null) {
+        final String appId = amRecord.getApplicationId().toString();
+        synchronized (lock) {
+          available.remove(appId);
+          taken.remove(appId);
+          LOG.info("Removed external session with applicationId: {}", appId);
+        }
+      }
+    }
   }
 
   public void close() {
     if (tezRegistryClient != null) {
       tezRegistryClient.close();
-    }
-  }
-
-  private static class AMRefresher implements Runnable {
-    private final HashSet<String> available;
-    private final HashSet<String> taken;
-    private final Object lock;
-    private final ZkAMRegistryClient tezRegistryClient;
-
-    AMRefresher(final ZkAMRegistryClient tezRegistryClient, final Object lock, final HashSet<String> available,
-      final HashSet<String> taken) {
-      this.tezRegistryClient = tezRegistryClient;
-      this.lock = lock;
-      this.available = available;
-      this.taken = taken;
-    }
-
-    @Override
-    public void run() {
-      synchronized (lock) {
-        // clear to remove old/dead entries
-        available.clear();
-        // TODO: This can be expensive if getAllRecords clones. We need a way for clients to register to updates from
-        // path children cache so that clients can cache and avoid this periodic polling
-        for (AMRecord amRecord : tezRegistryClient.getAllRecords()) {
-          if (!taken.contains(amRecord.getApplicationId())) {
-            available.add(amRecord.getApplicationId().toString());
-          }
-        }
-        LOG.info("Refreshed external sessions. available[{}]: {}", available.size(), available);
-        lock.notifyAll();
-      }
     }
   }
 

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -440,7 +441,7 @@ public class TezSessionPoolManager extends AbstractTriggerValidator
 
       // Working in the assumption that the user here will be the hive user if doAs = false, we'll make it past this false check.
       LOG.info("The current user: " + userName + ", session user: " + session.getUser());
-      if (userName.equals(session.getUser()) == false) {
+      if (!userName.equals(session.getUser())) {
         LOG.info("Different users incoming: " + userName + " existing: " + session.getUser());
         return false;
       }
@@ -459,7 +460,7 @@ public class TezSessionPoolManager extends AbstractTriggerValidator
       String queueName = session.getQueueName();
       String confQueueName = conf.get(TezConfiguration.TEZ_QUEUE_NAME);
       LOG.info("Current queue name is " + queueName + " incoming queue name is " + confQueueName);
-      return (queueName == null) ? confQueueName == null : queueName.equals(confQueueName);
+      return Objects.equals(queueName, confQueueName);
     } else {
       // this session should never be a default session unless something has messed up.
       throw new HiveException("The pool session " + session + " should have been returned to the pool");
@@ -472,7 +473,7 @@ public class TezSessionPoolManager extends AbstractTriggerValidator
       llapQueue.acquire(); // blocks if no more llap queries can be submitted.
     }
 
-    if (canWorkWithSameSession(session, conf)) {
+    if (externalSessions == null && canWorkWithSameSession(session, conf)) {
       session.setLegacyLlapMode(llap);
       return session;
     }

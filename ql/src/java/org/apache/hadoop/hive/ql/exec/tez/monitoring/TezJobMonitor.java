@@ -278,6 +278,11 @@ public class TezJobMonitor {
           rc = 1;
           done = true;
         } else {
+          try {
+            Thread.sleep(MAX_CHECK_INTERVAL);
+          } catch (InterruptedException e1) {
+            // best effort
+          }
           console.printInfo("Retrying...");
         }
         if (wmContext != null && done) {

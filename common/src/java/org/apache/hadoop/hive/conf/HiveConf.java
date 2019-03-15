@@ -3245,8 +3245,6 @@ public class HiveConf extends Configuration {
       "ZK namespace to use for tez external sessions"),
     HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_WAIT_MAX_ATTEMPTS("hive.server2.tez.external.sessions.wait.max.attempts",
       60, "Number of attempts before giving up waiting for external sessions (each attempt is 1 sec long)"),
-    HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_REFRESH_INTERVAL("hive.server2.tez.external.sessions.refresh.interval",
-      "10s", new TimeValidator(TimeUnit.SECONDS), "Interval for periodically refreshing tez external session registry"),
 
     // Operation log configuration
     HIVE_SERVER2_LOGGING_OPERATION_ENABLED("hive.server2.logging.operation.enabled", true,
