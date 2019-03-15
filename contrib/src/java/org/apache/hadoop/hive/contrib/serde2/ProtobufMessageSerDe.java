@@ -16,8 +16,22 @@
  * limitations under the License.
  */
 
-/**
- * This package contains the HiveMetaTool program and the classes used by it.
- */
-package org.apache.hadoop.hive.metastore.tools.metatool;
+package org.apache.hadoop.hive.contrib.serde2;
 
+import org.apache.hadoop.io.Writable;
+import org.apache.tez.dag.history.logging.proto.ProtoMessageWritable;
+
+import com.google.protobuf.Message;
+
+/**
+ * Class to convert ProtoMessageWritable to hive formats.
+ * @see ProtobufSerDe
+ */
+public class ProtobufMessageSerDe extends ProtobufSerDe {
+
+  @SuppressWarnings("unchecked")
+  protected Message toMessage(Writable writable) {
+    return ((ProtoMessageWritable<Message>)writable).getMessage();
+  }
+
+}
