@@ -1,11 +1,50 @@
 SELECT 'Upgrading MetaStore schema from 2.1.2000 to 3.0.0' AS MESSAGE;
 
+-- We can not change the datatype of a column with default value. Hence we first drop the default constraint
+-- and then change the datatype. We wrap the code to drop the default constraint in a stored procedure to avoid
+-- code duplicate. We create temporary stored procedures since we do not need them during normal
+-- metastore operation.
+CREATE PROCEDURE #DROP_DEFAULT_CONSTRAINT @TBL_NAME sysname, @COL_NAME sysname
+AS
+BEGIN
+	DECLARE @constraintname sysname
+	SELECT @constraintname = default_constraints.name
+		FROM sys.all_columns INNER JOIN sys.tables ON all_columns.object_id = tables.object_id
+			INNER JOIN sys.schemas ON tables.schema_id = schemas.schema_id
+			INNER JOIN sys.default_constraints ON all_columns.default_object_id = default_constraints.object_id
+		WHERE schemas.name = 'dbo' AND tables.name = @TBL_NAME AND all_columns.name = @COL_NAME
+
+	IF (@constraintname IS NOT NULL)
+	BEGIN
+		DECLARE @sql nvarchar(max) = 'ALTER TABLE [dbo].' + QUOTENAME(@TBL_NAME) + ' DROP CONSTRAINT ' + QUOTENAME(@constraintname)
+		EXEC(@sql)
+	END
+END;
+
+-- Similarly for primary key constraint
+CREATE PROCEDURE #DROP_PRIMARY_KEY_CONSTRAINT @TBL_NAME sysname
+AS
+BEGIN
+	DECLARE @constraintname sysname
+	SELECT @constraintname = constraint_name
+		FROM information_schema.table_constraints
+		WHERE constraint_type = 'PRIMARY KEY' AND table_schema = 'dbo' AND table_name = @TBL_NAME
+	IF @constraintname IS NOT NULL
+	BEGIN
+	    DECLARE @sql_pk nvarchar(max) = 'ALTER TABLE [dbo].' + QUOTENAME(@TBL_NAME) + ' DROP CONSTRAINT ' + @constraintname
+	    EXEC(@sql_pk)
+	end
+END;
+
 --:r 022-HIVE-14496.mssql.sql
-ALTER TABLE TBLS ADD IS_REWRITE_ENABLED bit NOT NULL DEFAULT(0);
+ALTER TABLE TBLS ADD IS_REWRITE_ENABLED bit NOT NULL CONSTRAINT DEFAULT_IS_REWRITE_ENABLED DEFAULT(0);
 
 --:r 024-HIVE-12274.mssql.sql
+EXEC #DROP_DEFAULT_CONSTRAINT "SERDE_PARAMS", "PARAM_VALUE";
 ALTER TABLE "SERDE_PARAMS" ALTER COLUMN "PARAM_VALUE" nvarchar(MAX);
+EXEC #DROP_DEFAULT_CONSTRAINT "TABLE_PARAMS", "PARAM_VALUE";
 ALTER TABLE "TABLE_PARAMS" ALTER COLUMN "PARAM_VALUE" nvarchar(MAX);
+EXEC #DROP_DEFAULT_CONSTRAINT "SD_PARAMS", "PARAM_VALUE";
 ALTER TABLE "SD_PARAMS" ALTER COLUMN "PARAM_VALUE" nvarchar(MAX);
 
 ALTER TABLE "TBLS" ALTER COLUMN "TBL_NAME" nvarchar(256);
@@ -17,8 +56,10 @@ ALTER TABLE "COMPLETED_TXN_COMPONENTS" ALTER COLUMN "CTC_TABLE" nvarchar(256);
 
 
 -- A number of indices and constraints reference COLUMN_NAME.  These have to be dropped before the not null constraint
--- can be added.
-ALTER TABLE COLUMNS_V2 DROP CONSTRAINT COLUMNS_PK;
+-- can be added. Earlier versions may not have created named constraints, so use IF EXISTS and also
+-- the stored procedure.
+ALTER TABLE COLUMNS_V2 DROP CONSTRAINT IF EXISTS COLUMNS_PK;
+EXEC #DROP_PRIMARY_KEY_CONSTRAINT COLUMNS_V2;
 DROP INDEX PARTITIONCOLUMNPRIVILEGEINDEX ON PART_COL_PRIVS;
 DROP INDEX TABLECOLUMNPRIVILEGEINDEX ON TBL_COL_PRIVS;
 DROP INDEX PCS_STATS_IDX ON PART_COL_STATS;
@@ -94,7 +135,7 @@ CREATE TABLE WM_TRIGGER
     "NAME" nvarchar(128) NOT NULL,
     TRIGGER_EXPRESSION nvarchar(1024),
     ACTION_EXPRESSION nvarchar(1024),
-    IS_IN_UNMANAGED bit NOT NULL DEFAULT 0
+    IS_IN_UNMANAGED bit NOT NULL CONSTRAINT DEF_WMT_IS_IN_UNMANAGED DEFAULT 0
 );
 
 ALTER TABLE WM_TRIGGER ADD CONSTRAINT WM_TRIGGER_PK PRIMARY KEY (TRIGGER_ID);
@@ -142,10 +183,10 @@ ALTER TABLE "SERDES" ADD "DESERIALIZER_CLASS" nvarchar(4000);
 ALTER TABLE "SERDES" ADD "SERDE_TYPE" int;
 
 CREATE TABLE "I_SCHEMA" (
-  "SCHEMA_ID" bigint primary key,
+  "SCHEMA_ID" bigint CONSTRAINT I_SCHEMA_PK primary key,
   "SCHEMA_TYPE" int not null,
   "NAME" nvarchar(256) unique,
-  "DB_ID" bigint references "DBS" ("DB_ID"),
+  "DB_ID" bigint CONSTRAINT I_SCHEMA_DB_ID_FK references "DBS" ("DB_ID"),
   "COMPATIBILITY" int not null,
   "VALIDATION_LEVEL" int not null,
   "CAN_EVOLVE" bit not null,
@@ -154,17 +195,17 @@ CREATE TABLE "I_SCHEMA" (
 );
 
 CREATE TABLE "SCHEMA_VERSION" (
-  "SCHEMA_VERSION_ID" bigint primary key,
-  "SCHEMA_ID" bigint references "I_SCHEMA" ("SCHEMA_ID"),
+  "SCHEMA_VERSION_ID" bigint CONSTRAINT SCHEMA_VERSION_PK primary key,
+  "SCHEMA_ID" bigint CONSTRAINT SCHEMA_VERSION_ID_FK references "I_SCHEMA" ("SCHEMA_ID"),
   "VERSION" int not null,
   "CREATED_AT" bigint not null,
-  "CD_ID" bigint references "CDS" ("CD_ID"),
+  "CD_ID" bigint CONSTRAINT SCHEMA_VERSION_CD_ID_FK references "CDS" ("CD_ID"),
   "STATE" int not null,
   "DESCRIPTION" nvarchar(4000),
   "SCHEMA_TEXT" varchar(max),
   "FINGERPRINT" nvarchar(256),
   "SCHEMA_VERSION_NAME" nvarchar(256),
-  "SERDE_ID" bigint references "SERDES" ("SERDE_ID"),
+  "SERDE_ID" bigint CONSTRAINT SCHEMA_VERSION_SERDE_ID_FK references "SERDES" ("SERDE_ID"),
   unique ("SCHEMA_ID", "VERSION")
 );
 
@@ -192,7 +233,7 @@ ALTER TABLE MV_TABLES_USED ADD FOREIGN KEY(MV_CREATION_METADATA_ID) REFERENCES M
 
 ALTER TABLE MV_TABLES_USED ADD FOREIGN KEY(TBL_ID) REFERENCES TBLS (TBL_ID);
 
-ALTER TABLE COMPLETED_TXN_COMPONENTS ADD CTC_TIMESTAMP datetime2 NOT NULL DEFAULT(CURRENT_TIMESTAMP);
+ALTER TABLE COMPLETED_TXN_COMPONENTS ADD CTC_TIMESTAMP datetime2 NOT NULL CONSTRAINT DEF_CTC_TIMESTAMP DEFAULT(CURRENT_TIMESTAMP);
 CREATE INDEX COMPLETED_TXN_COMPONENTS_IDX ON COMPLETED_TXN_COMPONENTS (CTC_DATABASE, CTC_TABLE, CTC_PARTITION);
 
 -- 034-HIVE-18489.mssql.sql
@@ -245,7 +286,11 @@ ALTER TABLE KEY_CONSTRAINTS ADD DEFAULT_VALUE VARCHAR(400);
 
 ALTER TABLE KEY_CONSTRAINTS ALTER COLUMN PARENT_CD_ID bigint NULL;
 
+-- Need to drop index changing column to NOT NULL 
+DROP INDEX HL_TXNID_INDEX ON HIVE_LOCKS;
 ALTER TABLE HIVE_LOCKS ALTER COLUMN HL_TXNID bigint NOT NULL;
+CREATE NONCLUSTERED INDEX HL_TXNID_INDEX ON HIVE_LOCKS(HL_TXNID ASC)
+	WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 
 CREATE TABLE REPL_TXN_MAP (
   RTM_REPL_POLICY nvarchar(256) NOT NULL,
@@ -258,6 +303,7 @@ ALTER TABLE REPL_TXN_MAP ADD CONSTRAINT REPL_TXN_MAP_PK PRIMARY KEY (RTM_REPL_PO
 -- Table SEQUENCE_TABLE is an internal table required by DataNucleus.
 -- NOTE: Some versions of SchemaTool do not automatically generate this table.
 -- See http://www.datanucleus.org/servlet/jira/browse/NUCRDBMS-416
+IF OBJECT_ID('SEQUENCE_TABLE', 'U') IS NULL
 CREATE TABLE SEQUENCE_TABLE
 (
    SEQUENCE_NAME nvarchar(256) NOT NULL,
@@ -284,7 +330,7 @@ CREATE UNIQUE INDEX UNIQUE_CTLG ON CTLGS ("NAME");
 INSERT INTO CTLGS VALUES (1, 'hive', 'Default catalog for Hive', 'TBD');
 
 -- Drop the unique index on DBS
-DROP INDEX UNIQUEDATABASE ON DBS;
+DROP INDEX IF EXISTS UNIQUEDATABASE ON DBS;
 
 -- Add the new column to the DBS table, can't put in the not null constraint yet
 ALTER TABLE DBS ADD CTLG_NAME nvarchar(256);
@@ -330,7 +376,7 @@ ALTER TABLE NOTIFICATION_LOG ADD CAT_NAME nvarchar(256);
 CREATE TABLE MIN_HISTORY_LEVEL (
   MHL_TXNID bigint NOT NULL,
   MHL_MIN_OPEN_TXNID bigint NOT NULL,
-PRIMARY KEY CLUSTERED
+CONSTRAINT MIN_HISTORY_LEVEL_PK PRIMARY KEY CLUSTERED
 (
     MHL_TXNID ASC
 )
