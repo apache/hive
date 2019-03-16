@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * JDBCAggregationPushDownRule convert a {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate}
- * into a {@link org.apache.calcite.adapter.jdbc.JdbcRules.JdbcAggregateRule.JdbcAggregate}
+ * into a {@link JdbcAggregate}
  * and pushes it down below the {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter}
  * operator so it will be sent to the external table.
  */

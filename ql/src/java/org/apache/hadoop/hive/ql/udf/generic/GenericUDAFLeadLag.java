@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.io.IntWritable;
 
 /**
- * abstract class for Lead & lag UDAFs GenericUDAFLeadLag.
+ * abstract class for Lead &amp; lag UDAFs GenericUDAFLeadLag.
  *
  */
 public abstract class GenericUDAFLeadLag extends AbstractGenericUDAFResolver {

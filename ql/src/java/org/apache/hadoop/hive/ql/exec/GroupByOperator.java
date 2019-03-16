@@ -390,8 +390,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
 
       // compare every groupbyMapAggrInterval rows
       numRowsCompareHashAggr = groupbyMapAggrInterval;
-      minReductionHashAggr = HiveConf.getFloatVar(hconf,
-          HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
+      minReductionHashAggr = conf.getMinReductionHashAggr();
     }
 
     List<String> fieldNames = new ArrayList<String>(conf.getOutputColumnNames());
@@ -500,8 +499,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
         || c.isInstance(Short.valueOf((short) 0))
         || c.isInstance(Integer.valueOf(0))
         || c.isInstance(Long.valueOf(0))
-        || c.isInstance(new Float(0))
-        || c.isInstance(new Double(0))) {
+        || c.isInstance(Float.valueOf(0)) || c.isInstance(Double.valueOf(0))) {
       return javaSizePrimitiveType;
     }
 

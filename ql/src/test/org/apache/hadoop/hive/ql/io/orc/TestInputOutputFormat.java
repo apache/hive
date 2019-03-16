@@ -1237,6 +1237,11 @@ public class TestInputOutputFormat {
       }
     }
 
+    @Override
+    public String getScheme() {
+      return "mock";
+    }
+
     // increments file modification time
     public void touch(MockFile file) {
       if (fileStatusMap.containsKey(file)) {
@@ -2655,7 +2660,7 @@ public class TestInputOutputFormat {
     SearchArgument sarg =
         SearchArgumentFactory.newBuilder()
             .startAnd()
-            .lessThan("z", PredicateLeaf.Type.LONG, new Long(0))
+            .lessThan("z", PredicateLeaf.Type.LONG, Long.valueOf(0))
             .end()
             .build();
     conf.set("sarg.pushdown", toKryo(sarg));

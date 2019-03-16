@@ -19,19 +19,18 @@ package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
+import org.apache.hadoop.hive.ql.ddl.database.LockDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.database.UnlockDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.table.LockTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.UnlockTableDesc;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.LockTableDesc;
-import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 
 import java.util.List;
 
@@ -178,7 +177,7 @@ public interface HiveTxnManager {
    * {@link ValidTxnWriteIdList} object can be passed as string to the processing
    * tasks for use in the reading the data.  This call will return same results as long as validTxnString
    * passed is same.
-   * @param tableList list of tables (<db_name>.<table_name>) read/written by current transaction.
+   * @param tableList list of tables (&lt;db_name&gt;.&lt;table_name&gt;) read/written by current transaction.
    * @param validTxnList snapshot of valid txns for the current txn
    * @return list of valid table write Ids.
    * @throws LockException

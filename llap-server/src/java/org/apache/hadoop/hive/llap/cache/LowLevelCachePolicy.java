@@ -20,11 +20,59 @@ package org.apache.hadoop.hive.llap.cache;
 
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 
+/**
+ * Actor managing the eviction requests.
+ * Cache policy relies notifications from the actual {@link LowLevelCache} to keep track of buffer access.
+ */
 public interface LowLevelCachePolicy extends LlapIoDebugDump {
+
+  /**
+   * Signals to the policy the addition of a new page to the cache directory.
+   *
+   * @param buffer   buffer to be cached
+   * @param priority the priority of cached element
+   */
   void cache(LlapCacheableBuffer buffer, Priority priority);
+
+  /**
+   * Notifies the policy that this buffer is locked, thus take it out of the free list.
+   * Note that this notification is a hint and can not be the source of truth about what can be evicted
+   * currently the source of truth is the counter of reference to the buffer see {@link LlapCacheableBuffer#isLocked()}.
+   *
+   * @param buffer buffer to be locked.
+   */
   void notifyLock(LlapCacheableBuffer buffer);
+
+  /**
+   * Notifies the policy that a buffer is unlocked after been used. This notification signals to the policy that an
+   * access to this page occurred thus can be used to track what page got a read request
+   *
+   * @param buffer buffer that just got unlocked
+   */
   void notifyUnlock(LlapCacheableBuffer buffer);
+
+  /**
+   * Signals to the policy that it has to evict some pages to make room incoming buffers.
+   * Policy has to at least evict the amount requested.
+   * Policy does not now about the shape of evicted buffers and only can reason about total size.
+   * Not that is method will block until at least {@code memoryToReserve} bytes are evicted.
+   *
+   * @param memoryToReserve amount of bytes to be evicted
+   * @return actual amount of evicted bytes.
+   */
   long evictSomeBlocks(long memoryToReserve);
+
+  /**
+   * Sets the eviction listener dispatcher.
+   *
+   * @param listener eviction listener actor
+   */
   void setEvictionListener(EvictionListener listener);
+
+  /**
+   * Signals to the policy to evict all the unlocked used buffers.
+   *
+   * @return amount (bytes) of memory evicted.
+   */
   long purge();
 }

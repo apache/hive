@@ -96,7 +96,7 @@ import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNSET;
  * in the query plan and merge them if they met some preconditions.
  *
  *  TS   TS             TS
- *  |    |     ->      /  \
+ *  |    |     -&gt;      /  \
  *  Op   Op           Op  Op
  *
  * <p>Now the rule has been extended to find opportunities to other operators
@@ -105,7 +105,7 @@ import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNSET;
  *  TS1   TS2    TS1   TS2            TS1   TS2
  *   |     |      |     |              |     |
  *   |    RS      |    RS              |    RS
- *    \   /        \   /       ->       \   /
+ *    \   /        \   /       -&gt;       \   /
  *   MapJoin      MapJoin              MapJoin
  *      |            |                  /   \
  *      Op           Op                Op   Op

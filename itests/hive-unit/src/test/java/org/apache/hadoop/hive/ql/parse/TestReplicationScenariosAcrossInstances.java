@@ -610,6 +610,10 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .run("show tables")
         .verifyResults(new String[] { "t1" });
 
+    assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase("default").getParameters()));
+    assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(primaryDbName).getParameters()));
+    assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(dbOne).getParameters()));
+
     replica.load("", incrementalTuple.dumpLocation)
         .run("show databases")
         .verifyResults(new String[] { "default", primaryDbName, dbOne, dbTwo })
@@ -619,6 +623,11 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .run("use " + dbOne)
         .run("show tables")
         .verifyResults(new String[] { "t1", "t2" });
+
+    assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase("default").getParameters()));
+    assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(primaryDbName).getParameters()));
+    assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(dbOne).getParameters()));
+    assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(dbTwo).getParameters()));
 
     /*
        Start of cleanup
@@ -865,23 +874,6 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     assertFalse(fs.exists(cSerdesTableDumpLocation));
   }
 
-  private void verifyIfCkptSet(WarehouseInstance wh, String dbName, String dumpDir) throws Exception {
-    Database db = wh.getDatabase(replicatedDbName);
-    verifyIfCkptSet(db.getParameters(), dumpDir);
-
-    List<String> tblNames = wh.getAllTables(dbName);
-    for (String tblName : tblNames) {
-      Table tbl = wh.getTable(dbName, tblName);
-      verifyIfCkptSet(tbl.getParameters(), dumpDir);
-      if (tbl.getPartitionKeysSize() != 0) {
-        List<Partition> partitions = wh.getAllPartitions(dbName, tblName);
-        for (Partition ptn : partitions) {
-          verifyIfCkptSet(ptn.getParameters(), dumpDir);
-        }
-      }
-    }
-  }
-
   @Test
   public void testShouldDumpMetaDataForNonNativeTableIfSetMeataDataOnly() throws Throwable {
     String tableName = testName.getMethodName() + "_table";
@@ -952,7 +944,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     CommandProcessorResponse response =
         replica.runCommand("REPL LOAD someJunkDB from '" + tuple.dumpLocation + "'");
     assertTrue(response.getErrorMessage().toLowerCase()
-        .contains("org.apache.hadoop.hive.ql.exec.DDLTask. Database does not exist: someJunkDB"
+        .contains("org.apache.hadoop.hive.ql.ddl.DDLTask2. Database does not exist: someJunkDB"
             .toLowerCase()));
 
     // Bootstrap load from an empty dump directory should return empty load directory error.
@@ -1029,7 +1021,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .dump(primaryDbName, null);
 
     // Bootstrap Repl A -> B
-    WarehouseInstance.Tuple tupleReplica = replica.load(replicatedDbName, tuplePrimary.dumpLocation)
+    replica.load(replicatedDbName, tuplePrimary.dumpLocation)
             .run("repl status " + replicatedDbName)
             .verifyResult(tuplePrimary.lastReplicationId)
             .run("show tblproperties t1('custom.property')")
@@ -1037,9 +1029,14 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .dumpFailure(replicatedDbName, null)
             .run("alter database " + replicatedDbName
                     + " set dbproperties ('" + SOURCE_OF_REPLICATION + "' = '1, 2, 3')")
-            .dump(replicatedDbName, null);
+            .dumpFailure(replicatedDbName, null);//can not dump the db before first successful incremental load is done.
+
+    // do a empty incremental load to allow dump of replicatedDbName
+    WarehouseInstance.Tuple temp = primary.dump(primaryDbName, tuplePrimary.lastReplicationId);
+    replica.load(replicatedDbName, temp.dumpLocation); // first successful incremental load.
 
     // Bootstrap Repl B -> C
+    WarehouseInstance.Tuple tupleReplica = replica.dump(replicatedDbName, null);
     String replDbFromReplica = replicatedDbName + "_dupe";
     replica.load(replDbFromReplica, tupleReplica.dumpLocation)
             .run("use " + replDbFromReplica)
@@ -1166,7 +1163,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .verifyResults(Collections.singletonList("10"))
             .run("select country from t2 order by country")
             .verifyResults(Arrays.asList("india", "uk", "us"));
-    verifyIfCkptSet(replica, replicatedDbName, tuple.dumpLocation);
+    replica.verifyIfCkptSet(replicatedDbName, tuple.dumpLocation);
 
     WarehouseInstance.Tuple tuple_2 = primary
             .run("use " + primaryDbName)
@@ -1240,9 +1237,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     assertEquals(0, replica.getForeignKeyList(replicatedDbName, "t2").size());
 
     // Retry with different dump should fail.
-    CommandProcessorResponse ret = replica.runCommand("REPL LOAD " + replicatedDbName +
-            " FROM '" + tuple2.dumpLocation + "'");
-    Assert.assertEquals(ret.getResponseCode(), ErrorMsg.REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID.getErrorCode());
+    replica.loadFailure(replicatedDbName, tuple2.dumpLocation, null,
+            ErrorMsg.REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID.getErrorCode());
 
     // Verify if create table is not called on table t1 but called for t2 and t3.
     // Also, allow constraint creation only on t1 and t3. Foreign key creation on t2 fails.

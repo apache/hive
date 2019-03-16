@@ -50,7 +50,7 @@ import org.apache.hadoop.mapred.RecordReader;
   * data.  The binary search can be used by setting the value of inputFormatSorted in the
   * MapreduceWork to true, but it should only be used if the data is going to a FilterOperator,
   * which filters by comparing a value in the data with a constant, using one of the comparisons
-  * =, <, >, <=, >=.  If the RecordReader's underlying format is an RCFile, this object can perform
+  * =, &lt;, &gt;, &lt;=, &gt;=.  If the RecordReader's underlying format is an RCFile, this object can perform
   * a binary search to find the block to begin reading from, and stop reading once it can be
   * determined no other entries will match the filter.
   */

@@ -798,10 +798,10 @@ public class VectorizedOrcAcidRowBatchReader
   /**
    * There are 2 types of schema from the {@link #baseReader} that this handles.  In the case
    * the data was written to a transactional table from the start, every row is decorated with
-   * transaction related info and looks like <op, owid, writerId, rowid, cwid, <f1, ... fn>>.
+   * transaction related info and looks like &lt;op, owid, writerId, rowid, cwid, &lt;f1, ... fn&gt;&gt;.
    *
    * The other case is when data was written to non-transactional table and thus only has the user
-   * data: <f1, ... fn>.  Then this table was then converted to a transactional table but the data
+   * data: &lt;f1, ... fn&gt;.  Then this table was then converted to a transactional table but the data
    * files are not changed until major compaction.  These are the "original" files.
    *
    * In this case we may need to decorate the outgoing data with transactional column values at

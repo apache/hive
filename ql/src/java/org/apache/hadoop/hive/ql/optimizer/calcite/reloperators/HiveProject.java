@@ -120,7 +120,7 @@ public class HiveProject extends Project implements HiveRelNode {
    * are projected multiple times.
    *
    * <p>
-   * This method could optimize the result as {@link #permute} does, but does
+   * This method could optimize the result as permute does, but does
    * not at present.
    *
    * @param rel

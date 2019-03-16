@@ -10080,6 +10080,11 @@ public class ObjectStore implements RawStore, Configurable {
       int tooOld = (tmp > Integer.MAX_VALUE) ? 0 : (int) tmp;
       query = pm.newQuery(MNotificationLog.class, "eventTime < tooOld");
       query.declareParameters("java.lang.Integer tooOld");
+
+      int max_events = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.EVENT_CLEAN_MAX_EVENTS);
+      max_events = max_events > 0 ? max_events : Integer.MAX_VALUE;
+      query.setRange(0, max_events);
+
       Collection<MNotificationLog> toBeRemoved = (Collection) query.execute(tooOld);
       if (CollectionUtils.isNotEmpty(toBeRemoved)) {
         pm.deletePersistentAll(toBeRemoved);

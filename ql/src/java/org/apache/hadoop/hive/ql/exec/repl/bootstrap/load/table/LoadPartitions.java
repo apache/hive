@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
-import org.apache.hadoop.hive.ql.plan.DropTableDesc;
+import org.apache.hadoop.hive.ql.plan.DropPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
@@ -101,22 +101,35 @@ public class LoadPartitions {
     this.table = ImportSemanticAnalyzer.tableIfExists(tableDesc, context.hiveDb);
   }
 
-  public TaskTracker tasks() throws SemanticException {
-    try {
-      /*
-      We are doing this both in load table and load partitions
-       */
-      Database parentDb = context.hiveDb.getDatabase(tableDesc.getDatabaseName());
-      LoadTable.TableLocationTuple tableLocationTuple =
-          LoadTable.tableLocation(tableDesc, parentDb, tableContext, context);
-      tableDesc.setLocation(tableLocationTuple.location);
+  public TaskTracker tasks() throws Exception {
+    /*
+    We are doing this both in load table and load partitions
+     */
+    Database parentDb = context.hiveDb.getDatabase(tableDesc.getDatabaseName());
+    LoadTable.TableLocationTuple tableLocationTuple =
+        LoadTable.tableLocation(tableDesc, parentDb, tableContext, context);
+    tableDesc.setLocation(tableLocationTuple.location);
 
-      if (table == null) {
-        //new table
-        table = tableDesc.toTable(context.hiveConf);
-        if (isPartitioned(tableDesc)) {
+    if (table == null) {
+      //new table
+      table = tableDesc.toTable(context.hiveConf);
+      if (isPartitioned(tableDesc)) {
+        updateReplicationState(initialReplicationState());
+        if (!forNewTable().hasReplicationState()) {
+          // Add ReplStateLogTask only if no pending table load tasks left for next cycle
+          Task<? extends Serializable> replLogTask
+                  = ReplUtils.getTableReplLogTask(tableDesc, replLogger, context.hiveConf);
+          tracker.addDependentTask(replLogTask);
+        }
+        return tracker;
+      }
+    } else {
+      // existing
+      if (table.isPartitioned()) {
+        List<AddPartitionDesc> partitionDescs = event.partitionDescriptions(tableDesc);
+        if (!event.replicationSpec().isMetadataOnly() && !partitionDescs.isEmpty()) {
           updateReplicationState(initialReplicationState());
-          if (!forNewTable().hasReplicationState()) {
+          if (!forExistingTable(lastReplicatedPartition).hasReplicationState()) {
             // Add ReplStateLogTask only if no pending table load tasks left for next cycle
             Task<? extends Serializable> replLogTask
                     = ReplUtils.getTableReplLogTask(tableDesc, replLogger, context.hiveConf);
@@ -124,26 +137,9 @@ public class LoadPartitions {
           }
           return tracker;
         }
-      } else {
-        // existing
-        if (table.isPartitioned()) {
-          List<AddPartitionDesc> partitionDescs = event.partitionDescriptions(tableDesc);
-          if (!event.replicationSpec().isMetadataOnly() && !partitionDescs.isEmpty()) {
-            updateReplicationState(initialReplicationState());
-            if (!forExistingTable(lastReplicatedPartition).hasReplicationState()) {
-              // Add ReplStateLogTask only if no pending table load tasks left for next cycle
-              Task<? extends Serializable> replLogTask
-                      = ReplUtils.getTableReplLogTask(tableDesc, replLogger, context.hiveConf);
-              tracker.addDependentTask(replLogTask);
-            }
-            return tracker;
-          }
-        }
       }
-      return tracker;
-    } catch (Exception e) {
-      throw new SemanticException(e);
     }
+    return tracker;
   }
 
   private void updateReplicationState(ReplicationState replicationState) {
@@ -199,12 +195,22 @@ public class LoadPartitions {
             context.hiveConf
     );
 
+    Task<?> ckptTask = ReplUtils.getTableCheckpointTask(
+            tableDesc,
+            (HashMap<String, String>)partSpec.getPartSpec(),
+            context.dumpDirectory,
+            context.hiveConf
+    );
+
     boolean isOnlyDDLOperation = event.replicationSpec().isMetadataOnly()
         || (TableType.EXTERNAL_TABLE.equals(table.getTableType())
         && !event.replicationSpec().isMigratingToExternalTable()
     );
 
     if (isOnlyDDLOperation) {
+      // Set Checkpoint task as dependant to add partition tasks. So, if same dump is retried for
+      // bootstrap, we skip current partition update.
+      addPartTask.addDependentTask(ckptTask);
       if (ptnRootTask == null) {
         ptnRootTask = addPartTask;
       } else {
@@ -246,21 +252,14 @@ public class LoadPartitions {
       movePartitionTask = movePartitionTask(table, partSpec, stagingDir, loadFileType);
     }
 
-    // Set Checkpoint task as dependant to add partition tasks. So, if same dump is retried for
-    // bootstrap, we skip current partition update.
-    Task<?> ckptTask = ReplUtils.getTableCheckpointTask(
-            tableDesc,
-            (HashMap<String, String>)partSpec.getPartSpec(),
-            context.dumpDirectory,
-            context.hiveConf
-    );
-
     if (ptnRootTask == null) {
       ptnRootTask = copyTask;
     } else {
       ptnRootTask.addDependentTask(copyTask);
     }
 
+    // Set Checkpoint task as dependant to the tail of add partition tasks. So, if same dump is
+    // retried for bootstrap, we skip current partition update.
     copyTask.addDependentTask(addPartTask);
     if (movePartitionTask != null) {
       addPartTask.addDependentTask(movePartitionTask);
@@ -350,8 +349,8 @@ public class LoadPartitions {
     Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecsExpr =
             ReplUtils.genPartSpecs(table, Collections.singletonList(partSpec));
     if (partSpecsExpr.size() > 0) {
-      DropTableDesc dropPtnDesc = new DropTableDesc(table.getFullyQualifiedName(),
-              partSpecsExpr, null, true, event.replicationSpec());
+      DropPartitionDesc dropPtnDesc = new DropPartitionDesc(table.getFullyQualifiedName(), partSpecsExpr, true,
+          event.replicationSpec());
       dropPtnTask = TaskFactory.get(
               new DDLWork(new HashSet<>(), new HashSet<>(), dropPtnDesc), context.hiveConf
       );

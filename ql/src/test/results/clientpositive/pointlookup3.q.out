@@ -954,20 +954,20 @@ STAGE PLANS:
           TableScan
             alias: t2
             filterExpr: ((key = 1) or (key = 2)) (type: boolean)
-            Statistics: Num rows: 60 Data size: 27720 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 60 Data size: 27720 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: ((key = 1) or (key = 2)) (type: boolean)
-              Statistics: Num rows: 10 Data size: 4620 Basic stats: COMPLETE Column stats: PARTIAL
+              Statistics: Num rows: 10 Data size: 4620 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), value (type: string), ds1 (type: string), ds2 (type: string), (key = 1) (type: boolean), (key = 2) (type: boolean)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                Statistics: Num rows: 10 Data size: 4700 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 10 Data size: 4700 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
-                  Statistics: Num rows: 10 Data size: 4700 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 10 Data size: 4700 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: 1
                   value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: boolean), _col5 (type: boolean)
                   auto parallelism: false
@@ -1134,15 +1134,15 @@ STAGE PLANS:
             0 
             1 
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
-          Statistics: Num rows: 400 Data size: 376000 Basic stats: COMPLETE Column stats: PARTIAL
+          Statistics: Num rows: 400 Data size: 376000 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             isSamplingPred: false
             predicate: ((_col4 and _col10) or (_col5 and _col11)) (type: boolean)
-            Statistics: Num rows: 200 Data size: 188000 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 200 Data size: 188000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col6 (type: int), _col7 (type: string), _col8 (type: string), _col9 (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-              Statistics: Num rows: 200 Data size: 184800 Basic stats: COMPLETE Column stats: PARTIAL
+              Statistics: Num rows: 200 Data size: 184800 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
@@ -1171,7 +1171,7 @@ STAGE PLANS:
               key expressions: _col4 (type: int), _col5 (type: string), _col2 (type: string)
               null sort order: zzz
               sort order: +++
-              Statistics: Num rows: 200 Data size: 184800 Basic stats: COMPLETE Column stats: PARTIAL
+              Statistics: Num rows: 200 Data size: 184800 Basic stats: COMPLETE Column stats: COMPLETE
               tag: -1
               value expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string), _col6 (type: string), _col7 (type: string)
               auto parallelism: false
@@ -1208,13 +1208,13 @@ STAGE PLANS:
         Select Operator
           expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), KEY.reducesinkkey2 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string), VALUE._col3 (type: string), VALUE._col4 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-          Statistics: Num rows: 200 Data size: 184800 Basic stats: COMPLETE Column stats: PARTIAL
+          Statistics: Num rows: 200 Data size: 184800 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 200 Data size: 184800 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 200 Data size: 184800 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -2369,20 +2369,20 @@ STAGE PLANS:
           TableScan
             alias: t2
             filterExpr: (key) IN (1, 2) (type: boolean)
-            Statistics: Num rows: 60 Data size: 27720 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 60 Data size: 27720 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: (key) IN (1, 2) (type: boolean)
-              Statistics: Num rows: 9 Data size: 4158 Basic stats: COMPLETE Column stats: PARTIAL
+              Statistics: Num rows: 9 Data size: 4158 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), value (type: string), ds1 (type: string), ds2 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 9 Data size: 4158 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 9 Data size: 4158 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
-                  Statistics: Num rows: 9 Data size: 4158 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 9 Data size: 4158 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: 1
                   value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string)
                   auto parallelism: false
@@ -2549,11 +2549,11 @@ STAGE PLANS:
             0 
             1 
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-          Statistics: Num rows: 360 Data size: 332640 Basic stats: COMPLETE Column stats: PARTIAL
+          Statistics: Num rows: 360 Data size: 332640 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             isSamplingPred: false
             predicate: (struct(_col2,_col4)) IN (const struct('2000-04-08',1), const struct('2000-04-09',2)) (type: boolean)
-            Statistics: Num rows: 180 Data size: 166320 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 180 Data size: 166320 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -2582,7 +2582,7 @@ STAGE PLANS:
               key expressions: _col4 (type: int), _col5 (type: string), _col2 (type: string)
               null sort order: zzz
               sort order: +++
-              Statistics: Num rows: 180 Data size: 166320 Basic stats: COMPLETE Column stats: PARTIAL
+              Statistics: Num rows: 180 Data size: 166320 Basic stats: COMPLETE Column stats: COMPLETE
               tag: -1
               value expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string), _col6 (type: string), _col7 (type: string)
               auto parallelism: false
@@ -2619,13 +2619,13 @@ STAGE PLANS:
         Select Operator
           expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), KEY.reducesinkkey2 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string), VALUE._col3 (type: string), VALUE._col4 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-          Statistics: Num rows: 180 Data size: 166320 Basic stats: COMPLETE Column stats: PARTIAL
+          Statistics: Num rows: 180 Data size: 166320 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 180 Data size: 166320 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 180 Data size: 166320 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat

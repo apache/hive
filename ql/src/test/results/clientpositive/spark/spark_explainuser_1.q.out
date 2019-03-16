@@ -7,8 +7,7 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_orc_merge_test_part_n0
 Stage-0
-  Create Table Operator:
-    name:default.src_orc_merge_test_part_n0
+  Create Table{"name:":"default.src_orc_merge_test_part_n0"}
 
 PREHOOK: query: create table src_orc_merge_test_part_n0(key int, value string) partitioned by (ds string, ts string) stored as orc
 PREHOOK: type: CREATETABLE
@@ -3248,8 +3247,7 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@abcd_n0
 Stage-0
-  Create Table Operator:
-    name:default.abcd_n0
+  Create Table{"name:":"default.abcd_n0"}
 
 PREHOOK: query: create table abcd_n0 (a int, b int, c int, d int)
 PREHOOK: type: CREATETABLE
@@ -3336,8 +3334,7 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_rc_merge_test
 Stage-0
-  Create Table Operator:
-    name:default.src_rc_merge_test
+  Create Table{"name:":"default.src_rc_merge_test"}
 
 PREHOOK: query: create table src_rc_merge_test(key int, value string) stored as rcfile
 PREHOOK: type: CREATETABLE
@@ -3364,8 +3361,7 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tgt_rc_merge_test
 Stage-0
-  Create Table Operator:
-    name:default.tgt_rc_merge_test
+  Create Table{"name:":"default.tgt_rc_merge_test"}
 
 PREHOOK: query: create table tgt_rc_merge_test(key int, value string) stored as rcfile
 PREHOOK: type: CREATETABLE
@@ -3597,8 +3593,7 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_Tmp_n0
 Stage-0
-  Create Table Operator:
-    name:default.nzhang_Tmp_n0
+  Create Table{"name:":"default.nzhang_Tmp_n0"}
 
 PREHOOK: query: create table nzhang_Tmp_n0(a int, b string)
 PREHOOK: type: CREATETABLE
@@ -3627,8 +3622,7 @@ Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT)
 Stage-2
   Stats Work{}
     Stage-3
-      Create Table Operator:
-        name:default.nzhang_CTAS1_n0
+      Create Table{"name:":"default.nzhang_CTAS1_n0"}
         Stage-0
           Move Operator
             Stage-1
@@ -3683,8 +3677,7 @@ Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT)
 Stage-2
   Stats Work{}
     Stage-3
-      Create Table Operator:
-        name:default.nzhang_ctas3_n0
+      Create Table{"name:":"default.nzhang_ctas3_n0"}
         Stage-0
           Move Operator
             Stage-1
@@ -3738,8 +3731,7 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_dtt
 Stage-0
-  Create Table Operator:
-    name:default.acid_dtt
+  Create Table{"name:":"default.acid_dtt"}
 
 PREHOOK: query: create temporary table acid_dtt(a int, b varchar(128)) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE

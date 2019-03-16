@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -120,9 +121,7 @@ public class WarehouseInstance implements Closeable {
   private void initialize(String cmRoot, String externalTableWarehouseRoot, String warehouseRoot,
       Map<String, String> overridesForHiveConf) throws Exception {
     hiveConf = new HiveConf(miniDFSCluster.getConfiguration(0), TestReplicationScenarios.class);
-    for (Map.Entry<String, String> entry : overridesForHiveConf.entrySet()) {
-      hiveConf.set(entry.getKey(), entry.getValue());
-    }
+
     String metaStoreUri = System.getProperty("test." + HiveConf.ConfVars.METASTOREURIS.varname);
     if (metaStoreUri != null) {
       hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, metaStoreUri);
@@ -152,7 +151,37 @@ public class WarehouseInstance implements Closeable {
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
 
+    for (Map.Entry<String, String> entry : overridesForHiveConf.entrySet()) {
+      hiveConf.set(entry.getKey(), entry.getValue());
+    }
+
     MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf, true);
+
+    // Add the below mentioned dependency in metastore/pom.xml file. For postgres need to copy postgresql-42.2.1.jar to
+    // .m2//repository/postgresql/postgresql/9.3-1102.jdbc41/postgresql-9.3-1102.jdbc41.jar.
+    /*
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>8.0.15</version>
+    </dependency>
+
+    <dependency>
+      <groupId>postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>9.3-1102.jdbc41</version>
+    </dependency>
+    */
+
+    /*hiveConf.setVar(HiveConf.ConfVars.METASTORECONNECTURLKEY, "jdbc:mysql://localhost:3306/APP");
+    hiveConf.setVar(HiveConf.ConfVars.METASTORE_CONNECTION_DRIVER, "com.mysql.jdbc.Driver");
+    hiveConf.setVar(HiveConf.ConfVars.METASTOREPWD, "hivepassword");
+    hiveConf.setVar(HiveConf.ConfVars.METASTORE_CONNECTION_USER_NAME, "hiveuser");*/
+
+    /*hiveConf.setVar(HiveConf.ConfVars.METASTORECONNECTURLKEY,"jdbc:postgresql://localhost/app");
+    hiveConf.setVar(HiveConf.ConfVars.METASTORE_CONNECTION_DRIVER, "org.postgresql.Driver");
+    hiveConf.setVar(HiveConf.ConfVars.METASTOREPWD, "password");
+    hiveConf.setVar(HiveConf.ConfVars.METASTORE_CONNECTION_USER_NAME, "postgres");*/
 
     driver = DriverFactory.newDriver(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
@@ -214,6 +243,18 @@ public class WarehouseInstance implements Closeable {
     return this;
   }
 
+  WarehouseInstance runFailure(String command, int errorCode) throws Throwable {
+    CommandProcessorResponse ret = driver.run(command);
+    if (ret.getException() == null) {
+      throw new RuntimeException("command execution passed for a invalid command" + command);
+    }
+    if (ret.getResponseCode() != errorCode) {
+      throw new RuntimeException("Command: " + command + " returned incorrect error code: "
+              + ret.getResponseCode() + " instead of " + errorCode);
+    }
+    return this;
+  }
+
   Tuple dump(String dbName, String lastReplicationId, List<String> withClauseOptions)
       throws Throwable {
     String dumpCommand =
@@ -259,7 +300,7 @@ public class WarehouseInstance implements Closeable {
   WarehouseInstance load(String replicatedDbName, String dumpLocation, List<String> withClauseOptions)
           throws Throwable {
     String replLoadCmd = "REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'";
-    if (!withClauseOptions.isEmpty()) {
+    if ((withClauseOptions != null) && !withClauseOptions.isEmpty()) {
       replLoadCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
     run("EXPLAIN " + replLoadCmd);
@@ -274,24 +315,33 @@ public class WarehouseInstance implements Closeable {
 
   WarehouseInstance status(String replicatedDbName, List<String> withClauseOptions) throws Throwable {
     String replStatusCmd = "REPL STATUS " + replicatedDbName;
-    if (!withClauseOptions.isEmpty()) {
+    if ((withClauseOptions != null) && !withClauseOptions.isEmpty()) {
       replStatusCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
     return run(replStatusCmd);
   }
 
   WarehouseInstance loadFailure(String replicatedDbName, String dumpLocation) throws Throwable {
-    runFailure("REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
+    loadFailure(replicatedDbName, dumpLocation, null);
     return this;
   }
 
   WarehouseInstance loadFailure(String replicatedDbName, String dumpLocation, List<String> withClauseOptions)
           throws Throwable {
     String replLoadCmd = "REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'";
-    if (!withClauseOptions.isEmpty()) {
+    if ((withClauseOptions != null) && !withClauseOptions.isEmpty()) {
       replLoadCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
     return runFailure(replLoadCmd);
+  }
+
+  WarehouseInstance loadFailure(String replicatedDbName, String dumpLocation, List<String> withClauseOptions,
+                                int errorCode) throws Throwable {
+    String replLoadCmd = "REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'";
+    if ((withClauseOptions != null) && !withClauseOptions.isEmpty()) {
+      replLoadCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
+    }
+    return runFailure(replLoadCmd, errorCode);
   }
 
   WarehouseInstance verifyResult(String data) throws IOException {
@@ -358,6 +408,32 @@ public class WarehouseInstance implements Closeable {
   private void printOutput() throws IOException {
     for (String s : getOutput()) {
       logger.info(s);
+    }
+  }
+
+  private void verifyIfCkptSet(Map<String, String> props, String dumpDir) {
+    assertTrue(props.containsKey(ReplUtils.REPL_CHECKPOINT_KEY));
+    assertTrue(props.get(ReplUtils.REPL_CHECKPOINT_KEY).equals(dumpDir));
+  }
+
+  public void verifyIfCkptSet(String dbName, String dumpDir) throws Exception {
+    Database db = getDatabase(dbName);
+    verifyIfCkptSet(db.getParameters(), dumpDir);
+
+    List<String> tblNames = getAllTables(dbName);
+    verifyIfCkptSetForTables(dbName, tblNames, dumpDir);
+  }
+
+  public void verifyIfCkptSetForTables(String dbName, List<String> tblNames, String dumpDir) throws Exception {
+    for (String tblName : tblNames) {
+      Table tbl = getTable(dbName, tblName);
+      verifyIfCkptSet(tbl.getParameters(), dumpDir);
+      if (tbl.getPartitionKeysSize() != 0) {
+        List<Partition> partitions = getAllPartitions(dbName, tblName);
+        for (Partition ptn : partitions) {
+          verifyIfCkptSet(ptn.getParameters(), dumpDir);
+        }
+      }
     }
   }
 

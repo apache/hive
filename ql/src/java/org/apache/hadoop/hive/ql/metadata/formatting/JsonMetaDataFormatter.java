@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
@@ -111,6 +112,30 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
   public void showTables(DataOutputStream out, Set<String> tables)
       throws HiveException {
     asJson(out, MapBuilder.create().put("tables", tables).build());
+  }
+
+  /**
+   * Show a list of tables including table types.
+   */
+  @Override
+  public void showTablesExtended(DataOutputStream out, List<Table> tables)
+      throws HiveException {
+    if (tables.isEmpty()) {
+      // Nothing to do
+      return;
+    }
+
+    MapBuilder builder = MapBuilder.create();
+    ArrayList<Map<String, Object>> res = new ArrayList<Map<String, Object>>();
+    for (Table table : tables) {
+      final String tableName = table.getTableName();
+      final String tableType = table.getTableType().toString();
+      res.add(builder
+          .put("Table Name", tableName)
+          .put("Table Type", tableType)
+          .build());
+    }
+    asJson(out, builder.put("tables", res).build());
   }
 
   /**
@@ -466,7 +491,7 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
    */
   @Override
   public void showDatabaseDescription(DataOutputStream out, String database, String comment,
-      String location, String ownerName, String ownerType, Map<String, String> params)
+      String location, String ownerName, PrincipalType ownerType, Map<String, String> params)
           throws HiveException {
     MapBuilder builder = MapBuilder.create().put("database", database).put("comment", comment)
         .put("location", location);
@@ -474,7 +499,7 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
       builder.put("owner", ownerName);
     }
     if (null != ownerType) {
-      builder.put("ownerType", ownerType);
+      builder.put("ownerType", ownerType.name());
     }
     if (null != params && !params.isEmpty()) {
       builder.put("params", params);

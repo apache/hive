@@ -212,6 +212,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortJoinReduceRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortLimitPullUpConstantsRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortLimitRemoveRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortRemoveRule;
@@ -537,7 +538,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 if (!explainConfig.isCboJoinCost()) {
                   // Include cost as provided by Calcite
                   newPlan.getCluster().invalidateMetadataQuery();
-                  RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(DefaultRelMetadataProvider.INSTANCE));
+                  RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
                 }
                 if (explainConfig.isFormatted()) {
                   this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
@@ -1768,17 +1769,21 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // Create and set MD provider
       HiveDefaultRelMetadataProvider mdProvider = new HiveDefaultRelMetadataProvider(conf);
-      RelMetadataQuery.THREAD_PROVIDERS.set(
-              JaninoRelMetadataProvider.of(mdProvider.getMetadataProvider()));
+      RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider.getMetadataProvider()));
 
       //Remove subquery
-      LOG.debug("Plan before removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Plan before removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
+      }
       calciteGenPlan = hepPlan(calciteGenPlan, false, mdProvider.getMetadataProvider(), null,
               new HiveSubQueryRemoveRule(conf));
-      LOG.debug("Plan just after removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
-
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Plan just after removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
+      }
       calciteGenPlan = HiveRelDecorrelator.decorrelateQuery(calciteGenPlan);
-      LOG.debug("Plan after decorrelation:\n" + RelOptUtil.toString(calciteGenPlan));
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Plan after decorrelation:\n" + RelOptUtil.toString(calciteGenPlan));
+      }
 
       // Validate query materialization for query results caching. This check needs
       // to occur before constant folding, which may remove some function calls
@@ -1906,11 +1911,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       // 8. convert SemiJoin + GBy to SemiJoin
-        perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
-        calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
-            HiveRemoveGBYSemiJoinRule.INSTANCE);
-        perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Removal of gby from semijoin");
-
+      perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+      calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
+          HiveRemoveGBYSemiJoinRule.INSTANCE);
+      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Removal of gby from semijoin");
 
       // 9. Run rule to fix windowing issue when it is done over
       // aggregation columns (HIVE-10627)
@@ -1943,17 +1947,22 @@ public class CalcitePlanner extends SemanticAnalyzer {
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Druid transformation rules");
 
       if (conf.getBoolVar(ConfVars.HIVE_ENABLE_JDBC_PUSHDOWN)) {
+        List<RelOptRule> rules = Lists.newArrayList();
+        rules.add(JDBCExtractJoinFilterRule.INSTANCE);
+        rules.add(JDBCAbstractSplitFilterRule.SPLIT_FILTER_ABOVE_JOIN);
+        rules.add(JDBCAbstractSplitFilterRule.SPLIT_FILTER_ABOVE_CONVERTER);
+        rules.add(JDBCFilterJoinRule.INSTANCE);
+        rules.add(JDBCFilterPushDownRule.INSTANCE);
+        rules.add(JDBCProjectPushDownRule.INSTANCE);
+        if (!conf.getBoolVar(ConfVars.HIVE_ENABLE_JDBC_SAFE_PUSHDOWN)) {
+          rules.add(JDBCJoinPushDownRule.INSTANCE);
+          rules.add(JDBCUnionPushDownRule.INSTANCE);
+          rules.add(JDBCAggregationPushDownRule.INSTANCE);
+          rules.add(JDBCSortPushDownRule.INSTANCE);
+        }
         perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
         calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, true, mdProvider.getMetadataProvider(), null,
-            HepMatchOrder.TOP_DOWN,
-            JDBCExtractJoinFilterRule.INSTANCE,
-            JDBCAbstractSplitFilterRule.SPLIT_FILTER_ABOVE_JOIN,
-            JDBCAbstractSplitFilterRule.SPLIT_FILTER_ABOVE_CONVERTER,
-            JDBCFilterJoinRule.INSTANCE,
-            JDBCJoinPushDownRule.INSTANCE, JDBCUnionPushDownRule.INSTANCE,
-            JDBCFilterPushDownRule.INSTANCE, JDBCProjectPushDownRule.INSTANCE,
-            JDBCAggregationPushDownRule.INSTANCE, JDBCSortPushDownRule.INSTANCE
-        );
+            HepMatchOrder.TOP_DOWN, rules.toArray(new RelOptRule[rules.size()]));
         perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: JDBC transformation rules");
       }
 
@@ -2140,6 +2149,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
         "Calcite: Prejoin ordering transformation, Push Down Semi Joins"); */
 
+      perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+      basePlan = hepPlan(basePlan, false, mdProvider, executorProvider,
+                                    HiveSortLimitRemoveRule.INSTANCE);
+      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
+                            "Calcite: Trying to remove Limit and Order by");
+
       // 6. Apply Partition Pruning
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       basePlan = hepPlan(basePlan, false, mdProvider, executorProvider, new HivePartitionPruneRule(conf));
@@ -2243,7 +2258,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         // Use Calcite cost model for view rewriting
         optCluster.invalidateMetadataQuery();
-        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(DefaultRelMetadataProvider.INSTANCE));
+        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
 
         // Add materializations to planner
         for (RelOptMaterialization materialization : materializations) {
@@ -2941,12 +2956,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
               String key = tabMetaData.getProperty(Constants.JDBC_KEY);
               pswd = Utilities.getPasswdFromKeystore(keystore, key);
             }
+            final String catalogName = tabMetaData.getProperty(Constants.JDBC_CATALOG);
+            final String schemaName = tabMetaData.getProperty(Constants.JDBC_SCHEMA);
             final String tableName = tabMetaData.getProperty(Constants.JDBC_TABLE);
 
             DataSource ds = JdbcSchema.dataSource(url, driver, user, pswd);
             SqlDialect jdbcDialect = JdbcSchema.createDialect(SqlDialectFactoryImpl.INSTANCE, ds);
             JdbcConvention jc = JdbcConvention.of(jdbcDialect, null, dataBaseType);
-            JdbcSchema schema = new JdbcSchema(ds, jc.dialect, jc, null/*catalog */, null/*schema */);
+            JdbcSchema schema = new JdbcSchema(ds, jc.dialect, jc, catalogName, schemaName);
             JdbcTable jt = (JdbcTable) schema.getTable(tableName);
             if (jt == null) {
               throw new SemanticException("Table " + tableName + " was not found in the database");
@@ -5146,6 +5163,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       return tabAliases;
     }
+  }
+
+  /**
+   * This method can be called at startup time to pre-register all the
+   * additional Hive classes (compared to Calcite core classes) that may
+   * be visited during the planning phase.
+   */
+  public static void initializeMetadataProviderClass() {
+    HiveDefaultRelMetadataProvider.initializeMetadataProviderClass();
   }
 
   private enum TableType {

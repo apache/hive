@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer;
 
+import org.apache.hadoop.hive.ql.ddl.DDLWork2;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
@@ -100,22 +101,23 @@ public class QueryPlanPostProcessor {
         new QueryPlanPostProcessor(((ExplainWork)work).getRootTasks(), acidSinks, executionId);
       }
       else if(work instanceof ReplLoadWork ||
-        work instanceof ReplStateLogWork ||
-        work instanceof GenTezWork ||
-        work instanceof GenSparkWork ||
-        work instanceof ArchiveWork ||
-        work instanceof ColumnStatsUpdateWork ||
-        work instanceof BasicStatsWork ||
-        work instanceof ConditionalWork ||
-        work instanceof CopyWork ||
-        work instanceof DDLWork ||
-        work instanceof DependencyCollectionWork ||
-        work instanceof ExplainSQRewriteWork ||
-        work instanceof FetchWork ||
-        work instanceof FunctionWork ||
-        work instanceof MoveWork ||
-        work instanceof BasicStatsNoJobWork ||
-        work instanceof StatsWork) {
+          work instanceof ReplStateLogWork ||
+          work instanceof GenTezWork ||
+          work instanceof GenSparkWork ||
+          work instanceof ArchiveWork ||
+          work instanceof ColumnStatsUpdateWork ||
+          work instanceof BasicStatsWork ||
+          work instanceof ConditionalWork ||
+          work instanceof CopyWork ||
+          work instanceof DDLWork ||
+          work instanceof DDLWork2 ||
+          work instanceof DependencyCollectionWork ||
+          work instanceof ExplainSQRewriteWork ||
+          work instanceof FetchWork ||
+          work instanceof FunctionWork ||
+          work instanceof MoveWork ||
+          work instanceof BasicStatsNoJobWork ||
+          work instanceof StatsWork) {
         LOG.debug("Found " + work.getClass().getName() + " - no FileSinkOperation can be present.  executionId=" + executionId);
       }
       else {

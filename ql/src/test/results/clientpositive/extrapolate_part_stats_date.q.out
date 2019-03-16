@@ -84,6 +84,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -334,11 +335,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: date_dim_n1
-          Statistics: Num rows: 4 Data size: 224 Basic stats: COMPLETE Column stats: PARTIAL
+          Statistics: Num rows: 4 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: d_date (type: date)
             outputColumnNames: _col0
-            Statistics: Num rows: 4 Data size: 224 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 4 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 

@@ -162,6 +162,7 @@ STAGE PLANS:
                               groupByMode: HASH
                               native: false
                               vectorProcessingMode: HASH
+                          minReductionHashAggr: 0.0
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -408,6 +409,7 @@ STAGE PLANS:
                               groupByMode: HASH
                               native: false
                               vectorProcessingMode: HASH
+                          minReductionHashAggr: 0.0
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -582,6 +584,7 @@ STAGE PLANS:
                               groupByMode: HASH
                               native: false
                               vectorProcessingMode: HASH
+                          minReductionHashAggr: 0.0
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -756,6 +759,7 @@ STAGE PLANS:
                               groupByMode: HASH
                               native: false
                               vectorProcessingMode: HASH
+                          minReductionHashAggr: 0.0
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -929,6 +933,7 @@ STAGE PLANS:
                               groupByMode: HASH
                               native: false
                               vectorProcessingMode: HASH
+                          minReductionHashAggr: 0.0
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE

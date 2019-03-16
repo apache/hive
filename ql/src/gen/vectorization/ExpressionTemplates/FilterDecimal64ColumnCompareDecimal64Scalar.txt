@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 /**
  * Generated from template FilterDecimal64ColumnCompareDecimal64Scalar.txt, which covers decimal64
  * comparison  expressions between a column and a scalar, however output is not produced in a
- * separate column. The selected vector of the input {@link VectorizedRowBatch} is updated for
+ * separate column. The selected vector of the input {@link org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch VectorizedRowBatch} is updated for
  * in-place filtering.
  */
 public class <ClassName> extends <BaseClassName> {

@@ -46,6 +46,8 @@ import org.junit.Test;
 
 public class TestGenericUDFOPPositive {
 
+  private static final double EPSILON = 1E-6;
+
   @Test
   public void testByte() throws HiveException {
     GenericUDFOPPositive udf = new GenericUDFOPPositive();
@@ -133,7 +135,7 @@ public class TestGenericUDFOPPositive {
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(TypeInfoFactory.floatTypeInfo, oi.getTypeInfo());
     FloatWritable res = (FloatWritable) udf.evaluate(args);
-    Assert.assertEquals(new Float(323.4747f), new Float(res.get()));
+    Assert.assertEquals(323.4747, res.get(), EPSILON);
   }
 
   @Test
@@ -151,7 +153,7 @@ public class TestGenericUDFOPPositive {
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(TypeInfoFactory.doubleTypeInfo, oi.getTypeInfo());
     DoubleWritable res = (DoubleWritable) udf.evaluate(args);
-    Assert.assertEquals(new Double(32300.004747), new Double(res.get()));
+    Assert.assertEquals(32300.004747, res.get(), EPSILON);
   }
 
   @Test
@@ -188,7 +190,7 @@ public class TestGenericUDFOPPositive {
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(TypeInfoFactory.doubleTypeInfo, oi.getTypeInfo());
     DoubleWritable res = (DoubleWritable) udf.evaluate(args);
-    Assert.assertEquals(new Double(32300.004747), new Double(res.get()));
+    Assert.assertEquals(32300.004747, res.get(), EPSILON);
   }
 
   @Test
@@ -208,7 +210,7 @@ public class TestGenericUDFOPPositive {
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(TypeInfoFactory.doubleTypeInfo, oi.getTypeInfo());
     DoubleWritable res = (DoubleWritable) udf.evaluate(args);
-    Assert.assertEquals(new Double(32300.004747), new Double(res.get()));
+    Assert.assertEquals(32300.004747, res.get(), EPSILON);
   }
 
   @Test
@@ -228,7 +230,7 @@ public class TestGenericUDFOPPositive {
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(TypeInfoFactory.doubleTypeInfo, oi.getTypeInfo());
     DoubleWritable res = (DoubleWritable) udf.evaluate(args);
-    Assert.assertEquals(new Double(32300.004747), new Double(res.get()));
+    Assert.assertEquals(32300.004747, res.get(), EPSILON);
   }
 
 }

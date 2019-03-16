@@ -62,14 +62,14 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 
 /**
  * Queries of form : select max(c), count(distinct c) from T; generates a plan
- * of form TS->mGBy->RS->rGBy->FS This plan suffers from a problem that vertex
- * containing rGBy->FS necessarily need to have 1 task. This limitation results
+ * of form TS-&gt;mGBy-&gt;RS-&gt;rGBy-&gt;FS This plan suffers from a problem that vertex
+ * containing rGBy-&gt;FS necessarily need to have 1 task. This limitation results
  * in slow execution because that task gets all the data. This optimization if
  * successful will rewrite above plan to mGby1-rs1-mGby2-mGby3-rs2-rGby1 This
  * introduces extra vertex of mGby2-mGby3-rs2. Note this vertex can have
  * multiple tasks and since we are doing aggregation, output of this must
  * necessarily be smaller than its input, which results in much less data going
- * in to original rGby->FS vertex, which continues to have single task. Also
+ * in to original rGby-&gt;FS vertex, which continues to have single task. Also
  * note on calcite tree we have HiveExpandDistinctAggregatesRule rule which does
  * similar plan transformation but has different conditions which needs to be
  * satisfied. Additionally, we don't do any costing here but this is possibly

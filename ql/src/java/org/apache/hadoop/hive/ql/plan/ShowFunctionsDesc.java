@@ -77,7 +77,7 @@ public class ShowFunctionsDesc extends DDLDesc implements Serializable {
   /**
    * @param pattern
    *          names of tables to show
-   * @param like
+   * @param isLikePattern
    *          is like keyword used
    */
   public ShowFunctionsDesc(Path resFile, String pattern, boolean isLikePattern) {

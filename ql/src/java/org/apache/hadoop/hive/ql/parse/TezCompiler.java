@@ -84,6 +84,7 @@ import org.apache.hadoop.hive.ql.optimizer.MergeJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.NonBlockingOpDeDupProc;
 import org.apache.hadoop.hive.ql.optimizer.ReduceSinkMapJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.RemoveDynamicPruningBySize;
+import org.apache.hadoop.hive.ql.optimizer.SetHashGroupByMinReduction;
 import org.apache.hadoop.hive.ql.optimizer.SetReducerParallelism;
 import org.apache.hadoop.hive.ql.optimizer.SharedWorkOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.SortedDynPartitionOptimizer;
@@ -174,9 +175,6 @@ public class TezCompiler extends TaskCompiler {
     runStatsAnnotation(procCtx);
     perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Setup stats in the operator plan");
 
-    // Update bucketing version of ReduceSinkOp if needed
-    updateBucketingVersionForUpgrade(procCtx);
-
     // run Sorted dynamic partition optimization
     if(HiveConf.getBoolVar(procCtx.conf, HiveConf.ConfVars.DYNAMICPARTITIONING) &&
         HiveConf.getVar(procCtx.conf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE).equals("nonstrict") &&
@@ -228,6 +226,15 @@ public class TezCompiler extends TaskCompiler {
     if(procCtx.conf.getBoolVar(ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
       new ConstantPropagate(ConstantPropagateOption.SHORTCUT).transform(procCtx.parseContext);
     }
+
+    // ATTENTION : DO NOT, I REPEAT, DO NOT WRITE ANYTHING AFTER updateBucketingVersionForUpgrade()
+    // ANYTHING WHICH NEEDS TO BE ADDED MUST BE ADDED ABOVE
+    // This call updates the bucketing version of final ReduceSinkOp based on
+    // the bucketing version of FileSinkOp. This operation must happen at the
+    // end to ensure there is no further rewrite of plan which may end up
+    // removing/updating the ReduceSinkOp as was the case with SortedDynPartitionOptimizer
+    // Update bucketing version of ReduceSinkOp if needed
+    updateBucketingVersionForUpgrade(procCtx);
 
   }
 
@@ -445,9 +452,13 @@ public class TezCompiler extends TaskCompiler {
     opRules.put(new RuleRegExp("Set parallelism - ReduceSink",
         ReduceSinkOperator.getOperatorName() + "%"),
         new SetReducerParallelism());
-
     opRules.put(new RuleRegExp("Convert Join to Map-join",
         JoinOperator.getOperatorName() + "%"), new ConvertJoinMapJoin());
+    if (procCtx.conf.getBoolVar(ConfVars.HIVEMAPAGGRHASHMINREDUCTIONSTATSADJUST)) {
+      opRules.put(new RuleRegExp("Set min reduction - GBy (Hash)",
+          GroupByOperator.getOperatorName() + "%"),
+          new SetHashGroupByMinReduction());
+    }
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
@@ -1833,30 +1844,23 @@ public class TezCompiler extends TaskCompiler {
 
 
     for (FileSinkOperator fsOp : fsOpsAll) {
-      Operator<?> parentOfFS = fsOp.getParentOperators().get(0);
-      if (parentOfFS instanceof GroupByOperator) {
-        GroupByOperator gbyOp = (GroupByOperator) parentOfFS;
-        List<String> aggs = gbyOp.getConf().getAggregatorStrings();
-        boolean compute_stats = false;
-        for (String agg : aggs) {
-          if (agg.equalsIgnoreCase("compute_stats")) {
-            compute_stats = true;
-            break;
-          }
-        }
-        if (compute_stats) {
-          continue;
-        }
-      }
-
-      // Not compute_stats
-      Set<ReduceSinkOperator> rsOps = OperatorUtils.findOperatorsUpstream(parentOfFS, ReduceSinkOperator.class);
-      if (rsOps.isEmpty()) {
+      if (!fsOp.getConf().getTableInfo().isSetBucketingVersion()) {
         continue;
       }
-      // Skip setting if the bucketing version is not set in FileSinkOp.
-      if (fsOp.getConf().getTableInfo().isSetBucketingVersion()) {
-        rsOps.iterator().next().setBucketingVersion(fsOp.getConf().getTableInfo().getBucketingVersion());
+      // Look for direct parent ReduceSinkOp
+      // If there are more than 1 parent, bail out.
+      Operator<?> parent = fsOp;
+      List<Operator<?>> parentOps = parent.getParentOperators();
+      while (parentOps != null && parentOps.size() == 1) {
+        parent = parentOps.get(0);
+        if (!(parent instanceof ReduceSinkOperator)) {
+          parentOps = parent.getParentOperators();
+          continue;
+        }
+
+        // Found the target RSOp
+        parent.setBucketingVersion(fsOp.getConf().getTableInfo().getBucketingVersion());
+        break;
       }
     }
   }

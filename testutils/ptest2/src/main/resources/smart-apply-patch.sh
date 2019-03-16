@@ -35,7 +35,7 @@ if [ "$PATCH_FILE" == "-" ]; then
   TOCLEAN="$TOCLEAN $PATCH_FILE"
 fi
 
-if git apply -p0 -3 --check $PATCH_FILE 2>&1 > /dev/null; then
+if echo "Trying to apply the patch with -p0"; git apply -p0 -3 --check $PATCH_FILE 2>&1 > /dev/null; then
   PLEVEL=0
 
   # if the patch applied at P0 there is the possibility that all we are doing
@@ -74,9 +74,9 @@ if git apply -p0 -3 --check $PATCH_FILE 2>&1 > /dev/null; then
     fi
 
   fi
-elif git apply -p1 -3 --check $PATCH_FILE 2>&1 > /dev/null; then
+elif echo "Trying to apply the patch with -p1"; git apply -p1 -3 --check $PATCH_FILE 2>&1 > /dev/null; then
   PLEVEL=1
-elif git apply -p2 -3 --check $PATCH_FILE 2>&1 > /dev/null; then
+elif echo "Trying to apply the patch with -p2"; git apply -p2 -3 --check $PATCH_FILE 2>&1 > /dev/null; then
   PLEVEL=2
 else
   echo "The patch does not appear to apply with p0, p1, or p2";

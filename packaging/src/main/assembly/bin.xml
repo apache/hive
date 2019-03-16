@@ -76,6 +76,7 @@
       <includes>
         <include>org.apache.hive.hcatalog:hive-hcatalog-core</include>
         <include>org.apache.hive.hcatalog:hive-hcatalog-server-extensions</include>
+        <include>javax.ws.rs:javax.ws.rs-api</include>
       </includes>
     </dependencySet>
     <dependencySet>
@@ -101,9 +102,12 @@
       <useTransitiveFiltering>true</useTransitiveFiltering>
       <excludes>
         <exclude>org.apache.hadoop:*</exclude>
+        <exclude>org.apache.hive:hive-jdbc:jar:standalone</exclude>
+        <exclude>org.apache.httpcomponents:*</exclude>
       </excludes>
       <includes>
         <include>org.apache.hive.hcatalog:hive-webhcat:*</include>
+        <include>org.apache.hive:hive-jdbc:jar</include>
       </includes>
     </dependencySet>
     <dependencySet>

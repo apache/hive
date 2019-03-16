@@ -49,6 +49,7 @@ public class ReplicationSpec {
   private Type specType = Type.DEFAULT; // DEFAULT means REPL_LOAD or BOOTSTRAP_DUMP or EXPORT
   private boolean isMigratingToTxnTable = false;
   private boolean isMigratingToExternalTable = false;
+  private boolean needDupCopyCheck = false;
 
   // Key definitions related to replication
   public enum KEY {
@@ -209,7 +210,7 @@ public class ReplicationSpec {
   }
 
   /**
-   * Returns a predicate filter to filter an Iterable<Partition> to return all partitions
+   * Returns a predicate filter to filter an Iterable&lt;Partition&gt; to return all partitions
    * that the current replication event specification is allowed to replicate-replace-into
    */
   public Predicate<Partition> allowEventReplacementInto() {
@@ -418,5 +419,22 @@ public class ReplicationSpec {
 
   public void setMigratingToExternalTable() {
     isMigratingToExternalTable = true;
+  }
+
+  public static void copyLastReplId(Map<String, String> srcParameter, Map<String, String> destParameter) {
+    String lastReplId = srcParameter.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
+    if (lastReplId != null) {
+      destParameter.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), lastReplId);
+    }
+  }
+
+  public boolean needDupCopyCheck() {
+    return needDupCopyCheck;
+  }
+
+  public void setNeedDupCopyCheck(boolean isFirstIncPending) {
+    // Duplicate file check during copy is required until after first successful incremental load.
+    // Check HIVE-21197 for more detail.
+    this.needDupCopyCheck = isFirstIncPending;
   }
 }

@@ -515,7 +515,7 @@ public class BeeLine implements Closeable {
 
   protected String locElapsedTime(long milliseconds) {
     if (getOpts().getShowElapsedTime()) {
-      return loc("time-ms", new Object[] {new Double(milliseconds / 1000d)});
+      return loc("time-ms", new Object[] {Double.valueOf(milliseconds / 1000d)});
     }
     return "";
   }
@@ -1202,6 +1202,10 @@ public class BeeLine implements Closeable {
       String password = cl.getOptionValue("p");
       if (password != null) {
         jdbcConnectionParams.getSessionVars().put(JdbcConnectionParams.AUTH_PASSWD, password);
+      }
+      String auth = cl.getOptionValue("a");
+      if (auth != null) {
+        jdbcConnectionParams.getSessionVars().put(JdbcConnectionParams.AUTH_TYPE, auth);
       }
       mergedConnectionProperties =
           HS2ConnectionFileUtils.mergeUserConnectionPropertiesAndBeelineSite(

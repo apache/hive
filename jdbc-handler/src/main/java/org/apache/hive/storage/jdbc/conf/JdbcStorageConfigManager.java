@@ -24,8 +24,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 
 import org.apache.hadoop.conf.Configuration;
 
-import org.apache.hive.storage.jdbc.QueryConditionBuilder;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,10 +128,6 @@ public class JdbcStorageConfigManager {
     if (tableName != null) {
       // We generate query as select *
       query = "select * from " + tableName;
-      String hiveFilterCondition = QueryConditionBuilder.getInstance().buildCondition(config);
-      if ((hiveFilterCondition != null) && (!hiveFilterCondition.trim().isEmpty())) {
-        query = query + " WHERE " + hiveFilterCondition;
-      }
     } else {
       query = config.get(Constants.JDBC_QUERY);
     }
@@ -151,11 +145,6 @@ public class JdbcStorageConfigManager {
     // We generate query as select *
     String tableName = config.get(JdbcStorageConfig.TABLE.getPropertyName());
     query = "select * from " + tableName;
-
-    String hiveFilterCondition = QueryConditionBuilder.getInstance().buildCondition(config);
-    if ((hiveFilterCondition != null) && (!hiveFilterCondition.trim().isEmpty())) {
-      query = query + " WHERE " + hiveFilterCondition;
-    }
 
     return query;
   }

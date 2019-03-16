@@ -11,6 +11,18 @@ true	true
 true	true
 true	true
 true	true
+PREHOOK: query: explain cbo select current_timestamp() from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select current_timestamp() from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject($f0=[CAST(2012-01-01 01:02:03):TIMESTAMP(9)])
+  HiveTableScan(table=[[default, alltypesorc]], table:alias=[alltypesorc])
+
 PREHOOK: query: select count(*) from (select current_timestamp() from alltypesorc union select current_timestamp() from src limit 5 ) subq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
@@ -47,7 +59,7 @@ POSTHOOK: query: explain extended select current_timestamp() from alltypesorc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CURRENT_TIMESTAMP() AS `$f0`
+OPTIMIZED SQL: SELECT CAST(TIMESTAMP '2012-01-01 01:02:03.000000000' AS TIMESTAMP(9)) AS `$f0`
 FROM `default`.`alltypesorc`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage

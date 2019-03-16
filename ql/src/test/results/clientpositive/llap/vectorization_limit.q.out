@@ -307,6 +307,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0, 1]
                       keys: _col0 (type: tinyint)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 131 Data size: 2492 Basic stats: COMPLETE Column stats: COMPLETE
@@ -523,6 +524,7 @@ STAGE PLANS:
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: []
                         keys: ctinyint (type: tinyint)
+                        minReductionHashAggr: 0.0
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 131 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
@@ -686,6 +688,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
                       keys: ctinyint (type: tinyint), cdouble (type: double)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 6144 Data size: 55052 Basic stats: COMPLETE Column stats: COMPLETE
@@ -930,6 +933,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
                       keys: cdouble (type: double)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 4586 Data size: 64088 Basic stats: COMPLETE Column stats: COMPLETE

@@ -23,7 +23,7 @@ import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Writable;
 
 /**
- * The ParquetHiveArrayInspector will inspect an ArrayWritable, considering it as an Hive array.<br />
+ * The ParquetHiveArrayInspector will inspect an ArrayWritable, considering it as an Hive array.<br>
  * It can also inspect a List if Hive decides to inspect the result of an inspection.
  *
  */

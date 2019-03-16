@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -107,6 +108,10 @@ public class CommitTxnHandler extends AbstractMessageHandler {
       updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName, context.tableName, null);
     }
     context.log.debug("Added Commit txn task : {}", commitTxnTask.getId());
+    if (tasks.isEmpty()) {
+      //will be used for setting the last repl id.
+      return Collections.singletonList(commitTxnTask);
+    }
     DAGTraversal.traverse(tasks, new AddDependencyToLeaves(commitTxnTask));
     return tasks;
   }

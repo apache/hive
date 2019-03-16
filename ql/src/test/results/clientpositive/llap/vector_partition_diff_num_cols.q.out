@@ -126,6 +126,7 @@ STAGE PLANS:
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -304,6 +305,7 @@ STAGE PLANS:
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -482,6 +484,7 @@ STAGE PLANS:
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -647,6 +650,7 @@ STAGE PLANS:
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
@@ -812,6 +816,7 @@ STAGE PLANS:
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE

@@ -511,13 +511,17 @@ public class DagUtils {
     case CUSTOM_SIMPLE_EDGE:
       assert partitionerClassName != null;
       partitionerConf = createPartitionerConf(partitionerClassName, conf);
-      UnorderedPartitionedKVEdgeConfig et3Conf = UnorderedPartitionedKVEdgeConfig
+      UnorderedPartitionedKVEdgeConfig.Builder et3Conf = UnorderedPartitionedKVEdgeConfig
           .newBuilder(keyClass, valClass, MRPartitioner.class.getName(), partitionerConf)
           .setFromConfiguration(conf)
           .setKeySerializationClass(TezBytesWritableSerialization.class.getName(), null)
-          .setValueSerializationClass(TezBytesWritableSerialization.class.getName(), null)
-          .build();
-      return et3Conf.createDefaultEdgeProperty();
+          .setValueSerializationClass(TezBytesWritableSerialization.class.getName(), null);
+      if (edgeProp.getBufferSize() != null) {
+        et3Conf.setAdditionalConfiguration(
+            TezRuntimeConfiguration.TEZ_RUNTIME_UNORDERED_OUTPUT_BUFFER_SIZE_MB,
+            edgeProp.getBufferSize().toString());
+      }
+      return et3Conf.build().createDefaultEdgeProperty();
     case ONE_TO_ONE_EDGE:
       UnorderedKVEdgeConfig et4Conf = UnorderedKVEdgeConfig
           .newBuilder(keyClass, valClass)
@@ -1012,7 +1016,7 @@ public class DagUtils {
    * to provide on the cluster as resources for execution.
    *
    * @param conf
-   * @return List<LocalResource> local resources to add to execution
+   * @return List&lt;LocalResource&gt; local resources to add to execution
    * @throws IOException when hdfs operation fails
    * @throws LoginException when getDefaultDestDir fails with the same exception
    */
@@ -1097,7 +1101,7 @@ public class DagUtils {
    * @param hdfsDirPathStr Destination directory in HDFS.
    * @param conf Configuration.
    * @param inputOutputJars The file names to localize.
-   * @return List<LocalResource> local resources to add to execution
+   * @return List&lt;LocalResource&gt; local resources to add to execution
    * @throws IOException when hdfs operation fails.
    * @throws LoginException when getDefaultDestDir fails with the same exception
    */

@@ -137,6 +137,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 358 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: compute_stats(ida, 'hll'), compute_stats(vala, 'hll'), compute_stats(idb, 'hll'), compute_stats(valb, 'hll')
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
@@ -271,6 +272,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 358 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: compute_stats(ida, 'hll'), compute_stats(vala, 'hll'), compute_stats(idb, 'hll'), compute_stats(valb, 'hll')
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
@@ -409,6 +411,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 358 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: compute_stats(ida, 'hll'), compute_stats(vala, 'hll'), compute_stats(idb, 'hll'), compute_stats(valb, 'hll')
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
@@ -439,6 +442,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 358 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: compute_stats(ida, 'hll'), compute_stats(vala, 'hll'), compute_stats(idb, 'hll'), compute_stats(valb, 'hll')
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
@@ -618,6 +622,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 358 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: compute_stats(ida, 'hll'), compute_stats(vala, 'hll'), compute_stats(idb, 'hll'), compute_stats(valb, 'hll')
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
@@ -648,6 +653,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 358 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: compute_stats(ida, 'hll'), compute_stats(vala, 'hll'), compute_stats(idb, 'hll'), compute_stats(valb, 'hll')
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
@@ -835,6 +841,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 358 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: compute_stats(ida, 'hll'), compute_stats(vala, 'hll'), compute_stats(idb, 'hll'), compute_stats(valb, 'hll')
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
@@ -865,6 +872,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 358 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: compute_stats(ida, 'hll'), compute_stats(vala, 'hll'), compute_stats(idb, 'hll'), compute_stats(valb, 'hll')
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1052,6 +1060,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 358 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: compute_stats(ida, 'hll'), compute_stats(vala, 'hll'), compute_stats(idb, 'hll'), compute_stats(valb, 'hll')
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1082,6 +1091,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 358 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: compute_stats(ida, 'hll'), compute_stats(vala, 'hll'), compute_stats(idb, 'hll'), compute_stats(valb, 'hll')
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1281,6 +1291,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 358 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: compute_stats(ida, 'hll'), compute_stats(vala, 'hll'), compute_stats(idb, 'hll'), compute_stats(valb, 'hll')
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1311,6 +1322,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 358 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: compute_stats(ida, 'hll'), compute_stats(vala, 'hll'), compute_stats(idb, 'hll'), compute_stats(valb, 'hll')
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1510,6 +1522,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 358 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: compute_stats(ida, 'hll'), compute_stats(vala, 'hll'), compute_stats(idb, 'hll'), compute_stats(valb, 'hll')
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1540,6 +1553,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 358 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: compute_stats(ida, 'hll'), compute_stats(vala, 'hll'), compute_stats(idb, 'hll'), compute_stats(valb, 'hll')
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE

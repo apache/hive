@@ -37,9 +37,7 @@ public class SparkMapJoinProcessor extends MapJoinProcessor {
    * convert a regular join to a a map-side join.
    *
    * @param conf
-   * @param opParseCtxMap
    * @param op join operator
-   * @param joinTree qb join tree
    * @param bigTablePos position of the source to be read as part of
    *                   map-reduce framework. All other sources are cached in memory
    * @param noCheckOuterJoin

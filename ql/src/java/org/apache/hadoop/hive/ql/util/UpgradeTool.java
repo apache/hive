@@ -83,7 +83,7 @@ import java.util.function.Function;
  * but can be made insert-only transactional tables and generate corresponding Alter Table commands.
  *
  * Note that to convert a table to full CRUD table requires that all files follow a naming
- * convention, namely 0000N_0 or 0000N_0_copy_M, N >= 0, M > 0.  This utility can perform this
+ * convention, namely 0000N_0 or 0000N_0_copy_M, N &gt;= 0, M &gt; 0.  This utility can perform this
  * rename with "execute" option.  It will also produce a script (with and w/o "execute" to
  * perform the renames).
  *

@@ -370,7 +370,6 @@ public class TezWork extends AbstractOperatorDesc {
   /**
    * connect adds an edge between a and b. Both nodes have
    * to be added prior to calling connect.
-   * @param
    */
   public void connect(BaseWork a, BaseWork b,
       TezEdgeProperty edgeProp) {

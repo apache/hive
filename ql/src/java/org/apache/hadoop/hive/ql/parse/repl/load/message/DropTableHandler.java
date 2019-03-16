@@ -18,11 +18,11 @@
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
 import org.apache.hadoop.hive.metastore.messaging.DropTableMessage;
+import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.table.DropTableDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
-import org.apache.hadoop.hive.ql.plan.DropTableDesc;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -39,8 +39,8 @@ public class DropTableHandler extends AbstractMessageHandler {
         actualDbName + "." + actualTblName,
         null, true, true, context.eventOnlyReplicationSpec(), false
     );
-    Task<DDLWork> dropTableTask = TaskFactory.get(
-        new DDLWork(readEntitySet, writeEntitySet, dropTableDesc), context.hiveConf
+    Task<DDLWork2> dropTableTask = TaskFactory.get(
+        new DDLWork2(readEntitySet, writeEntitySet, dropTableDesc), context.hiveConf
     );
     context.log.debug(
         "Added drop tbl task : {}:{}", dropTableTask.getId(), dropTableDesc.getTableName()

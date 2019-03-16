@@ -127,11 +127,12 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAugmentMaterializationRule;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
-import org.apache.hadoop.hive.ql.plan.DropTableDesc;
+import org.apache.hadoop.hive.ql.plan.DropPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.session.CreateTableAutomaticGrant;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -432,7 +433,7 @@ public class Hive {
 
   /**
    * Gets the allowClose flag which determines if it is allowed to close metastore connections.
-   * @returns allowClose flag
+   * @return allowClose flag
    */
   public boolean allowClose() {
     return isAllowClose;
@@ -648,9 +649,7 @@ public class Hive {
    *          new name of the table. could be the old name
    * @param transactional
    *          Need to generate and save a table snapshot into the metastore?
-   * @throws InvalidOperationException
-   *           if the changes in metadata is not acceptable
-   * @throws TException
+   * @throws HiveException
    */
   public void alterTable(String fullyQlfdTblName, Table newTbl, EnvironmentContext environmentContext,
                          boolean transactional)
@@ -737,7 +736,7 @@ public class Hive {
    *          new partition
    * @throws InvalidOperationException
    *           if the changes in metadata is not acceptable
-   * @throws TException
+   * @throws HiveException
    */
   @Deprecated
   public void alterPartition(String tblName, Partition newPart,
@@ -762,7 +761,7 @@ public class Hive {
    *          indicates this call is for transaction stats
    * @throws InvalidOperationException
    *           if the changes in metadata is not acceptable
-   * @throws TException
+   * @throws HiveException
    */
   public void alterPartition(String catName, String dbName, String tblName, Partition newPart,
                              EnvironmentContext environmentContext, boolean transactional)
@@ -819,7 +818,7 @@ public class Hive {
    *          Need to generate and save a table snapshot into the metastore?
    * @throws InvalidOperationException
    *           if the changes in metadata is not acceptable
-   * @throws TException
+   * @throws HiveException
    */
   public void alterPartitions(String tblName, List<Partition> newParts,
                               EnvironmentContext environmentContext, boolean transactional)
@@ -862,9 +861,7 @@ public class Hive {
    *          spec of old partition
    * @param newPart
    *          new partition
-   * @throws InvalidOperationException
-   *           if the changes in metadata is not acceptable
-   * @throws TException
+   * @throws HiveException
    */
   public void renamePartition(Table tbl, Map<String, String> oldPartSpec, Partition newPart)
       throws HiveException {
@@ -1354,6 +1351,18 @@ public class Hive {
    */
   public List<Table> getAllTableObjects(String dbName) throws HiveException {
     return getTableObjects(dbName, ".*", null);
+  }
+
+  /**
+   * Get tables for the specified database that match the provided regex pattern and table type.
+   * @param dbName
+   * @param pattern
+   * @param tableType
+   * @return List of table objects
+   * @throws HiveException
+   */
+  public List<Table> getTableObjectsByType(String dbName, String pattern, TableType tableType) throws HiveException {
+    return getTableObjects(dbName, pattern, tableType);
   }
 
   /**
@@ -2972,6 +2981,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
             org.apache.hadoop.hive.metastore.api.Partition ptn =
                 getMSC().getPartition(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(), p.getValues());
             if (addPartitionDesc.getReplicationSpec().allowReplacementInto(ptn.getParameters())){
+              ReplicationSpec.copyLastReplId(ptn.getParameters(), p.getParameters());
               partsToAlter.add(p);
             } // else ptn already exists, but we do nothing with it.
           } catch (NoSuchObjectException nsoe){
@@ -3353,7 +3363,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public List<Partition> dropPartitions(Table table, List<String>partDirNames,
       boolean deleteData, boolean ifExists) throws HiveException {
     // partitions to be dropped in this batch
-    List<DropTableDesc.PartSpec> partSpecs = new ArrayList<>(partDirNames.size());
+    List<DropPartitionDesc.PartSpec> partSpecs = new ArrayList<>(partDirNames.size());
 
     // parts of the partition
     String[] parts = null;
@@ -3403,7 +3413,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
 
       // Add the expression to partition specification
-      partSpecs.add(new DropTableDesc.PartSpec(expr, partSpecKey));
+      partSpecs.add(new DropPartitionDesc.PartSpec(expr, partSpecKey));
 
       // Increment dropKey to get a new key for hash map
       ++partSpecKey;
@@ -3413,14 +3423,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return dropPartitions(names[0], names[1], partSpecs, deleteData, ifExists);
   }
 
-  public List<Partition> dropPartitions(String tblName, List<DropTableDesc.PartSpec> partSpecs,
+  public List<Partition> dropPartitions(String tblName, List<DropPartitionDesc.PartSpec> partSpecs,
       boolean deleteData, boolean ifExists) throws HiveException {
     String[] names = Utilities.getDbTableName(tblName);
     return dropPartitions(names[0], names[1], partSpecs, deleteData, ifExists);
   }
 
   public List<Partition> dropPartitions(String dbName, String tblName,
-      List<DropTableDesc.PartSpec> partSpecs,  boolean deleteData,
+      List<DropPartitionDesc.PartSpec> partSpecs,  boolean deleteData,
       boolean ifExists) throws HiveException {
     return dropPartitions(dbName, tblName, partSpecs,
                           PartitionDropOptions.instance()
@@ -3428,19 +3438,19 @@ private void constructOneLBLocationMap(FileStatus fSta,
                                               .ifExists(ifExists));
   }
 
-  public List<Partition> dropPartitions(String tblName, List<DropTableDesc.PartSpec> partSpecs,
+  public List<Partition> dropPartitions(String tblName, List<DropPartitionDesc.PartSpec> partSpecs,
                                         PartitionDropOptions dropOptions) throws HiveException {
     String[] names = Utilities.getDbTableName(tblName);
     return dropPartitions(names[0], names[1], partSpecs, dropOptions);
   }
 
   public List<Partition> dropPartitions(String dbName, String tblName,
-      List<DropTableDesc.PartSpec> partSpecs, PartitionDropOptions dropOptions) throws HiveException {
+      List<DropPartitionDesc.PartSpec> partSpecs, PartitionDropOptions dropOptions) throws HiveException {
     try {
       Table tbl = getTable(dbName, tblName);
       List<org.apache.hadoop.hive.metastore.utils.ObjectPair<Integer, byte[]>> partExprs =
           new ArrayList<>(partSpecs.size());
-      for (DropTableDesc.PartSpec partSpec : partSpecs) {
+      for (DropPartitionDesc.PartSpec partSpec : partSpecs) {
         partExprs.add(new org.apache.hadoop.hive.metastore.utils.ObjectPair<>(partSpec.getPrefixLength(),
             SerializationUtilities.serializeExpressionToKryo(partSpec.getPartSpec())));
       }

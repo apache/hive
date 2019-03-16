@@ -73,7 +73,7 @@ public class PerfLogger {
    */
   public void PerfLogBegin(String callerName, String method) {
     long startTime = System.currentTimeMillis();
-    startTimes.put(method, new Long(startTime));
+    startTimes.put(method, Long.valueOf(startTime));
     if (LOG.isDebugEnabled()) {
       LOG.debug("<PERFLOG method=" + method + " from=" + callerName + ">");
     }
@@ -98,7 +98,7 @@ public class PerfLogger {
   public long PerfLogEnd(String callerName, String method, String additionalInfo) {
     Long startTime = startTimes.get(method);
     long endTime = System.currentTimeMillis();
-    endTimes.put(method, new Long(endTime));
+    endTimes.put(method, Long.valueOf(endTime));
     long duration = startTime == null ? -1 : endTime - startTime.longValue();
 
     if (LOG.isDebugEnabled()) {

@@ -58,7 +58,7 @@ public class VectorMapJoinFastBytesHashMultiSetStore implements MemoryEstimate {
    *      --------------------------------------
    *                                           |
    *                                           v
-   *       <4 bytes's for set membership count> <Key Bytes>
+   *       &lt;4 bytes's for set membership count&gt; &lt;Key Bytes&gt;
    *            COUNT                              KEY
    *
    * NOTE: MultiSetCount.byteLength = 4
@@ -72,7 +72,7 @@ public class VectorMapJoinFastBytesHashMultiSetStore implements MemoryEstimate {
    *      -------------------------------------
    *                                          |
    *                                          v
-   *      <4 byte's for set membership count> [Big Key Length] <Key Bytes>
+   *      &lt;4 byte's for set membership count&gt; [Big Key Length] &lt;Key Bytes&gt;
    *                NEXT (NONE)                optional           KEY
    */
 

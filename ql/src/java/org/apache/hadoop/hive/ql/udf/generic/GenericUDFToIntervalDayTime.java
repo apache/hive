@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 * GenericUDFIntervalDayTime
 *
 * Example usage:
-* ... CAST(<Interval string> as INTERVAL DAY TO SECOND) ...
+* ... CAST(&lt;Interval string&gt; as INTERVAL DAY TO SECOND) ...
 *
 * Creates a HiveIntervalDayTimeWritable object using PrimitiveObjectInspectorConverter
 *

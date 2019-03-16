@@ -617,7 +617,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return exception;
   }
 
-  protected void setException(Throwable ex) {
+  public void setException(Throwable ex) {
     exception = ex;
   }
 

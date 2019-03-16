@@ -51,7 +51,7 @@ import java.util.List;
  *   SELECT a, b, SUM(x) AS s, COUNT(*) AS c --NEW DATA
  *   FROM TAB_A
  *   JOIN TAB_B ON (TAB_A.a = TAB_B.z)
- *   WHERE TAB_A.ROW_ID > 5
+ *   WHERE TAB_A.ROW_ID &gt; 5
  *   GROUP BY a, b) inner_subq
  * GROUP BY a, b;
  *
@@ -61,10 +61,10 @@ import java.util.List;
  *   SELECT a, b, SUM(x) AS s, COUNT(*) AS c --NEW DATA
  *   FROM TAB_A
  *   JOIN TAB_B ON (TAB_A.a = TAB_B.z)
- *   WHERE TAB_A.ROW_ID > 5
+ *   WHERE TAB_A.ROW_ID &gt; 5
  *   GROUP BY a, b) source
  * ON (mv.a = source.a AND mv.b = source.b)
- * WHEN MATCHED AND mv.c + source.c <> 0
+ * WHEN MATCHED AND mv.c + source.c &lt;&gt; 0
  *   THEN UPDATE SET mv.s = mv.s + source.s, mv.c = mv.c + source.c
  * WHEN NOT MATCHED
  *   THEN INSERT VALUES (source.a, source.b, s, c);

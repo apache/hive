@@ -48,6 +48,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations: count()
                 keys: true (type: boolean)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE

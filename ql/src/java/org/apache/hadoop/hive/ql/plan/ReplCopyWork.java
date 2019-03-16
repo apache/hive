@@ -59,6 +59,8 @@ public class ReplCopyWork extends CopyWork {
 
   private boolean copyToMigratedTxnTable;
 
+  private boolean checkDuplicateCopy = false;
+
   public ReplCopyWork(final Path srcPath, final Path destPath, boolean errorOnSrcEmpty) {
     super(srcPath, destPath, errorOnSrcEmpty);
   }
@@ -109,5 +111,13 @@ public class ReplCopyWork extends CopyWork {
 
   public void setCopyToMigratedTxnTable(boolean copyToMigratedTxnTable) {
     this.copyToMigratedTxnTable = copyToMigratedTxnTable;
+  }
+
+  public boolean isNeedCheckDuplicateCopy() {
+    return checkDuplicateCopy;
+  }
+
+  public void setCheckDuplicateCopy(boolean flag) {
+    checkDuplicateCopy = flag;
   }
 }

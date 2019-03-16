@@ -711,7 +711,7 @@ public class Function {
   }
   
   void evalInt(int i) {
-    evalInt(new Long(i));
+    evalInt(Long.valueOf(i));
   }
   
   /**
@@ -744,7 +744,7 @@ public class Function {
     if (ctx != null) {
       return evalPop(ctx);
     }
-    return new Var(new Long(value));
+    return new Var(Long.valueOf(value));
   }
   
   /**
