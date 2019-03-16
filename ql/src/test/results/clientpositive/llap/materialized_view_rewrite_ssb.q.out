@@ -657,6 +657,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(discounted_price)
+                        minReductionHashAggr: 0.0
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -745,6 +746,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(discounted_price)
+                        minReductionHashAggr: 0.0
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -835,6 +837,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(discounted_price)
+                        minReductionHashAggr: 0.0
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -939,6 +942,7 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: sum(lo_revenue)
                         keys: d_year (type: int), p_brand1 (type: string)
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1062,6 +1066,7 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: sum(lo_revenue)
                         keys: d_year (type: int), p_brand1 (type: string)
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1185,6 +1190,7 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: sum(lo_revenue)
                         keys: d_year (type: int)
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1312,6 +1318,7 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: sum(lo_revenue)
                         keys: d_year (type: int), c_nation (type: string), s_nation (type: string)
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3
                         Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1437,6 +1444,7 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: sum(lo_revenue)
                         keys: d_year (type: int), c_city (type: string), s_city (type: string)
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3
                         Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1558,6 +1566,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: sum(lo_revenue)
                       keys: d_year (type: int), c_city (type: string), s_city (type: string)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1683,6 +1692,7 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: sum(lo_revenue)
                         keys: d_year (type: int), c_city (type: string), s_city (type: string)
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3
                         Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1814,6 +1824,7 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: sum(net_revenue)
                         keys: d_year (type: int), c_nation (type: string)
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1943,6 +1954,7 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: sum(net_revenue)
                         keys: d_year (type: int), s_nation (type: string), p_category (type: string)
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3
                         Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2072,6 +2084,7 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: sum(net_revenue)
                         keys: d_year (type: int), s_city (type: string), p_brand1 (type: string)
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3
                         Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE

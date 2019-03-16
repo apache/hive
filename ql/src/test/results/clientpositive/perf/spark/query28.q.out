@@ -144,6 +144,7 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: sum(ss_list_price), count(ss_list_price)
                         keys: ss_list_price (type: decimal(7,2))
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE
@@ -170,6 +171,7 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: sum(ss_list_price), count(ss_list_price)
                         keys: ss_list_price (type: decimal(7,2))
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE
@@ -196,6 +198,7 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: sum(ss_list_price), count(ss_list_price)
                         keys: ss_list_price (type: decimal(7,2))
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE
@@ -222,6 +225,7 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: sum(ss_list_price), count(ss_list_price)
                         keys: ss_list_price (type: decimal(7,2))
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE
@@ -248,6 +252,7 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: sum(ss_list_price), count(ss_list_price)
                         keys: ss_list_price (type: decimal(7,2))
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE
@@ -482,6 +487,7 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: sum(ss_list_price), count(ss_list_price)
                         keys: ss_list_price (type: decimal(7,2))
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE

@@ -1698,7 +1698,10 @@ public class HiveConf extends Configuration {
 
     HIVE_ENABLE_JDBC_PUSHDOWN("hive.jdbc.pushdown.enable", true,
         "Flag to control enabling pushdown of operators into JDBC connection and subsequent SQL generation\n" +
-        "using Calcite."),
+        "using Calcite"),
+    HIVE_ENABLE_JDBC_SAFE_PUSHDOWN("hive.jdbc.pushdown.safe.enable", false,
+        "Flag to control enabling pushdown of operators using Calcite that prevent splitting results\n" +
+        "retrieval in the JDBC storage handler"),
 
     // hive.mapjoin.bucket.cache.size has been replaced by hive.smbjoin.cache.row,
     // need to remove by hive .13. Also, do not change default (see SMB operator)
@@ -1747,6 +1750,10 @@ public class HiveConf extends Configuration {
     HIVEMAPAGGRHASHMINREDUCTION("hive.map.aggr.hash.min.reduction", (float) 0.99,
         "Hash aggregation will be turned off if the ratio between hash  table size and input rows is bigger than this number. \n" +
         "Set to 1 to make sure hash aggregation is never turned off."),
+    HIVEMAPAGGRHASHMINREDUCTIONSTATSADJUST("hive.map.aggr.hash.min.reduction.stats", true,
+        "Whether the value for hive.map.aggr.hash.min.reduction should be set statically using stats estimates. \n" +
+        "If this is enabled, the default value for hive.map.aggr.hash.min.reduction is only used as an upper-bound\n" +
+        "for the value set in the map-side group by operators."),
     HIVEMULTIGROUPBYSINGLEREDUCER("hive.multigroupby.singlereducer", true,
         "Whether to optimize multi group by query to generate single M/R  job plan. If the multi group by query has \n" +
         "common group by keys, it will be optimized to generate single M/R job."),

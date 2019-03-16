@@ -240,6 +240,7 @@ STAGE PLANS:
                     Statistics: Num rows: 6 Data size: 21816 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(_col0)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 3644 Basic stats: COMPLETE Column stats: NONE

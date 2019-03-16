@@ -104,6 +104,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: first_value_window_0 (type: tinyint)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -227,6 +228,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: last_value_window_0 (type: int)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -361,6 +363,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: last_value_window_0 (type: int), first_value_window_1 (type: tinyint)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -504,6 +507,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations: max(f)
                 keys: si (type: smallint)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -718,6 +722,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: _col1 (type: smallint), rank_window_0 (type: int)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
