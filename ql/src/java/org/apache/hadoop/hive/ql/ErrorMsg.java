@@ -93,7 +93,7 @@ public enum ErrorMsg {
   INVALID_MAPINDEX_CONSTANT(10031, "Non-constant expression for map indexes not supported"),
   INVALID_MAPINDEX_TYPE(10032, "MAP key type does not match index expression type"),
   NON_COLLECTION_TYPE(10033, "[] not valid on non-collection types"),
-  SELECT_DISTINCT_WITH_GROUPBY(10034, "SELECT DISTINCT and GROUP BY can not be in the same query"),
+  @Deprecated SELECT_DISTINCT_WITH_GROUPBY(10034, "SELECT DISTINCT and GROUP BY can not be in the same query"),
   COLUMN_REPEATED_IN_PARTITIONING_COLS(10035, "Column repeated in partitioning columns"),
   DUPLICATE_COLUMN_NAMES(10036, "Duplicate column name:"),
   INVALID_BUCKET_NUMBER(10037, "Bucket number should be bigger than zero"),

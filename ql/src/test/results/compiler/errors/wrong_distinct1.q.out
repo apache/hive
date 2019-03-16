@@ -1,2 +1,0 @@
-Semantic Exception: 
-2:88 SELECT DISTINCT and GROUP BY can not be in the same query. Error encountered near token 'key'
