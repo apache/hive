@@ -629,7 +629,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
     if (hasAcidDirs) {
       AcidUtils.Directory dirInfo = AcidUtils.getAcidState(
-          dir, conf, validWriteIdList, Ref.from(false), true, null);
+          fs, dir, conf, validWriteIdList, Ref.from(false), true, null);
 
       // Find the base, created for IOW.
       Path base = dirInfo.getBaseDirectory();

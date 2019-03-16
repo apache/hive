@@ -1079,14 +1079,15 @@ public class AcidUtils {
 
   /**
    * Is the given directory in ACID format?
+   * @param fileSystem file system instance
    * @param directory the partition directory to check
    * @param conf the query configuration
    * @return true, if it is an ACID directory
    * @throws IOException
    */
-  public static boolean isAcid(Path directory,
+  public static boolean isAcid(FileSystem fileSystem, Path directory,
                                Configuration conf) throws IOException {
-    FileSystem fs = directory.getFileSystem(conf);
+    FileSystem fs = fileSystem == null ? directory.getFileSystem(conf) : fileSystem;
     for(FileStatus file: fs.listStatus(directory)) {
       String filename = file.getPath().getName();
       if (filename.startsWith(BASE_PREFIX) ||
@@ -1105,7 +1106,7 @@ public class AcidUtils {
       Configuration conf,
       ValidWriteIdList writeIdList
       ) throws IOException {
-    return getAcidState(directory, conf, writeIdList, false, false);
+    return getAcidState(null, directory, conf, writeIdList, false, false);
   }
 
   /** State class for getChildState; cannot modify 2 things in a method. */
@@ -1121,22 +1122,23 @@ public class AcidUtils {
    * base and diff directories. Note that because major compactions don't
    * preserve the history, we can't use a base directory that includes a
    * write id that we must exclude.
+   * @param fileSystem file system instance
    * @param directory the partition directory to analyze
    * @param conf the configuration
    * @param writeIdList the list of write ids that we are reading
    * @return the state of the directory
    * @throws IOException
    */
-  public static Directory getAcidState(Path directory,
+  public static Directory getAcidState(FileSystem fileSystem, Path directory,
                                        Configuration conf,
                                        ValidWriteIdList writeIdList,
                                        boolean useFileIds,
                                        boolean ignoreEmptyFiles
                                        ) throws IOException {
-    return getAcidState(directory, conf, writeIdList, Ref.from(useFileIds), ignoreEmptyFiles, null);
+    return getAcidState(fileSystem, directory, conf, writeIdList, Ref.from(useFileIds), ignoreEmptyFiles, null);
   }
 
-  public static Directory getAcidState(Path directory,
+  public static Directory getAcidState(FileSystem fileSystem, Path directory,
                                        Configuration conf,
                                        ValidWriteIdList writeIdList,
                                        Ref<Boolean> useFileIds,
@@ -1159,7 +1161,7 @@ public class AcidUtils {
       validTxnList.readFromString(s);
     }
 
-    FileSystem fs = directory.getFileSystem(conf);
+    FileSystem fs = fileSystem == null ? directory.getFileSystem(conf) : fileSystem;
     // The following 'deltas' includes all kinds of delta files including insert & delete deltas.
     final List<ParsedDelta> deltas = new ArrayList<ParsedDelta>();
     List<ParsedDelta> working = new ArrayList<ParsedDelta>();
