@@ -580,7 +580,7 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
 
   @Override
   public void debugDumpShort(StringBuilder sb) {
-    long[] metricData = metrics.getHeapUsageStats();
+    long[] metricData = metrics.getUsageStats();
     sb.append("\nLRFU eviction list: ")
       .append(metricData[PolicyMetrics.LISTSIZE]).append(" items");
     sb.append("\nLRFU eviction heap: " + heapSize + " items");
@@ -695,7 +695,7 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
      *
      * @return long array with LRFU stats
      */
-    public long[] getHeapUsageStats() {
+    public long[] getUsageStats() {
       long dataOnHeap = 0L;   // all non-meta related buffers on min-heap
       long dataOnList = 0L;   // all non-meta related buffers on eviction list
       long metaOnHeap = 0L;   // meta data buffers on min-heap
@@ -741,7 +741,7 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
 
     @Override
     public synchronized void getMetrics(MetricsCollector collector, boolean all) {
-      long[] usageStats = getHeapUsageStats();
+      long[] usageStats = getUsageStats();
 
       // start a new record
       MetricsRecordBuilder mrb = collector.addRecord(PolicyInformation.PolicyMetrics)
