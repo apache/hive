@@ -28,10 +28,12 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelShuttle;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
+import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.util.Util;
 import org.apache.calcite.util.mapping.Mapping;
 import org.apache.calcite.util.mapping.MappingType;
@@ -88,7 +90,8 @@ public class HiveProject extends Project implements HiveRelNode {
       String msg = "Select list contains multiple expressions with the same name." + fieldNames;
       throw new CalciteSemanticException(msg, UnsupportedFeature.Same_name_in_multiple_expressions);
     }
-    RelDataType rowType = RexUtil.createStructType(cluster.getTypeFactory(), exps, fieldNames);
+    RelDataType rowType = RexUtil.createStructType(
+        cluster.getTypeFactory(), exps, fieldNames, SqlValidatorUtil.EXPR_SUGGESTER);
     return create(cluster, child, exps, rowType, Collections.<RelCollation> emptyList());
   }
 

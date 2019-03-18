@@ -7,15 +7,15 @@ POSTHOOK: Output: dboutput
 PREHOOK: query: FROM src
 SELECT
 #### A masked pattern was here ####
-'CREATE TABLE SIMPLE_DERBY_TABLE1 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE)' ),
+'CREATE TABLE EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1 ("IKEY" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE)' ),
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
+'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1 ("IKEY","bkey","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','-20','-20','-20.0','-20.0'),
+'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1 ("IKEY","bkey","fkey","dkey") VALUES (?,?,?,?)','-20','-20','-20.0','-20.0'),
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','100','-15','65.0','-74.0'),
+'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1 ("IKEY","bkey","fkey","dkey") VALUES (?,?,?,?)','100','-15','65.0','-74.0'),
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','44','53','-455.454','330.76')
+'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1 ("IKEY","bkey","fkey","dkey") VALUES (?,?,?,?)','44','53','-455.454','330.76')
 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -23,15 +23,15 @@ PREHOOK: Input: default@src
 POSTHOOK: query: FROM src
 SELECT
 #### A masked pattern was here ####
-'CREATE TABLE SIMPLE_DERBY_TABLE1 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE)' ),
+'CREATE TABLE EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1 ("IKEY" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE)' ),
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
+'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1 ("IKEY","bkey","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','-20','-20','-20.0','-20.0'),
+'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1 ("IKEY","bkey","fkey","dkey") VALUES (?,?,?,?)','-20','-20','-20.0','-20.0'),
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','100','-15','65.0','-74.0'),
+'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1 ("IKEY","bkey","fkey","dkey") VALUES (?,?,?,?)','100','-15','65.0','-74.0'),
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','44','53','-455.454','330.76')
+'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1 ("IKEY","bkey","fkey","dkey") VALUES (?,?,?,?)','44','53','-455.454','330.76')
 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -40,15 +40,15 @@ POSTHOOK: Input: default@src
 PREHOOK: query: FROM src
 SELECT
 #### A masked pattern was here ####
-'CREATE TABLE SIMPLE_DERBY_TABLE2 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE )' ),
+'CREATE TABLE EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey" INTEGER, "BKEY" BIGINT, "fkey" REAL, "dkey" DOUBLE )' ),
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
+'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey","BKEY","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','-20','8','9.0','11.0'),
+'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey","BKEY","fkey","dkey") VALUES (?,?,?,?)','-20','8','9.0','11.0'),
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','101','-16','66.0','-75.0'),
+'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey","BKEY","fkey","dkey") VALUES (?,?,?,?)','101','-16','66.0','-75.0'),
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','40','50','-455.4543','330.767')
+'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey","BKEY","fkey","dkey") VALUES (?,?,?,?)','40','50','-455.4543','330.767')
 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -56,15 +56,15 @@ PREHOOK: Input: default@src
 POSTHOOK: query: FROM src
 SELECT
 #### A masked pattern was here ####
-'CREATE TABLE SIMPLE_DERBY_TABLE2 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE )' ),
+'CREATE TABLE EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey" INTEGER, "BKEY" BIGINT, "fkey" REAL, "dkey" DOUBLE )' ),
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
+'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey","BKEY","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','-20','8','9.0','11.0'),
+'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey","BKEY","fkey","dkey") VALUES (?,?,?,?)','-20','8','9.0','11.0'),
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','101','-16','66.0','-75.0'),
+'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey","BKEY","fkey","dkey") VALUES (?,?,?,?)','101','-16','66.0','-75.0'),
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','40','50','-455.4543','330.767')
+'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey","BKEY","fkey","dkey") VALUES (?,?,?,?)','40','50','-455.4543','330.767')
 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -73,15 +73,15 @@ POSTHOOK: Input: default@src
 PREHOOK: query: FROM src
 SELECT
 #### A masked pattern was here ####
-'CREATE TABLE SIMPLE_DERBY_TABLE2 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE )' ),
+'CREATE TABLE EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey" INTEGER, "bkey" BIGINT, "FKEY" REAL, "DKEY" DOUBLE )' ),
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
+'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey","bkey","FKEY","DKEY") VALUES (?,?,?,?)','20','20','20.0','20.0'),
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','-20','8','9.0','11.0'),
+'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey","bkey","FKEY","DKEY") VALUES (?,?,?,?)','-20','8','9.0','11.0'),
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','101','-16','66.0','-75.0'),
+'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey","bkey","FKEY","DKEY") VALUES (?,?,?,?)','101','-16','66.0','-75.0'),
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','40','50','-455.4543','330.767')
+'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey","bkey","FKEY","DKEY") VALUES (?,?,?,?)','40','50','-455.4543','330.767')
 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -89,15 +89,15 @@ PREHOOK: Input: default@src
 POSTHOOK: query: FROM src
 SELECT
 #### A masked pattern was here ####
-'CREATE TABLE SIMPLE_DERBY_TABLE2 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE )' ),
+'CREATE TABLE EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey" INTEGER, "bkey" BIGINT, "FKEY" REAL, "DKEY" DOUBLE )' ),
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
+'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey","bkey","FKEY","DKEY") VALUES (?,?,?,?)','20','20','20.0','20.0'),
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','-20','8','9.0','11.0'),
+'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey","bkey","FKEY","DKEY") VALUES (?,?,?,?)','-20','8','9.0','11.0'),
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','101','-16','66.0','-75.0'),
+'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey","bkey","FKEY","DKEY") VALUES (?,?,?,?)','101','-16','66.0','-75.0'),
 #### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','40','50','-455.4543','330.767')
+'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey","bkey","FKEY","DKEY") VALUES (?,?,?,?)','40','50','-455.4543','330.767')
 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -117,7 +117,7 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
-                "hive.sql.table" = "SIMPLE_DERBY_TABLE1",
+                "hive.sql.table" = "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1",
                 "hive.sql.dbcp.maxActive" = "1"
 )
 PREHOOK: type: CREATETABLE
@@ -137,7 +137,7 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
-                "hive.sql.table" = "SIMPLE_DERBY_TABLE1",
+                "hive.sql.table" = "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1",
                 "hive.sql.dbcp.maxActive" = "1"
 )
 POSTHOOK: type: CREATETABLE
@@ -157,7 +157,7 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user2",
                 "hive.sql.dbcp.password" = "passwd2",
-                "hive.sql.table" = "SIMPLE_DERBY_TABLE2",
+                "hive.sql.table" = "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2",
                 "hive.sql.dbcp.maxActive" = "1"
 )
 PREHOOK: type: CREATETABLE
@@ -177,7 +177,7 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user2",
                 "hive.sql.dbcp.password" = "passwd2",
-                "hive.sql.table" = "SIMPLE_DERBY_TABLE2",
+                "hive.sql.table" = "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2",
                 "hive.sql.dbcp.maxActive" = "1"
 )
 POSTHOOK: type: CREATETABLE
@@ -197,7 +197,7 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
-                "hive.sql.table" = "SIMPLE_DERBY_TABLE2",
+                "hive.sql.table" = "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2",
                 "hive.sql.dbcp.maxActive" = "1"
 )
 PREHOOK: type: CREATETABLE
@@ -217,7 +217,7 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
-                "hive.sql.table" = "SIMPLE_DERBY_TABLE2",
+                "hive.sql.table" = "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2",
                 "hive.sql.dbcp.maxActive" = "1"
 )
 POSTHOOK: type: CREATETABLE
@@ -288,10 +288,10 @@ STAGE PLANS:
                 TableScan
                   alias: db1_ext_auth1
                   properties:
-                    hive.sql.query SELECT "ikey", "bkey", "fkey", "dkey"
-FROM "SIMPLE_DERBY_TABLE1"
-WHERE "ikey" IS NOT NULL
-                    hive.sql.query.fieldNames ikey,bkey,fkey,dkey
+                    hive.sql.query SELECT "IKEY", "bkey", "fkey", "dkey"
+FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
+WHERE "IKEY" IS NOT NULL
+                    hive.sql.query.fieldNames IKEY,bkey,fkey,dkey
                     hive.sql.query.fieldTypes int,bigint,float,double
                     hive.sql.query.split true
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
@@ -312,10 +312,10 @@ WHERE "ikey" IS NOT NULL
                 TableScan
                   alias: db2_ext_auth2
                   properties:
-                    hive.sql.query SELECT "ikey", "bkey", "fkey", "dkey"
-FROM "SIMPLE_DERBY_TABLE2"
+                    hive.sql.query SELECT "ikey", "BKEY", "fkey", "dkey"
+FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2"
 WHERE "ikey" IS NOT NULL
-                    hive.sql.query.fieldNames ikey,bkey,fkey,dkey
+                    hive.sql.query.fieldNames ikey,BKEY,fkey,dkey
                     hive.sql.query.fieldTypes int,bigint,float,double
                     hive.sql.query.split true
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
@@ -391,14 +391,14 @@ STAGE PLANS:
         TableScan
           alias: db1_ext_auth1
           properties:
-            hive.sql.query SELECT "t0"."ikey", "t0"."bkey", "t0"."fkey", "t0"."dkey", "t2"."ikey" AS "ikey0", "t2"."bkey" AS "bkey0", "t2"."fkey" AS "fkey0", "t2"."dkey" AS "dkey0"
-FROM (SELECT "ikey", "bkey", "fkey", "dkey"
-FROM "SIMPLE_DERBY_TABLE1"
-WHERE "ikey" IS NOT NULL) AS "t0"
-INNER JOIN (SELECT "ikey", "bkey", "fkey", "dkey"
-FROM "SIMPLE_DERBY_TABLE2"
-WHERE "ikey" IS NOT NULL) AS "t2" ON "t0"."ikey" = "t2"."ikey"
-            hive.sql.query.fieldNames ikey,bkey,fkey,dkey,ikey0,bkey0,fkey0,dkey0
+            hive.sql.query SELECT "t0"."IKEY", "t0"."bkey", "t0"."fkey", "t0"."dkey", "t2"."ikey" AS "ikey0", "t2"."bkey" AS "bkey0", "t2"."FKEY" AS "FKEY0", "t2"."DKEY" AS "DKEY0"
+FROM (SELECT "IKEY", "bkey", "fkey", "dkey"
+FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
+WHERE "IKEY" IS NOT NULL) AS "t0"
+INNER JOIN (SELECT "ikey", "bkey", "FKEY", "DKEY"
+FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2"
+WHERE "ikey" IS NOT NULL) AS "t2" ON "t0"."IKEY" = "t2"."ikey"
+            hive.sql.query.fieldNames IKEY,bkey,fkey,dkey,ikey0,bkey0,FKEY0,DKEY0
             hive.sql.query.fieldTypes int,bigint,float,double,int,bigint,float,double
             hive.sql.query.split false
           Select Operator
@@ -446,9 +446,9 @@ STAGE PLANS:
                 TableScan
                   alias: db1_ext_auth1
                   properties:
-                    hive.sql.query SELECT "ikey", "bkey", "fkey", "dkey"
-FROM "SIMPLE_DERBY_TABLE1"
-                    hive.sql.query.fieldNames ikey,bkey,fkey,dkey
+                    hive.sql.query SELECT "IKEY", "bkey", "fkey", "dkey"
+FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
+                    hive.sql.query.fieldNames IKEY,bkey,fkey,dkey
                     hive.sql.query.fieldTypes int,bigint,float,double
                     hive.sql.query.split true
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
@@ -467,8 +467,8 @@ FROM "SIMPLE_DERBY_TABLE1"
                 TableScan
                   alias: db1_ext_auth1
                   properties:
-                    hive.sql.query SELECT "ikey"
-FROM "SIMPLE_DERBY_TABLE1"
+                    hive.sql.query SELECT "IKEY" AS "ikey"
+FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
                     hive.sql.query.fieldNames ikey
                     hive.sql.query.fieldTypes int
                     hive.sql.query.split true
@@ -537,301 +537,6 @@ POSTHOOK: Input: default@db1_ext_auth1
 44	200
 44	40
 44	88
-PREHOOK: query: EXPLAIN
-SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db2_ext_auth2
-PREHOOK: type: QUERY
-PREHOOK: Input: default@db1_ext_auth1
-PREHOOK: Input: default@db2_ext_auth2
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN
-SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db2_ext_auth2
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@db1_ext_auth1
-POSTHOOK: Input: default@db2_ext_auth2
-#### A masked pattern was here ####
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Map 1 <- Union 2 (CONTAINS)
-        Map 3 <- Union 2 (CONTAINS)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: db1_ext_auth1
-                  Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: ikey (type: int), bkey (type: bigint), fkey (type: float), dkey (type: double)
-                    outputColumnNames: _col0, _col1, _col2, _col3
-                    Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 2 Data size: 48 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized, llap
-            LLAP IO: no inputs
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: db2_ext_auth2
-                  Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: ikey (type: int), bkey (type: bigint), fkey (type: float), dkey (type: double)
-                    outputColumnNames: _col0, _col1, _col2, _col3
-                    Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 2 Data size: 48 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized, llap
-            LLAP IO: no inputs
-        Union 2 
-            Vertex: Union 2
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
-PREHOOK: query: SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db2_ext_auth2
-PREHOOK: type: QUERY
-PREHOOK: Input: default@db1_ext_auth1
-PREHOOK: Input: default@db2_ext_auth2
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db2_ext_auth2
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@db1_ext_auth1
-POSTHOOK: Input: default@db2_ext_auth2
-#### A masked pattern was here ####
--20	-20	-20.0	-20.0
--20	8	9.0	11.0
-100	-15	65.0	-74.0
-101	-16	66.0	-75.0
-20	20	20.0	20.0
-20	20	20.0	20.0
-40	50	-455.4543	330.767
-44	53	-455.454	330.76
-PREHOOK: query: EXPLAIN
-SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db1_ext_auth2
-PREHOOK: type: QUERY
-PREHOOK: Input: default@db1_ext_auth1
-PREHOOK: Input: default@db1_ext_auth2
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN
-SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db1_ext_auth2
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@db1_ext_auth1
-POSTHOOK: Input: default@db1_ext_auth2
-#### A masked pattern was here ####
-STAGE DEPENDENCIES:
-  Stage-0 is a root stage
-
-STAGE PLANS:
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        TableScan
-          alias: db1_ext_auth1
-          properties:
-            hive.sql.query SELECT "ikey", "bkey", "fkey", "dkey"
-FROM (SELECT "ikey", "bkey", "fkey", "dkey"
-FROM "SIMPLE_DERBY_TABLE1"
-UNION ALL
-SELECT "ikey", "bkey", "fkey", "dkey"
-FROM "SIMPLE_DERBY_TABLE2") AS "t1"
-            hive.sql.query.fieldNames ikey,bkey,fkey,dkey
-            hive.sql.query.fieldTypes int,bigint,float,double
-            hive.sql.query.split false
-          Select Operator
-            expressions: ikey (type: int), bkey (type: bigint), fkey (type: float), dkey (type: double)
-            outputColumnNames: _col0, _col1, _col2, _col3
-            ListSink
-
-PREHOOK: query: SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db1_ext_auth2
-PREHOOK: type: QUERY
-PREHOOK: Input: default@db1_ext_auth1
-PREHOOK: Input: default@db1_ext_auth2
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db1_ext_auth2
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@db1_ext_auth1
-POSTHOOK: Input: default@db1_ext_auth2
-#### A masked pattern was here ####
--20	-20	-20.0	-20.0
--20	8	9.0	11.0
-100	-15	65.0	-74.0
-101	-16	66.0	-75.0
-20	20	20.0	20.0
-20	20	20.0	20.0
-40	50	-455.4543	330.767
-44	53	-455.454	330.76
-PREHOOK: query: EXPLAIN
-SELECT P.ikey
-FROM
-  db1_ext_auth1 P
-WHERE
-  NOT TRUE OR P.`ikey` IS NOT NULL
-  AND (P.`bkey` = 10 AND P.`dkey` = 15.15
-    OR P.`bkey` = 20 AND P.`dkey` = 25.25)
-PREHOOK: type: QUERY
-PREHOOK: Input: default@db1_ext_auth1
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN
-SELECT P.ikey
-FROM
-  db1_ext_auth1 P
-WHERE
-  NOT TRUE OR P.`ikey` IS NOT NULL
-  AND (P.`bkey` = 10 AND P.`dkey` = 15.15
-    OR P.`bkey` = 20 AND P.`dkey` = 25.25)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@db1_ext_auth1
-#### A masked pattern was here ####
-STAGE DEPENDENCIES:
-  Stage-0 is a root stage
-
-STAGE PLANS:
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        TableScan
-          alias: p
-          properties:
-            hive.sql.query SELECT "ikey"
-FROM "SIMPLE_DERBY_TABLE1"
-WHERE "bkey" IN (10, 20) AND "dkey" IN (15.15, 25.25) AND ("bkey" = 10 AND "dkey" = 15.15 OR "bkey" = 20 AND "dkey" = 25.25) AND "ikey" IS NOT NULL
-            hive.sql.query.fieldNames ikey
-            hive.sql.query.fieldTypes int
-            hive.sql.query.split true
-          Select Operator
-            expressions: ikey (type: int)
-            outputColumnNames: _col0
-            ListSink
-
-PREHOOK: query: SELECT P.ikey
-FROM
-  db1_ext_auth1 P
-WHERE
-  NOT TRUE OR P.`ikey` IS NOT NULL
-  AND (P.`bkey` = 10 AND P.`dkey` = 15.15
-    OR P.`bkey` = 20 AND P.`dkey` = 25.25)
-PREHOOK: type: QUERY
-PREHOOK: Input: default@db1_ext_auth1
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT P.ikey
-FROM
-  db1_ext_auth1 P
-WHERE
-  NOT TRUE OR P.`ikey` IS NOT NULL
-  AND (P.`bkey` = 10 AND P.`dkey` = 15.15
-    OR P.`bkey` = 20 AND P.`dkey` = 25.25)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@db1_ext_auth1
-#### A masked pattern was here ####
-PREHOOK: query: EXPLAIN
-SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db1_ext_auth2
-PREHOOK: type: QUERY
-PREHOOK: Input: default@db1_ext_auth1
-PREHOOK: Input: default@db1_ext_auth2
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN
-SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db1_ext_auth2
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@db1_ext_auth1
-POSTHOOK: Input: default@db1_ext_auth2
-#### A masked pattern was here ####
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Map 1 <- Union 2 (CONTAINS)
-        Map 3 <- Union 2 (CONTAINS)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: db1_ext_auth1
-                  Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: ikey (type: int), bkey (type: bigint), fkey (type: float), dkey (type: double)
-                    outputColumnNames: _col0, _col1, _col2, _col3
-                    Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 2 Data size: 48 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized, llap
-            LLAP IO: no inputs
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: db1_ext_auth2
-                  Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: ikey (type: int), bkey (type: bigint), fkey (type: float), dkey (type: double)
-                    outputColumnNames: _col0, _col1, _col2, _col3
-                    Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 2 Data size: 48 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized, llap
-            LLAP IO: no inputs
-        Union 2 
-            Vertex: Union 2
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
-PREHOOK: query: SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db1_ext_auth2
-PREHOOK: type: QUERY
-PREHOOK: Input: default@db1_ext_auth1
-PREHOOK: Input: default@db1_ext_auth2
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db1_ext_auth2
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@db1_ext_auth1
-POSTHOOK: Input: default@db1_ext_auth2
-#### A masked pattern was here ####
--20	-20	-20.0	-20.0
--20	8	9.0	11.0
-100	-15	65.0	-74.0
-101	-16	66.0	-75.0
-20	20	20.0	20.0
-20	20	20.0	20.0
-40	50	-455.4543	330.767
-44	53	-455.454	330.76
 PREHOOK: query: DROP TABLE db1_ext_auth1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@db1_ext_auth1
@@ -880,4 +585,4 @@ limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-1	1	1
+0	0	0
