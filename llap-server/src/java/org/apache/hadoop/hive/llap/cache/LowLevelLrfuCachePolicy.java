@@ -583,7 +583,8 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
     long[] metricData = metrics.getUsageStats();
     sb.append("\nLRFU eviction list: ")
       .append(metricData[PolicyMetrics.LISTSIZE]).append(" items");
-    sb.append("\nLRFU eviction heap: " + heapSize + " items");
+    sb.append("\nLRFU eviction heap: ")
+      .append(heapSize).append(" items (of max ").append(maxHeapSize).append(")");
     sb.append("\nLRFU data on heap: ")
       .append(LlapUtil.humanReadableByteCount(metricData[PolicyMetrics.DATAONHEAP]));
     sb.append("\nLRFU metadata on heap: ")
@@ -592,6 +593,10 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
       .append(LlapUtil.humanReadableByteCount(metricData[PolicyMetrics.DATAONLIST]));
     sb.append("\nLRFU metadata on eviction list: ")
       .append(LlapUtil.humanReadableByteCount(metricData[PolicyMetrics.METAONLIST]));
+    sb.append("\nLRFU data locked: ")
+      .append(LlapUtil.humanReadableByteCount(metricData[PolicyMetrics.LOCKEDDATA]));
+    sb.append("\nLRFU metadata locked: ")
+      .append(LlapUtil.humanReadableByteCount(metricData[PolicyMetrics.LOCKEDMETA]));
   }
 
   /**
@@ -642,10 +647,12 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
     public final static int METAONHEAP = 2;
     public final static int METAONLIST = 3;
     public final static int LISTSIZE   = 4;
+    public final static int LOCKEDDATA = 5;
+    public final static int LOCKEDMETA = 6;
 
     private final String session;         // identifier for the LLAP daemon
-    private final AtomicLong lockedData;  // counter for locked data buffers
-    private final AtomicLong lockedMeta;  // counter for locked meta data buffers
+    private final AtomicLong lockedData;  // counter for locked data bytes
+    private final AtomicLong lockedMeta;  // counter for locked meta bytes
 
     /**
      * Creates a new metrics producer.
@@ -692,6 +699,8 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
      * - amount of metadata (bytes) on min-heap
      * - amount of metadata (bytes) on eviction short list
      * - size of the eviction short list
+     * - amount of locked bytes for data
+     * - amount of locked bytes for metadata
      *
      * @return long array with LRFU stats
      */
@@ -736,7 +745,8 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
       }
 
       return new long[] {dataOnHeap, dataOnList,
-                         metaOnHeap, metaOnList, listSize};
+                         metaOnHeap, metaOnList, listSize,
+                         lockedData.get(), lockedMeta.get()};
     }
 
     @Override
