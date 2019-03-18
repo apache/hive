@@ -2383,7 +2383,7 @@ public class Hive {
     }
 
     String validWriteIdList = null;
-    Long writeId = 0L;
+    long writeId = 0L;
     if (tableSnapshot != null) {
       validWriteIdList = tableSnapshot.getValidWriteIdList();
       writeId = tableSnapshot.getWriteId();
@@ -2637,7 +2637,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
 
     boolean isTxnTable = AcidUtils.isTransactionalTable(tbl);
-    AcidUtils.TableSnapshot tableSnapshot = getTableSnapshot(tbl, writeId);
+    AcidUtils.TableSnapshot tableSnapshot = isTxnTable ? getTableSnapshot(tbl, writeId) : null;
 
     for (Entry<Path, PartitionDetails> entry : partitionDetailsMap.entrySet()) {
       tasks.add(() -> {
