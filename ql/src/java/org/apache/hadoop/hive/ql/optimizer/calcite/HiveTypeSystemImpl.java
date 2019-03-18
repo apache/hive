@@ -142,4 +142,10 @@ public class HiveTypeSystemImpl extends RelDataTypeSystemImpl {
   public int getMaxNumericPrecision() {
     return MAX_DECIMAL_PRECISION;
   }
+
+  @Override
+  public boolean isSchemaCaseSensitive() {
+    return false;
+  }
+
 }
