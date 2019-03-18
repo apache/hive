@@ -480,8 +480,7 @@ STAGE PLANS:
     Materialized View Work
 
   Stage: Stage-1
-      Pre Insert operator:
-        Pre-Insert task
+    Pre-Insert task
 
   Stage: Stage-2
     Tez

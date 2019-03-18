@@ -19,5 +19,5 @@
 /**
  * This package contains the HiveMetaTool program and the classes used by it.
  */
-package org.apache.hadoop.hive.metastore.tool.metatool;
+package org.apache.hadoop.hive.metastore.tools.metatool;
 

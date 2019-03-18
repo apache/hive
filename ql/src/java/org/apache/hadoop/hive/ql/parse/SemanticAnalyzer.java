@@ -26,6 +26,7 @@ import java.security.AccessControlException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -98,6 +99,10 @@ import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
+import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.table.CreateTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.CreateTableLikeDesc;
+import org.apache.hadoop.hive.ql.ddl.table.PreInsertTableDesc;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -190,8 +195,6 @@ import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
-import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
-import org.apache.hadoop.hive.ql.plan.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
@@ -1726,10 +1729,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         queryProperties.setHasGroupBy(true);
         if (qbp.getJoinExpr() != null) {
           queryProperties.setHasJoinFollowedByGroupBy(true);
-        }
-        if (qbp.getSelForClause(ctx_1.dest).getToken().getType() == HiveParser.TOK_SELECTDI) {
-          throw new SemanticException(generateErrorMessage(ast,
-              ErrorMsg.SELECT_DISTINCT_WITH_GROUPBY.getMsg()));
         }
         qbp.setGroupByExprForClause(ctx_1.dest, ast);
         skipRecursion = true;
@@ -4194,30 +4193,32 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
-   * This function is a wrapper of parseInfo.getGroupByForClause which
-   * automatically translates SELECT DISTINCT a,b,c to SELECT a,b,c GROUP BY
-   * a,b,c.
+   * Returns the GBY, if present;
+   * DISTINCT, if present, will be handled when generating the SELECT.
    */
   List<ASTNode> getGroupByForClause(QBParseInfo parseInfo, String dest) throws SemanticException {
-    if (parseInfo.getSelForClause(dest).getToken().getType() == HiveParser.TOK_SELECTDI) {
-      ASTNode selectExprs = parseInfo.getSelForClause(dest);
-      List<ASTNode> result = new ArrayList<ASTNode>(selectExprs == null ? 0
-          : selectExprs.getChildCount());
-      if (selectExprs != null) {
-        for (int i = 0; i < selectExprs.getChildCount(); ++i) {
-          if (((ASTNode) selectExprs.getChild(i)).getToken().getType() == HiveParser.QUERY_HINT) {
-            continue;
-          }
-          // table.column AS alias
-          ASTNode grpbyExpr = (ASTNode) selectExprs.getChild(i).getChild(0);
-          result.add(grpbyExpr);
+    ASTNode selectExpr = parseInfo.getSelForClause(dest);
+    Collection<ASTNode> aggregateFunction = parseInfo.getDestToAggregationExprs().get(dest).values();
+    if (!(this instanceof CalcitePlanner) && isSelectDistinct(selectExpr) && hasGroupBySibling(selectExpr)) {
+      throw new SemanticException("SELECT DISTINCT with GROUP BY is only supported with CBO");
+    }
+
+    if (isSelectDistinct(selectExpr) && !hasGroupBySibling(selectExpr) &&
+        !isAggregateInSelect(selectExpr, aggregateFunction)) {
+      List<ASTNode> result = new ArrayList<ASTNode>(selectExpr.getChildCount());
+      for (int i = 0; i < selectExpr.getChildCount(); ++i) {
+        if (((ASTNode) selectExpr.getChild(i)).getToken().getType() == HiveParser.QUERY_HINT) {
+          continue;
         }
+        // table.column AS alias
+        ASTNode grpbyExpr = (ASTNode) selectExpr.getChild(i).getChild(0);
+        result.add(grpbyExpr);
       }
       return result;
     } else {
+      // look for a true GBY
       ASTNode grpByExprs = parseInfo.getGroupByForClause(dest);
-      List<ASTNode> result = new ArrayList<ASTNode>(grpByExprs == null ? 0
-          : grpByExprs.getChildCount());
+      List<ASTNode> result = new ArrayList<ASTNode>(grpByExprs == null ? 0 : grpByExprs.getChildCount());
       if (grpByExprs != null) {
         for (int i = 0; i < grpByExprs.getChildCount(); ++i) {
           ASTNode grpbyExpr = (ASTNode) grpByExprs.getChild(i);
@@ -4228,6 +4229,35 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       return result;
     }
+  }
+
+  protected boolean hasGroupBySibling(ASTNode selectExpr) {
+    boolean isGroupBy = false;
+    if (selectExpr.getParent() != null && selectExpr.getParent() instanceof Node) {
+      for (Node sibling : ((Node)selectExpr.getParent()).getChildren()) {
+        isGroupBy |= sibling instanceof ASTNode && ((ASTNode)sibling).getType() == HiveParser.TOK_GROUPBY;
+      }
+    }
+
+    return isGroupBy;
+  }
+
+  protected boolean isSelectDistinct(ASTNode expr) {
+    return expr.getType() == HiveParser.TOK_SELECTDI;
+  }
+
+  protected boolean isAggregateInSelect(Node node, Collection<ASTNode> aggregateFunction) {
+    if (node.getChildren() == null) {
+      return false;
+    }
+
+    for (Node child : node.getChildren()) {
+      if (aggregateFunction.contains(child) || isAggregateInSelect(child, aggregateFunction)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   static String[] getColAlias(ASTNode selExpr, String defaultName,
@@ -5034,10 +5064,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     float groupByMemoryUsage = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
     float memoryThreshold = HiveConf
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
+    float minReductionHashAggr = HiveConf
+        .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
 
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
-            false, groupByMemoryUsage, memoryThreshold, null, false, -1, numDistinctUDFs > 0),
+            false, groupByMemoryUsage, memoryThreshold, minReductionHashAggr, null, false, -1, numDistinctUDFs > 0),
         new RowSchema(groupByOutputRowResolver.getColumnInfos()),
         input), groupByOutputRowResolver);
     op.setColumnExprMap(colExprMap);
@@ -5296,6 +5328,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     float groupByMemoryUsage = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
     float memoryThreshold = HiveConf
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
+    float minReductionHashAggr = HiveConf
+        .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
 
     // Nothing special needs to be done for grouping sets if
     // this is the final group by operator, and multiple rows corresponding to the
@@ -5304,7 +5338,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // additional rows corresponding to grouping sets need to be created here.
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
-            groupByMemoryUsage, memoryThreshold,
+            groupByMemoryUsage, memoryThreshold, minReductionHashAggr,
             groupingSets,
             groupingSetsPresent && groupingSetsNeedAdditionalMRJob,
             groupingSetsPosition, containsDistinctAggr),
@@ -5477,9 +5511,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     float groupByMemoryUsage = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
     float memoryThreshold = HiveConf
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
+    float minReductionHashAggr = HiveConf
+        .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
-            false, groupByMemoryUsage, memoryThreshold,
+            false, groupByMemoryUsage, memoryThreshold, minReductionHashAggr,
             groupingSetKeys, groupingSetsPresent, groupingSetsPosition, containsDistinctAggr),
         new RowSchema(groupByOutputRowResolver.getColumnInfos()),
         inputOperatorInfo), groupByOutputRowResolver);
@@ -6014,10 +6050,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     float groupByMemoryUsage = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
     float memoryThreshold = HiveConf
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
+    float minReductionHashAggr = HiveConf
+        .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
 
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
-            false, groupByMemoryUsage, memoryThreshold, null, false,
+            false, groupByMemoryUsage, memoryThreshold, minReductionHashAggr, null, false,
             groupingSetsPosition, containsDistinctAggr),
         new RowSchema(groupByOutputRowResolver2.getColumnInfos()),
         reduceSinkOperatorInfo2), groupByOutputRowResolver2);
@@ -8079,7 +8117,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private void createPreInsertDesc(Table table, boolean overwrite) {
     PreInsertTableDesc preInsertTableDesc = new PreInsertTableDesc(table, overwrite);
     this.rootTasks
-        .add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), preInsertTableDesc)));
+        .add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), preInsertTableDesc)));
 
   }
 
@@ -9270,9 +9308,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     float groupByMemoryUsage = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
     float memoryThreshold = HiveConf
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
+    float minReductionHashAggr = HiveConf
+        .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
-            false, groupByMemoryUsage, memoryThreshold, null, false, -1, false),
+            false, groupByMemoryUsage, memoryThreshold, minReductionHashAggr, null, false, -1, false),
         new RowSchema(groupByOutputRowResolver.getColumnInfos()),
         input), groupByOutputRowResolver);
 
@@ -12488,10 +12528,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (optionalTezTask.isPresent()) {
       final TezTask tezTask = optionalTezTask.get();
       rootTasks.stream()
-          .filter(task -> task.getWork() instanceof DDLWork)
-          .map(task -> (DDLWork) task.getWork())
-          .filter(ddlWork -> ddlWork.getPreInsertTableDesc() != null)
-          .map(ddlWork -> ddlWork.getPreInsertTableDesc())
+          .filter(task -> task.getWork() instanceof DDLWork2)
+          .map(task -> (DDLWork2) task.getWork())
+          .filter(ddlWork -> ddlWork.getDDLDesc() != null)
+          .map(ddlWork -> (PreInsertTableDesc)ddlWork.getDDLDesc())
           .map(ddlPreInsertTask -> new InsertCommitHookDesc(ddlPreInsertTask.getTable(),
               ddlPreInsertTask.isOverwrite()))
           .forEach(insertCommitHookDesc -> tezTask.addDependentTask(
@@ -13434,8 +13474,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       crtTblDesc.validate(conf);
       // outputs is empty, which means this create table happens in the current
       // database.
-      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-            crtTblDesc)));
+      rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), crtTblDesc)));
       break;
     case ctt: // CREATE TRANSACTIONAL TABLE
       if (isExt) {
@@ -13459,7 +13498,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       crtTranTblDesc.validate(conf);
       // outputs is empty, which means this create table happens in the current
       // database.
-      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), crtTranTblDesc)));
+      rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), crtTranTblDesc)));
       break;
 
     case CTLT: // create table like <tbl_name>
@@ -13478,8 +13517,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           storageFormat.getInputFormat(), storageFormat.getOutputFormat(), location,
           storageFormat.getSerde(), storageFormat.getSerdeProps(), tblProps, ifNotExists,
           likeTableName, isUserStorageFormat);
-      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-            crtTblLikeDesc)));
+      rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), crtTblLikeDesc)));
       break;
 
     case CTAS: // create table as select

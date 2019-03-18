@@ -60,9 +60,8 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.DriverUtils;
-import org.apache.hadoop.hive.ql.exec.DDLTask;
+import org.apache.hadoop.hive.ql.ddl.table.ShowCreateTableOperation;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
@@ -652,7 +651,7 @@ public class CompactorMR {
     String sh = t.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE);
     assert sh == null; // Not supposed to be a compactable table.
     if (!serdeParams.isEmpty()) {
-      DDLTask.appendSerdeParams(query, serdeParams);
+      ShowCreateTableOperation.appendSerdeParams(query, serdeParams);
     }
     query.append("STORED AS INPUTFORMAT '").append(
         HiveStringUtils.escapeHiveCommand(sd.getInputFormat())).append("' OUTPUTFORMAT '").append(

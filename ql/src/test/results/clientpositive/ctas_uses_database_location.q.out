@@ -60,6 +60,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll')
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
@@ -97,13 +98,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-8
-      Create Table Operator:
-        Create Table
-          columns: key string, value string
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: db1.table_db1
+    Create Table
+      columns: key string, value string
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: db1.table_db1
 
   Stage: Stage-2
     Stats Work

@@ -65,7 +65,8 @@ public final class DDLTask2 extends Task<DDLWork2> implements Serializable {
       DDLDesc ddlDesc = work.getDDLDesc();
 
       if (DESC_TO_OPARATION.containsKey(ddlDesc.getClass())) {
-        DDLOperationContext context = new DDLOperationContext(conf, driverContext);
+        DDLOperationContext context = new DDLOperationContext(conf, driverContext, this, (DDLWork2)work, queryState,
+            queryPlan);
         Class<? extends DDLOperation> ddlOpertaionClass = DESC_TO_OPARATION.get(ddlDesc.getClass());
         Constructor<? extends DDLOperation> constructor =
             ddlOpertaionClass.getConstructor(DDLOperationContext.class, ddlDesc.getClass());

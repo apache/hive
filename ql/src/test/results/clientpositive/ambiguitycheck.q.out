@@ -828,10 +828,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Describe Table Operator:
-        Describe Table
+    Describe Table
 #### A masked pattern was here ####
-          table: default.src
+      table: default.src
 
   Stage: Stage-1
     Fetch Operator

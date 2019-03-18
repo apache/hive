@@ -167,6 +167,7 @@ STAGE PLANS:
                     Statistics: Num rows: 791 Data size: 75145 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
@@ -678,6 +679,7 @@ STAGE PLANS:
                 Statistics: Num rows: 550 Data size: 47850 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: sum(hash(_col0)), sum(hash(_col1)), sum(hash(_col5))
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
@@ -803,6 +805,7 @@ STAGE PLANS:
                 Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(hash(_col2)), sum(hash(_col3))
+                  minReductionHashAggr: 0.0
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
@@ -936,6 +939,7 @@ STAGE PLANS:
                 Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(hash(_col2)), sum(hash(_col3))
+                  minReductionHashAggr: 0.0
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1107,6 +1111,7 @@ STAGE PLANS:
                 Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(hash(_col0)), sum(hash(_col3))
+                  minReductionHashAggr: 0.0
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1223,6 +1228,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: sum(hash(_col0)), sum(hash(_col6))
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE

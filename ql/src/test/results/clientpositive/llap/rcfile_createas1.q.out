@@ -100,6 +100,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1000 Data size: 99000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll'), compute_stats(col3, 'hll')
+                        minReductionHashAggr: 0.0
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 1 Data size: 1288 Basic stats: COMPLETE Column stats: COMPLETE
@@ -129,13 +130,12 @@ STAGE PLANS:
     Dependency Collection
 
   Stage: Stage-4
-      Create Table Operator:
-        Create Table
-          columns: key int, value string, part int
-          input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
-          output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-          name: default.rcfile_createas1b
+    Create Table
+      columns: key int, value string, part int
+      input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+      output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+      name: default.rcfile_createas1b
 
   Stage: Stage-3
     Stats Work

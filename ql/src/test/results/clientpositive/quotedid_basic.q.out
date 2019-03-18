@@ -119,6 +119,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   keys: x+1 (type: string), y&y (type: string)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: NONE
@@ -184,6 +185,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   keys: x+1 (type: string), y&y (type: string)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: NONE
@@ -293,6 +295,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   keys: x+1 (type: string), y&y (type: string)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: NONE

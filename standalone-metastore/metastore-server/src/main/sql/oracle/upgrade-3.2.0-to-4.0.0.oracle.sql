@@ -1,5 +1,8 @@
 SELECT 'Upgrading MetaStore schema from 3.2.0 to 4.0.0' AS Status from dual;
 
+-- HIVE-21336 safeguards from changes user may have made after 3.x schema was installed.
+ALTER SESSION SET NLS_LENGTH_SEMANTICS=BYTE;
+
 ALTER TABLE TBLS ADD WRITE_ID number DEFAULT 0 NOT NULL;
 ALTER TABLE PARTITIONS ADD WRITE_ID number DEFAULT 0 NOT NULL;
 

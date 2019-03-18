@@ -19,16 +19,16 @@
 package org.apache.hadoop.hive.ql.ddl.database;
 
 import java.io.DataOutputStream;
-import java.util.Map;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
@@ -44,21 +44,15 @@ public class DescDatabaseOperation extends DDLOperation {
 
   @Override
   public int execute() throws HiveException {
-    try (DataOutputStream outStream = getOutputStream(new Path(desc.getResFile()))) {
+    try (DataOutputStream outStream = DDLUtils.getOutputStream(new Path(desc.getResFile()), context)) {
       Database database = context.getDb().getDatabase(desc.getDatabaseName());
       if (database == null) {
         throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, desc.getDatabaseName());
       }
 
-      Map<String, String> params = null;
+      SortedMap<String, String> params = null;
       if (desc.isExt()) {
-        params = database.getParameters();
-      }
-
-      // If this is a q-test, let's order the params map (lexicographically) by
-      // key. This is to get consistent param ordering between Java7 and Java8.
-      if (HiveConf.getBoolVar(context.getConf(), HiveConf.ConfVars.HIVE_IN_TEST) && params != null) {
-        params = new TreeMap<String, String>(params);
+        params = new TreeMap<>(database.getParameters());
       }
 
       String location = database.getLocationUri();
@@ -66,9 +60,8 @@ public class DescDatabaseOperation extends DDLOperation {
         location = "location/in/test";
       }
 
-      PrincipalType ownerType = database.getOwnerType();
       context.getFormatter().showDatabaseDescription(outStream, database.getName(), database.getDescription(),
-          location, database.getOwnerName(), (null == ownerType) ? null : ownerType.name(), params);
+          location, database.getOwnerName(), database.getOwnerType(), params);
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
     }

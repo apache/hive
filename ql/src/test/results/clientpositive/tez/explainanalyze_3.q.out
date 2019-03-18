@@ -74,8 +74,7 @@ Stage-1
   Fetch Operator
     limit:-1
     Stage-0
-      Show Table Operator:
-        database name:default
+      Show Tables{"database name:":"default"}
 
 #### A masked pattern was here ####
 PREHOOK: type: CREATEDATABASE
@@ -94,6 +93,7 @@ POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:newDB
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 Stage-0
+  Create Database{"name:":"newDB"}
 
 #### A masked pattern was here ####
 PREHOOK: type: CREATEDATABASE
@@ -119,6 +119,7 @@ Stage-1
   Fetch Operator
     limit:-1
     Stage-0
+      Describe Database{"database:":"newDB"}
 
 PREHOOK: query: describe database extended newDB
 PREHOOK: type: DESCDATABASE
@@ -140,6 +141,7 @@ POSTHOOK: query: explain analyze use newDB
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:newdb
 Stage-0
+  Switch Database{"name:":"newDB"}
 
 PREHOOK: query: use newDB
 PREHOOK: type: SWITCHDATABASE
@@ -192,8 +194,7 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: newdb@tab_n2
 POSTHOOK: Output: newdb@tab_n2
 Stage-0
-  Drop Table Operator:
-    table:tab_n2
+  Drop Table{"table:":"tab_n2"}
 
 PREHOOK: query: drop table tab_n2
 PREHOOK: type: DROPTABLE
@@ -216,6 +217,7 @@ POSTHOOK: query: explain analyze use default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
 Stage-0
+  Switch Database{"name:":"default"}
 
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
@@ -404,8 +406,7 @@ Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 Stage-3
   Stats Work{}
     Stage-4
-      Create Table Operator:
-        name:default.src_autho_test_n4
+      Create Table{"name:":"default.src_autho_test_n4"}
         Stage-0
           Move Operator
             Stage-1
@@ -632,8 +633,7 @@ PREHOOK: type: DROPVIEW
 POSTHOOK: query: explain analyze drop view v_n5
 POSTHOOK: type: DROPVIEW
 Stage-0
-  Drop Table Operator:
-    table:v_n5
+  Drop Table{"table:":"v_n5"}
 
 PREHOOK: query: create view v_n5 as with cte as (select * from src  order by key limit 5)
 select * from cte
