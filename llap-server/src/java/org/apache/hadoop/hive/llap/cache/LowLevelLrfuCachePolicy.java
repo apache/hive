@@ -580,21 +580,18 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
 
   @Override
   public void debugDumpShort(StringBuilder sb) {
-    sb.append("\nLRFU eviction list: ");
-    LlapCacheableBuffer listHeadLocal = listHead, listTailLocal = listTail;
-    if (listHeadLocal == null) {
-      sb.append("0 items");
-    } else {
-      LlapCacheableBuffer listItem = listHeadLocal;
-      int c = 0;
-      while (listItem != null) {
-        ++c;
-        if (listItem == listTailLocal) break;
-        listItem = listItem.next;
-      }
-      sb.append(c + " items");
-    }
+    long[] metricData = metrics.getHeapUsageStats();
+    sb.append("\nLRFU eviction list: ")
+      .append(metricData[PolicyMetrics.LISTSIZE]).append(" items");
     sb.append("\nLRFU eviction heap: " + heapSize + " items");
+    sb.append("\nLRFU data on heap: ")
+      .append(LlapUtil.humanReadableByteCount(metricData[PolicyMetrics.DATAONHEAP]));
+    sb.append("\nLRFU metadata on heap: ")
+      .append(LlapUtil.humanReadableByteCount(metricData[PolicyMetrics.METAONHEAP]));
+    sb.append("\nLRFU data on eviction list: ")
+      .append(LlapUtil.humanReadableByteCount(metricData[PolicyMetrics.DATAONLIST]));
+    sb.append("\nLRFU metadata on eviction list: ")
+      .append(LlapUtil.humanReadableByteCount(metricData[PolicyMetrics.METAONLIST]));
   }
 
   /**
@@ -640,6 +637,12 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
    */
   @Metrics(about = "LRFU Cache Policy Metrics", context = "cache")
   private class PolicyMetrics implements MetricsSource {
+    public final static int DATAONHEAP = 0;
+    public final static int DATAONLIST = 1;
+    public final static int METAONHEAP = 2;
+    public final static int METAONLIST = 3;
+    public final static int LISTSIZE   = 4;
+
     private final String session;         // identifier for the LLAP daemon
     private final AtomicLong lockedData;  // counter for locked data buffers
     private final AtomicLong lockedMeta;  // counter for locked meta data buffers
@@ -681,20 +684,24 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
       }
     }
 
-    @Override
-    public synchronized void getMetrics(MetricsCollector collector, boolean all) {
+    /**
+     * Helper to get some basic LRFU usage statistics.
+     * This method returns a long array with the following content:
+     * - amount of data (bytes) on min-heap
+     * - amount of data (bytes) on eviction short list
+     * - amount of metadata (bytes) on min-heap
+     * - amount of metadata (bytes) on eviction short list
+     * - size of the eviction short list
+     *
+     * @return long array with LRFU stats
+     */
+    public long[] getHeapUsageStats() {
       long dataOnHeap = 0L;   // all non-meta related buffers on min-heap
       long dataOnList = 0L;   // all non-meta related buffers on eviction list
       long metaOnHeap = 0L;   // meta data buffers on min-heap
       long metaOnList = 0L;   // meta data buffers on eviction list
       long listSize   = 0L;   // number of entries on eviction list
 
-      // start a new record
-      MetricsRecordBuilder mrb = collector.addRecord(PolicyInformation.PolicyMetrics)
-                                          .setContext("cache")
-                                          .tag(MsInfo.ProcessName,
-                                               MetricsUtils.METRICS_PROCESS_NAME)
-                                          .tag(MsInfo.SessionId, session);
       // aggregate values on the heap
       synchronized (heapLock) {
         for (int heapIdx = 0; heapIdx < heapSize; ++heapIdx) {
@@ -728,18 +735,35 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
         listLock.unlock();
       }
 
+      return new long[] {dataOnHeap, dataOnList,
+                         metaOnHeap, metaOnList, listSize};
+    }
+
+    @Override
+    public synchronized void getMetrics(MetricsCollector collector, boolean all) {
+      long[] usageStats = getHeapUsageStats();
+
+      // start a new record
+      MetricsRecordBuilder mrb = collector.addRecord(PolicyInformation.PolicyMetrics)
+                                          .setContext("cache")
+                                          .tag(MsInfo.ProcessName,
+                                               MetricsUtils.METRICS_PROCESS_NAME)
+                                          .tag(MsInfo.SessionId, session);
+
       // add the values to the new record
-      mrb.addCounter(PolicyInformation.DataOnHeap,  dataOnHeap)
-         .addCounter(PolicyInformation.DataOnList,  dataOnList)
-         .addCounter(PolicyInformation.MetaOnHeap,  metaOnHeap)
-         .addCounter(PolicyInformation.MetaOnList,  metaOnList)
+      mrb.addCounter(PolicyInformation.DataOnHeap,  usageStats[DATAONHEAP])
+         .addCounter(PolicyInformation.DataOnList,  usageStats[DATAONLIST])
+         .addCounter(PolicyInformation.MetaOnHeap,  usageStats[METAONHEAP])
+         .addCounter(PolicyInformation.MetaOnList,  usageStats[METAONLIST])
          .addCounter(PolicyInformation.DataLocked,  lockedData.get())
          .addCounter(PolicyInformation.MetaLocked,  lockedMeta.get())
          .addCounter(PolicyInformation.HeapSize,    heapSize)
          .addCounter(PolicyInformation.HeapSizeMax, maxHeapSize)
-         .addCounter(PolicyInformation.ListSize,    listSize)
-         .addCounter(PolicyInformation.TotalData,   dataOnHeap + dataOnList)
-         .addCounter(PolicyInformation.TotalMeta,   metaOnHeap + metaOnList);
+         .addCounter(PolicyInformation.ListSize,    usageStats[LISTSIZE])
+         .addCounter(PolicyInformation.TotalData,   usageStats[DATAONHEAP]
+                                                    + usageStats[DATAONLIST])
+         .addCounter(PolicyInformation.TotalMeta,   usageStats[METAONHEAP]
+                                                    + usageStats[METAONLIST]);
     }
   }
 }
