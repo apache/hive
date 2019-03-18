@@ -65,7 +65,7 @@ public class TestCopyUtils {
 
     HiveConf conf = Mockito.spy(new HiveConf());
     doReturn(1L).when(conf).getLong(HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname, 32L * 1024 * 1024);
-    CopyUtils copyUtils = new CopyUtils("", conf);
+    CopyUtils copyUtils = new CopyUtils("", conf, null);
     long MB_128 = 128 * 1024 * 1024;
     assertFalse(copyUtils.limitReachedForLocalCopy(MB_128, 1L));
   }
@@ -76,7 +76,7 @@ public class TestCopyUtils {
     when(UserGroupInformation.getCurrentUser()).thenReturn(mock(UserGroupInformation.class));
 
     HiveConf conf = Mockito.spy(new HiveConf());
-    CopyUtils copyUtils = new CopyUtils("", conf);
+    CopyUtils copyUtils = new CopyUtils("", conf, null);
     long MB_16 = 16 * 1024 * 1024;
     assertFalse(copyUtils.limitReachedForLocalCopy(MB_16, 100L));
   }
@@ -88,7 +88,7 @@ public class TestCopyUtils {
     FileSystem fs = mock(FileSystem.class);
     List<Path> srcPaths = Arrays.asList(source, source);
     HiveConf conf = mock(HiveConf.class);
-    CopyUtils copyUtils = Mockito.spy(new CopyUtils(null, conf));
+    CopyUtils copyUtils = Mockito.spy(new CopyUtils(null, conf, fs));
 
     mockStatic(FileUtils.class);
     mockStatic(Utils.class);
@@ -99,7 +99,7 @@ public class TestCopyUtils {
                           same(ShimLoader.getHadoopShims())))
         .thenReturn(false);
     when(Utils.getUGI()).thenReturn(mock(UserGroupInformation.class));
-    doReturn(false).when(copyUtils).regularCopy(same(fs), same(fs), anyListOf(ReplChangeManager.FileInfo.class));
+    doReturn(false).when(copyUtils).regularCopy(same(fs), anyListOf(ReplChangeManager.FileInfo.class));
 
     copyUtils.doCopy(destination, srcPaths);
   }

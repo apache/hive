@@ -119,9 +119,9 @@ public class ExternalTableCopyTaskBuilder {
     private int handleException(Exception e, Path sourcePath, Path targetPath,
                                 int currentRetry, UserGroupInformation proxyUser) {
       try {
-        LOG.warn("Checking if source path " + sourcePath + " is missing for exception ", e);
+        LOG.info("Checking if source path " + sourcePath + " is missing for exception ", e);
         if (!checkIfPathExist(sourcePath, proxyUser)) {
-          LOG.warn("Source path is missing. Ignoring exception.");
+          LOG.info("Source path is missing. Ignoring exception.");
           return 0;
         }
       } catch (Exception ex) {
@@ -138,13 +138,13 @@ public class ExternalTableCopyTaskBuilder {
       if (currentRetry <= MAX_COPY_RETRY) {
         LOG.warn("Unable to copy {} to {}", sourcePath, targetPath, e);
       } else {
-        LOG.error("Unable to copy {} to {}", sourcePath, targetPath, e);
+        LOG.error("Unable to copy {} to {} even after retrying for {} time", sourcePath, targetPath, currentRetry, e);
         setException(e);
         return ErrorMsg.REPL_FILE_SYSTEM_OPERATION_RETRY.getErrorCode();
       }
 
       int sleepTime = FileUtils.getSleepTime(currentRetry);
-      LOG.info("Sleep for " + sleepTime + " milliseconds before retry " + (currentRetry));
+      LOG.info("Sleep for " + sleepTime + " milliseconds before retry no " + (currentRetry));
       try {
         Thread.sleep(sleepTime);
       } catch (InterruptedException timerEx) {

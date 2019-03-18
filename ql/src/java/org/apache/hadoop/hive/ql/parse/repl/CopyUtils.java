@@ -57,30 +57,37 @@ public class CopyUtils {
   private final long maxNumberOfFiles;
   private final boolean hiveInTest;
   private final String copyAsUser;
+  private FileSystem destinationFs;
 
-  public CopyUtils(String distCpDoAsUser, HiveConf hiveConf) {
+  public CopyUtils(String distCpDoAsUser, HiveConf hiveConf, FileSystem destinationFs) {
     this.hiveConf = hiveConf;
     maxNumberOfFiles = hiveConf.getLongVar(HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES);
     maxCopyFileSize = hiveConf.getLongVar(HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE);
     hiveInTest = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
     this.copyAsUser = distCpDoAsUser;
+    this.destinationFs = destinationFs;
   }
 
   // Used by replication, copy files from source to destination. It is possible source file is
   // changed/removed during copy, so double check the checksum after copy,
   // if not match, copy again from cm
-  public void copyAndVerify(FileSystem destinationFs, Path destRoot,
+  public void copyAndVerify(Path destRoot,
                     List<ReplChangeManager.FileInfo> srcFiles) throws IOException, LoginException, HiveFatalException {
     Map<FileSystem, Map< Path, List<ReplChangeManager.FileInfo>>> map = fsToFileMap(srcFiles, destRoot);
     UserGroupInformation proxyUser = getProxyUser();
     try {
       for (Map.Entry<FileSystem, Map<Path, List<ReplChangeManager.FileInfo>>> entry : map.entrySet()) {
-        FileSystem sourceFs = entry.getKey();
         Map<Path, List<ReplChangeManager.FileInfo>> destMap = entry.getValue();
         for (Map.Entry<Path, List<ReplChangeManager.FileInfo>> destMapEntry : destMap.entrySet()) {
           Path destination = destMapEntry.getKey();
           List<ReplChangeManager.FileInfo> fileInfoList = destMapEntry.getValue();
-          boolean useRegularCopy = regularCopy(destinationFs, sourceFs, fileInfoList);
+          if (fileInfoList.isEmpty()) {
+            continue;
+          }
+          // Get the file system again from cache. There is a chance that the file system stored in the map is closed.
+          // For instance, doCopyRetry closes the file system in case of i/o exceptions.
+          FileSystem sourceFs = fileInfoList.get(0).getSourcePath().getFileSystem(hiveConf);
+          boolean useRegularCopy = regularCopy(sourceFs, fileInfoList);
 
           if (!destinationFs.exists(destination)
                   && !FileUtils.mkdir(destinationFs, destination, hiveConf)) {
@@ -89,7 +96,7 @@ public class CopyUtils {
           }
 
           // Copy files with retry logic on failure or source file is dropped or changed.
-          doCopyRetry(sourceFs, fileInfoList, destinationFs, destination, proxyUser, useRegularCopy);
+          doCopyRetry(sourceFs, fileInfoList, destination, proxyUser, useRegularCopy);
         }
       }
     } finally {
@@ -100,7 +107,7 @@ public class CopyUtils {
   }
 
   private void doCopyRetry(FileSystem sourceFs, List<ReplChangeManager.FileInfo> srcFileList,
-                           FileSystem destinationFs, Path destination, UserGroupInformation proxyUser,
+                           Path destination, UserGroupInformation proxyUser,
                            boolean useRegularCopy) throws IOException, LoginException, HiveFatalException {
     int repeat = 0;
     boolean isCopyError = false;
@@ -109,7 +116,7 @@ public class CopyUtils {
       try {
         // if its retrying, first regenerate the path list.
         if (repeat > 0) {
-          pathList = getFilesToRetry(sourceFs, srcFileList, destinationFs, destination, isCopyError);
+          pathList = getFilesToRetry(sourceFs, srcFileList, destination, isCopyError);
           if (pathList.isEmpty()) {
             // all files were copied successfully in last try. So can break from here.
             break;
@@ -120,7 +127,7 @@ public class CopyUtils {
 
         // if exception happens during doCopyOnce, then need to call getFilesToRetry with copy error as true in retry.
         isCopyError = true;
-        doCopyOnce(sourceFs, pathList, destinationFs, destination, useRegularCopy, proxyUser);
+        doCopyOnce(sourceFs, pathList, destination, useRegularCopy, proxyUser);
 
         // if exception happens after doCopyOnce, then need to call getFilesToRetry with copy error as false in retry.
         isCopyError = false;
@@ -166,7 +173,7 @@ public class CopyUtils {
   // If yes, then add to the retry list. If source file missing, then retry with CM path. if CM path
   // itself is missing, then throw error.
   private List<Path> getFilesToRetry(FileSystem sourceFs, List<ReplChangeManager.FileInfo> srcFileList,
-                                     FileSystem destinationFs, Path destination, boolean isCopyError)
+                                     Path destination, boolean isCopyError)
           throws IOException, HiveFatalException {
     List<Path> pathList = new ArrayList<Path>();
 
@@ -286,10 +293,10 @@ public class CopyUtils {
 
   // Copy without retry
   private void doCopyOnce(FileSystem sourceFs, List<Path> srcList,
-                          FileSystem destinationFs, Path destination,
+                          Path destination,
                           boolean useRegularCopy, UserGroupInformation proxyUser) throws IOException {
     if (useRegularCopy) {
-      doRegularCopyOnce(sourceFs, srcList, destinationFs, destination, proxyUser);
+      doRegularCopyOnce(sourceFs, srcList, destination, proxyUser);
     } else {
       doDistCpCopyOnce(sourceFs, srcList, destination, proxyUser);
     }
@@ -321,7 +328,7 @@ public class CopyUtils {
     }
   }
 
-  private void doRegularCopyOnce(FileSystem sourceFs, List<Path> srcList, FileSystem destinationFs,
+  private void doRegularCopyOnce(FileSystem sourceFs, List<Path> srcList,
       Path destination, UserGroupInformation proxyUser) throws IOException {
   /*
     even for regular copy we have to use the same user permissions that distCp will use since
@@ -346,17 +353,16 @@ public class CopyUtils {
 
   public void doCopy(Path destination, List<Path> srcPaths) throws IOException, LoginException {
     Map<FileSystem, List<Path>> map = fsToPathMap(srcPaths);
-    FileSystem destinationFs = destination.getFileSystem(hiveConf);
 
     UserGroupInformation proxyUser = getProxyUser();
     try {
       for (Map.Entry<FileSystem, List<Path>> entry : map.entrySet()) {
         final FileSystem sourceFs = entry.getKey();
         List<ReplChangeManager.FileInfo> fileList = Lists.transform(entry.getValue(),
-                path -> new ReplChangeManager.FileInfo(sourceFs, path, null));
+           path -> new ReplChangeManager.FileInfo(sourceFs, path, null));
         doCopyOnce(sourceFs, entry.getValue(),
-                destinationFs, destination,
-                regularCopy(destinationFs, sourceFs, fileList), proxyUser);
+                destination,
+                regularCopy(sourceFs, fileList), proxyUser);
       }
     } finally {
       if (proxyUser != null) {
@@ -372,7 +378,7 @@ public class CopyUtils {
       3. aggregate fileSize of all source Paths(can be directory /  file) is less than configured size.
       4. number of files of all source Paths(can be directory /  file) is less than configured size.
   */
-  boolean regularCopy(FileSystem destinationFs, FileSystem sourceFs, List<ReplChangeManager.FileInfo> fileList)
+  boolean regularCopy(FileSystem sourceFs, List<ReplChangeManager.FileInfo> fileList)
       throws IOException {
     if (hiveInTest) {
       return true;
