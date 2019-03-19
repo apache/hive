@@ -21,6 +21,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.common.ReplConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
@@ -99,9 +100,12 @@ public class HiveAlterHandler implements AlterHandler {
     dbname = dbname.toLowerCase();
 
     final boolean cascade = environmentContext != null
-        && environmentContext.isSetProperties()
-        && StatsSetupConst.TRUE.equals(environmentContext.getProperties().get(
-            StatsSetupConst.CASCADE));
+            && environmentContext.isSetProperties()
+            && StatsSetupConst.TRUE.equals(environmentContext.getProperties().get(StatsSetupConst.CASCADE));
+    final boolean replDataLocationChanged = environmentContext != null
+            && environmentContext.isSetProperties()
+            && ReplConst.TRUE.equals(environmentContext.getProperties().get(ReplConst.DATA_LOCATION_CHANGED));
+
     if (newt == null) {
       throw new InvalidOperationException("New table is null");
     }
@@ -154,6 +158,7 @@ public class HiveAlterHandler implements AlterHandler {
       msdb.openTransaction();
       // get old table
       // Note: we don't verify stats here; it's done below in alterTableUpdateTableColumnStats.
+      Database olddb = msdb.getDatabase(catName, dbname);
       oldt = msdb.getTable(catName, dbname, name, null);
       if (oldt == null) {
         throw new InvalidOperationException("table " +
@@ -192,12 +197,12 @@ public class HiveAlterHandler implements AlterHandler {
       // 2) the table is not an external table, and
       // 3) the user didn't change the default location (or new location is empty), and
       // 4) the table was not initially created with a specified location
-      if (rename
-          && !oldt.getTableType().equals(TableType.VIRTUAL_VIEW.toString())
-          && (oldt.getSd().getLocation().compareTo(newt.getSd().getLocation()) == 0
-            || StringUtils.isEmpty(newt.getSd().getLocation()))
-          && !MetaStoreUtils.isExternalTable(oldt)) {
-        Database olddb = msdb.getDatabase(catName, dbname);
+      if (replDataLocationChanged
+              || (rename
+              && !oldt.getTableType().equals(TableType.VIRTUAL_VIEW.toString())
+              && (oldt.getSd().getLocation().compareTo(newt.getSd().getLocation()) == 0
+              || StringUtils.isEmpty(newt.getSd().getLocation()))
+              && !MetaStoreUtils.isExternalTable(oldt))) {
         // if a table was created in a user specified location using the DDL like
         // create table tbl ... location ...., it should be treated like an external table
         // in the table rename, its data location should not be changed. We can check
@@ -209,7 +214,13 @@ public class HiveAlterHandler implements AlterHandler {
         boolean tableInSpecifiedLoc = !oldtRelativePath.equalsIgnoreCase(name)
             && !oldtRelativePath.equalsIgnoreCase(name + Path.SEPARATOR);
 
-        if (!tableInSpecifiedLoc) {
+        if (replDataLocationChanged) {
+          // If data location is changed in replication flow, then new path was already set in
+          // the newt. Also, it is as good as the data is moved and set dataWasMoved=true so that
+          // location in partitions are also updated accordingly.
+          destPath = new Path(newt.getSd().getLocation());
+          dataWasMoved = true;
+        } else if (!tableInSpecifiedLoc) {
           srcFs = wh.getFs(srcPath);
 
           // get new location
@@ -357,6 +368,13 @@ public class HiveAlterHandler implements AlterHandler {
         }
       }
 
+      // If data location is changed in replication flow, then need to delete the old path.
+      if (replDataLocationChanged) {
+        Path deleteOldDataLoc = new Path(oldt.getSd().getLocation());
+        boolean isAutoPurge = "true".equalsIgnoreCase(oldt.getParameters().get("auto.purge"));
+        wh.deleteDir(deleteOldDataLoc, true, isAutoPurge, olddb);
+      }
+
       if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
         txnAlterTableEventResponses = MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                   EventMessage.EventType.ALTER_TABLE,
@@ -385,7 +403,7 @@ public class HiveAlterHandler implements AlterHandler {
       if (!success) {
         LOG.error("Failed to alter table " + TableName.getQualified(catName, dbname, name));
         msdb.rollbackTransaction();
-        if (dataWasMoved) {
+        if (!replDataLocationChanged && dataWasMoved) {
           try {
             if (destFs.exists(destPath)) {
               if (!destFs.rename(destPath, srcPath)) {

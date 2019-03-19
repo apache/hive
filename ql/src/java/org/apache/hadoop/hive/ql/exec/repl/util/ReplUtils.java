@@ -19,8 +19,10 @@ package org.apache.hadoop.hive.ql.exec.repl.util;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hive.common.ReplConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -205,5 +207,13 @@ public class ReplUtils {
     // If flag is not set, then we assume first incremental load is done as the database/table may be created by user
     // and not through replication.
     return firstIncPendFlag != null && !firstIncPendFlag.isEmpty() && "true".equalsIgnoreCase(firstIncPendFlag);
+  }
+
+  public static EnvironmentContext setDataLocationChangedFlag(EnvironmentContext envContext) {
+    if (envContext == null) {
+      envContext = new EnvironmentContext();
+    }
+    envContext.putToProperties(ReplConst.DATA_LOCATION_CHANGED, ReplConst.TRUE);
+    return envContext;
   }
 }
