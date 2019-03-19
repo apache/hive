@@ -92,7 +92,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected final transient Collection<Future<?>> asyncInitOperations = new HashSet<>();
   private String marker;
 
-  protected int bucketingVersion = -1;
   // It can be optimized later so that an operator operator (init/close) is performed
   // only after that operation has been performed on all the parents. This will require
   // initializing the whole tree in all the mappers (which might be required for mappers
@@ -1540,10 +1539,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   public void setBucketingVersion(int bucketingVersion) {
-    this.bucketingVersion = bucketingVersion;
+    conf.setBucketingVersion(bucketingVersion);
   }
 
   public int getBucketingVersion() {
-    return bucketingVersion;
+    return conf.getBucketingVersion();
   }
 }
