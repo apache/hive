@@ -442,7 +442,9 @@ STAGE PLANS:
           TableScan
             GatherStats: false
             Reduce Output Operator
+              bucketingVersion: 2
               null sort order: 
+              numBuckets: -1
               sort order: 
               Statistics: Num rows: 1 Data size: 1320 Basic stats: PARTIAL Column stats: NONE
               tag: -1
@@ -904,7 +906,9 @@ STAGE PLANS:
           TableScan
             GatherStats: false
             Reduce Output Operator
+              bucketingVersion: 2
               null sort order: 
+              numBuckets: -1
               sort order: 
               Statistics: Num rows: 1 Data size: 1320 Basic stats: PARTIAL Column stats: NONE
               tag: -1

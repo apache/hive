@@ -274,8 +274,10 @@ STAGE PLANS:
                         Position of Big Table: 0
                         Statistics: Num rows: 232 Data size: 37723 Basic stats: PARTIAL Column stats: NONE
                         Reduce Output Operator
+                          bucketingVersion: 2
                           key expressions: _col1 (type: string)
                           null sort order: a
+                          numBuckets: -1
                           sort order: +
                           Map-reduce partition columns: _col1 (type: string)
                           Statistics: Num rows: 232 Data size: 37723 Basic stats: PARTIAL Column stats: NONE
@@ -402,8 +404,10 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 2 Data size: 368 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
+                        bucketingVersion: 2
                         key expressions: _col0 (type: string)
                         null sort order: a
+                        numBuckets: -1
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 2 Data size: 368 Basic stats: PARTIAL Column stats: NONE
@@ -475,7 +479,9 @@ STAGE PLANS:
                   Select Operator
                     Statistics: Num rows: 3 Data size: 1724 Basic stats: PARTIAL Column stats: COMPLETE
                     Reduce Output Operator
+                      bucketingVersion: 2
                       null sort order: 
+                      numBuckets: -1
                       sort order: 
                       Statistics: Num rows: 3 Data size: 1724 Basic stats: PARTIAL Column stats: COMPLETE
                       tag: 1
@@ -550,7 +556,9 @@ STAGE PLANS:
                 Position of Big Table: 0
                 Statistics: Num rows: 255 Data size: 41495 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
+                  bucketingVersion: 2
                   null sort order: 
+                  numBuckets: -1
                   sort order: 
                   Statistics: Num rows: 255 Data size: 41495 Basic stats: PARTIAL Column stats: NONE
                   tag: 0
@@ -574,7 +582,9 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
+                    bucketingVersion: 2
                     null sort order: 
+                    numBuckets: -1
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     tag: -1

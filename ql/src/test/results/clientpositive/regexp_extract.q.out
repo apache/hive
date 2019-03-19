@@ -55,8 +55,10 @@ STAGE PLANS:
                   predicate: (_col0 < 100) (type: boolean)
                   Statistics: Num rows: 166 Data size: 30876 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
+                    bucketingVersion: 2
                     key expressions: _col0 (type: string)
                     null sort order: a
+                    numBuckets: -1
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 166 Data size: 30876 Basic stats: COMPLETE Column stats: COMPLETE
@@ -312,8 +314,10 @@ STAGE PLANS:
                   predicate: (_col0 < 100) (type: boolean)
                   Statistics: Num rows: 166 Data size: 30876 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
+                    bucketingVersion: 2
                     key expressions: _col0 (type: string)
                     null sort order: a
+                    numBuckets: -1
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 166 Data size: 30876 Basic stats: COMPLETE Column stats: COMPLETE

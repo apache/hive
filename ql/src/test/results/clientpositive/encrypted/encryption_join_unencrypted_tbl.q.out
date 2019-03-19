@@ -571,8 +571,10 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 500 Data size: 93000 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
+                  bucketingVersion: 2
                   key expressions: _col2 (type: double)
                   null sort order: a
+                  numBuckets: -1
                   sort order: +
                   Map-reduce partition columns: _col2 (type: double)
                   Statistics: Num rows: 500 Data size: 93000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -593,8 +595,10 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 500 Data size: 51500 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
+                  bucketingVersion: 2
                   key expressions: _col2 (type: double)
                   null sort order: a
+                  numBuckets: -1
                   sort order: +
                   Map-reduce partition columns: _col2 (type: double)
                   Statistics: Num rows: 500 Data size: 51500 Basic stats: COMPLETE Column stats: COMPLETE

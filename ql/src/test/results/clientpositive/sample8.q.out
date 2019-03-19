@@ -40,8 +40,10 @@ STAGE PLANS:
               predicate: ((((hash(key) & 2147483647) % 1) = 0) and (((hash(key) & 2147483647) % 10) = 0) and value is not null) (type: boolean)
               Statistics: Num rows: 125 Data size: 22250 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
+                bucketingVersion: 2
                 key expressions: key (type: string), value (type: string)
                 null sort order: aa
+                numBuckets: -1
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
                 Statistics: Num rows: 125 Data size: 22250 Basic stats: COMPLETE Column stats: COMPLETE
@@ -56,8 +58,10 @@ STAGE PLANS:
               predicate: ((((hash(key) & 2147483647) % 1) = 0) and (((hash(key) & 2147483647) % 10) = 0) and value is not null) (type: boolean)
               Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
+                bucketingVersion: 2
                 key expressions: key (type: string), value (type: string)
                 null sort order: aa
+                numBuckets: -1
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
                 Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
