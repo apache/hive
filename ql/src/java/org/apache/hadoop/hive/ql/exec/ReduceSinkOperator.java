@@ -34,13 +34,11 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBucketNumber;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -432,7 +430,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
    * For Acid Update/Delete case, we expect a single partitionEval of the form
    * UDFToInteger(ROW__ID) and buckNum == -1 so that the result of this method
    * is to return the bucketId extracted from ROW__ID unless it optimized by
-   * {@link org.apache.hadoop.hive.ql.optimizer.SortedDynPartitionOptimizer}
+   * {@link org.apache.hadoop.hive.ql.optimizer.SortedDynPartitionOptimizer} 
    */
   private int computeHashCode(Object row, int buckNum) throws HiveException {
     // Evaluate the HashCode
@@ -592,11 +590,6 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   @Override
   public void setOutputCollector(OutputCollector _out) {
     this.out = _out;
-  }
-
-  @Explain(displayName = "XXX", explainLevels = { Level.EXTENDED })
-  public int getBucketingVersion0() {
-    return bucketingVersion;
   }
 
 }

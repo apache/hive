@@ -135,9 +135,7 @@ public class OpTraitsRulesProcFactory {
                     break;
                   }
                 }
-                if (found) {
-                  break;
-                }
+                if (found) break;
               } // column exprmap.
             } // cols
           }
@@ -157,7 +155,7 @@ public class OpTraitsRulesProcFactory {
       OpTraits opTraits = new OpTraits(listBucketCols, numBuckets,
               listBucketCols, numReduceSinks, bucketingVersion);
       rs.setOpTraits(opTraits);
-      rs.getConf().setBucketingVersion(bucketingVersion);
+      rs.setBucketingVersion(bucketingVersion);
       return null;
     }
   }
