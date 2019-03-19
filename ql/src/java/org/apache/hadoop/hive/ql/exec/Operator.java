@@ -1537,8 +1537,4 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     }
     return true;
   }
-
-  public int getBucketingVersion() {
-    return conf.getBucketingVersion();
-  }
 }

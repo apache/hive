@@ -4046,7 +4046,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     LOG.info("Vectorizer vectorizeOperator reduce sink class " + opClass.getSimpleName());
 
     // Get the bucketing version
-    int bucketingVersion = ((ReduceSinkOperator)op).getBucketingVersion();
+    int bucketingVersion = ((ReduceSinkOperator)op).getConf().getBucketingVersion();
 
     Operator<? extends OperatorDesc> vectorOp = null;
     try {
