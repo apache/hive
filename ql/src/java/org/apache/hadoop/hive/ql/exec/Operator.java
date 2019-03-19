@@ -1538,10 +1538,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     return true;
   }
 
-  public void setBucketingVersion(int bucketingVersion) {
-    conf.setBucketingVersion(bucketingVersion);
-  }
-
   public int getBucketingVersion() {
     return conf.getBucketingVersion();
   }

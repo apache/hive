@@ -1012,7 +1012,7 @@ public class TezCompiler extends TaskCompiler {
     GraphWalker ogw = new PreOrderOnceWalker(disp);
     ogw.startWalking(topNodes, null);
   }
-    
+
   private class SemiJoinRemovalProc implements NodeProcessor {
 
     private final boolean removeBasedOnStats;
@@ -1859,7 +1859,7 @@ public class TezCompiler extends TaskCompiler {
         }
 
         // Found the target RSOp
-        parent.setBucketingVersion(fsOp.getConf().getTableInfo().getBucketingVersion());
+        parent.getConf().setBucketingVersion(fsOp.getConf().getTableInfo().getBucketingVersion());
         break;
       }
     }

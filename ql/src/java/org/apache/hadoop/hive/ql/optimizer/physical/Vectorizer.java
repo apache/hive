@@ -4061,7 +4061,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     // Set the bucketing version
     Preconditions.checkArgument(vectorOp instanceof VectorReduceSinkCommonOperator);
-    vectorOp.setBucketingVersion(bucketingVersion);
+    vectorOp.getConf().setBucketingVersion(bucketingVersion);
 
     return vectorOp;
   }
