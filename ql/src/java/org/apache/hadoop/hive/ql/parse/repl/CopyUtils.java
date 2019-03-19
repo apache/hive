@@ -81,9 +81,6 @@ public class CopyUtils {
         for (Map.Entry<Path, List<ReplChangeManager.FileInfo>> destMapEntry : destMap.entrySet()) {
           Path destination = destMapEntry.getKey();
           List<ReplChangeManager.FileInfo> fileInfoList = destMapEntry.getValue();
-          if (fileInfoList.isEmpty()) {
-            continue;
-          }
           // Get the file system again from cache. There is a chance that the file system stored in the map is closed.
           // For instance, doCopyRetry closes the file system in case of i/o exceptions.
           FileSystem sourceFs = fileInfoList.get(0).getSourcePath().getFileSystem(hiveConf);
