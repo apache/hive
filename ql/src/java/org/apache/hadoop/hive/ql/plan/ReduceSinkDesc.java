@@ -130,6 +130,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   private static transient Logger LOG = LoggerFactory.getLogger(ReduceSinkDesc.class);
 
   private AcidUtils.Operation writeType;
+  private int bucketingVersion;
 
   public ReduceSinkDesc() {
   }
@@ -715,4 +716,14 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   public AcidUtils.Operation getWriteType() {
     return writeType;
   }
+
+  public void setBucketingVersion(int bucketingVersion) {
+    this.bucketingVersion = bucketingVersion;
+  }
+
+  @Explain(displayName = "Reduce Sink Vectorization", explainLevels = { Level.EXTENDED })
+  public int getBucketingVersion() {
+    return bucketingVersion;
+  }
+
 }
