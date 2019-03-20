@@ -226,9 +226,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testpartbucket
 POSTHOOK: Input: default@testpartbucket@ds=hello/hr=world
 #### A masked pattern was here ####
-0	val_0	hello	world
-0	val_0	hello	world
-0	val_0	hello	world
+10	val_10	hello	world
+10	val_10	hello	world
+104	val_104	hello	world
 PREHOOK: query: drop table testpartbucket
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testpartbucket

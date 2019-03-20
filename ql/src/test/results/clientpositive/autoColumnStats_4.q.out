@@ -210,7 +210,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	10                  
 	rawDataSize         	0                   
-	totalSize           	1899                
+	totalSize           	1880                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -252,10 +252,10 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
-	numFiles            	4                   
+	numFiles            	3                   
 	numRows             	8                   
 	rawDataSize         	0                   
-	totalSize           	3275                
+	totalSize           	2590                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
