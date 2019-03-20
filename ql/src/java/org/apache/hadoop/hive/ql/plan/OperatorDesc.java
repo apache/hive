@@ -41,7 +41,7 @@ public interface OperatorDesc extends Serializable, Cloneable {
 
   void fillSignature(Map<String, Object> ret);
 
-  public void setBucketingVersion(int bucketingVersion);
+  public void setBucketingVersion1(int bucketingVersion);
 
-  public int getBucketingVersion();
+  public int getBucketingVersion1();
 }
