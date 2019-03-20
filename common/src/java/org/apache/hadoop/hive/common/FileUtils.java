@@ -636,18 +636,18 @@ public final class FileUtils {
   }
 
   public static boolean distCp(FileSystem srcFS, List<Path> srcPaths, Path dst,
-      boolean deleteSource, String doAsUser,
+      boolean deleteSource, UserGroupInformation proxyUser,
       HiveConf conf, HadoopShims shims) throws IOException {
     LOG.debug("copying srcPaths : {}, to DestPath :{} ,with doAs: {}",
-        StringUtils.join(",", srcPaths), dst.toString(), doAsUser);
+        StringUtils.join(",", srcPaths), dst.toString(), proxyUser);
     boolean copied = false;
-    if (doAsUser == null){
+    if (proxyUser == null){
       copied = shims.runDistCp(srcPaths, dst, conf);
     } else {
-      copied = shims.runDistCpAs(srcPaths, dst, conf, doAsUser);
+      copied = shims.runDistCpAs(srcPaths, dst, conf, proxyUser);
     }
     if (copied && deleteSource) {
-      if (doAsUser != null) {
+      if (proxyUser != null) {
         // if distcp is done using doAsUser, delete also should be done using same user.
         //TODO : Need to change the delete execution within doAs if doAsUser is given.
         throw new IOException("Distcp is called with doAsUser and delete source set as true");
