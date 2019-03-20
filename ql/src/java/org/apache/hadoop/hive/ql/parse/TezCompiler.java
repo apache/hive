@@ -1859,7 +1859,7 @@ public class TezCompiler extends TaskCompiler {
         }
 
         // Found the target RSOp
-        parent.setBucketingVersion(fsOp.getConf().getTableInfo().getBucketingVersion());
+        parent.getConf().setBucketingVersion(fsOp.getConf().getTableInfo().getBucketingVersion());
         break;
       }
     }

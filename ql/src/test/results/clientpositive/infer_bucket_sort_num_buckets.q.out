@@ -49,9 +49,7 @@ STAGE PLANS:
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 1000 Data size: 99000 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
-                bucketingVersion: 2
                 null sort order: 
-                numBuckets: -1
                 sort order: 
                 Map-reduce partition columns: _col0 (type: int)
                 Statistics: Num rows: 1000 Data size: 99000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -277,10 +275,8 @@ STAGE PLANS:
           TableScan
             GatherStats: false
             Reduce Output Operator
-              bucketingVersion: 2
               key expressions: '2008-04-08' (type: string), _col1 (type: string)
               null sort order: aa
-              numBuckets: -1
               sort order: ++
               Map-reduce partition columns: '2008-04-08' (type: string), _col1 (type: string)
               Statistics: Num rows: 316 Data size: 360872 Basic stats: COMPLETE Column stats: COMPLETE
@@ -399,7 +395,7 @@ Table:              	test_table_n0
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
-	numFiles            	1                   
+	numFiles            	2                   
 	numRows             	670                 
 	rawDataSize         	5888                
 	totalSize           	6558                
@@ -410,8 +406,8 @@ SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
 OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
 Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
+Num Buckets:        	2                   	 
+Bucket Columns:     	[key]               	 
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   

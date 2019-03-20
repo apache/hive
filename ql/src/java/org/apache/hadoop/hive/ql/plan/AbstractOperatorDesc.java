@@ -167,12 +167,12 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
   }
 
   @Override
-  public int getBucketingVersion1() {
+  public int getBucketingVersion() {
     return bucketingVersion;
   }
 
   @Override
-  public void setBucketingVersion1(int bucketingVersion) {
+  public void setBucketingVersion(int bucketingVersion) {
     this.bucketingVersion = bucketingVersion;
   }
 

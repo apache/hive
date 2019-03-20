@@ -40,10 +40,13 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorSparkHashTableSinkOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSparkPartitionPruningSinkOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorTopNKeyOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
+import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkCommonOperator;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFOperator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc;
 import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
+import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
+import org.apache.hadoop.hive.ql.plan.AbstractVectorDesc;
 import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
 import org.apache.hadoop.hive.ql.plan.CollectDesc;
 import org.apache.hadoop.hive.ql.plan.CommonMergeJoinDesc;
@@ -264,7 +267,7 @@ public final class OperatorFactory {
     ret.setConf(conf);
 
     // Set the bucketing Version
-    ret.setBucketingVersion(oplist0.getBucketingVersion());
+    ret.conf.setBucketingVersion(oplist0.getConf().getBucketingVersion());
 
     // Add the new operator as child of each of the passed in operators
     List<Operator> children = oplist0.getChildOperators();
@@ -337,9 +340,7 @@ public final class OperatorFactory {
     Operator<T> ret = get(ctx, (Class<T>) conf.getClass());
     ret.setConf(conf);
     ret.setSchema(rwsch);
-    if (oplist.length == 0) {
-      return ret;
-    }
+    if (oplist.length == 0) return ret;
 
     // Add the new operator as child of each of the passed in operators
     for (Operator op : oplist) {

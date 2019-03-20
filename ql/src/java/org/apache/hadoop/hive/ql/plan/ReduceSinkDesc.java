@@ -450,7 +450,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
 
   @Explain(displayName = "bucketingVersion", explainLevels = { Level.EXTENDED })
   public int getBucketingVersionForExplain() {
-    return getBucketingVersion1();
+    return getBucketingVersion();
   }
 
   public List<ExprNodeDesc> getBucketCols() {
