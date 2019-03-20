@@ -111,9 +111,11 @@ public class Msck {
     int ret = 0;
     try {
       Table table = getMsc().getTable(msckInfo.getCatalogName(), msckInfo.getDbName(), msckInfo.getTableName());
+      qualifiedTableName = Warehouse.getCatalogQualifiedTableName(table);
       if (getConf().getBoolean(MetastoreConf.ConfVars.MSCK_REPAIR_ENABLE_PARTITION_RETENTION.getHiveName(), false)) {
         msckInfo.setPartitionExpirySeconds(PartitionManagementTask.getRetentionPeriodInSeconds(table));
-        LOG.info("Retention period ({}s) for partition is enabled for MSCK REPAIR..", msckInfo.getPartitionExpirySeconds());
+        LOG.info("{} - Retention period ({}s) for partition is enabled for MSCK REPAIR..",
+          qualifiedTableName, msckInfo.getPartitionExpirySeconds());
       }
       HiveMetaStoreChecker checker = new HiveMetaStoreChecker(getMsc(), getConf(), msckInfo.getPartitionExpirySeconds());
       // checkMetastore call will fill in result with partitions that are present in filesystem
@@ -130,13 +132,12 @@ public class Msck {
       boolean lockRequired = totalPartsToFix > 0 &&
         msckInfo.isRepairPartitions() &&
         (msckInfo.isAddPartitions() || msckInfo.isDropPartitions());
-      LOG.info("#partsNotInMs: {} #partsNotInFs: {} #expiredPartitions: {} lockRequired: {} (R: {} A: {} D: {})",
-        partsNotInMs.size(), partsNotInFs.size(), expiredPartitions.size(), lockRequired,
+      LOG.info("{} - #partsNotInMs: {} #partsNotInFs: {} #expiredPartitions: {} lockRequired: {} (R: {} A: {} D: {})",
+        qualifiedTableName, partsNotInMs.size(), partsNotInFs.size(), expiredPartitions.size(), lockRequired,
         msckInfo.isRepairPartitions(), msckInfo.isAddPartitions(), msckInfo.isDropPartitions());
 
       if (msckInfo.isRepairPartitions()) {
         // Repair metadata in HMS
-        qualifiedTableName = Warehouse.getCatalogQualifiedTableName(table);
         long lockId;
         if (acquireLock && lockRequired && table.getParameters() != null &&
           MetaStoreUtils.isTransactionalTable(table.getParameters())) {

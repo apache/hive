@@ -61,7 +61,6 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -112,7 +111,6 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	numFiles            	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -271,7 +269,6 @@ STAGE PLANS:
               columns sourceip,desturl,visitdate,adrevenue,useragent,ccode,lcode,skeyword,avgtimeonsite
               columns.comments 
               columns.types string:string:string:float:string:string:string:string:int
-              discover.partitions true
               field.delim |
 #### A masked pattern was here ####
               name default.uservisits_web_text_none
@@ -294,7 +291,6 @@ STAGE PLANS:
                 columns sourceip,desturl,visitdate,adrevenue,useragent,ccode,lcode,skeyword,avgtimeonsite
                 columns.comments 
                 columns.types string:string:string:float:string:string:string:string:int
-                discover.partitions true
                 field.delim |
 #### A masked pattern was here ####
                 name default.uservisits_web_text_none
@@ -387,7 +383,6 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adRevenue\":\"true\",\"avgTimeOnSite\":\"true\",\"sourceIP\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	numFiles            	1                   
 	numRows             	55                  
 	rawDataSize         	7005                
