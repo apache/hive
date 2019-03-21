@@ -103,7 +103,7 @@ public class FileOperations {
       srcPaths.add(fileStatus.getPath());
     }
 
-    new CopyUtils(distCpDoAsUser, hiveConf).doCopy(toPath, srcPaths);
+    new CopyUtils(distCpDoAsUser, hiveConf, toPath.getFileSystem(hiveConf)).doCopy(toPath, srcPaths);
   }
 
   private void copyMmPath() throws LoginException, IOException {
@@ -135,7 +135,8 @@ public class FileOperations {
         }
         Utilities.FILE_OP_LOGGER.debug("Exporting originals from {} to {}",
             dirWithOriginals, exportRootDataDir);
-        new CopyUtils(distCpDoAsUser, hiveConf).doCopy(exportRootDataDir, srcPaths);
+        new CopyUtils(distCpDoAsUser, hiveConf, exportRootDataDir.getFileSystem(hiveConf)).
+                doCopy(exportRootDataDir, srcPaths);
       }
     }
   }
