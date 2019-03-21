@@ -2340,7 +2340,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           } else {
             // This is the only place where isQuery is set to true; it defaults to false.
             qb.setIsQuery(true);
-            Path stagingPath = getStagingPath(qb);
+            Path stagingPath = getStagingDirectoryPathname(qb);
             fname = stagingPath.toString();
             ctx.setResDir(stagingPath);
           }
@@ -7198,42 +7198,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return queryPath;
   }
 
-  private Path getQueryTempPath(final Path destinationPath, boolean isMmTable)
+  private Path getDestinationFilePath(final String destinationFile, boolean isMmTable)
       throws SemanticException {
-    Path fdesinationPath = destinationPath;
-    Path queryTmpdir = null;
-    try {
-      if (this.isResultsCacheEnabled() && this.queryTypeCanUseCache()) {
-        assert (!isMmTable);
-        QueryResultsCache instance = QueryResultsCache.getInstance();
-
-        // QueryResultsCache should have been initialized by now
-        assert (instance != null);
+    if (this.isResultsCacheEnabled() && this.queryTypeCanUseCache()) {
+      assert (!isMmTable);
+      QueryResultsCache instance = QueryResultsCache.getInstance();
+      // QueryResultsCache should have been initialized by now
+      if (instance != null) {
         Path resultCacheTopDir = instance.getCacheDirPath();
         String dirName = UUID.randomUUID().toString();
-        fdesinationPath = new Path(resultCacheTopDir, dirName);
+        Path resultDir = new Path(resultCacheTopDir, dirName);
+        this.ctx.setFsResultCacheDirs(resultDir);
+        return resultDir;
       }
-
-        //FileSystem fs = queryTmpdir.getFileSystem(conf);
-        //TODO: better catch handling
-        //FileUtils.mkdir(fs, queryTmpdir, conf);
-        //if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-         // Utilities.FILE_OP_LOGGER.trace("Setting query directory to result cache dir: " + queryTmpdir);
-        //}
-      //} else {
-        // otherwise write to the file system implied by the directory
-        // no copy is required. we may want to revisit this policy in future
-        Path qPath = FileUtils.makeQualified(fdesinationPath, conf);
-        queryTmpdir = isMmTable ? qPath : ctx.getTempDirForFinalJobPath(qPath);
-        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-          Utilities.FILE_OP_LOGGER.trace("Setting query directory " + queryTmpdir
-                                             + " from " + destinationPath + " (" + isMmTable + ")");
-        }
-    } catch (Exception e) {
-      throw new SemanticException("Error creating temporary folder on: "
-                                      + destinationPath, e);
     }
-    return queryTmpdir;
+    return new Path(destinationFile);
   }
 
   @SuppressWarnings("nls")
@@ -7500,7 +7479,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       isLocal = true;
       // fall through
     case QBMetaData.DEST_DFS_FILE: {
-      destinationPath = new Path(qbm.getDestFileForAlias(dest));
+      destinationPath = getDestinationFilePath(qbm.getDestFileForAlias(dest), isMmTable);
 
       // CTAS case: the file output format and serde are defined by the create
       // table command rather than taking the default value
