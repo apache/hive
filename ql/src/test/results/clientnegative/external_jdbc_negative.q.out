@@ -43,30 +43,4 @@ TBLPROPERTIES (
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@db1_ext_negative1
-POSTHOOK: query: CREATE EXTERNAL TABLE db1_ext_negative1
-(
- ikey int,
- bkey bigint
-)
-STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
-TBLPROPERTIES (
-                "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-#### A masked pattern was here ####
-                "hive.sql.dbcp.username" = "user1",
-                "hive.sql.dbcp.password" = "passwd1",
-                "hive.sql.table" = "EXTERNAL_JDBC_NEGATIVE_TABLE1",
-                "hive.sql.dbcp.maxActive" = "1"
-)
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@db1_ext_negative1
-PREHOOK: query: SELECT * FROM db1_ext_negative1
-PREHOOK: type: QUERY
-PREHOOK: Input: default@db1_ext_negative1
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM db1_ext_negative1
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@db1_ext_negative1
-#### A masked pattern was here ####
-Failed with exception java.io.IOException:java.io.IOException: org.apache.hive.storage.jdbc.exception.HiveJdbcDatabaseAccessException: Caught exception while trying to execute query:Column 'bkey' is either not in any table in the FROM list or appears within a join specification and is outside the scope of the join specification or appears in a HAVING clause and is not in the GROUP BY list. If this is a CREATE or ALTER TABLE  statement then 'bkey' is not a column in the target table.
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. java.lang.RuntimeException: MetaException(message:org.apache.hadoop.hive.serde2.SerDeException org.apache.hadoop.hive.serde2.SerDeException: Column numbers do not match. Remote table columns are [ikey] and declared table columns in Hive external table are [ikey, bkey])
