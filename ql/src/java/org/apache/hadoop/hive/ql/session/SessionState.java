@@ -1366,7 +1366,7 @@ public class SessionState {
   static void registerJars(List<String> newJars) throws IllegalArgumentException {
     LogHelper console = getConsole();
     try {
-      ClassLoader loader = Thread.currentThread().getContextClassLoader();
+      ClassLoader loader = SessionState.get().getConf().getClassLoader();
       ClassLoader newLoader = Utilities.addToClassPath(loader, newJars.toArray(new String[0]));
       Thread.currentThread().setContextClassLoader(newLoader);
       SessionState.get().getConf().setClassLoader(newLoader);
