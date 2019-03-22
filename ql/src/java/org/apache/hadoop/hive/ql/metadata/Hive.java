@@ -1882,6 +1882,20 @@ public class Hive {
     return getDatabase(currentDb);
   }
 
+  private TableSnapshot getTableSnapshot(Table tbl, Long writeId) throws LockException {
+    TableSnapshot tableSnapshot = null;
+    if ((writeId != null) && (writeId > 0)) {
+      ValidWriteIdList writeIds = AcidUtils.getTableValidWriteIdListWithTxnList(
+              conf, tbl.getDbName(), tbl.getTableName());
+      tableSnapshot = new TableSnapshot(writeId, writeIds.writeToString());
+    } else {
+      // Make sure we pass in the names, so we can get the correct snapshot for rename table.
+      tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl, tbl.getDbName(), tbl.getTableName(),
+                                                  true);
+    }
+    return tableSnapshot;
+  }
+
   /**
    * Load a directory into a Hive Table Partition - Alters existing content of
    * the partition with the contents of loadPath. - If the partition does not
@@ -1935,17 +1949,7 @@ public class Hive {
             inheritLocation, isSkewedStoreAsSubdir, isSrcLocal, isAcidIUDoperation,
             resetStatistics, writeId, stmtId, isInsertOverwrite, isTxnTable, newFiles);
 
-    AcidUtils.TableSnapshot tableSnapshot = null;
-    if (isTxnTable) {
-      if ((writeId != null) && (writeId > 0)) {
-        ValidWriteIdList writeIds = AcidUtils.getTableValidWriteIdListWithTxnList(
-                conf, tbl.getDbName(), tbl.getTableName());
-        tableSnapshot = new TableSnapshot(writeId, writeIds.writeToString());
-      } else {
-        // Make sure we pass in the names, so we can get the correct snapshot for rename table.
-        tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl, tbl.getDbName(), tbl.getTableName(), true);
-      }
-    }
+    AcidUtils.TableSnapshot tableSnapshot = isTxnTable ? getTableSnapshot(tbl, writeId) : null;
     if (tableSnapshot != null) {
       newTPart.getTPartition().setWriteId(tableSnapshot.getWriteId());
     }
@@ -2363,7 +2367,8 @@ public class Hive {
 
   private void setStatsPropAndAlterPartitions(boolean resetStatistics, Table tbl,
                                              List<Partition> partitions,
-                                             long writeId) throws TException {
+                                              AcidUtils.TableSnapshot tableSnapshot)
+          throws TException {
     if (partitions.isEmpty()) {
       return;
     }
@@ -2377,9 +2382,15 @@ public class Hive {
       LOG.debug(sb.toString());
     }
 
+    String validWriteIdList = null;
+    long writeId = 0L;
+    if (tableSnapshot != null) {
+      validWriteIdList = tableSnapshot.getValidWriteIdList();
+      writeId = tableSnapshot.getWriteId();
+    }
     getSynchronizedMSC().alter_partitions(tbl.getCatName(), tbl.getDbName(), tbl.getTableName(),
             partitions.stream().map(Partition::getTPartition).collect(Collectors.toList()),
-            ec, null, writeId);
+            ec, validWriteIdList, writeId);
   }
 
   /**
@@ -2626,6 +2637,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
 
     boolean isTxnTable = AcidUtils.isTransactionalTable(tbl);
+    AcidUtils.TableSnapshot tableSnapshot = isTxnTable ? getTableSnapshot(tbl, writeId) : null;
 
     for (Entry<Path, PartitionDetails> entry : partitionDetailsMap.entrySet()) {
       tasks.add(() -> {
@@ -2645,8 +2657,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
           // if the partition already existed before the loading, no need to add it again to the
           // metastore
 
-          AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf,
-                  partition.getTable(), true);
           if (tableSnapshot != null) {
             partition.getTPartition().setWriteId(tableSnapshot.getWriteId());
           }
@@ -2722,7 +2732,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               partitionDetailsMap.entrySet().stream()
                       .filter(entry -> entry.getValue().hasOldPartition)
                       .map(entry -> entry.getValue().partition)
-                      .collect(Collectors.toList()), writeId);
+                      .collect(Collectors.toList()), tableSnapshot);
 
     } catch (InterruptedException | ExecutionException e) {
       throw new HiveException("Exception when loading " + validPartitions.size()
