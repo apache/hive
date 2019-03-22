@@ -524,8 +524,6 @@ public final class QueryResultsCache {
    * @return
    */
   public boolean setEntryValid(CacheEntry cacheEntry, FetchWork fetchWork) {
-    String queryText = cacheEntry.getQueryText();
-    boolean dataDirMoved = false;
     Path queryResultsPath = null;
     Path cachedResultsPath = null;
 
@@ -533,8 +531,8 @@ public final class QueryResultsCache {
       // if we are here file sink op should have created files to fetch from
       assert(fetchWork.getFilesToFetch() != null );
 
-      boolean requiresMove = true;
-      queryResultsPath = Utilities.toTempPath(fetchWork.getTblDir());
+      boolean requiresCaching = true;
+      queryResultsPath = fetchWork.getTblDir();
       FileSystem resultsFs = queryResultsPath.getFileSystem(conf);
 
       long resultSize = 0;
@@ -542,15 +540,8 @@ public final class QueryResultsCache {
         if(resultsFs.exists(fs.getPath())) {
           resultSize +=  fs.getLen();
         } else {
-          // No actual result directory, no need to move anything.
-          cachedResultsPath = zeroRowsPath;
-          // Even if there are no results to move, at least check that we have permission
-          // to check the existence of zeroRowsPath, or the read using the cache will fail.
-          // A failure here will cause this query to not be added to the cache.
-          FileSystem cacheFs = cachedResultsPath.getFileSystem(conf);
-          boolean fakePathExists = cacheFs.exists(zeroRowsPath);
-          resultSize = 0;
-          requiresMove = false;
+          // No actual result directory, no need to cache anything.
+          requiresCaching = false;
           break;
         }
       }
@@ -567,20 +558,12 @@ public final class QueryResultsCache {
           return false;
         }
 
-        if (requiresMove) {
-          // Move the query results to the query cache directory.
-          //Set<Path> queryResultFiles = new HashSet<>();
-          //if(fetchWork.getFilesToFetch() != null && !fetchWork.getFilesToFetch().isEmpty()) {
+        if (requiresCaching) {
           cacheEntry.cachedResultPaths = new HashSet<>();
             for(FileStatus fs:fetchWork.getFilesToFetch()) {
               cacheEntry.cachedResultPaths.add(fs);
             }
-          //}
-          //cachedResultsPath = moveResultsToCacheDirectory(queryResultFiles);
-          dataDirMoved = true;
         }
-        //LOG.info("Moved query results from {} to {} (size {}) for query '{}'",
-         //   queryResultsPath, cachedResultsPath, resultSize, queryText);
 
         // Create a new FetchWork to reference the new cache location.
         FetchWork fetchWorkForCache =
@@ -605,23 +588,10 @@ public final class QueryResultsCache {
       incrementMetric(MetricsConstant.QC_VALID_ENTRIES);
       incrementMetric(MetricsConstant.QC_TOTAL_ENTRIES_ADDED);
     } catch (Exception err) {
+      String queryText = cacheEntry.getQueryText();
       LOG.error("Failed to create cache entry for query results for query: " + queryText, err);
-
-      if (dataDirMoved) {
-        // If data was moved from original location to cache directory, we need to move it back!
-        LOG.info("Restoring query results from {} back to {}", cachedResultsPath, queryResultsPath);
-        try {
-          FileSystem fs = cachedResultsPath.getFileSystem(conf);
-          fs.rename(cachedResultsPath, queryResultsPath);
-          cacheEntry.size = 0;
-          cacheEntry.cachedResultsPath = null;
-        } catch (Exception err2) {
-          String errMsg = "Failed cleanup during failed attempt to cache query: " + queryText;
-          LOG.error(errMsg);
-          throw new RuntimeException(errMsg);
-        }
-      }
-
+      cacheEntry.size = 0;
+      cacheEntry.cachedResultsPath = null;
       // Invalidate the entry. Rely on query cleanup to remove from lookup.
       cacheEntry.invalidate();
       return false;

@@ -7176,28 +7176,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return currUDF;
   }
 
-  private Path getStagingPath(final QB qb) throws HiveException{
-    Path queryPath = null;
-    if (this.isResultsCacheEnabled() && this.queryTypeCanUseCache()) {
-      try {
-        // In case this has not been initialized elsewhere.
-        QueryResultsCache.initialize(conf);
-      } catch (Exception err) {
-        throw new IllegalStateException(err);
-      }
-      QueryResultsCache instance = QueryResultsCache.getInstance();
-
-      // QueryResultsCache should have been initialized by now
-      //assert (instance != null);
-      Path resultCacheTopDir = instance.getCacheDirPath();
-      String dirName = UUID.randomUUID().toString();
-      queryPath = new Path(resultCacheTopDir, dirName);
-    } else {
-      queryPath = getStagingDirectoryPathname(qb);
-    }
-    return queryPath;
-  }
-
   private Path getDestinationFilePath(final String destinationFile, boolean isMmTable)
       throws SemanticException {
     if (this.isResultsCacheEnabled() && this.queryTypeCanUseCache()) {
