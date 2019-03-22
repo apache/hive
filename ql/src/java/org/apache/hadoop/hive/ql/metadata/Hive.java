@@ -1954,6 +1954,20 @@ public class Hive {
     return getDatabase(currentDb);
   }
 
+  private TableSnapshot getTableSnapshot(Table tbl, Long writeId) throws LockException {
+    TableSnapshot tableSnapshot = null;
+    if ((writeId != null) && (writeId > 0)) {
+      ValidWriteIdList writeIds = AcidUtils.getTableValidWriteIdListWithTxnList(
+              conf, tbl.getDbName(), tbl.getTableName());
+      tableSnapshot = new TableSnapshot(writeId, writeIds.writeToString());
+    } else {
+      // Make sure we pass in the names, so we can get the correct snapshot for rename table.
+      tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl, tbl.getDbName(), tbl.getTableName(),
+                                                  true);
+    }
+    return tableSnapshot;
+  }
+
   /**
    * Load a directory into a Hive Table Partition - Alters existing content of
    * the partition with the contents of loadPath. - If the partition does not
@@ -2094,19 +2108,8 @@ public class Hive {
       Partition newTPart = oldPart != null ? oldPart : new Partition(tbl, partSpec, newPartPath);
       alterPartitionSpecInMemory(tbl, partSpec, newTPart.getTPartition(), inheritTableSpecs, newPartPath.toString());
       validatePartition(newTPart);
-      AcidUtils.TableSnapshot tableSnapshot = null;
 
-      if (isTxnTable) {
-        if ((writeId != null) && (writeId > 0)) {
-          ValidWriteIdList writeIds = AcidUtils.getTableValidWriteIdListWithTxnList(
-                  conf, tbl.getDbName(), tbl.getTableName());
-          tableSnapshot = new TableSnapshot(writeId, writeIds.writeToString());
-        } else {
-          // Make sure we pass in the names, so we can get the correct snapshot for rename table.
-          tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl, tbl.getDbName(), tbl.getTableName(), true);
-
-        }
-      }
+      AcidUtils.TableSnapshot tableSnapshot = isTxnTable ? getTableSnapshot(tbl, writeId) : null;
       if (tableSnapshot != null) {
         newTPart.getTPartition().setWriteId(tableSnapshot.getWriteId());
       }

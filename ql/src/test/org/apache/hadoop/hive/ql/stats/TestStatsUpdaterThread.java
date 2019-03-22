@@ -284,6 +284,31 @@ public class TestStatsUpdaterThread {
     msClient.close();
   }
 
+  @Test
+  public void testTxnDynamicPartitions() throws Exception {
+    StatsUpdaterThread su = createUpdater();
+    IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
+
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
+    executeQuery("create table simple_stats (s string) partitioned by (i int)" +
+            " stored as orc " +
+            " TBLPROPERTIES (\"transactional\"=\"true\")");
+    executeQuery("insert into simple_stats (i, s) values (1, 'test')");
+    executeQuery("insert into simple_stats (i, s) values (2, 'test2')");
+    executeQuery("insert into simple_stats (i, s) values (3, 'test3')");
+    assertTrue(su.runOneIteration());
+    drainWorkQueue(su);
+    verifyPartStatsUpToDate(3, 1, msClient, "simple_stats", true);
+
+    executeQuery("insert into simple_stats (i, s) values (1, 'test12')");
+    executeQuery("insert into simple_stats (i, s) values (2, 'test22')");
+    executeQuery("insert into simple_stats (i, s) values (3, 'test32')");
+    assertTrue(su.runOneIteration());
+    drainWorkQueue(su);
+    verifyPartStatsUpToDate(3, 1, msClient, "simple_stats", true);
+    msClient.close();
+  }
+
   @Test(timeout=40000)
   public void testExistingOnly() throws Exception {
     hiveConf.set(MetastoreConf.ConfVars.STATS_AUTO_UPDATE.getVarname(), "existing");
