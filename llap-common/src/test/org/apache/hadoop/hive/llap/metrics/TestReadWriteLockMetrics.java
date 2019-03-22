@@ -282,15 +282,15 @@ public class TestReadWriteLockMetrics {
 
   /**
    * Helper to verify the actual value by comparing it with a +/- tolerance of
-   * 5% with the expected value.
+   * 10% with the expected value.
    *
    * @param txt Assertion message
    * @param expected The expected value (tolerance will be applied)
    * @param actual Actual test outcome
    */
   private void assertWithTolerance(String txt, long expected, long actual) {
-    long lowExpected = expected - (expected / 20L);
-    long highExpected = expected + (expected / 20L);
+    long lowExpected = expected - (expected / 10L);
+    long highExpected = expected + (expected / 10L);
 
     StringBuffer msg = new StringBuffer(txt);
     msg.append(" (expected ");

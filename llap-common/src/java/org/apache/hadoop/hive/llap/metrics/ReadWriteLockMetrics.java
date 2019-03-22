@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.llap.metrics;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -62,7 +63,9 @@ public class ReadWriteLockMetrics implements ReadWriteLock {
    * LockMetricSource</code> instances in descending order by their total lock
    * wait time.
    */
-  public static class MetricsComparator implements Comparator<MetricsSource> {
+  public static class MetricsComparator implements Comparator<MetricsSource>, Serializable {
+    private static final long serialVersionUID = -1;
+
     @Override
     public int compare(MetricsSource o1, MetricsSource o2) {
       if (o1 != null && o2 != null
@@ -314,7 +317,7 @@ public class ReadWriteLockMetrics implements ReadWriteLock {
    * lock, while itself is only responsible to measure the time that it took to
    * acquire a specific lock.
    */
-  private class LockWrapper implements Lock {
+  private static class LockWrapper implements Lock {
     /// the lock to delegate the work to
     private final Lock wrappedLock;
     /// total lock wait time in nanos
@@ -332,8 +335,8 @@ public class ReadWriteLockMetrics implements ReadWriteLock {
      * @param max The (atomic) counter to adjust to the maximum wait time
      * @param cnt The (atomic) counter to increment with each lock call
      */
-    public LockWrapper(Lock original, MutableCounterLong total,
-                       MutableCounterLong max, MutableCounterLong cnt) {
+    LockWrapper(Lock original, MutableCounterLong total,
+                MutableCounterLong max, MutableCounterLong cnt) {
       wrappedLock = original;
       this.lockWaitTotal = total;
       this.lockWaitMax = max;
