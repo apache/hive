@@ -27,6 +27,10 @@ describe formatted `srcpart` PARTITION(ds='2008-04-08', hr='12');
 describe formatted `srcpart` `ds`;
 describe formatted `srcpart` `hr`;
 
+set hive.display.partitioned.table.stats=false;
+describe formatted `srcpart`;
+set hive.display.partitioned.table.stats=true;
+
 create table srcpart_serdeprops like srcpart;
 alter table srcpart_serdeprops set serdeproperties('xyz'='0');
 alter table srcpart_serdeprops set serdeproperties('pqrs'='1');

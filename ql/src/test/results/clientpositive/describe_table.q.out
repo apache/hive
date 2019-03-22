@@ -388,6 +388,41 @@ num_falses
 bitVector           	                    	 	 	 	 	 	 	 	 	 	 
 comment             	                    	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"hr\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+PREHOOK: query: describe formatted `srcpart`
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@srcpart
+POSTHOOK: query: describe formatted `srcpart`
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@srcpart
+# col_name            	data_type           	comment             
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+hr                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: create table srcpart_serdeprops like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

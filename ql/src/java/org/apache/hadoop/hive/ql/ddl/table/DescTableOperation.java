@@ -114,6 +114,7 @@ public class DescTableOperation extends DDLOperation {
         }
       }
 
+      boolean displayPartitionedTblStats = context.getConf().getBoolVar(HiveConf.ConfVars.HIVE_DISPLAY_PARTITIONED_TABLE_STATS);
       if (colPath.equals(tableName)) {
         cols = (part == null || tbl.getTableType() == TableType.VIRTUAL_VIEW) ?
             tbl.getCols() : part.getCols();
@@ -122,7 +123,7 @@ public class DescTableOperation extends DDLOperation {
           cols.addAll(tbl.getPartCols());
         }
 
-        if (tbl.isPartitioned() && part == null) {
+        if (tbl.isPartitioned() && part == null && displayPartitionedTblStats) {
           // No partitioned specified for partitioned table, lets fetch all.
           Map<String, String> tblProps = tbl.getParameters() == null ?
               new HashMap<String, String>() : tbl.getParameters();
@@ -162,7 +163,7 @@ public class DescTableOperation extends DDLOperation {
           List<String> colNames = new ArrayList<String>();
           colNames.add(colName.toLowerCase());
           if (null == part) {
-            if (tbl.isPartitioned()) {
+            if (tbl.isPartitioned() && displayPartitionedTblStats) {
               Map<String, String> tblProps = tbl.getParameters() == null ?
                   new HashMap<String, String>() : tbl.getParameters();
               if (tbl.isPartitionKey(colNames.get(0))) {
