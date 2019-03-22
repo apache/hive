@@ -1,0 +1,21 @@
+PREHOOK: query: DESCRIBE FUNCTION mid
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION mid
+POSTHOOK: type: DESCFUNCTION
+mid(str, pos[, len]) - returns the substring of str that starts at pos and is of length len ormid(bin, pos[, len]) - returns the slice of byte array that starts at pos and is of length len
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED mid
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED mid
+POSTHOOK: type: DESCFUNCTION
+mid(str, pos[, len]) - returns the substring of str that starts at pos and is of length len ormid(bin, pos[, len]) - returns the slice of byte array that starts at pos and is of length len
+Synonyms: substr, substring
+pos is a 1-based index. If pos<0 the starting position is determined by counting backwards from the end of str.
+Example:
+   > SELECT mid('Facebook', 5) FROM src LIMIT 1;
+  'book'
+  > SELECT mid('Facebook', -5) FROM src LIMIT 1;
+  'ebook'
+  > SELECT mid('Facebook', 5, 1) FROM src LIMIT 1;
+  'b'
+Function class:org.apache.hadoop.hive.ql.udf.UDFSubstr
+Function type:BUILTIN
