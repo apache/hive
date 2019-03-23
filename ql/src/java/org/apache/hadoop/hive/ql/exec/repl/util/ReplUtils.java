@@ -209,11 +209,11 @@ public class ReplUtils {
     return firstIncPendFlag != null && !firstIncPendFlag.isEmpty() && "true".equalsIgnoreCase(firstIncPendFlag);
   }
 
-  public static EnvironmentContext setDataLocationChangedFlag(EnvironmentContext envContext) {
+  public static EnvironmentContext setReplDataLocationChangedFlag(EnvironmentContext envContext) {
     if (envContext == null) {
       envContext = new EnvironmentContext();
     }
-    envContext.putToProperties(ReplConst.DATA_LOCATION_CHANGED, ReplConst.TRUE);
+    envContext.putToProperties(ReplConst.REPL_DATA_LOCATION_CHANGED, ReplConst.TRUE);
     return envContext;
   }
 }

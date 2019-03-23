@@ -55,7 +55,7 @@ public class CreateTableOperation extends DDLOperation {
     Table tbl = desc.toTable(context.getConf());
     LOG.debug("creating table {} on {}", tbl.getFullyQualifiedName(), tbl.getDataLocation());
 
-    boolean dataLocationChanged = false;
+    boolean replDataLocationChanged = false;
     if (desc.getReplicationSpec().isInReplicationScope()) {
       // If in replication scope, we should check if the object we're looking at exists, and if so,
       // trigger replace-mode semantics.
@@ -71,7 +71,7 @@ public class CreateTableOperation extends DDLOperation {
           if (existingTable.getTableType().equals(TableType.MANAGED_TABLE)
                   && tbl.getTableType().equals(TableType.EXTERNAL_TABLE)
                   && (!existingTable.getDataLocation().equals(tbl.getDataLocation()))) {
-            dataLocationChanged = true;
+            replDataLocationChanged = true;
           }
         } else {
           LOG.debug("DDLTask: Create Table is skipped as table {} is newer than update", desc.getTableName());
@@ -82,7 +82,7 @@ public class CreateTableOperation extends DDLOperation {
 
     // create the table
     if (desc.getReplaceMode()) {
-      createTableReplaceMode(tbl, dataLocationChanged);
+      createTableReplaceMode(tbl, replDataLocationChanged);
     } else {
       createTableNonReplaceMode(tbl);
     }
@@ -91,7 +91,7 @@ public class CreateTableOperation extends DDLOperation {
     return 0;
   }
 
-  private void createTableReplaceMode(Table tbl, boolean dataLocationChanged) throws HiveException {
+  private void createTableReplaceMode(Table tbl, boolean replDataLocationChanged) throws HiveException {
     ReplicationSpec replicationSpec = desc.getReplicationSpec();
     long writeId = 0;
     EnvironmentContext environmentContext = null;
@@ -116,10 +116,10 @@ public class CreateTableOperation extends DDLOperation {
       }
     }
 
-    // If table's data location is moved, then set the corresponding flag in environment context to
-    // indicate Metastore to update location of all partitions and delete old directory.
-    if (dataLocationChanged) {
-      environmentContext = ReplUtils.setDataLocationChangedFlag(environmentContext);
+    // In replication flow, if table's data location is changed, then set the corresponding flag in
+    // environment context to notify Metastore to update location of all partitions and delete old directory.
+    if (replDataLocationChanged) {
+      environmentContext = ReplUtils.setReplDataLocationChangedFlag(environmentContext);
     }
 
     // replace-mode creates are really alters using CreateTableDesc.

@@ -27,7 +27,7 @@ public class ReplConst {
    * The constant that denotes the table data location is changed to different path. This indicates
    * Metastore to update corresponding path in Partitions and also need to delete old path.
    */
-  public static final String DATA_LOCATION_CHANGED = "DATA_LOCATION_CHANGED";
+  public static final String REPL_DATA_LOCATION_CHANGED = "REPL_DATA_LOCATION_CHANGED";
 
   public static final String TRUE = "true";
 }
