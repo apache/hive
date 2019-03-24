@@ -1,6 +1,10 @@
 -- Table SEQUENCE_TABLE is an internal table required by DataNucleus.
 -- NOTE: Some versions of SchemaTool do not automatically generate this table.
 -- See http://www.datanucleus.org/servlet/jira/browse/NUCRDBMS-416
+
+-- HIVE-21336 safeguards from failures from indices being too long
+ALTER SESSION SET NLS_LENGTH_SEMANTICS=BYTE;
+
 CREATE TABLE SEQUENCE_TABLE
 (
    SEQUENCE_NAME VARCHAR2(255) NOT NULL,
@@ -57,7 +61,7 @@ ALTER TABLE CDS ADD CONSTRAINT CDS_PK PRIMARY KEY (CD_ID);
 CREATE TABLE COLUMNS_V2
 (
     CD_ID NUMBER NOT NULL,
-    "COMMENT" VARCHAR2(256) NULL,
+    "COMMENT" VARCHAR2(4000) NULL,
     "COLUMN_NAME" VARCHAR2(767) NOT NULL,
     TYPE_NAME CLOB NOT NULL,
     INTEGER_IDX NUMBER(10) NOT NULL

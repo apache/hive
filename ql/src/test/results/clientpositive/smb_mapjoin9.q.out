@@ -286,6 +286,7 @@ STAGE PLANS:
                     outputColumnNames: col1, col2, col3, col4
                     Group By Operator
                       aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll'), compute_stats(col3, 'hll'), compute_stats(col4, 'hll')
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Reduce Output Operator
@@ -319,13 +320,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-9
-      Create Table Operator:
-        Create Table
-          columns: k1 int, value string, ds string, k2 int
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.smb_mapjoin9_results
+    Create Table
+      columns: k1 int, value string, ds string, k2 int
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.smb_mapjoin9_results
 
   Stage: Stage-2
     Stats Work

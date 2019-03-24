@@ -214,10 +214,10 @@ public class MapWork extends BaseWork {
   }
 
   /**
-   * This is used to display and verify output of "Path -> Alias" in test framework.
+   * This is used to display and verify output of "Path -&gt; Alias" in test framework.
    *
-   * QTestUtil masks "Path -> Alias" and makes verification impossible.
-   * By keeping "Path -> Alias" intact and adding a new display name which is not
+   * QTestUtil masks "Path -&gt; Alias" and makes verification impossible.
+   * By keeping "Path -&gt; Alias" intact and adding a new display name which is not
    * masked by QTestUtil by removing prefix.
    *
    * Notes: we would still be masking for intermediate directories.

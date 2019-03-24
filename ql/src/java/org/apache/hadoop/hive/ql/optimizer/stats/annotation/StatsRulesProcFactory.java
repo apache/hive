@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer.stats.annotation;
 
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -224,45 +225,32 @@ public class StatsRulesProcFactory {
   /**
    * FILTER operator does not change the average row size but it does change the number of rows
    * emitted. The reduction in the number of rows emitted is dependent on the filter expression.
-   * <ul>
    * <i>Notations:</i>
+   * <ul>
    * <li>T(S) - Number of tuples in relations S</li>
    * <li>V(S,A) - Number of distinct values of attribute A in relation S</li>
    * </ul>
+   * <i>Rules:</i> 
    * <ul>
-   * <i>Rules:</i> <b>
-   * <li>Column equals a constant</li></b> T(S) = T(R) / V(R,A)
-   * <p>
-   * <b>
-   * <li>Inequality conditions</li></b> T(S) = T(R) / 3
-   * <p>
-   * <b>
-   * <li>Not equals comparison</li></b> - Simple formula T(S) = T(R)
-   * <p>
-   * - Alternate formula T(S) = T(R) (V(R,A) - 1) / V(R,A)
-   * <p>
-   * <b>
-   * <li>NOT condition</li></b> T(S) = 1 - T(S'), where T(S') is the satisfying condition
-   * <p>
-   * <b>
-   * <li>Multiple AND conditions</li></b> Cascadingly apply the rules 1 to 3 (order doesn't matter)
-   * <p>
-   * <b>
-   * <li>Multiple OR conditions</li></b> - Simple formula is to evaluate conditions independently
-   * and sum the results T(S) = m1 + m2
-   * <p>
-   * - Alternate formula T(S) = T(R) * ( 1 - ( 1 - m1/T(R) ) * ( 1 - m2/T(R) ))
-   * <p>
+   * <li><b>Column equals a constant</b> T(S) = T(R) / V(R,A)</li>
+   * <li><b>Inequality conditions</b> T(S) = T(R) / 3</li>
+   * <li><b>Not equals comparison</b> - Simple formula T(S) = T(R)</li>
+   * <li>- Alternate formula T(S) = T(R) (V(R,A) - 1) / V(R,A) </li>
+   * <li><b>NOT condition</b> T(S) = 1 - T(S'), where T(S') is the satisfying condition</li>
+   * <li><b>Multiple AND conditions</b> Cascadingly apply the rules 1 to 3 (order doesn't matter)</li>
+   * <li><b>Multiple OR conditions</b> - Simple formula is to evaluate conditions independently
+   * and sum the results T(S) = m1 + m2</li>
+   * <li>- Alternate formula T(S) = T(R) * ( 1 - ( 1 - m1/T(R) ) * ( 1 - m2/T(R) ))
+   * <br>
    * where, m1 is the number of tuples that satisfy condition1 and m2 is the number of tuples that
-   * satisfy condition2
+   * satisfy condition2 </li>
    * </ul>
-   * <p>
    * <i>Worst case:</i> If no column statistics are available, then evaluation of predicate
    * expression will assume worst case (i.e; half the input rows) for each of predicate expression.
-   * <p>
+   * <br>
    * <i>For more information, refer 'Estimating The Cost Of Operations' chapter in
    * "Database Systems: The Complete Book" by Garcia-Molina et. al.</i>
-   * </p>
+   * <br>
    */
   public static class FilterStatsRule extends DefaultStatsRule implements NodeProcessor {
 
@@ -647,6 +635,14 @@ public class StatsRulesProcFactory {
             return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
           }
           default:
+            if (colType.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
+              BigDecimal value = new BigDecimal(boundValue);
+              BigDecimal maxValue = new BigDecimal(range.maxValue.toString());
+              BigDecimal minValue = new BigDecimal(range.minValue.toString());
+              int minComparison = value.compareTo(minValue);
+              int maxComparison = value.compareTo(maxValue);
+              return RangeResult.of(minComparison < 0, maxComparison < 0, minComparison == 0, maxComparison == 0);
+            }
             return null;
           }
         } catch (Exception e) {
@@ -1073,6 +1069,27 @@ public class StatsRulesProcFactory {
                 return 0;
               }
             }
+          } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
+            BigDecimal value = new BigDecimal(boundValue);
+            BigDecimal maxValue = new BigDecimal(cs.getRange().maxValue.toString());
+            BigDecimal minValue = new BigDecimal(cs.getRange().minValue.toString());
+            int minComparison = value.compareTo(minValue);
+            int maxComparison = value.compareTo(maxValue);
+            if (upperBound) {
+              if (maxComparison > 0) {
+                return numRows;
+              }
+              if (minComparison < 0) {
+                return 0;
+              }
+            } else {
+              if (minComparison <= 0) {
+                return numRows;
+              }
+              if (maxComparison > 0) {
+                return 0;
+              }
+            }
           }
         } catch (NumberFormatException nfe) {
           return numRows / 3;
@@ -1201,7 +1218,7 @@ public class StatsRulesProcFactory {
    * available then a better estimate can be found by taking the smaller of product of V(R,[A,B,C])
    * (product of distinct cardinalities of A,B,C) and T(R)/2.
    * <p>
-   * T(R) = min (T(R)/2 , V(R,[A,B,C]) ---> [1]
+   * T(R) = min (T(R)/2 , V(R,[A,B,C]) ---&gt; [1]
    * <p>
    * In the presence of grouping sets, map-side GBY will emit more rows depending on the size of
    * grouping set (input rows * size of grouping set). These rows will get reduced because of
@@ -1325,34 +1342,11 @@ public class StatsRulesProcFactory {
 
         stats = parentStats.clone();
         stats.setColumnStats(colStats);
-        long ndvProduct = 1;
         final long parentNumRows = stats.getNumRows();
 
         // compute product of distinct values of grouping columns
-        for (ColStatistics cs : colStats) {
-          if (cs != null) {
-            long ndv = cs.getCountDistint();
-            if (cs.getNumNulls() > 0) {
-              ndv = StatsUtils.safeAdd(ndv, 1);
-            }
-            ndvProduct = StatsUtils.safeMult(ndvProduct, ndv);
-          } else {
-            if (parentStats.getColumnStatsState().equals(Statistics.State.COMPLETE)) {
-              // the column must be an aggregate column inserted by GBY. We
-              // don't have to account for this column when computing product
-              // of NDVs
-              continue;
-            } else {
-              // partial column statistics on grouping attributes case.
-              // if column statistics on grouping attribute is missing, then
-              // assume worst case.
-              // GBY rule will emit half the number of rows if ndvProduct is 0
-              ndvProduct = 0;
-            }
-            break;
-          }
-        }
-
+        long ndvProduct =
+            StatsUtils.computeNDVGroupingColumns(colStats, parentStats, false);
         // if ndvProduct is 0 then column stats state must be partial and we are missing
         // column stats for a group by column
         if (ndvProduct == 0) {
@@ -1645,12 +1639,12 @@ public class StatsRulesProcFactory {
   }
 
   /**
-   * JOIN operator can yield any of the following three cases <li>The values of join keys are
+   * JOIN operator can yield any of the following three cases <ul><li>The values of join keys are
    * disjoint in both relations in which case T(RXS) = 0 (we need histograms for this)</li> <li>Join
    * key is primary key on relation R and foreign key on relation S in which case every tuple in S
-   * will have a tuple in R T(RXS) = T(S) (we need histograms for this)</li> <li>Both R & S relation
+   * will have a tuple in R T(RXS) = T(S) (we need histograms for this)</li> <li>Both R &amp; S relation
    * have same value for join-key. Ex: bool column with all true values T(RXS) = T(R) * T(S) (we
-   * need histograms for this. counDistinct = 1 and same value)</li>
+   * need histograms for this. counDistinct = 1 and same value)</li></ul>
    * <p>
    * In the absence of histograms, we can use the following general case
    * <p>

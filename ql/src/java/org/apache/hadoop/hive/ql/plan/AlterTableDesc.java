@@ -929,7 +929,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
   }
 
   /**
-   * @param cascade the isCascade to set
+   * @param isCascade the isCascade to set
    */
   public void setIsCascade(boolean isCascade) {
     this.isCascade = isCascade;

@@ -72,7 +72,7 @@ public enum BucketCodec {
    * by {@link RecordIdentifier} which includes the {@link RecordIdentifier#getBucketProperty()}
    * which has the actual bucket ID in the high order bits.  This scheme also ensures that 
    * {@link org.apache.hadoop.hive.ql.exec.FileSinkOperator#process(Object, int)} works in case
-   * there numBuckets > numReducers.  (The later could be fixed by changing how writers are
+   * there numBuckets &gt; numReducers.  (The later could be fixed by changing how writers are
    * initialized in "if (fpaths.acidLastBucket != bucketNum) {")
    */
   V1(1) {

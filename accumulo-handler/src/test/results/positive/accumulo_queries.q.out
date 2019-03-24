@@ -59,8 +59,7 @@ STAGE PLANS:
             COLUMN_STATS_ACCURATE 
 
   Stage: Stage-1
-      Pre Insert operator:
-        Pre-Insert task
+    Pre-Insert task
 
   Stage: Stage-2
     Map Reduce
@@ -543,8 +542,7 @@ STAGE PLANS:
             COLUMN_STATS_ACCURATE 
 
   Stage: Stage-1
-      Pre Insert operator:
-        Pre-Insert task
+    Pre-Insert task
 
   Stage: Stage-3
     Map Reduce
@@ -558,6 +556,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations: count(key)
                 keys: key (type: string)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE

@@ -611,7 +611,7 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
    *          selected in use.
    * @param joinResult
    *          The hash map lookup result for the repeated key.
-   * @param hashMapResults
+   * @param hashMapResult
    *          The array of all hash map results for the batch.
    * @param someRowsFilteredOut
    *          Whether some rows of the repeated key batch were knocked out by the filter.
@@ -619,10 +619,6 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
    *          A copy of the batch's selectedInUse flag on input to the process method.
    * @param inputLogicalSize
    *          The batch's size on input to the process method.
-   * @param scratch1
-   *          Pre-allocated storage to internal use.
-   * @param scratch2
-   *          Pre-allocated storage to internal use.
    */
   public void finishOuterRepeated(VectorizedRowBatch batch, JoinUtil.JoinResult joinResult,
       VectorMapJoinHashMapResult hashMapResult, boolean someRowsFilteredOut,

@@ -71,6 +71,22 @@ MSCK REPAIR TABLE default.repairtable_n10;
 show partitions default.repairtable_n10;
 
 
+CREATE EXTERNAL TABLE repairtable_n11 LIKE repairtable_n10;
+describe formatted repairtable_n11;
+
+ALTER TABLE repairtable_n10 SET TBLPROPERTIES('discover.partitions'='false');
+describe formatted repairtable_n10;
+
+-- tbl params are not retained by default
+CREATE EXTERNAL TABLE repairtable_n12 LIKE repairtable_n10;
+describe formatted repairtable_n12;
+
+set hive.ddl.createtablelike.properties.whitelist=discover.partitions;
+-- with tbl params retainer
+CREATE EXTERNAL TABLE repairtable_n13 LIKE repairtable_n10;
+describe formatted repairtable_n13;
+
+
 DROP TABLE default.repairtable_n7;
 DROP TABLE default.repairtable_n8;
 DROP TABLE default.repairtable_n9;

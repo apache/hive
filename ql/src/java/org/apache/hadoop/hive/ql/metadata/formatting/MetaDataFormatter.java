@@ -20,15 +20,14 @@ package org.apache.hadoop.hive.ql.metadata.formatting;
 
 import java.io.DataOutputStream;
 import java.io.OutputStream;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Nullable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
@@ -92,7 +91,6 @@ public interface MetaDataFormatter {
    * @param cols
    * @param isFormatted - describe with formatted keyword
    * @param isExt
-   * @param isPretty
    * @param isOutputPadded - if true, add spacing and indentation
    * @param colStats
    * @param fkInfo  foreign keys information
@@ -137,9 +135,9 @@ public interface MetaDataFormatter {
   /**
    * Describe a database.
    */
-  public void showDatabaseDescription (DataOutputStream out, String database, String comment,
-      String location, String ownerName, String ownerType, Map<String, String> params)
-          throws HiveException;
+  void showDatabaseDescription(DataOutputStream out, String database, String comment, String location,
+      String ownerName, PrincipalType ownerType, Map<String, String> params)
+      throws HiveException;
 
   void showResourcePlans(DataOutputStream out, List<WMResourcePlan> resourcePlans)
       throws HiveException;

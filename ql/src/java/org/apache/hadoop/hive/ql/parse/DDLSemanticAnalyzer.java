@@ -76,9 +76,19 @@ import org.apache.hadoop.hive.ql.ddl.database.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.DescDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.DropDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.LockDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.database.ShowCreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.ShowDatabasesDesc;
 import org.apache.hadoop.hive.ql.ddl.database.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.UnlockDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.table.DescTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.DropTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.LockTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.ShowCreateTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.ShowTableStatusDesc;
+import org.apache.hadoop.hive.ql.ddl.table.ShowTablesDesc;
+import org.apache.hadoop.hive.ql.ddl.table.ShowTablePropertiesDesc;
+import org.apache.hadoop.hive.ql.ddl.table.TruncateTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.UnlockTableDesc;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnStatsUpdateTask;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -131,9 +141,8 @@ import org.apache.hadoop.hive.ql.plan.DDLDesc;
 import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DescFunctionDesc;
-import org.apache.hadoop.hive.ql.plan.DescTableDesc;
+import org.apache.hadoop.hive.ql.plan.DropPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.DropResourcePlanDesc;
-import org.apache.hadoop.hive.ql.plan.DropTableDesc;
 import org.apache.hadoop.hive.ql.plan.DropWMMappingDesc;
 import org.apache.hadoop.hive.ql.plan.DropWMPoolDesc;
 import org.apache.hadoop.hive.ql.plan.DropWMTriggerDesc;
@@ -145,7 +154,6 @@ import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.KillQueryDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
-import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
@@ -155,21 +163,14 @@ import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowCompactionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowConfDesc;
-import org.apache.hadoop.hive.ql.plan.ShowCreateDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.ShowCreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowGrantDesc;
 import org.apache.hadoop.hive.ql.plan.ShowLocksDesc;
 import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowResourcePlanDesc;
-import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
-import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
-import org.apache.hadoop.hive.ql.plan.ShowTblPropertiesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTxnsDesc;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.plan.TruncateTableDesc;
-import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -1445,8 +1446,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     boolean ifPurge = (ast.getFirstChildWithType(HiveParser.KW_PURGE) != null);
     DropTableDesc dropTblDesc = new DropTableDesc(tableName, expectedType, ifExists, ifPurge, replicationSpec);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        dropTblDesc)));
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), dropTblDesc)));
   }
 
   private void analyzeTruncateTable(ASTNode ast) throws SemanticException {
@@ -1493,7 +1493,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       setAcidDdlDesc(truncateTblDesc);
     }
 
-    DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), truncateTblDesc);
+    DDLWork2 ddlWork = new DDLWork2(getInputs(), getOutputs(), truncateTblDesc);
     Task<?> truncateTask = TaskFactory.get(ddlWork);
 
     // Is this a truncate column command
@@ -2518,26 +2518,26 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       validateTable(tableName, partSpec);
     }
 
-    DescTableDesc descTblDesc = new DescTableDesc(
-      ctx.getResFile(), tableName, partSpec, colPath);
-
     boolean showColStats = false;
+    boolean isFormatted = false;
+    boolean isExt = false;
     if (ast.getChildCount() == 2) {
       int descOptions = ast.getChild(1).getType();
-      descTblDesc.setFormatted(descOptions == HiveParser.KW_FORMATTED);
-      descTblDesc.setExt(descOptions == HiveParser.KW_EXTENDED);
+      isFormatted = descOptions == HiveParser.KW_FORMATTED;
+      isExt = descOptions == HiveParser.KW_EXTENDED;
       // in case of "DESCRIBE FORMATTED tablename column_name" statement, colPath
       // will contain tablename.column_name. If column_name is not specified
       // colPath will be equal to tableName. This is how we can differentiate
       // if we are describing a table or column
-      if (!colPath.equalsIgnoreCase(tableName) && descTblDesc.isFormatted()) {
+      if (!colPath.equalsIgnoreCase(tableName) && isFormatted) {
         showColStats = true;
       }
     }
 
     inputs.add(new ReadEntity(getTable(tableName)));
-    Task ddlTask = TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        descTblDesc));
+
+    DescTableDesc descTblDesc = new DescTableDesc(ctx.getResFile(), tableName, partSpec, colPath, isExt, isFormatted);
+    Task<?> ddlTask = TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), descTblDesc));
     rootTasks.add(ddlTask);
     String schema = DescTableDesc.getSchema(showColStats);
     setFetchTask(createFetchTask(schema));
@@ -2620,14 +2620,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void analyzeShowCreateDatabase(ASTNode ast) throws SemanticException {
     String dbName = getUnescapedName((ASTNode)ast.getChild(0));
-    ShowCreateDatabaseDesc showCreateDbDesc =
-        new ShowCreateDatabaseDesc(dbName, ctx.getResFile().toString());
+    ShowCreateDatabaseDesc showCreateDbDesc = new ShowCreateDatabaseDesc(dbName, ctx.getResFile().toString());
 
     Database database = getDatabase(dbName);
     inputs.add(new ReadEntity(database));
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showCreateDbDesc)));
-    setFetchTask(createFetchTask(showCreateDbDesc.getSchema()));
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), showCreateDbDesc)));
+    setFetchTask(createFetchTask(ShowCreateDatabaseDesc.SCHEMA));
   }
 
 
@@ -2638,9 +2636,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Table tab = getTable(tableName);
     inputs.add(new ReadEntity(tab));
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showCreateTblDesc)));
-    setFetchTask(createFetchTask(showCreateTblDesc.getSchema()));
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), showCreateTblDesc)));
+    setFetchTask(createFetchTask(ShowCreateTableDesc.SCHEMA));
   }
 
   private void analyzeShowDatabases(ASTNode ast) throws SemanticException {
@@ -2686,8 +2683,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     showTblsDesc = new ShowTablesDesc(ctx.getResFile(), dbName, tableNames, tableTypeFilter, isExtended);
     inputs.add(new ReadEntity(getDatabase(dbName)));
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showTblsDesc)));
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), showTblsDesc)));
     setFetchTask(createFetchTask(showTblsDesc.getSchema()));
   }
 
@@ -2763,15 +2759,13 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       validateTable(tableNames, partSpec);
     }
 
-    showTblStatusDesc = new ShowTableStatusDesc(ctx.getResFile().toString(), dbName,
-        tableNames, partSpec);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showTblStatusDesc)));
-    setFetchTask(createFetchTask(showTblStatusDesc.getSchema()));
+    showTblStatusDesc = new ShowTableStatusDesc(ctx.getResFile().toString(), dbName, tableNames, partSpec);
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), showTblStatusDesc)));
+    setFetchTask(createFetchTask(ShowTableStatusDesc.SCHEMA));
   }
 
   private void analyzeShowTableProperties(ASTNode ast) throws SemanticException {
-    ShowTblPropertiesDesc showTblPropertiesDesc;
+    ShowTablePropertiesDesc showTblPropertiesDesc;
     String[] qualified = getQualifiedTableName((ASTNode) ast.getChild(0));
     String propertyName = null;
     if (ast.getChildCount() > 1) {
@@ -2781,11 +2775,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String tableNames = getDotName(qualified);
     validateTable(tableNames, null);
 
-    showTblPropertiesDesc = new ShowTblPropertiesDesc(ctx.getResFile().toString(), tableNames,
-        propertyName);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showTblPropertiesDesc)));
-    setFetchTask(createFetchTask(showTblPropertiesDesc.getSchema()));
+    showTblPropertiesDesc = new ShowTablePropertiesDesc(ctx.getResFile().toString(), tableNames, propertyName);
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), showTblPropertiesDesc)));
+    setFetchTask(createFetchTask(ShowTablePropertiesDesc.SCHEMA));
   }
 
   /**
@@ -2920,8 +2912,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       assert (ast.getChild(0).getType() == HiveParser.TOK_FROM);
       dbName = unescapeIdentifier(ast.getChild(1).getText());
       validateDatabase(dbName);
-      showViewsDesc = new ShowTablesDesc(ctx.getResFile(), dbName);
-      showViewsDesc.setType(TableType.VIRTUAL_VIEW);
+      showViewsDesc = new ShowTablesDesc(ctx.getResFile(), dbName, TableType.VIRTUAL_VIEW);
       break;
     case 3: // Uses a pattern and specifies a DB
       assert (ast.getChild(0).getType() == HiveParser.TOK_FROM);
@@ -2931,13 +2922,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       showViewsDesc = new ShowTablesDesc(ctx.getResFile(), dbName, viewNames, TableType.VIRTUAL_VIEW);
       break;
     default: // No pattern or DB
-      showViewsDesc = new ShowTablesDesc(ctx.getResFile(), dbName);
-      showViewsDesc.setType(TableType.VIRTUAL_VIEW);
+      showViewsDesc = new ShowTablesDesc(ctx.getResFile(), dbName, TableType.VIRTUAL_VIEW);
       break;
     }
 
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showViewsDesc)));
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), showViewsDesc)));
     setFetchTask(createFetchTask(showViewsDesc.getSchema()));
   }
 
@@ -2960,8 +2949,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       assert (ast.getChild(0).getType() == HiveParser.TOK_FROM);
       dbName = unescapeIdentifier(ast.getChild(1).getText());
       validateDatabase(dbName);
-      showMaterializedViewsDesc = new ShowTablesDesc(ctx.getResFile(), dbName);
-      showMaterializedViewsDesc.setType(TableType.MATERIALIZED_VIEW);
+      showMaterializedViewsDesc = new ShowTablesDesc(ctx.getResFile(), dbName, TableType.MATERIALIZED_VIEW);
       break;
     case 3: // Uses a pattern and specifies a DB
       assert (ast.getChild(0).getType() == HiveParser.TOK_FROM);
@@ -2972,13 +2960,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           ctx.getResFile(), dbName, materializedViewNames, TableType.MATERIALIZED_VIEW);
       break;
     default: // No pattern or DB
-      showMaterializedViewsDesc = new ShowTablesDesc(ctx.getResFile(), dbName);
-      showMaterializedViewsDesc.setType(TableType.MATERIALIZED_VIEW);
+      showMaterializedViewsDesc = new ShowTablesDesc(ctx.getResFile(), dbName, TableType.MATERIALIZED_VIEW);
       break;
     }
 
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showMaterializedViewsDesc)));
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), showMaterializedViewsDesc)));
     setFetchTask(createFetchTask(showMaterializedViewsDesc.getSchema()));
   }
 
@@ -3005,10 +2991,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     LockTableDesc lockTblDesc = new LockTableDesc(tableName, mode, partSpec,
-        HiveConf.getVar(conf, ConfVars.HIVEQUERYID));
-    lockTblDesc.setQueryStr(this.ctx.getCmd());
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        lockTblDesc)));
+        HiveConf.getVar(conf, ConfVars.HIVEQUERYID), ctx.getCmd());
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), lockTblDesc)));
 
     // Need to initialize the lock manager
     ctx.setNeedLockMgr(true);
@@ -3107,8 +3091,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     UnlockTableDesc unlockTblDesc = new UnlockTableDesc(tableName, partSpec);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        unlockTblDesc)));
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), unlockTblDesc)));
 
     // Need to initialize the lock manager
     ctx.setNeedLockMgr(true);
@@ -3438,9 +3421,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     addTableDropPartsOutputs(tab, partSpecs.values(), !ifExists);
 
-    DropTableDesc dropTblDesc =
-        new DropTableDesc(getDotName(qualified), partSpecs, expectView ? TableType.VIRTUAL_VIEW : null,
-                mustPurge, replicationSpec);
+    DropPartitionDesc dropTblDesc =
+        new DropPartitionDesc(getDotName(qualified), partSpecs, mustPurge, replicationSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), dropTblDesc)));
   }
 

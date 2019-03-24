@@ -211,6 +211,7 @@ STAGE PLANS:
                 Statistics: Num rows: 676 Data size: 85202 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   keys: _col0 (type: string)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 676 Data size: 85202 Basic stats: COMPLETE Column stats: NONE

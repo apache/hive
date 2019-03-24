@@ -58,7 +58,7 @@ public class ForkingDruidNode extends DruidNode {
   private final List<String> allowedPrefixes = Lists.newArrayList(
           "com.metamx",
           "druid",
-          "io.druid",
+          "org.apache.druid",
           "java.io.tmpdir",
           "hadoop"
   );
@@ -111,7 +111,7 @@ public class ForkingDruidNode extends DruidNode {
     }
     this.properties
             .forEach((key, value) -> command.add(String.format("-D%s=%s", key, value)));
-    command.addAll(Lists.newArrayList("io.druid.cli.Main", "server", getNodeType()));
+    command.addAll(Lists.newArrayList("org.apache.druid.cli.Main", "server", getNodeType()));
     processBuilder.command(command);
     log.info("Creating forking druid node with " + String.join(" ", processBuilder.command()));
   }

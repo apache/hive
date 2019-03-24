@@ -129,8 +129,8 @@ public class JdbcStorageHandler implements HiveStorageHandler {
 
     List<Class<?>> classesToLoad = new ArrayList<>();
     classesToLoad.add(org.apache.hive.storage.jdbc.JdbcInputSplit.class);
-    classesToLoad.add(org.apache.commons.dbcp.BasicDataSourceFactory.class);
-    classesToLoad.add(org.apache.commons.pool.impl.GenericObjectPool.class);
+    classesToLoad.add(org.apache.commons.dbcp2.BasicDataSourceFactory.class);
+    classesToLoad.add(org.apache.commons.pool2.impl.GenericObjectPool.class);
     // Adding mysql jdbc driver if exists
     try {
       classesToLoad.add(Class.forName("com.mysql.jdbc.Driver"));
@@ -149,6 +149,10 @@ public class JdbcStorageHandler implements HiveStorageHandler {
       classesToLoad.add(Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver"));
     } catch (Exception e) {
     }
+    try {
+      classesToLoad.add(Class.forName("com.ibm.db2.jcc.DB2Driver"));
+    } catch (Exception e) {
+    } // Adding db2 jdbc driver if exists
     try {
       JarUtils.addDependencyJars(conf, classesToLoad);
     } catch (IOException e) {

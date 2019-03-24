@@ -46,10 +46,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 
 /** Not an optimization rule.
- * Rule to aid in translation from Calcite tree -> Hive tree.
+ * Rule to aid in translation from Calcite tree -&gt; Hive tree.
  * Transforms :
  *   Left     Right                  Left                    Right
- *       \   /           ->             \                   /
+ *       \   /           -&gt;             \                   /
  *       Join                          HashExchange       HashExchange
  *                                             \         /
  *                                                 Join

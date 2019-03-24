@@ -52,12 +52,12 @@ import com.google.common.collect.Lists;
  * column statistics (if available).
  *
  * For instance, given the following predicate:
- *   a > 5
+ *   a &gt; 5
  * we can infer that the predicate will evaluate to false if the max
  * value for column a is 4.
  *
  * Currently we support the simplification of:
- *  - =, >=, <=, >, <
+ *  - =, &gt;=, &lt;=, &gt;, &lt;
  *  - IN
  *  - IS_NULL / IS_NOT_NULL
  */

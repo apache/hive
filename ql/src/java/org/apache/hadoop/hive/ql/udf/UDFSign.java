@@ -75,7 +75,7 @@ public class UDFSign extends UDF {
   /**
    * Get the sign of the decimal input
    *
-   * @param dec decimal input
+   * @param decWritable decimal input
    *
    * @return -1, 0, or 1 representing the sign of the input decimal
    */

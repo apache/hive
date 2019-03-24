@@ -29,10 +29,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
-import org.apache.hadoop.hive.ql.plan.DescTableDesc;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +43,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
@@ -73,14 +72,9 @@ class TextMetaDataFormatter implements MetaDataFormatter {
   private static final int separator = Utilities.tabCode;
   private static final int terminator = Utilities.newLineCode;
 
-  /** The number of columns to be used in pretty formatting metadata output.
-   * If -1, then the current terminal width is auto-detected and used.
-   */
-  private final int prettyOutputNumCols;
   private final boolean showPartColsSeparately;
 
-  public TextMetaDataFormatter(int prettyOutputNumCols, boolean partColsSeparately) {
-    this.prettyOutputNumCols = prettyOutputNumCols;
+  public TextMetaDataFormatter(boolean partColsSeparately) {
     this.showPartColsSeparately = partColsSeparately;
   }
 
@@ -629,7 +623,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
    */
   @Override
   public void showDatabaseDescription(DataOutputStream outStream, String database, String comment,
-      String location, String ownerName, String ownerType, Map<String, String> params)
+      String location, String ownerName, PrincipalType ownerType, Map<String, String> params)
           throws HiveException {
     try {
       outStream.write(database.getBytes("UTF-8"));
@@ -647,7 +641,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       }
       outStream.write(separator);
       if (ownerType != null) {
-        outStream.write(ownerType.getBytes("UTF-8"));
+        outStream.write(ownerType.name().getBytes("UTF-8"));
       }
       outStream.write(separator);
       if (params != null && !params.isEmpty()) {

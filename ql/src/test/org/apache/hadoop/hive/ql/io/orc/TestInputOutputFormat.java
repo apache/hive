@@ -1237,6 +1237,11 @@ public class TestInputOutputFormat {
       }
     }
 
+    @Override
+    public String getScheme() {
+      return "mock";
+    }
+
     // increments file modification time
     public void touch(MockFile file) {
       if (fileStatusMap.containsKey(file)) {

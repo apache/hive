@@ -169,7 +169,6 @@ public class AuthorizationUtils {
    * Convert authorization plugin principal type to thrift principal type
    * @param type
    * @return
-   * @throws HiveException
    */
   public static PrincipalType getThriftPrincipalType(HivePrincipalType type) {
     if(type == null){

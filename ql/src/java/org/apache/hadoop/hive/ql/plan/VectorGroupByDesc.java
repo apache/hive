@@ -35,17 +35,17 @@ public class VectorGroupByDesc extends AbstractVectorDesc  {
   private static final long serialVersionUID = 1L;
 
   /**
-   *     GLOBAL         No key.  All rows --> 1 full aggregation on end of input
+   *     GLOBAL         No key.  All rows --&gt; 1 full aggregation on end of input
    *
-   *     HASH           Rows aggregated in to hash table on group key -->
+   *     HASH           Rows aggregated in to hash table on group key --&gt;
    *                        1 partial aggregation per key (normally, unless there is spilling)
    *
    *     MERGE_PARTIAL  As first operator in a REDUCER, partial aggregations come grouped from
-   *                    reduce-shuffle -->
+   *                    reduce-shuffle --&gt;
    *                        aggregate the partial aggregations and emit full aggregation on
    *                        endGroup / closeOp
    *
-   *     STREAMING      Rows come from PARENT operator already grouped -->
+   *     STREAMING      Rows come from PARENT operator already grouped --&gt;
    *                        aggregate the rows and emit full aggregation on key change / closeOp
    *
    *     NOTE: Hash can spill partial result rows prematurely if it runs low on memory.
@@ -123,16 +123,16 @@ public class VectorGroupByDesc extends AbstractVectorDesc  {
    *
    *     Decides using GroupByDesc.Mode and whether there are keys.
    *
-   *         Mode.COMPLETE      --> (numKeys == 0 ? ProcessingMode.GLOBAL : ProcessingMode.STREAMING)
+   *         Mode.COMPLETE      --&gt; (numKeys == 0 ? ProcessingMode.GLOBAL : ProcessingMode.STREAMING)
    *
-   *         Mode.HASH          --> ProcessingMode.HASH
+   *         Mode.HASH          --&gt; ProcessingMode.HASH
    *
-   *         Mode.MERGEPARTIAL  --> (numKeys == 0 ? ProcessingMode.GLOBAL : ProcessingMode.MERGE_PARTIAL)
+   *         Mode.MERGEPARTIAL  --&gt; (numKeys == 0 ? ProcessingMode.GLOBAL : ProcessingMode.MERGE_PARTIAL)
    *
    *         Mode.PARTIAL1,
    *         Mode.PARTIAL2,
    *         Mode.PARTIALS,
-   *         Mode.FINAL        --> ProcessingMode.STREAMING
+   *         Mode.FINAL        --&gt; ProcessingMode.STREAMING
    *
    */
   public static ProcessingMode groupByDescModeToVectorProcessingMode(GroupByDesc.Mode mode,

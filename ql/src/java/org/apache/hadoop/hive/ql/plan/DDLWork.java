@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.plan;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
-import org.apache.hadoop.hive.ql.parse.PreInsertTableDesc;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 import java.io.Serializable;
@@ -34,19 +33,12 @@ public class DDLWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
   // TODO: this can probably be replaced with much less code via dynamic dispatch and/or templates.
-  private PreInsertTableDesc preInsertTableDesc;
   private InsertCommitHookDesc insertCommitHookDesc;
   private AlterMaterializedViewDesc alterMVDesc;
-  private CreateTableDesc createTblDesc;
-  private CreateTableLikeDesc createTblLikeDesc;
   private CreateViewDesc createVwDesc;
-  private DropTableDesc dropTblDesc;
+  private DropPartitionDesc dropPartitionDesc;
   private AlterTableDesc alterTblDesc;
-  private ShowTablesDesc showTblsDesc;
   private ShowColumnsDesc showColumnsDesc;
-  private ShowTblPropertiesDesc showTblPropertiesDesc;
-  private LockTableDesc lockTblDesc;
-  private UnlockTableDesc unlockTblDesc;
   private ShowFunctionsDesc showFuncsDesc;
   private ShowLocksDesc showLocksDesc;
   private ShowCompactionsDesc showCompactionsDesc;
@@ -54,16 +46,11 @@ public class DDLWork implements Serializable {
   private AbortTxnsDesc abortTxnsDesc;
   private DescFunctionDesc descFunctionDesc;
   private ShowPartitionsDesc showPartsDesc;
-  private ShowCreateDatabaseDesc showCreateDbDesc;
-  private ShowCreateTableDesc showCreateTblDesc;
-  private DescTableDesc descTblDesc;
   private AddPartitionDesc addPartitionDesc;
   private RenamePartitionDesc renamePartitionDesc;
   private AlterTableSimpleDesc alterTblSimpleDesc;
   private MsckDesc msckDesc;
-  private ShowTableStatusDesc showTblStatusDesc;
   private AlterTableAlterPartDesc alterTableAlterPartDesc;
-  private TruncateTableDesc truncateTblDesc;
   private AlterTableExchangePartition alterTableExchangePartition;
   private KillQueryDesc killQueryDesc;
 
@@ -116,12 +103,6 @@ public class DDLWork implements Serializable {
   }
 
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      TruncateTableDesc truncateTblDesc) {
-    this(inputs, outputs);
-    this.truncateTblDesc = truncateTblDesc;
-  }
-
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       ShowConfDesc showConfDesc) {
     this(inputs, outputs);
     this.showConfDesc = showConfDesc;
@@ -148,28 +129,6 @@ public class DDLWork implements Serializable {
   }
 
   /**
-   * @param createTblDesc
-   *          create table descriptor
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      CreateTableDesc createTblDesc) {
-    this(inputs, outputs);
-
-    this.createTblDesc = createTblDesc;
-  }
-
-  /**
-   * @param createTblLikeDesc
-   *          create table like descriptor
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      CreateTableLikeDesc createTblLikeDesc) {
-    this(inputs, outputs);
-
-    this.createTblLikeDesc = createTblLikeDesc;
-  }
-
-  /**
    * @param createVwDesc
    *          create view descriptor
    */
@@ -185,30 +144,10 @@ public class DDLWork implements Serializable {
    *          drop table descriptor
    */
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      DropTableDesc dropTblDesc) {
+      DropPartitionDesc dropPartitionDesc) {
     this(inputs, outputs);
 
-    this.dropTblDesc = dropTblDesc;
-  }
-
-  /**
-   * @param descTblDesc
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      DescTableDesc descTblDesc) {
-    this(inputs, outputs);
-
-    this.descTblDesc = descTblDesc;
-  }
-
-  /**
-   * @param showTblsDesc
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      ShowTablesDesc showTblsDesc) {
-    this(inputs, outputs);
-
-    this.showTblsDesc = showTblsDesc;
+    this.dropPartitionDesc = dropPartitionDesc;
   }
 
   /**
@@ -219,26 +158,6 @@ public class DDLWork implements Serializable {
     this(inputs, outputs);
 
     this.showColumnsDesc = showColumnsDesc;
-  }
-
-  /**
-   * @param lockTblDesc
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      LockTableDesc lockTblDesc) {
-    this(inputs, outputs);
-
-    this.lockTblDesc = lockTblDesc;
-  }
-
-  /**
-   * @param unlockTblDesc
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      UnlockTableDesc unlockTblDesc) {
-    this(inputs, outputs);
-
-    this.unlockTblDesc = unlockTblDesc;
   }
 
   /**
@@ -300,26 +219,6 @@ public class DDLWork implements Serializable {
   }
 
   /**
-   * @param showCreateDbDesc
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      ShowCreateDatabaseDesc showCreateDbDesc) {
-    this(inputs, outputs);
-
-    this.showCreateDbDesc = showCreateDbDesc;
-  }
-
-  /**
-   * @param showCreateTblDesc
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      ShowCreateTableDesc showCreateTblDesc) {
-    this(inputs, outputs);
-
-    this.showCreateTblDesc = showCreateTblDesc;
-  }
-
-  /**
    * @param addPartitionDesc
    *          information about the partitions we want to add.
    */
@@ -358,28 +257,6 @@ public class DDLWork implements Serializable {
     this(inputs, outputs);
 
     msckDesc = checkDesc;
-  }
-
-  /**
-   * @param showTblStatusDesc
-   *          show table status descriptor
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      ShowTableStatusDesc showTblStatusDesc) {
-    this(inputs, outputs);
-
-    this.showTblStatusDesc = showTblStatusDesc;
-  }
-
-  /**
-   * @param showTblPropertiesDesc
-   *          show table properties descriptor
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      ShowTblPropertiesDesc showTblPropertiesDesc) {
-    this(inputs, outputs);
-
-    this.showTblPropertiesDesc = showTblPropertiesDesc;
   }
 
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
@@ -441,12 +318,6 @@ public class DDLWork implements Serializable {
   ) {
     this(inputs, outputs);
     this.insertCommitHookDesc = insertCommitHookDesc;
-  }
-
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-          PreInsertTableDesc preInsertTableDesc) {
-    this(inputs, outputs);
-    this.preInsertTableDesc = preInsertTableDesc;
   }
 
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
@@ -536,22 +407,6 @@ public class DDLWork implements Serializable {
   /**
    * @return the createTblDesc
    */
-  @Explain(displayName = "Create Table Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public CreateTableDesc getCreateTblDesc() {
-    return createTblDesc;
-  }
-
-  /**
-   * @return the createTblDesc
-   */
-  @Explain(displayName = "Create Table Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public CreateTableLikeDesc getCreateTblLikeDesc() {
-    return createTblLikeDesc;
-  }
-
-  /**
-   * @return the createTblDesc
-   */
   @Explain(displayName = "Create View Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public CreateViewDesc getCreateViewDesc() {
     return createVwDesc;
@@ -560,9 +415,9 @@ public class DDLWork implements Serializable {
   /**
    * @return the dropTblDesc
    */
-  @Explain(displayName = "Drop Table Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public DropTableDesc getDropTblDesc() {
-    return dropTblDesc;
+  @Explain(displayName = "Drop Partition Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public DropPartitionDesc getDropPartitionDesc() {
+    return dropPartitionDesc;
   }
 
   /**
@@ -580,14 +435,6 @@ public class DDLWork implements Serializable {
   @Explain(displayName = "Alter Materialized View Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public AlterMaterializedViewDesc getAlterMaterializedViewDesc() {
     return alterMVDesc;
-  }
-
-  /**
-   * @return the showTblsDesc
-   */
-  @Explain(displayName = "Show Table Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public ShowTablesDesc getShowTblsDesc() {
-    return showTblsDesc;
   }
 
   /**
@@ -630,22 +477,6 @@ public class DDLWork implements Serializable {
   }
 
   /**
-   * @return the lockTblDesc
-   */
-  @Explain(displayName = "Lock Table Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public LockTableDesc getLockTblDesc() {
-    return lockTblDesc;
-  }
-
-  /**
-   * @return the unlockTblDesc
-   */
-  @Explain(displayName = "Unlock Table Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public UnlockTableDesc getUnlockTblDesc() {
-    return unlockTblDesc;
-  }
-
-  /**
    * @return the descFuncDesc
    */
   @Explain(displayName = "Show Function Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -664,28 +495,6 @@ public class DDLWork implements Serializable {
   @Explain(displayName = "Show Partitions Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public ShowPartitionsDesc getShowPartsDesc() {
     return showPartsDesc;
-  }
-
-  @Explain(displayName = "Show Create Database Operator",
-      explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public ShowCreateDatabaseDesc getShowCreateDbDesc() {
-    return showCreateDbDesc;
-  }
-
-  /**
-   * @return the showCreateTblDesc
-   */
-  @Explain(displayName = "Show Create Table Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public ShowCreateTableDesc getShowCreateTblDesc() {
-    return showCreateTblDesc;
-  }
-
-  /**
-   * @return the descTblDesc
-   */
-  @Explain(displayName = "Describe Table Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public DescTableDesc getDescTblDesc() {
-    return descTblDesc;
   }
 
   /**
@@ -715,17 +524,6 @@ public class DDLWork implements Serializable {
    */
   public MsckDesc getMsckDesc() {
     return msckDesc;
-  }
-
-  /**
-   * @return show table descriptor
-   */
-  public ShowTableStatusDesc getShowTblStatusDesc() {
-    return showTblStatusDesc;
-  }
-
-  public ShowTblPropertiesDesc getShowTblPropertiesDesc() {
-    return showTblPropertiesDesc;
   }
 
   public HashSet<ReadEntity> getInputs() {
@@ -787,11 +585,6 @@ public class DDLWork implements Serializable {
     return alterTableAlterPartDesc;
   }
 
-  @Explain(displayName = "Truncate Table Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public TruncateTableDesc getTruncateTblDesc() {
-    return truncateTblDesc;
-  }
-
   /**
    * @return information about the table partition to be exchanged
    */
@@ -813,11 +606,6 @@ public class DDLWork implements Serializable {
   @Explain(displayName = "Insert operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public InsertCommitHookDesc getInsertCommitHookDesc() {
     return insertCommitHookDesc;
-  }
-
-  @Explain(displayName = "Pre Insert operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public PreInsertTableDesc getPreInsertTableDesc() {
-    return preInsertTableDesc;
   }
 
   @Explain(displayName = "Create resource plan")

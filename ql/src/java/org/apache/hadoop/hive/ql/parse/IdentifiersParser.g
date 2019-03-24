@@ -665,7 +665,7 @@ precedenceOrExpression
 
 booleanValue
     :
-    KW_TRUE^ | KW_FALSE^ | KW_UNKNOWN^
+    KW_TRUE^ | KW_FALSE^
     ;
 
 booleanValueTok

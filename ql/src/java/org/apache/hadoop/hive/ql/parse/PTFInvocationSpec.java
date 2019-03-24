@@ -413,7 +413,7 @@ public class PTFInvocationSpec {
 
     /**
      * Add order expressions from the list of expressions in the format of ASTNode
-     * @param args
+     * @param nodes
      */
     public void addExpressions(ArrayList<ASTNode> nodes) {
       for (int i = 0; i < nodes.size(); i++) {

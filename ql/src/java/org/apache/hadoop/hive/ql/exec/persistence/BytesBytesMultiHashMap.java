@@ -493,7 +493,7 @@ public final class BytesBytesMultiHashMap implements MemoryEstimate {
   }
 
   /**
-   * Take the segment reference from {@link #getValueRefs(byte[], int, List)}
+   * Take the segment reference from getValueRefs(byte[],int,List)
    * result and makes it self-contained - adds byte array where the value is stored, and
    * updates the offset from "global" write buffers offset to offset within that array.
    */

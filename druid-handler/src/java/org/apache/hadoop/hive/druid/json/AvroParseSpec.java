@@ -21,11 +21,11 @@ package org.apache.hadoop.hive.druid.json;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.druid.data.input.impl.DimensionsSpec;
-import io.druid.data.input.impl.ParseSpec;
-import io.druid.data.input.impl.TimestampSpec;
-import io.druid.java.util.common.parsers.JSONPathSpec;
-import io.druid.java.util.common.parsers.Parser;
+import org.apache.druid.data.input.impl.DimensionsSpec;
+import org.apache.druid.data.input.impl.ParseSpec;
+import org.apache.druid.data.input.impl.TimestampSpec;
+import org.apache.druid.java.util.common.parsers.JSONPathSpec;
+import org.apache.druid.java.util.common.parsers.Parser;
 
 import java.util.Objects;
 

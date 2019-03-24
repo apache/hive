@@ -94,6 +94,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll')
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
@@ -131,13 +132,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-8
-      Create Table Operator:
-        Create Table
-          columns: key string, value string
-          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-          serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-          name: default.orc_createas1b
+    Create Table
+      columns: key string, value string
+      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+      serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+      name: default.orc_createas1b
 
   Stage: Stage-2
     Stats Work
@@ -305,6 +305,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1000 Data size: 99000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll'), compute_stats(col3, 'hll')
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 1 Data size: 1288 Basic stats: COMPLETE Column stats: COMPLETE
@@ -342,13 +343,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-8
-      Create Table Operator:
-        Create Table
-          columns: key int, value string, part int
-          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-          serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-          name: default.orc_createas1c
+    Create Table
+      columns: key int, value string, part int
+      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+      serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+      name: default.orc_createas1c
 
   Stage: Stage-2
     Stats Work

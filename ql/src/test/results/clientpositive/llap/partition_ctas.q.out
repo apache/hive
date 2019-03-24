@@ -56,6 +56,7 @@ STAGE PLANS:
                         Group By Operator
                           aggregations: compute_stats(col1, 'hll')
                           keys: col2 (type: string)
+                          minReductionHashAggr: 0.0
                           mode: hash
                           outputColumnNames: _col0, _col1
                           Statistics: Num rows: 27 Data size: 14229 Basic stats: COMPLETE Column stats: COMPLETE
@@ -92,14 +93,13 @@ STAGE PLANS:
     Dependency Collection
 
   Stage: Stage-4
-      Create Table Operator:
-        Create Table
-          columns: value string
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          partition columns: key string
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.partition_ctas_1
+    Create Table
+      columns: value string
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      partition columns: key string
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.partition_ctas_1
 
   Stage: Stage-0
     Move Operator
