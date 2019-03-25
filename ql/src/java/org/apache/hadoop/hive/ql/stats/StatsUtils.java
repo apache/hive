@@ -1953,10 +1953,7 @@ public class StatsUtils {
     if (useColStats) {
       List<ColStatistics> colStats = stats.getColumnStats();
       for (ColStatistics cs : colStats) {
-        long oldNumNulls = cs.getNumNulls();
         long oldDV = cs.getCountDistint();
-        long newNumNulls = Math.round(ratio * oldNumNulls);
-        cs.setNumNulls(newNumNulls);
         if (affectedColumns.contains(cs.getColumnName())) {
           long newDV = oldDV;
 
@@ -1973,6 +1970,8 @@ public class StatsUtils {
         if (oldDV > newNumRows) {
           cs.setCountDistint(newNumRows);
         }
+        long newNumNulls = Math.round(ratio * cs.getNumNulls());
+        cs.setNumNulls(newNumNulls > newNumRows ? newNumRows: newNumNulls);
       }
       stats.setColumnStats(colStats);
       long newDataSize = StatsUtils.getDataSizeFromColumnStats(newNumRows, colStats);
