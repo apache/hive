@@ -1334,6 +1334,7 @@ class MetaStoreDirectSql {
       // Build the filter and add parameters linearly; we are traversing leaf nodes LTR.
       String tableValue = "\"FILTER" + partColIndex + "\".\"PART_KEY_VAL\"";
 
+      String nodeValue0 = "?";
       if (node.isReverseOrder) {
         params.add(nodeValue);
       }
@@ -1367,14 +1368,23 @@ class MetaStoreDirectSql {
           params.add(table.getCatName().toLowerCase());
         }
         tableValue += " then " + tableValue0 + " else null end)";
+
+        if (valType == FilterType.Date) {
+          if (dbType == DatabaseProduct.ORACLE) {
+            // Oracle requires special treatment... as usual.
+            nodeValue0 = "TO_DATE(" + nodeValue0 + ", 'YYYY-MM-DD')";
+          } else {
+            nodeValue0 = "cast(" + nodeValue0 + " as date)";
+          }
+        }
       }
       if (!node.isReverseOrder) {
         params.add(nodeValue);
       }
 
       filterBuffer.append(node.isReverseOrder
-          ? "(? " + node.operator.getSqlOp() + " " + tableValue + ")"
-          : "(" + tableValue + " " + node.operator.getSqlOp() + " ?)");
+          ? "(" + nodeValue0 + " " + node.operator.getSqlOp() + " " + tableValue + ")"
+          : "(" + tableValue + " " + node.operator.getSqlOp() + " " + nodeValue0 + ")");
     }
   }
 
