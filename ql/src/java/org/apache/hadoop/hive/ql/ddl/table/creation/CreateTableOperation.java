@@ -23,6 +23,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
@@ -51,17 +52,24 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
     Table tbl = desc.toTable(context.getConf());
     LOG.debug("creating table {} on {}", tbl.getFullyQualifiedName(), tbl.getDataLocation());
 
-    if (desc.getReplicationSpec().isInReplicationScope() && (!desc.getReplaceMode())){
-      // if this is a replication spec, then replace-mode semantics might apply.
-      // if we're already asking for a table replacement, then we can skip this check.
-      // however, otherwise, if in replication scope, and we've not been explicitly asked
-      // to replace, we should check if the object we're looking at exists, and if so,
+    boolean replDataLocationChanged = false;
+    if (desc.getReplicationSpec().isInReplicationScope()){
+      // If in replication scope, we should check if the object we're looking at exists, and if so,
       // trigger replace-mode semantics.
       Table existingTable = context.getDb().getTable(tbl.getDbName(), tbl.getTableName(), false);
-      if (existingTable != null){
+      if (existingTable != null) {
         if (desc.getReplicationSpec().allowEventReplacementInto(existingTable.getParameters())) {
           desc.setReplaceMode(true); // we replace existing table.
           ReplicationSpec.copyLastReplId(existingTable.getParameters(), tbl.getParameters());
+
+          // If location of an existing managed table is changed, then need to delete the old location if exists.
+          // This scenario occurs when a managed table is converted into external table at source. In this case,
+          // at target, the table data would be moved to different location under base directory for external tables.
+          if (existingTable.getTableType().equals(TableType.MANAGED_TABLE)
+                  && tbl.getTableType().equals(TableType.EXTERNAL_TABLE)
+                  && (!existingTable.getDataLocation().equals(tbl.getDataLocation()))) {
+            replDataLocationChanged = true;
+          }
         } else {
           LOG.debug("DDLTask: Create Table is skipped as table {} is newer than update", desc.getTableName());
           return 0; // no replacement, the existing table state is newer than our update.
@@ -71,7 +79,7 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
 
     // create the table
     if (desc.getReplaceMode()) {
-      createTableReplaceMode(tbl);
+      createTableReplaceMode(tbl, replDataLocationChanged);
     } else {
       createTableNonReplaceMode(tbl);
     }
@@ -80,7 +88,7 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
     return 0;
   }
 
-  private void createTableReplaceMode(Table tbl) throws HiveException {
+  private void createTableReplaceMode(Table tbl, boolean replDataLocationChanged) throws HiveException {
     ReplicationSpec replicationSpec = desc.getReplicationSpec();
     long writeId = 0;
     EnvironmentContext environmentContext = null;
@@ -103,6 +111,12 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
         environmentContext = new EnvironmentContext();
         environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
       }
+    }
+
+    // In replication flow, if table's data location is changed, then set the corresponding flag in
+    // environment context to notify Metastore to update location of all partitions and delete old directory.
+    if (replDataLocationChanged) {
+      environmentContext = ReplUtils.setReplDataLocationChangedFlag(environmentContext);
     }
 
     // replace-mode creates are really alters using CreateTableDesc.
