@@ -777,7 +777,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
           throw new AssertionError("Caching data without an encoding at " + i + ": " + sd);
         }
       }
-      FileData fd = new FileData(fileKey, encodings.length);
+      FileData fd = new FileData(daemonConf, fileKey, encodings.length);
       fd.addStripe(sd);
       cache.putFileData(fd, Priority.NORMAL, counters, cacheTag);
     } else {
