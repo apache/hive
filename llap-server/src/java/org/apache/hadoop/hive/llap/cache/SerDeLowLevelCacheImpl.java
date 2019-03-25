@@ -661,6 +661,11 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
 
   public final void notifyEvicted(MemoryBuffer buffer) {
     newEvictions.incrementAndGet();
+
+    // FileCacheCleanupThread might we waiting for eviction increment
+    synchronized(newEvictions) {
+      newEvictions.notifyAll();
+    }
   }
 
   private final class CleanupThread extends FileCacheCleanupThread<FileData> {

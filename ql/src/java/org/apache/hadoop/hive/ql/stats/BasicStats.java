@@ -86,7 +86,7 @@ public class BasicStats {
 
       final ExecutorService pool;
       if (threads <= 1) {
-        pool = MoreExecutors.sameThreadExecutor();
+        pool = MoreExecutors.newDirectExecutorService();
       } else {
         pool = Executors.newFixedThreadPool(threads, new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Get-Partitions-Size-%d").build());
       }

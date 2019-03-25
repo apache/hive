@@ -855,7 +855,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
       tbl.setProperty("EXTERNAL", "TRUE");
       tbl.setTableType(TableType.EXTERNAL_TABLE);
       // only add if user have not explicit set it (user explicitly disabled for example in which case don't flip it)
-      if (tbl.getProperty(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY) == null) {
+      if (tbl.isPartitioned() && tbl.getProperty(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY) == null) {
         // partition discovery is on by default if undefined
         tbl.setProperty(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY, "true");
       }
