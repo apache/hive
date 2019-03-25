@@ -162,6 +162,7 @@ public final class BuddyAllocator
     int initCount = doPreallocate && !isMapped ? maxArenas : 1;
     for (int i = 0; i < initCount; ++i) {
       arenas[i].init(i);
+      metrics.incrAllocatedArena();
     }
     allocatedArenas.set(initCount);
     this.memoryManager = memoryManager;
@@ -170,7 +171,6 @@ public final class BuddyAllocator
       defragCounters[i] = new AtomicLong(0);
     }
     this.metrics = metrics;
-    metrics.incrAllocatedArena();
     boolean isBoth = null == discardMethod || "both".equalsIgnoreCase(discardMethod);
     doUseFreeListDiscard = isBoth || "freelist".equalsIgnoreCase(discardMethod);
     doUseBruteDiscard = isBoth || "brute".equalsIgnoreCase(discardMethod);
