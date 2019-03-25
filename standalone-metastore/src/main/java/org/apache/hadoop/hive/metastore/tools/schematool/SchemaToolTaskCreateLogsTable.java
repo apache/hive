@@ -29,10 +29,12 @@ import org.apache.hadoop.hive.metastore.HiveMetaException;
 public class SchemaToolTaskCreateLogsTable extends SchemaToolTask {
   /** Path of the warehouse/compute logs directory. */
   private String logPath;
+  private String retentionPeriod;
 
   @Override
   void setCommandLineArguments(SchemaToolCommandLine cl) {
     logPath = cl.getOptionValue("createLogsTable");
+    retentionPeriod = cl.getOptionValue("retentionPeriod") == null ? "7d" : cl.getOptionValue("retentionPeriod");
   }
 
   @Override
@@ -66,14 +68,14 @@ public class SchemaToolTaskCreateLogsTable extends SchemaToolTask {
         out.write("USE SYS;" + System.getProperty("line.separator"));
 
         out.write("CREATE EXTERNAL TABLE logs");
-        out.write(" (timeMillis TIMESTAMP, thread STRING, level STRING, loggerName STRING,");
-        out.write(" message STRING, host STRING, component_id STRING, container_id STRING,");
-        out.write(" tag STRING, unmatched_line STRING)");
+        out.write(" (facility STRING, severity STRING,");
+        out.write(" version STRING, ts TIMESTAMP, hostname STRING, app_name STRING,");
+        out.write(" proc_id STRING, msg_id STRING, structured_data map<STRING,STRING>, msg STRING,");
+        out.write(" unmatched STRING)");
         out.write(" PARTITIONED BY (dt DATE, ns STRING, app STRING)");
-        out.write(" ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.JsonSerDe'");
-        out.write(" WITH SERDEPROPERTIES (\"timestamp.formats\"=\"millis\")");
+        out.write(" STORED BY 'org.apache.hadoop.hive.ql.log.syslog.SyslogStorageHandler'");
         out.write(" LOCATION '" + logPath + "'");
-        out.write(" TBLPROPERTIES (\"partition.retention.period\"=\"7d\");");
+        out.write(" TBLPROPERTIES (\"partition.retention.period\"=\"" + retentionPeriod + "\");");
         out.write(System.getProperty("line.separator"));
       }
 
