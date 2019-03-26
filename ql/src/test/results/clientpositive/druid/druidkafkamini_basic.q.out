@@ -359,7 +359,6 @@ STAGE PLANS:
                     columns __time,page,user,language,added,deleted
                     columns.comments 
                     columns.types timestamp:string:string:string:int:int
-                    discover.partitions true
                     druid.datasource default.druid_kafka_test
                     druid.fieldNames language,user
                     druid.fieldTypes string,string
@@ -401,7 +400,6 @@ STAGE PLANS:
                       columns __time,page,user,language,added,deleted
                       columns.comments 
                       columns.types timestamp:string:string:string:int:int
-                      discover.partitions true
                       druid.datasource default.druid_kafka_test
                       druid.fieldNames language,user
                       druid.fieldTypes string,string

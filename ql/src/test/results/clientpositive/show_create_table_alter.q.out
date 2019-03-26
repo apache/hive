@@ -32,7 +32,6 @@ LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
   'bucketing_version'='2', 
-  'discover.partitions'='true', 
 #### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE tmp_showcrt1_n1 SET TBLPROPERTIES ('comment'='temporary table', 'EXTERNAL'='FALSE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -68,7 +67,6 @@ LOCATION
 TBLPROPERTIES (
   'EXTERNAL'='FALSE', 
   'bucketing_version'='2', 
-  'discover.partitions'='true', 
 #### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE tmp_showcrt1_n1 SET TBLPROPERTIES ('comment'='changed comment', 'EXTERNAL'='TRUE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -103,7 +101,6 @@ LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
   'bucketing_version'='2', 
-  'discover.partitions'='true', 
 #### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE tmp_showcrt1_n1 SET TBLPROPERTIES ('SORTBUCKETCOLSPREFIX'='FALSE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -138,7 +135,6 @@ LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
   'bucketing_version'='2', 
-  'discover.partitions'='true', 
 #### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE tmp_showcrt1_n1 SET TBLPROPERTIES ('storage_handler'='org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -173,7 +169,6 @@ LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
   'bucketing_version'='2', 
-  'discover.partitions'='true', 
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE tmp_showcrt1_n1
 PREHOOK: type: DROPTABLE

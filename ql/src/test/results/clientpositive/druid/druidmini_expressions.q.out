@@ -248,7 +248,6 @@ STAGE PLANS:
                     columns __time,cstring1,cstring2,cdouble,cfloat,ctinyint,csmallint,cint,cbigint,cboolean1,cboolean2
                     columns.comments 
                     columns.types timestamp with local time zone:string:string:double:float:tinyint:smallint:int:bigint:boolean:boolean
-                    discover.partitions true
                     druid.datasource default.druid_table_alltypesorc
                     druid.fieldNames vc
                     druid.fieldTypes int
@@ -281,7 +280,6 @@ STAGE PLANS:
                       columns __time,cstring1,cstring2,cdouble,cfloat,ctinyint,csmallint,cint,cbigint,cboolean1,cboolean2
                       columns.comments 
                       columns.types timestamp with local time zone:string:string:double:float:tinyint:smallint:int:bigint:boolean:boolean
-                      discover.partitions true
                       druid.datasource default.druid_table_alltypesorc
                       druid.fieldNames vc
                       druid.fieldTypes int

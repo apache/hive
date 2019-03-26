@@ -118,7 +118,6 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	external.table.purge	true                
 	hbase.mapred.output.outputtable	kkk                 
 	hbase.table.name    	hbase_table_0       
@@ -168,7 +167,6 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	external.table.purge	true                
 	hbase.table.name    	hbase_table_0       
 #### A masked pattern was here ####

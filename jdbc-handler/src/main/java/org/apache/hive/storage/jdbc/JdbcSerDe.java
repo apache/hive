@@ -87,8 +87,19 @@ public class JdbcSerDe extends AbstractSerDe {
                   Preconditions.checkNotNull(properties.getProperty(Constants.JDBC_QUERY_FIELD_TYPES, null));
           hiveColumnNames = fieldNamesProperty.trim().split(",");
           hiveColumnTypesList = TypeInfoUtils.getTypeInfosFromTypeString(fieldTypesProperty);
-        } else {
+        } else if (properties.containsKey(Constants.JDBC_QUERY)) {
+          // The query has been specified by user, extract column names
           hiveColumnNames = properties.getProperty(serdeConstants.LIST_COLUMNS).split(",");
+          hiveColumnTypesList = TypeInfoUtils.getTypeInfosFromTypeString(properties.getProperty(serdeConstants.LIST_COLUMN_TYPES));
+        } else {
+          // Table is specified, we need to get the column names from the accessor due to capitalization
+          hiveColumnNames = dbAccessor.getColumnNames(tableConfig).toArray(new String[0]);
+          // Number should be equal to list of columns
+          if (hiveColumnNames.length != properties.getProperty(serdeConstants.LIST_COLUMNS).split(",").length) {
+            throw new SerDeException("Column numbers do not match. " +
+                "Remote table columns are " + Arrays.toString(hiveColumnNames) + " and declared table columns in Hive " +
+                "external table are " + Arrays.toString(properties.getProperty(serdeConstants.LIST_COLUMNS).split(",")));
+          }
           hiveColumnTypesList = TypeInfoUtils.getTypeInfosFromTypeString(properties.getProperty(serdeConstants.LIST_COLUMN_TYPES));
         }
         if (hiveColumnNames.length == 0) {
