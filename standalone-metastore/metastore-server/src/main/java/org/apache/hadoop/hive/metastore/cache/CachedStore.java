@@ -812,7 +812,7 @@ public class CachedStore implements RawStore, Configurable {
       rawStore.openTransaction();
       try {
         Table table = rawStore.getTable(catName, dbName, tblName);
-        if (!table.isSetPartitionKeys()) {
+        if (table != null && !table.isSetPartitionKeys()) {
           List<String> colNames = MetaStoreUtils.getColumnNamesForTable(table);
           Deadline.startTimer("getTableColumnStatistics");
 
@@ -856,18 +856,20 @@ public class CachedStore implements RawStore, Configurable {
       rawStore.openTransaction();
       try {
         Table table = rawStore.getTable(catName, dbName, tblName);
-        List<String> colNames = MetaStoreUtils.getColumnNamesForTable(table);
-        List<String> partNames = rawStore.listPartitionNames(catName, dbName, tblName, (short) -1);
-        // Get partition column stats for this table
-        Deadline.startTimer("getPartitionColumnStatistics");
-        List<ColumnStatistics> partitionColStats =
-            rawStore.getPartitionColumnStatistics(catName, dbName, tblName, partNames, colNames);
-        Deadline.stopTimer();
-        sharedCache.refreshPartitionColStatsInCache(catName, dbName, tblName, partitionColStats);
-        List<Partition> parts = rawStore.getPartitionsByNames(catName, dbName, tblName, partNames);
-        // Also save partitions for consistency as they have the stats state.
-        for (Partition part : parts) {
-          sharedCache.alterPartitionInCache(catName, dbName, tblName, part.getValues(), part);
+        if (table != null) {
+          List<String> colNames = MetaStoreUtils.getColumnNamesForTable(table);
+          List<String> partNames = rawStore.listPartitionNames(catName, dbName, tblName, (short) -1);
+          // Get partition column stats for this table
+          Deadline.startTimer("getPartitionColumnStatistics");
+          List<ColumnStatistics> partitionColStats =
+                  rawStore.getPartitionColumnStatistics(catName, dbName, tblName, partNames, colNames);
+          Deadline.stopTimer();
+          sharedCache.refreshPartitionColStatsInCache(catName, dbName, tblName, partitionColStats);
+          List<Partition> parts = rawStore.getPartitionsByNames(catName, dbName, tblName, partNames);
+          // Also save partitions for consistency as they have the stats state.
+          for (Partition part : parts) {
+            sharedCache.alterPartitionInCache(catName, dbName, tblName, part.getValues(), part);
+          }
         }
         committed = rawStore.commitTransaction();
       } catch (MetaException | NoSuchObjectException e) {
@@ -886,6 +888,9 @@ public class CachedStore implements RawStore, Configurable {
                                                        String tblName) {
       try {
         Table table = rawStore.getTable(catName, dbName, tblName);
+        if (table == null) {
+          return;
+        }
         List<String> partNames = rawStore.listPartitionNames(catName, dbName, tblName, (short) -1);
         List<String> colNames = MetaStoreUtils.getColumnNamesForTable(table);
         if ((partNames != null) && (partNames.size() > 0)) {
