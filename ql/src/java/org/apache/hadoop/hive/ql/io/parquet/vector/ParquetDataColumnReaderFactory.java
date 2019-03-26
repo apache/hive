@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
+import java.time.ZoneId;
 import java.util.Arrays;
 
 /**
@@ -1172,16 +1173,20 @@ public final class ParquetDataColumnReaderFactory {
    */
   public static class TypesFromInt96PageReader extends DefaultParquetDataColumnReader {
     private boolean skipTimestampConversion = false;
+    private ZoneId writerTimezone;
 
     public TypesFromInt96PageReader(ValuesReader realReader, int length,
-                                    boolean skipTimestampConversion) {
+                                    boolean skipTimestampConversion, ZoneId writerTimezone) {
       super(realReader, length);
       this.skipTimestampConversion = skipTimestampConversion;
+      this.writerTimezone = writerTimezone;
     }
 
-    public TypesFromInt96PageReader(Dictionary dict, int length, boolean skipTimestampConversion) {
+    public TypesFromInt96PageReader(Dictionary dict, int length, boolean skipTimestampConversion,
+        ZoneId writerTimezone) {
       super(dict, length);
       this.skipTimestampConversion = skipTimestampConversion;
+      this.writerTimezone = writerTimezone;
     }
 
     private Timestamp convert(Binary binary) {
@@ -1190,7 +1195,7 @@ public final class ParquetDataColumnReaderFactory {
       long timeOfDayNanos = buf.getLong();
       int julianDay = buf.getInt();
       NanoTime nt = new NanoTime(julianDay, timeOfDayNanos);
-      return NanoTimeUtils.getTimestamp(nt, skipTimestampConversion);
+      return NanoTimeUtils.getTimestamp(nt, skipTimestampConversion, writerTimezone);
     }
 
     @Override
@@ -1477,7 +1482,8 @@ public final class ParquetDataColumnReaderFactory {
                                                                          Dictionary dictionary,
                                                                          ValuesReader valuesReader,
                                                                          boolean
-                                                                             skipTimestampConversion)
+                                                                             skipTimestampConversion,
+                                                                         ZoneId writerTimezone)
       throws IOException {
     // max length for varchar and char cases
     int length = getVarcharLength(hiveType);
@@ -1523,8 +1529,8 @@ public final class ParquetDataColumnReaderFactory {
           hiveScale) : new TypesFromFloatPageReader(valuesReader, length, hivePrecision, hiveScale);
     case INT96:
       return isDictionary ? new TypesFromInt96PageReader(dictionary, length,
-          skipTimestampConversion) : new
-          TypesFromInt96PageReader(valuesReader, length, skipTimestampConversion);
+          skipTimestampConversion, writerTimezone) : new
+          TypesFromInt96PageReader(valuesReader, length, skipTimestampConversion, writerTimezone);
     case BOOLEAN:
       return isDictionary ? new TypesFromBooleanPageReader(dictionary, length) : new
           TypesFromBooleanPageReader(valuesReader, length);
@@ -1584,19 +1590,20 @@ public final class ParquetDataColumnReaderFactory {
   public static ParquetDataColumnReader getDataColumnReaderByTypeOnDictionary(
       PrimitiveType parquetType,
       TypeInfo hiveType,
-      Dictionary realReader, boolean skipTimestampConversion)
+      Dictionary realReader,
+      boolean skipTimestampConversion,
+      ZoneId writerTimezone)
       throws IOException {
     return getDataColumnReaderByTypeHelper(true, parquetType, hiveType, realReader, null,
-        skipTimestampConversion);
+        skipTimestampConversion, writerTimezone);
   }
 
   public static ParquetDataColumnReader getDataColumnReaderByType(PrimitiveType parquetType,
-                                                                  TypeInfo hiveType,
-                                                                  ValuesReader realReader,
-                                                                  boolean skipTimestampConversion)
+      TypeInfo hiveType, ValuesReader realReader, boolean skipTimestampConversion,
+      ZoneId writerTimezone)
       throws IOException {
     return getDataColumnReaderByTypeHelper(false, parquetType, hiveType, null, realReader,
-        skipTimestampConversion);
+        skipTimestampConversion, writerTimezone);
   }
 
 
