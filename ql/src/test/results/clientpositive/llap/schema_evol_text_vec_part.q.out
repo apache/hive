@@ -856,7 +856,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_change_numeric_group_string_group_multi_ints_string_group_n10
-                  Statistics: Num rows: 6 Data size: 1140 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 6 Data size: 600 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:insert_num:int, 1:c1:string, 2:c2:string, 3:c3:string, 4:c4:string, 5:c5:char(50), 6:c6:char(50), 7:c7:char(50), 8:c8:char(50), 9:c9:char(5), 10:c10:char(5), 11:c11:char(5), 12:c12:char(5), 13:c13:varchar(50), 14:c14:varchar(50), 15:c15:varchar(50), 16:c16:varchar(50), 17:c17:varchar(5), 18:c18:varchar(5), 19:c19:varchar(5), 20:c20:varchar(5), 21:b:string, 22:part:int, 23:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -867,13 +867,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 22, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
-                    Statistics: Num rows: 6 Data size: 1140 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 6 Data size: 600 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 6 Data size: 1140 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 6 Data size: 600 Basic stats: COMPLETE Column stats: PARTIAL
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1276,7 +1276,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_change_string_group_string_group_string_n10
-                  Statistics: Num rows: 6 Data size: 2712 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 6 Data size: 600 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:insert_num:int, 1:c1:char(50), 2:c2:char(9), 3:c3:varchar(50), 4:c4:char(9), 5:c5:varchar(50), 6:c6:varchar(9), 7:c7:string, 8:c8:char(50), 9:c9:char(9), 10:c10:string, 11:b:string, 12:part:int, 13:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -1287,13 +1287,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-                    Statistics: Num rows: 6 Data size: 2712 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 6 Data size: 600 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 6 Data size: 2712 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 6 Data size: 600 Basic stats: COMPLETE Column stats: PARTIAL
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1507,7 +1507,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n10
-                  Statistics: Num rows: 6 Data size: 1060 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 6 Data size: 600 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:insert_num:int, 1:c1:smallint, 2:c2:int, 3:c3:bigint, 4:c4:decimal(38,18), 5:c5:float, 6:c6:double, 7:c7:int, 8:c8:bigint, 9:c9:decimal(38,18), 10:c10:float, 11:c11:double, 12:c12:bigint, 13:c13:decimal(38,18), 14:c14:float, 15:c15:double, 16:c16:decimal(38,18), 17:c17:float, 18:c18:double, 19:b:string, 20:part:int, 21:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -1518,13 +1518,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 20, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-                    Statistics: Num rows: 6 Data size: 1060 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 6 Data size: 600 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 6 Data size: 1060 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 6 Data size: 600 Basic stats: COMPLETE Column stats: PARTIAL
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

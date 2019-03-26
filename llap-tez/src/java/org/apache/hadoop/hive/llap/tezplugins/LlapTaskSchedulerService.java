@@ -17,6 +17,8 @@ package org.apache.hadoop.hive.llap.tezplugins;
 import com.google.common.io.ByteArrayDataOutput;
 
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.metrics2.MetricsSource;
+import org.apache.hadoop.metrics2.MetricsSystem;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 
 import org.apache.hadoop.hive.registry.impl.TezAmRegistryImpl;
@@ -59,6 +61,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -70,6 +73,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
+import org.apache.hadoop.hive.llap.metrics.ReadWriteLockMetrics;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto;
 import org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
@@ -175,6 +179,19 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     }
   }
 
+  /// Shared singleton MetricsSource instance for all FileData locks
+  private static final MetricsSource LOCK_METRICS;
+
+  static {
+    // create and register the MetricsSource for lock metrics
+    MetricsSystem ms = LlapMetricsSystem.instance();
+    LOCK_METRICS =
+        ReadWriteLockMetrics.createLockMetricsSource("TaskScheduler");
+
+    ms.register("LLAPTaskSchedulerLockMetrics",
+                "Lock metrics for R/W locks LLAP task scheduler", LOCK_METRICS);
+  }
+
   // TODO: this is an ugly hack; see the same in LlapTaskCommunicator for discussion.
   //       This only lives for the duration of the service init.
   static LlapTaskSchedulerService instance = null;
@@ -225,9 +242,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   @VisibleForTesting
   final DelayedTaskSchedulerCallable delayedTaskSchedulerCallable;
 
-  private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-  private final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
-  private final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
+  private final ReadWriteLock lock;
+  private final Lock readLock;
+  private final Lock writeLock;
 
   private final Lock scheduleLock = new ReentrantLock();
   private final Condition scheduleCondition = scheduleLock.newCondition();
@@ -320,6 +337,12 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       throw new TezUncheckedException(
           "Failed to parse user payload for " + LlapTaskSchedulerService.class.getSimpleName(), e);
     }
+
+    lock = ReadWriteLockMetrics.wrap(conf,
+                                     new ReentrantReadWriteLock(),
+                                    LOCK_METRICS);
+    readLock = lock.readLock();
+    writeLock = lock.writeLock();
 
     if (conf.getBoolean(LLAP_PLUGIN_ENDPOINT_ENABLED, false)) {
       JobTokenSecretManager sm = null;

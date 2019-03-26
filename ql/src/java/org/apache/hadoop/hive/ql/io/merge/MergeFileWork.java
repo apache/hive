@@ -144,7 +144,7 @@ public class MergeFileWork extends MapWork {
 
   /**
    * alter table ... concatenate
-   * <p/>
+   * <br>
    * If it is skewed table, use subdirectories in inputpaths.
    */
   public void resolveConcatenateMerge(HiveConf conf) {

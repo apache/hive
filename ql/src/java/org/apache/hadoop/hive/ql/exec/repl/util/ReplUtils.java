@@ -19,8 +19,10 @@ package org.apache.hadoop.hive.ql.exec.repl.util;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hive.common.ReplConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -65,6 +67,10 @@ public class ReplUtils {
   // write id allocated in the current execution context which will be passed through config to be used by different
   // tasks.
   public static final String REPL_CURRENT_TBL_WRITE_ID = "hive.repl.current.table.write.id";
+
+  // Configuration to be received via WITH clause of REPL LOAD to clean tables from any previously failed
+  // bootstrap load.
+  public static final String REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG = "hive.repl.clean.tables.from.bootstrap";
 
   public static final String FUNCTIONS_ROOT_DIR_NAME = "_functions";
   public static final String CONSTRAINTS_ROOT_DIR_NAME = "_constraints";
@@ -201,5 +207,13 @@ public class ReplUtils {
     // If flag is not set, then we assume first incremental load is done as the database/table may be created by user
     // and not through replication.
     return firstIncPendFlag != null && !firstIncPendFlag.isEmpty() && "true".equalsIgnoreCase(firstIncPendFlag);
+  }
+
+  public static EnvironmentContext setReplDataLocationChangedFlag(EnvironmentContext envContext) {
+    if (envContext == null) {
+      envContext = new EnvironmentContext();
+    }
+    envContext.putToProperties(ReplConst.REPL_DATA_LOCATION_CHANGED, ReplConst.TRUE);
+    return envContext;
   }
 }

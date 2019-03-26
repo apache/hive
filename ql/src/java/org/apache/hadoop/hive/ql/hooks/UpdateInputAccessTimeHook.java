@@ -59,6 +59,9 @@ public class UpdateInputAccessTimeHook {
         // of the object, before it was modified by StatsTask.
         // Get the latest versions of the object
         case TABLE: {
+          if(re.getTable().getTableName().equals("_dummy_table")){
+            break;
+          }
           String dbName = re.getTable().getDbName();
           String tblName = re.getTable().getTableName();
           Table t = db.getTable(dbName, tblName);

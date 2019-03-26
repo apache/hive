@@ -69,6 +69,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ExprNodeConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter;
@@ -613,7 +614,7 @@ public class HiveCalciteUtil {
 
   /**
    * Get top level select starting from root. Assumption here is root can only
-   * be Sort & Project. Also the top project should be at most 2 levels below
+   * be Sort &amp; Project. Also the top project should be at most 2 levels below
    * Sort; i.e Sort(Limit)-Sort(OB)-Select
    *
    * @param rootRel
@@ -978,7 +979,6 @@ public class HiveCalciteUtil {
    * Check if the expression is usable for query materialization, returning the first failing expression.
    */
   public static RexCall checkMaterializable(RexNode expr) {
-    boolean deterministic = true;
     RexCall failingCall = null;
 
     if (expr == null) {
@@ -989,7 +989,9 @@ public class HiveCalciteUtil {
       @Override
       public Void visitCall(org.apache.calcite.rex.RexCall call) {
         // non-deterministic functions as well as runtime constants are not materializable.
-        if (!call.getOperator().isDeterministic() || call.getOperator().isDynamicFunction()) {
+        SqlOperator op = call.getOperator();
+        if (!op.isDeterministic() || op.isDynamicFunction() ||
+            (op instanceof HiveSqlFunction && ((HiveSqlFunction) op).isRuntimeConstant())) {
           throw new Util.FoundOne(call);
         }
         return super.visitCall(call);

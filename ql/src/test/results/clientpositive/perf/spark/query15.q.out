@@ -176,6 +176,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: sum(_col8)
                       keys: _col3 (type: string)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 348467716 Data size: 47189528877 Basic stats: COMPLETE Column stats: NONE

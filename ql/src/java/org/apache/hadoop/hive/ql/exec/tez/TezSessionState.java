@@ -222,11 +222,6 @@ public class TezSessionState {
     return true;
   }
 
-
-  /**
-   * Get all open sessions. Only used to clean up at shutdown.
-   * @return List<TezSessionState>
-   */
   public static String makeSessionId() {
     return UUID.randomUUID().toString();
   }

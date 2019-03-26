@@ -146,7 +146,7 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   }
 
   /**
-   * Create HivePrivilegeObject of type {@link HivePrivilegeObjectType.COMMAND_PARAMS}
+   * Create HivePrivilegeObject of type {@link HivePrivilegeObjectType#COMMAND_PARAMS}
    * @param cmdParams
    * @return
    */
@@ -215,7 +215,7 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   }
 
   /**
-   * Applicable columns in this object, when the type is {@link HivePrivilegeObjectType.TABLE}
+   * Applicable columns in this object, when the type is {@link HivePrivilegeObjectType#TABLE_OR_VIEW}
    * In case of DML read operations, this is the set of columns being used.
    * Column information is not set for DDL operations and for tables being written into
    * @return list of applicable columns
@@ -225,7 +225,7 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   }
 
   /**
-   * The class name when the type is {@link HivePrivilegeObjectType.FUNCTION}
+   * The class name when the type is {@link HivePrivilegeObjectType#FUNCTION}
    * @return the class name
    */
   public String getClassName() {

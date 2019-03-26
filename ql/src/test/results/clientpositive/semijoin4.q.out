@@ -195,6 +195,7 @@ STAGE PLANS:
           Statistics: Num rows: 1 Data size: 167 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
             keys: true (type: boolean)
+            minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 167 Basic stats: COMPLETE Column stats: NONE

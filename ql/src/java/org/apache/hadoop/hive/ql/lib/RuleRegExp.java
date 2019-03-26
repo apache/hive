@@ -90,7 +90,7 @@ public class RuleRegExp implements Rule {
 
   /**
    * The rule specified by the regular expression. Note that, the regular
-   * expression is specified in terms of Node name. For eg: TS.*RS -> means
+   * expression is specified in terms of Node name. For eg: TS.*RS -&gt; means
    * TableScan Node followed by anything any number of times followed by
    * ReduceSink
    * 

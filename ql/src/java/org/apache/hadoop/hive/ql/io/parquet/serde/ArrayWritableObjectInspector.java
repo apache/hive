@@ -36,7 +36,7 @@ import org.apache.hadoop.io.ArrayWritable;
 
 /**
  *
- * The ArrayWritableObjectInspector will inspect an ArrayWritable, considering it as a Hive struct.<br />
+ * The ArrayWritableObjectInspector will inspect an ArrayWritable, considering it as a Hive struct.<br>
  * It can also inspect a List if Hive decides to inspect the result of an inspection.
  *
  */

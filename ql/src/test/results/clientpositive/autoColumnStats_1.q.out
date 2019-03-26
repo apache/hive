@@ -578,11 +578,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: nzhang_part14_n1
-          Statistics: Num rows: 11 Data size: 946 Basic stats: COMPLETE Column stats: PARTIAL
+          Statistics: Num rows: 11 Data size: 957 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 11 Data size: 946 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 11 Data size: 957 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: create table alter5_n0 ( col1 string ) partitioned by (dt string)

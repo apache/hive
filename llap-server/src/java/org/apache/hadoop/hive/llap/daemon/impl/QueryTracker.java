@@ -24,10 +24,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.log.Log4jQueryCompleteMarker;
 import org.apache.hadoop.hive.llap.log.LogHelpers;
+import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
+import org.apache.hadoop.hive.llap.metrics.ReadWriteLockMetrics;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.logging.slf4j.Log4jMarker;
 import org.apache.tez.common.CallableWithNdc;
 
@@ -41,6 +42,8 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableV
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateProto;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
+import org.apache.hadoop.metrics2.MetricsSource;
+import org.apache.hadoop.metrics2.MetricsSystem;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.common.security.TokenCache;
 import org.slf4j.Logger;
@@ -66,12 +69,26 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class QueryTracker extends AbstractService {
 
   private static final Logger LOG = LoggerFactory.getLogger(QueryTracker.class);
-  private static final Marker QUERY_COMPLETE_MARKER = new Log4jMarker(new Log4jQueryCompleteMarker());
+  private static final Marker QUERY_COMPLETE_MARKER =
+      new Log4jMarker(new Log4jQueryCompleteMarker());
+
+  /// Shared singleton MetricsSource instance for all DAG locks
+  private static final MetricsSource LOCK_METRICS;
+
+  static {
+    // create and register the MetricsSource for lock metrics
+    MetricsSystem ms = LlapMetricsSystem.instance();
+    LOCK_METRICS = ReadWriteLockMetrics.createLockMetricsSource("QueryTracker");
+
+    ms.register("QueryTrackerDAGLockMetrics",
+                "Lock metrics for QueryTracher DAG instances", LOCK_METRICS);
+  }
 
   private final ScheduledExecutorService executorService;
 
   private final ConcurrentHashMap<QueryIdentifier, QueryInfo> queryInfoMap = new ConcurrentHashMap<>();
 
+  private final Configuration conf;
   private final String[] localDirsBase;
   private final FileSystem localFs;
   private final String clusterId;
@@ -91,7 +108,7 @@ public class QueryTracker extends AbstractService {
 
 
   private final Lock lock = new ReentrantLock();
-  private final ConcurrentMap<QueryIdentifier, ReentrantReadWriteLock> dagSpecificLocks = new ConcurrentHashMap<>();
+  private final ConcurrentMap<QueryIdentifier, ReadWriteLock> dagSpecificLocks = new ConcurrentHashMap<>();
 
   // Tracks various maps for dagCompletions. This is setup here since stateChange messages
   // may be processed by a thread which ends up executing before a task.
@@ -109,6 +126,8 @@ public class QueryTracker extends AbstractService {
     super("QueryTracker");
     this.localDirsBase = localDirsBase;
     this.clusterId = clusterId;
+    this.conf = conf;
+
     try {
       localFs = FileSystem.getLocal(conf);
     } catch (IOException e) {
@@ -380,16 +399,18 @@ public class QueryTracker extends AbstractService {
     }
   }
 
-  private ReentrantReadWriteLock getDagLockNoCreate(QueryIdentifier queryIdentifier) {
+  private ReadWriteLock getDagLockNoCreate(QueryIdentifier queryIdentifier) {
     return dagSpecificLocks.get(queryIdentifier);
   }
 
-  private ReentrantReadWriteLock getDagLock(QueryIdentifier queryIdentifier) {
+  private ReadWriteLock getDagLock(QueryIdentifier queryIdentifier) {
     lock.lock();
     try {
-      ReentrantReadWriteLock dagLock = dagSpecificLocks.get(queryIdentifier);
+      ReadWriteLock dagLock = dagSpecificLocks.get(queryIdentifier);
       if (dagLock == null) {
-        dagLock = new ReentrantReadWriteLock();
+        dagLock = ReadWriteLockMetrics.wrap(conf,
+                                            new ReentrantReadWriteLock(),
+                                            LOCK_METRICS);
         dagSpecificLocks.put(queryIdentifier, dagLock);
       }
       return dagLock;
@@ -477,7 +498,7 @@ public class QueryTracker extends AbstractService {
     @Override
     protected Void callInternal() {
       LOG.info("External cleanup callable for {}", queryIdentifier);
-      ReentrantReadWriteLock dagLock = getDagLockNoCreate(queryIdentifier);
+      ReadWriteLock dagLock = getDagLockNoCreate(queryIdentifier);
       if (dagLock == null) {
         if (LOG.isTraceEnabled()) {
           LOG.trace("null dagLock. No cleanup required at the moment for {}", queryIdString);
@@ -528,7 +549,7 @@ public class QueryTracker extends AbstractService {
 
   private void handleFragmentCompleteExternalQuery(QueryInfo queryInfo) {
     if (queryInfo.isExternalQuery()) {
-      ReentrantReadWriteLock dagLock = getDagLock(queryInfo.getQueryIdentifier());
+      ReadWriteLock dagLock = getDagLock(queryInfo.getQueryIdentifier());
       if (dagLock == null) {
         LOG.warn("Ignoring fragment completion for unknown query: {}",
             queryInfo.getQueryIdentifier());

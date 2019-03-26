@@ -59,6 +59,7 @@ STAGE PLANS:
               Statistics: Num rows: 20 Data size: 7400 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll'), compute_stats(col3, 'hll'), compute_stats(col4, 'hll')
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 1 Data size: 1744 Basic stats: COMPLETE Column stats: COMPLETE
@@ -76,13 +77,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-4
-      Create Table Operator:
-        Create Table
-          columns: key string, value string, _c1 double, _c2 string
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.summary
+    Create Table
+      columns: key string, value string, _c1 double, _c2 string
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.summary
 
   Stage: Stage-2
     Stats Work
@@ -270,6 +270,7 @@ STAGE PLANS:
                 Statistics: Num rows: 25 Data size: 4475 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll'), compute_stats(col3, 'hll')
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: COMPLETE
@@ -287,13 +288,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-4
-      Create Table Operator:
-        Create Table
-          columns: key string, value string, rr int
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.x4
+    Create Table
+      columns: key string, value string, rr int
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.x4
 
   Stage: Stage-2
     Stats Work
@@ -513,6 +513,7 @@ STAGE PLANS:
               Statistics: Num rows: 20 Data size: 7240 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll'), compute_stats(col3, 'hll')
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: COMPLETE
@@ -530,13 +531,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-5
-      Create Table Operator:
-        Create Table
-          columns: key string, value string, lead1 string
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.x5
+    Create Table
+      columns: key string, value string, lead1 string
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.x5
 
   Stage: Stage-3
     Stats Work
@@ -694,6 +694,7 @@ STAGE PLANS:
                 Statistics: Num rows: 25 Data size: 4575 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll'), compute_stats(col3, 'hll')
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: COMPLETE
@@ -731,13 +732,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-8
-      Create Table Operator:
-        Create Table
-          columns: key string, value string, _c1 double
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.x6
+    Create Table
+      columns: key string, value string, _c1 double
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.x6
 
   Stage: Stage-2
     Stats Work
@@ -892,6 +892,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations: count(value)
                 keys: key (type: string), value (type: string)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -923,6 +924,7 @@ STAGE PLANS:
             Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
             Group By Operator
               aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll'), compute_stats(col3, 'hll')
+              minReductionHashAggr: 0.99
               mode: hash
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: COMPLETE
@@ -940,13 +942,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-4
-      Create Table Operator:
-        Create Table
-          columns: _col0 string, _col1 string, _c1 bigint
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.x7
+    Create Table
+      columns: _col0 string, _col1 string, _c1 bigint
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.x7
 
   Stage: Stage-2
     Stats Work
@@ -1378,6 +1379,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations: count(value)
                 keys: key (type: string), value (type: string)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 83 Data size: 15438 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1409,6 +1411,7 @@ STAGE PLANS:
             Statistics: Num rows: 83 Data size: 15438 Basic stats: COMPLETE Column stats: COMPLETE
             Group By Operator
               aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll'), compute_stats(col3, 'hll')
+              minReductionHashAggr: 0.99
               mode: hash
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1426,13 +1429,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-4
-      Create Table Operator:
-        Create Table
-          columns: _col0 string, _col1 string, _c1 bigint
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.x8
+    Create Table
+      columns: _col0 string, _col1 string, _c1 bigint
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.x8
 
   Stage: Stage-2
     Stats Work
@@ -1560,6 +1562,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations: max(value)
                 keys: key (type: string)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 83 Data size: 22493 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1598,6 +1601,7 @@ STAGE PLANS:
                 Statistics: Num rows: 83 Data size: 22493 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll')
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1615,13 +1619,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-4
-      Create Table Operator:
-        Create Table
-          columns: _c0 string, key string
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.x9
+    Create Table
+      columns: _c0 string, key string
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.x9
 
   Stage: Stage-2
     Stats Work

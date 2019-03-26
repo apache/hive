@@ -243,6 +243,18 @@ public class WarehouseInstance implements Closeable {
     return this;
   }
 
+  WarehouseInstance runFailure(String command, int errorCode) throws Throwable {
+    CommandProcessorResponse ret = driver.run(command);
+    if (ret.getException() == null) {
+      throw new RuntimeException("command execution passed for a invalid command" + command);
+    }
+    if (ret.getResponseCode() != errorCode) {
+      throw new RuntimeException("Command: " + command + " returned incorrect error code: "
+              + ret.getResponseCode() + " instead of " + errorCode);
+    }
+    return this;
+  }
+
   Tuple dump(String dbName, String lastReplicationId, List<String> withClauseOptions)
       throws Throwable {
     String dumpCommand =
@@ -288,7 +300,7 @@ public class WarehouseInstance implements Closeable {
   WarehouseInstance load(String replicatedDbName, String dumpLocation, List<String> withClauseOptions)
           throws Throwable {
     String replLoadCmd = "REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'";
-    if (!withClauseOptions.isEmpty()) {
+    if ((withClauseOptions != null) && !withClauseOptions.isEmpty()) {
       replLoadCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
     run("EXPLAIN " + replLoadCmd);
@@ -303,24 +315,33 @@ public class WarehouseInstance implements Closeable {
 
   WarehouseInstance status(String replicatedDbName, List<String> withClauseOptions) throws Throwable {
     String replStatusCmd = "REPL STATUS " + replicatedDbName;
-    if (!withClauseOptions.isEmpty()) {
+    if ((withClauseOptions != null) && !withClauseOptions.isEmpty()) {
       replStatusCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
     return run(replStatusCmd);
   }
 
   WarehouseInstance loadFailure(String replicatedDbName, String dumpLocation) throws Throwable {
-    runFailure("REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
+    loadFailure(replicatedDbName, dumpLocation, null);
     return this;
   }
 
   WarehouseInstance loadFailure(String replicatedDbName, String dumpLocation, List<String> withClauseOptions)
           throws Throwable {
     String replLoadCmd = "REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'";
-    if (!withClauseOptions.isEmpty()) {
+    if ((withClauseOptions != null) && !withClauseOptions.isEmpty()) {
       replLoadCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
     return runFailure(replLoadCmd);
+  }
+
+  WarehouseInstance loadFailure(String replicatedDbName, String dumpLocation, List<String> withClauseOptions,
+                                int errorCode) throws Throwable {
+    String replLoadCmd = "REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'";
+    if ((withClauseOptions != null) && !withClauseOptions.isEmpty()) {
+      replLoadCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
+    }
+    return runFailure(replLoadCmd, errorCode);
   }
 
   WarehouseInstance verifyResult(String data) throws IOException {

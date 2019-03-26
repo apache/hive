@@ -412,10 +412,6 @@ public final class QueryResultsCache {
   /**
    * Check if the cache contains an entry for the requested LookupInfo.
    * @param request
-   * @param addReader Should the reader count be incremented during the lookup.
-   *        This will ensure the returned entry can be used after the lookup.
-   *        If true, the caller will be responsible for decrementing the reader count
-   *        using CacheEntry.releaseReader().
    * @return  The cached result if there is a match in the cache, or null if no match is found.
    */
   public CacheEntry lookup(LookupInfo request) {

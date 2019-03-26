@@ -61,7 +61,7 @@ import java.util.stream.Collectors;
  * 2. Table before partition is not explicitly required as table and partition metadata are in the same file.
  *
  *
- * For future integrations other sources of events like kafka, would require to implement an Iterator<BootstrapEvent>
+ * For future integrations other sources of events like kafka, would require to implement an Iterator&lt;BootstrapEvent&gt;
  *
  */
 public class BootstrapEventsIterator implements Iterator<BootstrapEvent> {
@@ -75,9 +75,10 @@ public class BootstrapEventsIterator implements Iterator<BootstrapEvent> {
   private final String dumpDirectory;
   private final String dbNameToLoadIn;
   private final HiveConf hiveConf;
+  private final boolean needLogger;
   private ReplLogger replLogger;
 
-  public BootstrapEventsIterator(String dumpDirectory, String dbNameToLoadIn, HiveConf hiveConf)
+  public BootstrapEventsIterator(String dumpDirectory, String dbNameToLoadIn, boolean needLogger, HiveConf hiveConf)
           throws IOException {
     Path path = new Path(dumpDirectory);
     FileSystem fileSystem = path.getFileSystem(hiveConf);
@@ -107,6 +108,7 @@ public class BootstrapEventsIterator implements Iterator<BootstrapEvent> {
 
     this.dumpDirectory = dumpDirectory;
     this.dbNameToLoadIn = dbNameToLoadIn;
+    this.needLogger = needLogger;
     this.hiveConf = hiveConf;
   }
 
@@ -116,7 +118,9 @@ public class BootstrapEventsIterator implements Iterator<BootstrapEvent> {
       if (currentDatabaseIterator == null) {
         if (dbEventsIterator.hasNext()) {
           currentDatabaseIterator = dbEventsIterator.next();
-          initReplLogger();
+          if (needLogger) {
+            initReplLogger();
+          }
         } else {
           return false;
         }

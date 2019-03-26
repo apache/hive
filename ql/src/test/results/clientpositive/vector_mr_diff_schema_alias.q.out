@@ -356,6 +356,7 @@ STAGE PLANS:
           Group By Operator
             aggregations: count()
             keys: _col4 (type: string)
+            minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE

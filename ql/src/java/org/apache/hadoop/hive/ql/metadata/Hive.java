@@ -127,7 +127,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAugmentMaterializationRule;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
-import org.apache.hadoop.hive.ql.plan.DropTableDesc;
+import org.apache.hadoop.hive.ql.plan.DropPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -433,7 +433,7 @@ public class Hive {
 
   /**
    * Gets the allowClose flag which determines if it is allowed to close metastore connections.
-   * @returns allowClose flag
+   * @return allowClose flag
    */
   public boolean allowClose() {
     return isAllowClose;
@@ -649,9 +649,7 @@ public class Hive {
    *          new name of the table. could be the old name
    * @param transactional
    *          Need to generate and save a table snapshot into the metastore?
-   * @throws InvalidOperationException
-   *           if the changes in metadata is not acceptable
-   * @throws TException
+   * @throws HiveException
    */
   public void alterTable(String fullyQlfdTblName, Table newTbl, EnvironmentContext environmentContext,
                          boolean transactional)
@@ -738,7 +736,7 @@ public class Hive {
    *          new partition
    * @throws InvalidOperationException
    *           if the changes in metadata is not acceptable
-   * @throws TException
+   * @throws HiveException
    */
   @Deprecated
   public void alterPartition(String tblName, Partition newPart,
@@ -763,7 +761,7 @@ public class Hive {
    *          indicates this call is for transaction stats
    * @throws InvalidOperationException
    *           if the changes in metadata is not acceptable
-   * @throws TException
+   * @throws HiveException
    */
   public void alterPartition(String catName, String dbName, String tblName, Partition newPart,
                              EnvironmentContext environmentContext, boolean transactional)
@@ -820,7 +818,7 @@ public class Hive {
    *          Need to generate and save a table snapshot into the metastore?
    * @throws InvalidOperationException
    *           if the changes in metadata is not acceptable
-   * @throws TException
+   * @throws HiveException
    */
   public void alterPartitions(String tblName, List<Partition> newParts,
                               EnvironmentContext environmentContext, boolean transactional)
@@ -863,9 +861,7 @@ public class Hive {
    *          spec of old partition
    * @param newPart
    *          new partition
-   * @throws InvalidOperationException
-   *           if the changes in metadata is not acceptable
-   * @throws TException
+   * @throws HiveException
    */
   public void renamePartition(Table tbl, Map<String, String> oldPartSpec, Partition newPart)
       throws HiveException {
@@ -1886,6 +1882,20 @@ public class Hive {
     return getDatabase(currentDb);
   }
 
+  private TableSnapshot getTableSnapshot(Table tbl, Long writeId) throws LockException {
+    TableSnapshot tableSnapshot = null;
+    if ((writeId != null) && (writeId > 0)) {
+      ValidWriteIdList writeIds = AcidUtils.getTableValidWriteIdListWithTxnList(
+              conf, tbl.getDbName(), tbl.getTableName());
+      tableSnapshot = new TableSnapshot(writeId, writeIds.writeToString());
+    } else {
+      // Make sure we pass in the names, so we can get the correct snapshot for rename table.
+      tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl, tbl.getDbName(), tbl.getTableName(),
+                                                  true);
+    }
+    return tableSnapshot;
+  }
+
   /**
    * Load a directory into a Hive Table Partition - Alters existing content of
    * the partition with the contents of loadPath. - If the partition does not
@@ -1939,17 +1949,7 @@ public class Hive {
             inheritLocation, isSkewedStoreAsSubdir, isSrcLocal, isAcidIUDoperation,
             resetStatistics, writeId, stmtId, isInsertOverwrite, isTxnTable, newFiles);
 
-    AcidUtils.TableSnapshot tableSnapshot = null;
-    if (isTxnTable) {
-      if ((writeId != null) && (writeId > 0)) {
-        ValidWriteIdList writeIds = AcidUtils.getTableValidWriteIdListWithTxnList(
-                conf, tbl.getDbName(), tbl.getTableName());
-        tableSnapshot = new TableSnapshot(writeId, writeIds.writeToString());
-      } else {
-        // Make sure we pass in the names, so we can get the correct snapshot for rename table.
-        tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl, tbl.getDbName(), tbl.getTableName(), true);
-      }
-    }
+    AcidUtils.TableSnapshot tableSnapshot = isTxnTable ? getTableSnapshot(tbl, writeId) : null;
     if (tableSnapshot != null) {
       newTPart.getTPartition().setWriteId(tableSnapshot.getWriteId());
     }
@@ -2367,7 +2367,8 @@ public class Hive {
 
   private void setStatsPropAndAlterPartitions(boolean resetStatistics, Table tbl,
                                              List<Partition> partitions,
-                                             long writeId) throws TException {
+                                              AcidUtils.TableSnapshot tableSnapshot)
+          throws TException {
     if (partitions.isEmpty()) {
       return;
     }
@@ -2381,9 +2382,15 @@ public class Hive {
       LOG.debug(sb.toString());
     }
 
+    String validWriteIdList = null;
+    long writeId = 0L;
+    if (tableSnapshot != null) {
+      validWriteIdList = tableSnapshot.getValidWriteIdList();
+      writeId = tableSnapshot.getWriteId();
+    }
     getSynchronizedMSC().alter_partitions(tbl.getCatName(), tbl.getDbName(), tbl.getTableName(),
             partitions.stream().map(Partition::getTPartition).collect(Collectors.toList()),
-            ec, null, writeId);
+            ec, validWriteIdList, writeId);
   }
 
   /**
@@ -2630,6 +2637,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
 
     boolean isTxnTable = AcidUtils.isTransactionalTable(tbl);
+    AcidUtils.TableSnapshot tableSnapshot = isTxnTable ? getTableSnapshot(tbl, writeId) : null;
 
     for (Entry<Path, PartitionDetails> entry : partitionDetailsMap.entrySet()) {
       tasks.add(() -> {
@@ -2649,8 +2657,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
           // if the partition already existed before the loading, no need to add it again to the
           // metastore
 
-          AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf,
-                  partition.getTable(), true);
           if (tableSnapshot != null) {
             partition.getTPartition().setWriteId(tableSnapshot.getWriteId());
           }
@@ -2726,7 +2732,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               partitionDetailsMap.entrySet().stream()
                       .filter(entry -> entry.getValue().hasOldPartition)
                       .map(entry -> entry.getValue().partition)
-                      .collect(Collectors.toList()), writeId);
+                      .collect(Collectors.toList()), tableSnapshot);
 
     } catch (InterruptedException | ExecutionException e) {
       throw new HiveException("Exception when loading " + validPartitions.size()
@@ -3367,7 +3373,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public List<Partition> dropPartitions(Table table, List<String>partDirNames,
       boolean deleteData, boolean ifExists) throws HiveException {
     // partitions to be dropped in this batch
-    List<DropTableDesc.PartSpec> partSpecs = new ArrayList<>(partDirNames.size());
+    List<DropPartitionDesc.PartSpec> partSpecs = new ArrayList<>(partDirNames.size());
 
     // parts of the partition
     String[] parts = null;
@@ -3417,7 +3423,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
 
       // Add the expression to partition specification
-      partSpecs.add(new DropTableDesc.PartSpec(expr, partSpecKey));
+      partSpecs.add(new DropPartitionDesc.PartSpec(expr, partSpecKey));
 
       // Increment dropKey to get a new key for hash map
       ++partSpecKey;
@@ -3427,14 +3433,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return dropPartitions(names[0], names[1], partSpecs, deleteData, ifExists);
   }
 
-  public List<Partition> dropPartitions(String tblName, List<DropTableDesc.PartSpec> partSpecs,
+  public List<Partition> dropPartitions(String tblName, List<DropPartitionDesc.PartSpec> partSpecs,
       boolean deleteData, boolean ifExists) throws HiveException {
     String[] names = Utilities.getDbTableName(tblName);
     return dropPartitions(names[0], names[1], partSpecs, deleteData, ifExists);
   }
 
   public List<Partition> dropPartitions(String dbName, String tblName,
-      List<DropTableDesc.PartSpec> partSpecs,  boolean deleteData,
+      List<DropPartitionDesc.PartSpec> partSpecs,  boolean deleteData,
       boolean ifExists) throws HiveException {
     return dropPartitions(dbName, tblName, partSpecs,
                           PartitionDropOptions.instance()
@@ -3442,19 +3448,19 @@ private void constructOneLBLocationMap(FileStatus fSta,
                                               .ifExists(ifExists));
   }
 
-  public List<Partition> dropPartitions(String tblName, List<DropTableDesc.PartSpec> partSpecs,
+  public List<Partition> dropPartitions(String tblName, List<DropPartitionDesc.PartSpec> partSpecs,
                                         PartitionDropOptions dropOptions) throws HiveException {
     String[] names = Utilities.getDbTableName(tblName);
     return dropPartitions(names[0], names[1], partSpecs, dropOptions);
   }
 
   public List<Partition> dropPartitions(String dbName, String tblName,
-      List<DropTableDesc.PartSpec> partSpecs, PartitionDropOptions dropOptions) throws HiveException {
+      List<DropPartitionDesc.PartSpec> partSpecs, PartitionDropOptions dropOptions) throws HiveException {
     try {
       Table tbl = getTable(dbName, tblName);
       List<org.apache.hadoop.hive.metastore.utils.ObjectPair<Integer, byte[]>> partExprs =
           new ArrayList<>(partSpecs.size());
-      for (DropTableDesc.PartSpec partSpec : partSpecs) {
+      for (DropPartitionDesc.PartSpec partSpec : partSpecs) {
         partExprs.add(new org.apache.hadoop.hive.metastore.utils.ObjectPair<>(partSpec.getPrefixLength(),
             SerializationUtilities.serializeExpressionToKryo(partSpec.getPartSpec())));
       }

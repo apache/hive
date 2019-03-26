@@ -42,7 +42,6 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"country\":\"true\",\"country_id\":\"true\",\"key\":\"true\",\"state\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	external.table.purge	true                
 	numFiles            	0                   
 	numRows             	0                   
@@ -85,8 +84,7 @@ STAGE PLANS:
             COLUMN_STATS_ACCURATE 
 
   Stage: Stage-1
-      Pre Insert operator:
-        Pre-Insert task
+    Pre-Insert task
 
   Stage: Stage-2
     Map Reduce
@@ -137,7 +135,6 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	external.table.purge	true                
 #### A masked pattern was here ####
 	numFiles            	0                   
@@ -205,7 +202,6 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	external.table.purge	true                
 #### A masked pattern was here ####
 	numFiles            	0                   
@@ -265,7 +261,6 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	external.table.purge	true                
 #### A masked pattern was here ####
 	numFiles            	0                   
@@ -309,6 +304,7 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
@@ -375,7 +371,6 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	external.table.purge	true                
 #### A masked pattern was here ####
 	numFiles            	0                   
@@ -419,6 +414,7 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE

@@ -73,6 +73,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   private ArrayList<java.lang.String> outputColumnNames;
   private float groupByMemoryUsage;
   private float memoryThreshold;
+  private float minReductionHashAggr;
   transient private boolean isDistinct;
   private boolean dontResetAggrsDistinct;
 
@@ -86,12 +87,13 @@ public class GroupByDesc extends AbstractOperatorDesc {
       final ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators,
       final float groupByMemoryUsage,
       final float memoryThreshold,
+      final float minReductionHashAggr,
       final List<Long> listGroupingSets,
       final boolean groupingSetsPresent,
       final int groupingSetsPosition,
       final boolean isDistinct) {
     this(mode, outputColumnNames, keys, aggregators,
-        false, groupByMemoryUsage, memoryThreshold, listGroupingSets,
+        false, groupByMemoryUsage, memoryThreshold, minReductionHashAggr, listGroupingSets,
         groupingSetsPresent, groupingSetsPosition, isDistinct);
   }
 
@@ -103,6 +105,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
       final boolean bucketGroup,
       final float groupByMemoryUsage,
       final float memoryThreshold,
+      final float minReductionHashAggr,
       final List<Long> listGroupingSets,
       final boolean groupingSetsPresent,
       final int groupingSetsPosition,
@@ -114,6 +117,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
     this.bucketGroup = bucketGroup;
     this.groupByMemoryUsage = groupByMemoryUsage;
     this.memoryThreshold = memoryThreshold;
+    this.minReductionHashAggr = minReductionHashAggr;
     this.listGroupingSets = listGroupingSets;
     this.groupingSetsPresent = groupingSetsPresent;
     this.groupingSetPosition = groupingSetsPosition;
@@ -207,6 +211,19 @@ public class GroupByDesc extends AbstractOperatorDesc {
 
   public void setMemoryThreshold(float memoryThreshold) {
     this.memoryThreshold = memoryThreshold;
+  }
+
+  public float getMinReductionHashAggr() {
+    return minReductionHashAggr;
+  }
+
+  public void setMinReductionHashAggr(float minReductionHashAggr) {
+    this.minReductionHashAggr = minReductionHashAggr;
+  }
+
+  @Explain(displayName = "minReductionHashAggr")
+  public String getMinReductionHashAggrString() {
+    return mode == Mode.HASH ? Float.toString(minReductionHashAggr) : null;
   }
 
   @Explain(displayName = "aggregations", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -320,7 +337,8 @@ public class GroupByDesc extends AbstractOperatorDesc {
     List<Long> listGroupingSets = new ArrayList<>();
     listGroupingSets.addAll(this.listGroupingSets);
     return new GroupByDesc(this.mode, outputColumnNames, keys, aggregators,
-        this.groupByMemoryUsage, this.memoryThreshold, listGroupingSets, this.groupingSetsPresent,
+        this.groupByMemoryUsage, this.memoryThreshold, this.minReductionHashAggr,
+        listGroupingSets, this.groupingSetsPresent,
         this.groupingSetPosition, this.isDistinct);
   }
 

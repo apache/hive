@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Generated from template FilterScalarCompareTimestampColumn.txt, which covers comparison
  * expressions between a long/double scalar and a timestamp column, however output is not produced
- * in a separate column. The selected vector of the input {@link VectorizedRowBatch} is updated
+ * in a separate column. The selected vector of the input {@link org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch} is updated
  * for in-place filtering.
  */
 public class <ClassName> extends VectorExpression {

@@ -210,7 +210,7 @@ public class ReplicationSpec {
   }
 
   /**
-   * Returns a predicate filter to filter an Iterable<Partition> to return all partitions
+   * Returns a predicate filter to filter an Iterable&lt;Partition&gt; to return all partitions
    * that the current replication event specification is allowed to replicate-replace-into
    */
   public Predicate<Partition> allowEventReplacementInto() {

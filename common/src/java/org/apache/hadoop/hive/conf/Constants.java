@@ -45,6 +45,8 @@ public class Constants {
   public static final String JDBC_HIVE_STORAGE_HANDLER_ID =
       "org.apache.hive.storage.jdbc.JdbcStorageHandler";
   public static final String JDBC_CONFIG_PREFIX = "hive.sql";
+  public static final String JDBC_CATALOG = JDBC_CONFIG_PREFIX + ".catalog";
+  public static final String JDBC_SCHEMA = JDBC_CONFIG_PREFIX + ".schema";
   public static final String JDBC_TABLE = JDBC_CONFIG_PREFIX + ".table";
   public static final String JDBC_DATABASE_TYPE = JDBC_CONFIG_PREFIX + ".database.type";
   public static final String JDBC_URL = JDBC_CONFIG_PREFIX + ".jdbc.url";

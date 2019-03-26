@@ -54,6 +54,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations: count(1)
                 keys: array(key) (type: array<string>)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 482000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -71,6 +72,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations: count(1)
                 keys: map(key:value) (type: map<string,string>)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 232000 Basic stats: COMPLETE Column stats: COMPLETE

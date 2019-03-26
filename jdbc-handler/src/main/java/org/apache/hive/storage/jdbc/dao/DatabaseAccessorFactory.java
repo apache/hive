@@ -51,6 +51,10 @@ public class DatabaseAccessorFactory {
       accessor = new MsSqlDatabaseAccessor();
       break;
 
+    case DB2:
+      accessor = new DB2DatabaseAccessor();
+      break;
+
     default:
       accessor = new GenericJdbcDatabaseAccessor();
       break;
