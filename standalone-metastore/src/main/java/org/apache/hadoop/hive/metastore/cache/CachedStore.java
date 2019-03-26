@@ -780,7 +780,12 @@ public class CachedStore implements RawStore, Configurable {
           }
         } else {
           // TODO: prewarm and update can probably be merged.
-          update();
+          try {
+            update();
+            
+          } catch (Exception e) {
+            LOG.error("periodical refresh fail ", e);
+          }
         }
       } else {
         try {
@@ -874,7 +879,7 @@ public class CachedStore implements RawStore, Configurable {
       rawStore.openTransaction();
       try {
         Table table = rawStore.getTable(catName, dbName, tblName);
-        if (table.getPartitionKeys().isEmpty()) {
+        if (table != null && !table.getPartitionKeys().isEmpty()) {
           List<String> colNames = MetaStoreUtils.getColumnNamesForTable(table);
           Deadline.startTimer("getTableColumnStatistics");
           ColumnStatistics tableColStats = rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames, CacheUtils.HIVE_ENGINE);
@@ -950,6 +955,9 @@ public class CachedStore implements RawStore, Configurable {
                                                        String tblName) {
       try {
         Table table = rawStore.getTable(catName, dbName, tblName);
+        if (table == null) {
+          return;
+        }
         List<String> partNames = rawStore.listPartitionNames(catName, dbName, tblName, (short) -1);
         List<String> colNames = MetaStoreUtils.getColumnNamesForTable(table);
         if ((partNames != null) && (partNames.size() > 0)) {
