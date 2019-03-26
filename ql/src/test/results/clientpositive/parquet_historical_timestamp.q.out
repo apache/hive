@@ -1,0 +1,50 @@
+PREHOOK: query: create table legacy_table (t timestamp) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@legacy_table
+POSTHOOK: query: create table legacy_table (t timestamp) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@legacy_table
+PREHOOK: query: load data local inpath '../../data/files/parquet_historical_timestamp_legacy.parq' into table legacy_table
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@legacy_table
+POSTHOOK: query: load data local inpath '../../data/files/parquet_historical_timestamp_legacy.parq' into table legacy_table
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@legacy_table
+PREHOOK: query: select * from legacy_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@legacy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from legacy_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@legacy_table
+#### A masked pattern was here ####
+2018-12-31 16:30:30.111111111
+PREHOOK: query: create table new_table (t timestamp) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@new_table
+POSTHOOK: query: create table new_table (t timestamp) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@new_table
+PREHOOK: query: load data local inpath '../../data/files/parquet_historical_timestamp_new.parq' into table new_table
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@new_table
+POSTHOOK: query: load data local inpath '../../data/files/parquet_historical_timestamp_new.parq' into table new_table
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@new_table
+PREHOOK: query: select * from new_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@new_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from new_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@new_table
+#### A masked pattern was here ####
+2019-01-01 00:30:30.111111111
