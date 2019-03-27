@@ -28,6 +28,7 @@ import org.apache.parquet.schema.DecimalMetadata;
 import org.apache.parquet.schema.Type;
 
 import java.io.IOException;
+import java.time.ZoneId;
 
 import static org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32;
 import static org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64;
@@ -42,8 +43,11 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       ColumnDescriptor descriptor,
       PageReader pageReader,
       boolean skipTimestampConversion,
-      Type type, TypeInfo hiveType) throws IOException {
-    super(descriptor, pageReader, skipTimestampConversion, type, hiveType);
+      ZoneId writerTimezone,
+      Type type,
+      TypeInfo hiveType)
+      throws IOException {
+    super(descriptor, pageReader, skipTimestampConversion, writerTimezone, type, hiveType);
   }
 
   @Override
