@@ -1,4 +1,5 @@
 set hive.vectorized.execution.enabled=false;
+set hive.parquet.timestamp.skip.conversion=true;
 
 create table timetest_parquet(t timestamp) stored as parquet;
 

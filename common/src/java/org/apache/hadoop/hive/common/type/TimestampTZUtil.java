@@ -17,12 +17,13 @@
  */
 package org.apache.hadoop.hive.common.type;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.DateTimeException;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -145,4 +146,19 @@ public class TimestampTZUtil {
     }
   }
 
+  /**
+   * Timestamps are technically time zone agnostic, and this method sort of cheats its logic.
+   * Timestamps are supposed to represent nanos since [UTC epoch]. Here,
+   * the input timestamp represents nanoseconds since [epoch at fromZone], and
+   * we return a Timestamp representing nanoseconds since [epoch at toZone].
+   */
+  public static Timestamp convertTimestampToZone(Timestamp ts, ZoneId fromZone, ZoneId toZone) {
+    // get nanos since [epoch at fromZone]
+    Instant instant = convert(ts, fromZone).getZonedDateTime().toInstant();
+    // get [local time at toZone]
+    LocalDateTime localDateTimeAtToZone = LocalDateTime.ofInstant(instant, toZone);
+    // get nanos between [epoch at toZone] and [local time at toZone]
+    return Timestamp.ofEpochSecond(localDateTimeAtToZone.toEpochSecond(ZoneOffset.UTC),
+        localDateTimeAtToZone.getNano());
+  }
 }

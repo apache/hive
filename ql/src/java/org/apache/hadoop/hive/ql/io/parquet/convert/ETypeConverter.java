@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -348,11 +349,17 @@ public enum ETypeConverter {
         protected TimestampWritableV2 convert(Binary binary) {
           NanoTime nt = NanoTime.fromBinary(binary);
           Map<String, String> metadata = parent.getMetadata();
-          //Current Hive parquet timestamp implementation stores it in UTC, but other components do not do that.
-          //If this file written by current Hive implementation itself, we need to do the reverse conversion, else skip the conversion.
+          // Current Hive parquet timestamp implementation stores timestamps in UTC, but other
+          // components do not. In this case we skip timestamp conversion.
+          // If this file is written by a version of hive before HIVE-21290, file metadata will
+          // not contain the writer timezone, so we convert the timestamp to the system (reader)
+          // time zone.
+          // If file is written by current Hive implementation, we convert timestamps to the writer
+          // time zone in order to emulate time zone agnostic behavior.
           boolean skipConversion = Boolean.parseBoolean(
               metadata.get(HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION.varname));
-          Timestamp ts = NanoTimeUtils.getTimestamp(nt, skipConversion);
+          Timestamp ts = NanoTimeUtils.getTimestamp(nt, skipConversion,
+              DataWritableReadSupport.getWriterTimeZoneId(metadata));
           return new TimestampWritableV2(ts);
         }
       };
