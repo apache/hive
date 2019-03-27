@@ -13,6 +13,8 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.read;
 
+import java.time.DateTimeException;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,6 +28,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.parquet.convert.DataWritableRecordConverter;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
+import org.apache.hadoop.hive.ql.io.parquet.write.DataWritableWriteSupport;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.FieldNode;
 import org.apache.hadoop.hive.ql.optimizer.NestedColumnFieldPruningUtils;
@@ -263,6 +266,25 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
   }
 
   /**
+   * Get a valid zoneId from some metadata, otherwise return null.
+   */
+  public static ZoneId getWriterTimeZoneId(Map<String, String> metadata) {
+    if (metadata == null) {
+      return null;
+    }
+    String value = metadata.get(DataWritableWriteSupport.WRITER_TIMEZONE);
+    try {
+      if (value != null) {
+        return ZoneId.of(value);
+      }
+    } catch (DateTimeException e) {
+      throw new RuntimeException("Can't parse writer time zone stored in file metadata", e);
+    }
+
+    return null;
+  }
+
+  /**
    * Return the columns which contains required nested attribute level
    * E.g., given struct a:<x:int, y:int> while 'x' is required and 'y' is not, the method will return
    * a pruned struct for 'a' which only contains the attribute 'x'
@@ -448,11 +470,23 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
       throw new IllegalStateException("ReadContext not initialized properly. " +
         "Don't know the Hive Schema.");
     }
+
     String key = HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION.varname;
     if (!metadata.containsKey(key)) {
       metadata.put(key, String.valueOf(HiveConf.getBoolVar(
         configuration, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)));
     }
+
+    String writerTimezone = DataWritableWriteSupport.WRITER_TIMEZONE;
+    if (!metadata.containsKey(writerTimezone)) {
+      if (keyValueMetaData.containsKey(writerTimezone)) {
+        metadata.put(writerTimezone, keyValueMetaData.get(writerTimezone));
+      }
+    } else if (!metadata.get(writerTimezone).equals(keyValueMetaData.get(writerTimezone))) {
+      throw new IllegalStateException("Metadata contains a writer time zone that does not match "
+          + "file footer's writer time zone.");
+    }
+
     return new DataWritableRecordConverter(readContext.getRequestedSchema(), metadata, hiveTypeInfo);
   }
 }

@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.time.ZoneId;
 
 import static org.apache.parquet.column.ValuesType.DEFINITION_LEVEL;
 import static org.apache.parquet.column.ValuesType.REPETITION_LEVEL;
@@ -53,6 +54,7 @@ public abstract class BaseVectorizedColumnReader implements VectorizedColumnRead
   private static final Logger LOG = LoggerFactory.getLogger(BaseVectorizedColumnReader.class);
 
   protected boolean skipTimestampConversion = false;
+  protected ZoneId writerTimezone = null;
 
   /**
    * Total number of values read.
@@ -116,12 +118,14 @@ public abstract class BaseVectorizedColumnReader implements VectorizedColumnRead
       ColumnDescriptor descriptor,
       PageReader pageReader,
       boolean skipTimestampConversion,
+      ZoneId writerTimezone,
       Type parquetType, TypeInfo hiveType) throws IOException {
     this.descriptor = descriptor;
     this.type = parquetType;
     this.pageReader = pageReader;
     this.maxDefLevel = descriptor.getMaxDefinitionLevel();
     this.skipTimestampConversion = skipTimestampConversion;
+    this.writerTimezone = writerTimezone;
     this.hiveType = hiveType;
 
     DictionaryPage dictionaryPage = pageReader.readDictionaryPage();
@@ -130,7 +134,7 @@ public abstract class BaseVectorizedColumnReader implements VectorizedColumnRead
         this.dictionary = ParquetDataColumnReaderFactory
             .getDataColumnReaderByTypeOnDictionary(parquetType.asPrimitiveType(), hiveType,
                 dictionaryPage.getEncoding().initDictionary(descriptor, dictionaryPage),
-                skipTimestampConversion);
+                skipTimestampConversion, writerTimezone);
         this.isCurrentPageDictionaryEncoded = true;
       } catch (IOException e) {
         throw new IOException("could not decode the dictionary for " + descriptor, e);
@@ -182,11 +186,11 @@ public abstract class BaseVectorizedColumnReader implements VectorizedColumnRead
       }
       dataColumn = ParquetDataColumnReaderFactory.getDataColumnReaderByType(type.asPrimitiveType(), hiveType,
           dataEncoding.getDictionaryBasedValuesReader(descriptor, VALUES, dictionary
-              .getDictionary()), skipTimestampConversion);
+              .getDictionary()), skipTimestampConversion, writerTimezone);
       this.isCurrentPageDictionaryEncoded = true;
     } else {
       dataColumn = ParquetDataColumnReaderFactory.getDataColumnReaderByType(type.asPrimitiveType(), hiveType,
-          dataEncoding.getValuesReader(descriptor, VALUES), skipTimestampConversion);
+          dataEncoding.getValuesReader(descriptor, VALUES), skipTimestampConversion, writerTimezone);
       this.isCurrentPageDictionaryEncoded = false;
     }
 

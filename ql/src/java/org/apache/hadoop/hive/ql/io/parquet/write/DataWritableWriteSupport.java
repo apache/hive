@@ -14,6 +14,8 @@
 package org.apache.hadoop.hive.ql.io.parquet.write;
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.TimeZone;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
@@ -31,6 +33,7 @@ import org.apache.parquet.schema.MessageTypeParser;
 public class DataWritableWriteSupport extends WriteSupport<ParquetHiveRecord> {
 
   public static final String PARQUET_HIVE_SCHEMA = "parquet.hive.schema";
+  public static final String WRITER_TIMEZONE = "writer.time.zone";
 
   private DataWritableWriter writer;
   private MessageType schema;
@@ -46,7 +49,9 @@ public class DataWritableWriteSupport extends WriteSupport<ParquetHiveRecord> {
   @Override
   public WriteContext init(final Configuration configuration) {
     schema = getSchema(configuration);
-    return new WriteContext(schema, new HashMap<String, String>());
+    Map<String, String> metaData = new HashMap<>();
+    metaData.put(WRITER_TIMEZONE, TimeZone.getDefault().toZoneId().toString());
+    return new WriteContext(schema, metaData);
   }
 
   @Override
