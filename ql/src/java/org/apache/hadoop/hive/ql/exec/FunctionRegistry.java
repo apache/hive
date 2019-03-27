@@ -463,6 +463,8 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("compute_bit_vector", new GenericUDAFComputeBitVector());
     system.registerGenericUDAF("bloom_filter", new GenericUDAFBloomFilter());
     system.registerUDAF("percentile", UDAFPercentile.class);
+    system.registerGenericUDAF("percentile_cont", new GenericUDAFPercentileCont());
+    system.registerGenericUDAF("percentile_disc", new GenericUDAFPercentileDisc());
 
     system.registerUDFPlugin(DataSketchesFunctions.INSTANCE);
 
