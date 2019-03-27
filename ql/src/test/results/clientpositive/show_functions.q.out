@@ -194,6 +194,8 @@ parse_url_tuple
 percent_rank
 percentile
 percentile_approx
+percentile_cont
+percentile_disc
 pi
 pmod
 posexplode
