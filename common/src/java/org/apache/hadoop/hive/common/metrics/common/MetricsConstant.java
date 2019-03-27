@@ -50,6 +50,9 @@ public class MetricsConstant {
   // The number of Hive operations that are waiting to enter the compile block
   public static final String WAITING_COMPILE_OPS = "waiting_compile_ops";
 
+  // The number of Hive operations that are waiting to enter the compile block
+  public static final String WAITING_TEZ_SESSION = "waiting_tez_session";
+
   // The number of map reduce tasks executed by the HiveServer2 since the last restart
   public static final String HIVE_MR_TASKS = "hive_mapred_tasks";
   // The number of spark tasks executed by the HiveServer2 since the last restart

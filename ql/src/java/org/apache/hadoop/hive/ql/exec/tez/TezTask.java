@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hive.common.util.Ref;
 import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
 import java.io.IOException;
@@ -185,9 +186,19 @@ public class TezTask extends Task<TezWork> {
           "HIVE", queryPlan.getQueryId(), "HIVE_QUERY_ID", queryPlan.getQueryStr());
 
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_GET_SESSION);
-      session = sessionRef.value = WorkloadManagerFederation.getSession(
-          sessionRef.value, conf, mi, getWork().getLlapMode(), wmContext);
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_GET_SESSION);
+      Metrics metrics = MetricsFactory.getInstance();
+      if (metrics != null) {
+        metrics.incrementCounter(MetricsConstant.WAITING_TEZ_SESSION, 1);
+      }
+      try {
+        session = sessionRef.value = WorkloadManagerFederation.getSession(
+                sessionRef.value, conf, mi, getWork().getLlapMode(), wmContext);
+      } finally {
+        if (metrics != null) {
+          metrics.decrementCounter(MetricsConstant.WAITING_TEZ_SESSION, 1);
+        }
+        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_GET_SESSION);
+      }
 
       try {
         ss.setTezSession(session);
