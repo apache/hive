@@ -175,7 +175,7 @@ public class MessageBuilder {
   }
 
   public DropDatabaseMessage buildDropDatabaseMessage(Database db) {
-    return new JSONDropDatabaseMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, db.getName(), now());
+    return new JSONDropDatabaseMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, db, now());
   }
 
   public CreateTableMessage buildCreateTableMessage(Table table, Iterator<String> fileIter) {

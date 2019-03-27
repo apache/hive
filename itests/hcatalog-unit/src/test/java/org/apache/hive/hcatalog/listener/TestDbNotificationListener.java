@@ -406,8 +406,11 @@ public class TestDbNotificationListener {
     String dbName2 = "dropdb2";
     String dbLocationUri = testTempDir;
     String dbDescription = "no description";
-    Database db = new Database(dbName, dbDescription, dbLocationUri, emptyParameters);
-    msClient.createDatabase(db);
+    msClient.createDatabase(new Database(dbName, dbDescription, dbLocationUri, emptyParameters));
+
+    // Get the DB for comparison below since it may include additional parameters
+    Database db = msClient.getDatabase(dbName);
+    // Drop the database
     msClient.dropDatabase(dbName);
 
     // Read notification from metastore
@@ -428,6 +431,7 @@ public class TestDbNotificationListener {
     // Parse the message field
     DropDatabaseMessage dropDbMsg = md.getDropDatabaseMessage(event.getMessage());
     assertEquals(dbName, dropDbMsg.getDB());
+    assertEquals(db, dropDbMsg.getDatabaseObject());
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.DROP_DATABASE, firstEventId + 2);
@@ -435,8 +439,7 @@ public class TestDbNotificationListener {
 
     // When hive.metastore.transactional.event.listeners is set,
     // a failed event should not create a new notification
-    db = new Database(dbName2, dbDescription, dbLocationUri, emptyParameters);
-    msClient.createDatabase(db);
+    msClient.createDatabase(new Database(dbName2, dbDescription, dbLocationUri, emptyParameters));
     DummyRawStoreFailEvent.setEventSucceed(false);
     try {
       msClient.dropDatabase(dbName2);
