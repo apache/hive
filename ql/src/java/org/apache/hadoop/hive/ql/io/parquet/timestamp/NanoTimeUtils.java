@@ -30,25 +30,25 @@ import org.apache.hadoop.hive.common.type.TimestampTZUtil;
  * This utilizes the Jodd library.
  */
 public class NanoTimeUtils {
-   static final long NANOS_PER_HOUR = TimeUnit.HOURS.toNanos(1);
-   static final long NANOS_PER_MINUTE = TimeUnit.MINUTES.toNanos(1);
-   static final long NANOS_PER_SECOND = TimeUnit.SECONDS.toNanos(1);
-   static final long NANOS_PER_DAY = TimeUnit.DAYS.toNanos(1);
+  static final long NANOS_PER_HOUR = TimeUnit.HOURS.toNanos(1);
+  static final long NANOS_PER_MINUTE = TimeUnit.MINUTES.toNanos(1);
+  static final long NANOS_PER_SECOND = TimeUnit.SECONDS.toNanos(1);
+  static final long NANOS_PER_DAY = TimeUnit.DAYS.toNanos(1);
 
-   private static final ThreadLocal<Calendar> parquetGMTCalendar = new ThreadLocal<Calendar>();
+  private static final ThreadLocal<Calendar> parquetGMTCalendar = new ThreadLocal<Calendar>();
 
-   private static Calendar getGMTCalendar() {
-     //Calendar.getInstance calculates the current-time needlessly, so cache an instance.
-     if (parquetGMTCalendar.get() == null) {
-       parquetGMTCalendar.set(Calendar.getInstance(TimeZone.getTimeZone("GMT")));
-     }
-     parquetGMTCalendar.get().clear();
-     return parquetGMTCalendar.get();
-   }
+  private static Calendar getGMTCalendar() {
+    //Calendar.getInstance calculates the current-time needlessly, so cache an instance.
+    if (parquetGMTCalendar.get() == null) {
+      parquetGMTCalendar.set(Calendar.getInstance(TimeZone.getTimeZone("GMT")));
+    }
+    parquetGMTCalendar.get().clear();
+    return parquetGMTCalendar.get();
+  }
 
-   public static NanoTime getNanoTime(Timestamp ts, boolean skipConversion) {
-     return getNanoTime(ts, skipConversion, null);
-   }
+  public static NanoTime getNanoTime(Timestamp ts, boolean skipConversion) {
+    return getNanoTime(ts, skipConversion, null);
+  }
 
   /**
    * Gets a NanoTime object, which represents timestamps as nanoseconds since epoch, from a
@@ -61,34 +61,34 @@ public class NanoTimeUtils {
    * converted to NanoTime.
    * (See TimestampDataWriter#write for current Hive writing procedure.)
    */
-   public static NanoTime getNanoTime(Timestamp ts, boolean skipConversion, ZoneId timeZoneId) {
-     if (skipConversion) {
-       timeZoneId = ZoneOffset.UTC;
-     } else if (timeZoneId == null) {
-       timeZoneId = TimeZone.getDefault().toZoneId();
-     }
-     ts = TimestampTZUtil.convertTimestampToZone(ts, timeZoneId, ZoneOffset.UTC);
+  public static NanoTime getNanoTime(Timestamp ts, boolean skipConversion, ZoneId timeZoneId) {
+    if (skipConversion) {
+      timeZoneId = ZoneOffset.UTC;
+    } else if (timeZoneId == null) {
+      timeZoneId = TimeZone.getDefault().toZoneId();
+    }
+    ts = TimestampTZUtil.convertTimestampToZone(ts, timeZoneId, ZoneOffset.UTC);
 
-     Calendar calendar = getGMTCalendar();
-     calendar.setTimeInMillis(ts.toEpochMilli());
-     int year = calendar.get(Calendar.YEAR);
-     if (calendar.get(Calendar.ERA) == GregorianCalendar.BC) {
-       year = 1 - year;
-     }
-     JDateTime jDateTime = new JDateTime(year,
-       calendar.get(Calendar.MONTH) + 1,  //java calendar index starting at 1.
-       calendar.get(Calendar.DAY_OF_MONTH));
-     int days = jDateTime.getJulianDayNumber();
+    Calendar calendar = getGMTCalendar();
+    calendar.setTimeInMillis(ts.toEpochMilli());
+    int year = calendar.get(Calendar.YEAR);
+    if (calendar.get(Calendar.ERA) == GregorianCalendar.BC) {
+      year = 1 - year;
+    }
+    JDateTime jDateTime = new JDateTime(year,
+        calendar.get(Calendar.MONTH) + 1,  //java calendar index starting at 1.
+        calendar.get(Calendar.DAY_OF_MONTH));
+    int days = jDateTime.getJulianDayNumber();
 
-     long hour = calendar.get(Calendar.HOUR_OF_DAY);
-     long minute = calendar.get(Calendar.MINUTE);
-     long second = calendar.get(Calendar.SECOND);
-     long nanos = ts.getNanos();
-     long nanosOfDay = nanos + NANOS_PER_SECOND * second + NANOS_PER_MINUTE * minute +
-         NANOS_PER_HOUR * hour;
+    long hour = calendar.get(Calendar.HOUR_OF_DAY);
+    long minute = calendar.get(Calendar.MINUTE);
+    long second = calendar.get(Calendar.SECOND);
+    long nanos = ts.getNanos();
+    long nanosOfDay = nanos + NANOS_PER_SECOND * second + NANOS_PER_MINUTE * minute +
+        NANOS_PER_HOUR * hour;
 
-     return new NanoTime(days, nanosOfDay);
-   }
+    return new NanoTime(days, nanosOfDay);
+  }
 
   public static Timestamp getTimestamp(NanoTime nt, boolean skipConversion) {
     return getTimestamp(nt, skipConversion, null);
@@ -106,43 +106,43 @@ public class NanoTimeUtils {
    * For skipConversion to be true it must be set in conf AND the parquet file must NOT be written
    * by parquet's java library (parquet-mr). This is enforced in ParquetRecordReaderBase#getSplit.
    */
-   public static Timestamp getTimestamp(NanoTime nt, boolean skipConversion, ZoneId timeZoneId) {
-     if (skipConversion) {
-       timeZoneId = ZoneOffset.UTC;
-     } else if (timeZoneId == null) {
-       timeZoneId = TimeZone.getDefault().toZoneId();
-     }
+  public static Timestamp getTimestamp(NanoTime nt, boolean skipConversion, ZoneId timeZoneId) {
+    if (skipConversion) {
+      timeZoneId = ZoneOffset.UTC;
+    } else if (timeZoneId == null) {
+      timeZoneId = TimeZone.getDefault().toZoneId();
+    }
 
-     int julianDay = nt.getJulianDay();
-     long nanosOfDay = nt.getTimeOfDayNanos();
+    int julianDay = nt.getJulianDay();
+    long nanosOfDay = nt.getTimeOfDayNanos();
 
-     long remainder = nanosOfDay;
-     julianDay += remainder / NANOS_PER_DAY;
-     remainder %= NANOS_PER_DAY;
-     if (remainder < 0) {
-       remainder += NANOS_PER_DAY;
-       julianDay--;
-     }
+    long remainder = nanosOfDay;
+    julianDay += remainder / NANOS_PER_DAY;
+    remainder %= NANOS_PER_DAY;
+    if (remainder < 0) {
+      remainder += NANOS_PER_DAY;
+      julianDay--;
+    }
 
-     JDateTime jDateTime = new JDateTime((double) julianDay);
-     Calendar calendar = getGMTCalendar();
-     calendar.set(Calendar.YEAR, jDateTime.getYear());
-     calendar.set(Calendar.MONTH, jDateTime.getMonth() - 1); //java calendar index starting at 1.
-     calendar.set(Calendar.DAY_OF_MONTH, jDateTime.getDay());
+    JDateTime jDateTime = new JDateTime((double) julianDay);
+    Calendar calendar = getGMTCalendar();
+    calendar.set(Calendar.YEAR, jDateTime.getYear());
+    calendar.set(Calendar.MONTH, jDateTime.getMonth() - 1); //java calendar index starting at 1.
+    calendar.set(Calendar.DAY_OF_MONTH, jDateTime.getDay());
 
-     int hour = (int) (remainder / (NANOS_PER_HOUR));
-     remainder = remainder % (NANOS_PER_HOUR);
-     int minutes = (int) (remainder / (NANOS_PER_MINUTE));
-     remainder = remainder % (NANOS_PER_MINUTE);
-     int seconds = (int) (remainder / (NANOS_PER_SECOND));
-     long nanos = remainder % NANOS_PER_SECOND;
+    int hour = (int) (remainder / (NANOS_PER_HOUR));
+    remainder = remainder % (NANOS_PER_HOUR);
+    int minutes = (int) (remainder / (NANOS_PER_MINUTE));
+    remainder = remainder % (NANOS_PER_MINUTE);
+    int seconds = (int) (remainder / (NANOS_PER_SECOND));
+    long nanos = remainder % NANOS_PER_SECOND;
 
-     calendar.set(Calendar.HOUR_OF_DAY, hour);
-     calendar.set(Calendar.MINUTE, minutes);
-     calendar.set(Calendar.SECOND, seconds);
+    calendar.set(Calendar.HOUR_OF_DAY, hour);
+    calendar.set(Calendar.MINUTE, minutes);
+    calendar.set(Calendar.SECOND, seconds);
 
-     Timestamp ts = Timestamp.ofEpochMilli(calendar.getTimeInMillis(), (int) nanos);
-     ts = TimestampTZUtil.convertTimestampToZone(ts, ZoneOffset.UTC, timeZoneId);
-     return ts;
-   }
+    Timestamp ts = Timestamp.ofEpochMilli(calendar.getTimeInMillis(), (int) nanos);
+    ts = TimestampTZUtil.convertTimestampToZone(ts, ZoneOffset.UTC, timeZoneId);
+    return ts;
+  }
 }
