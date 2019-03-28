@@ -187,8 +187,8 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
     long blockStart = -1;
     FileSplit fileSplit = split;
     Path path = fileSplit.getPath();
-    FileSystem fs = path.getFileSystem(job);
     if (inputFormatClass.getName().contains("SequenceFile")) {
+      FileSystem fs = path.getFileSystem(job);
       SequenceFile.Reader in = new SequenceFile.Reader(fs, path, job);
       blockPointer = in.isBlockCompressed();
       in.sync(fileSplit.getStart());
@@ -198,6 +198,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
       blockPointer = true;
       blockStart = ((RCFileRecordReader) recordReader).getStart();
     } else if (inputFormatClass.getName().contains("RCFile")) {
+      FileSystem fs = path.getFileSystem(job);
       blockPointer = true;
       RCFile.Reader in = new RCFile.Reader(fs, path, job);
       in.sync(fileSplit.getStart());
@@ -205,7 +206,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
       in.close();
     }
     this.jobConf = job;
-    this.initIOContext(blockStart, blockPointer, path.makeQualified(fs));
+    this.initIOContext(blockStart, blockPointer, path);
 
     this.initIOContextSortedProps(split, recordReader, job);
   }
