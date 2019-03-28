@@ -768,7 +768,7 @@ public class FetchOperator implements Serializable {
   private FileStatus[] listStatusUnderPath(FileSystem fs, Path p) throws IOException {
     boolean recursive = job.getBoolean(FileInputFormat.INPUT_DIR_RECURSIVE, false);
     // If this is in acid format always read it recursively regardless of what the jobconf says.
-    if (!recursive && !AcidUtils.isAcid(p, job)) {
+    if (!recursive && !AcidUtils.isAcid(fs, p, job)) {
       return fs.listStatus(p, FileUtils.HIDDEN_FILES_PATH_FILTER);
     }
     List<FileStatus> results = new ArrayList<FileStatus>();
