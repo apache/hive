@@ -318,11 +318,11 @@ public class VectorizedOrcAcidRowBatchReader
       RecordIdentifier k = keyInterval.getMinKey();
       b = SearchArgumentFactory.newBuilder();
       b.startAnd()  //not(ot < 7) -> ot >=7
-          .startNot().lessThan("originalTransaction",
+          .startNot().lessThan(OrcRecordUpdater.ORIGINAL_WRITEID_FIELD_NAME,
           PredicateLeaf.Type.LONG, k.getWriteId()).end();
       b.startNot().lessThan(
-          "bucket", PredicateLeaf.Type.LONG, minBucketProp).end();
-      b.startNot().lessThan("rowId",
+          OrcRecordUpdater.BUCKET_FIELD_NAME, PredicateLeaf.Type.LONG, minBucketProp).end();
+      b.startNot().lessThan(OrcRecordUpdater.ROW_ID_FIELD_NAME,
           PredicateLeaf.Type.LONG, minRowId).end();
       b.end();
     }
@@ -332,16 +332,20 @@ public class VectorizedOrcAcidRowBatchReader
         b = SearchArgumentFactory.newBuilder();
       }
       b.startAnd().lessThanEquals(
-          "originalTransaction", PredicateLeaf.Type.LONG, k.getWriteId());
-      b.lessThanEquals("bucket", PredicateLeaf.Type.LONG, maxBucketProp);
-      b.lessThanEquals("rowId", PredicateLeaf.Type.LONG, maxRowId);
+          OrcRecordUpdater.ORIGINAL_WRITEID_FIELD_NAME, PredicateLeaf.Type.LONG, k.getWriteId());
+      b.lessThanEquals(OrcRecordUpdater.BUCKET_FIELD_NAME, PredicateLeaf.Type.LONG, maxBucketProp);
+      b.lessThanEquals(OrcRecordUpdater.ROW_ID_FIELD_NAME, PredicateLeaf.Type.LONG, maxRowId);
       b.end();
     }
     if(b != null) {
       deleteEventSarg = b.build();
       LOG.info("deleteReader SARG(" + deleteEventSarg + ") ");
       deleteEventReaderOptions.searchArgument(deleteEventSarg,
-          new String[] {"originalTransaction", "bucket", "rowId"});
+          new String[] {
+              OrcRecordUpdater.ORIGINAL_WRITEID_FIELD_NAME,
+              OrcRecordUpdater.BUCKET_FIELD_NAME,
+              OrcRecordUpdater.ROW_ID_FIELD_NAME
+          });
       return;
     }
     deleteEventReaderOptions.searchArgument(null, null);

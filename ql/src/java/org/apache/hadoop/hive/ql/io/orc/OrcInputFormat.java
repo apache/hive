@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.NoDynamicValuesException;
 import org.apache.hadoop.fs.PathFilter;
@@ -120,7 +121,6 @@ import org.apache.orc.ColumnStatistics;
 import org.apache.orc.FileFormatException;
 import org.apache.orc.OrcProto;
 import org.apache.orc.OrcProto.Footer;
-import org.apache.orc.OrcProto.Type;
 import org.apache.orc.OrcUtils;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.StripeStatistics;
@@ -338,19 +338,25 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     return file.rowsOptions(options, conf);
   }
 
+  /**
+   * Check if the given file is original orc file or an ACID file.
+   * @param file The file reader to check
+   * @return <code>false</code> if an ACID file, <code>true</code> if a simple orc file
+   */
   public static boolean isOriginal(Reader file) {
-    return !file.hasMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME);
+    return !CollectionUtils.isEqualCollection(file.getSchema().getFieldNames(),
+        OrcRecordUpdater.ALL_ACID_ROW_NAMES);
   }
 
+  /**
+   * Check if the given file is original orc file or an ACID file.
+   * @param footer The footer of the given file to check
+   * @return <code>false</code> if an ACID file, <code>true</code> if a simple orc file
+   */
   public static boolean isOriginal(Footer footer) {
-    for(OrcProto.UserMetadataItem item: footer.getMetadataList()) {
-      if (item.hasName() && item.getName().equals(OrcRecordUpdater.ACID_KEY_INDEX_NAME)) {
-        return true;
-      }
-    }
-    return false;
+    return !CollectionUtils.isEqualCollection(footer.getTypesList().get(0).getFieldNamesList(),
+        OrcRecordUpdater.ALL_ACID_ROW_NAMES);
   }
-
 
   public static boolean[] genIncludedColumns(TypeDescription readerSchema,
                                              List<Integer> included) {
