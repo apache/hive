@@ -309,7 +309,6 @@
                       <exclude>org.datanucleus:*</exclude>
                       <exclude>org.fusesource.leveldbjni:*</exclude>
                       <exclude>org.htrace:*</exclude>
-                      <exclude>org.mortbay.jetty:*</exclude>
                       <exclude>org.xerial.snappy:*</exclude>
                       <exclude>com.tdunning:*</exclude>
                       <exclude>tomcat:*</exclude>

@@ -266,7 +266,7 @@ public class CompactorMR {
     // and discovering that in getSplits is too late as we then have no way to pass it to our
     // mapper.
 
-    AcidUtils.Directory dir = AcidUtils.getAcidState(new Path(sd.getLocation()), conf, writeIds, false, true);
+    AcidUtils.Directory dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf, writeIds, false, true);
     List<AcidUtils.ParsedDelta> parsedDeltas = dir.getCurrentDirectories();
     int maxDeltastoHandle = conf.getIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA);
     if(parsedDeltas.size() > maxDeltastoHandle) {
@@ -345,7 +345,8 @@ public class CompactorMR {
   private void runCrudCompaction(HiveConf hiveConf, Table t, Partition p, StorageDescriptor sd, ValidWriteIdList writeIds,
       CompactionInfo ci) throws IOException {
     AcidUtils.setAcidOperationalProperties(hiveConf, true, AcidUtils.getAcidOperationalProperties(t.getParameters()));
-    AcidUtils.Directory dir = AcidUtils.getAcidState(new Path(sd.getLocation()), hiveConf, writeIds, Ref.from(false), false,
+    AcidUtils.Directory dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()), hiveConf, writeIds,
+      Ref.from(false), false,
         t.getParameters());
     int deltaCount = dir.getCurrentDirectories().size();
     int origCount = dir.getOriginalFiles().size();
@@ -415,7 +416,7 @@ public class CompactorMR {
       StorageDescriptor sd, ValidWriteIdList writeIds, CompactionInfo ci) throws IOException {
     LOG.debug("Going to delete directories for aborted transactions for MM table "
         + t.getDbName() + "." + t.getTableName());
-    AcidUtils.Directory dir = AcidUtils.getAcidState(new Path(sd.getLocation()),
+    AcidUtils.Directory dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()),
         conf, writeIds, Ref.from(false), false, t.getParameters());
     removeFilesForMmTable(conf, dir);
 

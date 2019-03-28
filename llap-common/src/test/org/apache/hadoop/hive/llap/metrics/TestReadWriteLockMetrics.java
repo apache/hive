@@ -47,6 +47,7 @@ import org.apache.hadoop.metrics2.MetricsInfo;
 import org.apache.hadoop.metrics2.MetricsRecordBuilder;
 import org.apache.hadoop.metrics2.MetricsSource;
 import org.apache.hadoop.metrics2.MetricsTag;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -336,6 +337,7 @@ public class TestReadWriteLockMetrics {
    * deal with any contention. The test shows that the locks are received rather quick and tha
    * all metrics for write locks remain zero.
    */
+  @Ignore("Test requires available CPU resources for background threads")
   @Test
   public void testWithoutContention() throws Exception {
     final long execTime = 100;
@@ -409,6 +411,7 @@ public class TestReadWriteLockMetrics {
    * released. It also performs basic sanity checks on the read and write lock
    * metrics.
    */
+  @Ignore("Test requires available CPU resources for background threads")
   @Test
   public void testWithContention() throws Exception {
     final long execTime = 200;
