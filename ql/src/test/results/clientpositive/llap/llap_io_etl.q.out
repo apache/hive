@@ -1,0 +1,203 @@
+PREHOOK: query: create table if not exists alltypes (
+ bo1 boolean,
+ ti1 tinyint,
+ si1 smallint,
+ i1 int,
+ bi1 bigint,
+ f1 float,
+ d1 double,
+ de1 decimal,
+ ts1 timestamp,
+ da1 timestamp,
+ s1 string,
+ vc1 varchar(5),
+ m1 map<string, string>,
+ l1 array<int>,
+ st1 struct<c1:int, c2:string>
+) row format delimited fields terminated by '|'
+collection items terminated by ','
+map keys terminated by ':' stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alltypes
+POSTHOOK: query: create table if not exists alltypes (
+ bo1 boolean,
+ ti1 tinyint,
+ si1 smallint,
+ i1 int,
+ bi1 bigint,
+ f1 float,
+ d1 double,
+ de1 decimal,
+ ts1 timestamp,
+ da1 timestamp,
+ s1 string,
+ vc1 varchar(5),
+ m1 map<string, string>,
+ l1 array<int>,
+ st1 struct<c1:int, c2:string>
+) row format delimited fields terminated by '|'
+collection items terminated by ','
+map keys terminated by ':' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alltypes
+PREHOOK: query: load data local inpath '../../data/files/alltypes.txt' overwrite into table alltypes
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@alltypes
+POSTHOOK: query: load data local inpath '../../data/files/alltypes.txt' overwrite into table alltypes
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@alltypes
+PREHOOK: query: create table alltypes_orc stored as orc as select * from alltypes
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypes
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alltypes_orc
+Stage-1 FILE SYSTEM COUNTERS:
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 2
+   RECORDS_OUT_1_default.alltypes_orc: 2
+   RECORDS_OUT_INTERMEDIATE_Map_1: 0
+   RECORDS_OUT_OPERATOR_FS_4: 2
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_SEL_3: 2
+   RECORDS_OUT_OPERATOR_TS_0: 2
+   TOTAL_TABLE_ROWS_WRITTEN: 2
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+PREHOOK: query: insert into alltypes_orc select * from alltypes
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes
+PREHOOK: Output: default@alltypes_orc
+Stage-1 FILE SYSTEM COUNTERS:
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 2
+   RECORDS_OUT_1_default.alltypes_orc: 2
+   RECORDS_OUT_INTERMEDIATE_Map_1: 0
+   RECORDS_OUT_OPERATOR_FS_4: 2
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_SEL_3: 2
+   RECORDS_OUT_OPERATOR_TS_0: 2
+   TOTAL_TABLE_ROWS_WRITTEN: 2
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+PREHOOK: query: create table alltypes_text1 stored as textfile as select * from alltypes
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypes
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alltypes_text1
+Stage-1 FILE SYSTEM COUNTERS:
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 2
+   RECORDS_OUT_1_default.alltypes_text1: 2
+   RECORDS_OUT_INTERMEDIATE_Map_1: 0
+   RECORDS_OUT_OPERATOR_FS_4: 2
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_SEL_3: 2
+   RECORDS_OUT_OPERATOR_TS_0: 2
+   TOTAL_TABLE_ROWS_WRITTEN: 2
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+PREHOOK: query: insert into alltypes_text1 select * from alltypes
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes
+PREHOOK: Output: default@alltypes_text1
+Stage-1 FILE SYSTEM COUNTERS:
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 2
+   RECORDS_OUT_1_default.alltypes_text1: 2
+   RECORDS_OUT_INTERMEDIATE_Map_1: 0
+   RECORDS_OUT_OPERATOR_FS_4: 2
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_SEL_3: 2
+   RECORDS_OUT_OPERATOR_TS_0: 2
+   TOTAL_TABLE_ROWS_WRITTEN: 2
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+PREHOOK: query: create table alltypes_text2 stored as textfile as select * from alltypes
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypes
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alltypes_text2
+Stage-1 FILE SYSTEM COUNTERS:
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 2
+   RECORDS_OUT_1_default.alltypes_text2: 2
+   RECORDS_OUT_INTERMEDIATE_Map_1: 0
+   RECORDS_OUT_OPERATOR_FS_4: 2
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_SEL_3: 2
+   RECORDS_OUT_OPERATOR_TS_0: 2
+   TOTAL_TABLE_ROWS_WRITTEN: 2
+Stage-1 LLAP IO COUNTERS:
+   CACHE_MISS_BYTES: 244
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 1
+   ROWS_EMITTED: 2
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+PREHOOK: query: insert into alltypes_text2 select * from alltypes
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes
+PREHOOK: Output: default@alltypes_text2
+Stage-1 FILE SYSTEM COUNTERS:
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 2
+   RECORDS_OUT_1_default.alltypes_text2: 2
+   RECORDS_OUT_INTERMEDIATE_Map_1: 0
+   RECORDS_OUT_OPERATOR_FS_4: 2
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_SEL_3: 2
+   RECORDS_OUT_OPERATOR_TS_0: 2
+   TOTAL_TABLE_ROWS_WRITTEN: 2
+Stage-1 LLAP IO COUNTERS:
+   CACHE_MISS_BYTES: 244
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 1
+   ROWS_EMITTED: 2
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+PREHOOK: query: drop table alltypes_text1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@alltypes_text1
+PREHOOK: Output: default@alltypes_text1
+PREHOOK: query: drop table alltypes_text2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@alltypes_text2
+PREHOOK: Output: default@alltypes_text2
+PREHOOK: query: drop table alltypes_orc
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@alltypes_orc
+PREHOOK: Output: default@alltypes_orc

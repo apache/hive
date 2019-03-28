@@ -395,8 +395,13 @@ public class TestOrcRawRecordMerger {
     typeBuilder.setKind(OrcProto.Type.Kind.STRUCT).addSubtypes(1)
         .addSubtypes(2).addSubtypes(3).addSubtypes(4).addSubtypes(5)
         .addSubtypes(6);
-    typeBuilder.addAllFieldNames(Lists.newArrayList("operation", "originalTransaction", "bucket",
-        "rowId", "currentTransaction", "row"));
+    typeBuilder.addAllFieldNames(Lists.newArrayList(
+        OrcRecordUpdater.OPERATION_FIELD_NAME,
+        OrcRecordUpdater.CURRENT_WRITEID_FIELD_NAME,
+        OrcRecordUpdater.BUCKET_FIELD_NAME,
+        OrcRecordUpdater.ROW_ID_FIELD_NAME,
+        OrcRecordUpdater.CURRENT_WRITEID_FIELD_NAME,
+        OrcRecordUpdater.ROW_FIELD_NAME));
     types.add(typeBuilder.build());
     types.add(null);
     types.add(null);
@@ -478,15 +483,15 @@ public class TestOrcRawRecordMerger {
     List<? extends StructField> fields =
         eventObjectInspector.getAllStructFieldRefs();
     assertEquals(OrcRecordUpdater.FIELDS, fields.size());
-    assertEquals("operation",
+    assertEquals(OrcRecordUpdater.OPERATION_FIELD_NAME,
         fields.get(OrcRecordUpdater.OPERATION).getFieldName());
-    assertEquals("currentTransaction",
+    assertEquals(OrcRecordUpdater.CURRENT_WRITEID_FIELD_NAME,
         fields.get(OrcRecordUpdater.CURRENT_WRITEID).getFieldName());
-    assertEquals("originalTransaction",
+    assertEquals(OrcRecordUpdater.ORIGINAL_WRITEID_FIELD_NAME,
         fields.get(OrcRecordUpdater.ORIGINAL_WRITEID).getFieldName());
-    assertEquals("bucket",
+    assertEquals(OrcRecordUpdater.BUCKET_FIELD_NAME,
         fields.get(OrcRecordUpdater.BUCKET).getFieldName());
-    assertEquals("rowId",
+    assertEquals(OrcRecordUpdater.ROW_ID_FIELD_NAME,
         fields.get(OrcRecordUpdater.ROW_ID).getFieldName());
     StructObjectInspector rowObjectInspector =
         (StructObjectInspector) fields.get(OrcRecordUpdater.ROW)

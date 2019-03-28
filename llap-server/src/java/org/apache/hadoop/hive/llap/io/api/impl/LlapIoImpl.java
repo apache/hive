@@ -167,6 +167,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
         SerDeLowLevelCacheImpl serdeCacheImpl = new SerDeLowLevelCacheImpl(
             cacheMetrics, cachePolicyWrapper, allocator);
         serdeCache = serdeCacheImpl;
+        serdeCacheImpl.setConf(conf);
       }
 
       boolean useGapCache = HiveConf.getBoolVar(conf, ConfVars.LLAP_CACHE_ENABLE_ORC_GAP_CACHE);
