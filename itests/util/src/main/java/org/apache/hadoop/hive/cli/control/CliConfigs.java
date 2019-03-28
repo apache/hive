@@ -65,6 +65,7 @@ public class CliConfigs {
         excludeQuery("udaf_corr.q"); // disabled in HIVE-20741
         excludeQuery("udaf_histogram_numeric.q"); // disabled in HIVE-20715
         excludeQuery("stat_estimate_related_col.q"); // disabled in HIVE-20727
+        excludeQuery("vector_groupby_reduce.q"); // Disabled in HIVE-21396
 
         setResultsDir("ql/src/test/results/clientpositive");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
