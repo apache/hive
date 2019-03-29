@@ -11376,6 +11376,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return (qb.getId() == null ? alias : qb.getId() + ":" + alias).toLowerCase();
   }
 
+  public static RowResolver getRowResolverFromTable(Table tbl) {
+    RowResolver rwsch = new RowResolver();
+    String alias = tbl.getTableName();
+    for (FieldSchema cols : tbl.getAllCols()) {
+      rwsch.put(alias, cols.getName(), new ColumnInfo(cols.getName(),
+              TypeInfoFactory.getPrimitiveTypeInfo(cols.getType()), alias, false));
+    }
+    for (FieldSchema partCol : tbl.getPartCols()) {
+      rwsch.put(alias, partCol.getName(), new ColumnInfo(partCol.getName(),
+              TypeInfoFactory.getPrimitiveTypeInfo(partCol.getType()), alias, true));
+    }
+    return rwsch;
+  }
+
   @SuppressWarnings("nls")
   private Operator genTablePlan(String alias, QB qb) throws SemanticException {
 

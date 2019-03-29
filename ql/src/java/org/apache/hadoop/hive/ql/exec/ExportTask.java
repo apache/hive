@@ -53,7 +53,7 @@ public class ExportTask extends Task<ExportWork> implements Serializable {
       LOG.debug("Exporting data to: {}", exportPaths.exportRootDir());
       work.acidPostProcess(db);
       TableExport tableExport = new TableExport(exportPaths, work.getTableSpec(),
-          work.getReplicationSpec(), db, null, conf, work.getMmContext());
+          work.getReplicationSpec(), db, null, conf, work.getMmContext(), null);
       if (!tableExport.write()) {
         throw new SemanticException(ErrorMsg.INCOMPATIBLE_SCHEMA.getMsg());
       }

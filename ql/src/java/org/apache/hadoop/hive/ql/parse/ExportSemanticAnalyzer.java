@@ -108,7 +108,7 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
     // Note: this tableExport is actually never used other than for auth, and another one is
     //       created when the task is executed. So, we don't care about the correct MM state here.
     TableExport.AuthEntities authEntities = new TableExport(
-        exportPaths, ts, replicationSpec, db, null, conf, null).getAuthEntities();
+        exportPaths, ts, replicationSpec, db, null, conf, null, null).getAuthEntities();
     inputs.addAll(authEntities.inputs);
     outputs.addAll(authEntities.outputs);
     String exportRootDirName = tmpPath;

@@ -255,6 +255,11 @@ public class WarehouseInstance implements Closeable {
     return this;
   }
 
+  Tuple dump(String replPolicy, String oldReplPolicy, String lastReplicationId, List<String> withClauseOptions)
+          throws Throwable {
+    return dump(replPolicy, oldReplPolicy, lastReplicationId, withClauseOptions, null);
+  }
+
   Tuple dump(String dbName, String lastReplicationId, List<String> withClauseOptions)
       throws Throwable {
     String dumpCommand =
@@ -265,14 +270,18 @@ public class WarehouseInstance implements Closeable {
     return dump(dumpCommand);
   }
 
-  Tuple dump(String replPolicy, String oldReplPolicy, String lastReplicationId, List<String> withClauseOptions)
-          throws Throwable {
+  Tuple dump(String replPolicy, String oldReplPolicy, String lastReplicationId, List<String> withClauseOptions,
+             String partitionFilter) throws Throwable {
     String dumpCommand =
             "REPL DUMP " + replPolicy
                     + (oldReplPolicy == null ? "" : " REPLACE " + oldReplPolicy)
                     + (lastReplicationId == null ? "" : " FROM " + lastReplicationId);
-    if (!withClauseOptions.isEmpty()) {
+    if (withClauseOptions != null && !withClauseOptions.isEmpty()) {
       dumpCommand += " with (" + StringUtils.join(withClauseOptions, ",") + ")";
+    }
+
+    if (partitionFilter != null) {
+      dumpCommand += " where " + partitionFilter;
     }
     return dump(dumpCommand);
   }
