@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.common.repl;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -33,6 +35,7 @@ public class ReplScope implements Serializable {
   private String excludedTableNames;
   private Pattern includedTableNamePattern;
   private Pattern excludedTableNamePattern;
+  private Map<Pattern, Object> partFilter = new HashMap<>();
 
   public ReplScope() {
   }
@@ -115,5 +118,24 @@ public class ReplScope implements Serializable {
       return false;
     }
     return excludedTableNamePattern.matcher(tableName).matches();
+  }
+
+  public Object getPartFilter(String tableName) {
+    Object filter = null;
+    // The number of patterns are not expected to be huge, so iterating the whole list once per table should not
+    // be an issue.
+    for (Pattern pattern : partFilter.keySet()) {
+      if (pattern.matcher(tableName).matches()) {
+        if (filter != null) {
+          throw new RuntimeException("Table " + tableName + " is matching multiple partition filter patterns.");
+        }
+        filter = partFilter.get(pattern);
+      }
+    }
+    return filter;
+  }
+
+  public void setPartFilter(String patternString, Object filter) {
+    partFilter.put(Pattern.compile(patternString, Pattern.CASE_INSENSITIVE), filter);
   }
 }

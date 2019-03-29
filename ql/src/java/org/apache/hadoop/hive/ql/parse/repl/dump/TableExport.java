@@ -21,6 +21,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -30,12 +31,17 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.TypeCheckCtx;
+import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.FileOperations;
 import org.apache.hadoop.hive.ql.plan.ExportWork.MmContext;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,9 +69,10 @@ public class TableExport {
   private final HiveConf conf;
   private final Paths paths;
   private final MmContext mmCtx;
+  private ExprNodeDesc partitionFilter = null;
 
   public TableExport(Paths paths, TableSpec tableSpec, ReplicationSpec replicationSpec, Hive db,
-      String distCpDoAsUser, HiveConf conf, MmContext mmCtx) {
+      String distCpDoAsUser, HiveConf conf, MmContext mmCtx, ReplScope replScope) throws SemanticException {
     this.tableSpec = (tableSpec != null
         && tableSpec.tableHandle.isTemporary()
         && replicationSpec.isInReplicationScope())
@@ -83,6 +90,17 @@ public class TableExport {
     this.conf = conf;
     this.paths = paths;
     this.mmCtx = mmCtx;
+    if (replScope != null) {
+      ASTNode filterNode = (ASTNode) replScope.getPartFilter(tableSpec.tableHandle.getTableName());
+      if (filterNode == null) {
+        logger.info("Partition filter is not set for table " + tableSpec.tableHandle.getTableName());
+      } else {
+        partitionFilter = TypeCheckProcFactory.genExprNode(filterNode,
+                new TypeCheckCtx(SemanticAnalyzer.getRowResolverFromTable(tableSpec.tableHandle))).get(filterNode);
+        logger.info("Partition filter " + filterNode.toStringTree() + " is set for table " +
+                tableSpec.tableHandle.getTableName());
+      }
+    }
   }
 
   public boolean write() throws SemanticException {
@@ -108,6 +126,9 @@ public class TableExport {
           if (replicationSpec.isMetadataOnly()) {
             return null;
           } else {
+            if (partitionFilter != null) {
+              return new PartitionIterable(db, tableSpec.tableHandle, partitionFilter);
+            }
             return new PartitionIterable(db, tableSpec.tableHandle, null, conf.getIntVar(
                 HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX), true);
           }

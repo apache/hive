@@ -398,6 +398,8 @@ TOK_REPL_CONFIG;
 TOK_REPL_CONFIG_LIST;
 TOK_REPL_TABLES;
 TOK_REPL_TABLES_LIST;
+TOK_REPL_COND;
+TOK_REPL_COND_LIST;
 TOK_TO;
 TOK_ONLY;
 TOK_SUMMARY;
@@ -904,7 +906,8 @@ replDumpStatement
           (KW_LIMIT (batchSize=Number))?
         )?
         (KW_WITH replConf=replConfigs)?
-    -> ^(TOK_REPL_DUMP $dbPolicy ^(TOK_REPLACE $oldDbPolicy)? ^(TOK_FROM $eventId (TOK_TO $rangeEnd)? (TOK_LIMIT $batchSize)?)? $replConf?)
+        (KW_WHERE tblwh=tableWhereClauseList)?
+    -> ^(TOK_REPL_DUMP $dbPolicy ^(TOK_REPLACE $oldDbPolicy)? ^(TOK_FROM $eventId (TOK_TO $rangeEnd)? (TOK_LIMIT $batchSize)?)? $replConf? $tblwh?)
     ;
 
 replDbPolicy
@@ -912,6 +915,20 @@ replDbPolicy
 @after { popMsg(state); }
     :
       (dbName=identifier) (DOT tablePolicy=replTableLevelPolicy)? -> $dbName $tablePolicy?
+      ;
+
+tableWhereClauseList
+@init { pushMsg("Table where clause List for partition filter", state); }
+@after { popMsg(state); }
+    :
+      tableWhereClause (COMMA tableWhereClause)* -> ^(TOK_REPL_COND_LIST tableWhereClause+)
+    ;
+
+tableWhereClause
+@init { pushMsg("Where clasue for each table name pattern", state); }
+@after { popMsg(state); }
+    :
+      tblName=StringLiteral wh=whereClause -> ^(TOK_REPL_COND $tblName $wh)
     ;
 
 replLoadStatement

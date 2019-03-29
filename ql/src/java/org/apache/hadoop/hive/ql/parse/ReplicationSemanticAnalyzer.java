@@ -65,6 +65,7 @@ import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_LOAD;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_STATUS;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_TABLES;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_TO;
+import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_COND_LIST;
 
 public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   // Replication Scope
@@ -180,6 +181,22 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     setReplDumpTablesList(oldPolicyTablesListNode, oldReplScope);
   }
 
+  private void extractPartitionFilter(Tree condNode, ReplScope replScope) throws Exception {
+    for (int i = 0; i < condNode.getChildCount(); i++) {
+      Tree node = condNode.getChild(i);
+      // Table pattern node
+      String tablePattern = unescapeSQLString(node.getChild(0).getText());
+      if (tablePattern == null || tablePattern.isEmpty()) {
+        throw new SemanticException(ErrorMsg.REPL_INVALID_DB_OR_TABLE_PATTERN);
+      }
+
+      // Filter Node
+      Tree filter = node.getChild(1).getChild(0);
+      LOG.info("Adding filter " + filter.toStringTree() + " to repl scope for pattern list " + tablePattern);
+      replScope.setPartFilter(tablePattern, filter);
+    }
+  }
+
   private void initReplDump(ASTNode ast) throws HiveException {
     int numChildren = ast.getChildCount();
     boolean isMetaDataOnly = false;
@@ -233,6 +250,15 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
             }
             // move to the next child in FROM tree
             fromChildIdx++;
+          }
+          break;
+        }
+        case TOK_REPL_COND_LIST: {
+          try {
+            extractPartitionFilter(currNode, replScope);
+          } catch (Exception e) {
+            LOG.error("Failed to extract partition filter.", e);
+            throw new HiveException(e.getMessage());
           }
           break;
         }
