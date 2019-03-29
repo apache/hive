@@ -54,7 +54,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveSubQRemoveRelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.SubqueryConf;
@@ -107,11 +106,9 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
       SubqueryConf subqueryConfig = filter.getCluster().getPlanner().
           getContext().unwrap(SubqueryConf.class);
       boolean isCorrScalarQuery = subqueryConfig.getCorrScalarRexSQWithAgg().contains(e.rel);
-      boolean hasNoWindowingAndNoGby =
-          subqueryConfig.getScalarAggWithoutGbyWindowing().contains(e.rel);
 
       final RexNode target = apply(call.getMetadataQuery(), e, HiveFilter.getVariablesSet(e), logic,
-          builder, 1, fieldCount, isCorrScalarQuery, hasNoWindowingAndNoGby);
+          builder, 1, fieldCount, isCorrScalarQuery);
       final RexShuttle shuttle = new ReplaceSubQueryShuttle(e, target);
       builder.filter(shuttle.apply(filter.getCondition()));
       builder.project(fields(builder, filter.getRowType().getFieldCount()));
@@ -133,11 +130,9 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
       SubqueryConf subqueryConfig =
           project.getCluster().getPlanner().getContext().unwrap(SubqueryConf.class);
       boolean isCorrScalarQuery = subqueryConfig.getCorrScalarRexSQWithAgg().contains(e.rel);
-      boolean hasNoWindowingAndNoGby =
-          subqueryConfig.getScalarAggWithoutGbyWindowing().contains(e.rel);
 
       final RexNode target = apply(call.getMetadataQuery(), e, HiveFilter.getVariablesSet(e),
-          logic, builder, 1, fieldCount, isCorrScalarQuery, hasNoWindowingAndNoGby);
+          logic, builder, 1, fieldCount, isCorrScalarQuery);
       final RexShuttle shuttle = new ReplaceSubQueryShuttle(e, target);
       builder.project(shuttle.apply(project.getProjects()),
           project.getRowType().getFieldNames());
@@ -168,10 +163,9 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
   }
 
   protected RexNode apply(RelMetadataQuery mq, RexSubQuery e, Set<CorrelationId> variablesSet,
-                          RelOptUtil.Logic logic,
-                          HiveSubQRemoveRelBuilder builder, int inputCount, int offset,
-                          boolean isCorrScalarAgg,
-                          boolean hasNoWindowingAndNoGby) {
+      RelOptUtil.Logic logic,
+      HiveSubQRemoveRelBuilder builder, int inputCount, int offset,
+      boolean isCorrScalarAgg) {
     switch (e.getKind()) {
     case SCALAR_QUERY:
       // if scalar query has aggregate and no windowing and no gby avoid adding sq_count_check
@@ -179,8 +173,6 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
       Double maxRowCount = mq.getMaxRowCount(e.rel);
       boolean shouldIntroSQCountCheck = maxRowCount== null || maxRowCount > 1.0;
       if(shouldIntroSQCountCheck) {
-        final List<RexNode> parentQueryFields = new ArrayList<>();
-
         builder.push(e.rel);
         // returns single row/column
         builder.aggregate(builder.groupKey(), builder.count(false, "cnt"));
@@ -199,7 +191,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
         } else {
           builder.join(JoinRelType.INNER, builder.literal(true), variablesSet);
         }
-          offset++;
+        offset++;
       }
       if(isCorrScalarAgg) {
         // Transformation :

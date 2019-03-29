@@ -159,7 +159,7 @@ Stage-0
                                     SHUFFLE [RS_19]
                                       PartitionCols:0
                                       Filter Operator [FIL_18] (rows=20854 width=228)
-                                        predicate:(_col1 > (0.9 * _col2))
+                                        predicate:(_col1 > _col2)
                                         Merge Join Operator [MERGEJOIN_103] (rows=62562 width=228)
                                           Conds:(Inner),Output:["_col0","_col1","_col2"]
                                         <-Reducer 11 [CUSTOM_SIMPLE_EDGE] vectorized
