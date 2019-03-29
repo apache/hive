@@ -178,7 +178,7 @@
     <!-- Glassfish jersey is included for Spark client test only -->
     <glassfish.jersey.version>2.22.2</glassfish.jersey.version>
     <jline.version>2.12</jline.version>
-    <jms.version>1.1</jms.version>
+    <jms.version>2.0.2</jms.version>
     <joda.version>2.9.9</joda.version>
     <jodd.version>3.5.2</jodd.version>
     <json.version>1.8</json.version>
@@ -395,8 +395,8 @@
         <version>${jdo-api.version}</version>
       </dependency>
       <dependency>
-        <groupId>javax.jms</groupId>
-        <artifactId>jms</artifactId>
+        <groupId>jakarta.jms</groupId>
+        <artifactId>jakarta.jms-api</artifactId>
         <version>${jms.version}</version>
       </dependency>
       <dependency>

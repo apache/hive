@@ -81,7 +81,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.io.WritableComparable;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Ignore;
 import org.junit.Test;

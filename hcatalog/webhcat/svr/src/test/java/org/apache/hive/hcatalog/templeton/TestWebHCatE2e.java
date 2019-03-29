@@ -43,7 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 /**
  * A set of tests exercising e2e WebHCat DDL APIs.  These tests are somewhat

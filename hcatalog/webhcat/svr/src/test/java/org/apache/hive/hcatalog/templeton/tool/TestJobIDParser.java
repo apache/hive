@@ -24,7 +24,7 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.junit.Test;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 public class TestJobIDParser {
   @Test

@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import junit.framework.TestCase;
 import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileWriter;

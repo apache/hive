@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.hooks;
 import java.io.Serializable;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hadoop.hive.ql.HiveDriverRunHook;
 import org.apache.hadoop.hive.ql.HiveDriverRunHookContext;
