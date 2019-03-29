@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.session.SessionState;
 

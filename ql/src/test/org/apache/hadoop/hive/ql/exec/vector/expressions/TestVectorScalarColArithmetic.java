@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;

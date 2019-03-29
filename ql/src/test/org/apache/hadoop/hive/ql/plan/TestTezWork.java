@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.LinkedList;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.mapred.JobConf;

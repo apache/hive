@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.persistence;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hadoop.io.Text;
 import org.junit.Test;

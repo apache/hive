@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import java.util.Map;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.MapRedStats;

@@ -29,7 +29,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hive.ptest.api.Status;
 import org.apache.hive.ptest.api.request.TestStartRequest;

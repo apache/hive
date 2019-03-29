@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
 import java.util.Collections;
 import java.util.Set;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hive.ptest.execution.MockSSHCommandExecutor;
 import org.apache.hive.ptest.execution.conf.Host;

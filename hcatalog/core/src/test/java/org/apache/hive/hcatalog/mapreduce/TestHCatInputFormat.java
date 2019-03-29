@@ -19,7 +19,7 @@
 
 package org.apache.hive.hcatalog.mapreduce;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.serde2.thrift.test.IntString;

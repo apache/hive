@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.StringTokenizer;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.hadoop.hive.common.type.HiveChar;

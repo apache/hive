@@ -21,7 +21,7 @@ package org.apache.hive.hcatalog.pig;
 
 import com.google.common.collect.Lists;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
