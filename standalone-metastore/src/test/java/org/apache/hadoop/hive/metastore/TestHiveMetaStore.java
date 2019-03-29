@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
+import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.datanucleus.api.jdo.JDOPersistenceManager;
@@ -3145,5 +3146,10 @@ public abstract class TestHiveMetaStore {
     }
     int size = allUuids.size();
     assertEquals(numAPICallsPerThread * parallelCalls, size);
+  }
+
+  @Test
+  public void testVersion() throws TException {
+    assertEquals(MetastoreVersionInfo.getVersion(), client.getServerVersion());
   }
 }

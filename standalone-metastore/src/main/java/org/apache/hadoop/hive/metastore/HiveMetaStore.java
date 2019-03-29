@@ -5244,8 +5244,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     @Override
     public String getVersion() throws TException {
-      endFunction(startFunction("getVersion"), true, null);
-      return "3.0";
+      String version = MetastoreVersionInfo.getVersion();
+      endFunction(startFunction("getVersion"), version != null, null);
+      return version;
     }
 
     @Override
