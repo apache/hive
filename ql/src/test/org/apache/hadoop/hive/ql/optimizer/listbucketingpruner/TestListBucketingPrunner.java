@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.listbucketingpruner;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import junit.framework.TestCase;
 
 import org.junit.Test;

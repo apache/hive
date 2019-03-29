@@ -24,7 +24,7 @@ import java.io.FileWriter;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hive.hcatalog.common.HCatConstants;

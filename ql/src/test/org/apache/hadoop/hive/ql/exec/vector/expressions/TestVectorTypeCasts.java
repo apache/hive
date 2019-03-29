@@ -27,7 +27,7 @@ import java.sql.Timestamp;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -59,7 +59,7 @@ public class TestVectorTypeCasts {
     b.cols[0].noNulls = true;
     VectorExpression expr = new CastLongToDouble(0, 1);
     expr.evaluate(b);
-    Assert.assertEquals(2.0, resultV.vector[4]);
+    Assert.assertEquals(2.0, resultV.vector[4], Double.MIN_VALUE);
   }
 
   @Test
@@ -105,8 +105,8 @@ public class TestVectorTypeCasts {
     b.cols[0].noNulls = true;
     VectorExpression expr = new CastDoubleToTimestamp(0, 1);
     expr.evaluate(b);
-    Assert.assertEquals(0.0, TimestampUtils.getDouble(resultV.asScratchTimestamp(3)));
-    Assert.assertEquals(0.5d, TimestampUtils.getDouble(resultV.asScratchTimestamp(4)));
+    Assert.assertEquals(0.0, TimestampUtils.getDouble(resultV.asScratchTimestamp(3)), Double.MIN_VALUE);
+    Assert.assertEquals(0.5d, TimestampUtils.getDouble(resultV.asScratchTimestamp(4)), Double.MIN_VALUE);
   }
 
   @Test
@@ -663,7 +663,7 @@ public class TestVectorTypeCasts {
     HiveDecimal[] hiveDecimalValues = new HiveDecimal[500];
     VectorizedRowBatch b = getBatchTimestampDecimal(hiveDecimalValues);
     VectorExpression expr = new CastTimestampToDecimal(0, 1);
-    TimestampColumnVector inT = (TimestampColumnVector) b.cols[0];
+
     expr.evaluate(b);
     DecimalColumnVector r = (DecimalColumnVector) b.cols[1];
     for (int i = 0; i < hiveDecimalValues.length; i++) {

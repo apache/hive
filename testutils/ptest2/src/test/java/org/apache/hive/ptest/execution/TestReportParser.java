@@ -20,7 +20,7 @@ package org.apache.hive.ptest.execution;
 
 import java.io.File;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
