@@ -47,8 +47,8 @@
     </dependency>
     <!-- inter-project -->
     <dependency>
-      <groupId>javax.jms</groupId>
-      <artifactId>jms</artifactId>
+      <groupId>jakarta.jms</groupId>
+      <artifactId>jakarta.jms-api</artifactId>
       <version>${jms.version}</version>
     </dependency>
     <dependency>
