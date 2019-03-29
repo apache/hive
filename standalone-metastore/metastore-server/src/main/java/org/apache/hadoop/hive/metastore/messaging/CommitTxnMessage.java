@@ -56,4 +56,6 @@ public abstract class CommitTxnMessage extends EventMessage {
   public abstract List<String> getFilesList();
 
   public abstract void addWriteEventInfo(List<WriteEventInfo> writeEventInfoList);
+
+  public abstract void removeWriteEventInfo(int idx);
 }

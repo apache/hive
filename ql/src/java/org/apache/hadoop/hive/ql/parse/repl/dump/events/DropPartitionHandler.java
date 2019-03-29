@@ -47,6 +47,8 @@ class DropPartitionHandler extends AbstractEventHandler<DropPartitionMessage> {
       return;
     }
 
+    //TODO : Even if partition filter is specified, we dump the drop partition message for all partitions.
+    // The filtering is handled during load, where the event will be skipped as partition will not be present.
     DumpMetaData dmd = withinContext.createDmd(this);
     dmd.setPayload(eventMessageAsJSON);
     dmd.write();

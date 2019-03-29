@@ -84,7 +84,11 @@ class AddPartitionHandler extends AbstractEventHandler {
             return null;
           }
           try {
-            return new Partition(qlMdTable, input);
+            Partition partition = new Partition(qlMdTable, input);
+            if (withinContext.isPartitionIncludedInDump(qlMdTable, withinContext.hiveConf, partition.getValues())) {
+              return partition;
+            }
+            return null;
           } catch (HiveException e) {
             throw new IllegalArgumentException(e);
           }
@@ -105,6 +109,9 @@ class AddPartitionHandler extends AbstractEventHandler {
     // list would be empty. So, it is enough to check hasNext outside the loop.
     if (partitionFilesIter.hasNext()) {
       for (Partition qlPtn : qlPtns) {
+        if (qlPtn == null) {
+          continue;
+        }
         Iterable<String> files = partitionFilesIter.next().getFiles();
         if (files != null) {
           // encoded filename/checksum of files, write into _files

@@ -69,6 +69,9 @@ class InsertHandler extends AbstractEventHandler<InsertMessage> {
     List<Partition> qlPtns = null;
     if (qlMdTable.isPartitioned() && (null != eventMessage.getPtnObj())) {
       qlPtns = Collections.singletonList(partitionObject(qlMdTable, eventMessage));
+      if (!withinContext.isPartitionIncludedInDump(qlMdTable, withinContext.hiveConf, qlPtns.get(0).getValues())) {
+        return;
+      }
     }
     Path metaDataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
 

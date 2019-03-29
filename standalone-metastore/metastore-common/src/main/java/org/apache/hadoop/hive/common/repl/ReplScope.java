@@ -36,6 +36,7 @@ public class ReplScope implements Serializable {
   private Pattern includedTableNamePattern;
   private Pattern excludedTableNamePattern;
   private Map<Pattern, Object> partFilter = new HashMap<>();
+  private Map<String, Object> partFilterTableMap = new HashMap<>();
 
   public ReplScope() {
   }
@@ -121,6 +122,10 @@ public class ReplScope implements Serializable {
   }
 
   public Object getPartFilter(String tableName) {
+    // This will make sure that for each table partFilter is scanned only once.
+    if (partFilterTableMap.containsKey(tableName.toLowerCase())) {
+      return partFilterTableMap.get(tableName);
+    }
     Object filter = null;
     // The number of patterns are not expected to be huge, so iterating the whole list once per table should not
     // be an issue.
@@ -132,6 +137,8 @@ public class ReplScope implements Serializable {
         filter = partFilter.get(pattern);
       }
     }
+    // The filter can be null for cases where the table does not match any of the pattern.
+    this.partFilterTableMap.put(tableName, filter);
     return filter;
   }
 

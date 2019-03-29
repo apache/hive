@@ -26,7 +26,10 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.misc.AlterTableSetPropertiesDesc;
@@ -34,7 +37,9 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
@@ -43,6 +48,7 @@ import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.util.HiveStrictManagedMigration;
@@ -57,6 +63,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.LinkedList;
+import java.util.Collections;
 import java.io.Serializable;
 
 import static org.apache.hadoop.hive.ql.util.HiveStrictManagedMigration.TableMigrationOption.MANAGED;
@@ -292,5 +300,26 @@ public class ReplUtils {
 
   public static boolean tableIncludedInReplScope(ReplScope replScope, String tableName) {
     return ((replScope == null) || replScope.tableIncludedInReplScope(tableName));
+  }
+
+  public static boolean isPartSatisfiesFilter(Table tbl, List<String> partValues, ExprNodeDesc partitionFilter,
+                                              HiveConf conf) throws HiveException, MetaException {
+    // Pass the table name as a linked list (single node) to partition pruner. If the table is pruned that means
+    // it's not passing the filter. Linked list is used as pruner expect a list
+    // so that it is easy to remove node from it.
+    List<String> partColumnNames = new ArrayList<>();
+    List<PrimitiveTypeInfo> partColumnTypeInfos = new ArrayList<>();
+    String partName = Warehouse.makePartName(tbl.getPartCols(), partValues);
+    for (FieldSchema fs : tbl.getPartCols()) {
+      partColumnNames.add(fs.getName());
+      partColumnTypeInfos.add(TypeInfoFactory.getPrimitiveTypeInfo(fs.getType()));
+    }
+    LinkedList linkedList = new LinkedList<>(Collections.singletonList(partName));
+    PartitionPruner.prunePartitionNames(partColumnNames, partColumnTypeInfos,
+            (ExprNodeGenericFuncDesc) partitionFilter,
+            conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
+            linkedList);
+    // If linked list is empty means the partition does not satisfies the filter.
+    return !linkedList.isEmpty();
   }
 }

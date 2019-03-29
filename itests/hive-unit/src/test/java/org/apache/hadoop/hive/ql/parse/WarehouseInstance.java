@@ -255,33 +255,24 @@ public class WarehouseInstance implements Closeable {
     return this;
   }
 
-  Tuple dump(String replPolicy, String oldReplPolicy, String lastReplicationId, List<String> withClauseOptions)
+  Tuple dump(String replPolicy, String lastReplicationId, List<String> withClauseOptions)
           throws Throwable {
-    return dump(replPolicy, oldReplPolicy, lastReplicationId, withClauseOptions, null);
-  }
-
-  Tuple dump(String dbName, String lastReplicationId, List<String> withClauseOptions)
-      throws Throwable {
     String dumpCommand =
-        "REPL DUMP " + dbName + (lastReplicationId == null ? "" : " FROM " + lastReplicationId);
-    if (!withClauseOptions.isEmpty()) {
+            "REPL DUMP " + replPolicy + (lastReplicationId == null ? "" : " FROM " + lastReplicationId);
+    if (withClauseOptions != null && !withClauseOptions.isEmpty()) {
       dumpCommand += " with (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
     return dump(dumpCommand);
   }
 
-  Tuple dump(String replPolicy, String oldReplPolicy, String lastReplicationId, List<String> withClauseOptions,
-             String partitionFilter) throws Throwable {
+  Tuple dump(String replPolicy, String oldReplPolicy, String lastReplicationId, List<String> withClauseOptions)
+          throws Throwable {
     String dumpCommand =
             "REPL DUMP " + replPolicy
                     + (oldReplPolicy == null ? "" : " REPLACE " + oldReplPolicy)
                     + (lastReplicationId == null ? "" : " FROM " + lastReplicationId);
     if (withClauseOptions != null && !withClauseOptions.isEmpty()) {
       dumpCommand += " with (" + StringUtils.join(withClauseOptions, ",") + ")";
-    }
-
-    if (partitionFilter != null) {
-      dumpCommand += " where " + partitionFilter;
     }
     return dump(dumpCommand);
   }
@@ -294,13 +285,13 @@ public class WarehouseInstance implements Closeable {
     return new Tuple(dumpLocation, lastDumpId);
   }
 
-  Tuple dump(String dbName, String lastReplicationId) throws Throwable {
-    return dump(dbName, lastReplicationId, Collections.emptyList());
+  Tuple dump(String replPolicy, String lastReplicationId) throws Throwable {
+    return dump(replPolicy, lastReplicationId, Collections.emptyList());
   }
 
-  WarehouseInstance dumpFailure(String dbName, String lastReplicationId) throws Throwable {
+  WarehouseInstance dumpFailure(String replPolicy, String lastReplicationId) throws Throwable {
     String dumpCommand =
-            "REPL DUMP " + dbName + (lastReplicationId == null ? "" : " FROM " + lastReplicationId);
+            "REPL DUMP " + replPolicy + (lastReplicationId == null ? "" : " FROM " + lastReplicationId);
     advanceDumpDir();
     runFailure(dumpCommand);
     return this;

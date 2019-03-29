@@ -161,8 +161,6 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
       int numEntry = (writeEventInfoList != null ? writeEventInfoList.size() : 0);
       if (numEntry != 0) {
         eventMessage.addWriteEventInfo(writeEventInfoList);
-        payload = jsonMessageEncoder.getSerializer().serialize(eventMessage);
-        LOG.debug("payload for commit txn event : " + eventMessageAsJSON);
       }
 
       org.apache.hadoop.hive.ql.metadata.Table qlMdTablePrev = null;
@@ -191,8 +189,18 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
         }
 
         if (qlMdTable.isPartitioned() && (null != eventMessage.getPartitionObj(idx))) {
-          qlPtns.add(new org.apache.hadoop.hive.ql.metadata.Partition(qlMdTable,
-              eventMessage.getPartitionObj(idx)));
+          org.apache.hadoop.hive.ql.metadata.Partition partition =
+                  new org.apache.hadoop.hive.ql.metadata.Partition(qlMdTable,
+                  eventMessage.getPartitionObj(idx));
+          if (withinContext.isPartitionIncludedInDump(qlMdTable, withinContext.hiveConf, partition.getValues())) {
+            qlPtns.add(partition);
+          } else {
+            // If partition is filtered out, remove its entry from eventMessage. Update the iterators accordingly.
+            eventMessage.removeWriteEventInfo(idx);
+            idx--;
+            numEntry--;
+            continue;
+          }
         }
 
         filesTobeAdded.add(Lists.newArrayList(
@@ -202,6 +210,13 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
       //Dump last table in the list
       if (qlMdTablePrev != null) {
         createDumpFileForTable(withinContext, qlMdTablePrev, qlPtns, filesTobeAdded);
+      }
+
+      // Build the payload after eventMessage is updated properly using filter. If no write event info is there,
+      // no need to re-create the payload.
+      if (writeEventInfoList != null && writeEventInfoList.size() != 0) {
+        payload = jsonMessageEncoder.getSerializer().serialize(eventMessage);
+        LOG.debug("payload for commit txn event : " + payload);
       }
     }
 

@@ -34,6 +34,7 @@ import java.util.List;
 
 class AlterPartitionHandler extends AbstractEventHandler<AlterPartitionMessage> {
   private final org.apache.hadoop.hive.metastore.api.Partition after;
+  private final org.apache.hadoop.hive.metastore.api.Partition before;
   private final org.apache.hadoop.hive.metastore.api.Table tableObject;
   private final boolean isTruncateOp;
   private final Scenario scenario;
@@ -42,7 +43,7 @@ class AlterPartitionHandler extends AbstractEventHandler<AlterPartitionMessage> 
     super(event);
     AlterPartitionMessage apm = eventMessage;
     tableObject = apm.getTableObj();
-    org.apache.hadoop.hive.metastore.api.Partition before = apm.getPtnObjBefore();
+    before = apm.getPtnObjBefore();
     after = apm.getPtnObjAfter();
     isTruncateOp = apm.getIsTruncateOp();
     scenario = scenarioType(before, after);
@@ -102,6 +103,10 @@ class AlterPartitionHandler extends AbstractEventHandler<AlterPartitionMessage> 
     Table qlMdTable = new Table(tableObject);
     if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, true,
             withinContext.getTablesForBootstrap(), withinContext.oldReplScope,  withinContext.hiveConf)) {
+      return;
+    }
+
+    if (!withinContext.isPartitionIncludedInDump(qlMdTable, withinContext.hiveConf, before.getValues())) {
       return;
     }
 

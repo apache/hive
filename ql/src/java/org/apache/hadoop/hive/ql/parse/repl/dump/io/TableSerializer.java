@@ -104,8 +104,10 @@ public class TableSerializer implements JsonWriter.Serializer {
     writer.jsonGenerator.writeStartArray();
     if (partitions != null) {
       for (org.apache.hadoop.hive.ql.metadata.Partition partition : partitions) {
-        new PartitionSerializer(partition.getTPartition())
-            .writeTo(writer, additionalPropertiesProvider);
+        if (partition != null) {
+          new PartitionSerializer(partition.getTPartition())
+                  .writeTo(writer, additionalPropertiesProvider);
+        }
       }
     }
     writer.jsonGenerator.writeEndArray();

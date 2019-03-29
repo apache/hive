@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.ReplEventFilter;
@@ -83,6 +84,12 @@ import java.util.UUID;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Writer;
 
 public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
@@ -242,6 +249,29 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return true;
   }
 
+  private Map<String, Set<String>> getPartitionFilter(Hive hiveDb) throws Exception {
+    Map<String, Set<String>> partitionFilter = new HashMap<>();
+
+    for (String tableName : hiveDb.getMSC().getAllTables(work.dbNameOrPattern)) {
+      String filter = work.getPartitionFilter(tableName);
+      if (filter != null) {
+        //TODO : May cause issue if the numbber of partitions is too huge.
+        List<Partition> partitions =
+                hiveDb.getMSC().listPartitionsByFilter(work.dbNameOrPattern, tableName, filter, (short)-1);
+        Set<String> partitionsSet = StreamSupport.stream(partitions.spliterator(), true).map(
+                partition -> {
+                  if (partition == null) {
+                    return null;
+                  }
+                  return partition.getValues().toString();
+                }).collect(Collectors.toSet());
+        LOG.info("Added partition filter " + filter + " for table " + tableName);
+        partitionFilter.put(tableName, partitionsSet);
+      }
+    }
+    return partitionFilter;
+  }
+
   private Long incrementalDump(Path dumpRoot, DumpMetaData dmd, Path cmRoot, Hive hiveDb) throws Exception {
     Long lastReplId;// get list of events matching dbPattern & tblPattern
     // go through each event, and dump out each event to a event-level dump dir inside dumproot
@@ -297,11 +327,14 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             evFetcher.getDbNotificationEventsCount(work.eventFrom, dbName, work.eventTo,
                     work.maxEventLimit()));
     replLogger.startLog();
+
+    Map<String, Set<String>> partitionFilter = getPartitionFilter(hiveDb);
+
     while (evIter.hasNext()) {
       NotificationEvent ev = evIter.next();
       lastReplId = ev.getEventId();
       Path evRoot = new Path(dumpRoot, String.valueOf(lastReplId));
-      dumpEvent(ev, evRoot, cmRoot, hiveDb);
+      dumpEvent(ev, evRoot, cmRoot, hiveDb, partitionFilter);
     }
 
     replLogger.endLog(lastReplId.toString());
@@ -381,7 +414,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return new Path(dumpRoot, dbName);
   }
 
-  private void dumpEvent(NotificationEvent ev, Path evRoot, Path cmRoot, Hive db) throws Exception {
+  private void dumpEvent(NotificationEvent ev, Path evRoot, Path cmRoot, Hive db,
+                         Map<String, Set<String>> partitionFilter) throws Exception {
     EventHandler.Context context = new EventHandler.Context(
         evRoot,
         cmRoot,
@@ -581,7 +615,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     MmContext mmCtx = MmContext.createIfNeeded(tableSpec.tableHandle);
     new TableExport(exportPaths, tableSpec, tuple.replicationSpec, hiveDb, distCpDoAsUser, conf,
             mmCtx, work.replScope).write();
-
     replLogger.tableLog(tblName, tableSpec.tableHandle.getTableType());
   }
 

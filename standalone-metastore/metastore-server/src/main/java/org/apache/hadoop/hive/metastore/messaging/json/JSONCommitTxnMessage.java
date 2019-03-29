@@ -174,6 +174,17 @@ public class JSONCommitTxnMessage extends CommitTxnMessage {
   }
 
   @Override
+  public void removeWriteEventInfo(int idx) {
+    this.databases.remove(idx);
+    this.tables.remove(idx);
+    this.writeIds.remove(idx);
+    this.partitions.remove(idx);
+    this.tableObjs.remove(idx);
+    this.partitionObjs.remove(idx);
+    this.files.remove(idx);
+  }
+
+  @Override
   public String toString() {
     try {
       return JSONMessageDeserializer.mapper.writeValueAsString(this);

@@ -20,11 +20,22 @@ package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.TypeCheckCtx;
+import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+
 import java.util.Set;
+import java.util.List;
 
 public interface EventHandler {
   void handle(Context withinContext) throws Exception;
@@ -94,6 +105,23 @@ public interface EventHandler {
     boolean removeFromListOfTablesForBootstrap(String tableName) {
       assert tableName != null;
       return tablesForBootstrap.remove(tableName.toLowerCase());
+    }
+
+    public boolean isPartitionIncludedInDump(Table tbl, HiveConf conf, List<String> partValues) {
+      try {
+        ASTNode filterNode = (ASTNode)replScope.getPartFilter(tbl.getTableName());
+        if (filterNode == null) {
+          // Table has no filter, means all partitions are part of dump.
+          return true;
+        }
+        ExprNodeDesc partitionFilter = TypeCheckProcFactory.genExprNode(filterNode,
+                new TypeCheckCtx(SemanticAnalyzer.getRowResolverFromTable(tbl))).get(filterNode);
+        return ReplUtils.isPartSatisfiesFilter(tbl, partValues, partitionFilter, conf);
+      } catch (HiveException e) {
+        throw new RuntimeException(e.getMessage());
+      } catch (MetaException e) {
+        throw new RuntimeException(e.getMessage());
+      }
     }
   }
 }
