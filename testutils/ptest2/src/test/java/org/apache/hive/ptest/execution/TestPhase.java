@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hive.ptest.execution.ssh.NonZeroExitCodeException;
 import org.approvaltests.Approvals;

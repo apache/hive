@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.common;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.apache.hadoop.conf.Configuration;
 import org.junit.Test;
 

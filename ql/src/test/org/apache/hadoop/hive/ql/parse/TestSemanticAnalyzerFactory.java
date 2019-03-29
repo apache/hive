@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.antlr.runtime.CommonToken;
 import org.apache.hadoop.hive.conf.HiveConf;

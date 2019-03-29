@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.hooks;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;

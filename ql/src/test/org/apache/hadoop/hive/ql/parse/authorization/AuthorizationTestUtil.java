@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 /**
  * Util function for authorization tests

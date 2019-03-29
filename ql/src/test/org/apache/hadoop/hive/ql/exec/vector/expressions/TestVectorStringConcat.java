@@ -67,7 +67,7 @@ import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Test;
 
