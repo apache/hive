@@ -2567,4 +2567,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     CacheFileMetadataResult result = client.cache_file_metadata(req);
     return result.isIsSupported();
   }
+
+  @Override
+  public String getServerVersion() throws TException {
+    return client.getVersion();
+  }
 }
