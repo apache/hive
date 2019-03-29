@@ -137,9 +137,61 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     Utils.writeOutput(values, new Path(work.resultTempPath), conf);
   }
 
+  /**
+   * Decide whether to examine all the tables to dump. We do this if
+   * 1. External tables are going to be part of the dump : In which case we need to list their
+   * locations.
+   * 2. External or ACID tables are being bootstrapped for the first time : so that we can dump
+   * those tables as a whole.
+   * @return
+   */
+  private boolean shouldDumpExternalTableLocation() {
+    return conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)
+            && (!conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY)
+            || conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES));
+  }
+
+  private boolean shouldExamineTablesToDump() {
+    return shouldDumpExternalTableLocation() ||
+            conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES);
+  }
+
+  private boolean shouldBootstrapDumpTable(Table table) {
+    if (conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES) &&
+            TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
+      return true;
+    }
+
+    if (conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES) &&
+           AcidUtils.isTransactionalTable(table)) {
+      return true;
+    }
+
+    return false;
+  }
+
   private Long incrementalDump(Path dumpRoot, DumpMetaData dmd, Path cmRoot, Hive hiveDb) throws Exception {
     Long lastReplId;// get list of events matching dbPattern & tblPattern
     // go through each event, and dump out each event to a event-level dump dir inside dumproot
+    ValidTxnList validTxnList = null;
+    long waitUntilTime = 0;
+    long bootDumpBeginReplId = -1;
+
+    // If we are bootstrapping ACID tables, we need to perform steps similar to a regular
+    // bootstrap (See bootstrapDump() for more details. Only difference here is instead of
+    // waiting for the concurrent transactions to finish, we start dumping the incremental events
+    // and wait only for the remaining time if any.
+    if (conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES)) {
+      bootDumpBeginReplId = queryState.getConf().getLong(ReplUtils.LAST_REPL_ID_KEY, -1L);
+      assert (bootDumpBeginReplId >= 0);
+      LOG.info("Dump for bootstrapping ACID tables during an incremental dump for db {} and table {}",
+              work.dbNameOrPattern,
+              work.tableNameOrPattern);
+      validTxnList = getTxnMgr().getValidTxns();
+      long timeoutInMs = HiveConf.getTimeVar(conf,
+              HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
+      waitUntilTime = System.currentTimeMillis() + timeoutInMs;
+    }
 
     // TODO : instead of simply restricting by message format, we should eventually
     // move to a jdbc-driver-stype registering of message format, and picking message
@@ -147,7 +199,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     // same factory, restricting by message format is effectively a guard against
     // older leftover data that would cause us problems.
 
-    work.overrideEventTo(hiveDb);
+    work.overrideEventTo(hiveDb, bootDumpBeginReplId);
 
     IMetaStoreClient.NotificationFilter evFilter = new AndFilter(
         new DatabaseAndTableFilter(work.dbNameOrPattern, work.tableNameOrPattern),
@@ -193,27 +245,36 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     dmd.setDump(DumpType.INCREMENTAL, work.eventFrom, lastReplId, cmRoot);
     dmd.write();
 
-    // If external tables are enabled for replication and
-    // - If bootstrap is enabled, then need to combine bootstrap dump of external tables.
-    // - If metadata-only dump is enabled, then shall skip dumping external tables data locations to
-    //   _external_tables_info file. If not metadata-only, then dump the data locations.
-    if (conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)
-        && (!conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY)
-        || conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES))) {
+    // If required wait more for any transactions open at the time of starting the ACID bootstrap.
+    if (conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES)) {
+      assert (waitUntilTime > 0);
+      validTxnList = getValidTxnListForReplDump(hiveDb, validTxnList, waitUntilTime);
+    }
+
+    // Examine all the tables if required.
+    if (shouldExamineTablesToDump()) {
       Path dbRoot = getBootstrapDbRoot(dumpRoot, dbName, true);
+
       try (Writer writer = new Writer(dumpRoot, conf)) {
         for (String tableName : Utils.matchesTbl(hiveDb, dbName, work.tableNameOrPattern)) {
           Table table = hiveDb.getTable(dbName, tableName);
-          if (TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
+
+          // Dump external table locations if required.
+          if (shouldDumpExternalTableLocation() &&
+                  TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
             writer.dataLocationDump(table);
-            if (conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES)) {
-              HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(table);
-              dumpTable(dbName, tableName, null, dbRoot, 0, hiveDb, tableTuple);
-            }
+          }
+
+          // Dump the table to be bootstrapped if required.
+          if (shouldBootstrapDumpTable(table)) {
+            HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(table);
+            dumpTable(dbName, tableName, validTxnList.toString(), dbRoot, bootDumpBeginReplId, hiveDb,
+                      tableTuple);
           }
         }
       }
     }
+
     return lastReplId;
   }
 
@@ -256,8 +317,19 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     assert (bootDumpBeginReplId >= 0L);
 
     LOG.info("Bootstrap Dump for db {} and table {}", work.dbNameOrPattern, work.tableNameOrPattern);
+    // Key design point for REPL DUMP is to not have any txns older than current txn in which dump runs.
+    // This is needed to ensure that Repl dump doesn't copy any data files written by any open txns
+    // mainly for streaming ingest case where one delta file shall have data from committed/aborted/open txns.
+    // It may also have data inconsistency if the on-going txns doesn't have corresponding open/write
+    // events captured which means, catch-up incremental phase won't be able to replicate those txns.
+    // So, the logic is to wait for configured amount of time to see if all open txns < current txn is
+    // getting aborted/committed. If not, then we forcefully abort those txns just like AcidHouseKeeperService.
+    ValidTxnList validTxnList = getTxnMgr().getValidTxns();
+    long timeoutInMs = HiveConf.getTimeVar(conf,
+            HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
+    long waitUntilTime = System.currentTimeMillis() + timeoutInMs;
 
-    String validTxnList = getValidTxnListForReplDump(hiveDb);
+    validTxnList = getValidTxnListForReplDump(hiveDb, validTxnList, waitUntilTime);
     for (String dbName : Utils.matchesDb(hiveDb, work.dbNameOrPattern)) {
       LOG.debug("ReplicationSemanticAnalyzer: analyzeReplDump dumping db: " + dbName);
       Database db = hiveDb.getDatabase(dbName);
@@ -298,7 +370,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               LOG.debug("Adding table {} to external tables list", tblName);
               writer.dataLocationDump(tableTuple.object);
             }
-            dumpTable(dbName, tblName, validTxnList, dbRoot, bootDumpBeginReplId, hiveDb,
+            dumpTable(dbName, tblName, validTxnList.toString(), dbRoot, bootDumpBeginReplId, hiveDb,
                 tableTuple);
           } catch (InvalidTableException te) {
             // Bootstrap dump shouldn't fail if the table is dropped/renamed while dumping it.
@@ -397,22 +469,13 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return openTxns;
   }
 
-  String getValidTxnListForReplDump(Hive hiveDb) throws HiveException {
-    // Key design point for REPL DUMP is to not have any txns older than current txn in which dump runs.
-    // This is needed to ensure that Repl dump doesn't copy any data files written by any open txns
-    // mainly for streaming ingest case where one delta file shall have data from committed/aborted/open txns.
-    // It may also have data inconsistency if the on-going txns doesn't have corresponding open/write
-    // events captured which means, catch-up incremental phase won't be able to replicate those txns.
-    // So, the logic is to wait for configured amount of time to see if all open txns < current txn is
-    // getting aborted/committed. If not, then we forcefully abort those txns just like AcidHouseKeeperService.
-    ValidTxnList validTxnList = getTxnMgr().getValidTxns();
-    long timeoutInMs = HiveConf.getTimeVar(conf,
-            HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
-    long waitUntilTime = System.currentTimeMillis() + timeoutInMs;
+  ValidTxnList getValidTxnListForReplDump(Hive hiveDb, ValidTxnList validTxnList,
+                                          long waitUntilTime)
+          throws HiveException {
     while (System.currentTimeMillis() < waitUntilTime) {
       // If there are no txns which are open for the given ValidTxnList snapshot, then just return it.
       if (getOpenTxns(validTxnList).isEmpty()) {
-        return validTxnList.toString();
+        return validTxnList;
       }
 
       // Wait for 1 minute and check again.
@@ -436,7 +499,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         throw new IllegalStateException("REPL DUMP triggered abort txns failed for unknown reasons.");
       }
     }
-    return validTxnList.toString();
+    return validTxnList;
   }
 
   private ReplicationSpec getNewReplicationSpec(String evState, String objState,

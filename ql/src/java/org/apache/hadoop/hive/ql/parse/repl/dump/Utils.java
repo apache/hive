@@ -196,6 +196,23 @@ public class Utils {
         }
         return shouldReplicateExternalTables;
       }
+
+      if (AcidUtils.isTransactionalTable(tableHandle.getTTable())) {
+        // For testing purposes only, do not replicate ACID tables when config says so
+        boolean shouldReplicateAcidTables = true;
+        if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)) {
+          shouldReplicateAcidTables =
+                        hiveConf.getBoolVar((HiveConf.ConfVars.REPL_DUMP_INCLUDE_ACID_TABLES));
+        }
+        if (!shouldReplicateAcidTables) {
+          return false;
+        }
+
+        // Skip dumping events related to ACID tables if bootstrap is enabled on it
+        if (isEventDump) {
+           return !hiveConf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES);
+        }
+      }
     }
     return true;
   }

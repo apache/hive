@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -38,6 +39,8 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.validation.Valid;
 
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -78,8 +81,9 @@ public class TestReplDumpTask {
     }
 
     @Override
-    String getValidTxnListForReplDump(Hive hiveDb) {
-      return "";
+    ValidTxnList getValidTxnListForReplDump(Hive hiveDb, ValidTxnList validTxnList,
+                                            long waitUntilTime) {
+      return validTxnList;
     }
 
     @Override

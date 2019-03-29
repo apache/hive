@@ -23,6 +23,7 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -36,6 +37,7 @@ import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.Behaviour
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.Utils;
@@ -55,6 +57,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Collections;
 import java.util.Map;
@@ -80,6 +83,14 @@ public class TestReplicationScenariosAcidTables {
     REPL_TEST_ACID_INSERT_OVERWRITE, REPL_TEST_ACID_INSERT_IMPORT, REPL_TEST_ACID_INSERT_LOADLOCAL,
     REPL_TEST_ACID_INSERT_UNION
   }
+  private static List<String> dumpWithoutAcidClause = Collections.singletonList(
+          "'" + HiveConf.ConfVars.REPL_DUMP_INCLUDE_ACID_TABLES.varname + "'='false'");
+  private static List<String> dumpWithAcidBootstrapClause = Arrays.asList(
+          "'" + HiveConf.ConfVars.REPL_DUMP_INCLUDE_ACID_TABLES.varname + "'='true'",
+          "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES + "'='true'");
+  private List<String> acidTableNames = new LinkedList<>();
+  private List<String> nonAcidTableNames = new LinkedList<>();
+
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
@@ -109,6 +120,7 @@ public class TestReplicationScenariosAcidTables {
       put("hive.mapred.mode", "nonstrict");
       put("mapred.input.dir.recursive", "true");
       put("hive.metastore.disallow.incompatible.col.type.changes", "false");
+      put("hive.in.repl.test", "true");
     }};
 
     acidEnableConf.putAll(overrides);
@@ -149,10 +161,10 @@ public class TestReplicationScenariosAcidTables {
     primary.run("drop database if exists " + primaryDbName + "_extra cascade");
   }
 
-  private WarehouseInstance.Tuple prepareDataAndDump(String primaryDbName, String fromReplId) throws Throwable {
-    return primary.run("use " + primaryDbName)
+  private void prepareAcidData(String primaryDbName) throws Throwable {
+    primary.run("use " + primaryDbName)
             .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
-                    "tblproperties (\"transactional\"=\"true\")")
+            "tblproperties (\"transactional\"=\"true\")")
             .run("insert into t1 values(1)")
             .run("insert into t1 values(2)")
             .run("create table t2 (place string) partitioned by (country string) clustered by(place) " +
@@ -165,46 +177,344 @@ public class TestReplicationScenariosAcidTables {
                     "\"transactional_properties\"=\"insert_only\")")
             .run("insert into t3 values(11)")
             .run("insert into t3 values(22)")
-            .run("create table t4 (id int)")
-            .run("insert into t4 values(111), (222)")
             .run("create table t5 (id int) stored as orc ")
             .run("insert into t5 values(1111), (2222)")
             .run("alter table t5 set tblproperties (\"transactional\"=\"true\")")
-            .run("insert into t5 values(3333)")
-            .dump(primaryDbName, fromReplId);
+            .run("insert into t5 values(3333)");
+    acidTableNames.add("t1");
+    acidTableNames.add("t2");
+    acidTableNames.add("t3");
+    acidTableNames.add("t5");
   }
 
-  private void verifyLoadExecution(String replicatedDbName, String lastReplId) throws Throwable {
+  private void prepareNonAcidData(String primaryDbName) throws Throwable {
+    primary.run("use " + primaryDbName)
+            .run("create table t4 (id int)")
+            .run("insert into t4 values(111), (222)");
+    nonAcidTableNames.add("t4");
+  }
+  private WarehouseInstance.Tuple prepareDataAndDump(String primaryDbName, String fromReplId,
+                                                     List<String> withClause) throws Throwable {
+    prepareAcidData(primaryDbName);
+    prepareNonAcidData(primaryDbName);
+    return primary.run("use " + primaryDbName)
+            .dump(primaryDbName, fromReplId, withClause != null ?
+                    withClause : Collections.emptyList());
+  }
+
+  private void verifyNonAcidTableLoad(String replicatedDbName) throws Throwable {
     replica.run("use " + replicatedDbName)
-            .run("show tables")
-            .verifyResults(new String[] {"t1", "t2", "t3", "t4", "t5"})
-            .run("repl status " + replicatedDbName)
-            .verifyResult(lastReplId)
+            .run("select id from t4 order by id")
+            .verifyResults(new String[] {"111", "222"});
+  }
+
+  private void verifyAcidTableLoad(String replicatedDbName) throws Throwable {
+    replica.run("use " + replicatedDbName)
             .run("select id from t1 order by id")
             .verifyResults(new String[]{"1", "2"})
             .run("select country from t2 order by country")
             .verifyResults(new String[] {"france", "india", "us"})
             .run("select rank from t3 order by rank")
             .verifyResults(new String[] {"11", "22"})
-            .run("select id from t4 order by id")
-            .verifyResults(new String[] {"111", "222"})
             .run("select id from t5 order by id")
             .verifyResults(new String[] {"1111", "2222", "3333"});
   }
 
+  private void verifyLoadExecution(String replicatedDbName, String lastReplId, boolean includeAcid)
+          throws Throwable {
+    List<String> tableNames = new LinkedList<>(nonAcidTableNames);
+    if (includeAcid) {
+      tableNames.addAll(acidTableNames);
+    }
+    replica.run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(tableNames)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(lastReplId);
+    verifyNonAcidTableLoad(replicatedDbName);
+    if (includeAcid) {
+      verifyAcidTableLoad(replicatedDbName);
+    }
+  }
+
   @Test
   public void testAcidTablesBootstrap() throws Throwable {
-    WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null);
+    // Bootstrap
+    WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null, null);
     replica.load(replicatedDbName, bootstrapDump.dumpLocation);
-    verifyLoadExecution(replicatedDbName, bootstrapDump.lastReplicationId);
+    verifyLoadExecution(replicatedDbName, bootstrapDump.lastReplicationId, true);
+
+    // First incremental, after bootstrap
+    prepareIncNonAcidData(primaryDbName);
+    prepareIncAcidData(primaryDbName);
+    LOG.info(testName.getMethodName() + ": first incremental dump and load.");
+    WarehouseInstance.Tuple incDump = primary.run("use " + primaryDbName)
+            .dump(primaryDbName, bootstrapDump.lastReplicationId);
+    replica.load(replicatedDbName, incDump.dumpLocation);
+    verifyIncLoad(replicatedDbName, incDump.lastReplicationId);
+
+    // Second incremental, after bootstrap
+    prepareInc2NonAcidData(primaryDbName, primary.hiveConf);
+    prepareInc2AcidData(primaryDbName, primary.hiveConf);
+    LOG.info(testName.getMethodName() + ": second incremental dump and load.");
+    WarehouseInstance.Tuple inc2Dump = primary.run("use " + primaryDbName)
+            .dump(primaryDbName, incDump.lastReplicationId);
+    replica.load(replicatedDbName, inc2Dump.dumpLocation);
+    verifyInc2Load(replicatedDbName, inc2Dump.lastReplicationId);
   }
 
   @Test
   public void testAcidTablesMoveOptimizationBootStrap() throws Throwable {
-    WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null);
+    WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null, null);
     replica.load(replicatedDbName, bootstrapDump.dumpLocation,
             Collections.singletonList("'hive.repl.enable.move.optimization'='true'"));
-    verifyLoadExecution(replicatedDbName, bootstrapDump.lastReplicationId);
+    verifyLoadExecution(replicatedDbName, bootstrapDump.lastReplicationId, true);
+  }
+
+  private void prepareIncAcidData(String dbName) throws Throwable {
+    primary.run("use " + dbName)
+            .run("create table t6 (str string) stored as orc tblproperties " +
+                    "(\"transactional\"=\"true\")")
+            .run("insert into t6 values ('aaa'), ('bbb')")
+            .run("alter table t2 add columns (placetype string)")
+            .run("update t2 set placetype = 'city'");
+    acidTableNames.add("t6");
+  }
+
+  private void verifyIncAcidLoad(String dbName) throws Throwable {
+    replica.run("use " + dbName)
+            .run("select str from t6 order by str")
+            .verifyResults(new String[]{"aaa", "bbb"})
+            .run("select country from t2 order by country")
+            .verifyResults(new String[] {"france", "india", "us"})
+            .run("select distinct placetype from t2")
+            .verifyResult("city")
+            .run("select id from t1 order by id")
+            .verifyResults(new String[]{"1", "2"})
+            .run("select rank from t3 order by rank")
+            .verifyResults(new String[] {"11", "22"})
+            .run("select id from t5 order by id")
+            .verifyResults(new String[] {"1111", "2222", "3333"});
+  }
+
+  private void runUsingDriver(IDriver driver, String command) throws Throwable {
+    CommandProcessorResponse ret = driver.run(command);
+    if (ret.getException() != null) {
+      throw ret.getException();
+    }
+  }
+
+  private void prepareInc2AcidData(String dbName, HiveConf hiveConf) throws Throwable {
+    IDriver driver = DriverFactory.newDriver(hiveConf);
+    SessionState.start(new CliSessionState(hiveConf));
+    runUsingDriver(driver, "use " + dbName);
+    runUsingDriver(driver, "insert into t1 values (3)");
+    runUsingDriver(driver, "insert into t5 values (4444)");
+  }
+
+  private void verifyInc2AcidLoad(String dbName) throws Throwable {
+    replica.run("use " + dbName)
+            .run("select str from t6 order by str")
+            .verifyResults(new String[]{"aaa", "bbb"})
+            .run("select country from t2 order by country")
+            .verifyResults(new String[] {"france", "india", "us"})
+            .run("select distinct placetype from t2")
+            .verifyResult("city")
+            .run("select id from t1 order by id")
+            .verifyResults(new String[]{"1", "2", "3"})
+            .run("select rank from t3 order by rank")
+            .verifyResults(new String[] {"11", "22"})
+            .run("select id from t5 order by id")
+            .verifyResults(new String[] {"1111", "2222", "3333", "4444"});
+  }
+
+  private void prepareIncNonAcidData(String dbName) throws Throwable {
+    primary.run("use " + dbName)
+            .run("insert into t4 values (333)")
+            .run("create table t7 (str string)")
+            .run("insert into t7 values ('aaa')");
+    nonAcidTableNames.add("t7");
+  }
+
+  private void verifyIncNonAcidLoad(String dbName) throws Throwable {
+    replica.run("use " + dbName)
+            .run("select * from t4 order by id")
+            .verifyResults(new String[] {"111", "222", "333"})
+            .run("select * from t7")
+            .verifyResult("aaa");
+  }
+
+  private void prepareInc2NonAcidData(String dbName, HiveConf hiveConf) throws Throwable {
+    IDriver driver = DriverFactory.newDriver(hiveConf);
+    SessionState.start(new CliSessionState(hiveConf));
+    runUsingDriver(driver, "use " + dbName);
+    runUsingDriver(driver, "insert into t4 values (444)");
+    runUsingDriver(driver, "insert into t7 values ('bbb')");
+  }
+
+  private void verifyInc2NonAcidLoad(String dbName) throws Throwable {
+    replica.run("use " + dbName)
+            .run("select * from t4 order by id")
+            .verifyResults(new String[] {"111", "222", "333", "444"})
+            .run("select * from t7")
+            .verifyResults(new String[] {"aaa", "bbb"});
+  }
+
+  private void verifyIncLoad(String dbName, String lastReplId)
+          throws Throwable {
+    List<String> tableNames = new LinkedList<>(nonAcidTableNames);
+    tableNames.addAll(acidTableNames);
+    replica.run("use " + dbName)
+            .run("show tables")
+            .verifyResults(tableNames)
+            .run("repl status " + dbName)
+            .verifyResult(lastReplId);
+    verifyIncNonAcidLoad(dbName);
+    verifyIncAcidLoad(dbName);
+  }
+
+  private void verifyInc2Load(String dbName, String lastReplId)
+          throws Throwable {
+    List<String> tableNames = new LinkedList<>(nonAcidTableNames);
+    tableNames.addAll(acidTableNames);
+    replica.run("use " + dbName)
+            .run("show tables")
+            .verifyResults(tableNames)
+            .run("repl status " + dbName)
+            .verifyResult(lastReplId);
+    verifyInc2NonAcidLoad(dbName);
+    verifyInc2AcidLoad(dbName);
+  }
+
+  @Test
+  public void testAcidTablesBootstrapDuringIncremental() throws Throwable {
+    // Take a bootstrap dump without acid tables
+    WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null,
+            dumpWithoutAcidClause);
+    LOG.info(testName.getMethodName() + ": loading dump without acid tables.");
+    replica.load(replicatedDbName, bootstrapDump.dumpLocation);
+    verifyLoadExecution(replicatedDbName, bootstrapDump.lastReplicationId, false);
+
+    // Take a incremental dump with acid table bootstrap
+    prepareIncAcidData(primaryDbName);
+    prepareIncNonAcidData(primaryDbName);
+    LOG.info(testName.getMethodName() + ": incremental dump and load dump with acid table bootstrap.");
+    WarehouseInstance.Tuple incrementalDump = primary.run("use " + primaryDbName)
+            .dump(primaryDbName, bootstrapDump.lastReplicationId, dumpWithAcidBootstrapClause);
+    replica.load(replicatedDbName, incrementalDump.dumpLocation);
+    verifyIncLoad(replicatedDbName, incrementalDump.lastReplicationId);
+    // Ckpt should be set on bootstrapped tables.
+    replica.verifyIfCkptSetForTables(replicatedDbName, acidTableNames, incrementalDump.dumpLocation);
+
+    // Take a second normal incremental dump after Acid table boostrap
+    prepareInc2AcidData(primaryDbName, primary.hiveConf);
+    prepareInc2NonAcidData(primaryDbName, primary.hiveConf);
+    LOG.info(testName.getMethodName()
+             + ": second incremental dump and load dump after incremental with acid table " +
+            "bootstrap.");
+    WarehouseInstance.Tuple inc2Dump = primary.run("use " + primaryDbName)
+            .dump(primaryDbName, incrementalDump.lastReplicationId);
+    replica.load(replicatedDbName, inc2Dump.dumpLocation);
+    verifyInc2Load(replicatedDbName, inc2Dump.lastReplicationId);
+  }
+
+  @Test
+  public void testRetryAcidTablesBootstrapFromDifferentDump() throws Throwable {
+    WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null,
+            dumpWithoutAcidClause);
+    LOG.info(testName.getMethodName() + ": loading dump without acid tables.");
+    replica.load(replicatedDbName, bootstrapDump.dumpLocation);
+    verifyLoadExecution(replicatedDbName, bootstrapDump.lastReplicationId, false);
+
+    prepareIncAcidData(primaryDbName);
+    prepareIncNonAcidData(primaryDbName);
+    LOG.info(testName.getMethodName() + ": first incremental dump with acid table bootstrap.");
+    WarehouseInstance.Tuple incDump = primary.run("use " + primaryDbName)
+            .dump(primaryDbName, bootstrapDump.lastReplicationId, dumpWithAcidBootstrapClause);
+
+    // Fail setting ckpt property for table t5 but success for earlier tables
+    BehaviourInjection<CallerArguments, Boolean> callerVerifier
+            = new BehaviourInjection<CallerArguments, Boolean>() {
+      @Nullable
+      @Override
+      public Boolean apply(@Nullable CallerArguments args) {
+        if (args.tblName.equalsIgnoreCase("t5") && args.dbName.equalsIgnoreCase(replicatedDbName)) {
+          injectionPathCalled = true;
+          LOG.warn("Verifier - DB : " + args.dbName + " TABLE : " + args.tblName);
+          return false;
+        }
+        return true;
+      }
+    };
+
+    // Fail repl load before the ckpt property is set for t4 and after it is set for t2.
+    // In the retry, these half baked tables should be dropped and bootstrap should be successful.
+    InjectableBehaviourObjectStore.setAlterTableModifier(callerVerifier);
+    try {
+      LOG.info(testName.getMethodName()
+              + ": loading first incremental dump with acid table bootstrap (will fail)");
+      replica.loadFailure(replicatedDbName, incDump.dumpLocation);
+      callerVerifier.assertInjectionsPerformed(true, false);
+    } finally {
+      InjectableBehaviourObjectStore.resetAlterTableModifier();
+    }
+
+    prepareInc2AcidData(primaryDbName, primary.hiveConf);
+    prepareInc2NonAcidData(primaryDbName, primary.hiveConf);
+    LOG.info(testName.getMethodName() + ": second incremental dump with acid table bootstrap");
+    WarehouseInstance.Tuple inc2Dump = primary.run("use " + primaryDbName)
+            .dump(primaryDbName, bootstrapDump.lastReplicationId, dumpWithAcidBootstrapClause);
+
+    // Set incorrect bootstrap dump to clean tables. Here, used the full bootstrap dump which is invalid.
+    // So, REPL LOAD fails.
+    List<String> loadWithClause = Collections.singletonList(
+            "'" + ReplUtils.REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG + "'='"
+            + bootstrapDump.dumpLocation + "'");
+    LOG.info(testName.getMethodName()
+            + ": trying to load second incremental dump with wrong bootstrap dump "
+            + " specified for cleaning ACID tables. Should fail.");
+    replica.loadFailure(replicatedDbName, inc2Dump.dumpLocation, loadWithClause);
+
+    // Set previously failed bootstrap dump to clean-up. Now, new bootstrap should overwrite the old one.
+    loadWithClause = Collections.singletonList(
+            "'" + ReplUtils.REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG + "'='"
+                    + incDump.dumpLocation + "'");
+
+    LOG.info(testName.getMethodName()
+            + ": trying to load second incremental dump with correct bootstrap dump "
+            + "specified for cleaning ACID tables. Should succeed.");
+    replica.load(replicatedDbName, inc2Dump.dumpLocation, loadWithClause);
+    verifyInc2Load(replicatedDbName, inc2Dump.lastReplicationId);
+
+    // Once the REPL LOAD is successful, the this config should be unset or else, the subsequent REPL LOAD
+    // will also drop those tables which will cause data loss.
+    loadWithClause = Collections.emptyList();
+
+    // Verify if bootstrapping with same dump is idempotent and return same result
+    LOG.info(testName.getMethodName()
+            + ": trying to load second incremental dump (with acid bootstrap) again."
+            + " Should succeed.");
+    replica.load(replicatedDbName, inc2Dump.dumpLocation, loadWithClause);
+    verifyInc2Load(replicatedDbName, inc2Dump.lastReplicationId);
+  }
+
+  @Test
+  public void retryIncBootstrapAcidFromDifferentDumpWithoutCleanTablesConfig() throws Throwable {
+    WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null,
+            dumpWithoutAcidClause);
+    replica.load(replicatedDbName, bootstrapDump.dumpLocation);
+
+    prepareIncAcidData(primaryDbName);
+    prepareIncNonAcidData(primaryDbName);
+    WarehouseInstance.Tuple incDump = primary.run("use " + primaryDbName)
+            .dump(primaryDbName, bootstrapDump.lastReplicationId, dumpWithAcidBootstrapClause);
+    WarehouseInstance.Tuple inc2Dump = primary.run("use " + primaryDbName)
+            .dump(primaryDbName, bootstrapDump.lastReplicationId, dumpWithAcidBootstrapClause);
+    replica.load(replicatedDbName, incDump.dumpLocation);
+
+    // Re-bootstrapping from different bootstrap dump without clean tables config should fail.
+    replica.loadFailure(replicatedDbName, inc2Dump.dumpLocation, Collections.emptyList(),
+            ErrorMsg.REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID.getErrorCode());
   }
 
   @Test
@@ -212,23 +522,90 @@ public class TestReplicationScenariosAcidTables {
     WarehouseInstance.Tuple bootstrapDump = primary.dump(primaryDbName, null);
     replica.load(replicatedDbName, bootstrapDump.dumpLocation,
             Collections.singletonList("'hive.repl.enable.move.optimization'='true'"));
-    WarehouseInstance.Tuple incrDump = prepareDataAndDump(primaryDbName, bootstrapDump.lastReplicationId);
+    WarehouseInstance.Tuple incrDump = prepareDataAndDump(primaryDbName,
+            bootstrapDump.lastReplicationId, null);
     replica.load(replicatedDbName, incrDump.dumpLocation,
             Collections.singletonList("'hive.repl.enable.move.optimization'='true'"));
-    verifyLoadExecution(replicatedDbName, incrDump.lastReplicationId);
+    verifyLoadExecution(replicatedDbName, incrDump.lastReplicationId, true);
+  }
+
+  private List<Long> openTxns(int numTxns, TxnStore txnHandler, HiveConf primaryConf) throws Throwable {
+    OpenTxnsResponse otResp = txnHandler.openTxns(new OpenTxnRequest(numTxns, "u1", "localhost"));
+    List<Long> txns = otResp.getTxn_ids();
+    String txnIdRange = " txn_id >= " + txns.get(0) + " and txn_id <= " + txns.get(numTxns - 1);
+    Assert.assertEquals(TxnDbUtil.queryToString(primaryConf, "select * from TXNS"),
+            numTxns, TxnDbUtil.countQueryAgent(primaryConf,
+                    "select count(*) from TXNS where txn_state = 'o' and " + txnIdRange));
+    return txns;
+  }
+
+  private void allocateWriteIdsForTables(String primaryDbName, Map<String, Long> tables,
+                                         TxnStore txnHandler,
+                                         List<Long> txns, HiveConf primaryConf) throws Throwable {
+    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest();
+    rqst.setDbName(primaryDbName);
+
+    for(Map.Entry<String, Long> entry : tables.entrySet()) {
+      rqst.setTableName(entry.getKey());
+      rqst.setTxnIds(txns);
+      txnHandler.allocateTableWriteIds(rqst);
+    }
+    verifyWriteIdsForTables(tables, primaryConf, primaryDbName);
+  }
+
+  private void verifyWriteIdsForTables(Map<String, Long> tables, HiveConf conf, String dbName)
+          throws Throwable {
+    for(Map.Entry<String, Long> entry : tables.entrySet()) {
+      Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from TXN_TO_WRITE_ID"),
+                          entry.getValue().longValue(),
+                          TxnDbUtil.countQueryAgent(conf,
+          "select count(*) from TXN_TO_WRITE_ID where t2w_database = '"
+                    + dbName.toLowerCase()
+                    + "' and t2w_table = '" + entry.getKey() + "'"));
+    }
+  }
+
+  private void verifyAllOpenTxnsAborted(List<Long> txns, HiveConf primaryConf) throws Throwable {
+    int numTxns = txns.size();
+    String txnIdRange = " txn_id >= " + txns.get(0) + " and txn_id <= " + txns.get(numTxns - 1);
+    Assert.assertEquals(TxnDbUtil.queryToString(primaryConf, "select * from TXNS"),
+            0, TxnDbUtil.countQueryAgent(primaryConf,
+                    "select count(*) from TXNS where txn_state = 'o' and " + txnIdRange));
+    Assert.assertEquals(TxnDbUtil.queryToString(primaryConf, "select * from TXNS"),
+            numTxns, TxnDbUtil.countQueryAgent(primaryConf,
+                    "select count(*) from TXNS where txn_state = 'a' and " + txnIdRange));
+  }
+
+  private void verifyNextId(Map<String, Long> tables, String dbName, HiveConf conf) throws Throwable {
+    // Verify the next write id
+    for(Map.Entry<String, Long> entry : tables.entrySet()) {
+      String[] nextWriteId =
+              TxnDbUtil.queryToString(conf,
+                      "select nwi_next from NEXT_WRITE_ID where  nwi_database = '"
+                              + dbName.toLowerCase() + "' and nwi_table = '"
+                              + entry.getKey() + "'").split("\n");
+      Assert.assertEquals(Long.parseLong(nextWriteId[1].trim()), entry.getValue() + 1);
+    }
+  }
+
+  private void verifyCompactionQueue(Map<String, Long> tables, String dbName, HiveConf conf)
+          throws Throwable {
+    for(Map.Entry<String, Long> entry : tables.entrySet()) {
+    Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"),
+                        entry.getValue().longValue(),
+                        TxnDbUtil.countQueryAgent(conf,
+                    "select count(*) from COMPACTION_QUEUE where cq_database = '" + dbName
+                            + "' and cq_table = '" + entry.getKey() + "'"));
+    }
   }
 
   @Test
   public void testAcidTablesBootstrapWithOpenTxnsTimeout() throws Throwable {
-    // Open 5 txns
+    int numTxns = 5;
     HiveConf primaryConf = primary.getConf();
     TxnStore txnHandler = TxnUtils.getTxnStore(primary.getConf());
-    OpenTxnsResponse otResp = txnHandler.openTxns(new OpenTxnRequest(5, "u1", "localhost"));
-    List<Long> txns = otResp.getTxn_ids();
-    String txnIdRange = " txn_id >= " + txns.get(0) + " and txn_id <= " + txns.get(4);
-    Assert.assertEquals(TxnDbUtil.queryToString(primaryConf, "select * from TXNS"),
-            5, TxnDbUtil.countQueryAgent(primaryConf,
-                  "select count(*) from TXNS where txn_state = 'o' and " + txnIdRange));
+    // Open 5 txns
+    List<Long> txns = openTxns(numTxns, txnHandler, primaryConf);
 
     // Create 2 tables, one partitioned and other not. Also, have both types of full ACID and MM tables.
     primary.run("use " + primaryDbName)
@@ -239,21 +616,13 @@ public class TestReplicationScenariosAcidTables {
                     "\"transactional_properties\"=\"insert_only\")")
             .run("insert into t2 partition(name='Bob') values(11)")
             .run("insert into t2 partition(name='Carl') values(10)");
+
     // Allocate write ids for both tables t1 and t2 for all txns
     // t1=5+1(insert) and t2=5+2(insert)
-    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(primaryDbName, "t1");
-    rqst.setTxnIds(txns);
-    txnHandler.allocateTableWriteIds(rqst);
-    rqst.setTableName("t2");
-    txnHandler.allocateTableWriteIds(rqst);
-    Assert.assertEquals(TxnDbUtil.queryToString(primaryConf, "select * from TXN_TO_WRITE_ID"),
-            6, TxnDbUtil.countQueryAgent(primaryConf,
-                    "select count(*) from TXN_TO_WRITE_ID where t2w_database = '" + primaryDbName.toLowerCase()
-                            + "' and t2w_table = 't1'"));
-    Assert.assertEquals(TxnDbUtil.queryToString(primaryConf, "select * from TXN_TO_WRITE_ID"),
-            7, TxnDbUtil.countQueryAgent(primaryConf,
-                    "select count(*) from TXN_TO_WRITE_ID where t2w_database = '" + primaryDbName.toLowerCase()
-                            + "' and t2w_table = 't2'"));
+    Map<String, Long> tables = new HashMap<>();
+    tables.put("t1", numTxns+1L);
+    tables.put("t2", numTxns+2L);
+    allocateWriteIdsForTables(primaryDbName, tables, txnHandler, txns, primaryConf);
 
     // Bootstrap dump with open txn timeout as 1s.
     List<String> withConfigs = Arrays.asList(
@@ -263,22 +632,8 @@ public class TestReplicationScenariosAcidTables {
             .dump(primaryDbName, null, withConfigs);
 
     // After bootstrap dump, all the opened txns should be aborted. Verify it.
-    Assert.assertEquals(TxnDbUtil.queryToString(primaryConf, "select * from TXNS"),
-            0, TxnDbUtil.countQueryAgent(primaryConf,
-                    "select count(*) from TXNS where txn_state = 'o' and " + txnIdRange));
-    Assert.assertEquals(TxnDbUtil.queryToString(primaryConf, "select * from TXNS"),
-            5, TxnDbUtil.countQueryAgent(primaryConf,
-                    "select count(*) from TXNS where txn_state = 'a' and " + txnIdRange));
-
-    // Verify the next write id
-    String[] nextWriteId = TxnDbUtil.queryToString(primaryConf, "select nwi_next from NEXT_WRITE_ID where "
-            + " nwi_database = '" + primaryDbName.toLowerCase() + "' and nwi_table = 't1'")
-            .split("\n");
-    Assert.assertEquals(Long.parseLong(nextWriteId[1].trim()), 7L);
-    nextWriteId = TxnDbUtil.queryToString(primaryConf, "select nwi_next from NEXT_WRITE_ID where "
-            + " nwi_database = '" + primaryDbName.toLowerCase() + "' and nwi_table = 't2'")
-            .split("\n");
-    Assert.assertEquals(Long.parseLong(nextWriteId[1].trim()), 8L);
+    verifyAllOpenTxnsAborted(txns, primaryConf);
+    verifyNextId(tables, primaryDbName, primaryConf);
 
     // Bootstrap load which should also replicate the aborted write ids on both tables.
     HiveConf replicaConf = replica.getConf();
@@ -294,35 +649,82 @@ public class TestReplicationScenariosAcidTables {
             .verifyResults(new String[] {"10", "11"});
 
     // Verify if HWM is properly set after REPL LOAD
-    nextWriteId = TxnDbUtil.queryToString(replicaConf, "select nwi_next from NEXT_WRITE_ID where "
-            + " nwi_database = '" + replicatedDbName.toLowerCase() + "' and nwi_table = 't1'")
-            .split("\n");
-    Assert.assertEquals(Long.parseLong(nextWriteId[1].trim()), 7L);
-    nextWriteId = TxnDbUtil.queryToString(replicaConf, "select nwi_next from NEXT_WRITE_ID where "
-            + " nwi_database = '" + replicatedDbName.toLowerCase() + "' and nwi_table = 't2'")
-            .split("\n");
-    Assert.assertEquals(Long.parseLong(nextWriteId[1].trim()), 8L);
+    verifyNextId(tables, replicatedDbName, replicaConf);
 
     // Verify if all the aborted write ids are replicated to the replicated DB
-    Assert.assertEquals(TxnDbUtil.queryToString(replicaConf, "select * from TXN_TO_WRITE_ID"),
-            5, TxnDbUtil.countQueryAgent(replicaConf,
-                    "select count(*) from TXN_TO_WRITE_ID where t2w_database = '" + replicatedDbName.toLowerCase()
-                            + "' and t2w_table = 't1'"));
-    Assert.assertEquals(TxnDbUtil.queryToString(replicaConf, "select * from TXN_TO_WRITE_ID"),
-            5, TxnDbUtil.countQueryAgent(replicaConf,
-                    "select count(*) from TXN_TO_WRITE_ID where t2w_database = '" + replicatedDbName.toLowerCase()
-                            + "' and t2w_table = 't2'"));
+    for(Map.Entry<String, Long> entry : tables.entrySet()) {
+      entry.setValue((long) numTxns);
+    }
+    verifyWriteIdsForTables(tables, replicaConf, replicatedDbName);
 
     // Verify if entries added in COMPACTION_QUEUE for each table/partition
     // t1-> 1 entry and t2-> 2 entries (1 per partition)
-    Assert.assertEquals(TxnDbUtil.queryToString(replicaConf, "select * from COMPACTION_QUEUE"),
-            1, TxnDbUtil.countQueryAgent(replicaConf,
-                    "select count(*) from COMPACTION_QUEUE where cq_database = '" + replicatedDbName
-                            + "' and cq_table = 't1'"));
-    Assert.assertEquals(TxnDbUtil.queryToString(replicaConf, "select * from COMPACTION_QUEUE"),
-            2, TxnDbUtil.countQueryAgent(replicaConf,
-                    "select count(*) from COMPACTION_QUEUE where cq_database = '" + replicatedDbName
-                            + "' and cq_table = 't2'"));
+    tables.clear();
+    tables.put("t1", 1L);
+    tables.put("t2", 2L);
+    verifyCompactionQueue(tables, replicatedDbName, replicaConf);
+  }
+
+  @Test
+  public void testAcidTablesBootstrapDuringIncrementalWithOpenTxnsTimeout() throws Throwable {
+    // Take a dump without ACID tables
+    WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null,
+                                                                dumpWithoutAcidClause);
+    LOG.info(testName.getMethodName() + ": loading dump without acid tables.");
+    replica.load(replicatedDbName, bootstrapDump.dumpLocation);
+
+    // Open concurrent transactions, create data for incremental and take an incremental dump
+    // with ACID table bootstrap.
+    int numTxns = 5;
+    HiveConf primaryConf = primary.getConf();
+    TxnStore txnHandler = TxnUtils.getTxnStore(primary.getConf());
+    // Open 5 txns
+    List<Long> txns = openTxns(numTxns, txnHandler, primaryConf);
+    prepareIncNonAcidData(primaryDbName);
+    prepareIncAcidData(primaryDbName);
+    // Allocate write ids for tables t1 and t2 for all txns
+    // t1=5+2(insert) and t2=5+5(insert, alter add column)
+    Map<String, Long> tables = new HashMap<>();
+    tables.put("t1", numTxns+2L);
+    tables.put("t2", numTxns+5L);
+    allocateWriteIdsForTables(primaryDbName, tables, txnHandler, txns, primaryConf);
+
+    // Bootstrap dump with open txn timeout as 1s.
+    List<String> withConfigs = new LinkedList<>(dumpWithAcidBootstrapClause);
+            withConfigs.add("'hive.repl.bootstrap.dump.open.txn.timeout'='1s'");
+    WarehouseInstance.Tuple incDump = primary
+            .run("use " + primaryDbName)
+            .dump(primaryDbName, bootstrapDump.lastReplicationId, withConfigs);
+
+    // After bootstrap dump, all the opened txns should be aborted. Verify it.
+    verifyAllOpenTxnsAborted(txns, primaryConf);
+    verifyNextId(tables, primaryDbName, primaryConf);
+
+    // Incremental load with ACID bootstrap should also replicate the aborted write ids on
+    // tables t1 and t2
+    HiveConf replicaConf = replica.getConf();
+    LOG.info(testName.getMethodName() + ": loading incremental dump with ACID bootstrap.");
+    replica.load(replicatedDbName, incDump.dumpLocation);
+    // During incremental dump with ACID bootstrap we do not dump ALLOC_WRITE_ID events. So the
+    // two ALLOC_WRITE_ID events corresponding aborted transactions on t1 and t2 will not be
+    // repliaced. Discount those.
+    verifyIncLoad(replicatedDbName,
+            (new Long(Long.valueOf(incDump.lastReplicationId) - 2)).toString());
+    // Verify if HWM is properly set after REPL LOAD
+    verifyNextId(tables, replicatedDbName, replicaConf);
+
+    // Verify if all the aborted write ids are replicated to the replicated DB
+    for(Map.Entry<String, Long> entry : tables.entrySet()) {
+      entry.setValue((long) numTxns);
+    }
+    verifyWriteIdsForTables(tables, replicaConf, replicatedDbName);
+
+    // Verify if entries added in COMPACTION_QUEUE for each table/partition
+    // t1-> 1 entry and t2-> 2 entries (1 per partition)
+    tables.clear();
+    tables.put("t1", 1L);
+    tables.put("t2", 4L);
+    verifyCompactionQueue(tables, replicatedDbName, replicaConf);
   }
 
   @Test
@@ -394,6 +796,83 @@ public class TestReplicationScenariosAcidTables {
             .verifyResult(incrementalDump.lastReplicationId)
             .run("select id from t1 order by id")
             .verifyResults(new String[]{"1", "2" });
+  }
+
+  @Test
+  public void testBootstrapAcidTablesDuringIncrementalWithConcurrentWrites() throws Throwable {
+    // Dump and load bootstrap without ACID tables.
+    WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null,
+                                                                dumpWithoutAcidClause);
+    LOG.info(testName.getMethodName() + ": loading dump without acid tables.");
+    replica.load(replicatedDbName, bootstrapDump.dumpLocation);
+
+    // Create incremental data for incremental load with bootstrap of ACID
+    prepareIncNonAcidData(primaryDbName);
+    prepareIncAcidData(primaryDbName);
+    // Perform concurrent writes. Bootstrap won't see the written data but the subsequent
+    // incremental repl should see it. We can not inject callerVerifier since an incremental dump
+    // would not cause an ALTER DATABASE event. Instead we piggy back on
+    // getCurrentNotificationEventId() which is anyway required for a bootstrap.
+    BehaviourInjection<CurrentNotificationEventId, CurrentNotificationEventId> callerInjectedBehavior
+            = new BehaviourInjection<CurrentNotificationEventId, CurrentNotificationEventId>() {
+      @Nullable
+      @Override
+      public CurrentNotificationEventId apply(@Nullable CurrentNotificationEventId input) {
+        if (injectionPathCalled) {
+          nonInjectedPathCalled = true;
+        } else {
+          // Do some writes through concurrent thread
+          injectionPathCalled = true;
+          Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+              LOG.info("Entered new thread");
+              try {
+                prepareInc2NonAcidData(primaryDbName, primary.hiveConf);
+                prepareInc2AcidData(primaryDbName, primary.hiveConf);
+              } catch (Throwable t) {
+                Assert.assertNull(t);
+              }
+              LOG.info("Exit new thread success");
+            }
+          });
+          t.start();
+          LOG.info("Created new thread {}", t.getName());
+          try {
+            t.join();
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+        }
+        return input;
+      }
+    };
+
+    InjectableBehaviourObjectStore.setGetCurrentNotificationEventIdBehaviour(callerInjectedBehavior);
+    WarehouseInstance.Tuple incDump = null;
+    try {
+      incDump = primary.dump(primaryDbName, bootstrapDump.lastReplicationId, dumpWithAcidBootstrapClause);
+      callerInjectedBehavior.assertInjectionsPerformed(true, true);
+    } finally {
+      // reset the behaviour
+      InjectableBehaviourObjectStore.resetGetCurrentNotificationEventIdBehaviour();
+    }
+
+    // While bootstrapping ACID tables it has taken snapshot before concurrent thread performed
+    // write. So concurrent writes won't be dumped.
+    LOG.info(testName.getMethodName() +
+            ": loading incremental dump containing bootstrapped ACID tables.");
+    replica.load(replicatedDbName, incDump.dumpLocation);
+    verifyIncLoad(replicatedDbName, incDump.lastReplicationId);
+
+    // Next Incremental should include the concurrent writes
+    LOG.info(testName.getMethodName() +
+            ": dumping second normal incremental dump from event id = " + incDump.lastReplicationId);
+    WarehouseInstance.Tuple inc2Dump = primary.dump(primaryDbName, incDump.lastReplicationId);
+    LOG.info(testName.getMethodName() +
+            ": loading second normal incremental dump from event id = " + incDump.lastReplicationId);
+    replica.load(replicatedDbName, inc2Dump.dumpLocation);
+    verifyInc2Load(replicatedDbName, inc2Dump.lastReplicationId);
   }
 
   @Test

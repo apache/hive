@@ -65,11 +65,20 @@ public class ReplDumpWork implements Serializable {
     return maxEventLimit;
   }
 
-  void overrideEventTo(Hive fromDb) throws Exception {
+  void overrideEventTo(Hive fromDb, long bootstrapLastId) throws Exception {
     if (eventTo == null) {
       eventTo = fromDb.getMSC().getCurrentNotificationEventId().getEventId();
       LoggerFactory.getLogger(this.getClass())
           .debug("eventTo not specified, using current event id : {}", eventTo);
+    }
+
+    // If we are bootstrapping ACID tables, we need to restrict events only upto the event id at
+    // the beginning of the bootstrap dump. See bootstrampDump() for more details.
+    if (bootstrapLastId >= 0) {
+      eventTo = bootstrapLastId;
+      LoggerFactory.getLogger(this.getClass())
+              .debug("eventTo restricted to event id : {} because of bootstrap of ACID tables",
+                      eventTo);
     }
   }
 }
