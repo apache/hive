@@ -3306,4 +3306,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setMaxCreateTime(maxCreateTime);
     return client.get_runtime_stats(req);
   }
+
+  @Override
+  public String getServerVersion() throws TException {
+    return client.getVersion();
+  }
 }

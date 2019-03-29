@@ -3696,4 +3696,10 @@ public interface IMetaStoreClient {
   /** Reads runtime statistics. */
   List<RuntimeStat> getRuntimeStats(int maxWeight, int maxCreateTime) throws TException;
 
+  /**
+   * Gets the version string of the metastore server which this client is connected to
+   *
+   * @return String representation of the version number of Metastore server (eg: 3.1.0-SNAPSHOT)
+   */
+  String getServerVersion() throws TException;
 }

@@ -3421,4 +3421,9 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   public List<RuntimeStat> getRuntimeStats(int maxWeight, int maxCreateTime) throws TException {
     throw new UnsupportedOperationException();
   }
+
+  @Override
+  public String getServerVersion() throws TException {
+    return client.getVersion();
+  }
 }
