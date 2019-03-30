@@ -278,6 +278,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       throw new SemanticException(ErrorMsg.COLUMNSTATSCOLLECTOR_IO_ERROR.getMsg());
     }
     ctx.setCmd(rewrittenQuery);
+    ctx.setHDFSCleanup(true);
 
     try {
       return ParseUtils.parse(rewrittenQuery, ctx);
@@ -374,6 +375,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       analyzeRewrite.setColName(colNames);
       analyzeRewrite.setColType(colType);
       qbp.setAnalyzeRewrite(analyzeRewrite);
+      origCtx.addRewrittenStatementContext(ctx);
       initCtx(ctx);
       ctx.setExplainConfig(origCtx.getExplainConfig());
       LOG.info("Invoking analyze on rewritten query");
