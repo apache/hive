@@ -543,7 +543,7 @@
                 <configuration>
                   <target>
                     <exec executable="bash" dir="${basedir}" failonerror="true">
-                      <arg line="../target/download.sh"/>
+                      <arg line="../bin/download-spark.sh ${spark.version}"/>
                     </exec>
                   </target>
                 </configuration>
