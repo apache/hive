@@ -104,10 +104,10 @@ STAGE PLANS:
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
           TableScan
             alias: b
-            filterExpr: key is not null (type: boolean)
+            filterExpr: UDFToDouble(key) is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: key is not null (type: boolean)
+              predicate: UDFToDouble(key) is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string), concat(key, value) (type: string), UDFToDouble(key) (type: double)

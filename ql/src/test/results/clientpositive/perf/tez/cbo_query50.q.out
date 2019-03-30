@@ -131,7 +131,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=
       HiveProject($f0=[$12], $f1=[$13], $f2=[$14], $f3=[$15], $f4=[$16], $f5=[$17], $f6=[$18], $f7=[$19], $f8=[$20], $f9=[$21], $f10=[CASE(<=(-($5, $0), 30), 1, 0)], $f11=[CASE(AND(>(-($5, $0), 30), <=(-($5, $0), 60)), 1, 0)], $f12=[CASE(AND(>(-($5, $0), 60), <=(-($5, $0), 90)), 1, 0)], $f13=[CASE(AND(>(-($5, $0), 90), <=(-($5, $0), 120)), 1, 0)], $f14=[CASE(>(-($5, $0), 120), 1, 0)])
         HiveJoin(condition=[=($3, $11)], joinType=[inner], algorithm=[none], cost=[not available])
           HiveJoin(condition=[=($0, $10)], joinType=[inner], algorithm=[none], cost=[not available])
-            HiveJoin(condition=[AND(AND(=($4, $8), =($1, $6)), =($2, $7))], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveJoin(condition=[AND(=($4, $8), =($1, $6), =($2, $7))], joinType=[inner], algorithm=[none], cost=[not available])
               HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_customer_sk=[$3], ss_store_sk=[$7], ss_ticket_number=[$9])
                 HiveFilter(condition=[AND(IS NOT NULL($9), IS NOT NULL($2), IS NOT NULL($3), IS NOT NULL($7), IS NOT NULL($0))])
                   HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])

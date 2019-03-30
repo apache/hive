@@ -27,7 +27,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hive.ptest.api.server.TestLogger;
 import org.apache.hive.ptest.execution.conf.Host;

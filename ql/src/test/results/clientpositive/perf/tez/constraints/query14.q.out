@@ -297,21 +297,21 @@ Stage-0
     Stage-1
       Reducer 9 vectorized
       File Output Operator [FS_1350]
-        Limit [LIM_1349] (rows=7 width=192)
+        Limit [LIM_1349] (rows=7 width=212)
           Number of rows:100
-          Select Operator [SEL_1348] (rows=7 width=192)
+          Select Operator [SEL_1348] (rows=7 width=212)
             Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
           <-Reducer 8 [SIMPLE_EDGE] vectorized
             SHUFFLE [RS_1347]
-              Select Operator [SEL_1346] (rows=7 width=192)
+              Select Operator [SEL_1346] (rows=7 width=212)
                 Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-                Group By Operator [GBY_1345] (rows=7 width=200)
+                Group By Operator [GBY_1345] (rows=7 width=220)
                   Output:["_col0","_col1","_col2","_col3","_col5","_col6"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"],keys:KEY._col0, KEY._col1, KEY._col2, KEY._col3, KEY._col4
                 <-Union 7 [SIMPLE_EDGE]
                   <-Reducer 16 [CONTAINS]
                     Reduce Output Operator [RS_1195]
                       PartitionCols:_col0, _col1, _col2, _col3, _col4
-                      Group By Operator [GBY_1194] (rows=7 width=200)
+                      Group By Operator [GBY_1194] (rows=7 width=220)
                         Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"],aggregations:["sum(_col4)","sum(_col5)"],keys:_col0, _col1, _col2, _col3, 0L
                         Top N Key Operator [TNK_1193] (rows=3 width=221)
                           keys:_col0, _col1, _col2, _col3, 0L,sort order:+++++,top n:100
@@ -683,7 +683,7 @@ Stage-0
                   <-Reducer 22 [CONTAINS]
                     Reduce Output Operator [RS_1202]
                       PartitionCols:_col0, _col1, _col2, _col3, _col4
-                      Group By Operator [GBY_1201] (rows=7 width=200)
+                      Group By Operator [GBY_1201] (rows=7 width=220)
                         Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"],aggregations:["sum(_col4)","sum(_col5)"],keys:_col0, _col1, _col2, _col3, 0L
                         Top N Key Operator [TNK_1200] (rows=3 width=221)
                           keys:_col0, _col1, _col2, _col3, 0L,sort order:+++++,top n:100
@@ -866,7 +866,7 @@ Stage-0
                   <-Reducer 6 [CONTAINS]
                     Reduce Output Operator [RS_1188]
                       PartitionCols:_col0, _col1, _col2, _col3, _col4
-                      Group By Operator [GBY_1187] (rows=7 width=200)
+                      Group By Operator [GBY_1187] (rows=7 width=220)
                         Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"],aggregations:["sum(_col4)","sum(_col5)"],keys:_col0, _col1, _col2, _col3, 0L
                         Top N Key Operator [TNK_1186] (rows=3 width=221)
                           keys:_col0, _col1, _col2, _col3, 0L,sort order:+++++,top n:100

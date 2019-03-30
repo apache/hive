@@ -119,12 +119,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table__323
-                  filterExpr: ((col_20) IN ('part1', 'part2', 'part3') and CAST( col_3 AS DATE) BETWEEN DATE'2018-07-01' AND DATE'2019-01-23') (type: boolean)
+                  filterExpr: ((col_20) IN ('part1', 'part2', 'part3') and (UDFToDouble(col_7) is not null or col_7 is null) and CAST( col_3 AS DATE) BETWEEN DATE'2018-07-01' AND DATE'2019-01-23') (type: boolean)
                   Statistics: Num rows: 1 Data size: 592 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((col_20) IN ('part1', 'part2', 'part3') and CAST( col_3 AS DATE) BETWEEN DATE'2018-07-01' AND DATE'2019-01-23') (type: boolean)
+                    predicate: ((UDFToDouble(col_7) is not null or col_7 is null) and (col_20) IN ('part1', 'part2', 'part3') and CAST( col_3 AS DATE) BETWEEN DATE'2018-07-01' AND DATE'2019-01-23') (type: boolean)
                     Statistics: Num rows: 1 Data size: 592 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: col_1 (type: string), col_7 (type: string), col_20 (type: string), CAST( col_3 AS DATE) (type: date)

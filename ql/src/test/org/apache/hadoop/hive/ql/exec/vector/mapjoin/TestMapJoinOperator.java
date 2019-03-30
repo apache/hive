@@ -118,7 +118,7 @@ import java.util.Random;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 public class TestMapJoinOperator {
 

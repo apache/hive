@@ -3839,4 +3839,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public void setHadoopJobid(String jobId, long cqId) throws MetaException, TException {
     client.set_hadoop_jobid(jobId, cqId);
   }
+
+  @Override
+  public String getServerVersion() throws TException {
+    return client.getVersion();
+  }
 }

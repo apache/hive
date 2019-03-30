@@ -12334,6 +12334,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
+    final String llapIOETLSkipFormat = HiveConf.getVar(conf, ConfVars.LLAP_IO_ETL_SKIP_FORMAT);
+    if (qb.getParseInfo().hasInsertTables() || qb.isCTAS()) {
+      if (llapIOETLSkipFormat.equalsIgnoreCase("encode")) {
+        conf.setBoolean(ConfVars.LLAP_IO_ENCODE_ENABLED.varname, false);
+        LOG.info("Disabling LLAP IO encode as ETL query is detected");
+      } else if (llapIOETLSkipFormat.equalsIgnoreCase("all")) {
+        conf.setBoolean(ConfVars.LLAP_IO_ENABLED.varname, false);
+        LOG.info("Disabling LLAP IO as ETL query is detected");
+      }
+    }
+
     // Check query results cache.
     // If no masking/filtering required, then we can check the cache now, before
     // generating the operator tree and going through CBO.

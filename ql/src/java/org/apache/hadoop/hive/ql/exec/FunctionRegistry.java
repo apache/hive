@@ -473,6 +473,8 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("bloom_filter", new GenericUDAFBloomFilter());
     system.registerGenericUDAF("approx_distinct", new GenericUDAFApproximateDistinct());
     system.registerUDAF("percentile", UDAFPercentile.class);
+    system.registerGenericUDAF("percentile_cont", new GenericUDAFPercentileCont());
+    system.registerGenericUDAF("percentile_disc", new GenericUDAFPercentileDisc());
 
 
     // Generic UDFs

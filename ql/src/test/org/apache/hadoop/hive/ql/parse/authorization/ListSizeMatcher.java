@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.ql.parse.authorization;
 
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 public class ListSizeMatcher<E> {
   private final List<E> list;

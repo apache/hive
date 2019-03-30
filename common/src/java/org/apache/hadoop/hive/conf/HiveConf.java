@@ -4112,6 +4112,10 @@ public class HiveConf extends Configuration {
     LLAP_EXECUTION_MODE("hive.llap.execution.mode", "none",
         new StringSet("auto", "none", "all", "map", "only"),
         "Chooses whether query fragments will run in container or in llap"),
+    LLAP_IO_ETL_SKIP_FORMAT("hive.llap.io.etl.skip.format", "encode", new StringSet("none", "encode", "all"),
+      "For ETL queries, determines whether to skip llap io cache. By default, hive.llap.io.encode.enabled " +
+        "will be set to false which disables LLAP IO for text formats. Setting it to 'all' will disable LLAP IO for all" +
+        " formats. 'none' will not disable LLAP IO for any formats."),
     LLAP_OBJECT_CACHE_ENABLED("hive.llap.object.cache.enabled", true,
         "Cache objects (plans, hashtables, etc) in llap"),
     LLAP_IO_DECODING_METRICS_PERCENTILE_INTERVALS("hive.llap.io.decoding.metrics.percentiles.intervals", "30",

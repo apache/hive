@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse.authorization;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;

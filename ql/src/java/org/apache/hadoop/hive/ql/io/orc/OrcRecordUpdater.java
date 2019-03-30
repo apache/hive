@@ -24,6 +24,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
@@ -83,6 +84,20 @@ public class OrcRecordUpdater implements RecordUpdater {
   final static int ROW_ID = 3;
   final static int CURRENT_WRITEID = 4;
   public static final int ROW = 5;
+  static final String OPERATION_FIELD_NAME = "operation";
+  static final String ORIGINAL_WRITEID_FIELD_NAME = "originalTransaction";
+  static final String BUCKET_FIELD_NAME = "bucket";
+  static final String ROW_ID_FIELD_NAME = "rowId";
+  static final String CURRENT_WRITEID_FIELD_NAME = "currentTransaction";
+  static final String ROW_FIELD_NAME = "row";
+  public static final Collection ALL_ACID_ROW_NAMES = Arrays.asList(
+      OrcRecordUpdater.BUCKET_FIELD_NAME,
+      OrcRecordUpdater.CURRENT_WRITEID_FIELD_NAME,
+      OrcRecordUpdater.ORIGINAL_WRITEID_FIELD_NAME,
+      OrcRecordUpdater.OPERATION_FIELD_NAME,
+      OrcRecordUpdater.ROW_FIELD_NAME,
+      OrcRecordUpdater.ROW_ID_FIELD_NAME);
+
   /**
    * total number of fields (above)
    */
@@ -190,17 +205,17 @@ public class OrcRecordUpdater implements RecordUpdater {
    */
   static StructObjectInspector createEventObjectInspector(ObjectInspector rowInspector) {
     List<StructField> fields = new ArrayList<StructField>();
-    fields.add(new OrcStruct.Field("operation",
+    fields.add(new OrcStruct.Field(OPERATION_FIELD_NAME,
         PrimitiveObjectInspectorFactory.writableIntObjectInspector, OPERATION));
-    fields.add(new OrcStruct.Field("originalTransaction",
+    fields.add(new OrcStruct.Field(ORIGINAL_WRITEID_FIELD_NAME,
         PrimitiveObjectInspectorFactory.writableLongObjectInspector, ORIGINAL_WRITEID));
-    fields.add(new OrcStruct.Field("bucket",
+    fields.add(new OrcStruct.Field(BUCKET_FIELD_NAME,
         PrimitiveObjectInspectorFactory.writableIntObjectInspector, BUCKET));
-    fields.add(new OrcStruct.Field("rowId",
+    fields.add(new OrcStruct.Field(ROW_ID_FIELD_NAME,
         PrimitiveObjectInspectorFactory.writableLongObjectInspector, ROW_ID));
-    fields.add(new OrcStruct.Field("currentTransaction",
+    fields.add(new OrcStruct.Field(CURRENT_WRITEID_FIELD_NAME,
         PrimitiveObjectInspectorFactory.writableLongObjectInspector, CURRENT_WRITEID));
-    fields.add(new OrcStruct.Field("row", rowInspector, ROW));
+    fields.add(new OrcStruct.Field(ROW_FIELD_NAME, rowInspector, ROW));
     return new OrcStruct.OrcStructInspector(fields);
   }
 

@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hive.ptest.execution.Dirs;

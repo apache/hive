@@ -222,7 +222,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: bucket_small_n17
-                  filterExpr: pri BETWEEN 1 AND 2 (type: boolean)
+                  filterExpr: pri BETWEEN 1L AND 2L (type: boolean)
                   Statistics: Num rows: 236 Data size: 45636 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: bigint), value (type: string)
@@ -370,7 +370,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: bucket_small_n17
-                  filterExpr: pri BETWEEN 1 AND 2 (type: boolean)
+                  filterExpr: pri BETWEEN 1L AND 2L (type: boolean)
                   Statistics: Num rows: 236 Data size: 45636 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: bigint), value (type: string)
@@ -626,7 +626,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: bucket_small_n17
-                  filterExpr: pri BETWEEN 1 AND 2 (type: boolean)
+                  filterExpr: pri BETWEEN 1L AND 2L (type: boolean)
                   Statistics: Num rows: 236 Data size: 45636 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: bigint), value (type: string)
