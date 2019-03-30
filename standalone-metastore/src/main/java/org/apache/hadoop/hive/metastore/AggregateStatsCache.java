@@ -253,6 +253,7 @@ public class AggregateStatsCache {
         // Check if this is the best match so far
         if (matchStats.hits > bestMatchHits) {
           bestMatch = candidate;
+          bestMatchHits = matchStats.hits;
         }
       }
     }
