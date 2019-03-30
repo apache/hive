@@ -122,7 +122,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], dir0=[ASC], dir1=[
               HiveProject(i_item_sk=[$0], i_item_id=[$1], i_item_desc=[$4])
                 HiveFilter(condition=[IS NOT NULL($0)])
                   HiveTableScan(table=[[default, item]], table:alias=[item])
-              HiveJoin(condition=[AND(AND(=($2, $9), =($1, $8)), =($4, $10))], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveJoin(condition=[AND(=($2, $9), =($1, $8), =($4, $10))], joinType=[inner], algorithm=[none], cost=[not available])
                 HiveJoin(condition=[=($6, $0)], joinType=[inner], algorithm=[none], cost=[not available])
                   HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_customer_sk=[$3], ss_store_sk=[$7], ss_ticket_number=[$9], ss_quantity=[$10])
                     HiveFilter(condition=[AND(IS NOT NULL($3), IS NOT NULL($2), IS NOT NULL($9), IS NOT NULL($0), IS NOT NULL($7))])

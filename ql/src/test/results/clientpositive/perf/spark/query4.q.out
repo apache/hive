@@ -992,7 +992,7 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col3, _col5, _col6, _col8, _col9, _col11, _col13, _col14
                 Statistics: Num rows: 1916625598 Data size: 169085266687 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: (CASE WHEN (_col3 is not null) THEN (CASE WHEN (_col9) THEN (((_col11 / _col8) > (_col14 / _col3))) ELSE ((null > (_col14 / _col3))) END) ELSE (CASE WHEN (_col9) THEN (((_col11 / _col8) > null)) ELSE (null) END) END and CASE WHEN (_col6) THEN (CASE WHEN (_col9) THEN (((_col11 / _col8) > (_col1 / _col5))) ELSE ((null > (_col1 / _col5))) END) ELSE (CASE WHEN (_col9) THEN (((_col11 / _col8) > null)) ELSE (null) END) END) (type: boolean)
+                  predicate: (CASE WHEN (_col3 is not null) THEN (CASE WHEN (_col9) THEN (((_col11 / _col8) > (_col14 / _col3))) ELSE (false) END) ELSE (false) END and CASE WHEN (_col6) THEN (CASE WHEN (_col9) THEN (((_col11 / _col8) > (_col1 / _col5))) ELSE (false) END) ELSE (false) END) (type: boolean)
                   Statistics: Num rows: 479156399 Data size: 42271316627 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col13 (type: string)

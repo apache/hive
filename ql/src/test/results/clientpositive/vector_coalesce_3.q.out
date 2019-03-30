@@ -88,7 +88,7 @@ STAGE PLANS:
             alias: n
             Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: member (type: bigint), CASE WHEN (CASE WHEN (attr is not null) THEN ((attr > 1L)) ELSE (true) END) THEN (attr) ELSE (null) END (type: bigint)
+              expressions: member (type: bigint), CASE WHEN (((attr > 1L) or attr is null)) THEN (attr) ELSE (null) END (type: bigint)
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
               HashTable Sink Operator
