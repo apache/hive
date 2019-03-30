@@ -275,6 +275,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
 
   private Function2<RelNode, RelNode, Void> createCopyHook() {
     return new Function2<RelNode, RelNode, Void>() {
+      @Override
       public Void apply(RelNode oldNode, RelNode newNode) {
         if (cm.mapRefRelToCorRef.containsKey(oldNode)) {
           final CorelMap corelMap = new CorelMapBuilder().build(newNode);
@@ -1193,7 +1194,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       final RexFieldAccess f = (RexFieldAccess) e;
       if (f.getField().getIndex() == correlation.field
           && f.getReferenceExpr() instanceof RexCorrelVariable) {
-        if (((RexCorrelVariable) f.getReferenceExpr()).id == correlation.corr) {
+        if (((RexCorrelVariable) f.getReferenceExpr()).id.equals(correlation.corr)) {
           return true;
         }
       }
@@ -2193,6 +2194,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
                               operand(Aggregate.class, any()))));
     }
 
+    @Override
     public void onMatch(RelOptRuleCall call) {
       Aggregate singleAggregate = call.rel(0);
       Project project = call.rel(1);
@@ -2242,6 +2244,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
                                       operand(RelNode.class, any())))));
     }
 
+    @Override
     public void onMatch(RelOptRuleCall call) {
       final LogicalCorrelate correlate = call.rel(0);
       final RelNode left = call.rel(1);
@@ -2444,6 +2447,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
                                               operand(RelNode.class, any()))))));
     }
 
+    @Override
     public void onMatch(RelOptRuleCall call) {
       final LogicalCorrelate correlate = call.rel(0);
       final RelNode left = call.rel(1);
@@ -2825,6 +2829,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       this.flavor = flavor;
     }
 
+    @Override
     public void onMatch(RelOptRuleCall call) {
       final LogicalCorrelate correlate = call.rel(0);
       final RelNode left = call.rel(1);
@@ -2975,6 +2980,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
           && field == ((CorRef) o).field;
     }
 
+    @Override
     public int compareTo(@Nonnull CorRef o) {
       int c = corr.compareTo(o.corr);
       if (c != 0) {
@@ -3025,6 +3031,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
           && field == ((CorDef) o).field;
     }
 
+    @Override
     public int compareTo(@Nonnull CorDef o) {
       int c = corr.compareTo(o.corr);
       if (c != 0) {
@@ -3158,7 +3165,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       return rel;
     }
     @Override public RelNode visit(HiveProject rel) {
-      if(!(hasRexOver(((HiveProject)rel).getProjects()))) {
+      if(!(hasRexOver(rel.getProjects()))) {
         mightRequireValueGen = false;
         return super.visit(rel);
       } else {
@@ -3199,6 +3206,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
         Multimaps.newSortedSetMultimap(
             new HashMap<RelNode, Collection<CorRef>>(),
             new Supplier<TreeSet<CorRef>>() {
+              @Override
               public TreeSet<CorRef> get() {
                 Bug.upgrade("use MultimapBuilder when we're on Guava-16");
                 return Sets.newTreeSet();
@@ -3219,6 +3227,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
               mapFieldAccessToCorVar);
     }
 
+    @Override
     public RelNode visit(HiveJoin join) {
       try {
         Stacks.push(stack, join);
@@ -3248,6 +3257,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       return join;
     }
 
+    @Override
     public RelNode visit(final HiveProject project) {
       try {
         Stacks.push(stack, project);
@@ -3260,6 +3270,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       return super.visit(project);
     }
 
+    @Override
     public RelNode visit(final HiveFilter filter) {
       try {
         Stacks.push(stack, filter);
