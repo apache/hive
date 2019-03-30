@@ -19,17 +19,23 @@
 package org.apache.hadoop.hive.ql;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -46,9 +52,13 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcFile;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager2;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.orc.OrcProto;
 import org.apache.tez.mapreduce.hadoop.MRJobConfig;
 import org.junit.After;
 import org.junit.Assert;
@@ -871,6 +881,40 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
     List<String> rsCompact = runStatementOnDriver("select ROW__ID, * from  " + tblName, confForTez);
     Assert.assertEquals("normal read", expectedRs, rs);
     Assert.assertEquals("compacted read", rs, rsCompact);
+  }
+
+  /**
+   * Tests the OrcInputFormat.isOrignal method for files in ACID and Non-ACID tables.
+   * @throws IOException If there is a file reading error
+   */
+  @Test
+  public void testIsOriginal() throws IOException {
+    assertIsOriginal(new Path(TEST_WAREHOUSE_DIR, Table.ACIDTBL.toString().toLowerCase()), false);
+    assertIsOriginal(new Path(TEST_WAREHOUSE_DIR, Table.NONACIDORCTBL.toString().toLowerCase()), true);
+  }
+
+  /**
+   * Checks if the file format is original or ACID file based on OrcInputFormat static methods.
+   * @param path The file to check
+   * @param expected The expected result of the isOriginal
+   * @throws IOException Error when reading the file
+   */
+  private void assertIsOriginal(Path path, boolean expected) throws FileNotFoundException, IOException {
+    FileSystem fs = FileSystem.get(hiveConf);
+    RemoteIterator<LocatedFileStatus> lfs = fs.listFiles(path, true);
+    boolean foundAnyFile = false;
+    while (lfs.hasNext()) {
+      LocatedFileStatus lf = lfs.next();
+      Path file = lf.getPath();
+      if (!file.getName().startsWith(".") && !file.getName().startsWith("_")) {
+        Reader reader = OrcFile.createReader(file, OrcFile.readerOptions(new Configuration()));
+        OrcProto.Footer footer = reader.getFileTail().getFooter();
+        assertEquals("Reader based original check", expected, OrcInputFormat.isOriginal(reader));
+        assertEquals("Footer based original check", expected, OrcInputFormat.isOriginal(footer));
+        foundAnyFile = true;
+      }
+    }
+    assertTrue("Checking if any file found to check", foundAnyFile);
   }
 
   private void restartSessionAndDriver(HiveConf conf) throws Exception {

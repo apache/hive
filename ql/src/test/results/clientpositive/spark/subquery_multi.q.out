@@ -404,7 +404,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11, _col13
                   Statistics: Num rows: 1 Data size: 39397 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((_col10 = 0L) or (_col13 is null and _col3 is not null and (_col11 >= _col10))) (type: boolean)
+                    predicate: (((_col11 >= _col10) or (_col10 = 0L) or _col13 is not null or _col3 is null) and (_col13 is null or (_col10 = 0L)) and (_col3 is not null or (_col10 = 0L) or _col13 is not null)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 39397 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
@@ -629,7 +629,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11, _col13
                   Statistics: Num rows: 1 Data size: 39397 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((_col10 = 0L) or (_col13 is null and _col3 is not null and (_col11 >= _col10))) (type: boolean)
+                    predicate: (((_col11 >= _col10) or (_col10 = 0L) or _col13 is not null or _col3 is null) and (_col13 is null or (_col10 = 0L)) and (_col3 is not null or (_col10 = 0L) or _col13 is not null)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 39397 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
@@ -853,15 +853,15 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11, _col13
                   Statistics: Num rows: 2 Data size: 71632 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((_col10 = 0L) or (_col13 is null and (_col11 >= _col10))) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 35816 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (((_col11 >= _col10) or (_col10 = 0L) or _col13 is not null or _col3 is null) and (_col13 is null or (_col10 = 0L))) (type: boolean)
+                    Statistics: Num rows: 2 Data size: 71632 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                      Statistics: Num rows: 1 Data size: 35816 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 71632 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 1 Data size: 35816 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 71632 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1081,7 +1081,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col12
                   Statistics: Num rows: 1 Data size: 35833 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
-                    predicate: ((_col12 is null and _col1 is not null and (_col10 >= _col9)) or (_col9 = 0L)) (type: boolean)
+                    predicate: (((_col10 >= _col9) or (_col9 = 0L) or _col12 is not null or _col1 is null) and (_col1 is not null or (_col9 = 0L) or _col12 is not null) and (_col12 is null or (_col9 = 0L))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 35833 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
@@ -1723,6 +1723,46 @@ POSTHOOK: Input: default@tempty
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
+PREHOOK: query: explain cbo select * from part_null where 
+        p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type
+                                 AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Input: default@part_null
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select * from part_null where 
+        p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type
+                                 AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_null
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(p_partkey=[$0], p_name=[$1], p_mfgr=[$2], p_brand=[$3], p_type=[$4], p_size=[$5], p_container=[$6], p_retailprice=[$7], p_comment=[$8])
+  HiveFilter(condition=[AND(OR(IS NULL($14), =($10, 0), IS NULL($10)), OR(IS NOT NULL($3), =($10, 0), IS NULL($10), IS NOT NULL($14)), OR(IS NOT TRUE(<($11, $10)), =($10, 0), IS NULL($10), IS NOT NULL($14), IS NULL($3)))])
+    HiveJoin(condition=[AND(=($3, $12), =($13, $4))], joinType=[left], algorithm=[none], cost=[not available])
+      HiveJoin(condition=[=($9, $4)], joinType=[left], algorithm=[none], cost=[not available])
+        HiveProject(p_partkey=[$0], p_name=[$1], p_mfgr=[$2], p_brand=[$3], p_type=[$4], p_size=[$5], p_container=[$6], p_retailprice=[$7], p_comment=[$8])
+          HiveTableScan(table=[[default, part_null]], table:alias=[part_null])
+        HiveProject(p_type=[$0], c=[$1], ck=[$2])
+          HiveAggregate(group=[{1}], c=[COUNT()], ck=[COUNT($2)])
+            HiveSemiJoin(condition=[AND(=($1, $4), =($0, $3))], joinType=[inner])
+              HiveProject(p_brand=[$3], p_type=[$4], p_container=[$6])
+                HiveFilter(condition=[AND(IS NOT NULL($4), IS NOT NULL($3))])
+                  HiveTableScan(table=[[default, part]], table:alias=[part])
+              HiveProject(p_brand=[$3], p_type=[$4])
+                HiveFilter(condition=[AND(IS NOT NULL($4), IS NOT NULL($3))])
+                  HiveTableScan(table=[[default, part]], table:alias=[pp])
+      HiveProject(p_container=[$1], p_type=[$0], $f2=[true])
+        HiveAggregate(group=[{1, 2}])
+          HiveSemiJoin(condition=[AND(=($1, $4), =($0, $3))], joinType=[inner])
+            HiveProject(p_brand=[$3], p_type=[$4], p_container=[$6])
+              HiveFilter(condition=[AND(IS NOT NULL($4), IS NOT NULL($3), IS NOT NULL($6))])
+                HiveTableScan(table=[[default, part]], table:alias=[part])
+            HiveProject(p_brand=[$3], p_type=[$4])
+              HiveFilter(condition=[AND(IS NOT NULL($4), IS NOT NULL($3))])
+                HiveTableScan(table=[[default, part]], table:alias=[pp])
+
 PREHOOK: query: explain select * from part_null where p_name IN ( select p_name from part where part.p_type = part_null.p_type)
         AND p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type
                                 AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type))
@@ -1971,15 +2011,15 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11, _col14
                 Statistics: Num rows: 33 Data size: 4187 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: CASE WHEN ((_col10 = 0L)) THEN (true) WHEN (_col10 is null) THEN (true) WHEN (_col14 is not null) THEN (false) WHEN (_col3 is null) THEN (null) WHEN ((_col11 < _col10)) THEN (false) ELSE (true) END (type: boolean)
-                  Statistics: Num rows: 16 Data size: 2030 Basic stats: COMPLETE Column stats: NONE
+                  predicate: (((_col11 < _col10) is not true or (_col10 = 0L) or _col10 is null or _col14 is not null or _col3 is null) and (_col14 is null or (_col10 = 0L) or _col10 is null) and (_col3 is not null or (_col10 = 0L) or _col10 is null or _col14 is not null)) (type: boolean)
+                  Statistics: Num rows: 33 Data size: 4187 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                    Statistics: Num rows: 16 Data size: 2030 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 33 Data size: 4187 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 16 Data size: 2030 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 33 Data size: 4187 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2491,15 +2531,15 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11, _col14
                 Statistics: Num rows: 33 Data size: 4187 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: CASE WHEN ((_col10 = 0L)) THEN (true) WHEN (_col10 is null) THEN (true) WHEN (_col14 is not null) THEN (false) WHEN (_col3 is null) THEN (null) WHEN ((_col11 < _col10)) THEN (false) ELSE (true) END (type: boolean)
-                  Statistics: Num rows: 16 Data size: 2030 Basic stats: COMPLETE Column stats: NONE
+                  predicate: (((_col11 < _col10) is not true or (_col10 = 0L) or _col10 is null or _col14 is not null or _col3 is null) and (_col14 is null or (_col10 = 0L) or _col10 is null) and (_col3 is not null or (_col10 = 0L) or _col10 is null or _col14 is not null)) (type: boolean)
+                  Statistics: Num rows: 33 Data size: 4187 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                    Statistics: Num rows: 16 Data size: 2030 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 33 Data size: 4187 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 16 Data size: 2030 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 33 Data size: 4187 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2742,15 +2782,15 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11, _col14
                 Statistics: Num rows: 33 Data size: 4187 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: CASE WHEN ((_col10 = 0L)) THEN (true) WHEN (_col10 is null) THEN (true) WHEN (_col14 is not null) THEN (false) WHEN (_col3 is null) THEN (null) WHEN ((_col11 < _col10)) THEN (false) ELSE (true) END (type: boolean)
-                  Statistics: Num rows: 16 Data size: 2030 Basic stats: COMPLETE Column stats: NONE
+                  predicate: (((_col11 < _col10) is not true or (_col10 = 0L) or _col10 is null or _col14 is not null or _col3 is null) and (_col14 is null or (_col10 = 0L) or _col10 is null) and (_col3 is not null or (_col10 = 0L) or _col10 is null or _col14 is not null)) (type: boolean)
+                  Statistics: Num rows: 33 Data size: 4187 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                    Statistics: Num rows: 16 Data size: 2030 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 33 Data size: 4187 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 16 Data size: 2030 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 33 Data size: 4187 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3210,23 +3250,23 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col2, _col4, _col5, _col7
                   Statistics: Num rows: 27 Data size: 3757 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((_col4 = 0L) or (_col7 is null and _col2 is not null and (_col5 >= _col4))) (type: boolean)
-                    Statistics: Num rows: 17 Data size: 2365 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (((_col5 >= _col4) or (_col4 = 0L) or _col7 is not null or _col2 is null) and (_col2 is not null or (_col4 = 0L) or _col7 is not null) and (_col7 is null or (_col4 = 0L))) (type: boolean)
+                    Statistics: Num rows: 26 Data size: 3617 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), 1 (type: int)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 17 Data size: 2365 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 3617 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: int), _col1 (type: int)
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 17 Data size: 2365 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 26 Data size: 3617 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: int)
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                          Statistics: Num rows: 17 Data size: 2365 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 26 Data size: 3617 Basic stats: COMPLETE Column stats: NONE
         Reducer 9 
             Execution mode: vectorized
             Reduce Operator Tree:
@@ -4119,7 +4159,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col12
                   Statistics: Num rows: 28 Data size: 3937 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((_col0 = 3) or CASE WHEN ((_col9 = 0L)) THEN (true) WHEN (_col12 is not null) THEN (false) WHEN (_col5 is null) THEN (null) WHEN ((_col10 < _col9)) THEN (null) ELSE (true) END) (type: boolean)
+                    predicate: (((_col9 <> 0L) and _col12 is null and (_col10 >= _col9) and _col5 is not null) or (_col0 = 3) or (_col9 = 0L)) (type: boolean)
                     Statistics: Num rows: 28 Data size: 3937 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
@@ -4342,7 +4382,7 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col4, _col5
                 Statistics: Num rows: 550 Data size: 13543 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((_col4 is not null and (_col2 <> 0L)) or _col1 is not null or _col5 is not null) (type: boolean)
+                  predicate: (((_col2 <> 0L) and _col4 is not null) or _col1 is not null or _col5 is not null) (type: boolean)
                   Statistics: Num rows: 550 Data size: 13543 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     Statistics: Num rows: 550 Data size: 13543 Basic stats: COMPLETE Column stats: NONE

@@ -119,7 +119,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_test_n0
-                  filterExpr: (((cbigint % 500) = 0) and (sin(cdecimal1) >= -1.0D)) (type: boolean)
+                  filterExpr: (((cbigint % 500L) = 0L) and (sin(cdecimal1) >= -1.0D)) (type: boolean)
                   Statistics: Num rows: 12289 Data size: 1100992 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -129,7 +129,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 5:bigint, val 0)(children: LongColModuloLongScalar(col 0:bigint, val 500) -> 5:bigint), FilterDoubleColGreaterEqualDoubleScalar(col 7:double, val -1.0)(children: FuncSinDoubleToDouble(col 6:double)(children: CastDecimalToDouble(col 2:decimal(20,10)) -> 6:double) -> 7:double))
-                    predicate: (((cbigint % 500) = 0) and (sin(cdecimal1) >= -1.0D)) (type: boolean)
+                    predicate: (((cbigint % 500L) = 0L) and (sin(cdecimal1) >= -1.0D)) (type: boolean)
                     Statistics: Num rows: 2048 Data size: 183600 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cdecimal1 (type: decimal(20,10)), round(cdecimal1, 2) (type: decimal(13,2)), round(cdecimal1) (type: decimal(11,0)), floor(cdecimal1) (type: decimal(11,0)), ceil(cdecimal1) (type: decimal(11,0)), round(exp(cdecimal1), 58) (type: double), ln(cdecimal1) (type: double), log10(cdecimal1) (type: double), log2(cdecimal1) (type: double), log2((cdecimal1 - 15601)) (type: double), log(2, cdecimal1) (type: double), power(log2(cdecimal1), 2) (type: double), power(log2(cdecimal1), 2) (type: double), sqrt(cdecimal1) (type: double), abs(cdecimal1) (type: decimal(20,10)), sin(cdecimal1) (type: double), asin(cdecimal1) (type: double), cos(cdecimal1) (type: double), acos(cdecimal1) (type: double), atan(cdecimal1) (type: double), degrees(cdecimal1) (type: double), radians(cdecimal1) (type: double), cdecimal1 (type: decimal(20,10)), (- cdecimal1) (type: decimal(20,10)), sign(cdecimal1) (type: int), cos(((- sin(log(cdecimal1))) + 3.14159D)) (type: double)
@@ -370,7 +370,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_test_small
-                  filterExpr: (((cbigint % 500) = 0) and (sin(cdecimal1) >= -1.0D)) (type: boolean)
+                  filterExpr: (((cbigint % 500L) = 0L) and (sin(cdecimal1) >= -1.0D)) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 1100992 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -380,7 +380,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 5:bigint, val 0)(children: LongColModuloLongScalar(col 0:bigint, val 500) -> 5:bigint), FilterDoubleColGreaterEqualDoubleScalar(col 8:double, val -1.0)(children: FuncSinDoubleToDouble(col 7:double)(children: CastDecimalToDouble(col 6:decimal(12,4))(children: ConvertDecimal64ToDecimal(col 2:decimal(12,4)/DECIMAL_64) -> 6:decimal(12,4)) -> 7:double) -> 8:double))
-                    predicate: (((cbigint % 500) = 0) and (sin(cdecimal1) >= -1.0D)) (type: boolean)
+                    predicate: (((cbigint % 500L) = 0L) and (sin(cdecimal1) >= -1.0D)) (type: boolean)
                     Statistics: Num rows: 2048 Data size: 183600 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cdecimal1 (type: decimal(12,4)), round(cdecimal1, 2) (type: decimal(11,2)), round(cdecimal1) (type: decimal(9,0)), floor(cdecimal1) (type: decimal(9,0)), ceil(cdecimal1) (type: decimal(9,0)), round(exp(cdecimal1), 58) (type: double), ln(cdecimal1) (type: double), log10(cdecimal1) (type: double), log2(cdecimal1) (type: double), log2((cdecimal1 - 15601)) (type: double), log(2, cdecimal1) (type: double), power(log2(cdecimal1), 2) (type: double), power(log2(cdecimal1), 2) (type: double), sqrt(cdecimal1) (type: double), abs(cdecimal1) (type: decimal(12,4)), sin(cdecimal1) (type: double), asin(cdecimal1) (type: double), cos(cdecimal1) (type: double), acos(cdecimal1) (type: double), atan(cdecimal1) (type: double), degrees(cdecimal1) (type: double), radians(cdecimal1) (type: double), cdecimal1 (type: decimal(12,4)), (- cdecimal1) (type: decimal(12,4)), sign(cdecimal1) (type: int), cos(((- sin(log(cdecimal1))) + 3.14159D)) (type: double)

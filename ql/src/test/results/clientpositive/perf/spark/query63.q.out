@@ -252,7 +252,11 @@ STAGE PLANS:
                       outputColumnNames: avg_window_0, _col0, _col2
                       Statistics: Num rows: 383325119 Data size: 33817053293 Basic stats: COMPLETE Column stats: NONE
                       Filter Operator
+<<<<<<< HEAD
                         predicate: if((avg_window_0 > 0), ((abs((_col2 - avg_window_0)) / avg_window_0) > 0.1), null) (type: boolean)
+=======
+                        predicate: CASE WHEN ((avg_window_0 > 0)) THEN (((abs((_col2 - avg_window_0)) / avg_window_0) > 0.1)) ELSE (false) END (type: boolean)
+>>>>>>> asf/master
                         Statistics: Num rows: 191662559 Data size: 16908526602 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col0 (type: int), _col2 (type: decimal(17,2)), avg_window_0 (type: decimal(21,6))

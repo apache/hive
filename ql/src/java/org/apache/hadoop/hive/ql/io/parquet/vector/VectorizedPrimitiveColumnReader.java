@@ -31,6 +31,7 @@ import org.apache.parquet.schema.DecimalMetadata;
 import org.apache.parquet.schema.Type;
 
 import java.io.IOException;
+import java.time.ZoneId;
 
 /**
  * It's column level Parquet reader which is used to read a batch of records for a column,
@@ -47,8 +48,11 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       ColumnDescriptor descriptor,
       PageReader pageReader,
       boolean skipTimestampConversion,
-      Type type, TypeInfo hiveType) throws IOException {
-    super(descriptor, pageReader, skipTimestampConversion, type, hiveType);
+      ZoneId writerTimezone,
+      Type type,
+      TypeInfo hiveType)
+      throws IOException {
+    super(descriptor, pageReader, skipTimestampConversion, writerTimezone, type, hiveType);
   }
 
   @Override

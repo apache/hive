@@ -21,7 +21,7 @@ package org.apache.hive.ptest.execution.conf;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.io.Resources;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.apache.hive.ptest.execution.PTest;
 import org.apache.hive.ptest.execution.context.ExecutionContext;
 import org.junit.Test;

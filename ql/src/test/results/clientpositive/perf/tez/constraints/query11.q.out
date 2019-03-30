@@ -199,7 +199,11 @@ Stage-0
               Select Operator [SEL_88] (rows=12248094 width=85)
                 Output:["_col0"]
                 Filter Operator [FIL_87] (rows=12248094 width=537)
+<<<<<<< HEAD
                   predicate:if(_col4 is not null, if(_col2, ((_col6 / _col1) > (_col9 / _col4)), (null > (_col9 / _col4))), if(_col2, ((_col6 / _col1) > null), null))
+=======
+                  predicate:CASE WHEN (_col4 is not null) THEN (CASE WHEN (_col2) THEN (((_col6 / _col1) > (_col9 / _col4))) ELSE (false) END) ELSE (false) END
+>>>>>>> asf/master
                   Merge Join Operator [MERGEJOIN_283] (rows=24496188 width=537)
                     Conds:RS_84._col3=RS_346._col0(Inner),Output:["_col1","_col2","_col4","_col6","_col8","_col9"]
                   <-Reducer 20 [SIMPLE_EDGE] vectorized

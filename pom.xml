@@ -127,7 +127,7 @@
     <avatica.version>1.12.0</avatica.version>
     <avro.version>1.8.2</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
-    <calcite.version>1.17.0</calcite.version>
+    <calcite.version>1.19.0</calcite.version>
     <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
     <datanucleus-core.version>4.1.17</datanucleus-core.version>
     <datanucleus-rdbms.version>4.1.19</datanucleus-rdbms.version>
@@ -178,7 +178,7 @@
     <!-- Glassfish jersey is included for Spark client test only -->
     <glassfish.jersey.version>2.22.2</glassfish.jersey.version>
     <jline.version>2.12</jline.version>
-    <jms.version>1.1</jms.version>
+    <jms.version>2.0.2</jms.version>
     <joda.version>2.9.9</joda.version>
     <jodd.version>3.5.2</jodd.version>
     <json.version>1.8</json.version>
@@ -224,6 +224,16 @@
 
   <repositories>
    <!-- This needs to be removed before checking in-->
+    <repository>
+      <id>central</id>
+      <name>central</name>
+      <url>https://repo.maven.apache.org/maven2</url>
+      <layout>default</layout>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>warn</checksumPolicy>
+      </releases>
+    </repository>
     <repository>
       <id>datanucleus</id>
       <name>datanucleus maven repository</name>
@@ -395,8 +405,8 @@
         <version>${jdo-api.version}</version>
       </dependency>
       <dependency>
-        <groupId>javax.jms</groupId>
-        <artifactId>jms</artifactId>
+        <groupId>jakarta.jms</groupId>
+        <artifactId>jakarta.jms-api</artifactId>
         <version>${jms.version}</version>
       </dependency>
       <dependency>

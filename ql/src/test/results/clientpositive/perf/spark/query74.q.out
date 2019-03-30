@@ -645,7 +645,11 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col3, _col5, _col6, _col7, _col8, _col9, _col10
                 Statistics: Num rows: 1149975359 Data size: 101451160012 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
+<<<<<<< HEAD
                   predicate: if(_col3 is not null, if(_col6, ((_col1 / _col5) > (_col10 / _col3)), (null > (_col10 / _col3))), if(_col6, ((_col1 / _col5) > null), null)) (type: boolean)
+=======
+                  predicate: CASE WHEN (_col3 is not null) THEN (CASE WHEN (_col6) THEN (((_col1 / _col5) > (_col10 / _col3))) ELSE (false) END) ELSE (false) END (type: boolean)
+>>>>>>> asf/master
                   Statistics: Num rows: 574987679 Data size: 50725579961 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col7 (type: string), _col8 (type: string), _col9 (type: string)

@@ -3832,6 +3832,19 @@ POSTHOOK: Input: default@dst_union22_delta_n0@ds=1
 POSTHOOK: Input: default@dst_union22_n0
 POSTHOOK: Input: default@dst_union22_n0@ds=1
 POSTHOOK: Output: default@dst_union22_n0@ds=2
+OPTIMIZED SQL: SELECT `k1`, `k2`, `k3`, `k4`
+FROM (SELECT `k1`, `k2`, `k3`, `k4`
+FROM `default`.`dst_union22_delta_n0`
+WHERE `ds` = '1' AND `k0` <= 50
+UNION ALL
+SELECT `t2`.`k1`, `t2`.`k2`, `t4`.`k3`, `t4`.`k4`
+FROM (SELECT `k1`, `k2`, `ds` = '1' AS `=`
+FROM `default`.`dst_union22_n0`
+WHERE `k1` > 20) AS `t2`
+LEFT JOIN (SELECT `k1`, `k3`, `k4`
+FROM `default`.`dst_union22_delta_n0`
+WHERE `ds` = '1' AND `k0` > 50 AND `k1` > 20) AS `t4` ON `t2`.`k1` = `t4`.`k1` AND `t2`.`=`)
+GROUP BY `k1`, `k2`, `k3`, `k4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

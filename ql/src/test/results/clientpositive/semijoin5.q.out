@@ -82,10 +82,10 @@ STAGE PLANS:
                   value expressions: _col2 (type: timestamp), _col3 (type: double), _col5 (type: smallint)
           TableScan
             alias: t2
-            filterExpr: (tinyint_col_15 is not null and decimal2709_col_9 is not null and tinyint_col_20 is not null and smallint_col_19 is not null) (type: boolean)
+            filterExpr: (UDFToLong(tinyint_col_15) is not null and decimal2709_col_9 is not null and tinyint_col_20 is not null and UDFToInteger(smallint_col_19) is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 128 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (decimal2709_col_9 is not null and smallint_col_19 is not null and tinyint_col_15 is not null and tinyint_col_20 is not null) (type: boolean)
+              predicate: (UDFToInteger(smallint_col_19) is not null and UDFToLong(tinyint_col_15) is not null and decimal2709_col_9 is not null and tinyint_col_20 is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 128 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: decimal2709_col_9 (type: decimal(27,9)), int_col_10 (type: int), tinyint_col_15 (type: tinyint), smallint_col_19 (type: smallint), tinyint_col_20 (type: tinyint)

@@ -5,6 +5,7 @@ build-eclipse
 .externalToolBuilders
 .project
 .settings
+.factorypath
 *.launch
 *~
 metastore_db

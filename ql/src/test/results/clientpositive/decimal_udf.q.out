@@ -991,14 +991,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: (UDFToDouble(key) / null) (type: double)
+            expressions: null (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
               Number of rows: 1
-              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: SELECT key / NULL FROM DECIMAL_UDF limit 1
