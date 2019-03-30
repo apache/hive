@@ -790,7 +790,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                notVectorizedReason: SELECT operator: Could not vectorize expression (mode = PROJECTION): GenericUDFBridge ==> log (Column[value], Const decimal(20,10) 10) because hive.vectorized.adaptor.usage.mode=none
+                notVectorizedReason: SELECT operator: Could not vectorize expression (mode = PROJECTION): GenericUDFBridge ==> log (Column[value], Const decimal(2,0) 10) because hive.vectorized.adaptor.usage.mode=none
                 vectorized: false
 
   Stage: Stage-0
@@ -972,7 +972,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                notVectorizedReason: SELECT operator: Could not vectorize expression (mode = PROJECTION): GenericUDFBridge ==> log (Column[value], Const decimal(20,10) 10) because hive.vectorized.adaptor.usage.mode=chosen and the UDF wasn't one of the chosen ones
+                notVectorizedReason: SELECT operator: Could not vectorize expression (mode = PROJECTION): GenericUDFBridge ==> log (Column[value], Const decimal(2,0) 10) because hive.vectorized.adaptor.usage.mode=chosen and the UDF wasn't one of the chosen ones
                 vectorized: false
 
   Stage: Stage-0

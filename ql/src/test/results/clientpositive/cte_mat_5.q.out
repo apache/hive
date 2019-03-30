@@ -115,10 +115,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            filterExpr: colnum is not null (type: boolean)
+            filterExpr: UDFToDouble(colnum) is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: colnum is not null (type: boolean)
+              predicate: UDFToDouble(colnum) is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: colnum (type: int), UDFToDouble(colnum) (type: double)
@@ -132,10 +132,10 @@ STAGE PLANS:
                   value expressions: _col0 (type: int)
           TableScan
             alias: b
-            filterExpr: key is not null (type: boolean)
+            filterExpr: UDFToDouble(key) is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: key is not null (type: boolean)
+              predicate: UDFToDouble(key) is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: UDFToDouble(key) (type: double)

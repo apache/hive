@@ -455,7 +455,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            filterExpr: c2 is not null (type: boolean)
+            filterExpr: CAST( c2 AS STRING) is not null (type: boolean)
             Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
@@ -463,8 +463,8 @@ STAGE PLANS:
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: SelectColumnIsNotNull(col 1:char(10))
-              predicate: c2 is not null (type: boolean)
+                  predicateExpression: SelectColumnIsNotNull(col 1:string)(children: col 1:char(10))
+              predicate: CAST( c2 AS STRING) is not null (type: boolean)
               Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: c1 (type: int), c2 (type: char(10)), CAST( c2 AS STRING) (type: string)
