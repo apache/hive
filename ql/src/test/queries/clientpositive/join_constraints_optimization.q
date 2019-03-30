@@ -122,7 +122,7 @@ FROM `lineorder_removal_n0`
 LEFT OUTER JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`
 LEFT OUTER JOIN `dates_removal_n0` ON `lo_orderdate` = `d_datekey`;
 
--- NOT TRANFORM EITHER
+-- REMOVE SECOND OUTER AND NOT TRANFORM FIRST OUTER
 EXPLAIN
 SELECT `lo_linenumber`
 FROM `lineorder_removal_n0`

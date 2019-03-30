@@ -414,10 +414,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: accumulo_pushdown
-            filterExpr: (not COALESCE((key < '90'),false)) (type: boolean)
+            filterExpr: (key < '90') is not true (type: boolean)
             Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (not COALESCE((key < '90'),false)) (type: boolean)
+              predicate: (key < '90') is not true (type: boolean)
               Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)

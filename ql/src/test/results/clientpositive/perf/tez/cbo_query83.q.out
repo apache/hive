@@ -144,7 +144,7 @@ POSTHOOK: Input: default@web_returns
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
-  HiveProject(item_id=[$0], sr_item_qty=[$4], sr_dev=[*(/(/($5, CAST(+(+($4, $1), $7)):DOUBLE), CAST(3):DOUBLE), CAST(100):DOUBLE)], cr_item_qty=[$1], cr_dev=[*(/(/($2, CAST(+(+($4, $1), $7)):DOUBLE), CAST(3):DOUBLE), CAST(100):DOUBLE)], wr_item_qty=[$7], wr_dev=[*(/(/($8, CAST(+(+($4, $1), $7)):DOUBLE), CAST(3):DOUBLE), CAST(100):DOUBLE)], average=[/(CAST(+(+($4, $1), $7)):DECIMAL(19, 0), 3)])
+  HiveProject(item_id=[$0], sr_item_qty=[$4], sr_dev=[*(/(/($5, CAST(+(+($4, $1), $7)):DOUBLE), 3), 100)], cr_item_qty=[$1], cr_dev=[*(/(/($2, CAST(+(+($4, $1), $7)):DOUBLE), 3), 100)], wr_item_qty=[$7], wr_dev=[*(/(/($8, CAST(+(+($4, $1), $7)):DOUBLE), 3), 100)], average=[/(CAST(+(+($4, $1), $7)):DECIMAL(19, 0), 3:DECIMAL(1, 0))])
     HiveJoin(condition=[=($0, $6)], joinType=[inner], algorithm=[none], cost=[not available])
       HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveProject($f0=[$0], $f1=[$1], CAST=[CAST($1):DOUBLE])

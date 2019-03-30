@@ -1448,13 +1448,13 @@ STAGE PLANS:
                     predicate: ((s) IN ('oscar allen', 'oscar carson') and (t = 10Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: UDFToByte(10) (type: tinyint), s (type: string)
+                      key expressions: 10Y (type: tinyint), s (type: string)
                       sort order: ++
-                      Map-reduce partition columns: UDFToByte(10) (type: tinyint)
+                      Map-reduce partition columns: 10Y (type: tinyint)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
                           keyColumns: 12:tinyint, 7:string
-                          keyExpressions: ConstantVectorExpression(val 10) -> 12:bigint
+                          keyExpressions: ConstantVectorExpression(val 10) -> 12:tinyint
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           partitionColumns: 13:tinyint
@@ -1512,7 +1512,7 @@ STAGE PLANS:
                         input alias: ptf_1
                         name: windowingtablefunction
                         order by: _col7 ASC NULLS LAST
-                        partition by: UDFToByte(10)
+                        partition by: 10Y
                         raw input shape:
                         window functions:
                             window function definition
@@ -1532,7 +1532,7 @@ STAGE PLANS:
                       orderExpressions: [col 1:string]
                       outputColumns: [3, 2, 1]
                       outputTypes: [int, int, string]
-                      partitionExpressions: [ConstantVectorExpression(val 10) -> 4:bigint]
+                      partitionExpressions: [ConstantVectorExpression(val 10) -> 4:tinyint]
                       streamingColumns: []
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                   Select Operator

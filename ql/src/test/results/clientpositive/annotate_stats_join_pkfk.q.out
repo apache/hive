@@ -467,10 +467,10 @@ STAGE PLANS:
                   Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: ss
-            filterExpr: ss_store_sk is not null (type: boolean)
+            filterExpr: UDFToLong(ss_store_sk) is not null (type: boolean)
             Statistics: Num rows: 1000 Data size: 3860 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ss_store_sk is not null (type: boolean)
+              predicate: UDFToLong(ss_store_sk) is not null (type: boolean)
               Statistics: Num rows: 964 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: UDFToLong(ss_store_sk) (type: bigint)

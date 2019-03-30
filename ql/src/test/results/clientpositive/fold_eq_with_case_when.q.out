@@ -236,18 +236,17 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            filterExpr: CASE WHEN ((key <> '238')) THEN ((key = '238')) WHEN ((key = '23')) THEN ((key = '238')) ELSE (null) END (type: boolean)
             Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: CASE WHEN ((key <> '238')) THEN ((key = '238')) WHEN ((key = '23')) THEN ((key = '238')) ELSE (null) END (type: boolean)
-              Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+              predicate: false (type: boolean)
+              Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

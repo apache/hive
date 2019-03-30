@@ -474,10 +474,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: key is not null (type: boolean)
+                  filterExpr: UDFToDouble(key) is not null (type: boolean)
                   Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: key is not null (type: boolean)
+                    predicate: UDFToDouble(key) is not null (type: boolean)
                     Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), value (type: string), UDFToDouble(key) (type: double)
@@ -499,10 +499,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: key is not null (type: boolean)
+                  filterExpr: UDFToDouble(key) is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: key is not null (type: boolean)
+                    predicate: UDFToDouble(key) is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: value (type: string), UDFToDouble(key) (type: double)
@@ -567,10 +567,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: key is not null (type: boolean)
+                  filterExpr: UDFToDouble(key) is not null (type: boolean)
                   Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: key is not null (type: boolean)
+                    predicate: UDFToDouble(key) is not null (type: boolean)
                     Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), value (type: string), UDFToDouble(key) (type: double)
@@ -592,10 +592,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: key is not null (type: boolean)
+                  filterExpr: UDFToDouble(key) is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: key is not null (type: boolean)
+                    predicate: UDFToDouble(key) is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: value (type: string), UDFToDouble(key) (type: double)
@@ -1384,10 +1384,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tab_n10
-                  filterExpr: value is not null (type: boolean)
+                  filterExpr: UDFToDouble(value) is not null (type: boolean)
                   Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: value is not null (type: boolean)
+                    predicate: UDFToDouble(value) is not null (type: boolean)
                     Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: value (type: string)
@@ -1428,10 +1428,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: key is not null (type: boolean)
+                  filterExpr: UDFToDouble(key) is not null (type: boolean)
                   Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: key is not null (type: boolean)
+                    predicate: UDFToDouble(key) is not null (type: boolean)
                     Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: value (type: string), UDFToDouble(key) (type: double)
@@ -1494,10 +1494,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tab_n10
-                  filterExpr: value is not null (type: boolean)
+                  filterExpr: UDFToDouble(value) is not null (type: boolean)
                   Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: value is not null (type: boolean)
+                    predicate: UDFToDouble(value) is not null (type: boolean)
                     Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: value (type: string)
@@ -1538,10 +1538,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: key is not null (type: boolean)
+                  filterExpr: UDFToDouble(key) is not null (type: boolean)
                   Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: key is not null (type: boolean)
+                    predicate: UDFToDouble(key) is not null (type: boolean)
                     Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: value (type: string), UDFToDouble(key) (type: double)
@@ -2379,6 +2379,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@my_dim
 POSTHOOK: Input: default@my_fact
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t0`.`bucket_col`, `t2`.`join_col` AS `account1`, `t0`.`accounting_period`
+FROM (SELECT `bucket_col`, `join_col`, `accounting_period`
+FROM `default`.`my_fact`
+WHERE `fiscal_year` = '2015' AND `accounting_period` = 10 AND `join_col` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `join_col`
+FROM `default`.`my_dim`
+WHERE `filter_col` IN ('VAL1', 'VAL2') AND `join_col` IS NOT NULL) AS `t2` ON `t0`.`join_col` = `t2`.`join_col`
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

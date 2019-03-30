@@ -211,10 +211,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ax
-            filterExpr: (((s = 'a') and (t = 'a         ')) or ((s = null) and (t = 'bb        '))) is null (type: boolean)
+            filterExpr: (((s = 'a') and (t = 'a         ')) or (null and (t = 'bb        '))) is null (type: boolean)
             Statistics: Num rows: 3 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((s = 'a') and (t = 'a         ')) or ((s = null) and (t = 'bb        '))) is null (type: boolean)
+              predicate: (((s = 'a') and (t = 'a         ')) or (null and (t = 'bb        '))) is null (type: boolean)
               Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE

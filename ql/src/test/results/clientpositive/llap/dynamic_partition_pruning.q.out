@@ -569,27 +569,30 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: ds is not null (type: boolean)
+                  filterExpr: CAST( ds AS DATE) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: day(CAST( ds AS DATE)) (type: int)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 2000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
+                  Filter Operator
+                    predicate: CAST( ds AS DATE) is not null (type: boolean)
+                    Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: day(CAST( ds AS DATE)) (type: int)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 2000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n2
-                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and CAST( ds AS DATE) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                    predicate: ((date = '2008-04-08') and CAST( ds AS DATE) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: day(CAST( ds AS DATE)) (type: int)
@@ -714,27 +717,30 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: ds is not null (type: boolean)
+                  filterExpr: CAST( ds AS DATE) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: day(CAST( ds AS DATE)) (type: int)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 2000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
+                  Filter Operator
+                    predicate: CAST( ds AS DATE) is not null (type: boolean)
+                    Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: day(CAST( ds AS DATE)) (type: int)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 2000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n2
-                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and CAST( ds AS DATE) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                    predicate: ((date = '2008-04-08') and CAST( ds AS DATE) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: day(CAST( ds AS DATE)) (type: int)
@@ -1818,27 +1824,30 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: hr is not null (type: boolean)
+                  filterExpr: UDFToDouble(hr) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: UDFToDouble(hr) (type: double)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: double)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: double)
+                  Filter Operator
+                    predicate: UDFToDouble(hr) is not null (type: boolean)
+                    Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: UDFToDouble(hr) (type: double)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: double)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour_n0
-                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and UDFToDouble(UDFToInteger((hr / 2.0D))) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and UDFToDouble(UDFToInteger((hr / 2.0D))) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: UDFToDouble(UDFToInteger((hr / 2.0D))) (type: double)
@@ -1963,17 +1972,20 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: hr is not null (type: boolean)
+                  filterExpr: UDFToDouble(hr) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: (UDFToDouble(hr) * 2.0D) (type: double)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: double)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: double)
+                  Filter Operator
+                    predicate: UDFToDouble(hr) is not null (type: boolean)
+                    Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: (UDFToDouble(hr) * 2.0D) (type: double)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: double)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
         Map 4 
@@ -2108,27 +2120,30 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: hr is not null (type: boolean)
+                  filterExpr: UDFToDouble(hr) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: UDFToDouble(hr) (type: double)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: double)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: double)
+                  Filter Operator
+                    predicate: UDFToDouble(hr) is not null (type: boolean)
+                    Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: UDFToDouble(hr) (type: double)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: double)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour_n0
-                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and UDFToDouble(UDFToInteger((hr / 2.0D))) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and UDFToDouble(UDFToInteger((hr / 2.0D))) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: UDFToDouble(UDFToInteger((hr / 2.0D))) (type: double)
@@ -2237,17 +2252,20 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: hr is not null (type: boolean)
+                  filterExpr: UDFToDouble(hr) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: (UDFToDouble(hr) * 2.0D) (type: double)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: double)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: double)
+                  Filter Operator
+                    predicate: UDFToDouble(hr) is not null (type: boolean)
+                    Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: (UDFToDouble(hr) * 2.0D) (type: double)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: double)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
         Map 4 
@@ -2379,27 +2397,30 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: hr is not null (type: boolean)
+                  filterExpr: CAST( (UDFToDouble(hr) * 2.0D) AS STRING) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: CAST( (UDFToDouble(hr) * 2.0D) AS STRING) (type: string)
-                    outputColumnNames: _col0
+                  Filter Operator
+                    predicate: CAST( (UDFToDouble(hr) * 2.0D) AS STRING) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
+                    Select Operator
+                      expressions: CAST( (UDFToDouble(hr) * 2.0D) AS STRING) (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour_n0
-                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and CAST( hr AS STRING) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and CAST( hr AS STRING) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: CAST( hr AS STRING) (type: string)
@@ -4602,41 +4623,44 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: ds is not null (type: boolean)
+                  filterExpr: CAST( ds AS DATE) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: day(CAST( ds AS DATE)) (type: int)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 2000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 _col0 (type: int)
-                        1 _col0 (type: int)
-                      input vertices:
-                        1 Map 3
-                      Statistics: Num rows: 64 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
-                      Group By Operator
-                        aggregations: count()
-                        minReductionHashAggr: 0.0
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        Reduce Output Operator
-                          sort order: 
+                  Filter Operator
+                    predicate: CAST( ds AS DATE) is not null (type: boolean)
+                    Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: day(CAST( ds AS DATE)) (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 64 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: count()
+                          minReductionHashAggr: 0.0
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          value expressions: _col0 (type: bigint)
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col0 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n2
-                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and CAST( ds AS DATE) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                    predicate: ((date = '2008-04-08') and CAST( ds AS DATE) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: day(CAST( ds AS DATE)) (type: int)
@@ -5248,41 +5272,44 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: hr is not null (type: boolean)
+                  filterExpr: UDFToDouble(hr) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: UDFToDouble(hr) (type: double)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 _col0 (type: double)
-                        1 _col0 (type: double)
-                      input vertices:
-                        1 Map 3
-                      Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Group By Operator
-                        aggregations: count()
-                        minReductionHashAggr: 0.0
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        Reduce Output Operator
-                          sort order: 
+                  Filter Operator
+                    predicate: UDFToDouble(hr) is not null (type: boolean)
+                    Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: UDFToDouble(hr) (type: double)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: double)
+                          1 _col0 (type: double)
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: count()
+                          minReductionHashAggr: 0.0
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          value expressions: _col0 (type: bigint)
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col0 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour_n0
-                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and UDFToDouble(UDFToInteger((hr / 2.0D))) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and UDFToDouble(UDFToInteger((hr / 2.0D))) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: UDFToDouble(UDFToInteger((hr / 2.0D))) (type: double)
@@ -5387,31 +5414,34 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: hr is not null (type: boolean)
+                  filterExpr: UDFToDouble(hr) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: (UDFToDouble(hr) * 2.0D) (type: double)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 _col0 (type: double)
-                        1 _col0 (type: double)
-                      input vertices:
-                        1 Map 3
-                      Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Group By Operator
-                        aggregations: count()
-                        minReductionHashAggr: 0.0
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        Reduce Output Operator
-                          sort order: 
+                  Filter Operator
+                    predicate: UDFToDouble(hr) is not null (type: boolean)
+                    Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: (UDFToDouble(hr) * 2.0D) (type: double)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: double)
+                          1 _col0 (type: double)
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: count()
+                          minReductionHashAggr: 0.0
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          value expressions: _col0 (type: bigint)
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col0 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
         Map 3 
@@ -6590,40 +6620,44 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_orc
+                  filterExpr: UDFToDouble(hr) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 564000 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: ds (type: string), UDFToDouble(hr) (type: double)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 2000 Data size: 384000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 _col0 (type: string), _col1 (type: double)
-                        1 _col0 (type: string), _col1 (type: double)
-                      input vertices:
-                        1 Map 3
-                      Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Group By Operator
-                        aggregations: count()
-                        minReductionHashAggr: 0.0
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        Reduce Output Operator
-                          sort order: 
+                  Filter Operator
+                    predicate: UDFToDouble(hr) is not null (type: boolean)
+                    Statistics: Num rows: 2000 Data size: 376000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: ds (type: string), UDFToDouble(hr) (type: double)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2000 Data size: 384000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: string), _col1 (type: double)
+                          1 _col0 (type: string), _col1 (type: double)
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: count()
+                          minReductionHashAggr: 0.0
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          value expressions: _col0 (type: bigint)
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col0 (type: bigint)
             Execution mode: llap
             LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_hour_n0
-                  filterExpr: ((date) IN ('2008-04-08', '2008-04-09') and (UDFToDouble(hour) = 11.0D) and ds is not null and hr is not null) (type: boolean)
+                  filterExpr: ((date) IN ('2008-04-08', '2008-04-09') and (UDFToDouble(hour) = 11.0D) and ds is not null and UDFToDouble(hr) is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(hour) = 11.0D) and (date) IN ('2008-04-08', '2008-04-09') and ds is not null and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and (date) IN ('2008-04-08', '2008-04-09') and UDFToDouble(hr) is not null and ds is not null) (type: boolean)
                     Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ds (type: string), UDFToDouble(hr) (type: double)

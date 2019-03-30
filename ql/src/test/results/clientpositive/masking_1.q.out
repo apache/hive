@@ -253,10 +253,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_n8
-            filterExpr: (((key % 2) = 0) and (key < 10)) (type: boolean)
+            filterExpr: (((key % 2) = 0) and (key < 10) and UDFToDouble(key) is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((key % 2) = 0) and (key < 10)) (type: boolean)
+              predicate: (((key % 2) = 0) and (key < 10) and UDFToDouble(key) is not null) (type: boolean)
               Statistics: Num rows: 83 Data size: 7885 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), reverse(value) (type: string), UDFToDouble(key) (type: double)
@@ -270,10 +270,10 @@ STAGE PLANS:
                   value expressions: _col0 (type: int), _col1 (type: string)
           TableScan
             alias: srcpart
-            filterExpr: key is not null (type: boolean)
+            filterExpr: UDFToDouble(key) is not null (type: boolean)
             Statistics: Num rows: 2000 Data size: 1092000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: key is not null (type: boolean)
+              predicate: UDFToDouble(key) is not null (type: boolean)
               Statistics: Num rows: 2000 Data size: 1092000 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string), ds (type: string), hr (type: string), UDFToDouble(key) (type: double)
