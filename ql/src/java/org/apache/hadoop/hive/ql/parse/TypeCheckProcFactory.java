@@ -328,6 +328,9 @@ public class TypeCheckProcFactory {
           // Literal decimal
           String strVal = expr.getText().substring(0, expr.getText().length() - 2);
           return createDecimal(strVal, false);
+        } else if (expr.getText().endsWith("F")) {
+          // Literal float.
+          v = Float.valueOf(expr.getText().substring(0, expr.getText().length() - 1));
         } else if (expr.getText().endsWith("D")) {
           // Literal double.
           v = Double.valueOf(expr.getText().substring(0, expr.getText().length() - 1));
