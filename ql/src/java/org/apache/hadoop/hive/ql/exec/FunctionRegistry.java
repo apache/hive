@@ -567,6 +567,8 @@ public final class FunctionRegistry {
     system.registerHiddenBuiltIn(GenericUDFOPDTIPlus.class);
     system.registerHiddenBuiltIn(GenericUDFOPNumericMinus.class);
     system.registerHiddenBuiltIn(GenericUDFOPNumericPlus.class);
+    // No operator for nullsafe not equal, but add as built-in to allow for LLAP.
+    system.registerHiddenBuiltIn(GenericUDFOPNotEqualNS.class);
 
     // mask UDFs
     system.registerGenericUDF(GenericUDFMask.UDF_NAME, GenericUDFMask.class);
