@@ -1690,6 +1690,10 @@ public class HiveConf extends Configuration {
         "tries to modify the original materialization contents to reflect the latest changes to the\n" +
         "materialized view source tables, instead of rebuilding the contents fully. Incremental rebuild\n" +
         "is based on the materialized view algebraic incremental rewriting."),
+    HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL_FACTOR("hive.materializedview.rebuild.incremental.factor", 0.1f,
+        "The estimated cost of the resulting plan for incremental maintenance of materialization\n" +
+        "with aggregations will be multiplied by this value. Reducing the value can be useful to\n" +
+        "favour incremental rebuild over full rebuild."),
     HIVE_MATERIALIZED_VIEW_FILE_FORMAT("hive.materializedview.fileformat", "ORC",
         new StringSet("none", "TextFile", "SequenceFile", "RCfile", "ORC"),
         "Default file format for CREATE MATERIALIZED VIEW statement"),

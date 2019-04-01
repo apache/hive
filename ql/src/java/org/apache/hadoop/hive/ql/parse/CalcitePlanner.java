@@ -45,9 +45,11 @@ import org.apache.calcite.config.CalciteConnectionProperty;
 import org.apache.calcite.config.NullCollation;
 import org.apache.calcite.interpreter.BindableConvention;
 import org.apache.calcite.plan.RelOptCluster;
+import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelOptRule;
+import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptSchema;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelTraitSet;
@@ -2211,11 +2213,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
       final PerfLogger perfLogger = SessionState.getPerfLogger();
 
       final RelNode calcitePreMVRewritingPlan = basePlan;
+      final boolean mvRebuild = mvRebuildMode != MaterializationRebuildMode.NONE;
 
       // Add views to planner
       List<RelOptMaterialization> materializations = new ArrayList<>();
       try {
-        if (mvRebuildMode != MaterializationRebuildMode.NONE) {
+        if (mvRebuild) {
           // We only retrieve the materialization corresponding to the rebuild. In turn,
           // we pass 'true' for the forceMVContentsUpToDate parameter, as we cannot allow the
           // materialization contents to be stale for a rebuild if we want to use it.
@@ -2275,40 +2278,51 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (!materializations.isEmpty()) {
         perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
 
-        // Use Calcite cost model for view rewriting
-        optCluster.invalidateMetadataQuery();
-        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
+        if (mvRebuild) {
+          // If it is a materialized view rebuild, we use the HepPlanner, since we only have
+          // one MV and we would like to use it to create incremental maintenance plans
+          HepPlanner hepPlanner = createHepPlanner(basePlan.getCluster(), true, mdProvider, null,
+              HepMatchOrder.TOP_DOWN, HiveMaterializedViewRule.MATERIALIZED_VIEW_REWRITING_RULES);
+          // Add materialization for rebuild to planner
+          assert materializations.size() == 1;
+          hepPlanner.addMaterialization(materializations.get(0));
+          // Optimize plan
+          hepPlanner.setRoot(basePlan);
+          basePlan = hepPlanner.findBestExp();
+        } else {
+          // If this is not a rebuild, we use Volcano planner as the decision
+          // on whether to use MVs or not and which MVs to use should be cost-based
+          optCluster.invalidateMetadataQuery();
+          RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
 
-        // Add materializations to planner
-        for (RelOptMaterialization materialization : materializations) {
-          planner.addMaterialization(materialization);
+          // Add materializations to planner
+          for (RelOptMaterialization materialization : materializations) {
+            planner.addMaterialization(materialization);
+          }
+          // Add view-based rewriting rules to planner
+          for (RelOptRule rule : HiveMaterializedViewRule.MATERIALIZED_VIEW_REWRITING_RULES) {
+            planner.addRule(rule);
+          }
+          // Partition pruner rule
+          planner.addRule(HiveFilterProjectTSTransposeRule.INSTANCE);
+          planner.addRule(new HivePartitionPruneRule(conf));
+
+          // Optimize plan
+          planner.setRoot(basePlan);
+          basePlan = planner.findBestExp();
+          // Remove view-based rewriting rules from planner
+          planner.clear();
+
+          // Restore default cost model
+          optCluster.invalidateMetadataQuery();
+          RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider));
         }
-        // Add view-based rewriting rules to planner
-        planner.addRule(HiveMaterializedViewRule.INSTANCE_PROJECT_FILTER);
-        planner.addRule(HiveMaterializedViewRule.INSTANCE_FILTER);
-        planner.addRule(HiveMaterializedViewRule.INSTANCE_PROJECT_JOIN);
-        planner.addRule(HiveMaterializedViewRule.INSTANCE_JOIN);
-        planner.addRule(HiveMaterializedViewRule.INSTANCE_PROJECT_AGGREGATE);
-        planner.addRule(HiveMaterializedViewRule.INSTANCE_AGGREGATE);
-        // Partition pruner rule
-        planner.addRule(HiveFilterProjectTSTransposeRule.INSTANCE);
-        planner.addRule(new HivePartitionPruneRule(conf));
-
-        // Optimize plan
-        planner.setRoot(basePlan);
-        basePlan = planner.findBestExp();
-        // Remove view-based rewriting rules from planner
-        planner.clear();
-
-        // Restore default cost model
-        optCluster.invalidateMetadataQuery();
-        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider));
 
         perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: View-based rewriting");
 
         if (!RelOptUtil.toString(calcitePreMVRewritingPlan).equals(RelOptUtil.toString(basePlan))) {
           // A rewriting was produced, we will check whether it was part of an incremental rebuild
-          // to try to replace INSERT OVERWRITE by INSERT
+          // to try to replace INSERT OVERWRITE by INSERT or MERGE
           if (mvRebuildMode == MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD &&
               HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL)) {
             // First we need to check if it is valid to convert to MERGE/INSERT INTO.
@@ -2333,6 +2347,24 @@ public class CalcitePlanner extends SemanticAnalyzer {
           basePlan = applyPreJoinOrderingTransforms(basePlan, mdProvider, executorProvider);
         }
       }
+
+      if (mvRebuildMode == MaterializationRebuildMode.AGGREGATE_REBUILD) {
+        // Make a cost-based decision factoring the configuration property
+        optCluster.invalidateMetadataQuery();
+        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
+        RelMetadataQuery mq = RelMetadataQuery.instance();
+        RelOptCost costOriginalPlan = mq.getCumulativeCost(calcitePreMVRewritingPlan);
+        final double factorSelectivity = (double) HiveConf.getFloatVar(
+          conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL_FACTOR);
+        RelOptCost costRebuildPlan = mq.getCumulativeCost(basePlan).multiplyBy(factorSelectivity);
+        if (costOriginalPlan.isLe(costRebuildPlan)) {
+          basePlan = calcitePreMVRewritingPlan;
+          mvRebuildMode = MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD;
+        }
+        optCluster.invalidateMetadataQuery();
+        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider));
+      }
+
       return basePlan;
     }
 
@@ -2379,10 +2411,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
      * @return optimized RelNode
      */
     private RelNode hepPlan(RelNode basePlan, boolean followPlanChanges,
+        RelMetadataProvider mdProvider, RexExecutor executorProvider,
+        HepMatchOrder order, RelOptRule... rules) {
+      HepPlanner planner = createHepPlanner(basePlan.getCluster(), followPlanChanges,
+        mdProvider, executorProvider, order, rules);
+      planner.setRoot(basePlan);
+      return planner.findBestExp();
+    }
+
+    private HepPlanner createHepPlanner(RelOptCluster cluster, boolean followPlanChanges,
         RelMetadataProvider mdProvider, RexExecutor executorProvider, HepMatchOrder order,
         RelOptRule... rules) {
-
-      RelNode optimizedRelNode = basePlan;
       HepProgramBuilder programBuilder = new HepProgramBuilder();
       if (followPlanChanges) {
         programBuilder.addMatchOrder(order);
@@ -2396,26 +2435,23 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // Create planner and copy context
       HepPlanner planner = new HepPlanner(programBuilder.build(),
-              basePlan.getCluster().getPlanner().getContext());
+          cluster.getPlanner().getContext());
 
       List<RelMetadataProvider> list = Lists.newArrayList();
       list.add(mdProvider);
       planner.registerMetadataProviders(list);
       RelMetadataProvider chainedProvider = ChainedRelMetadataProvider.of(list);
-      basePlan.getCluster().setMetadataProvider(
+      cluster.setMetadataProvider(
           new CachingRelMetadataProvider(chainedProvider, planner));
 
       if (executorProvider != null) {
         // basePlan.getCluster.getPlanner is the VolcanoPlanner from apply()
         // both planners need to use the correct executor
-        basePlan.getCluster().getPlanner().setExecutor(executorProvider);
+        cluster.getPlanner().setExecutor(executorProvider);
         planner.setExecutor(executorProvider);
       }
 
-      planner.setRoot(basePlan);
-      optimizedRelNode = planner.findBestExp();
-
-      return optimizedRelNode;
+      return planner;
     }
 
     @SuppressWarnings("nls")
