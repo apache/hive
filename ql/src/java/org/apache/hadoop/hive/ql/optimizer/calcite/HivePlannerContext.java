@@ -35,14 +35,14 @@ public class HivePlannerContext implements Context {
 
   public HivePlannerContext(HiveAlgorithmsConf algoConfig, HiveRulesRegistry registry,
       CalciteConnectionConfig calciteConfig, Set<RelNode> corrScalarRexSQWithAgg,
-      Set<RelNode> scalarAggNoGbyWindowing, HiveConfPlannerContext isCorrelatedColumns) {
+      HiveConfPlannerContext isCorrelatedColumns) {
     this.algoConfig = algoConfig;
     this.registry = registry;
     this.calciteConfig = calciteConfig;
     // this is to keep track if a subquery is correlated and contains aggregate
     // this is computed in CalcitePlanner while planning and is later required by subuery remove rule
     // hence this is passed using HivePlannerContext
-    this.subqueryConfig = new SubqueryConf(corrScalarRexSQWithAgg, scalarAggNoGbyWindowing);
+    this.subqueryConfig = new SubqueryConf(corrScalarRexSQWithAgg);
     this.isCorrelatedColumns = isCorrelatedColumns;
   }
 
