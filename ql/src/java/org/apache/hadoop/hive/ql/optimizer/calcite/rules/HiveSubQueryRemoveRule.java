@@ -285,8 +285,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
 
       builder.push(e.rel);
       final List<RexNode> fields = new ArrayList<>();
-      switch (e.getKind()) {
-      case IN:
+      if(e.getKind() == SqlKind.IN) {
         fields.addAll(builder.fields());
         // Transformation: sq_count_check(count(*), true) FILTER is generated on top
         //  of subquery which is then joined (LEFT or INNER) with outer query
