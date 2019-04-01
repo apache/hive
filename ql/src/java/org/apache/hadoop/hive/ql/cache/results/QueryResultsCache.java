@@ -563,6 +563,8 @@ public final class QueryResultsCache {
             for(FileStatus fs:fetchWork.getFilesToFetch()) {
               cacheEntry.cachedResultPaths.add(fs);
             }
+          LOG.info("Cached query result paths located at {} (size {}) for query '{}'",
+              queryResultsPath, resultSize, cacheEntry.getQueryText());
         }
 
         // Create a new FetchWork to reference the new cache location.
@@ -771,26 +773,6 @@ public final class QueryResultsCache {
     }
 
     return true;
-  }
-
-  private Path moveResultsToCacheDirectory(Set<Path> queryResultsPath) throws IOException {
-    String dirName = UUID.randomUUID().toString();
-    Path cachedResultsPath = new Path(cacheDirPath, dirName);
-    FileSystem fs = cachedResultsPath.getFileSystem(conf);
-    fs.mkdirs(cachedResultsPath);
-    try {
-      for(Path resultPath:queryResultsPath) {
-        boolean resultsMoved = Hive.moveFile(conf, resultPath, cachedResultsPath, false, false, false);
-        if (!resultsMoved) {
-          throw new IOException("Failed to move " + queryResultsPath + " to " + cachedResultsPath);
-        }
-      }
-    } catch (IOException err) {
-      throw err;
-    } catch (Exception err) {
-      throw new IOException("Error moving " + queryResultsPath + " to " + cachedResultsPath, err);
-    }
-    return cachedResultsPath;
   }
 
   private boolean hasSpaceForCacheEntry(CacheEntry entry, long size) {
