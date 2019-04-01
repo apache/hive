@@ -217,7 +217,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           if (conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
             mrJob = mr.getMrJob();
           }
-        } catch (Exception e) {
+        } catch (Throwable e) {
           LOG.error("Caught exception while trying to compact " + ci +
               ".  Marking failed to avoid repeated failures, " + StringUtils.stringifyException(e));
           msc.markFailed(CompactionInfo.compactionInfoToStruct(ci));
