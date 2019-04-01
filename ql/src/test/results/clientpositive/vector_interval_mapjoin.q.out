@@ -206,10 +206,10 @@ STAGE PLANS:
         $hdt$_1:vectortab_b_1korc 
           TableScan
             alias: vectortab_b_1korc
-            filterExpr: (dt is not null and ts is not null and s is not null) (type: boolean)
+            filterExpr: (dt is not null and CAST( ts AS DATE) is not null and s is not null) (type: boolean)
             Statistics: Num rows: 1000 Data size: 186864 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (dt is not null and s is not null and ts is not null) (type: boolean)
+              predicate: (CAST( ts AS DATE) is not null and dt is not null and s is not null) (type: boolean)
               Statistics: Num rows: 943 Data size: 176202 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: s (type: string), (dt - CAST( ts AS DATE)) (type: interval_day_time)
@@ -225,7 +225,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: vectortab_a_1korc
-            filterExpr: (dt is not null and ts is not null and s is not null) (type: boolean)
+            filterExpr: (dt is not null and CAST( ts AS DATE) is not null and s is not null) (type: boolean)
             Statistics: Num rows: 1000 Data size: 187480 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
@@ -233,8 +233,8 @@ STAGE PLANS:
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 12:date), SelectColumnIsNotNull(col 10:timestamp), SelectColumnIsNotNull(col 8:string))
-              predicate: (dt is not null and s is not null and ts is not null) (type: boolean)
+                  predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 12:date), SelectColumnIsNotNull(col 14:date)(children: CastTimestampToDate(col 10:timestamp) -> 14:date), SelectColumnIsNotNull(col 8:string))
+              predicate: (CAST( ts AS DATE) is not null and dt is not null and s is not null) (type: boolean)
               Statistics: Num rows: 954 Data size: 178852 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: s (type: string), (dt - CAST( ts AS DATE)) (type: interval_day_time)
@@ -242,8 +242,8 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [8, 15]
-                    selectExpressions: DateColSubtractDateColumn(col 12:date, col 14:date)(children: CastTimestampToDate(col 10:timestamp) -> 14:date) -> 15:interval_day_time
+                    projectedOutputColumnNums: [8, 16]
+                    selectExpressions: DateColSubtractDateColumn(col 12:date, col 15:date)(children: CastTimestampToDate(col 10:timestamp) -> 15:date) -> 16:interval_day_time
                 Statistics: Num rows: 954 Data size: 101124 Basic stats: COMPLETE Column stats: COMPLETE
                 Map Join Operator
                   condition map:
@@ -252,8 +252,8 @@ STAGE PLANS:
                     0 _col0 (type: string), _col1 (type: interval_day_time)
                     1 _col0 (type: string), _col1 (type: interval_day_time)
                   Map Join Vectorization:
-                      bigTableKeyExpressions: col 8:string, col 15:interval_day_time
-                      bigTableValueExpressions: col 8:string, col 15:interval_day_time
+                      bigTableKeyExpressions: col 8:string, col 16:interval_day_time
+                      bigTableValueExpressions: col 8:string, col 16:interval_day_time
                       className: VectorMapJoinOperator
                       native: false
                       nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true

@@ -245,7 +245,7 @@ Stage-0
                                                 Select Operator [SEL_603] (rows=28798881 width=121)
                                                   Output:["_col0","_col1","_col2","_col3"]
                                                   Filter Operator [FIL_602] (rows=28798881 width=121)
-                                                    predicate:cr_item_sk is not null
+                                                    predicate:(cr_item_sk is not null and cr_order_number is not null)
                                                     TableScan [TS_9] (rows=28798881 width=121)
                                                       default@catalog_returns,catalog_returns,Tbl:COMPLETE,Col:COMPLETE,Output:["cr_item_sk","cr_order_number","cr_return_quantity","cr_return_amount"]
                                             <-Reducer 22 [SIMPLE_EDGE]
@@ -311,7 +311,7 @@ Stage-0
                                                 Select Operator [SEL_625] (rows=57591150 width=119)
                                                   Output:["_col0","_col1","_col2","_col3"]
                                                   Filter Operator [FIL_624] (rows=57591150 width=119)
-                                                    predicate:sr_item_sk is not null
+                                                    predicate:(sr_item_sk is not null and sr_ticket_number is not null)
                                                     TableScan [TS_31] (rows=57591150 width=119)
                                                       default@store_returns,store_returns,Tbl:COMPLETE,Col:COMPLETE,Output:["sr_item_sk","sr_ticket_number","sr_return_quantity","sr_return_amt"]
                                             <-Reducer 30 [SIMPLE_EDGE]
@@ -371,7 +371,7 @@ Stage-0
                                         Select Operator [SEL_634] (rows=14398467 width=118)
                                           Output:["_col0","_col1","_col2","_col3"]
                                           Filter Operator [FIL_633] (rows=14398467 width=118)
-                                            predicate:wr_item_sk is not null
+                                            predicate:(wr_item_sk is not null and wr_order_number is not null)
                                             TableScan [TS_60] (rows=14398467 width=118)
                                               default@web_returns,web_returns,Tbl:COMPLETE,Col:COMPLETE,Output:["wr_item_sk","wr_order_number","wr_return_quantity","wr_return_amt"]
                                     <-Reducer 34 [SIMPLE_EDGE]

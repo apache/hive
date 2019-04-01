@@ -588,7 +588,7 @@ public final class ConstantPropagateProcFactory {
        return null;
      }
      GenericUDF childUDF = caseOrWhenexpr.getGenericUDF();
-     List<ExprNodeDesc> children = caseOrWhenexpr.getChildren();
+      List<ExprNodeDesc> children = new ArrayList(caseOrWhenexpr.getChildren());
      int i;
      if (childUDF instanceof GenericUDFWhen) {
        for (i = 1; i < children.size(); i+=2) {

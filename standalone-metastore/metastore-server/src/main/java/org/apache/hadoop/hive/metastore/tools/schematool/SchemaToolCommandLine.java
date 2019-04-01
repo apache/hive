@@ -47,6 +47,9 @@ public class SchemaToolCommandLine {
         .withDescription("Schema initialization to a version")
         .create("initSchemaTo");
     Option initOrUpgradeSchemaOpt = new Option("initOrUpgradeSchema", "Initialize or upgrade schema to latest version");
+    Option dropDbOpt = new Option("dropAllDatabases", "Drop all Hive databases (with CASCADE). " +
+            "This will remove all managed data!");
+    Option yesOpt = new Option("yes", "Don't ask for confirmation when using -dropAllDatabases.");
     Option validateOpt = new Option("validate", "Validate the database");
     Option createCatalog = OptionBuilder
         .hasArg()
@@ -77,6 +80,7 @@ public class SchemaToolCommandLine {
       .addOption(upgradeOpt)
       .addOption(upgradeFromOpt)
       .addOption(initOpt)
+      .addOption(dropDbOpt)
       .addOption(initToOpt)
       .addOption(initOrUpgradeSchemaOpt)
       .addOption(validateOpt)
@@ -185,6 +189,7 @@ public class SchemaToolCommandLine {
     options.addOption(hiveUserOpt);
     options.addOption(hivePasswdOpt);
     options.addOption(hiveDbOpt);
+    options.addOption(yesOpt);
     if (additionalOptions != null) options.addOptionGroup(additionalOptions);
 
     return options;
@@ -275,6 +280,14 @@ public class SchemaToolCommandLine {
     if (!cl.hasOption("moveTable") &&
         (cl.hasOption("fromDatabase") || cl.hasOption("toDatabase"))) {
       printAndExit("fromDatabase and toDatabase may be set only for moveTable");
+    }
+
+    if (cl.hasOption("dropAllDatabases") && !HiveSchemaHelper.DB_HIVE.equals(dbType)) {
+      printAndExit("dropAllDatabases can only be used with dbType=hive");
+    }
+
+    if (cl.hasOption("yes") && !cl.hasOption("dropAllDatabases")) {
+      printAndExit("yes can only be used with dropAllDatabases");
     }
   }
 

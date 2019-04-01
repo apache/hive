@@ -111,18 +111,22 @@ STAGE PLANS:
         $hdt$_1:tjoin2 
           TableScan
             alias: tjoin2
+            filterExpr: c1 is not null (type: boolean)
             Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
-            Select Operator
-              expressions: c1 (type: int), c2 (type: char(2))
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
-              HashTable Sink Operator
-                filter predicates:
-                  0 {_col3}
-                  1 
-                keys:
-                  0 _col1 (type: int)
-                  1 _col0 (type: int)
+            Filter Operator
+              predicate: c1 is not null (type: boolean)
+              Statistics: Num rows: 3 Data size: 270 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: c1 (type: int), c2 (type: char(2))
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 270 Basic stats: COMPLETE Column stats: COMPLETE
+                HashTable Sink Operator
+                  filter predicates:
+                    0 {_col3}
+                    1 
+                  keys:
+                    0 _col1 (type: int)
+                    1 _col0 (type: int)
 
   Stage: Stage-3
     Map Reduce
@@ -144,14 +148,14 @@ STAGE PLANS:
                   0 _col1 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col5
-                Statistics: Num rows: 6 Data size: 588 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col5 (type: char(2))
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 6 Data size: 588 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 6 Data size: 588 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -212,18 +216,22 @@ STAGE PLANS:
         $hdt$_1:tjoin2 
           TableScan
             alias: tjoin2
+            filterExpr: c1 is not null (type: boolean)
             Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
-            Select Operator
-              expressions: c1 (type: int), c2 (type: char(2))
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
-              HashTable Sink Operator
-                filter predicates:
-                  0 {_col3}
-                  1 
-                keys:
-                  0 _col1 (type: int)
-                  1 _col0 (type: int)
+            Filter Operator
+              predicate: c1 is not null (type: boolean)
+              Statistics: Num rows: 3 Data size: 270 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: c1 (type: int), c2 (type: char(2))
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 270 Basic stats: COMPLETE Column stats: COMPLETE
+                HashTable Sink Operator
+                  filter predicates:
+                    0 {_col3}
+                    1 
+                  keys:
+                    0 _col1 (type: int)
+                    1 _col0 (type: int)
 
   Stage: Stage-3
     Map Reduce
@@ -245,14 +253,14 @@ STAGE PLANS:
                   0 _col1 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col5
-                Statistics: Num rows: 6 Data size: 588 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col5 (type: char(2))
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 6 Data size: 588 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 6 Data size: 588 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -313,18 +321,22 @@ STAGE PLANS:
         $hdt$_1:tjoin2 
           TableScan
             alias: tjoin2
+            filterExpr: c1 is not null (type: boolean)
             Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
-            Select Operator
-              expressions: c1 (type: int), c2 (type: char(2))
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
-              HashTable Sink Operator
-                filter predicates:
-                  0 {_col3}
-                  1 
-                keys:
-                  0 _col1 (type: int)
-                  1 _col0 (type: int)
+            Filter Operator
+              predicate: c1 is not null (type: boolean)
+              Statistics: Num rows: 3 Data size: 270 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: c1 (type: int), c2 (type: char(2))
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 270 Basic stats: COMPLETE Column stats: COMPLETE
+                HashTable Sink Operator
+                  filter predicates:
+                    0 {_col3}
+                    1 
+                  keys:
+                    0 _col1 (type: int)
+                    1 _col0 (type: int)
 
   Stage: Stage-3
     Map Reduce
@@ -361,7 +373,7 @@ STAGE PLANS:
                     nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
                     nativeConditionsNotMet: hive.vectorized.execution.mapjoin.native.enabled IS false, hive.execution.engine mr IN [tez, spark] IS false
                 outputColumnNames: _col0, _col1, _col2, _col5
-                Statistics: Num rows: 6 Data size: 588 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col5 (type: char(2))
                   outputColumnNames: _col0, _col1, _col2, _col3
@@ -369,13 +381,13 @@ STAGE PLANS:
                       className: VectorSelectOperator
                       native: true
                       projectedOutputColumnNums: [0, 1, 2, 3]
-                  Statistics: Num rows: 6 Data size: 588 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
                     File Sink Vectorization:
                         className: VectorFileSinkOperator
                         native: false
-                    Statistics: Num rows: 6 Data size: 588 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -452,18 +464,22 @@ STAGE PLANS:
         $hdt$_1:tjoin2 
           TableScan
             alias: tjoin2
+            filterExpr: c1 is not null (type: boolean)
             Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
-            Select Operator
-              expressions: c1 (type: int), c2 (type: char(2))
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
-              HashTable Sink Operator
-                filter predicates:
-                  0 {_col3}
-                  1 
-                keys:
-                  0 _col1 (type: int)
-                  1 _col0 (type: int)
+            Filter Operator
+              predicate: c1 is not null (type: boolean)
+              Statistics: Num rows: 3 Data size: 270 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: c1 (type: int), c2 (type: char(2))
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 270 Basic stats: COMPLETE Column stats: COMPLETE
+                HashTable Sink Operator
+                  filter predicates:
+                    0 {_col3}
+                    1 
+                  keys:
+                    0 _col1 (type: int)
+                    1 _col0 (type: int)
 
   Stage: Stage-3
     Map Reduce
@@ -500,7 +516,7 @@ STAGE PLANS:
                     nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
                     nativeConditionsNotMet: hive.vectorized.execution.mapjoin.native.enabled IS false, hive.execution.engine mr IN [tez, spark] IS false
                 outputColumnNames: _col0, _col1, _col2, _col5
-                Statistics: Num rows: 6 Data size: 588 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col5 (type: char(2))
                   outputColumnNames: _col0, _col1, _col2, _col3
@@ -508,13 +524,13 @@ STAGE PLANS:
                       className: VectorSelectOperator
                       native: true
                       projectedOutputColumnNums: [0, 1, 2, 3]
-                  Statistics: Num rows: 6 Data size: 588 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
                     File Sink Vectorization:
                         className: VectorFileSinkOperator
                         native: false
-                    Statistics: Num rows: 6 Data size: 588 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -591,18 +607,22 @@ STAGE PLANS:
         $hdt$_1:tjoin2 
           TableScan
             alias: tjoin2
+            filterExpr: c1 is not null (type: boolean)
             Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
-            Select Operator
-              expressions: c1 (type: int), c2 (type: char(2))
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
-              HashTable Sink Operator
-                filter predicates:
-                  0 {_col3}
-                  1 
-                keys:
-                  0 _col1 (type: int)
-                  1 _col0 (type: int)
+            Filter Operator
+              predicate: c1 is not null (type: boolean)
+              Statistics: Num rows: 3 Data size: 270 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: c1 (type: int), c2 (type: char(2))
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 270 Basic stats: COMPLETE Column stats: COMPLETE
+                HashTable Sink Operator
+                  filter predicates:
+                    0 {_col3}
+                    1 
+                  keys:
+                    0 _col1 (type: int)
+                    1 _col0 (type: int)
 
   Stage: Stage-3
     Map Reduce
@@ -639,7 +659,7 @@ STAGE PLANS:
                     nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
                     nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
                 outputColumnNames: _col0, _col1, _col2, _col5
-                Statistics: Num rows: 6 Data size: 588 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col5 (type: char(2))
                   outputColumnNames: _col0, _col1, _col2, _col3
@@ -647,13 +667,13 @@ STAGE PLANS:
                       className: VectorSelectOperator
                       native: true
                       projectedOutputColumnNums: [0, 1, 2, 3]
-                  Statistics: Num rows: 6 Data size: 588 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
                     File Sink Vectorization:
                         className: VectorFileSinkOperator
                         native: false
-                    Statistics: Num rows: 6 Data size: 588 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -730,18 +750,22 @@ STAGE PLANS:
         $hdt$_1:tjoin2 
           TableScan
             alias: tjoin2
+            filterExpr: c1 is not null (type: boolean)
             Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
-            Select Operator
-              expressions: c1 (type: int), c2 (type: char(2))
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
-              HashTable Sink Operator
-                filter predicates:
-                  0 {_col3}
-                  1 
-                keys:
-                  0 _col1 (type: int)
-                  1 _col0 (type: int)
+            Filter Operator
+              predicate: c1 is not null (type: boolean)
+              Statistics: Num rows: 3 Data size: 270 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: c1 (type: int), c2 (type: char(2))
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 270 Basic stats: COMPLETE Column stats: COMPLETE
+                HashTable Sink Operator
+                  filter predicates:
+                    0 {_col3}
+                    1 
+                  keys:
+                    0 _col1 (type: int)
+                    1 _col0 (type: int)
 
   Stage: Stage-3
     Map Reduce
@@ -778,7 +802,7 @@ STAGE PLANS:
                     nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
                     nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
                 outputColumnNames: _col0, _col1, _col2, _col5
-                Statistics: Num rows: 6 Data size: 588 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col5 (type: char(2))
                   outputColumnNames: _col0, _col1, _col2, _col3
@@ -786,13 +810,13 @@ STAGE PLANS:
                       className: VectorSelectOperator
                       native: true
                       projectedOutputColumnNums: [0, 1, 2, 3]
-                  Statistics: Num rows: 6 Data size: 588 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
                     File Sink Vectorization:
                         className: VectorFileSinkOperator
                         native: false
-                    Statistics: Num rows: 6 Data size: 588 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

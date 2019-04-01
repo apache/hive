@@ -26,7 +26,6 @@ import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
-import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.core.RelFactories.FilterFactory;
 import org.apache.calcite.rex.RexBuilder;
@@ -47,10 +46,10 @@ import com.google.common.collect.Sets;
 public final class HiveJoinAddNotNullRule extends RelOptRule {
 
   public static final HiveJoinAddNotNullRule INSTANCE_JOIN =
-          new HiveJoinAddNotNullRule(HiveJoin.class, HiveRelFactories.HIVE_FILTER_FACTORY);
+      new HiveJoinAddNotNullRule(HiveJoin.class, HiveRelFactories.HIVE_FILTER_FACTORY);
 
   public static final HiveJoinAddNotNullRule INSTANCE_SEMIJOIN =
-          new HiveJoinAddNotNullRule(HiveSemiJoin.class, HiveRelFactories.HIVE_FILTER_FACTORY);
+      new HiveJoinAddNotNullRule(HiveSemiJoin.class, HiveRelFactories.HIVE_FILTER_FACTORY);
 
   private final FilterFactory filterFactory;
 
@@ -60,7 +59,7 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
    * Creates an HiveJoinAddNotNullRule.
    */
   public HiveJoinAddNotNullRule(Class<? extends Join> clazz,
-          RelFactories.FilterFactory filterFactory) {
+                                RelFactories.FilterFactory filterFactory) {
     super(operand(clazz, any()));
     this.filterFactory = filterFactory;
   }
@@ -76,11 +75,27 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
     HiveRulesRegistry registry = call.getPlanner().getContext().unwrap(HiveRulesRegistry.class);
     assert registry != null;
 
-    if (join.getJoinType() != JoinRelType.INNER) {
+
+    if (join.getCondition().isAlwaysTrue()) {
       return;
     }
 
-    if (join.getCondition().isAlwaysTrue()) {
+    boolean genPredOnLeftSide = false, genPredOnRightSide = false;
+
+    switch (join.getJoinType()) {
+    case INNER:
+      genPredOnLeftSide = true;
+      genPredOnRightSide = true;
+      break;
+    case LEFT:
+      genPredOnLeftSide = false;
+      genPredOnRightSide = true;
+      break;
+    case RIGHT:
+      genPredOnLeftSide = true;
+      genPredOnRightSide = false;
+      break;
+    default:
       return;
     }
 
@@ -90,45 +105,58 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
     } catch (CalciteSemanticException e) {
       return;
     }
-    
+
     List<RexNode> leftJoinExprsList = new ArrayList<>();
     List<RexNode> rightJoinExprsList = new ArrayList<>();
     for (JoinLeafPredicateInfo joinLeafPredicateInfo : joinPredInfo.getEquiJoinPredicateElements()) {
-        leftJoinExprsList.addAll(joinLeafPredicateInfo.getJoinExprs(0));
-        rightJoinExprsList.addAll(joinLeafPredicateInfo.getJoinExprs(1));
+      leftJoinExprsList.addAll(joinLeafPredicateInfo.getJoinExprs(0));
+      rightJoinExprsList.addAll(joinLeafPredicateInfo.getJoinExprs(1));
     }
 
     // Build not null conditions
     final RelOptCluster cluster = join.getCluster();
     final RexBuilder rexBuilder = join.getCluster().getRexBuilder();
 
-    Set<String> leftPushedPredicates = Sets.newHashSet(registry.getPushedPredicates(join, 0));
-    final List<RexNode> newLeftConditions = getNotNullConditions(cluster,
-            rexBuilder, leftJoinExprsList, leftPushedPredicates);
-    Set<String> rightPushedPredicates = Sets.newHashSet(registry.getPushedPredicates(join, 1));
-    final List<RexNode> newRightConditions = getNotNullConditions(cluster,
-            rexBuilder, rightJoinExprsList, rightPushedPredicates);
 
-    // Nothing will be added to the expression
-    RexNode newLeftPredicate = RexUtil.composeConjunction(rexBuilder, newLeftConditions, false);
-    RexNode newRightPredicate = RexUtil.composeConjunction(rexBuilder, newRightConditions, false);
-    if (newLeftPredicate.isAlwaysTrue() && newRightPredicate.isAlwaysTrue()) {
+    RexNode newLeftPredicate = rexBuilder.makeLiteral(true);
+    RexNode newRightPredicate = rexBuilder.makeLiteral(true);
+
+    // generate predicate on left side
+    Set<String> leftPushedPredicates = Sets.newHashSet(registry.getPushedPredicates(join, 0));
+    if (genPredOnLeftSide) {
+      List<RexNode> newLeftConditions = getNotNullConditions(cluster,
+                                                             rexBuilder, leftJoinExprsList, leftPushedPredicates);
+      newLeftPredicate = RexUtil.composeConjunction(rexBuilder, newLeftConditions, false);
+    }
+
+    // generate predicate on right side
+    Set<String> rightPushedPredicates = Sets.newHashSet(registry.getPushedPredicates(join, 1));
+    if (genPredOnRightSide) {
+      List<RexNode> newRightConditions = getNotNullConditions(cluster,
+                                                              rexBuilder, rightJoinExprsList, rightPushedPredicates);
+      newRightPredicate = RexUtil.composeConjunction(rexBuilder, newRightConditions, false);
+    }
+
+    boolean isNewLeftPredicateAlwaysTrue = newLeftPredicate.isAlwaysTrue();
+    boolean isNewRightPredAlwaysTrue = newRightPredicate.isAlwaysTrue();
+
+    if (isNewLeftPredicateAlwaysTrue && isNewRightPredAlwaysTrue) {
       return;
     }
 
-    if (!newLeftPredicate.isAlwaysTrue()) {
+    if (!isNewLeftPredicateAlwaysTrue) {
       RelNode curr = lChild;
       lChild = filterFactory.createFilter(lChild, newLeftPredicate);
       call.getPlanner().onCopy(curr, lChild);
     }
-    if (!newRightPredicate.isAlwaysTrue()) {
+    if (!isNewRightPredAlwaysTrue) {
       RelNode curr = rChild;
       rChild = filterFactory.createFilter(rChild, newRightPredicate);
       call.getPlanner().onCopy(curr, rChild);
     }
 
     Join newJoin = join.copy(join.getTraitSet(), join.getCondition(),
-            lChild, rChild, join.getJoinType(), join.isSemiJoinDone());
+                             lChild, rChild, join.getJoinType(), join.isSemiJoinDone());
     call.getPlanner().onCopy(join, newJoin);
 
     // Register information about created predicates
@@ -139,18 +167,17 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
   }
 
   private static List<RexNode> getNotNullConditions(RelOptCluster cluster,
-          RexBuilder rexBuilder, List<RexNode> inputJoinExprs,
-          Set<String> pushedPredicates) {
+                                                    RexBuilder rexBuilder, List<RexNode> inputJoinExprs,
+                                                    Set<String> pushedPredicates) {
     final List<RexNode> newConditions = Lists.newArrayList();
 
     for (RexNode rexNode : inputJoinExprs) {
-        RexNode cond = rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, rexNode);
-        String digest = cond.toString();
-        if (pushedPredicates.add(digest)) {
-            newConditions.add(cond);
-        }
+      RexNode cond = rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, rexNode);
+      String digest = cond.toString();
+      if (pushedPredicates.add(digest)) {
+        newConditions.add(cond);
+      }
     }
     return newConditions;
   }
-
 }

@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -331,6 +332,9 @@ public class TypeCheckProcFactory {
           // Literal decimal
           String strVal = expr.getText().substring(0, expr.getText().length() - 2);
           return createDecimal(strVal, false);
+        } else if (expr.getText().endsWith("F")) {
+          // Literal float.
+          v = Float.valueOf(expr.getText().substring(0, expr.getText().length() - 1));
         } else if (expr.getText().endsWith("D")) {
           // Literal double.
           v = Double.valueOf(expr.getText().substring(0, expr.getText().length() - 1));
@@ -1421,22 +1425,36 @@ public class TypeCheckProcFactory {
         return hiveDecimal;
       }
 
-      // TODO : Char and string comparison happens in char. But, varchar and string comparison happens in String.
-
-      // if column type is char and constant type is string, then convert the constant to char
-      // type with padded spaces.
       String constTypeInfoName = constTypeInfo.getTypeName();
-      if (constTypeInfoName.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME) && colTypeInfo instanceof CharTypeInfo) {
-        final String constValue = constVal.toString();
-        final int length = TypeInfoUtils.getCharacterLengthForType(colTypeInfo);
-        HiveChar newValue = new HiveChar(constValue, length);
-        HiveChar maxCharConst = new HiveChar(constValue, HiveChar.MAX_CHAR_LENGTH);
-        if (maxCharConst.equals(newValue)) {
-          return newValue;
-        } else {
-          return null;
+      if (constTypeInfoName.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME)) {
+        // because a comparison against a "string" will happen in "string" type.
+        // to avoid unintnetional comparisions in "string"
+        // constants which are representing char/varchar values must be converted to the
+        // appropriate type.
+        if (colTypeInfo instanceof CharTypeInfo) {
+          final String constValue = constVal.toString();
+          final int length = TypeInfoUtils.getCharacterLengthForType(colTypeInfo);
+          HiveChar newValue = new HiveChar(constValue, length);
+          HiveChar maxCharConst = new HiveChar(constValue, HiveChar.MAX_CHAR_LENGTH);
+          if (maxCharConst.equals(newValue)) {
+            return newValue;
+          } else {
+            return null;
+          }
+        }
+        if (colTypeInfo instanceof VarcharTypeInfo) {
+          final String constValue = constVal.toString();
+          final int length = TypeInfoUtils.getCharacterLengthForType(colTypeInfo);
+          HiveVarchar newValue = new HiveVarchar(constValue, length);
+          HiveVarchar maxCharConst = new HiveVarchar(constValue, HiveVarchar.MAX_VARCHAR_LENGTH);
+          if (maxCharConst.equals(newValue)) {
+            return newValue;
+          } else {
+            return null;
+          }
         }
       }
+
       return constVal;
     }
 
