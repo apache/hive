@@ -262,12 +262,18 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 71999454 Data size: 6351812727 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
+<<<<<<< HEAD
                   expressions: _col1 (type: decimal(17,2)), _col2 (type: bigint)
                   outputColumnNames: _col1, _col2
+=======
+                  expressions: (0.9 * (_col1 / _col2)) (type: decimal(38,22))
+                  outputColumnNames: _col0
+>>>>>>> 2111c01ca1... HIVE-21537: Scalar query rewrite could be improved to not generate an extra join if subquery is guaranteed to produce atmost one row (Vineet Garg, reviewed by Jesus Camacho Rodriguez)
                   Statistics: Num rows: 71999454 Data size: 6351812727 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (_col1 is not null and _col2 is not null) (type: boolean)
                     Statistics: Num rows: 71999454 Data size: 6351812727 Basic stats: COMPLETE Column stats: NONE
+<<<<<<< HEAD
                     Select Operator
                       expressions: (_col1 / _col2) (type: decimal(37,22))
                       outputColumnNames: _col0
@@ -299,6 +305,10 @@ STAGE PLANS:
                       Statistics: Num rows: 143998908 Data size: 12703625455 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: int), _col1 (type: decimal(37,22))
         Reducer 15 
+=======
+                    value expressions: _col0 (type: decimal(38,22))
+        Reducer 12 
+>>>>>>> 2111c01ca1... HIVE-21537: Scalar query rewrite could be improved to not generate an extra join if subquery is guaranteed to produce atmost one row (Vineet Garg, reviewed by Jesus Camacho Rodriguez)
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -391,11 +401,16 @@ STAGE PLANS:
                 Statistics: Num rows: 10367842752596232 Data size: 1922618777862369774 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
 <<<<<<< HEAD
+<<<<<<< HEAD
                   predicate: (_col3 > (0.9 * _col1)) (type: boolean)
 =======
                   predicate: (_col1 > _col2) (type: boolean)
 >>>>>>> 6664c44c79... HIVE-21793: CBO retrieves column stats even if hive.stats.fetch.column.stats is set to false (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Statistics: Num rows: 3455947584198744 Data size: 640872925954123264 Basic stats: COMPLETE Column stats: NONE
+=======
+                  predicate: (_col1 > _col2) (type: boolean)
+                  Statistics: Num rows: 3455947584198744 Data size: 613225345280533248 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> 2111c01ca1... HIVE-21537: Scalar query rewrite could be improved to not generate an extra join if subquery is guaranteed to produce atmost one row (Vineet Garg, reviewed by Jesus Camacho Rodriguez)
                   Reduce Output Operator
                     key expressions: 0 (type: int), _col1 (type: decimal(37,22))
                     null sort order: az
@@ -456,12 +471,18 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 71999454 Data size: 6351812727 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
+<<<<<<< HEAD
                   expressions: _col1 (type: decimal(17,2)), _col2 (type: bigint)
                   outputColumnNames: _col1, _col2
+=======
+                  expressions: (0.9 * (_col1 / _col2)) (type: decimal(38,22))
+                  outputColumnNames: _col0
+>>>>>>> 2111c01ca1... HIVE-21537: Scalar query rewrite could be improved to not generate an extra join if subquery is guaranteed to produce atmost one row (Vineet Garg, reviewed by Jesus Camacho Rodriguez)
                   Statistics: Num rows: 71999454 Data size: 6351812727 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (_col1 is not null and _col2 is not null) (type: boolean)
                     Statistics: Num rows: 71999454 Data size: 6351812727 Basic stats: COMPLETE Column stats: NONE
+<<<<<<< HEAD
                     Select Operator
                       expressions: (_col1 / _col2) (type: decimal(37,22))
                       outputColumnNames: _col0
@@ -475,6 +496,9 @@ STAGE PLANS:
         Reducer 24 
 =======
                         value expressions: _col0 (type: decimal(38,22))
+=======
+                    value expressions: _col0 (type: decimal(38,22))
+>>>>>>> 2111c01ca1... HIVE-21537: Scalar query rewrite could be improved to not generate an extra join if subquery is guaranteed to produce atmost one row (Vineet Garg, reviewed by Jesus Camacho Rodriguez)
         Reducer 2 
 >>>>>>> 6664c44c79... HIVE-21793: CBO retrieves column stats even if hive.stats.fetch.column.stats is set to false (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
             Execution mode: vectorized
@@ -511,11 +535,16 @@ STAGE PLANS:
                 Statistics: Num rows: 10367842752596232 Data size: 1922618777862369774 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
 <<<<<<< HEAD
+<<<<<<< HEAD
                   predicate: (_col3 > (0.9 * _col1)) (type: boolean)
 =======
                   predicate: (_col1 > _col2) (type: boolean)
 >>>>>>> 6664c44c79... HIVE-21793: CBO retrieves column stats even if hive.stats.fetch.column.stats is set to false (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Statistics: Num rows: 3455947584198744 Data size: 640872925954123264 Basic stats: COMPLETE Column stats: NONE
+=======
+                  predicate: (_col1 > _col2) (type: boolean)
+                  Statistics: Num rows: 3455947584198744 Data size: 613225345280533248 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> 2111c01ca1... HIVE-21537: Scalar query rewrite could be improved to not generate an extra join if subquery is guaranteed to produce atmost one row (Vineet Garg, reviewed by Jesus Camacho Rodriguez)
                   Reduce Output Operator
                     key expressions: 0 (type: int), _col1 (type: decimal(37,22))
                     null sort order: az

@@ -167,7 +167,7 @@ Stage-0
                                         Top N Key Operator [TNK_145] (rows=20854 width=228)
                                           keys:_col3,top n:11
                                           Filter Operator [FIL_38] (rows=20854 width=228)
-                                            predicate:(_col3 > (0.9 * _col1))
+                                            predicate:(_col3 > _col1)
                                             Merge Join Operator [MERGEJOIN_157] (rows=62562 width=228)
                                               Conds:(Inner),Output:["_col1","_col2","_col3"]
                                             <-Reducer 15 [CUSTOM_SIMPLE_EDGE] vectorized

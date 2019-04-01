@@ -24,19 +24,13 @@ import java.util.Set;
 public class SubqueryConf{
 
   private Set<RelNode> corrScalarRexSQWithAgg;
-  private Set<RelNode> scalarAggWithoutGbyWindowing;
 
 
-  public SubqueryConf(Set<RelNode> corrScalarRexSQWithAgg,
-      Set<RelNode> scalarAggWithoutGbyWindowing) {
+  public SubqueryConf(Set<RelNode> corrScalarRexSQWithAgg){
     this.corrScalarRexSQWithAgg = corrScalarRexSQWithAgg;
-    this.scalarAggWithoutGbyWindowing = scalarAggWithoutGbyWindowing;
   }
 
   public Set<RelNode> getCorrScalarRexSQWithAgg() {
     return corrScalarRexSQWithAgg;
-  }
-  public Set<RelNode> getScalarAggWithoutGbyWindowing() {
-    return scalarAggWithoutGbyWindowing;
   }
 }
