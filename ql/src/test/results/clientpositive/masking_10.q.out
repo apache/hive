@@ -87,7 +87,7 @@ POSTHOOK: Input: default@masking_test
 2017	2_lav
 2017	4_lav
 2017	8_lav
-Warning: Shuffle Join JOIN[29][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[30][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain
 select * from
   masking_test alias01

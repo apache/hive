@@ -476,10 +476,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: catalog_returns
-                  filterExpr: cr_item_sk is not null (type: boolean)
+                  filterExpr: (cr_item_sk is not null and cr_order_number is not null) (type: boolean)
                   Statistics: Num rows: 28798881 Data size: 3057234680 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: cr_item_sk is not null (type: boolean)
+                    predicate: (cr_item_sk is not null and cr_order_number is not null) (type: boolean)
                     Statistics: Num rows: 28798881 Data size: 3057234680 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cr_item_sk (type: int), cr_order_number (type: int), cr_return_amount (type: decimal(7,2)), cr_net_loss (type: decimal(7,2))
@@ -555,10 +555,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_returns
-                  filterExpr: wr_item_sk is not null (type: boolean)
+                  filterExpr: (wr_item_sk is not null and wr_order_number is not null) (type: boolean)
                   Statistics: Num rows: 14398467 Data size: 1325194184 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: wr_item_sk is not null (type: boolean)
+                    predicate: (wr_item_sk is not null and wr_order_number is not null) (type: boolean)
                     Statistics: Num rows: 14398467 Data size: 1325194184 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: wr_item_sk (type: int), wr_order_number (type: int), wr_return_amt (type: decimal(7,2)), wr_net_loss (type: decimal(7,2))
@@ -594,10 +594,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_returns
-                  filterExpr: sr_item_sk is not null (type: boolean)
+                  filterExpr: (sr_item_sk is not null and sr_ticket_number is not null) (type: boolean)
                   Statistics: Num rows: 57591150 Data size: 4462194832 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: sr_item_sk is not null (type: boolean)
+                    predicate: (sr_item_sk is not null and sr_ticket_number is not null) (type: boolean)
                     Statistics: Num rows: 57591150 Data size: 4462194832 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: sr_item_sk (type: int), sr_ticket_number (type: int), sr_return_amt (type: decimal(7,2)), sr_net_loss (type: decimal(7,2))

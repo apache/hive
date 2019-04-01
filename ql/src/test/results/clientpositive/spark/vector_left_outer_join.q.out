@@ -38,15 +38,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cd
+                  filterExpr: cint is not null (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: cint (type: int)
-                    outputColumnNames: _col0
+                  Filter Operator
+                    predicate: cint is not null (type: boolean)
                     Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 _col1 (type: int)
-                        1 _col0 (type: int)
+                    Select Operator
+                      expressions: cint (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col1 (type: int)
+                          1 _col0 (type: int)
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -63,15 +67,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: hd
+                  filterExpr: ctinyint is not null (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: ctinyint (type: tinyint)
-                    outputColumnNames: _col0
+                  Filter Operator
+                    predicate: ctinyint is not null (type: boolean)
                     Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 _col0 (type: tinyint)
-                        1 _col0 (type: tinyint)
+                    Select Operator
+                      expressions: ctinyint (type: tinyint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col0 (type: tinyint)
+                          1 _col0 (type: tinyint)
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
