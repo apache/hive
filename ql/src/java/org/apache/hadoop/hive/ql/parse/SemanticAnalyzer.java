@@ -2711,6 +2711,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_CHARSETLITERAL:
     case HiveParser.KW_TRUE:
     case HiveParser.KW_FALSE:
+    case HiveParser.TOK_DATELITERAL:
     case HiveParser.TOK_INTERVAL_DAY_LITERAL:
     case HiveParser.TOK_INTERVAL_DAY_TIME:
     case HiveParser.TOK_INTERVAL_DAY_TIME_LITERAL:
