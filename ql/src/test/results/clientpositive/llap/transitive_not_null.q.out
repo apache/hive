@@ -1,0 +1,351 @@
+PREHOOK: query: create table tbl_1(i1 int, j1 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_1
+POSTHOOK: query: create table tbl_1(i1 int, j1 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_1
+PREHOOK: query: insert into tbl_1 values(1,2),(1,null), (null, 200), (45,68)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_1
+POSTHOOK: query: insert into tbl_1 values(1,2),(1,null), (null, 200), (45,68)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_1
+POSTHOOK: Lineage: tbl_1.i1 SCRIPT []
+POSTHOOK: Lineage: tbl_1.j1 SCRIPT []
+PREHOOK: query: create table tbl_2(i2 int, j2 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_2
+POSTHOOK: query: create table tbl_2(i2 int, j2 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_2
+PREHOOK: query: insert into tbl_2 values(1,2),(1,null), (null, 200), (45,68)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_2
+POSTHOOK: query: insert into tbl_2 values(1,2),(1,null), (null, 200), (45,68)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_2
+POSTHOOK: Lineage: tbl_2.i2 SCRIPT []
+POSTHOOK: Lineage: tbl_2.j2 SCRIPT []
+PREHOOK: query: explain cbo select * from tbl_1 left join tbl_2 on tbl_1.i1 = tbl_2.i2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_1
+PREHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select * from tbl_1 left join tbl_2 on tbl_1.i1 = tbl_2.i2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_1
+POSTHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJoin(condition=[=($0, $2)], joinType=[left], algorithm=[none], cost=[not available])
+  HiveProject(i1=[$0], j1=[$1])
+    HiveTableScan(table=[[default, tbl_1]], table:alias=[tbl_1])
+  HiveProject(i2=[$0], j2=[$1])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[default, tbl_2]], table:alias=[tbl_2])
+
+PREHOOK: query: select * from tbl_1 left join tbl_2 on tbl_1.i1 = tbl_2.i2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_1
+PREHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl_1 left join tbl_2 on tbl_1.i1 = tbl_2.i2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_1
+POSTHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+NULL	200	NULL	NULL
+1	2	1	2
+1	2	1	NULL
+1	NULL	1	2
+1	NULL	1	NULL
+45	68	45	68
+PREHOOK: query: explain cbo select * from tbl_1 right join tbl_2 on tbl_1.i1 = tbl_2.i2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_1
+PREHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select * from tbl_1 right join tbl_2 on tbl_1.i1 = tbl_2.i2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_1
+POSTHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJoin(condition=[=($0, $2)], joinType=[right], algorithm=[none], cost=[not available])
+  HiveProject(i1=[$0], j1=[$1])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[default, tbl_1]], table:alias=[tbl_1])
+  HiveProject(i2=[$0], j2=[$1])
+    HiveTableScan(table=[[default, tbl_2]], table:alias=[tbl_2])
+
+PREHOOK: query: select * from tbl_1 right join tbl_2 on tbl_1.i1 = tbl_2.i2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_1
+PREHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl_1 right join tbl_2 on tbl_1.i1 = tbl_2.i2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_1
+POSTHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+NULL	NULL	NULL	200
+1	2	1	2
+1	2	1	NULL
+1	NULL	1	2
+1	NULL	1	NULL
+45	68	45	68
+PREHOOK: query: explain cbo select * from tbl_1 full outer join tbl_2 on tbl_1.i1 = tbl_2.i2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_1
+PREHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select * from tbl_1 full outer join tbl_2 on tbl_1.i1 = tbl_2.i2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_1
+POSTHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJoin(condition=[=($0, $2)], joinType=[full], algorithm=[none], cost=[not available])
+  HiveProject(i1=[$0], j1=[$1])
+    HiveTableScan(table=[[default, tbl_1]], table:alias=[tbl_1])
+  HiveProject(i2=[$0], j2=[$1])
+    HiveTableScan(table=[[default, tbl_2]], table:alias=[tbl_2])
+
+PREHOOK: query: select * from tbl_1 full outer join tbl_2 on tbl_1.i1 = tbl_2.i2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_1
+PREHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl_1 full outer join tbl_2 on tbl_1.i1 = tbl_2.i2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_1
+POSTHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+NULL	NULL	NULL	200
+NULL	200	NULL	NULL
+1	2	1	2
+1	2	1	NULL
+1	NULL	1	2
+1	NULL	1	NULL
+45	68	45	68
+PREHOOK: query: explain cbo select * from tbl_1 left join tbl_2 on tbl_1.i1 = tbl_2.i2 AND tbl_1.j1=tbl_2.j2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_1
+PREHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select * from tbl_1 left join tbl_2 on tbl_1.i1 = tbl_2.i2 AND tbl_1.j1=tbl_2.j2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_1
+POSTHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJoin(condition=[AND(=($0, $2), =($1, $3))], joinType=[left], algorithm=[none], cost=[not available])
+  HiveProject(i1=[$0], j1=[$1])
+    HiveTableScan(table=[[default, tbl_1]], table:alias=[tbl_1])
+  HiveProject(i2=[$0], j2=[$1])
+    HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+      HiveTableScan(table=[[default, tbl_2]], table:alias=[tbl_2])
+
+PREHOOK: query: select * from tbl_1 left join tbl_2 on tbl_1.i1 = tbl_2.i2 AND tbl_1.j1=tbl_2.j2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_1
+PREHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl_1 left join tbl_2 on tbl_1.i1 = tbl_2.i2 AND tbl_1.j1=tbl_2.j2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_1
+POSTHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+NULL	200	NULL	NULL
+1	NULL	NULL	NULL
+1	2	1	2
+45	68	45	68
+PREHOOK: query: explain cbo select * from tbl_1 right join tbl_2 on tbl_1.i1 = tbl_2.i2 AND tbl_1.j1=tbl_2.j2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_1
+PREHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select * from tbl_1 right join tbl_2 on tbl_1.i1 = tbl_2.i2 AND tbl_1.j1=tbl_2.j2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_1
+POSTHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJoin(condition=[AND(=($0, $2), =($1, $3))], joinType=[right], algorithm=[none], cost=[not available])
+  HiveProject(i1=[$0], j1=[$1])
+    HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+      HiveTableScan(table=[[default, tbl_1]], table:alias=[tbl_1])
+  HiveProject(i2=[$0], j2=[$1])
+    HiveTableScan(table=[[default, tbl_2]], table:alias=[tbl_2])
+
+PREHOOK: query: select * from tbl_1 right join tbl_2 on tbl_1.i1 = tbl_2.i2 AND tbl_1.j1=tbl_2.j2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_1
+PREHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl_1 right join tbl_2 on tbl_1.i1 = tbl_2.i2 AND tbl_1.j1=tbl_2.j2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_1
+POSTHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+NULL	NULL	NULL	200
+NULL	NULL	1	NULL
+1	2	1	2
+45	68	45	68
+PREHOOK: query: explain cbo select * from tbl_1 left join tbl_2 on tbl_1.i1 = tbl_2.i2 AND tbl_1.j1>tbl_2.j2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_1
+PREHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select * from tbl_1 left join tbl_2 on tbl_1.i1 = tbl_2.i2 AND tbl_1.j1>tbl_2.j2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_1
+POSTHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJoin(condition=[AND(=($0, $2), >($1, $3))], joinType=[left], algorithm=[none], cost=[not available])
+  HiveProject(i1=[$0], j1=[$1])
+    HiveTableScan(table=[[default, tbl_1]], table:alias=[tbl_1])
+  HiveProject(i2=[$0], j2=[$1])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[default, tbl_2]], table:alias=[tbl_2])
+
+PREHOOK: query: select * from tbl_1 left join tbl_2 on tbl_1.i1 = tbl_2.i2 AND tbl_1.j1>tbl_2.j2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_1
+PREHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl_1 left join tbl_2 on tbl_1.i1 = tbl_2.i2 AND tbl_1.j1>tbl_2.j2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_1
+POSTHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+NULL	200	NULL	NULL
+1	2	NULL	NULL
+1	NULL	NULL	NULL
+45	68	NULL	NULL
+PREHOOK: query: explain cbo select * from tbl_1 right join tbl_2 on tbl_1.i1 = tbl_2.i2 AND tbl_1.j1>tbl_2.j2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_1
+PREHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select * from tbl_1 right join tbl_2 on tbl_1.i1 = tbl_2.i2 AND tbl_1.j1>tbl_2.j2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_1
+POSTHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJoin(condition=[AND(=($0, $2), >($1, $3))], joinType=[right], algorithm=[none], cost=[not available])
+  HiveProject(i1=[$0], j1=[$1])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[default, tbl_1]], table:alias=[tbl_1])
+  HiveProject(i2=[$0], j2=[$1])
+    HiveTableScan(table=[[default, tbl_2]], table:alias=[tbl_2])
+
+PREHOOK: query: select * from tbl_1 right join tbl_2 on tbl_1.i1 = tbl_2.i2 AND tbl_1.j1>tbl_2.j2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_1
+PREHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl_1 right join tbl_2 on tbl_1.i1 = tbl_2.i2 AND tbl_1.j1>tbl_2.j2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_1
+POSTHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+NULL	NULL	NULL	200
+NULL	NULL	1	2
+NULL	NULL	1	NULL
+NULL	NULL	45	68
+PREHOOK: query: explain cbo SELECT t0.col0, t0.col1
+FROM
+  (
+    SELECT i1 as col0, j1 as col1 FROM tbl_1
+  ) AS t0
+  LEFT JOIN
+  (
+    SELECT i2 as col0, j2 as col1 FROM tbl_2
+  ) AS t1
+ON t0.col0 = t1.col0 AND t0.col1 = t1.col1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_1
+PREHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo SELECT t0.col0, t0.col1
+FROM
+  (
+    SELECT i1 as col0, j1 as col1 FROM tbl_1
+  ) AS t0
+  LEFT JOIN
+  (
+    SELECT i2 as col0, j2 as col1 FROM tbl_2
+  ) AS t1
+ON t0.col0 = t1.col0 AND t0.col1 = t1.col1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_1
+POSTHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(col0=[$0], col1=[$1])
+  HiveJoin(condition=[AND(=($0, $2), =($1, $3))], joinType=[left], algorithm=[none], cost=[not available])
+    HiveProject(i1=[$0], j1=[$1])
+      HiveTableScan(table=[[default, tbl_1]], table:alias=[tbl_1])
+    HiveProject(i2=[$0], j2=[$1])
+      HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+        HiveTableScan(table=[[default, tbl_2]], table:alias=[tbl_2])
+
+PREHOOK: query: SELECT t0.col0, t0.col1
+FROM
+  (
+    SELECT i1 as col0, j1 as col1 FROM tbl_1
+  ) AS t0
+  LEFT JOIN
+  (
+    SELECT i2 as col0, j2 as col1 FROM tbl_2
+  ) AS t1
+ON t0.col0 = t1.col0 AND t0.col1 = t1.col1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_1
+PREHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t0.col0, t0.col1
+FROM
+  (
+    SELECT i1 as col0, j1 as col1 FROM tbl_1
+  ) AS t0
+  LEFT JOIN
+  (
+    SELECT i2 as col0, j2 as col1 FROM tbl_2
+  ) AS t1
+ON t0.col0 = t1.col0 AND t0.col1 = t1.col1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_1
+POSTHOOK: Input: default@tbl_2
+#### A masked pattern was here ####
+NULL	200
+1	NULL
+1	2
+45	68
+PREHOOK: query: DROP TABLE tbl_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_1
+PREHOOK: Output: default@tbl_1
+POSTHOOK: query: DROP TABLE tbl_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_1
+POSTHOOK: Output: default@tbl_1
+PREHOOK: query: DROP TABLE tbl_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_2
+PREHOOK: Output: default@tbl_2
+POSTHOOK: query: DROP TABLE tbl_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_2
+POSTHOOK: Output: default@tbl_2

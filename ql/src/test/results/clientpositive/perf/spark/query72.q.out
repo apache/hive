@@ -138,15 +138,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: promotion
+                  filterExpr: p_promo_sk is not null (type: boolean)
                   Statistics: Num rows: 2300 Data size: 2713420 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: p_promo_sk (type: int)
-                    outputColumnNames: _col0
+                  Filter Operator
+                    predicate: p_promo_sk is not null (type: boolean)
                     Statistics: Num rows: 2300 Data size: 2713420 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 _col5 (type: int)
-                        1 _col0 (type: int)
+                    Select Operator
+                      expressions: p_promo_sk (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2300 Data size: 2713420 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col5 (type: int)
+                          1 _col0 (type: int)
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -299,10 +303,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: catalog_returns
-                  filterExpr: cr_item_sk is not null (type: boolean)
+                  filterExpr: (cr_item_sk is not null and cr_order_number is not null) (type: boolean)
                   Statistics: Num rows: 28798881 Data size: 3057234680 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: cr_item_sk is not null (type: boolean)
+                    predicate: (cr_item_sk is not null and cr_order_number is not null) (type: boolean)
                     Statistics: Num rows: 28798881 Data size: 3057234680 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cr_item_sk (type: int), cr_order_number (type: int)
