@@ -1488,7 +1488,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
     // Schedule Major compaction on all the partitions/table to clean aborted data
     if (numAbortedWrites > 0) {
-      CompactionRequest compactRqst = new CompactionRequest(rqst.getDbName(), rqst.getTableName(),
+      CompactionRequest compactRqst = new CompactionRequest(dbName, tblName,
               CompactionType.MAJOR);
       if (rqst.isSetPartNames()) {
         for (String partName : rqst.getPartNames()) {
@@ -3068,7 +3068,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         pst = sqlGenerator.prepareStmtWithParameters(dbConn, sb.toString(), params);
-        LOG.debug("Going to execute query <" + sb.toString() + ">");
+        LOG.debug("Going to execute query <" + sb.toString().replaceAll("\\?", "{}") + ">",
+                rqst.getDbname(), rqst.getTablename(), rqst.getPartitionname());
         ResultSet rs = pst.executeQuery();
         if(rs.next()) {
           long enqueuedId = rs.getLong(1);
@@ -3131,7 +3132,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         buf.append(")");
         String s = buf.toString();
         pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
-        LOG.debug("Going to execute update <" + s + ">");
+        LOG.debug("Going to execute update <" + s.replaceAll("\\?", "{}") + ">",
+                rqst.getDbname(), rqst.getTablename(), partName, rqst.getProperties(), rqst.getRunas());
         pst.executeUpdate();
         LOG.debug("Going to commit");
         dbConn.commit();

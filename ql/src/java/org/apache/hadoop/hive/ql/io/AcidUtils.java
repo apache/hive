@@ -364,6 +364,15 @@ public class AcidUtils {
     return baseOrDeltaDir + VISIBILITY_PREFIX
         + String.format(DELTA_DIGITS, visibilityTxnId);
   }
+
+  public static long getVisibilityTxnId(String filename) {
+    int idxOfv = filename.indexOf(VISIBILITY_PREFIX);
+    if(idxOfv < 0) {
+      return -1;
+    }
+    return Long.parseLong(filename.substring(idxOfv + VISIBILITY_PREFIX.length()));
+  }
+
   /**
    * Represents bucketId and copy_N suffix
    */

@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
@@ -463,7 +464,29 @@ public class CopyUtils {
     String[] subDirs = fileInfo.getSubDir().split(Path.SEPARATOR);
     Path destination = destRoot;
     for (String subDir: subDirs) {
-      destination = new Path(destination, subDir);
+      // If the directory is created by compactor, then the directory will have the transaction id also.
+      // In case of replication, the same txn id can not be used at target, as the txn with same id might be a
+      // aborted or live txn at target.
+      // In case of bootstrap load, we copy only the committed data, so the directory with only write id
+      // can be created. The validity txn id can be removed from the directory name.
+      // TODO : Support for incremental load flow. This can be done once replication of compaction is decided.
+      if (AcidUtils.getVisibilityTxnId(subDir) > 0) {
+        if (subDir.startsWith(AcidUtils.BASE_PREFIX)) {
+          AcidUtils.ParsedBase pb = AcidUtils.ParsedBase.parseBase(new Path(subDir));
+          destination = new Path(destination, AcidUtils.baseDir(pb.getWriteId()));
+        } else if (subDir.startsWith(AcidUtils.DELTA_PREFIX)) {
+          AcidUtils.ParsedDeltaLight pdl = AcidUtils.ParsedDeltaLight.parse(new Path(subDir));
+          destination = new Path(destination, AcidUtils.deltaSubdir(pdl.getMinWriteId(), pdl.getMaxWriteId()));
+        } else if (subDir.startsWith(AcidUtils.DELETE_DELTA_PREFIX)) {
+          AcidUtils.ParsedDeltaLight pdl = AcidUtils.ParsedDeltaLight.parse(new Path(subDir));
+          destination = new Path(destination, AcidUtils.deleteDeltaSubdir(pdl.getMinWriteId(), pdl.getMaxWriteId()));
+        } else {
+          LOG.error("Invalid directory prefix " + subDir);
+          assert (false); // should never happen
+        }
+      } else {
+        destination = new Path(destination, subDir);
+      }
     }
     return destination;
   }

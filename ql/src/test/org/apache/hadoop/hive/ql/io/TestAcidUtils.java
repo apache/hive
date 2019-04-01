@@ -692,6 +692,16 @@ public class TestAcidUtils {
     assertEquals(1, AcidUtils.getAcidOperationalProperties(parameters).toInt());
   }
 
+  @Test
+  public void testgetVisibilityTxnId() {
+    assertEquals(6, AcidUtils.getVisibilityTxnId("base_0000002_v0000006"));
+    assertEquals(-1, AcidUtils.getVisibilityTxnId("base_0000102"));
+    assertEquals(60, AcidUtils.getVisibilityTxnId("delta_0000010_v0000060"));
+    assertEquals(-1, AcidUtils.getVisibilityTxnId("delta_0000102"));
+    assertEquals(1000060, AcidUtils.getVisibilityTxnId("delete_delta_0000010_v1000060"));
+    assertEquals(-1, AcidUtils.getVisibilityTxnId("delete_delta_0000102"));
+  }
+
   /**
    * See {@link TestOrcRawRecordMerger#testGetLogicalLength()}
    */

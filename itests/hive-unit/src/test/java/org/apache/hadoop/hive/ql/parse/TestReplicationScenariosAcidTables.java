@@ -17,11 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -33,6 +36,7 @@ import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.Utils;
 
@@ -50,11 +54,15 @@ import java.util.List;
 import java.util.Collections;
 import java.util.Map;
 
+import static org.apache.hadoop.hive.ql.TestTxnCommands2.runCleaner;
+import static org.apache.hadoop.hive.ql.TestTxnCommands2.runWorker;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.junit.Assert.assertTrue;
 
 /**
  * TestReplicationScenariosAcidTables - test replication for ACID tables.
  */
+
 public class TestReplicationScenariosAcidTables extends BaseReplicationScenariosAcidTables {
 
   @BeforeClass
@@ -669,5 +677,64 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     replica.run("drop database " + primaryDbName + " cascade");
     replica.run("drop database " + dbName1 + " cascade");
     replica.run("drop database " + dbName2 + " cascade");
+  }
+
+  private void runCompaction(String dbName, String tblName, CompactionType compactionType) throws Throwable {
+    HiveConf hiveConf = new HiveConf(primary.getConf());
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+    txnHandler.compact(new CompactionRequest(dbName, tblName, compactionType));
+    hiveConf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, false);
+    runWorker(hiveConf);
+    runCleaner(hiveConf);
+  }
+
+  private FileStatus[] getDirsInTableLoc(WarehouseInstance wh, String db, String table) throws Throwable {
+    Path tblLoc = new Path(wh.getTable(db, table).getSd().getLocation());
+    FileSystem fs = tblLoc.getFileSystem(wh.getConf());
+    return fs.listStatus(tblLoc, EximUtil.getDirectoryFilter(fs));
+  }
+
+  @Test
+  public void testAcidTablesBootstrapWithCompaction() throws Throwable {
+     String tableName = testName.getMethodName();
+     primary.run("use " + primaryDbName)
+            .run("create table " + tableName + " (id int) clustered by(id) into 3 buckets stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\")")
+            .run("insert into " + tableName + " values(1)")
+            .run("insert into " + tableName + " values(2)");
+    runCompaction(primaryDbName, tableName, CompactionType.MAJOR);
+    WarehouseInstance.Tuple bootstrapDump = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, bootstrapDump.dumpLocation);
+    replica.run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] {tableName})
+            .run("repl status " + replicatedDbName)
+            .verifyResult(bootstrapDump.lastReplicationId)
+            .run("select id from " + tableName + " order by id")
+            .verifyResults(new String[]{"1", "2"});
+
+    FileStatus[] dirsInLoadPath = getDirsInTableLoc(primary, primaryDbName, tableName);
+    long writeId = -1;
+    for (FileStatus fileStatus : dirsInLoadPath) {
+      if (fileStatus.getPath().getName().startsWith(AcidUtils.BASE_PREFIX)) {
+        writeId = AcidUtils.ParsedBase.parseBase(fileStatus.getPath()).getWriteId();
+        assertTrue(AcidUtils.getVisibilityTxnId(fileStatus.getPath().getName()) != -1);
+        break;
+      }
+    }
+    //compaction is done so there should be a base directory.
+    assertTrue(writeId != -1);
+
+    dirsInLoadPath = getDirsInTableLoc(replica, replicatedDbName, tableName);
+    for (FileStatus fileStatus : dirsInLoadPath) {
+      if (fileStatus.getPath().getName().startsWith(AcidUtils.BASE_PREFIX)) {
+        assertTrue(writeId == AcidUtils.ParsedBase.parseBase(fileStatus.getPath()).getWriteId());
+        assertTrue(AcidUtils.getVisibilityTxnId(fileStatus.getPath().getName()) == -1);
+        writeId = -1;
+        break;
+      }
+    }
+    //make sure that it has done the verification.
+    assertTrue(writeId == -1);
   }
 }

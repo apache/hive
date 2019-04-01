@@ -376,8 +376,8 @@ public class BaseReplicationScenariosAcidTables {
       Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"),
                           entry.getValue().longValue(),
                           TxnDbUtil.countQueryAgent(conf,
-                    "select count(*) from COMPACTION_QUEUE where cq_database = '" + dbName
-                            + "' and cq_table = '" + entry.getKey() + "'"));
+                    "select count(*) from COMPACTION_QUEUE where cq_database = '" + dbName.toLowerCase()
+                            + "' and cq_table = '" + entry.getKey().toLowerCase() + "'"));
     }
   }
 }
