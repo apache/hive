@@ -19,7 +19,9 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.messaging.DropDatabaseMessage;
+import org.apache.thrift.TException;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
@@ -28,7 +30,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 public class JSONDropDatabaseMessage extends DropDatabaseMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db;
+  String server, servicePrincipal, db, dbJson;
 
   @JsonProperty
   Long timestamp;
@@ -38,11 +40,16 @@ public class JSONDropDatabaseMessage extends DropDatabaseMessage {
    */
   public JSONDropDatabaseMessage() {}
 
-  public JSONDropDatabaseMessage(String server, String servicePrincipal, String db, Long timestamp) {
+  public JSONDropDatabaseMessage(String server, String servicePrincipal,  Database db, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
-    this.db = db;
+    this.db = db.getName();
     this.timestamp = timestamp;
+    try {
+      this.dbJson = JSONMessageFactory.createDatabaseObjJson(db);
+    } catch (TException ex) {
+      throw new IllegalArgumentException("Could not serialize database object", ex);
+    }
     checkValid();
   }
 
@@ -58,6 +65,11 @@ public class JSONDropDatabaseMessage extends DropDatabaseMessage {
 
   @Override
   public Long getTimestamp() { return timestamp; }
+
+  @Override
+  public Database getDatabaseObject() throws Exception {
+    return (Database) JSONMessageFactory.getTObj(dbJson, Database.class);
+  }
 
   @Override
   public String toString() {
