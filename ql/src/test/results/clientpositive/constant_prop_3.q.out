@@ -355,10 +355,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: supplier_hive
-            filterExpr: (s_comment like '%Customer%Complaints%') (type: boolean)
+            filterExpr: ((s_comment like '%Customer%Complaints%') and s_suppkey is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (s_comment like '%Customer%Complaints%') (type: boolean)
+              predicate: ((s_comment like '%Customer%Complaints%') and s_suppkey is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: s_suppkey (type: int)

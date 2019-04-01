@@ -57,37 +57,39 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 llap
-      File Output Operator [FS_17]
-        Merge Join Operator [MERGEJOIN_21] (rows=1 width=4)
-          Conds:RS_33._col0=RS_36._col0(Left Outer),Output:["_col0"]
+      File Output Operator [FS_19]
+        Merge Join Operator [MERGEJOIN_23] (rows=1 width=4)
+          Conds:RS_35._col0=RS_39._col0(Left Outer),Output:["_col0"]
         <-Map 1 [SIMPLE_EDGE] vectorized, llap
-          SHUFFLE [RS_33]
+          SHUFFLE [RS_35]
             PartitionCols:_col0
-            Select Operator [SEL_32] (rows=1 width=4)
+            Select Operator [SEL_34] (rows=1 width=4)
               Output:["_col0"]
               TableScan [TS_0] (rows=1 width=4)
                 default@tb1,a,Tbl:COMPLETE,Col:NONE,Output:["id"]
         <-Reducer 5 [SIMPLE_EDGE] vectorized, llap
-          SHUFFLE [RS_36]
+          SHUFFLE [RS_39]
             PartitionCols:_col0
-            Limit [LIM_35] (rows=1 width=2)
-              Number of rows:1
-              Select Operator [SEL_34] (rows=1 width=2)
-                Output:["_col0"]
-              <-Union 4 [CUSTOM_SIMPLE_EDGE]
-                <-Map 3 [CONTAINS] vectorized, llap
-                  Reduce Output Operator [RS_39]
-                    Limit [LIM_38] (rows=1 width=2)
-                      Number of rows:1
-                      Select Operator [SEL_37] (rows=1 width=4)
-                        Output:["_col0"]
-                        TableScan [TS_22] (rows=1 width=4)
-                          Output:["id"]
-                <-Map 6 [CONTAINS] vectorized, llap
-                  Reduce Output Operator [RS_42]
-                    Limit [LIM_41] (rows=1 width=2)
-                      Number of rows:1
-                      Select Operator [SEL_40] (rows=1 width=0)
-                        Output:["_col0"]
-                        TableScan [TS_27] (rows=1 width=0)
+            Filter Operator [FIL_38] (rows=1 width=2)
+              predicate:_col0 is not null
+              Limit [LIM_37] (rows=1 width=2)
+                Number of rows:1
+                Select Operator [SEL_36] (rows=1 width=2)
+                  Output:["_col0"]
+                <-Union 4 [CUSTOM_SIMPLE_EDGE]
+                  <-Map 3 [CONTAINS] vectorized, llap
+                    Reduce Output Operator [RS_42]
+                      Limit [LIM_41] (rows=1 width=2)
+                        Number of rows:1
+                        Select Operator [SEL_40] (rows=1 width=4)
+                          Output:["_col0"]
+                          TableScan [TS_24] (rows=1 width=4)
+                            Output:["id"]
+                  <-Map 6 [CONTAINS] vectorized, llap
+                    Reduce Output Operator [RS_45]
+                      Limit [LIM_44] (rows=1 width=2)
+                        Number of rows:1
+                        Select Operator [SEL_43] (rows=1 width=0)
+                          Output:["_col0"]
+                          TableScan [TS_29] (rows=1 width=0)
 
