@@ -133,7 +133,7 @@ public class LlapCacheResourceProcessor implements CommandProcessor {
   }
 
   private void llapCachePurge(final SessionState ss, final LlapRegistryService llapRegistryService) throws Exception {
-    ExecutorService executorService = Executors.newCachedThreadPool();
+    ExecutorService executorService = Executors.newFixedThreadPool(10);
     List<Future<Long>> futures = new ArrayList<>();
     Collection<LlapServiceInstance> instances = llapRegistryService.getInstances().getAll();
     for (LlapServiceInstance instance : instances) {
