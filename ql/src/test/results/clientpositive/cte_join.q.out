@@ -29,7 +29,7 @@ POSTHOOK: Input: default@t1
 CBO PLAN:
 HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
   HiveProject(a=[$0])
-    HiveFilter(condition=[AND(=(CAST($1):VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'c'), IS NOT NULL($0))])
+    HiveFilter(condition=[AND(=($1, _UTF-16LE'c'), IS NOT NULL($0))])
       HiveTableScan(table=[[default, t1]], table:alias=[t1])
   HiveProject(a=[$0], b=[$1])
     HiveFilter(condition=[IS NOT NULL($0)])
@@ -65,10 +65,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1
-            filterExpr: ((CAST( b AS STRING) = 'c') and a is not null) (type: boolean)
+            filterExpr: ((b = 'c') and a is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((CAST( b AS STRING) = 'c') and a is not null) (type: boolean)
+              predicate: ((b = 'c') and a is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: a (type: int)

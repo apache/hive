@@ -36,10 +36,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ax
-            filterExpr: ((CAST( s AS STRING) = 'a') and (CAST( t AS STRING) = 'a')) (type: boolean)
+            filterExpr: ((s = 'a') and (t = 'a')) (type: boolean)
             Statistics: Num rows: 3 Data size: 11 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((CAST( s AS STRING) = 'a') and (CAST( t AS STRING) = 'a')) (type: boolean)
+              predicate: ((s = 'a') and (t = 'a')) (type: boolean)
               Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
@@ -108,13 +108,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ax
-            filterExpr: (struct(CAST( s AS STRING),CAST( t AS STRING))) IN (const struct('a','a'), const struct('b','bb')) (type: boolean)
+            filterExpr: (struct(s,t)) IN (const struct('a','a'), const struct('b','bb')) (type: boolean)
             Statistics: Num rows: 3 Data size: 11 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (struct(CAST( s AS STRING),CAST( t AS STRING))) IN (const struct('a','a'), const struct('b','bb')) (type: boolean)
-              Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+              predicate: (struct(s,t)) IN (const struct('a','a'), const struct('b','bb')) (type: boolean)
+              Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   minReductionHashAggr: 0.99
@@ -126,7 +126,6 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
-      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
