@@ -71,7 +71,7 @@ public class HiveSchemaHelper {
       driver = driver == null ? getValidConfVar(MetastoreConf.ConfVars.CONNECTION_DRIVER, conf) : driver;
       if (printInfo) {
         logAndPrintToStdout("Metastore connection URL:\t " + url);
-        logAndPrintToStdout("Metastore Connection Driver :\t " + driver);
+        logAndPrintToStdout("Metastore connection Driver :\t " + driver);
         logAndPrintToStdout("Metastore connection User:\t " + userName);
         if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST)) {
           logAndPrintToStdout("Metastore connection Password:\t " + password);
