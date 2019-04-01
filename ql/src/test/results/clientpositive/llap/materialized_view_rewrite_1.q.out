@@ -1069,10 +1069,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1_n2
-                  filterExpr: (CAST( name AS STRING) = 'Sales') (type: boolean)
+                  filterExpr: (name = 'Sales') (type: boolean)
                   Statistics: Num rows: 3 Data size: 291 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (CAST( name AS STRING) = 'Sales') (type: boolean)
+                    predicate: (name = 'Sales') (type: boolean)
                     Statistics: Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c (type: bigint)
@@ -1195,10 +1195,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1_n2
-                  filterExpr: (CAST( name AS STRING) = 'Sales') (type: boolean)
+                  filterExpr: (name = 'Sales') (type: boolean)
                   Statistics: Num rows: 3 Data size: 303 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (CAST( name AS STRING) = 'Sales') (type: boolean)
+                    predicate: (name = 'Sales') (type: boolean)
                     Statistics: Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: deptno (type: int), c (type: bigint)
