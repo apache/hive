@@ -400,11 +400,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   public static RelOptPlanner createPlanner(HiveConf conf) {
-    return createPlanner(conf, new HashSet<RelNode>(), new HashSet<RelNode>());
+    return createPlanner(conf, new HashSet<RelNode>());
   }
 
   private static RelOptPlanner createPlanner(
-      HiveConf conf, Set<RelNode> corrScalarRexSQWithAgg, Set<RelNode> scalarAggNoGbyNoWin) {
+      HiveConf conf, Set<RelNode> corrScalarRexSQWithAgg) {
     final Double maxSplitSize = (double) HiveConf.getLongVar(
             conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE);
     final Double maxMemory = (double) HiveConf.getLongVar(
@@ -423,7 +423,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     boolean heuristicMaterializationStrategy = HiveConf.getVar(conf,
         HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_SELECTION_STRATEGY).equals("heuristic");
     HivePlannerContext confContext = new HivePlannerContext(algorithmsConf, registry, calciteConfig,
-        corrScalarRexSQWithAgg, scalarAggNoGbyNoWin,
+        corrScalarRexSQWithAgg,
         new HiveConfPlannerContext(isCorrelatedColumns, heuristicMaterializationStrategy));
     return HiveVolcanoPlanner.createPlanner(confContext);
   }
@@ -1727,7 +1727,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
     // this is to keep track if a subquery is correlated and contains aggregate
     // since this is special cased when it is rewritten in SubqueryRemoveRule
     Set<RelNode> corrScalarRexSQWithAgg = new HashSet<RelNode>();
-    Set<RelNode> scalarAggNoGbyNoWin = new HashSet<RelNode>();
 
     // TODO: Do we need to keep track of RR, ColNameToPosMap for every op or
     // just last one.
@@ -1753,7 +1752,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       /*
        * recreate cluster, so that it picks up the additional traitDef
        */
-      RelOptPlanner planner = createPlanner(conf, corrScalarRexSQWithAgg, scalarAggNoGbyNoWin);
+      RelOptPlanner planner = createPlanner(conf, corrScalarRexSQWithAgg);
       final RexBuilder rexBuilder = cluster.getRexBuilder();
       final RelOptCluster optCluster = RelOptCluster.create(planner, rexBuilder);
 
@@ -3141,8 +3140,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private void subqueryRestrictionCheck(QB qb, ASTNode searchCond, RelNode srcRel,
-                                         boolean forHavingClause, Set<ASTNode> corrScalarQueries,
-                        Set<ASTNode> scalarQueriesWithAggNoWinNoGby) throws SemanticException {
+                                         boolean forHavingClause, Set<ASTNode> corrScalarQueries)
+        throws SemanticException {
       List<ASTNode> subQueriesInOriginalTree = SubQueryUtils.findSubQueries(searchCond);
 
       ASTNode clonedSearchCond = (ASTNode) SubQueryUtils.adaptor.dupTree(searchCond);
@@ -3179,9 +3178,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
             havingInputAlias, subqueryConfig);
         if(subqueryConfig[0]) {
           corrScalarQueries.add(originalSubQueryAST);
-        }
-        if(subqueryConfig[1]) {
-          scalarQueriesWithAggNoWinNoGby.add(originalSubQueryAST);
         }
       }
     }
@@ -3341,12 +3337,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
                                        Map<ASTNode, RelNode> subQueryToRelNode) throws CalciteSubquerySemanticException {
 
       Set<ASTNode> corrScalarQueriesWithAgg = new HashSet<ASTNode>();
-      Set<ASTNode> scalarQueriesWithAggNoWinNoGby = new HashSet<ASTNode>();
       boolean isSubQuery = false;
       try {
         //disallow subqueries which HIVE doesn't currently support
-        subqueryRestrictionCheck(qb, node, srcRel, forHavingClause, corrScalarQueriesWithAgg,
-            scalarQueriesWithAggNoWinNoGby);
+        subqueryRestrictionCheck(qb, node, srcRel, forHavingClause, corrScalarQueriesWithAgg);
         Deque<ASTNode> stack = new ArrayDeque<ASTNode>();
         stack.push(node);
 
@@ -3378,9 +3372,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
             // inner aggregate happens on empty result
             if (corrScalarQueriesWithAgg.contains(next)) {
               corrScalarRexSQWithAgg.add(subQueryRelNode);
-            }
-            if (scalarQueriesWithAggNoWinNoGby.contains(next)) {
-              scalarAggNoGbyNoWin.add(subQueryRelNode);
             }
             isSubQuery = true;
             break;

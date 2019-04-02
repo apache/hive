@@ -75,7 +75,7 @@
     <datanucleus-core.version>4.1.17</datanucleus-core.version>
     <datanucleus-jdo.version>3.2.0-m3</datanucleus-jdo.version>
     <datanucleus-rdbms.version>4.1.19</datanucleus-rdbms.version>
-    <derby.version>10.10.2.0</derby.version>
+    <derby.version>10.14.1.0</derby.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2
     </dropwizard-metrics-hadoop-metrics2-reporter.version>
     <dropwizard.version>3.1.0</dropwizard.version>
