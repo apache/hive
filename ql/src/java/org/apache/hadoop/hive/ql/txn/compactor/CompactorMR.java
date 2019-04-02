@@ -358,7 +358,7 @@ public class CompactorMR {
       return;
     }
     String user = UserGroupInformation.getCurrentUser().getShortUserName();
-    SessionState sessionState = DriverUtils.setUpSessionState(hiveConf, user, false);
+    SessionState sessionState = DriverUtils.setUpSessionState(hiveConf, user, true);
     // Set up the session for driver.
     HiveConf conf = new HiveConf(hiveConf);
     conf.set(ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
