@@ -76,6 +76,7 @@ public class SchemaToolCommandLine {
         .hasArg()
         .withDescription("Create table for Hive warehouse/compute logs")
         .create("createLogsTable");
+
     OptionGroup optGroup = new OptionGroup();
     optGroup
       .addOption(help)
@@ -169,9 +170,6 @@ public class SchemaToolCommandLine {
         .withDescription("Database a moving table is going to.  This is " +
             "required if you are moving a table.")
         .create("toDatabase");
-    Option retentionPeriod = OptionBuilder.hasArg()
-      .withDescription("Specify logs table retention period")
-      .create("retentionPeriod");
 
     Options options = new Options();
     options.addOption(help);
@@ -196,7 +194,6 @@ public class SchemaToolCommandLine {
     options.addOption(hiveUserOpt);
     options.addOption(hivePasswdOpt);
     options.addOption(hiveDbOpt);
-    options.addOption(retentionPeriod);
     options.addOption(yesOpt);
     if (additionalOptions != null) options.addOptionGroup(additionalOptions);
 
