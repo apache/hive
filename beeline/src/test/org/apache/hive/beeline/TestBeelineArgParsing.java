@@ -353,4 +353,19 @@ public class TestBeelineArgParsing {
     Assert.assertTrue(bl.getOpts().getMaxHistoryRows() == 100);
     bl.close();
   }
+
+  /**
+   * Test the file parameter option
+   * @throws Exception
+   */
+  @Test
+  public void testFileParam() throws Exception {
+    TestBeeline bl = new TestBeeline();
+    String args[] = new String[] {"-u", "url", "-n", "name",
+        "-p", "password", "-d", "driver", "-f", "hdfs://myscript"};
+    Assert.assertEquals(0, bl.initArgs(args));
+    Assert.assertTrue(bl.connectArgs.equals("url name password driver"));
+    Assert.assertTrue(bl.getOpts().getScriptFile().equals("hdfs://myscript"));
+  }
+
 }
