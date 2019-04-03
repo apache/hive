@@ -2835,7 +2835,14 @@ public class Driver implements IDriver {
   private void releaseContext() {
     try {
       if (ctx != null) {
-        ctx.clear();
+        boolean deleteResultDir = true;
+        // don't let context delete result dirs and scratch dirs if result was cached
+        if(this.cacheUsage != null
+            && this.cacheUsage.getStatus() == CacheUsage.CacheStatus.QUERY_USING_CACHE) {
+          deleteResultDir = false;
+
+        }
+        ctx.clear(deleteResultDir);
         if (ctx.getHiveLocks() != null) {
           hiveLocks.addAll(ctx.getHiveLocks());
           ctx.setHiveLocks(null);
@@ -2931,10 +2938,10 @@ public class Driver implements IDriver {
         lDrvState.abort();
       }
       releasePlan();
+      releaseContext();
       releaseCachedResult();
       releaseFetchTask();
       releaseResStream();
-      releaseContext();
       lDrvState.driverState = DriverState.CLOSED;
     } finally {
       lDrvState.stateLock.unlock();
