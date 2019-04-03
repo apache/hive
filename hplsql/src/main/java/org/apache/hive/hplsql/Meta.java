@@ -259,7 +259,7 @@ public class Meta {
   }
   
   /**
-   * Split qualified object to 2 parts: schema.tab.col -> schema.tab|col; tab.col -> tab|col 
+   * Split qualified object to 2 parts: schema.tab.col -&gt; schema.tab|col; tab.col -&gt; tab|col
    */
   public ArrayList<String> splitIdentifierToTwoParts(String name) {
     ArrayList<String> parts = splitIdentifier(name);    
