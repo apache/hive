@@ -34,6 +34,24 @@ POSTHOOK: query: CREATE TABLE scr_txn (key int, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@scr_txn
+PREHOOK: query: CREATE TABLE scr_txn_2 (key int, value string) STORED AS ORC
+    TBLPROPERTIES ("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@scr_txn_2
+POSTHOOK: query: CREATE TABLE scr_txn_2 (key int, value string) STORED AS ORC
+    TBLPROPERTIES ("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@scr_txn_2
+PREHOOK: query: alter table scr_txn compact 'major'
+PREHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: query: alter table scr_txn compact 'major'
+POSTHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: query: alter table scr_txn_2 compact 'minor'
+PREHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: query: alter table scr_txn_2 compact 'minor'
+POSTHOOK: type: ALTERTABLE_COMPACT
 PREHOOK: query: CREATE TEMPORARY TABLE src_tmp (key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -90,6 +108,10 @@ default	scr_txn			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	scr_txn			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	scr_txn			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	scr_txn			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	scr_txn_2			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	scr_txn_2			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	scr_txn_2			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	scr_txn_2			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	src			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	src			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	src			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -142,6 +164,10 @@ information_schema	columns			hive_test_user	USER	DELETE	true	-1	hive_test_user
 information_schema	columns			hive_test_user	USER	INSERT	true	-1	hive_test_user
 information_schema	columns			hive_test_user	USER	SELECT	true	-1	hive_test_user
 information_schema	columns			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	compactions			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	compactions			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	compactions			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	compactions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 information_schema	scheduled_executions			hive_test_user	USER	DELETE	true	-1	hive_test_user
 information_schema	scheduled_executions			hive_test_user	USER	INSERT	true	-1	hive_test_user
 information_schema	scheduled_executions			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -182,6 +208,18 @@ sys	columns_v2			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	columns_v2			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	columns_v2			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	columns_v2			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	compaction_queue			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	compaction_queue			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	compaction_queue			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	compaction_queue			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	compactions			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	compactions			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	compactions			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	compactions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	completed_compactions			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	completed_compactions			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	completed_compactions			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	completed_compactions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	database_params			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	database_params			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	database_params			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -494,6 +532,58 @@ columns_v2	column_name
 columns_v2	comment
 columns_v2	integer_idx
 columns_v2	type_name
+compaction_queue	cq_database
+#### A masked pattern was here ####
+compaction_queue	cq_highest_write_id
+compaction_queue	cq_id
+compaction_queue	cq_partition
+compaction_queue	cq_run_as
+compaction_queue	cq_start
+compaction_queue	cq_state
+compaction_queue	cq_table
+compaction_queue	cq_tblproperties
+compaction_queue	cq_type
+compaction_queue	cq_worker_id
+compactions	c_catalog
+compactions	c_catalog
+compactions	c_database
+compactions	c_database
+compactions	c_duration
+compactions	c_duration
+#### A masked pattern was here ####
+compactions	c_highest_write_id
+compactions	c_highest_write_id
+compactions	c_hostname
+compactions	c_hostname
+compactions	c_id
+compactions	c_id
+compactions	c_partition
+compactions	c_partition
+compactions	c_run_as
+compactions	c_run_as
+compactions	c_start
+compactions	c_start
+compactions	c_state
+compactions	c_state
+compactions	c_table
+compactions	c_table
+compactions	c_type
+compactions	c_type
+compactions	c_worker_id
+compactions	c_worker_id
+completed_compactions	cc_database
+completed_compactions	cc_end
+#### A masked pattern was here ####
+completed_compactions	cc_highest_write_id
+completed_compactions	cc_id
+completed_compactions	cc_partition
+completed_compactions	cc_run_as
+completed_compactions	cc_start
+completed_compactions	cc_state
+completed_compactions	cc_table
+completed_compactions	cc_tblproperties
+completed_compactions	cc_type
+completed_compactions	cc_worker_id
 database_params	db_id
 database_params	param_key
 database_params	param_value
@@ -703,6 +793,8 @@ schemata	schema_name
 schemata	sql_path
 scr_txn	key
 scr_txn	value
+scr_txn_2	key
+scr_txn_2	value
 sd_params	param_key
 sd_params	param_value
 sd_params	sd_id
@@ -1148,7 +1240,7 @@ POSTHOOK: query: select count(*) from sds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sds
 #### A masked pattern was here ####
-82
+87
 PREHOOK: query: select param_key, param_value from sd_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sd_params
@@ -1167,8 +1259,8 @@ POSTHOOK: Input: sys@serdes
 #### A masked pattern was here ####
 NULL	org.apache.hadoop.hive.ql.io.orc.OrcSerde
 NULL	org.apache.hadoop.hive.ql.io.orc.OrcSerde
+NULL	org.apache.hadoop.hive.ql.io.orc.OrcSerde
 NULL	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
-NULL	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 NULL	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 PREHOOK: query: select param_key, param_value from serde_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
@@ -1481,6 +1573,20 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@tab_col_stats
 #### A masked pattern was here ####
 6122
+PREHOOK: query: select * from compactions
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@compaction_queue
+PREHOOK: Input: sys@compactions
+PREHOOK: Input: sys@completed_compactions
+#### A masked pattern was here ####
+POSTHOOK: query: select * from compactions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@compaction_queue
+POSTHOOK: Input: sys@compactions
+POSTHOOK: Input: sys@completed_compactions
+#### A masked pattern was here ####
+1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: use INFORMATION_SCHEMA
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:information_schema
@@ -1525,6 +1631,7 @@ default	default	lineitem	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	moretypes	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	part	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	scr_txn	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	scr_txn_2	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	src	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	src1	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	src_buck	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
@@ -1538,6 +1645,7 @@ default	default	srcbucket2	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	srcpart	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	information_schema	column_privileges	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	columns	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	information_schema	compactions	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	scheduled_executions	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	scheduled_queries	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	schemata	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
@@ -1548,6 +1656,9 @@ default	sys	bucketing_cols	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	cdh_version	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	cds	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	columns_v2	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	compaction_queue	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	compactions	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	sys	completed_compactions	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	database_params	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	db_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	db_version	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
@@ -1687,6 +1798,7 @@ POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
 information_schema	column_privileges
 information_schema	columns
+information_schema	compactions
 information_schema	scheduled_executions
 information_schema	scheduled_queries
 information_schema	schemata
@@ -1694,6 +1806,7 @@ information_schema	table_privileges
 information_schema	tables
 information_schema	views
 sys	cdh_version
+sys	compactions
 sys	partition_stats_view
 sys	table_stats_view
 sys	version

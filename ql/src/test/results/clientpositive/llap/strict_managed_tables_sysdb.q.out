@@ -164,6 +164,10 @@ information_schema	columns			hive_test_user	USER	DELETE	true	-1	hive_test_user
 information_schema	columns			hive_test_user	USER	INSERT	true	-1	hive_test_user
 information_schema	columns			hive_test_user	USER	SELECT	true	-1	hive_test_user
 information_schema	columns			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	compactions			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	compactions			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	compactions			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	compactions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 information_schema	scheduled_executions			hive_test_user	USER	DELETE	true	-1	hive_test_user
 information_schema	scheduled_executions			hive_test_user	USER	INSERT	true	-1	hive_test_user
 information_schema	scheduled_executions			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -204,6 +208,18 @@ sys	columns_v2			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	columns_v2			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	columns_v2			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	columns_v2			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	compaction_queue			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	compaction_queue			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	compaction_queue			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	compaction_queue			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	compactions			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	compactions			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	compactions			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	compactions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	completed_compactions			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	completed_compactions			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	completed_compactions			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	completed_compactions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	database_params			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	database_params			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	database_params			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -427,6 +443,9 @@ PREHOOK: Output: sys@bucketing_cols
 PREHOOK: Output: sys@cdh_version
 PREHOOK: Output: sys@cds
 PREHOOK: Output: sys@columns_v2
+PREHOOK: Output: sys@compaction_queue
+PREHOOK: Output: sys@compactions
+PREHOOK: Output: sys@completed_compactions
 PREHOOK: Output: sys@database_params
 PREHOOK: Output: sys@db_privs
 PREHOOK: Output: sys@db_version
@@ -479,6 +498,9 @@ POSTHOOK: Output: sys@bucketing_cols
 POSTHOOK: Output: sys@cdh_version
 POSTHOOK: Output: sys@cds
 POSTHOOK: Output: sys@columns_v2
+POSTHOOK: Output: sys@compaction_queue
+POSTHOOK: Output: sys@compactions
+POSTHOOK: Output: sys@completed_compactions
 POSTHOOK: Output: sys@database_params
 POSTHOOK: Output: sys@db_privs
 POSTHOOK: Output: sys@db_version
@@ -529,6 +551,7 @@ PREHOOK: Input: database:information_schema
 PREHOOK: Output: database:information_schema
 PREHOOK: Output: information_schema@column_privileges
 PREHOOK: Output: information_schema@columns
+PREHOOK: Output: information_schema@compactions
 PREHOOK: Output: information_schema@scheduled_executions
 PREHOOK: Output: information_schema@scheduled_queries
 PREHOOK: Output: information_schema@schemata
@@ -541,6 +564,7 @@ POSTHOOK: Input: database:information_schema
 POSTHOOK: Output: database:information_schema
 POSTHOOK: Output: information_schema@column_privileges
 POSTHOOK: Output: information_schema@columns
+POSTHOOK: Output: information_schema@compactions
 POSTHOOK: Output: information_schema@scheduled_executions
 POSTHOOK: Output: information_schema@scheduled_queries
 POSTHOOK: Output: information_schema@schemata
