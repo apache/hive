@@ -38,7 +38,7 @@ import com.google.common.base.Joiner;
  * Servlet that runs async-profiler as web-endpoint.
  * Following options from async-profiler can be specified as query paramater.
  * //  -e event          profiling event: cpu|alloc|lock|cache-misses etc.
- * //  -d duration       run profiling for <duration> seconds (integer)
+ * //  -d duration       run profiling for &lt;duration&gt; seconds (integer)
  * //  -i interval       sampling interval in nanoseconds (long)
  * //  -j jstackdepth    maximum Java stack depth (integer)
  * //  -b bufsize        frame buffer size (long)
@@ -53,7 +53,7 @@ import com.google.common.base.Joiner;
  * - To collect 30 second CPU profile of current process (returns FlameGraph svg)
  * curl "http://localhost:10002/prof"
  * - To collect 1 minute CPU profile of current process and output in tree format (html)
- * curl "http://localhost:10002/prof?output=tree&duration=60"
+ * curl "http://localhost:10002/prof?output=tree&amp;duration=60"
  * - To collect 30 second heap allocation profile of current process (returns FlameGraph svg)
  * curl "http://localhost:10002/prof?event=alloc"
  * - To collect lock contention profile of current process (returns FlameGraph svg)

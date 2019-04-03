@@ -51,8 +51,8 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public String properties;
   public boolean tooManyAborts = false;
   /**
+   * The highest write id that the compaction job will pay attention to.
    * {@code 0} means it wasn't set (e.g. in case of upgrades, since ResultSet.getLong() will return 0 if field is NULL) 
-   * See {@link TxnStore#setCompactionHighestWriteId(CompactionInfo, long)} for precise definition.
    * See also {@link TxnUtils#createValidCompactWriteIdList(TableValidWriteIds)} and
    * {@link ValidCompactorWriteIdList#highWatermark}.
    */

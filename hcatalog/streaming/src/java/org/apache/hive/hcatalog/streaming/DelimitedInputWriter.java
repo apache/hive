@@ -44,9 +44,9 @@ import java.util.Properties;
 
 /**
  * Streaming Writer handles delimited input (eg. CSV).
- * Delimited input is parsed & reordered to match column order in table
+ * Delimited input is parsed &amp; reordered to match column order in table
  * Uses Lazy Simple Serde to process delimited input
- * @deprecated as of Hive 3.0.0, replaced by {@link org.apache.hive.streaming.StrictDelimitedInputWriter}
+ * @deprecated as of Hive 3.0.0, replaced by org.apache.hive.streaming.StrictDelimitedInputWriter
  */
 @Deprecated
 public class DelimitedInputWriter extends AbstractRecordWriter {

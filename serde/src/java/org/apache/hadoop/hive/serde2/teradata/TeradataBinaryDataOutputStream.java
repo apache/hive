@@ -138,8 +138,8 @@ public class TeradataBinaryDataOutputStream extends ByteArrayOutputStream {
    * Write DATE.
    * The representation of date in Teradata binary format is:
    * The Date D is a int with 4 bytes using little endian.
-   * The representation is (YYYYMMDD - 19000000).toInt -> D
-   * eg. 1911.11.11 -> 19111111 -> 111111 -> 07 b2 01 00 in little endian.
+   * The representation is (YYYYMMDD - 19000000).toInt -&gt; D
+   * eg. 1911.11.11 -&gt; 19111111 -&gt; 111111 -&gt; 07 b2 01 00 in little endian.
    * the null date will use 0 to pad.
    *
    * @param date the date
@@ -168,7 +168,7 @@ public class TeradataBinaryDataOutputStream extends ByteArrayOutputStream {
   /**
    * Write CHAR(N).
    * The representation of char in Teradata binary format is:
-   * the byte number to read is based on the [charLength] * [bytePerChar] <- totalLength,
+   * the byte number to read is based on the [charLength] * [bytePerChar] &lt;- totalLength,
    * bytePerChar is decided by the charset: LATAIN charset is 2 bytes per char and UNICODE charset is 3 bytes per char.
    * the null char will use space to pad.
    *

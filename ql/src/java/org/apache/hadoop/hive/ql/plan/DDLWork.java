@@ -116,10 +116,6 @@ public class DDLWork implements Serializable {
     this.alterTblDesc = alterTblDesc;
   }
 
-  /**
-   * @param dropTblDesc
-   *          drop table descriptor
-   */
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       DropPartitionDesc dropPartitionDesc) {
     this(inputs, outputs);
