@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.ddl.DDLWork2;
 import org.apache.hadoop.hive.ql.ddl.table.CreateTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.CreateViewDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -327,7 +328,7 @@ public class ImportTableDesc {
     case TABLE:
       return TaskFactory.get(new DDLWork2(inputs, outputs, createTblDesc), conf);
     case VIEW:
-      return TaskFactory.get(new DDLWork(inputs, outputs, createViewDesc), conf);
+      return TaskFactory.get(new DDLWork2(inputs, outputs, createViewDesc), conf);
     }
     return null;
   }

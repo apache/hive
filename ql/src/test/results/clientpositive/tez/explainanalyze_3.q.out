@@ -662,9 +662,7 @@ POSTHOOK: Output: default@v_n5
 Plan optimized by CBO.
 
 Stage-1
-  Create View Operator:
-    name:default.v_n5,original text:with cte as (select * from src  order by key limit 5)
-select * from cte
+  Create View{"name:":"default.v_n5","original text:":"with cte as (select * from src  order by key limit 5)\nselect * from cte"}
 
 PREHOOK: query: with cte as (select * from src  order by key limit 5)
 select * from cte

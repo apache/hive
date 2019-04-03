@@ -101,13 +101,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-8
-      Create View Operator:
-        Create View
-          columns: key int
-          expanded text: select `masking_test_n_mv`.`key` from `default`.`masking_test_n_mv`
-          name: default.masking_test_view_n_mv
-          original text: select key from masking_test_n_mv
-          rewrite enabled: true
+    Create View
+      columns: key int
+      expanded text: select `masking_test_n_mv`.`key` from `default`.`masking_test_n_mv`
+      name: default.masking_test_view_n_mv
+      original text: select key from masking_test_n_mv
+      rewrite enabled: true
 
   Stage: Stage-2
     Stats Work
@@ -774,13 +773,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-8
-      Create View Operator:
-        Create View
-          columns: key int
-          expanded text: select `srctnx`.`key` from `default`.`srcTnx`
-          name: default.masking_test_view_n_mv_2
-          original text: select key from srcTnx
-          rewrite enabled: true
+    Create View
+      columns: key int
+      expanded text: select `srctnx`.`key` from `default`.`srcTnx`
+      name: default.masking_test_view_n_mv_2
+      original text: select key from srcTnx
+      rewrite enabled: true
 
   Stage: Stage-2
     Stats Work
