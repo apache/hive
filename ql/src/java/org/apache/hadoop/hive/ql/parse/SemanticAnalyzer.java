@@ -42,6 +42,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
@@ -7176,6 +7177,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return currUDF;
   }
 
+  private Path getDestinationFilePath(final String destinationFile, boolean isMmTable)
+      throws SemanticException {
+    if (this.isResultsCacheEnabled() && this.queryTypeCanUseCache()) {
+      assert (!isMmTable);
+      QueryResultsCache instance = QueryResultsCache.getInstance();
+      // QueryResultsCache should have been initialized by now
+      if (instance != null) {
+        Path resultCacheTopDir = instance.getCacheDirPath();
+        String dirName = UUID.randomUUID().toString();
+        Path resultDir = new Path(resultCacheTopDir, dirName);
+        this.ctx.setFsResultCacheDirs(resultDir);
+        return resultDir;
+      }
+    }
+    return new Path(destinationFile);
+  }
+
   @SuppressWarnings("nls")
   protected Operator genFileSinkPlan(String dest, QB qb, Operator input)
       throws SemanticException {
@@ -7440,7 +7458,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       isLocal = true;
       // fall through
     case QBMetaData.DEST_DFS_FILE: {
-      destinationPath = new Path(qbm.getDestFileForAlias(dest));
+      destinationPath = getDestinationFilePath(qbm.getDestFileForAlias(dest), isMmTable);
 
       // CTAS case: the file output format and serde are defined by the create
       // table command rather than taking the default value
@@ -15062,6 +15080,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Some initial checks for a query to see if we can look this query up in the results cache.
    */
   private boolean queryTypeCanUseCache() {
+    if(this.qb == null || this.qb.getParseInfo() == null) {
+      return false;
+    }
     if (this instanceof ColumnStatsSemanticAnalyzer) {
       // Column stats generates "select compute_stats() .." queries.
       // Disable caching for these.
@@ -15072,13 +15093,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return false;
     }
 
-    if (qb.getParseInfo().isAnalyzeCommand()) {
-      return false;
-    }
+      if (qb.getParseInfo().isAnalyzeCommand()) {
+        return false;
+      }
 
-    if (qb.getParseInfo().hasInsertTables()) {
-      return false;
-    }
+      if (qb.getParseInfo().hasInsertTables()) {
+        return false;
+      }
 
     // HIVE-19096 - disable for explain analyze
     if (ctx.getExplainAnalyze() != null) {
