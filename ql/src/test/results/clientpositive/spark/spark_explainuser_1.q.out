@@ -5295,11 +5295,7 @@ POSTHOOK: Output: default@mfgr_price_view_n1
 Plan optimized by CBO.
 
 Stage-1
-  Create View Operator:
-    name:default.mfgr_price_view_n1,original text:select p_mfgr, p_brand,
-sum(p_retailprice) as s
-from part
-group by p_mfgr, p_brand
+  Create View{"name:":"default.mfgr_price_view_n1","original text:":"select p_mfgr, p_brand,\nsum(p_retailprice) as s\nfrom part\ngroup by p_mfgr, p_brand"}
 
 PREHOOK: query: CREATE TABLE part_4_n0(
 p_mfgr STRING,

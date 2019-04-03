@@ -4687,16 +4687,15 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-1
-      Create View Operator:
-        Create View
-          if not exists: true
-          columns: p_mfgr string, p_brand string, s double
-          expanded text: select `part`.`p_mfgr`, `part`.`p_brand`, 
+    Create View
+      if not exists: true
+      columns: p_mfgr string, p_brand string, s double
+      expanded text: select `part`.`p_mfgr`, `part`.`p_brand`, 
 round(sum(`part`.`p_retailprice`),2) as `s` 
 from `default`.`part` 
 group by `part`.`p_mfgr`, `part`.`p_brand`
-          name: default.mfgr_price_view_n2
-          original text: select p_mfgr, p_brand, 
+      name: default.mfgr_price_view_n2
+      original text: select p_mfgr, p_brand, 
 round(sum(p_retailprice),2) as s 
 from part 
 group by p_mfgr, p_brand
@@ -5018,16 +5017,15 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-1
-      Create View Operator:
-        Create View
-          if not exists: true
-          columns: p_mfgr string, p_brand string, s double
-          expanded text: select `part`.`p_mfgr`, `part`.`p_brand`, 
+    Create View
+      if not exists: true
+      columns: p_mfgr string, p_brand string, s double
+      expanded text: select `part`.`p_mfgr`, `part`.`p_brand`, 
 round(sum(`part`.`p_retailprice`) over w1,2) as `s`
 from `default`.`part` 
 window w1 as (distribute by `part`.`p_mfgr` sort by `part`.`p_name` rows between 2 preceding and current row)
-          name: default.mfgr_brand_price_view_n0
-          original text: select p_mfgr, p_brand, 
+      name: default.mfgr_brand_price_view_n0
+      original text: select p_mfgr, p_brand, 
 round(sum(p_retailprice) over w1,2) as s
 from part 
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and current row)

@@ -72,6 +72,7 @@ import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.alter.AlterMaterializedViewRewriteDesc;
 import org.apache.hadoop.hive.ql.ddl.database.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.DescDatabaseDesc;
@@ -121,8 +122,6 @@ import org.apache.hadoop.hive.ql.parse.authorization.HiveAuthorizationTaskFactor
 import org.apache.hadoop.hive.ql.plan.AbortTxnsDesc;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc.OnePartitionDesc;
-import org.apache.hadoop.hive.ql.plan.AlterMaterializedViewDesc;
-import org.apache.hadoop.hive.ql.plan.AlterMaterializedViewDesc.AlterMaterializedViewTypes;
 import org.apache.hadoop.hive.ql.plan.AlterResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableAlterPartDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
@@ -4404,10 +4403,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException("Invalid alter materialized view expression");
     }
 
-    AlterMaterializedViewDesc alterMVDesc =
-        new AlterMaterializedViewDesc(AlterMaterializedViewTypes.UPDATE_REWRITE_FLAG);
-    alterMVDesc.setFqMaterializedViewName(fqMvName);
-    alterMVDesc.setRewriteEnableFlag(enableFlag);
+    AlterMaterializedViewRewriteDesc alterMVRewriteDesc = new AlterMaterializedViewRewriteDesc(fqMvName, enableFlag);
 
     // It can be fully qualified name or use default database
     Table materializedViewTable = getTable(fqMvName, true);
@@ -4425,13 +4421,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (AcidUtils.isTransactionalTable(materializedViewTable)) {
-      setAcidDdlDesc(alterMVDesc);
+      setAcidDdlDesc(alterMVRewriteDesc);
     }
 
     inputs.add(new ReadEntity(materializedViewTable));
     outputs.add(new WriteEntity(materializedViewTable, WriteEntity.WriteType.DDL_EXCLUSIVE));
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        alterMVDesc)));
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), alterMVRewriteDesc)));
   }
 
 }

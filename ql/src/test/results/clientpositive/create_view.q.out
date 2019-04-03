@@ -172,12 +172,11 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-1
-      Create View Operator:
-        Create View
-          columns: valoo string
-          expanded text: SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `default`.`src` WHERE `src`.`key`=86) `default.view0`
-          name: default.view0
-          original text: SELECT upper(value) FROM src WHERE key=86
+    Create View
+      columns: valoo string
+      expanded text: SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `default`.`src` WHERE `src`.`key`=86) `default.view0`
+      name: default.view0
+      original text: SELECT upper(value) FROM src WHERE key=86
 
 PREHOOK: query: EXPLAIN
 SELECT * from view2 where key=18

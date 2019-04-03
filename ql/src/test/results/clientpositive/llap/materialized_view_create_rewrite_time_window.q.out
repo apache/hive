@@ -193,17 +193,16 @@ STAGE PLANS:
     Dependency Collection
 
   Stage: Stage-4
-      Create View Operator:
-        Create View
-          columns: a int, c decimal(10,2)
-          table properties:
-            rewriting.time.window 5min
-          expanded text: SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`
+    Create View
+      columns: a int, c decimal(10,2)
+      table properties:
+        rewriting.time.window 5min
+      expanded text: SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`
   FROM `default`.`cmv_basetable_n3` JOIN `default`.`cmv_basetable_2_n1` ON (`cmv_basetable_n3`.`a` = `cmv_basetable_2_n1`.`a`)
   WHERE `cmv_basetable_2_n1`.`c` > 10.0
   GROUP BY `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`
-          name: default.cmv_mat_view_n3
-          original text: SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c
+      name: default.cmv_mat_view_n3
+      original text: SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c
   FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
   WHERE cmv_basetable_2_n1.c > 10.0
   GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
@@ -462,10 +461,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Alter Materialized View Operator:
-        Alter Materialized View
-          name: default.cmv_mat_view_n3
-          operation: UPDATE_REWRITE_FLAG
+    Alter Materialized View
+      name: default.cmv_mat_view_n3
+      operation: UPDATE_REWRITE_FLAG
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view_n3 ENABLE REWRITE
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE

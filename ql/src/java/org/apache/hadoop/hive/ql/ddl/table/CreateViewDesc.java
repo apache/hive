@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.table;
 
 import java.io.Serializable;
 import java.util.List;
@@ -27,37 +27,45 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 /**
- * CreateViewDesc.
- *
+ * DDL task description for CREATE VIEW commands.
  */
 @Explain(displayName = "Create View", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class CreateViewDesc extends DDLDesc implements Serializable {
+public class CreateViewDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
-  private static Logger LOG = LoggerFactory.getLogger(CreateViewDesc.class);
+  private static final Logger LOG = LoggerFactory.getLogger(CreateViewDesc.class);
+
+  static {
+    DDLTask2.registerOperation(CreateViewDesc.class, CreateViewOperation.class);
+  }
 
   private String viewName;
+  private List<FieldSchema> schema;
+  private String comment;
+  private Map<String, String> tblProps;
+  private List<String> partColNames;
+  private boolean ifNotExists;
+  private boolean orReplace;
+
   private String originalText;
   private String expandedText;
   private boolean rewriteEnabled;
-  private List<FieldSchema> schema;
-  private Map<String, String> tblProps;
-  private List<String> partColNames;
   private List<FieldSchema> partCols;
-  private String comment;
-  private boolean ifNotExists;
-  private boolean replace;
   private boolean isAlterViewAs;
   private boolean isMaterialized;
   private String inputFormat;
@@ -70,41 +78,19 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   private ReplicationSpec replicationSpec = null;
 
   /**
-   * For serialization only.
+   * Used to create a materialized view descriptor.
    */
-  public CreateViewDesc() {
-  }
-
-  /**
-   * Used to create a materialized view descriptor
-   * @param viewName
-   * @param schema
-   * @param comment
-   * @param tblProps
-   * @param partColNames
-   * @param ifNotExists
-   * @param orReplace
-   * @param isAlterViewAs
-   * @param inputFormat
-   * @param outputFormat
-   * @param location
-   * @param serName
-   * @param serde
-   * @param storageHandler
-   * @param serdeProps
-   */
-  public CreateViewDesc(String viewName, List<FieldSchema> schema, String comment,
-          Map<String, String> tblProps, List<String> partColNames,
-          boolean ifNotExists, boolean replace, boolean rewriteEnabled, boolean isAlterViewAs,
+  public CreateViewDesc(String viewName, List<FieldSchema> schema, String comment, Map<String, String> tblProps,
+      List<String> partColNames, boolean ifNotExists, boolean orReplace, boolean rewriteEnabled, boolean isAlterViewAs,
           String inputFormat, String outputFormat, String location,
           String serde, String storageHandler, Map<String, String> serdeProps) {
     this.viewName = viewName;
     this.schema = schema;
+    this.comment = comment;
     this.tblProps = tblProps;
     this.partColNames = partColNames;
-    this.comment = comment;
     this.ifNotExists = ifNotExists;
-    this.replace = replace;
+    this.orReplace = orReplace;
     this.isMaterialized = true;
     this.rewriteEnabled = rewriteEnabled;
     this.isAlterViewAs = isAlterViewAs;
@@ -117,30 +103,20 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   }
 
   /**
-   * Used to create a view descriptor
-   * @param viewName
-   * @param schema
-   * @param comment
-   * @param tblProps
-   * @param partColNames
-   * @param ifNotExists
-   * @param orReplace
-   * @param isAlterViewAs
-   * @param inputFormat
-   * @param outputFormat
-   * @param serde
+   * Used to create a view descriptor.
    */
-  public CreateViewDesc(String viewName, List<FieldSchema> schema, String comment,
-                        Map<String, String> tblProps, List<String> partColNames,
-                        boolean ifNotExists, boolean orReplace, boolean isAlterViewAs,
+  public CreateViewDesc(String viewName, List<FieldSchema> schema, String comment, Map<String, String> tblProps,
+      List<String> partColNames, boolean ifNotExists, boolean orReplace,
+      boolean isAlterViewAs,
                         String inputFormat, String outputFormat, String serde) {
     this.viewName = viewName;
     this.schema = schema;
+    this.comment = comment;
     this.tblProps = tblProps;
     this.partColNames = partColNames;
-    this.comment = comment;
     this.ifNotExists = ifNotExists;
-    this.replace = orReplace;
+    this.orReplace = orReplace;
+
     this.isAlterViewAs = isAlterViewAs;
     this.isMaterialized = false;
     this.rewriteEnabled = false;
@@ -256,11 +232,11 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
 
   @Explain(displayName = "replace", displayOnlyOnTrue = true)
   public boolean isReplace() {
-    return replace;
+    return orReplace;
   }
 
   public void setReplace(boolean replace) {
-    this.replace = replace;
+    this.orReplace = replace;
   }
 
   @Explain(displayName = "is alter view as select", displayOnlyOnTrue = true)
@@ -384,12 +360,10 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
       if (getSerde() == null) {
         if (storageHandler == null) {
           serDeClassName = PlanUtils.getDefaultSerDe().getName();
-          LOG.info("Default to {} for materialized view {}", serDeClassName,
-            getViewName());
+          LOG.info("Default to {} for materialized view {}", serDeClassName, getViewName());
         } else {
           serDeClassName = storageHandler.getSerDeClass().getName();
-          LOG.info("Use StorageHandler-supplied {} for materialized view {}",
-            serDeClassName, getViewName());
+          LOG.info("Use StorageHandler-supplied {} for materialized view {}", serDeClassName, getViewName());
         }
       } else {
         // let's validate that the serde exists
