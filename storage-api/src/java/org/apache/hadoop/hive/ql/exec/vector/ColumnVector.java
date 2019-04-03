@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * ColumnVector contains the shared structure for the sub-types,
@@ -31,6 +32,10 @@ import java.util.Arrays;
  * structure that is used in the inner loop of query execution.
  */
 public abstract class ColumnVector {
+
+
+  /** Reference count. */
+  private AtomicInteger refCount = new AtomicInteger(0);
 
   /**
    * The current kinds of column vectors.
@@ -95,6 +100,7 @@ public abstract class ColumnVector {
    *  - sets isRepeating to false
    */
   public void reset() {
+    assert (refCount.get() == 0);
     if (!noNulls) {
       Arrays.fill(isNull, false);
     }
@@ -102,6 +108,21 @@ public abstract class ColumnVector {
     isRepeating = false;
     preFlattenNoNulls = true;
     preFlattenIsRepeating = false;
+  }
+
+
+  public final void incRef() {
+    refCount.incrementAndGet();
+  }
+
+  public final int getRef() {
+    return refCount.get();
+  }
+
+  public final int decRef() {
+    int i = refCount.decrementAndGet();
+    assert i >= 0;
+    return i;
   }
 
   /**
@@ -258,5 +279,6 @@ public abstract class ColumnVector {
     otherCv.isRepeating = isRepeating;
     otherCv.preFlattenIsRepeating = preFlattenIsRepeating;
     otherCv.preFlattenNoNulls = preFlattenNoNulls;
+    otherCv.refCount = refCount;
   }
 }
