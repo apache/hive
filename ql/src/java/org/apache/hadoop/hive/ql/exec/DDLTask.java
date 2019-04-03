@@ -42,11 +42,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
-import org.apache.calcite.rel.RelNode;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -54,7 +52,6 @@ import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
@@ -66,7 +63,6 @@ import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
-import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -92,7 +88,6 @@ import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -104,7 +99,6 @@ import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
-import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -131,16 +125,13 @@ import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
 import org.apache.hadoop.hive.ql.metadata.formatting.TextMetaDataTable;
 import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
-import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
-import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.plan.AbortTxnsDesc;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
-import org.apache.hadoop.hive.ql.plan.AlterMaterializedViewDesc;
 import org.apache.hadoop.hive.ql.plan.AlterResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableAlterPartDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
@@ -153,7 +144,6 @@ import org.apache.hadoop.hive.ql.plan.CreateOrAlterWMMappingDesc;
 import org.apache.hadoop.hive.ql.plan.CreateOrAlterWMPoolDesc;
 import org.apache.hadoop.hive.ql.plan.CreateOrDropTriggerToPoolMappingDesc;
 import org.apache.hadoop.hive.ql.plan.CreateResourcePlanDesc;
-import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
 import org.apache.hadoop.hive.ql.plan.CreateWMTriggerDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DescFunctionDesc;
@@ -306,11 +296,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         } else {
           return alterTable(db, alterTbl);
         }
-      }
-
-      CreateViewDesc crtView = work.getCreateViewDesc();
-      if (crtView != null) {
-        return createView(db, crtView);
       }
 
       AddPartitionDesc addPartitionDesc = work.getAddPartitionDesc();
@@ -491,10 +476,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       if (work.getTriggerToPoolMappingDesc() != null) {
         return createOrDropTriggerToPoolMapping(db, work.getTriggerToPoolMappingDesc());
-      }
-
-      if (work.getAlterMaterializedViewDesc() != null) {
-        return alterMaterializedView(db, work.getAlterMaterializedViewDesc());
       }
 
       if (work.getReplSetFirstIncLoadFlagDesc() != null) {
@@ -997,68 +978,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       appendNonNull(sb, entry, true);
     }
     writeToFile(sb.toString(), resFile);
-  }
-
-  /**
-   * Alters a materialized view.
-   *
-   * @param db
-   *          Database that the materialized view belongs to.
-   * @param alterMVDesc
-   *          Descriptor of the changes.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   * @throws InvalidOperationException
-   */
-  private int alterMaterializedView(Hive db, AlterMaterializedViewDesc alterMVDesc) throws HiveException {
-    String mvName = alterMVDesc.getMaterializedViewName();
-    // It can be fully qualified name or use default database
-    Table oldMV = db.getTable(mvName);
-    Table mv = oldMV.copy(); // Do not mess with Table instance
-    EnvironmentContext environmentContext = new EnvironmentContext();
-    environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
-
-    switch (alterMVDesc.getOp()) {
-    case UPDATE_REWRITE_FLAG:
-      if (mv.isRewriteEnabled() == alterMVDesc.isRewriteEnable()) {
-        // This is a noop, return successfully
-        return 0;
-      }
-      if (alterMVDesc.isRewriteEnable()) {
-        try {
-          final QueryState qs =
-              new QueryState.Builder().withHiveConf(conf).build();
-          final CalcitePlanner planner = new CalcitePlanner(qs);
-          final Context ctx = new Context(conf);
-          ctx.setIsLoadingMaterializedView(true);
-          planner.initCtx(ctx);
-          planner.init(false);
-          final RelNode plan = planner.genLogicalPlan(ParseUtils.parse(mv.getViewExpandedText()));
-          if (plan == null) {
-            String msg = "Cannot enable automatic rewriting for materialized view.";
-            if (ctx.getCboInfo() != null) {
-              msg += " " + ctx.getCboInfo();
-            }
-            throw new HiveException(msg);
-          }
-          if (!planner.isValidAutomaticRewritingMaterialization()) {
-            throw new HiveException("Cannot enable rewriting for materialized view. " +
-                planner.getInvalidAutomaticRewritingMaterializationReason());
-          }
-        } catch (Exception e) {
-          throw new HiveException(e);
-        }
-      }
-      mv.setRewriteEnabled(alterMVDesc.isRewriteEnable());
-      break;
-
-    default:
-      throw new AssertionError("Unsupported alter materialized view type! : " + alterMVDesc.getOp());
-    }
-
-    db.alterTable(mv, false, environmentContext, true);
-
-    return 0;
   }
 
   /**
@@ -3422,85 +3341,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (Exception e) {
       throw new HiveException("Cannot validate serde: " + serdeName, e);
     }
-  }
-
-  /**
-   * Create a new view.
-   *
-   * @param db
-   *          The database in question.
-   * @param crtView
-   *          This is the view we're creating.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
-   */
-  private int createView(Hive db, CreateViewDesc crtView) throws HiveException {
-    Table oldview = db.getTable(crtView.getViewName(), false);
-    if (oldview != null) {
-      // Check whether we are replicating
-      if (crtView.getReplicationSpec().isInReplicationScope()) {
-        // if this is a replication spec, then replace-mode semantics might apply.
-        if (crtView.getReplicationSpec().allowEventReplacementInto(oldview.getParameters())){
-          crtView.setReplace(true); // we replace existing view.
-        } else {
-          LOG.debug("DDLTask: Create View is skipped as view {} is newer than update",
-              crtView.getViewName()); // no replacement, the existing table state is newer than our update.
-          return 0;
-        }
-      }
-
-      if (!crtView.isReplace() && !crtView.getIfNotExists()) {
-        // View already exists, thus we should be replacing
-        throw new HiveException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(crtView.getViewName()));
-      }
-
-      // It should not be a materialized view
-      assert !crtView.isMaterialized();
-
-      // replace existing view
-      // remove the existing partition columns from the field schema
-      oldview.setViewOriginalText(crtView.getViewOriginalText());
-      oldview.setViewExpandedText(crtView.getViewExpandedText());
-      oldview.setFields(crtView.getSchema());
-      if (crtView.getComment() != null) {
-        oldview.setProperty("comment", crtView.getComment());
-      }
-      if (crtView.getTblProps() != null) {
-        oldview.getTTable().getParameters().putAll(crtView.getTblProps());
-      }
-      oldview.setPartCols(crtView.getPartCols());
-      if (crtView.getInputFormat() != null) {
-        oldview.setInputFormatClass(crtView.getInputFormat());
-      }
-      if (crtView.getOutputFormat() != null) {
-        oldview.setOutputFormatClass(crtView.getOutputFormat());
-      }
-      oldview.checkValidity(null);
-      if (crtView.getOwnerName() != null) {
-        oldview.setOwner(crtView.getOwnerName());
-      }
-      db.alterTable(crtView.getViewName(), oldview, false, null, true);
-      addIfAbsentByName(new WriteEntity(oldview, WriteEntity.WriteType.DDL_NO_LOCK));
-    } else {
-      // We create new view
-      Table tbl = crtView.toTable(conf);
-      // We set the signature for the view if it is a materialized view
-      if (tbl.isMaterializedView()) {
-        CreationMetadata cm =
-            new CreationMetadata(MetaStoreUtils.getDefaultCatalog(conf), tbl.getDbName(),
-                tbl.getTableName(), ImmutableSet.copyOf(crtView.getTablesUsed()));
-        cm.setValidTxnList(conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
-        tbl.getTTable().setCreationMetadata(cm);
-      }
-      db.createTable(tbl, crtView.getIfNotExists());
-      addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
-
-      //set lineage info
-      DataContainer dc = new DataContainer(tbl.getTTable());
-      queryState.getLineageState().setLineage(new Path(crtView.getViewName()), dc, tbl.getCols());
-    }
-    return 0;
   }
 
   private int exchangeTablePartition(Hive db,

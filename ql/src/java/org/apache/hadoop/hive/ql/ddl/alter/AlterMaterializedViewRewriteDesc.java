@@ -16,97 +16,45 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.alter;
 
-import java.io.Serializable;
-
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * AlterMaterializedViewDesc.
+ * DDL task description for the ALTER MATERIALIZED VIEW commands.
  */
 @Explain(displayName = "Alter Materialized View", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterMaterializedViewDesc extends DDLDesc implements Serializable, DDLDescWithWriteId {
+public class AlterMaterializedViewRewriteDesc extends AlterMaterializedViewDesc implements DDLDescWithWriteId {
   private static final long serialVersionUID = 1L;
-  private String fqMaterializedViewName;
-  private boolean rewriteEnable;
 
-  /**
-   * alterMVTypes.
-   *
-   */
-  public static enum AlterMaterializedViewTypes {
-    UPDATE_REWRITE_FLAG
-  };
-
-  AlterMaterializedViewTypes op;
-  private long writeId;
-
-  public AlterMaterializedViewDesc() {
+  static {
+    DDLTask2.registerOperation(AlterMaterializedViewRewriteDesc.class, AlterMaterializedViewRewriteOperation.class);
   }
 
-  public AlterMaterializedViewDesc(AlterMaterializedViewTypes type) {
-    this.op = type;
+  private final String fqMaterializedViewName;
+  private final boolean rewriteEnable;
+
+  public AlterMaterializedViewRewriteDesc(String fqMaterializedViewName, boolean rewriteEnable) {
+    super(AlterMaterializedViewTypes.UPDATE_REWRITE_FLAG);
+    this.fqMaterializedViewName = fqMaterializedViewName;
+    this.rewriteEnable = rewriteEnable;
   }
 
-  /**
-   * @return the name of the materializedViewName
-   */
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getMaterializedViewName() {
     return fqMaterializedViewName;
   }
 
-  /**
-   * @param materializedViewName
-   *          the materializedViewName to set
-   */
-  public void setFqMaterializedViewName(String materializedViewName) {
-    this.fqMaterializedViewName = materializedViewName;
-  }
-
-  /**
-   * @return the rewrite flag
-   */
   public boolean isRewriteEnable() {
     return rewriteEnable;
   }
 
-  /**
-   * @param rewriteEnable
-   *          the value for the flag
-   */
-  public void setRewriteEnableFlag(boolean rewriteEnable) {
-    this.rewriteEnable = rewriteEnable;
-  }
-
-  /**
-   * @return the op
-   */
-  @Explain(displayName = "operation", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getOpString() {
-    return op.toString();
-  }
-
-  /**
-   * @return the op
-   */
-  public AlterMaterializedViewTypes getOp() {
-    return op;
-  }
-
-  /**
-   * @param op
-   *          the op to set
-   */
-  public void setOp(AlterMaterializedViewTypes op) {
-    this.op = op;
-  }
-
   @Override
   public void setWriteId(long writeId) {
-    this.writeId = writeId;
+    // We don't actually need the write id, but by implementing DDLDescWithWriteId it ensures that it is allocated
   }
 
   @Override
@@ -118,5 +66,4 @@ public class AlterMaterializedViewDesc extends DDLDesc implements Serializable, 
   public boolean mayNeedWriteId() {
     return true; // Verified when this is set as DDL Desc for ACID.
   }
-
 }

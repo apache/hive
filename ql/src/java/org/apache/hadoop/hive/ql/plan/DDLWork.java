@@ -34,8 +34,6 @@ public class DDLWork implements Serializable {
 
   // TODO: this can probably be replaced with much less code via dynamic dispatch and/or templates.
   private InsertCommitHookDesc insertCommitHookDesc;
-  private AlterMaterializedViewDesc alterMVDesc;
-  private CreateViewDesc createVwDesc;
   private DropPartitionDesc dropPartitionDesc;
   private AlterTableDesc alterTblDesc;
   private ShowColumnsDesc showColumnsDesc;
@@ -116,27 +114,6 @@ public class DDLWork implements Serializable {
       AlterTableDesc alterTblDesc) {
     this(inputs, outputs);
     this.alterTblDesc = alterTblDesc;
-  }
-
-  /**
-   * @param alterMVDesc
-   *          alter materialized view descriptor
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      AlterMaterializedViewDesc alterMVDesc) {
-    this(inputs, outputs);
-    this.alterMVDesc = alterMVDesc;
-  }
-
-  /**
-   * @param createVwDesc
-   *          create view descriptor
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      CreateViewDesc createVwDesc) {
-    this(inputs, outputs);
-
-    this.createVwDesc = createVwDesc;
   }
 
   /**
@@ -405,14 +382,6 @@ public class DDLWork implements Serializable {
   }
 
   /**
-   * @return the createTblDesc
-   */
-  @Explain(displayName = "Create View Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public CreateViewDesc getCreateViewDesc() {
-    return createVwDesc;
-  }
-
-  /**
    * @return the dropTblDesc
    */
   @Explain(displayName = "Drop Partition Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -426,15 +395,6 @@ public class DDLWork implements Serializable {
   @Explain(displayName = "Alter Table Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public AlterTableDesc getAlterTblDesc() {
     return alterTblDesc;
-  }
-
-
-  /**
-   * @return the alterMVDesc
-   */
-  @Explain(displayName = "Alter Materialized View Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public AlterMaterializedViewDesc getAlterMaterializedViewDesc() {
-    return alterMVDesc;
   }
 
   /**
