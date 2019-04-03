@@ -549,8 +549,8 @@ public class CompactorMR {
    * {@link org.apache.hadoop.hive.ql.exec.tez.SplitGrouper#getCompactorSplitGroups(InputSplit[], Configuration)},
    * we will end up with one file per bucket.
    */
-  private void commitCrudMajorCompaction(Table t, String from, String tmpTableName, String to, Configuration conf,
-      ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException {
+  private void commitCrudMajorCompaction(Table t, String from, String tmpTableName, String to, HiveConf conf,
+      ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException, HiveException {
     Path fromPath = new Path(from);
     Path toPath = new Path(to);
     Path tmpTablePath = new Path(fromPath, tmpTableName);
@@ -582,7 +582,7 @@ public class CompactorMR {
         options = new AcidOutputFormat.Options(conf).writingBase(true).isCompressed(false).maximumWriteId(maxTxn)
             .bucket(bucketId).statementId(-1).visibilityTxnId(compactorTxnId);
         Path finalBucketFile = AcidUtils.createFilename(toPath, options);
-        fs.rename(filestatus.getPath(), finalBucketFile);
+        Hive.moveFile(conf, filestatus.getPath(), finalBucketFile, true, false, false);
       }
     }
     fs.delete(fromPath, true);
