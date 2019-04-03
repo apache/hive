@@ -369,11 +369,17 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
     destinationBatch.endOfFile = sourceBatch.endOfFile;
   }
 
-  private void addBatchToWriter() throws IOException {
+  void addBatchToWriter() throws IOException {
     propagateSourceBatchFieldsToDest();
     if (!isAsync) {
       orcWriter.addRowBatch(destinationBatch);
     } else {
+      //Lock ColumnVectors so we don't accidentally reset them before they're written out
+      for (ColumnVector cv : destinationBatch.cols) {
+        if (cv != null) {
+          cv.incRef();
+        }
+      }
       currentBatches.add(destinationBatch);
       addWriteOp(new VrbOperation(destinationBatch));
     }
@@ -431,7 +437,7 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
     return result;
   }
 
-  private static interface WriteOperation {
+  interface WriteOperation {
     boolean apply(Writer writer, CacheWriter cacheWriter) throws IOException;
   }
 
@@ -447,6 +453,11 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
     public boolean apply(Writer writer, CacheWriter cacheWriter) throws IOException {
       // LlapIoImpl.LOG.debug("Writing batch " + batch);
       writer.addRowBatch(batch);
+      for (ColumnVector cv : batch.cols) {
+        if (cv != null) {
+          assert (cv.decRef() == 0);
+        }
+      }
       return false;
     }
   }
