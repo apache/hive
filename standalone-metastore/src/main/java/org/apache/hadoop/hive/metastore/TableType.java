@@ -22,5 +22,11 @@ package org.apache.hadoop.hive.metastore;
  * Typesafe enum for types of tables described by the metastore.
  */
 public enum TableType {
-  MANAGED_TABLE, EXTERNAL_TABLE, VIRTUAL_VIEW, MATERIALIZED_VIEW
+  MANAGED_TABLE,
+  EXTERNAL_TABLE,
+  VIRTUAL_VIEW,
+  // @deprecated
+  // INDEX_TABLE enum is deprecated
+  INDEX_TABLE,
+  MATERIALIZED_VIEW
 }
