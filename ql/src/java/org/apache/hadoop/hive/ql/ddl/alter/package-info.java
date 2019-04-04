@@ -16,33 +16,5 @@
  * limitations under the License.
  */
 
-package org.apache.hive.service.cli.operation;
-
-import java.util.Set;
-
-import org.apache.hadoop.hive.common.classification.InterfaceAudience;
-import org.apache.hadoop.hive.common.classification.InterfaceStability;
-
-@InterfaceAudience.Public
-@InterfaceStability.Evolving
-public interface TableTypeMapping {
-  /**
-   * Map client's table type name to hive's table type
-   * @param clientTypeName
-   * @return
-   */
-  public String[] mapToHiveType (String clientTypeName);
-
-  /**
-   * Map hive's table type name to client's table type
-   * @param hiveTypeName
-   * @return
-   */
-  public String mapToClientType (String hiveTypeName);
-
-  /**
-   * Get all the table types of this mapping
-   * @return
-   */
-  public Set<String> getTableTypeNames();
-}
+/** Alter DDL operation descriptions and operations. */
+package org.apache.hadoop.hive.ql.ddl.alter;

@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.llap;
 
 /**
- * Consumer feedback typically used by Consumer<T>;
+ * Consumer feedback typically used by Consumer&lt;T&gt;;
  * allows consumer to influence production of data.
  */
 public interface ConsumerFeedback<T> {

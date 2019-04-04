@@ -124,7 +124,7 @@ public class TxnUtils {
    * Note, users are responsible for using the correct TxnManager. We do not look at
    * SessionState.get().getTxnMgr().supportsAcid() here
    * Should produce the same result as
-   * {@link org.apache.hadoop.hive.ql.io.AcidUtils#isTransactionalTable(org.apache.hadoop.hive.ql.metadata.Table)}.
+   * org.apache.hadoop.hive.ql.io.AcidUtils#isTransactionalTable.
    * @return true if table is a transactional table, false otherwise
    */
   public static boolean isTransactionalTable(Table table) {
@@ -147,7 +147,7 @@ public class TxnUtils {
 
   /**
    * Should produce the same result as
-   * {@link org.apache.hadoop.hive.ql.io.AcidUtils#isAcidTable(org.apache.hadoop.hive.ql.metadata.Table)}.
+   * org.apache.hadoop.hive.ql.io.AcidUtils#isAcidTable.
    */
   public static boolean isAcidTable(Table table) {
     return TxnUtils.isTransactionalTable(table) &&
@@ -156,7 +156,7 @@ public class TxnUtils {
   }
 
   /**
-   * Should produce the result as <dbName>.<tableName>.
+   * Should produce the result as &lt;dbName&gt;.&lt;tableName&gt;.
    */
   public static String getFullTableName(String dbName, String tableName) {
     return dbName.toLowerCase() + "." + tableName.toLowerCase();

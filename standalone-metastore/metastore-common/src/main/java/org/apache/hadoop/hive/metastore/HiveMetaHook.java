@@ -35,7 +35,7 @@ import java.util.List;
  *
  *<p>
  *
- * Implementations can use {@link MetaStoreUtils#isExternalTable} to
+ * Implementations can use {@link org.apache.hadoop.hive.metastore.utils.MetaStoreUtils#isExternalTable} to
  * distinguish external tables from managed tables.
  */
 @InterfaceAudience.Public

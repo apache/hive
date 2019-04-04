@@ -577,12 +577,11 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-1
-      Create View Operator:
-        Create View
-          columns: key string, value string
-          expanded text: select `m1`.`key`, `m1`.`value` from `default`.`M1`
-          name: default.V1_n0
-          original text: select * from M1
+    Create View
+      columns: key string, value string
+      expanded text: select `m1`.`key`, `m1`.`value` from `default`.`M1`
+      name: default.V1_n0
+      original text: select * from M1
 
 PREHOOK: query: EXPLAIN CREATE TABLE M1 LIKE src
 PREHOOK: type: CREATETABLE

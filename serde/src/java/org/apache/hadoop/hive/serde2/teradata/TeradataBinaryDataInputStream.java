@@ -108,8 +108,8 @@ public class TeradataBinaryDataInputStream extends SwappedDataInputStream {
    * Read DATE.
    * The representation of date in Teradata binary format is:
    * The Date D is a int with 4 bytes using little endian,
-   * The representation is (D+19000000).ToString -> YYYYMMDD,
-   * eg: Date 07 b2 01 00 -> 111111 in little endian -> 19111111 - > 1911.11.11.
+   * The representation is (D+19000000).ToString -&gt; YYYYMMDD,
+   * eg: Date 07 b2 01 00 -&gt; 111111 in little endian -&gt; 19111111 - &gt; 1911.11.11.
    * the null date will use 0 to pad.
    *
    * @return the date
@@ -135,7 +135,7 @@ public class TeradataBinaryDataInputStream extends SwappedDataInputStream {
   /**
    * Read CHAR(N).
    * The representation of char in Teradata binary format is
-   * the byte number to read is based on the [charLength] * [bytePerChar] <- totalLength,
+   * the byte number to read is based on the [charLength] * [bytePerChar] &lt;- totalLength,
    * bytePerChar is decided by the charset: LATAIN charset is 2 bytes per char and UNICODE charset is 3 bytes per char.
    * the null char will use space to pad.
    *
