@@ -103,7 +103,7 @@ public class SyslogSerDe extends AbstractSerDe {
       EMPTY_ROW.set(EMPTY_ROW.size() - 1, rowText.getBytes());
       return EMPTY_ROW;
     }
-    ByteArrayInputStream bis = new ByteArrayInputStream(rowText.getBytes(), 0, rowText.getLength());
+    ByteArrayInputStream bis = new ByteArrayInputStream(rowText.getBytes());
     syslogParser.setInputStream(bis);
     try {
       return syslogParser.readEvent();
