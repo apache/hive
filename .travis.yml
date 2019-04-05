@@ -23,10 +23,8 @@ dist: trusty
 # that requires full git history, enable this
 # before_install: git fetch --unshallow
 
-# parallel builds on jdk7 and jdk8
 language: java
 jdk:
-  - oraclejdk7
   - oraclejdk8
 
 cache:
@@ -44,4 +42,4 @@ before_install:
 
 install: true
 
-script: mvn clean install -DskipTests -T 4 -q -Pitests
+script: travis_wait 30 mvn clean install -DskipTests -T 4 -q -Pitests

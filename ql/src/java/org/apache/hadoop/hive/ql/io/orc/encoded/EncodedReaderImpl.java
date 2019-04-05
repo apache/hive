@@ -122,11 +122,11 @@ class EncodedReaderImpl implements EncodedReader {
   private final DataCache cacheWrapper;
   private boolean isTracingEnabled;
 
-  public EncodedReaderImpl(Object fileKey, List<OrcProto.Type> types, CompressionCodec codec,
+  public EncodedReaderImpl(Object fileKey, List<OrcProto.Type> types,
       int bufferSize, long strideRate, DataCache cacheWrapper, DataReader dataReader,
       PoolFactory pf) throws IOException {
     this.fileKey = fileKey;
-    this.codec = codec;
+    this.codec = dataReader.getCompressionCodec();
     this.types = types;
     this.bufferSize = bufferSize;
     this.rowIndexStride = strideRate;

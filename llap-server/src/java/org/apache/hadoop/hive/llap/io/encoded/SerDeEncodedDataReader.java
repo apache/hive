@@ -546,6 +546,11 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       throw new UnsupportedOperationException(); // Only used in ACID writer.
     }
 
+    @Override
+    public CompressionCodec getCompressionCodec() {
+      return null;
+    }
+
     public void setCurrentStripeOffsets(long currentKnownTornStart,
         long firstStartOffset, long lastStartOffset, long currentFileOffset) {
       currentStripe.knownTornStart = currentKnownTornStart;

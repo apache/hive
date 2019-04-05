@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 
 import org.apache.hadoop.hive.common.io.DiskRangeList;
+import org.apache.orc.CompressionCodec;
 import org.apache.orc.DataReader;
 import org.apache.orc.OrcFile;
 import org.apache.orc.TypeDescription;
@@ -158,6 +159,11 @@ public class TestIncrementalObjectSizeEstimator {
 
     @Override
     public void close() throws IOException {
+    }
+
+    @Override
+    public CompressionCodec getCompressionCodec() {
+      return null;
     }
   }
 
