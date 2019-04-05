@@ -16,6 +16,7 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import java.io.IOException;
 import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -24,6 +25,7 @@ import org.apache.hadoop.hive.ql.session.KillQuery;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.wm.Trigger;
 import org.apache.hadoop.hive.ql.wm.TriggerActionHandler;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +42,8 @@ public class KillTriggerActionHandler implements TriggerActionHandler<TezSession
         case KILL_QUERY:
           TezSession sessionState = entry.getKey();
           try {
-            SessionState ss = new SessionState(new HiveConf());
+            UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
+            SessionState ss = new SessionState(new HiveConf(), ugi.getShortUserName());
             ss.setIsHiveServerQuery(true);
             SessionState.start(ss);
             // then session might have been released to pool or closed already
@@ -48,7 +51,7 @@ public class KillTriggerActionHandler implements TriggerActionHandler<TezSession
             if (!wasKilled) {
               LOG.info("Didn't kill the query {}", sessionState.getWmContext().getQueryId());
             }
-          } catch (HiveException e) {
+          } catch (HiveException|IOException e) {
             LOG.warn("Unable to kill query {} for trigger violation",
                 sessionState.getWmContext().getQueryId());
           }
