@@ -149,10 +149,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: p2
-            filterExpr: p_partkey is not null (type: boolean)
+            filterExpr: (p_partkey is not null and p_size is not null) (type: boolean)
             Statistics: Num rows: 26 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: p_partkey is not null (type: boolean)
+              predicate: (p_partkey is not null and p_size is not null) (type: boolean)
               Statistics: Num rows: 26 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: p_partkey (type: int), p_size (type: int), (p_size + 10) (type: int)
