@@ -298,7 +298,7 @@ STAGE PLANS:
                       outputColumnNames: _col1
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 50 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 45 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Left Outer Join 0 to 1
@@ -316,7 +316,7 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 142 Data size: 1064 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 109 Data size: 800 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count(), sum(_col1)
                           Group By Vectorization:
@@ -365,25 +365,32 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
-                  Select Operator
-                    expressions: cint (type: int)
-                    outputColumnNames: _col0
-                    Select Vectorization:
-                        className: VectorSelectOperator
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
                         native: true
-                        projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 20 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
-                      Reduce Sink Vectorization:
-                          className: VectorReduceSinkLongOperator
-                          keyColumnNums: [2]
+                        predicateExpression: SelectColumnIsNotNull(col 2:int)
+                    predicate: cint is not null (type: boolean)
+                    Statistics: Num rows: 10 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: cint (type: int)
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumnNums: []
-                      Statistics: Num rows: 20 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                          projectedOutputColumnNums: [2]
+                      Statistics: Num rows: 10 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkLongOperator
+                            keyColumnNums: [2]
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumnNums: []
+                        Statistics: Num rows: 10 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -409,25 +416,32 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
-                  Select Operator
-                    expressions: cbigint (type: bigint)
-                    outputColumnNames: _col0
-                    Select Vectorization:
-                        className: VectorSelectOperator
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
                         native: true
-                        projectedOutputColumnNums: [3]
-                    Statistics: Num rows: 20 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: bigint)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: bigint)
-                      Reduce Sink Vectorization:
-                          className: VectorReduceSinkLongOperator
-                          keyColumnNums: [3]
+                        predicateExpression: SelectColumnIsNotNull(col 3:bigint)
+                    predicate: cbigint is not null (type: boolean)
+                    Statistics: Num rows: 10 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: cbigint (type: bigint)
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumnNums: []
-                      Statistics: Num rows: 20 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+                          projectedOutputColumnNums: [3]
+                      Statistics: Num rows: 10 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkLongOperator
+                            keyColumnNums: [3]
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumnNums: []
+                        Statistics: Num rows: 10 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:

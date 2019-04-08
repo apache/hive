@@ -731,17 +731,21 @@ STAGE PLANS:
                 Statistics: Num rows: 20 Data size: 1615 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: cbo_t4:cbo_t1
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 20 Data size: 1691 Basic stats: COMPLETE Column stats: COMPLETE
-            Select Operator
-              expressions: key (type: string), c_int (type: int)
-              outputColumnNames: key, c_int
-              Statistics: Num rows: 20 Data size: 1691 Basic stats: COMPLETE Column stats: COMPLETE
-              Reduce Output Operator
-                key expressions: key (type: string)
-                sort order: +
-                Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 20 Data size: 1691 Basic stats: COMPLETE Column stats: COMPLETE
-                value expressions: c_int (type: int)
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: key (type: string), c_int (type: int)
+                outputColumnNames: key, c_int
+                Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: key (type: string)
+                  sort order: +
+                  Map-reduce partition columns: key (type: string)
+                  Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: c_int (type: int)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -754,14 +758,14 @@ STAGE PLANS:
             2 key (type: string)
             3 key (type: string)
           outputColumnNames: key, c_int, key0, c_int0, key1, c_int2
-          Statistics: Num rows: 1080 Data size: 288093 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 972 Data size: 259257 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string), c_int (type: int), key0 (type: string), c_int0 (type: int), key1 (type: string), c_int2 (type: int)
             outputColumnNames: key, c_int, p, q, x, b
-            Statistics: Num rows: 1080 Data size: 288093 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 972 Data size: 259257 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1080 Data size: 288093 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 972 Data size: 259257 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

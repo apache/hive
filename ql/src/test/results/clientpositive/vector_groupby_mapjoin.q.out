@@ -1,4 +1,4 @@
-Warning: Map Join MAPJOIN[42][bigTable=?] in task 'Stage-8:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[44][bigTable=?] in task 'Stage-8:MAPRED' is a cross product
 PREHOOK: query: explain vectorization expression
 select *
 from src
@@ -327,13 +327,12 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-            Select Operator
-              expressions: key (type: string)
-              outputColumnNames: key
-              Select Vectorization:
-                  className: VectorSelectOperator
+            Filter Operator
+              Filter Vectorization:
+                  className: VectorFilterOperator
                   native: true
-                  projectedOutputColumnNums: [0]
+                  predicateExpression: SelectColumnIsNotNull(col 0:string)
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 Group By Vectorization:
@@ -395,7 +394,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[42][bigTable=?] in task 'Stage-8:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[44][bigTable=?] in task 'Stage-8:MAPRED' is a cross product
 PREHOOK: query: select *
 from src
 where not key in
@@ -424,7 +423,7 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orcsrc
 POSTHOOK: Lineage: orcsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-Warning: Map Join MAPJOIN[42][bigTable=?] in task 'Stage-8:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[44][bigTable=?] in task 'Stage-8:MAPRED' is a cross product
 PREHOOK: query: select *
 from orcsrc
 where not key in
@@ -441,7 +440,7 @@ order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orcsrc
 #### A masked pattern was here ####
-Warning: Map Join MAPJOIN[42][bigTable=?] in task 'Stage-8:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[44][bigTable=?] in task 'Stage-8:MAPRED' is a cross product
 PREHOOK: query: select *
 from orcsrc
 where not key in

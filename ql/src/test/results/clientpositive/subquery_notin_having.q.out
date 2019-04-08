@@ -512,7 +512,7 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Manufacturer#1	1173.15
 Manufacturer#2	1690.68
-Warning: Shuffle Join JOIN[27][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[28][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain
 select b.p_mfgr, min(p_retailprice) 
 from part b 
@@ -736,9 +736,8 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: p_mfgr (type: string), p_retailprice (type: double)
-              outputColumnNames: p_mfgr, p_retailprice
+            Filter Operator
+              predicate: p_mfgr is not null (type: boolean)
               Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: max(p_retailprice), min(p_retailprice)
@@ -781,7 +780,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[27][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[28][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: select b.p_mfgr, min(p_retailprice) 
 from part b 
 group by b.p_mfgr
@@ -843,7 +842,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t2_n85
 POSTHOOK: Lineage: t2_n85.c1 SCRIPT []
-Warning: Shuffle Join JOIN[20][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[21][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain SELECT c1 FROM t1_n145 group by c1 having c1 NOT IN (SELECT c1 FROM t2_n85)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1_n145
@@ -1008,9 +1007,8 @@ STAGE PLANS:
           TableScan
             alias: t2_n85
             Statistics: Num rows: 3 Data size: 6 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: c1 (type: int)
-              outputColumnNames: c1
+            Filter Operator
+              predicate: c1 is not null (type: boolean)
               Statistics: Num rows: 3 Data size: 6 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: c1 (type: int)
@@ -1047,7 +1045,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[20][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[21][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: SELECT c1 FROM t1_n145 group by c1 having c1 NOT IN (SELECT c1 FROM t2_n85)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1_n145

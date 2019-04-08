@@ -137,7 +137,7 @@ STAGE PLANS:
                   alias: item
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (i_item_sk) IN (2, 3, 5, 7, 11, 13, 17, 19, 23, 29) (type: boolean)
+                    predicate: ((i_item_sk) IN (2, 3, 5, 7, 11, 13, 17, 19, 23, 29) and i_item_id is not null) (type: boolean)
                     Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: i_item_id (type: string)

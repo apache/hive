@@ -393,7 +393,7 @@ STAGE PLANS:
             alias: supplier_hive
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (s_comment like '%Customer%Complaints%') (type: boolean)
+              predicate: ((s_comment like '%Customer%Complaints%') and s_suppkey is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: s_suppkey (type: int)

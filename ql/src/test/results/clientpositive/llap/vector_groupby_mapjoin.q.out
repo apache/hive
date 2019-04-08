@@ -1,4 +1,4 @@
-Warning: Map Join MAPJOIN[27][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[28][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: explain vectorization expression
 select *
 from src
@@ -150,28 +150,35 @@ STAGE PLANS:
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint), _col1 (type: bigint)
-                  Group By Operator
-                    Group By Vectorization:
-                        className: VectorGroupByOperator
-                        groupByMode: HASH
-                        keyExpressions: col 0:string
-                        native: false
-                        vectorProcessingMode: HASH
-                        projectedOutputColumnNums: []
-                    keys: key (type: string)
-                    minReductionHashAggr: 0.0
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
-                      Reduce Sink Vectorization:
-                          className: VectorReduceSinkStringOperator
-                          native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNotNull(col 0:string)
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      Group By Vectorization:
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: col 0:string
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: []
+                      keys: key (type: string)
+                      minReductionHashAggr: 0.0
+                      mode: hash
+                      outputColumnNames: _col0
                       Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkStringOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
@@ -286,7 +293,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[27][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[28][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: select *
 from src
 where not key in
@@ -315,7 +322,7 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orcsrc
 POSTHOOK: Lineage: orcsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-Warning: Map Join MAPJOIN[27][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[28][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: select *
 from orcsrc
 where not key in
@@ -332,7 +339,7 @@ order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orcsrc
 #### A masked pattern was here ####
-Warning: Map Join MAPJOIN[27][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[28][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: select *
 from orcsrc
 where not key in

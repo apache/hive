@@ -1749,7 +1749,8 @@ INNER JOIN ((SELECT `key`, `value`
 FROM `default`.`src1`
 WHERE `value` IS NOT NULL) AS `t2`
 LEFT JOIN (SELECT `key`
-FROM `default`.`src`) AS `t3` ON `t2`.`key` = `t3`.`key`) ON `t0`.`value` = `t2`.`value`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL) AS `t4` ON `t2`.`key` = `t4`.`key`) ON `t0`.`value` = `t2`.`value`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1848,20 +1849,25 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
-                  Select Operator
-                    expressions: key (type: string)
-                    outputColumnNames: _col0
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      null sort order: a
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                      tag: 1
-                      auto parallelism: true
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: 1
+                        auto parallelism: true
             Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:

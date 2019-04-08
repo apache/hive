@@ -164,7 +164,7 @@ Stage-0
                                                   Select Operator [SEL_98] (rows=11 width=104)
                                                     Output:["i_item_id"]
                                                     Filter Operator [FIL_95] (rows=11 width=104)
-                                                      predicate:(i_item_sk) IN (2, 3, 5, 7, 11, 13, 17, 19, 23, 29)
+                                                      predicate:((i_item_sk) IN (2, 3, 5, 7, 11, 13, 17, 19, 23, 29) and i_item_id is not null)
                                                        Please refer to the previous TableScan [TS_6]
                               <-Reducer 2 [SIMPLE_EDGE]
                                 SHUFFLE [RS_43]

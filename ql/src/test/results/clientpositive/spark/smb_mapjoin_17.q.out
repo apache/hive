@@ -774,18 +774,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: q
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: key (type: int)
-                    outputColumnNames: _col0
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 _col0 (type: int)
-                        1 _col0 (type: int)
-                        2 _col0 (type: int)
-                        3 _col0 (type: int)
-                        4 _col0 (type: int)
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                          2 _col0 (type: int)
+                          3 _col0 (type: int)
+                          4 _col0 (type: int)
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -793,18 +797,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: r
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: key (type: int)
-                    outputColumnNames: _col0
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 _col0 (type: int)
-                        1 _col0 (type: int)
-                        2 _col0 (type: int)
-                        3 _col0 (type: int)
-                        4 _col0 (type: int)
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                          2 _col0 (type: int)
+                          3 _col0 (type: int)
+                          4 _col0 (type: int)
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -812,18 +820,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: key (type: int)
-                    outputColumnNames: _col0
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 _col0 (type: int)
-                        1 _col0 (type: int)
-                        2 _col0 (type: int)
-                        3 _col0 (type: int)
-                        4 _col0 (type: int)
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                          2 _col0 (type: int)
+                          3 _col0 (type: int)
+                          4 _col0 (type: int)
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -831,18 +843,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: key (type: int)
-                    outputColumnNames: _col0
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 _col0 (type: int)
-                        1 _col0 (type: int)
-                        2 _col0 (type: int)
-                        3 _col0 (type: int)
-                        4 _col0 (type: int)
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                          2 _col0 (type: int)
+                          3 _col0 (type: int)
+                          4 _col0 (type: int)
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work

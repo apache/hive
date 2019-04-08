@@ -95,14 +95,17 @@ STAGE PLANS:
           TableScan
             alias: t2
             Statistics: Num rows: 6 Data size: 550 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: c (type: int), v2 (type: string)
-              outputColumnNames: _col0, _col1
+            Filter Operator
+              predicate: c is not null (type: boolean)
               Statistics: Num rows: 6 Data size: 550 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 _col1 (type: int)
-                  1 _col0 (type: int)
+              Select Operator
+                expressions: c (type: int), v2 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 6 Data size: 550 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col1 (type: int)
+                    1 _col0 (type: int)
 
   Stage: Stage-3
     Map Reduce
@@ -220,14 +223,17 @@ STAGE PLANS:
           TableScan
             alias: t1
             Statistics: Num rows: 6 Data size: 544 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: v1 (type: string), a (type: int)
-              outputColumnNames: _col0, _col1
+            Filter Operator
+              predicate: a is not null (type: boolean)
               Statistics: Num rows: 6 Data size: 544 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 _col1 (type: int)
-                  1 _col0 (type: int)
+              Select Operator
+                expressions: v1 (type: string), a (type: int)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 6 Data size: 544 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col1 (type: int)
+                    1 _col0 (type: int)
 
   Stage: Stage-3
     Map Reduce
