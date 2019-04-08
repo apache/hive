@@ -173,10 +173,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inventory
-                  filterExpr: (inv_item_sk is not null and inv_warehouse_sk is not null and inv_date_sk is not null) (type: boolean)
+                  filterExpr: (inv_item_sk is not null and inv_warehouse_sk is not null and inv_date_sk is not null and inv_quantity_on_hand is not null) (type: boolean)
                   Statistics: Num rows: 37584000 Data size: 593821104 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (inv_date_sk is not null and inv_item_sk is not null and inv_warehouse_sk is not null) (type: boolean)
+                    predicate: (inv_date_sk is not null and inv_item_sk is not null and inv_quantity_on_hand is not null and inv_warehouse_sk is not null) (type: boolean)
                     Statistics: Num rows: 37584000 Data size: 593821104 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: inv_date_sk (type: int), inv_item_sk (type: int), inv_warehouse_sk (type: int), inv_quantity_on_hand (type: int)
@@ -205,10 +205,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
-                  filterExpr: ((d_year = 2001) and d_date_sk is not null and d_week_seq is not null) (type: boolean)
+                  filterExpr: ((d_year = 2001) and d_date_sk is not null and d_week_seq is not null and UDFToDouble(d_date) is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d_year = 2001) and d_date_sk is not null and d_week_seq is not null) (type: boolean)
+                    predicate: ((d_year = 2001) and UDFToDouble(d_date) is not null and d_date_sk is not null and d_week_seq is not null) (type: boolean)
                     Statistics: Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int), d_week_seq (type: int), (UDFToDouble(d_date) + 5.0D) (type: double)
@@ -264,10 +264,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d3
-                  filterExpr: d_date_sk is not null (type: boolean)
+                  filterExpr: (d_date_sk is not null and UDFToDouble(d_date) is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: d_date_sk is not null (type: boolean)
+                    predicate: (UDFToDouble(d_date) is not null and d_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int), UDFToDouble(d_date) (type: double)
@@ -322,10 +322,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: catalog_sales
-                  filterExpr: (cs_item_sk is not null and cs_bill_cdemo_sk is not null and cs_bill_hdemo_sk is not null and cs_sold_date_sk is not null and cs_ship_date_sk is not null) (type: boolean)
+                  filterExpr: (cs_item_sk is not null and cs_bill_cdemo_sk is not null and cs_bill_hdemo_sk is not null and cs_sold_date_sk is not null and cs_ship_date_sk is not null and cs_quantity is not null) (type: boolean)
                   Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cs_bill_cdemo_sk is not null and cs_bill_hdemo_sk is not null and cs_item_sk is not null and cs_ship_date_sk is not null and cs_sold_date_sk is not null) (type: boolean)
+                    predicate: (cs_bill_cdemo_sk is not null and cs_bill_hdemo_sk is not null and cs_item_sk is not null and cs_quantity is not null and cs_ship_date_sk is not null and cs_sold_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cs_sold_date_sk (type: int), cs_ship_date_sk (type: int), cs_bill_cdemo_sk (type: int), cs_bill_hdemo_sk (type: int), cs_item_sk (type: int), cs_promo_sk (type: int), cs_order_number (type: int), cs_quantity (type: int)

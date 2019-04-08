@@ -31,7 +31,7 @@ import com.google.common.collect.Sets;
 public class HiveRulesRegistry {
 
   private SetMultimap<RelOptRule, RelNode> registryVisited;
-  private ListMultimap<RelNode,Set<String>> registryPushedPredicates;
+  private ListMultimap<RelNode, Set<String>> registryPushedPredicates;
 
   public HiveRulesRegistry() {
     this.registryVisited = HashMultimap.create();
