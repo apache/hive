@@ -2163,6 +2163,17 @@ public class HiveConf extends Configuration {
         "the Tez UI representing the work that was done. Used by Spark to set the query name, will show up in the\n" +
         "Spark UI."),
 
+    SYSLOG_INPUT_FORMAT_FILE_PRUNING("hive.syslog.input.format.file.pruning", true,
+      "Whether syslog input format should prune files based on timestamp (ts) column in sys.logs table."),
+    SYSLOG_INPUT_FORMAT_FILE_TIME_SLICE("hive.syslog.input.format.file.time.slice", "300s",
+      new TimeValidator(TimeUnit.SECONDS, 0L, false, Long.MAX_VALUE, false),
+      "Files stored in sys.logs typically are chunked with time interval. For example: depending on the\n" +
+        "logging library used this represents the flush interval/time slice. \n" +
+        "If time slice/flust interval is set to 5 minutes, then the expectation is that the filename \n" +
+        "2019-01-02-10-00_0.log represent time range from 10:00 to 10:05.\n" +
+        "This time slice should align with the flush interval of the logging library else file pruning may\n" +
+        "incorrectly prune files leading to incorrect results from sys.logs table."),
+
     HIVEOPTIMIZEBUCKETINGSORTING("hive.optimize.bucketingsorting", true,
         "Don't create a reducer for enforcing \n" +
         "bucketing/sorting for queries of the form: \n" +
