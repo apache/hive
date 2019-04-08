@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import static org.apache.commons.lang.StringUtils.join;
-
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -27,7 +25,6 @@ import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -95,7 +92,6 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils.PartSpecInfo;
-import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
@@ -146,7 +142,6 @@ import org.apache.hadoop.hive.ql.plan.CreateOrDropTriggerToPoolMappingDesc;
 import org.apache.hadoop.hive.ql.plan.CreateResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.CreateWMTriggerDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
-import org.apache.hadoop.hive.ql.plan.DescFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.DropPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.DropResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.DropWMMappingDesc;
@@ -174,7 +169,6 @@ import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowCompactionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowConfDesc;
-import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowGrantDesc;
 import org.apache.hadoop.hive.ql.plan.ShowLocksDesc;
 import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
@@ -195,7 +189,6 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRoleGrant;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveV1Authorizer;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
@@ -213,7 +206,6 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hadoop.tools.HadoopArchives;
 import org.apache.hadoop.util.ToolRunner;
-import org.apache.hive.common.util.AnnotationUtils;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -326,19 +318,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         return msck(db, msckDesc);
       }
 
-      DescFunctionDesc descFunc = work.getDescFunctionDesc();
-      if (descFunc != null) {
-        return describeFunction(db, descFunc);
-      }
-
       ShowColumnsDesc showCols = work.getShowColumnsDesc();
       if (showCols != null) {
         return showColumns(db, showCols);
-      }
-
-      ShowFunctionsDesc showFuncs = work.getShowFuncsDesc();
-      if (showFuncs != null) {
-        return showFunctions(db, showFuncs);
       }
 
       ShowLocksDesc showLocks = work.getShowLocksDesc();
@@ -1971,59 +1953,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   /**
-   * Write a list of the user defined functions to a file.
-   * @param db
-   *
-   * @param showFuncs
-   *          are the functions we're interested in.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
-   */
-  private int showFunctions(Hive db, ShowFunctionsDesc showFuncs) throws HiveException {
-    // get the tables for the desired patten - populate the output stream
-    Set<String> funcs = null;
-    if (showFuncs.getPattern() != null) {
-      LOG.debug("pattern: {}", showFuncs.getPattern());
-      if (showFuncs.getIsLikePattern()) {
-         funcs = FunctionRegistry.getFunctionNamesByLikePattern(showFuncs.getPattern());
-      } else {
-         console.printInfo("SHOW FUNCTIONS is deprecated, please use SHOW FUNCTIONS LIKE instead.");
-         funcs = FunctionRegistry.getFunctionNames(showFuncs.getPattern());
-      }
-      LOG.info("Found {} function(s) matching the SHOW FUNCTIONS statement.", funcs.size());
-    } else {
-      funcs = FunctionRegistry.getFunctionNames();
-    }
-
-    // write the results in the file
-    DataOutputStream outStream = getOutputStream(showFuncs.getResFile());
-    try {
-      SortedSet<String> sortedFuncs = new TreeSet<String>(funcs);
-      // To remove the primitive types
-      sortedFuncs.removeAll(serdeConstants.PrimitiveTypes);
-      Iterator<String> iterFuncs = sortedFuncs.iterator();
-
-      while (iterFuncs.hasNext()) {
-        // create a row per table name
-        outStream.writeBytes(iterFuncs.next());
-        outStream.write(terminator);
-      }
-    } catch (FileNotFoundException e) {
-      LOG.warn("show function: ", e);
-      return 1;
-    } catch (IOException e) {
-      LOG.warn("show function: ", e);
-      return 1;
-    } catch (Exception e) {
-      throw new HiveException(e);
-    } finally {
-      IOUtils.closeStream(outStream);
-    }
-    return 0;
-  }
-
-  /**
    * Write a list of the current locks to a file.
    * @param db
    *
@@ -2366,80 +2295,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       sessionState.getKillQuery().killQuery(queryId, "User invoked KILL QUERY", db.getConf());
     }
     LOG.info("kill query called ({})", desc.getQueryIds());
-    return 0;
-  }
-
-  /**
-   * Shows a description of a function.
-   * @param db
-   *
-   * @param descFunc
-   *          is the function we are describing
-   * @throws HiveException
-   */
-  private int describeFunction(Hive db, DescFunctionDesc descFunc) throws HiveException, SQLException {
-    String funcName = descFunc.getName();
-
-    // write the results in the file
-    DataOutputStream outStream = getOutputStream(descFunc.getResFile());
-    try {
-      // get the function documentation
-      Description desc = null;
-      Class<?> funcClass = null;
-      FunctionInfo functionInfo = FunctionRegistry.getFunctionInfo(funcName);
-      if (functionInfo != null) {
-        funcClass = functionInfo.getFunctionClass();
-      }
-      if (funcClass != null) {
-        desc = AnnotationUtils.getAnnotation(funcClass, Description.class);
-      }
-      if (desc != null) {
-        outStream.writeBytes(desc.value().replace("_FUNC_", funcName));
-        if (descFunc.isExtended()) {
-          Set<String> synonyms = FunctionRegistry.getFunctionSynonyms(funcName);
-          if (synonyms.size() > 0) {
-            outStream.writeBytes("\nSynonyms: " + join(synonyms, ", "));
-          }
-          if (desc.extended().length() > 0) {
-            outStream.writeBytes("\n"
-                + desc.extended().replace("_FUNC_", funcName));
-          }
-        }
-      } else {
-        if (funcClass != null) {
-          outStream.writeBytes("There is no documentation for function '"
-              + funcName + "'");
-        } else {
-          outStream.writeBytes("Function '" + funcName + "' does not exist.");
-        }
-      }
-
-      outStream.write(terminator);
-      if (descFunc.isExtended()) {
-        if (funcClass != null) {
-          outStream.writeBytes("Function class:" + funcClass.getName() + "\n");
-        }
-        if (functionInfo != null) {
-          outStream.writeBytes("Function type:" + functionInfo.getFunctionType() + "\n");
-          FunctionResource[] resources = functionInfo.getResources();
-          if (resources != null) {
-            for (FunctionResource resource : resources) {
-              outStream.writeBytes("Resource:" + resource.getResourceURI() + "\n");
-            }
-          }
-        }
-      }
-    } catch (FileNotFoundException e) {
-      LOG.warn("describe function: ", e);
-      return 1;
-    } catch (IOException e) {
-      LOG.warn("describe function: ", e);
-      return 1;
-    } catch (Exception e) {
-      throw new HiveException(e);
-    } finally {
-      IOUtils.closeStream(outStream);
-    }
     return 0;
   }
 
