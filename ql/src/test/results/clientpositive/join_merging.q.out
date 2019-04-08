@@ -135,7 +135,7 @@ STAGE PLANS:
             alias: p2
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: p_partkey is not null (type: boolean)
+              predicate: (p_partkey is not null and p_size is not null) (type: boolean)
               Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: p_partkey (type: int), p_size (type: int)

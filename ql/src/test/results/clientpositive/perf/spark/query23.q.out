@@ -1,5 +1,5 @@
-Warning: Map Join MAPJOIN[285][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
-Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[291][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[292][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain
 with frequent_ss_items as 
  (select substr(i_item_desc,1,30) itemdesc,i_item_sk item_sk,d_date solddate,count(*) cnt
@@ -415,11 +415,14 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
-                Spark HashTable Sink Operator
-                  keys:
-                    0 
-                    1 
-                    2 
+                Filter Operator
+                  predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                  Spark HashTable Sink Operator
+                    keys:
+                      0 
+                      1 
+                      2 
 
   Stage: Stage-3
     Spark
@@ -713,11 +716,14 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
-                Spark HashTable Sink Operator
-                  keys:
-                    0 
-                    1 
-                    2 
+                Filter Operator
+                  predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                  Spark HashTable Sink Operator
+                    keys:
+                      0 
+                      1 
+                      2 
 
   Stage: Stage-1
     Spark
@@ -971,31 +977,34 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 316797606 Data size: 27947976754 Basic stats: COMPLETE Column stats: NONE
-                Map Join Operator
-                  condition map:
-                       Inner Join 0 to 1
-                       Inner Join 0 to 2
-                  keys:
-                    0 
-                    1 
-                    2 
-                  outputColumnNames: _col1, _col2, _col3
-                  input vertices:
-                    0 Reducer 17
-                    1 Reducer 24
-                  Statistics: Num rows: 316797606 Data size: 137243150824 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (_col3 > (0.95 * _col1)) (type: boolean)
-                    Statistics: Num rows: 105599202 Data size: 45747716941 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col2 (type: int)
-                      outputColumnNames: _col0
+                Filter Operator
+                  predicate: _col1 is not null (type: boolean)
+                  Statistics: Num rows: 316797606 Data size: 27947976754 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                         Inner Join 0 to 2
+                    keys:
+                      0 
+                      1 
+                      2 
+                    outputColumnNames: _col1, _col2, _col3
+                    input vertices:
+                      0 Reducer 17
+                      1 Reducer 24
+                    Statistics: Num rows: 316797606 Data size: 137243150824 Basic stats: COMPLETE Column stats: NONE
+                    Filter Operator
+                      predicate: (_col3 > (0.95 * _col1)) (type: boolean)
                       Statistics: Num rows: 105599202 Data size: 45747716941 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
+                      Select Operator
+                        expressions: _col2 (type: int)
+                        outputColumnNames: _col0
                         Statistics: Num rows: 105599202 Data size: 45747716941 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 105599202 Data size: 45747716941 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Reduce Operator Tree:
               Join Operator
@@ -1160,31 +1169,34 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 316797606 Data size: 27947976754 Basic stats: COMPLETE Column stats: NONE
-                Map Join Operator
-                  condition map:
-                       Inner Join 0 to 1
-                       Inner Join 0 to 2
-                  keys:
-                    0 
-                    1 
-                    2 
-                  outputColumnNames: _col1, _col2, _col3
-                  input vertices:
-                    0 Reducer 46
-                    1 Reducer 53
-                  Statistics: Num rows: 316797606 Data size: 137243150824 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (_col3 > (0.95 * _col1)) (type: boolean)
-                    Statistics: Num rows: 105599202 Data size: 45747716941 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col2 (type: int)
-                      outputColumnNames: _col0
+                Filter Operator
+                  predicate: _col1 is not null (type: boolean)
+                  Statistics: Num rows: 316797606 Data size: 27947976754 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                         Inner Join 0 to 2
+                    keys:
+                      0 
+                      1 
+                      2 
+                    outputColumnNames: _col1, _col2, _col3
+                    input vertices:
+                      0 Reducer 46
+                      1 Reducer 53
+                    Statistics: Num rows: 316797606 Data size: 137243150824 Basic stats: COMPLETE Column stats: NONE
+                    Filter Operator
+                      predicate: (_col3 > (0.95 * _col1)) (type: boolean)
                       Statistics: Num rows: 105599202 Data size: 45747716941 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
+                      Select Operator
+                        expressions: _col2 (type: int)
+                        outputColumnNames: _col0
                         Statistics: Num rows: 105599202 Data size: 45747716941 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 105599202 Data size: 45747716941 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-0
     Fetch Operator

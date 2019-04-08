@@ -1,4 +1,4 @@
-Warning: Map Join MAPJOIN[111][bigTable=?] in task 'Reducer 15' is a cross product
+Warning: Map Join MAPJOIN[112][bigTable=?] in task 'Reducer 15' is a cross product
 PREHOOK: query: explain cbo
 select  a.ca_state state, count(*) cnt
  from customer_address a
@@ -91,13 +91,14 @@ HiveSortLimit(sort0=[$1], dir0=[ASC-nulls-first], fetch=[100])
           HiveProject(i_item_sk=[$0], i_current_price=[$1], i_category=[$2], _o__c0=[$3], i_category0=[$4], cnt=[$5])
             HiveJoin(condition=[AND(=($4, $2), >($1, *(1.2, CAST($3):DECIMAL(16, 6))))], joinType=[inner], algorithm=[none], cost=[not available])
               HiveProject(i_item_sk=[$0], i_current_price=[$5], i_category=[$12])
-                HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($12))])
+                HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($12), IS NOT NULL($5))])
                   HiveTableScan(table=[[default, item]], table:alias=[i])
               HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
                 HiveProject(_o__c0=[/($1, $2)], i_category=[$0])
-                  HiveAggregate(group=[{12}], agg#0=[sum($5)], agg#1=[count($5)])
-                    HiveFilter(condition=[IS NOT NULL($12)])
-                      HiveTableScan(table=[[default, item]], table:alias=[j])
+                  HiveFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($2))])
+                    HiveAggregate(group=[{12}], agg#0=[sum($5)], agg#1=[count($5)])
+                      HiveFilter(condition=[IS NOT NULL($12)])
+                        HiveTableScan(table=[[default, item]], table:alias=[j])
                 HiveProject(cnt=[$0])
                   HiveFilter(condition=[<=(sq_count_check($0), 1)])
                     HiveProject(cnt=[$0])

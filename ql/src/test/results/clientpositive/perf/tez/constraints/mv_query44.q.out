@@ -19,7 +19,8 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@store_sales
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv_store_sales_item_customer
-Warning: Shuffle Join MERGEJOIN[93][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[143][tables = [$hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[144][tables = [$hdt$_2, $hdt$_3, $hdt$_1]] in Stage 'Reducer 5' is a cross product
 PREHOOK: query: explain
 select  asceding.rnk, i1.i_product_name best_performing, i2.i_product_name worst_performing
 from(select *
@@ -97,118 +98,155 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Reducer 11 <- Map 10 (SIMPLE_EDGE)
+Reducer 10 <- Reducer 9 (SIMPLE_EDGE)
+Reducer 11 <- Reducer 5 (SIMPLE_EDGE)
+Reducer 13 <- Map 12 (SIMPLE_EDGE)
+Reducer 15 <- Map 14 (SIMPLE_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
-Reducer 3 <- Reducer 11 (CUSTOM_SIMPLE_EDGE), Reducer 2 (CUSTOM_SIMPLE_EDGE)
-Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
-Reducer 5 <- Reducer 4 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
-Reducer 6 <- Map 12 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
-Reducer 7 <- Map 12 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
-Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
-Reducer 9 <- Reducer 3 (SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+Reducer 4 <- Reducer 13 (CUSTOM_SIMPLE_EDGE), Reducer 3 (CUSTOM_SIMPLE_EDGE)
+Reducer 5 <- Reducer 15 (CUSTOM_SIMPLE_EDGE), Reducer 4 (CUSTOM_SIMPLE_EDGE)
+Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
+Reducer 7 <- Reducer 11 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
+Reducer 8 <- Map 16 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
+Reducer 9 <- Map 16 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:100
     Stage-1
-      Reducer 8 vectorized
-      File Output Operator [FS_127]
-        Limit [LIM_126] (rows=100 width=218)
+      Reducer 10 vectorized
+      File Output Operator [FS_194]
+        Limit [LIM_193] (rows=100 width=218)
           Number of rows:100
-          Select Operator [SEL_125] (rows=6951 width=218)
+          Select Operator [SEL_192] (rows=6951 width=218)
             Output:["_col0","_col1","_col2"]
-          <-Reducer 7 [SIMPLE_EDGE]
-            SHUFFLE [RS_66]
-              Select Operator [SEL_65] (rows=6951 width=218)
+          <-Reducer 9 [SIMPLE_EDGE]
+            SHUFFLE [RS_106]
+              Select Operator [SEL_105] (rows=6951 width=218)
                 Output:["_col0","_col1","_col2"]
-                Merge Join Operator [MERGEJOIN_97] (rows=6951 width=218)
-                  Conds:RS_62._col2=RS_124._col0(Inner),Output:["_col1","_col5","_col7"]
-                <-Map 12 [SIMPLE_EDGE] vectorized
-                  SHUFFLE [RS_124]
+                Merge Join Operator [MERGEJOIN_149] (rows=6951 width=218)
+                  Conds:RS_102._col2=RS_191._col0(Inner),Output:["_col1","_col5","_col7"]
+                <-Map 16 [SIMPLE_EDGE] vectorized
+                  SHUFFLE [RS_191]
                     PartitionCols:_col0
-                    Select Operator [SEL_122] (rows=462000 width=111)
+                    Select Operator [SEL_189] (rows=462000 width=111)
                       Output:["_col0","_col1"]
-                      TableScan [TS_52] (rows=462000 width=111)
+                      TableScan [TS_92] (rows=462000 width=111)
                         default@item,i1,Tbl:COMPLETE,Col:COMPLETE,Output:["i_item_sk","i_product_name"]
-                <-Reducer 6 [SIMPLE_EDGE]
-                  SHUFFLE [RS_62]
+                <-Reducer 8 [SIMPLE_EDGE]
+                  SHUFFLE [RS_102]
                     PartitionCols:_col2
-                    Merge Join Operator [MERGEJOIN_96] (rows=6951 width=115)
-                      Conds:RS_59._col0=RS_123._col0(Inner),Output:["_col1","_col2","_col5"]
-                    <-Map 12 [SIMPLE_EDGE] vectorized
-                      SHUFFLE [RS_123]
+                    Merge Join Operator [MERGEJOIN_148] (rows=6951 width=115)
+                      Conds:RS_99._col0=RS_190._col0(Inner),Output:["_col1","_col2","_col5"]
+                    <-Map 16 [SIMPLE_EDGE] vectorized
+                      SHUFFLE [RS_190]
                         PartitionCols:_col0
-                         Please refer to the previous Select Operator [SEL_122]
-                    <-Reducer 5 [SIMPLE_EDGE]
-                      SHUFFLE [RS_59]
+                         Please refer to the previous Select Operator [SEL_189]
+                    <-Reducer 7 [SIMPLE_EDGE]
+                      SHUFFLE [RS_99]
                         PartitionCols:_col0
-                        Merge Join Operator [MERGEJOIN_95] (rows=6951 width=12)
-                          Conds:RS_116._col1=RS_121._col1(Inner),Output:["_col0","_col1","_col2"]
-                        <-Reducer 4 [SIMPLE_EDGE] vectorized
-                          SHUFFLE [RS_116]
+                        Merge Join Operator [MERGEJOIN_147] (rows=6951 width=12)
+                          Conds:RS_183._col1=RS_188._col1(Inner),Output:["_col0","_col1","_col2"]
+                        <-Reducer 11 [SIMPLE_EDGE] vectorized
+                          SHUFFLE [RS_188]
                             PartitionCols:_col1
-                            Select Operator [SEL_115] (rows=6951 width=8)
+                            Select Operator [SEL_187] (rows=6951 width=8)
                               Output:["_col0","_col1"]
-                              Filter Operator [FIL_114] (rows=6951 width=116)
+                              Filter Operator [FIL_186] (rows=6951 width=116)
                                 predicate:(rank_window_0 < 11)
-                                PTF Operator [PTF_113] (rows=20854 width=116)
-                                  Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS FIRST","partition by:":"0"}]
-                                  Select Operator [SEL_112] (rows=20854 width=116)
-                                    Output:["_col0","_col1"]
-                                  <-Reducer 3 [SIMPLE_EDGE]
-                                    SHUFFLE [RS_19]
+                                PTF Operator [PTF_185] (rows=20854 width=116)
+                                  Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col3 DESC NULLS LAST","partition by:":"0"}]
+                                  Select Operator [SEL_184] (rows=20854 width=116)
+                                    Output:["_col2","_col3"]
+                                  <-Reducer 5 [SIMPLE_EDGE]
+                                    SHUFFLE [RS_85]
                                       PartitionCols:0
-                                      Filter Operator [FIL_18] (rows=20854 width=228)
-                                        predicate:(_col1 > (0.9 * _col2))
-                                        Merge Join Operator [MERGEJOIN_93] (rows=62562 width=228)
-                                          Conds:(Inner),Output:["_col0","_col1","_col2"]
-                                        <-Reducer 11 [CUSTOM_SIMPLE_EDGE] vectorized
-                                          PARTITION_ONLY_SHUFFLE [RS_111]
-                                            Select Operator [SEL_110] (rows=1 width=112)
-                                              Output:["_col0"]
-                                              Group By Operator [GBY_109] (rows=1 width=124)
-                                                Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)","count(VALUE._col1)"],keys:KEY._col0
-                                              <-Map 10 [SIMPLE_EDGE] vectorized
-                                                SHUFFLE [RS_108]
-                                                  PartitionCols:_col0
-                                                  Group By Operator [GBY_107] (rows=258 width=124)
-                                                    Output:["_col0","_col1","_col2"],aggregations:["sum(_col1)","count(_col1)"],keys:true
-                                                    Select Operator [SEL_106] (rows=287946 width=114)
-                                                      Output:["_col1"]
-                                                      Filter Operator [FIL_105] (rows=287946 width=114)
-                                                        predicate:((ss_store_sk = 410) and ss_hdemo_sk is null)
-                                                        TableScan [TS_7] (rows=575995635 width=114)
-                                                          default@store_sales,store_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_hdemo_sk","ss_store_sk","ss_net_profit"]
-                                        <-Reducer 2 [CUSTOM_SIMPLE_EDGE] vectorized
-                                          PARTITION_ONLY_SHUFFLE [RS_104]
-                                            Select Operator [SEL_103] (rows=62562 width=116)
+                                      Filter Operator [FIL_38] (rows=20854 width=228)
+                                        predicate:(_col3 > (0.9 * _col1))
+                                        Merge Join Operator [MERGEJOIN_144] (rows=62562 width=228)
+                                          Conds:(Inner),Output:["_col1","_col2","_col3"]
+                                        <-Reducer 15 [CUSTOM_SIMPLE_EDGE] vectorized
+                                          PARTITION_ONLY_SHUFFLE [RS_178]
+                                            Select Operator [SEL_177] (rows=62562 width=116)
                                               Output:["_col0","_col1"]
-                                              Group By Operator [GBY_102] (rows=62562 width=124)
-                                                Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)","count(VALUE._col1)"],keys:KEY._col0
-                                              <-Map 1 [SIMPLE_EDGE] vectorized
-                                                SHUFFLE [RS_101]
-                                                  PartitionCols:_col0
-                                                  Group By Operator [GBY_100] (rows=3199976 width=124)
-                                                    Output:["_col0","_col1","_col2"],aggregations:["sum(ss_net_profit)","count(ss_net_profit)"],keys:ss_item_sk
-                                                    Select Operator [SEL_99] (rows=6399952 width=114)
-                                                      Output:["ss_item_sk","ss_net_profit"]
-                                                      Filter Operator [FIL_98] (rows=6399952 width=114)
-                                                        predicate:(ss_store_sk = 410)
-                                                        TableScan [TS_0] (rows=575995635 width=114)
-                                                          default@store_sales,ss1,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_item_sk","ss_store_sk","ss_net_profit"]
-                        <-Reducer 9 [SIMPLE_EDGE] vectorized
-                          SHUFFLE [RS_121]
+                                              Filter Operator [FIL_176] (rows=62562 width=124)
+                                                predicate:(_col1 is not null and _col2 is not null)
+                                                Group By Operator [GBY_175] (rows=62562 width=124)
+                                                  Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)","count(VALUE._col1)"],keys:KEY._col0
+                                                <-Map 14 [SIMPLE_EDGE] vectorized
+                                                  SHUFFLE [RS_174]
+                                                    PartitionCols:_col0
+                                                    Group By Operator [GBY_173] (rows=3199976 width=124)
+                                                      Output:["_col0","_col1","_col2"],aggregations:["sum(ss_net_profit)","count(ss_net_profit)"],keys:ss_item_sk
+                                                      Select Operator [SEL_172] (rows=6399952 width=114)
+                                                        Output:["ss_item_sk","ss_net_profit"]
+                                                        Filter Operator [FIL_171] (rows=6399952 width=114)
+                                                          predicate:(ss_store_sk = 410)
+                                                          TableScan [TS_24] (rows=575995635 width=114)
+                                                            default@store_sales,ss1,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_item_sk","ss_store_sk","ss_net_profit"]
+                                        <-Reducer 4 [CUSTOM_SIMPLE_EDGE]
+                                          PARTITION_ONLY_SHUFFLE [RS_35]
+                                            Merge Join Operator [MERGEJOIN_143] (rows=1 width=112)
+                                              Conds:(Inner),Output:["_col1"]
+                                            <-Reducer 13 [CUSTOM_SIMPLE_EDGE] vectorized
+                                              PARTITION_ONLY_SHUFFLE [RS_170]
+                                                Select Operator [SEL_169] (rows=1 width=112)
+                                                  Output:["_col0"]
+                                                  Filter Operator [FIL_168] (rows=1 width=120)
+                                                    predicate:(_col1 is not null and _col2 is not null)
+                                                    Select Operator [SEL_167] (rows=1 width=120)
+                                                      Output:["_col1","_col2"]
+                                                      Group By Operator [GBY_166] (rows=1 width=124)
+                                                        Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)","count(VALUE._col1)"],keys:KEY._col0
+                                                      <-Map 12 [SIMPLE_EDGE] vectorized
+                                                        SHUFFLE [RS_165]
+                                                          PartitionCols:_col0
+                                                          Group By Operator [GBY_164] (rows=258 width=124)
+                                                            Output:["_col0","_col1","_col2"],aggregations:["sum(_col1)","count(_col1)"],keys:true
+                                                            Select Operator [SEL_163] (rows=287946 width=114)
+                                                              Output:["_col1"]
+                                                              Filter Operator [FIL_162] (rows=287946 width=114)
+                                                                predicate:((ss_store_sk = 410) and ss_hdemo_sk is null)
+                                                                TableScan [TS_15] (rows=575995635 width=114)
+                                                                  default@store_sales,store_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_hdemo_sk","ss_store_sk","ss_net_profit"]
+                                            <-Reducer 3 [CUSTOM_SIMPLE_EDGE] vectorized
+                                              PARTITION_ONLY_SHUFFLE [RS_161]
+                                                Select Operator [SEL_160] (rows=1 width=8)
+                                                  Filter Operator [FIL_159] (rows=1 width=8)
+                                                    predicate:(sq_count_check(_col0) <= 1)
+                                                    Group By Operator [GBY_158] (rows=1 width=8)
+                                                      Output:["_col0"],aggregations:["count(VALUE._col0)"]
+                                                    <-Reducer 2 [CUSTOM_SIMPLE_EDGE] vectorized
+                                                      PARTITION_ONLY_SHUFFLE [RS_157]
+                                                        Group By Operator [GBY_156] (rows=1 width=8)
+                                                          Output:["_col0"],aggregations:["count()"]
+                                                          Select Operator [SEL_155] (rows=1 width=4)
+                                                            Group By Operator [GBY_154] (rows=1 width=4)
+                                                              Output:["_col0"],keys:KEY._col0
+                                                            <-Map 1 [SIMPLE_EDGE] vectorized
+                                                              SHUFFLE [RS_153]
+                                                                PartitionCols:_col0
+                                                                Group By Operator [GBY_152] (rows=18 width=4)
+                                                                  Output:["_col0"],keys:true
+                                                                  Select Operator [SEL_151] (rows=287946 width=7)
+                                                                    Filter Operator [FIL_150] (rows=287946 width=7)
+                                                                      predicate:((ss_store_sk = 410) and ss_hdemo_sk is null)
+                                                                      TableScan [TS_0] (rows=575995635 width=7)
+                                                                        default@store_sales,store_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_hdemo_sk","ss_store_sk"]
+                        <-Reducer 6 [SIMPLE_EDGE] vectorized
+                          SHUFFLE [RS_183]
                             PartitionCols:_col1
-                            Select Operator [SEL_120] (rows=6951 width=8)
+                            Select Operator [SEL_182] (rows=6951 width=8)
                               Output:["_col0","_col1"]
-                              Filter Operator [FIL_119] (rows=6951 width=116)
+                              Filter Operator [FIL_181] (rows=6951 width=116)
                                 predicate:(rank_window_0 < 11)
-                                PTF Operator [PTF_118] (rows=20854 width=116)
-                                  Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 DESC NULLS LAST","partition by:":"0"}]
-                                  Select Operator [SEL_117] (rows=20854 width=116)
-                                    Output:["_col0","_col1"]
-                                  <-Reducer 3 [SIMPLE_EDGE]
-                                    SHUFFLE [RS_45]
+                                PTF Operator [PTF_180] (rows=20854 width=116)
+                                  Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col3 ASC NULLS FIRST","partition by:":"0"}]
+                                  Select Operator [SEL_179] (rows=20854 width=116)
+                                    Output:["_col2","_col3"]
+                                  <-Reducer 5 [SIMPLE_EDGE]
+                                    SHUFFLE [RS_39]
                                       PartitionCols:0
-                                       Please refer to the previous Filter Operator [FIL_18]
+                                       Please refer to the previous Filter Operator [FIL_38]
 

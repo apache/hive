@@ -262,7 +262,7 @@ STAGE PLANS:
             alias: cart_history
             Statistics: Num rows: 6 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: s is not null (type: boolean)
+              predicate: (s is not null and time is not null) (type: boolean)
               Statistics: Num rows: 6 Data size: 36 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: s (type: string), time (type: int)
@@ -278,7 +278,7 @@ STAGE PLANS:
             alias: purchase_history
             Statistics: Num rows: 4 Data size: 57 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: s is not null (type: boolean)
+              predicate: (s is not null and time is not null) (type: boolean)
               Statistics: Num rows: 4 Data size: 57 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: s (type: string), time (type: int)
@@ -494,7 +494,7 @@ STAGE PLANS:
             alias: cart_history
             Statistics: Num rows: 6 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: s is not null (type: boolean)
+              predicate: (s is not null and time is not null) (type: boolean)
               Statistics: Num rows: 6 Data size: 36 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: s (type: string), time (type: int)
@@ -510,7 +510,7 @@ STAGE PLANS:
             alias: purchase_history
             Statistics: Num rows: 4 Data size: 57 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: s is not null (type: boolean)
+              predicate: (s is not null and time is not null) (type: boolean)
               Statistics: Num rows: 4 Data size: 57 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: s (type: string), time (type: int)

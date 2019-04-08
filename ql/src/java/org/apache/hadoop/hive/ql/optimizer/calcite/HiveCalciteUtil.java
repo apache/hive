@@ -491,6 +491,10 @@ public class HiveCalciteUtil {
       this.projsJoinKeysInJoinSchema = projsJoinKeysInJoinSchemaBuilder.build();
     }
 
+    public SqlKind getComparisonType() {
+      return comparisonType;
+    }
+
     public List<RexNode> getJoinExprs(int input) {
       return this.joinKeyExprs.get(input);
     }
@@ -537,7 +541,7 @@ public class HiveCalciteUtil {
 
       // 1. Split leaf join predicate to expressions from left, right
       RexNode otherConditions = HiveRelOptUtil.splitHiveJoinCondition(systemFieldList, inputs, pe,
-          joinExprs, filterNulls, null);
+          joinExprs, filterNulls, new ArrayList<SqlOperator>());
 
       if (otherConditions.isAlwaysTrue()) {
         // 2. Collect child projection indexes used
