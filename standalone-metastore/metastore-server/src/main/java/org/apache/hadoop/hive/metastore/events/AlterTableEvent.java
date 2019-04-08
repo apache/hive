@@ -23,6 +23,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 
 @InterfaceAudience.Public
 @InterfaceStability.Stable
@@ -32,6 +33,7 @@ public class AlterTableEvent extends ListenerEvent {
   private final Table oldTable;
   private final boolean isTruncateOp;
   private Long writeId;
+  private final String locOwner;
 
   public AlterTableEvent (Table oldTable, Table newTable, boolean isTruncateOp, boolean status,
                           Long writeId, IHMSHandler handler) {
@@ -40,6 +42,11 @@ public class AlterTableEvent extends ListenerEvent {
     this.newTable = newTable;
     this.isTruncateOp = isTruncateOp;
     this.writeId = writeId;
+    if (newTable.getSd() == null) {
+      locOwner = FileUtils.getLocationOwner(oldTable.getSd().getLocation(), handler.getConf());
+    } else {
+      locOwner = FileUtils.getLocationOwner(newTable.getSd().getLocation(), handler.getConf());
+    }
   }
 
   /**
@@ -65,5 +72,9 @@ public class AlterTableEvent extends ListenerEvent {
 
   public Long getWriteId() {
     return writeId;
+  }
+
+  public String getLocOwner() {
+    return locOwner;
   }
 }

@@ -23,6 +23,7 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 
 @InterfaceAudience.Public
 @InterfaceStability.Stable
@@ -33,6 +34,7 @@ public class AlterPartitionEvent extends ListenerEvent {
   private final Table table;
   private final boolean isTruncateOp;
   private Long writeId;
+  private String locOwner;
 
   public AlterPartitionEvent(Partition oldPart, Partition newPart, Table table, boolean isTruncateOp,
                              boolean status, Long writeId, IHMSHandler handler) {
@@ -42,6 +44,9 @@ public class AlterPartitionEvent extends ListenerEvent {
     this.table = table;
     this.isTruncateOp = isTruncateOp;
     this.writeId = writeId;
+
+    // The table location owner is same as partition location owner if the database is source of replication.
+    locOwner = FileUtils.getLocationOwner(table.getSd().getLocation(), handler.getConf());
   }
 
   /**
@@ -77,5 +82,9 @@ public class AlterPartitionEvent extends ListenerEvent {
 
   public Long getWriteId() {
     return writeId;
+  }
+
+  public String getLocOwner() {
+    return locOwner;
   }
 }

@@ -31,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class JSONAlterTableMessage extends AlterTableMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableType, tableObjBeforeJson, tableObjAfterJson;
+  String server, servicePrincipal, db, table, tableType, tableObjBeforeJson, tableObjAfterJson, locOwner;
 
   @JsonProperty
   String isTruncateOp;
@@ -46,7 +46,7 @@ public class JSONAlterTableMessage extends AlterTableMessage {
   }
 
   public JSONAlterTableMessage(String server, String servicePrincipal, Table tableObjBefore, Table tableObjAfter,
-      boolean isTruncateOp, Long writeId, Long timestamp) {
+      boolean isTruncateOp, Long writeId, String locOwner, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = tableObjBefore.getDbName();
@@ -61,6 +61,7 @@ public class JSONAlterTableMessage extends AlterTableMessage {
     } catch (TException e) {
       throw new IllegalArgumentException("Could not serialize: ", e);
     }
+    this.locOwner = locOwner;
     checkValid();
   }
 
@@ -122,6 +123,11 @@ public class JSONAlterTableMessage extends AlterTableMessage {
   @Override
   public Long getWriteId() {
     return writeId == null ? 0 : writeId;
+  }
+
+  @Override
+  public String getLocOwner() {
+    return locOwner;
   }
 
   @Override

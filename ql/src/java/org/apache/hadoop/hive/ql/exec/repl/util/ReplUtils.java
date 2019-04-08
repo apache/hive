@@ -165,7 +165,8 @@ public class ReplUtils {
                                                                   String actualTblName, HiveConf conf,
                                                                   UpdatedMetaDataTracker updatedMetaDataTracker,
                                                                   Task<? extends Serializable> childTask,
-                                                                  org.apache.hadoop.hive.metastore.api.Table tableObj)
+                                                                  org.apache.hadoop.hive.metastore.api.Table tableObj,
+                                                                  boolean isPathOwnedByHive)
           throws IOException, TException {
     List<Task<? extends Serializable>> taskList = new ArrayList<>();
     taskList.add(childTask);
@@ -175,7 +176,7 @@ public class ReplUtils {
       //TODO : isPathOwnByHive is hard coded to true, need to get it from repl dump metadata.
       HiveStrictManagedMigration.TableMigrationOption migrationOption =
               HiveStrictManagedMigration.determineMigrationTypeAutomatically(tableObj, TableType.MANAGED_TABLE,
-                      null, conf, null, true);
+                      null, conf, null, isPathOwnedByHive);
       if (migrationOption == MANAGED) {
         //if conversion to managed table.
         Task<? extends Serializable> replTxnTask = TaskFactory.get(new ReplTxnWork(actualDbName, actualTblName,

@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.ddl.table.TruncateTableDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 import java.io.Serializable;
@@ -47,8 +48,10 @@ public class TruncateTableHandler extends AbstractMessageHandler {
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, null);
 
     try {
+      // User firing the repl load command sets the config for hive user to be used.
       return ReplUtils.addOpenTxnTaskForMigration(actualDbName, actualTblName,
-              context.hiveConf, updatedMetadata, truncateTableTask, msg.getTableObjBefore());
+              context.hiveConf, updatedMetadata, truncateTableTask, msg.getTableObjBefore(),
+              ReplicationSpec.isPathOwnedByHive(context.hiveConf, msg.getLocOwner()));
     } catch (Exception e) {
       throw new SemanticException(e.getMessage());
     }

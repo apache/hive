@@ -367,7 +367,7 @@ public class HiveStrictManagedMigration {
 
   void checkOwnerPermsOptions() {
     if (runOptions.shouldModifyManagedTableOwner) {
-      ownerName = conf.get("strict.managed.tables.migration.owner", "hive");
+      ownerName = conf.get(HiveConf.ConfVars.STRICT_MANAGED_TABLES_MIGRARTION_OWNER.varname, "hive");
       groupName = conf.get("strict.managed.tables.migration.group", null);
     }
     if (runOptions.shouldModifyManagedTablePermissions) {

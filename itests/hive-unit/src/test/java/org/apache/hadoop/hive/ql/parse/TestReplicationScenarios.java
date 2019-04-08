@@ -3484,7 +3484,7 @@ public class TestReplicationScenarios {
         evid,
         (int)System.currentTimeMillis(),
         MessageBuilder.CREATE_TABLE_EVENT,
-        MessageBuilder.getInstance().buildCreateTableMessage(t, Arrays.asList("/tmp/").iterator())
+        MessageBuilder.getInstance().buildCreateTableMessage(t, Arrays.asList("/tmp/").iterator(), null)
             .toString()
     );
     event.setDbName(t.getDbName());

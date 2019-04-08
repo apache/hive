@@ -77,6 +77,8 @@ class AddPartitionHandler extends AbstractEventHandler {
       return;
     }
 
+    withinContext.replicationSpec.setPathOwnedByHive(withinContext.hiveConf, apm.getLocOwner());
+
     Iterable<Partition> qlPtns = StreamSupport.stream(ptns.spliterator(), true).map(
         input -> {
           if (input == null) {

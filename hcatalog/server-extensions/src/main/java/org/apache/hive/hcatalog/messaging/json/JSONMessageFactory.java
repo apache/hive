@@ -82,15 +82,15 @@ public class JSONMessageFactory extends MessageFactory {
   }
 
   @Override
-  public CreateTableMessage buildCreateTableMessage(Table table) {
+  public CreateTableMessage buildCreateTableMessage(Table table, String locOwner) {
     return new JSONCreateTableMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, table.getDbName(),
         table.getTableName(), table.getTableType(), now());
   }
 
   @Override
-  public AlterTableMessage buildAlterTableMessage(Table before, Table after, Long writeId) {
+  public AlterTableMessage buildAlterTableMessage(Table before, Table after, Long writeId, String locOwner) {
     return new JSONAlterTableMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, before.getDbName(),
-        before.getTableName(), before.getTableType(), writeId, now());
+        before.getTableName(), before.getTableType(), writeId, locOwner, now());
   }
 
   @Override
@@ -100,18 +100,19 @@ public class JSONMessageFactory extends MessageFactory {
   }
 
   @Override
-  public AddPartitionMessage buildAddPartitionMessage(Table table, Iterator<Partition> partitionsIterator) {
+  public AddPartitionMessage buildAddPartitionMessage(Table table, Iterator<Partition> partitionsIterator,
+                                                      String locOwner) {
     return new JSONAddPartitionMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, table.getDbName(),
         table.getTableName(), table.getTableType(),
-        MessageBuilder.getPartitionKeyValues(table, partitionsIterator), now());
+        MessageBuilder.getPartitionKeyValues(table, partitionsIterator), locOwner, now());
   }
 
   @Override
   public AlterPartitionMessage buildAlterPartitionMessage(Table table, Partition before, Partition after,
-                                                          Long writeId) {
+                                                          Long writeId, String locOwner) {
     return new JSONAlterPartitionMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL,
         before.getDbName(), before.getTableName(), table.getTableType(),
-        MessageBuilder.getPartitionKeyValues(table,before), writeId, now());
+        MessageBuilder.getPartitionKeyValues(table,before), writeId, locOwner, now());
   }
 
   @Override
@@ -135,16 +136,16 @@ public class JSONMessageFactory extends MessageFactory {
 
   @Override
   public InsertMessage buildInsertMessage(String db, String table, Map<String,String> partKeyVals,
-                                          List<String> files) {
+                                          List<String> files, String locOwner) {
     return new JSONInsertMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, db, table, null,
-        partKeyVals, files, now());
+        partKeyVals, files, locOwner, now());
   }
 
   @Override
   public InsertMessage buildInsertMessage(String db, Table table, Map<String,String> partKeyVals,
-      List<String> files) {
+      List<String> files, String locOwner) {
     return new JSONInsertMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, table.getDbName(),
-        table.getTableName(), table.getTableType(), partKeyVals, files, now());
+        table.getTableName(), table.getTableType(), partKeyVals, files, locOwner, now());
   }
 
   private long now() {

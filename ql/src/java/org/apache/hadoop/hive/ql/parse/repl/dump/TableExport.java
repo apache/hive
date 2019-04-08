@@ -84,6 +84,34 @@ public class TableExport {
     this.conf = conf;
     this.paths = paths;
     this.mmCtx = mmCtx;
+    this.replicationSpec.setEventBasedOwnershipCheck(false);
+    setPathOwnedByHive(this.replicationSpec, tableSpec.tableHandle.getDataLocation(), db.getConf());
+  }
+
+  public static void setPathOwnedByHive(ReplicationSpec replicationSpec, Path location, HiveConf conf) {
+    // For incremental load path, this flag should be set using the owner name in the event.
+    if (replicationSpec == null || !replicationSpec.isInReplicationScope() ||
+            replicationSpec.isEventBasedOwnershipCheck()) {
+      return;
+    }
+
+    // If the table path or path of any of the partitions is not owned by hive,
+    // then table location not owned by hive for whole table.
+    if (!replicationSpec.isPathOwnedByHive()) {
+      logger.info("Path is not owned by hive user for table or some partition. No need to check further.");
+      return;
+    }
+
+    try {
+      FileStatus fileStatus = location.getFileSystem(conf).getFileStatus(location);
+      String hiveOwner = conf.get(HiveConf.ConfVars.STRICT_MANAGED_TABLES_MIGRARTION_OWNER.varname, "hive");
+      replicationSpec.setPathOwnedByHive(hiveOwner.equals(fileStatus.getOwner()));
+      logger.debug("Owner of path " + location + " is " +  fileStatus.getOwner() +
+              " replicationSpec.setPathOwnedByHive with " + replicationSpec.isPathOwnedByHive());
+    } catch (Exception e) {
+      logger.error("Failed to get location owner ", e);
+      throw new RuntimeException(e.getMessage());
+    }
   }
 
   public boolean write() throws SemanticException {

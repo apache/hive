@@ -42,6 +42,8 @@ public abstract class AlterPartitionMessage extends HCatEventMessage {
 
   public abstract Long getWriteId();
 
+  public abstract String getLocOwner();
+
   @Override
   public HCatEventMessage checkValid() {
     if (getTable() == null) throw new IllegalStateException("Table name unset.");

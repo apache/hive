@@ -104,6 +104,8 @@ class AlterPartitionHandler extends AbstractEventHandler<AlterPartitionMessage> 
       return;
     }
 
+    withinContext.replicationSpec.setPathOwnedByHive(withinContext.hiveConf, eventMessage.getLocOwner());
+
     if (Scenario.ALTER == scenario) {
       withinContext.replicationSpec.setIsMetadataOnly(true);
       List<Partition> partitions = new ArrayList<>();

@@ -44,7 +44,7 @@ import com.google.common.collect.Lists;
 public class JSONAddPartitionMessage extends AddPartitionMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableType, tableObjJson;
+  String server, servicePrincipal, db, table, tableType, tableObjJson, locOwner;
 
   @JsonProperty
   Long timestamp;
@@ -68,7 +68,7 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
    * Note that we get an Iterator rather than an Iterable here: so we can only walk thru the list once
    */
   public JSONAddPartitionMessage(String server, String servicePrincipal, Table tableObj,
-      Iterator<Partition> partitionsIterator, Iterator<PartitionFiles> partitionFileIter,
+      Iterator<Partition> partitionsIterator, Iterator<PartitionFiles> partitionFileIter, String locOwner,
       Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
@@ -91,6 +91,7 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
     }
     this.partitionFiles = (partitionFileIter != null) ? Lists.newArrayList(partitionFileIter)
                                                       : Lists.newArrayList();
+    this.locOwner = locOwner;
     checkValid();
   }
 
@@ -159,6 +160,9 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
   public List<String> getPartitionListJson() {
     return partitionListJson;
   }
+
+  @Override
+  public String getLocOwner() { return locOwner; }
 
   @Override
   public String toString() {

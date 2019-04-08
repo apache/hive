@@ -173,7 +173,7 @@ public class TestEximReplicationTasks{
     t.setDbName("testdb");
     t.setTableName("testtable");
     NotificationEvent event = new NotificationEvent(getEventId(), getTime(),
-        HCatConstants.HCAT_CREATE_TABLE_EVENT, msgFactory.buildCreateTableMessage(t).toString());
+        HCatConstants.HCAT_CREATE_TABLE_EVENT, msgFactory.buildCreateTableMessage(t, null).toString());
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
 
@@ -267,7 +267,7 @@ public class TestEximReplicationTasks{
     t.setTableName("testtable");
     NotificationEvent event = new NotificationEvent(getEventId(), getTime(),
         HCatConstants.HCAT_ALTER_TABLE_EVENT,
-            msgFactory.buildAlterTableMessage(t, t, t.getWriteId()).toString());
+            msgFactory.buildAlterTableMessage(t, t, t.getWriteId(), null).toString());
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
 
@@ -324,7 +324,8 @@ public class TestEximReplicationTasks{
     addedPtns.add(createPtn(t, Arrays.asList("201", "xyz")));
 
     NotificationEvent event = new NotificationEvent(getEventId(), getTime(),
-        HCatConstants.HCAT_ADD_PARTITION_EVENT, msgFactory.buildAddPartitionMessage(t, addedPtns.iterator()).toString());
+        HCatConstants.HCAT_ADD_PARTITION_EVENT, msgFactory.buildAddPartitionMessage(t,
+            addedPtns.iterator(), null).toString());
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
 
@@ -456,7 +457,7 @@ public class TestEximReplicationTasks{
 
     NotificationEvent event = new NotificationEvent(getEventId(), getTime(),
         HCatConstants.HCAT_ALTER_PARTITION_EVENT, msgFactory.buildAlterPartitionMessage(t,
-            p, p, p.getWriteId()).toString());
+            p, p, p.getWriteId(), null).toString());
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
 
@@ -511,7 +512,7 @@ public class TestEximReplicationTasks{
         t.getDbName(),
         t.getTableName(),
         getPtnDesc(t,p),
-        files
+        files, null
     ).toString());
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());

@@ -37,7 +37,7 @@ import com.google.common.collect.Lists;
 public class JSONInsertMessage extends InsertMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableType, tableObjJson, ptnObjJson;
+  String server, servicePrincipal, db, table, tableType, tableObjJson, ptnObjJson, locOwner;
 
   @JsonProperty
   Long timestamp;
@@ -55,7 +55,7 @@ public class JSONInsertMessage extends InsertMessage {
   }
 
   public JSONInsertMessage(String server, String servicePrincipal, Table tableObj, Partition ptnObj,
-                           boolean replace, Iterator<String> fileIter, Long timestamp) {
+                           boolean replace, Iterator<String> fileIter, String locOwner, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
 
@@ -81,6 +81,7 @@ public class JSONInsertMessage extends InsertMessage {
     this.timestamp = timestamp;
     this.replace = Boolean.toString(replace);
     this.files = Lists.newArrayList(fileIter);
+    this.locOwner = locOwner;
 
     checkValid();
   }
@@ -135,6 +136,11 @@ public class JSONInsertMessage extends InsertMessage {
   @Override
   public Partition getPtnObj() throws Exception {
     return ((null == ptnObjJson) ? null : (Partition) MessageBuilder.getTObj(ptnObjJson, Partition.class));
+  }
+
+  @Override
+  public String getLocOwner() {
+    return locOwner;
   }
 
   @Override

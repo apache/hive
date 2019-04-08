@@ -103,6 +103,8 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
         qlMdTableAfter.setStatsStateLikeNewTable();
       }
 
+      withinContext.replicationSpec.setPathOwnedByHive(withinContext.hiveConf, eventMessage.getLocOwner());
+
       EximUtil.createExportDump(
           metaDataPath.getFileSystem(withinContext.hiveConf),
           metaDataPath,

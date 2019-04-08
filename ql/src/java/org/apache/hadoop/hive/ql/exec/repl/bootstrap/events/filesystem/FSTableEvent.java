@@ -99,7 +99,7 @@ public class FSTableEvent implements TableEvent {
         HiveStrictManagedMigration.TableMigrationOption migrationOption =
             HiveStrictManagedMigration.determineMigrationTypeAutomatically(table.getTTable(),
                 table.getTableType(), null, hiveConf,
-                hiveDb.getMSC(), true);
+                hiveDb.getMSC(), replicationSpec().isPathOwnedByHive());
         HiveStrictManagedMigration.migrateTable(table.getTTable(), table.getTableType(),
                 migrationOption, false,
                 getHiveUpdater(hiveConf), hiveDb.getMSC(), hiveConf);

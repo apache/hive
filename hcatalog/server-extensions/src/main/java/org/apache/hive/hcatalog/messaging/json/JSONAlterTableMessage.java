@@ -32,7 +32,7 @@ import java.util.List;
 public class JSONAlterTableMessage extends AlterTableMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableType;
+  String server, servicePrincipal, db, table, tableType, locOwner;
 
   @JsonProperty
   Long timestamp, writeId;
@@ -47,8 +47,9 @@ public class JSONAlterTableMessage extends AlterTableMessage {
                                String db,
                                String table,
                                Long writeId,
-                               Long timestamp) {
-    this(server, servicePrincipal, db, table, null, writeId, timestamp);
+                               Long timestamp,
+                               String locOwner) {
+    this(server, servicePrincipal, db, table, null, writeId, locOwner, timestamp);
   }
 
   public JSONAlterTableMessage(String server,
@@ -57,6 +58,7 @@ public class JSONAlterTableMessage extends AlterTableMessage {
                                String table,
                                String tableType,
                                Long writeId,
+                               String locOwner,
                                Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
@@ -65,6 +67,7 @@ public class JSONAlterTableMessage extends AlterTableMessage {
     this.tableType = tableType;
     this.timestamp = timestamp;
     this.writeId = writeId;
+    this.locOwner = locOwner;
     checkValid();
   }
 
@@ -101,6 +104,11 @@ public class JSONAlterTableMessage extends AlterTableMessage {
   @Override
   public Long getWriteId() {
     return writeId == null ? 0 : writeId;
+  }
+
+  @Override
+  public String getLocOwner() {
+    return locOwner;
   }
 
   @Override

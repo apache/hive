@@ -34,7 +34,7 @@ import java.util.Map;
 public class JSONAlterPartitionMessage extends AlterPartitionMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableType;
+  String server, servicePrincipal, db, table, tableType, locOwner;
 
   @JsonProperty
   Long timestamp, writeId;
@@ -53,8 +53,9 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
                                    String table,
                                    Map<String,String> keyValues,
                                    Long writeId,
+                                   String locOwner,
                                    Long timestamp) {
-    this(server, servicePrincipal, db, table, null, keyValues, writeId, timestamp);
+    this(server, servicePrincipal, db, table, null, keyValues, writeId, locOwner, timestamp);
   }
 
   public JSONAlterPartitionMessage(String server,
@@ -64,6 +65,7 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
                                    String tableType,
                                    Map<String,String> keyValues,
                                    long writeId,
+                                   String locOwner,
                                    Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
@@ -73,6 +75,7 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
     this.timestamp = timestamp;
     this.keyValues = keyValues;
     this.writeId = writeId;
+    this.locOwner = locOwner;
     checkValid();
   }
 
@@ -115,6 +118,9 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
   public Long getWriteId() {
     return writeId == null ? 0 : writeId;
   }
+
+  @Override
+  public String getLocOwner() { return locOwner; }
 
   @Override
   public String toString() {

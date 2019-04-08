@@ -515,6 +515,11 @@ public class HiveConf extends Configuration {
         "This is the base directory on the target/replica warehouse under which data for "
             + "external tables is stored. This is relative base path and hence prefixed to the source "
             + "external table path on target cluster."),
+    STRICT_MANAGED_TABLES_MIGRARTION_OWNER("strict.managed.tables.migration.owner", "hive",
+        "This is used by upgrade tool to check if a managed table should be converted to external table. If the " +
+            "owner of the table location is not same as this config value, then the table is converted to an " +
+            "external table. The same is used during replication from a cluster with strict managed table set to" +
+            "false to a target cluster with strict managed table set to true."),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),

@@ -47,4 +47,6 @@ public abstract class CreateTableMessage extends HCatEventMessage {
       throw new IllegalStateException("Table name unset.");
     return super.checkValid();
   }
+
+  public abstract String getLocOwner();
 }

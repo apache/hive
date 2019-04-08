@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
@@ -50,6 +51,8 @@ public class ReplicationSpec {
   private boolean isMigratingToTxnTable = false;
   private boolean isMigratingToExternalTable = false;
   private boolean needDupCopyCheck = false;
+  private boolean isPathOwnedByHive = true;
+  private boolean isEventBasedOwnershipCheck = true;
 
   // Key definitions related to replication
   public enum KEY {
@@ -60,7 +63,8 @@ public class ReplicationSpec {
     LAZY("repl.lazy"),
     IS_REPLACE("repl.is.replace"),
     VALID_WRITEID_LIST("repl.valid.writeid.list"),
-    VALID_TXN_LIST("repl.valid.txnid.list")
+    VALID_TXN_LIST("repl.valid.txnid.list"),
+    PATH_OWNED_BY_HIVE("repl.path.owned.by.hive")
     ;
     private final String keyName;
 
@@ -128,6 +132,7 @@ public class ReplicationSpec {
     this.isLazy = isLazy;
     this.isReplace = isReplace;
     this.specType = Type.DEFAULT;
+    this.isPathOwnedByHive = true;
   }
 
   public ReplicationSpec(Function<String, String> keyFetcher) {
@@ -150,6 +155,10 @@ public class ReplicationSpec {
     this.isReplace = Boolean.parseBoolean(keyFetcher.apply(ReplicationSpec.KEY.IS_REPLACE.toString()));
     this.validWriteIdList = keyFetcher.apply(ReplicationSpec.KEY.VALID_WRITEID_LIST.toString());
     this.validTxnList = keyFetcher.apply(KEY.VALID_TXN_LIST.toString());
+    String pathOwnedByHive = keyFetcher.apply(KEY.PATH_OWNED_BY_HIVE.toString());
+    if (pathOwnedByHive != null) {
+      this.isPathOwnedByHive = Boolean.parseBoolean(pathOwnedByHive);
+    }
   }
 
   /**
@@ -390,6 +399,8 @@ public class ReplicationSpec {
         return getValidWriteIdList();
       case VALID_TXN_LIST:
         return getValidTxnList();
+      case PATH_OWNED_BY_HIVE:
+        return String.valueOf(isPathOwnedByHive());
     }
     return null;
   }
@@ -436,5 +447,31 @@ public class ReplicationSpec {
     // Duplicate file check during copy is required until after first successful incremental load.
     // Check HIVE-21197 for more detail.
     this.needDupCopyCheck = isFirstIncPending;
+  }
+
+  public boolean isPathOwnedByHive() {
+    return isPathOwnedByHive;
+  }
+
+  public static boolean isPathOwnedByHive(HiveConf conf, String user) {
+    String ownerName = conf.get(HiveConf.ConfVars.STRICT_MANAGED_TABLES_MIGRARTION_OWNER.varname, "hive");
+    return  (user == null || ownerName.equals(user));
+  }
+
+  public void setPathOwnedByHive(boolean pathOwnedByHive) {
+    isPathOwnedByHive = pathOwnedByHive;
+  }
+
+  public void setPathOwnedByHive(HiveConf conf, String user) {
+    String ownerName = conf.get(HiveConf.ConfVars.STRICT_MANAGED_TABLES_MIGRARTION_OWNER.varname, "hive");
+    isPathOwnedByHive = (user == null || ownerName.equals(user));
+  }
+
+  public void setEventBasedOwnershipCheck(boolean eventBasedOwnershipCheck) {
+    isEventBasedOwnershipCheck = eventBasedOwnershipCheck;
+  }
+
+  public boolean isEventBasedOwnershipCheck() {
+    return isEventBasedOwnershipCheck;
   }
 }

@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -36,17 +37,26 @@ public class AddPartitionEvent extends ListenerEvent {
   private final Table table;
   private final List<Partition> partitions;
   private PartitionSpecProxy partitionSpecProxy;
+  private final String locOwner;
 
-  public AddPartitionEvent(Table table, List<Partition> partitions, boolean status,
+  public AddPartitionEvent(Table table, List<Partition> partitions, PartitionSpecProxy partitionSpec, boolean status,
                            IHMSHandler handler) {
     super(status, handler);
     this.table = table;
     this.partitions = partitions;
-    this.partitionSpecProxy = null;
+    this.partitionSpecProxy = partitionSpec;
+
+    // The table location owner is same as partition location owner if the database is source of replication.
+    locOwner = FileUtils.getLocationOwner(table.getSd().getLocation(), handler.getConf());
+  }
+
+  public AddPartitionEvent(Table table, List<Partition> partitions, boolean status,
+                           IHMSHandler handler) {
+    this(table, partitions, null, status, handler);
   }
 
   public AddPartitionEvent(Table table, Partition partition, boolean status, IHMSHandler handler) {
-    this(table, Arrays.asList(partition), status, handler);
+    this(table, Arrays.asList(partition), null, status, handler);
   }
 
   /**
@@ -54,10 +64,7 @@ public class AddPartitionEvent extends ListenerEvent {
    */
   public AddPartitionEvent(Table table, PartitionSpecProxy partitionSpec, boolean status,
                            IHMSHandler handler) {
-    super(status, handler);
-    this.table = table;
-    this.partitions = null;
-    this.partitionSpecProxy = partitionSpec;
+    this(table, null, partitionSpec, status, handler);
   }
 
   /**
@@ -81,4 +88,7 @@ public class AddPartitionEvent extends ListenerEvent {
     }
   }
 
+  public String getLocOwner() {
+    return locOwner;
+  }
 }

@@ -203,15 +203,15 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private static void upgradeTableDesc(org.apache.hadoop.hive.metastore.api.Table tableObj, MetaData rv,
-                                       EximUtil.SemanticAnalyzerWrapperContext x)
+                                       EximUtil.SemanticAnalyzerWrapperContext x, Boolean isPathOwnedByHive)
           throws IOException, TException, HiveException {
     x.getLOG().debug("Converting table " + tableObj.getTableName() + " of type " + tableObj.getTableType() +
-            " with para " + tableObj.getParameters());
+            " with para " + tableObj.getParameters() + " isPathOwnedByHive  " + isPathOwnedByHive);
     //TODO : isPathOwnedByHive is hard coded to true, need to get it from repl dump metadata.
     TableType tableType = TableType.valueOf(tableObj.getTableType());
     HiveStrictManagedMigration.TableMigrationOption migrationOption =
             HiveStrictManagedMigration.determineMigrationTypeAutomatically(tableObj, tableType,
-                    null, x.getConf(), x.getHive().getMSC(), true);
+                    null, x.getConf(), x.getHive().getMSC(), isPathOwnedByHive);
     HiveStrictManagedMigration.migrateTable(tableObj, tableType, migrationOption, false,
             getHiveUpdater(x.getConf()), x.getHive().getMSC(), x.getConf());
     x.getLOG().debug("Converted table " + tableObj.getTableName() + " of type " + tableObj.getTableType() +
@@ -284,7 +284,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
               x.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES) &&
               (TableType.valueOf(tblObj.getTableType()) == TableType.MANAGED_TABLE)) {
         //TODO : dump metadata should be read to make sure that migration is required.
-        upgradeTableDesc(tblObj, rv, x);
+        upgradeTableDesc(tblObj, rv, x, replicationSpec.isPathOwnedByHive());
         //if the conversion is from non transactional to transactional table
         if (TxnUtils.isTransactionalTable(tblObj)) {
           replicationSpec.setMigratingToTxnTable();

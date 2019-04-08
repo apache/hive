@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.repl.dump.TableExport;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
@@ -103,6 +104,7 @@ public class TableSerializer implements JsonWriter.Serializer {
     writer.jsonGenerator.writeStartArray();
     if (partitions != null) {
       for (org.apache.hadoop.hive.ql.metadata.Partition partition : partitions) {
+        TableExport.setPathOwnedByHive(additionalPropertiesProvider, partition.getDataLocation(), hiveConf);
         new PartitionSerializer(partition.getTPartition())
             .writeTo(writer, additionalPropertiesProvider);
       }
