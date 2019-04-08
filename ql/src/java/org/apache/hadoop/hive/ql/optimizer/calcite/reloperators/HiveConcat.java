@@ -18,8 +18,12 @@
 
 package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
+import java.util.List;
+import org.apache.calcite.sql.SqlCall;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlSpecialOperator;
+import org.apache.calcite.sql.SqlWriter;
 import org.apache.calcite.sql.type.InferTypes;
 import org.apache.calcite.sql.type.ReturnTypes;
 
@@ -31,5 +35,31 @@ public class HiveConcat extends SqlSpecialOperator {
         InferTypes.RETURN_TYPE, null
     );
   }
-}
 
+  @Override
+  public void unparse(
+      SqlWriter writer,
+      SqlCall call,
+      int leftPrec,
+      int rightPrec) {
+    List<SqlNode> opList = call.getOperandList();
+    assert (opList.size() >= 1);
+    final SqlWriter.Frame frame =
+        writer.startList(SqlWriter.FrameTypeEnum.SIMPLE);
+    SqlNode sqlNode = opList.get(0);
+    sqlNode.unparse(writer, leftPrec, getLeftPrec());
+    for (SqlNode op : opList.subList(1, opList.size() - 1)) {
+      writer.setNeedWhitespace(true);
+      writer.sep("||");
+      writer.setNeedWhitespace(true);
+      op.unparse(writer, 0, 0);
+    }
+    sqlNode = opList.get(opList.size() - 1);
+    writer.setNeedWhitespace(true);
+    writer.sep("||");
+    writer.setNeedWhitespace(true);
+    sqlNode.unparse(writer, getRightPrec(), rightPrec);
+    writer.endList(frame);
+  }
+
+}
