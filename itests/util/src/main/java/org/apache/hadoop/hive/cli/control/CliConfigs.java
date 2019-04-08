@@ -233,7 +233,6 @@ public class CliConfigs {
         excludeQuery("union_fast_stats.q"); // Disabled in HIVE-19509
         excludeQuery("schema_evol_orc_acidvec_part.q"); // Disabled in HIVE-19509
         excludeQuery("schema_evol_orc_vec_part_llap_io.q"); // Disabled in HIVE-19509
-        excludeQuery("syslog_parser_file_pruning.q"); // Disabled in HIVE-21427
 
         setResultsDir("ql/src/test/results/clientpositive/llap");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
