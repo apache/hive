@@ -612,8 +612,8 @@ class LlapRecordReader
         //       currently implemented in Hive). The compile should supply the columns it expects
         //       to see, which is not "all, of any schema". Is VRB row CVs the right mechanism
         //       for that? Who knows. Perhaps resolve in schema evolution v2.
-        tableIncludedCols = new ArrayList<>(rbCtx.getDataColumnCount());
-        for (int i = 0; i < rbCtx.getDataColumnCount(); ++i) {
+        tableIncludedCols = new ArrayList<>(rbCtx.getRowColumnTypeInfos().length);
+        for (int i = 0; i < rbCtx.getRowColumnTypeInfos().length; ++i) {
           tableIncludedCols.add(i);
         }
       }
