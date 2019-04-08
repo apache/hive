@@ -72,10 +72,6 @@ public class SchemaToolCommandLine {
         .create("moveTable");
     Option createUserOpt = new Option("createUser", "Create the Hive user, set hiveUser to the db" +
         " admin user and the hive password to the db admin password with this");
-    Option createLogsTable = OptionBuilder
-      .hasArg()
-      .withDescription("Create table for Hive warehouse/compute logs")
-      .create("createLogsTable");
 
     OptionGroup optGroup = new OptionGroup();
     optGroup
@@ -92,8 +88,7 @@ public class SchemaToolCommandLine {
       .addOption(alterCatalog)
       .addOption(moveDatabase)
       .addOption(moveTable)
-      .addOption(createUserOpt)
-      .addOption(createLogsTable);
+      .addOption(createUserOpt);
     optGroup.setRequired(true);
 
     Option userNameOpt = OptionBuilder.withArgName("user")
@@ -170,9 +165,6 @@ public class SchemaToolCommandLine {
         .withDescription("Database a moving table is going to.  This is " +
             "required if you are moving a table.")
         .create("toDatabase");
-    Option retentionPeriod = OptionBuilder.hasArg()
-      .withDescription("Specify logs table retention period")
-      .create("retentionPeriod");
 
     Options options = new Options();
     options.addOption(help);
@@ -198,7 +190,6 @@ public class SchemaToolCommandLine {
     options.addOption(hivePasswdOpt);
     options.addOption(hiveDbOpt);
     options.addOption(yesOpt);
-    options.addOption(retentionPeriod);
     if (additionalOptions != null) options.addOptionGroup(additionalOptions);
 
     return options;
