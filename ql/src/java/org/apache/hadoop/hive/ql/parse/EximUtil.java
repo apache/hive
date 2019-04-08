@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -49,11 +50,11 @@ import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -320,14 +321,7 @@ public class EximUtil {
   public static String readAsString(final FileSystem fs, final Path fromMetadataPath)
       throws IOException {
     try (FSDataInputStream stream = fs.open(fromMetadataPath)) {
-      byte[] buffer = new byte[1024];
-      ByteArrayOutputStream sb = new ByteArrayOutputStream();
-      int read = stream.read(buffer);
-      while (read != -1) {
-        sb.write(buffer, 0, read);
-        read = stream.read(buffer);
-      }
-      return new String(sb.toByteArray(), "UTF-8");
+      return IOUtils.toString(stream, StandardCharsets.UTF_8);
     }
   }
 
