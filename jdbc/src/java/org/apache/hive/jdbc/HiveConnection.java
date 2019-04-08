@@ -682,23 +682,24 @@ public class HiveConnection implements java.sql.Connection {
           saslProps.put(Sasl.QOP, "auth-conf,auth-int,auth");
         }
         saslProps.put(Sasl.SERVER_AUTH, "true");
-        if (sessConfMap.containsKey(JdbcConnectionParams.AUTH_PRINCIPAL)) {
-          transport = KerberosSaslHelper.getKerberosTransport(
-              sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL), host,
-              socketTransport, saslProps, assumeSubject);
-        } else {
+        String tokenStr = null;
+        if (JdbcConnectionParams.AUTH_TOKEN.equals(sessConfMap.get(JdbcConnectionParams.AUTH_TYPE))) {
           // If there's a delegation token available then use token based connection
-          String tokenStr = getClientDelegationToken(sessConfMap);
-          if (tokenStr != null) {
-            transport = KerberosSaslHelper.getTokenTransport(tokenStr,
-                host, socketTransport, saslProps);
-          } else {
-            // we are using PLAIN Sasl connection with user/password
-            String userName = getUserName();
-            String passwd = getPassword();
-            // Overlay the SASL transport on top of the base socket transport (SSL or non-SSL)
-            transport = PlainSaslHelper.getPlainTransport(userName, passwd, socketTransport);
-          }
+          tokenStr = getClientDelegationToken(sessConfMap);
+        }
+        if (tokenStr != null) {
+          transport = KerberosSaslHelper.getTokenTransport(tokenStr,
+                  host, socketTransport, saslProps);
+        } else if(sessConfMap.containsKey(JdbcConnectionParams.AUTH_PRINCIPAL)){
+          transport = KerberosSaslHelper.getKerberosTransport(
+                  sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL), host,
+                  socketTransport, saslProps, assumeSubject);
+        } else {
+          // we are using PLAIN Sasl connection with user/password
+          String userName = getUserName();
+          String passwd = getPassword();
+          // Overlay the SASL transport on top of the base socket transport (SSL or non-SSL)
+          transport = PlainSaslHelper.getPlainTransport(userName, passwd, socketTransport);
         }
       } else {
         // Raw socket connection (non-sasl)
