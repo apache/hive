@@ -351,25 +351,17 @@ public class TestWorker extends CompactorTest {
     Assert.assertEquals(1, compacts.size());
     Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
 
-    // There should still now be 5 directories in the location
+    // There should still be 4 directories in the location
     FileSystem fs = FileSystem.get(conf);
     FileStatus[] stat = fs.listStatus(new Path(t.getSd().getLocation()));
-    Assert.assertEquals(toString(stat),6 , stat.length);
+    Assert.assertEquals(toString(stat), 4, stat.length);
 
     // Find the new delta file and make sure it has the right contents
     Arrays.sort(stat);
     Assert.assertEquals("base_20", stat[0].getPath().getName());
-    /**
-     * this may look a bit odd.  Compactor is capped at min open write id which is 23 in this case
-     * so the minor compaction above only 1 dir as input, delta_21_22 and outputs
-     * delta_21_22_v28 (and matching delete_delta)  (HIVE-9995/HIVE-20901)
-     */
-    Assert.assertEquals(makeDeleteDeltaDirNameCompacted(21, 22) + "_v0000028",
-        stat[1].getPath().getName());
-    Assert.assertEquals(makeDeltaDirNameCompacted(21, 22), stat[2].getPath().getName());
-    Assert.assertEquals(makeDeltaDirNameCompacted(21, 22) + "_v0000028", stat[3].getPath().getName());
-    Assert.assertEquals(makeDeltaDirName(23, 25), stat[4].getPath().getName());
-    Assert.assertEquals(makeDeltaDirName(26, 27), stat[5].getPath().getName());
+    Assert.assertEquals(makeDeltaDirName(21, 22), stat[1].getPath().getName());
+    Assert.assertEquals(makeDeltaDirName(23, 25), stat[2].getPath().getName());
+    Assert.assertEquals(makeDeltaDirName(26, 27), stat[3].getPath().getName());
   }
 
   @Test
