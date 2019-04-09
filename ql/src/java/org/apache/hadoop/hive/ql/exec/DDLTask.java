@@ -35,6 +35,7 @@ import java.sql.SQLException;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -779,8 +780,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     }
     if (pm != null) {
-      pm.updateTriggers(appliedRp);
-      LOG.info("Updated tez session pool manager with active resource plan: {}", name);
+      Collection<String> appliedTriggers = pm.updateTriggers(appliedRp);
+      LOG.info("Updated tez session pool manager with active resource plan: {} appliedTriggers: {}", name, appliedTriggers);
     }
     return 0;
   }
