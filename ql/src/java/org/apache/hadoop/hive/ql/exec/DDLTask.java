@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -582,8 +583,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     }
     if (pm != null) {
-      pm.updateTriggers(appliedRp);
-      LOG.info("Updated tez session pool manager with active resource plan: {}", name);
+      Collection<String> appliedTriggers = pm.updateTriggers(appliedRp);
+      LOG.info("Updated tez session pool manager with active resource plan: {} appliedTriggers: {}", name, appliedTriggers);
     }
     return 0;
   }
