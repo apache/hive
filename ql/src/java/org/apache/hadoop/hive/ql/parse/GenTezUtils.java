@@ -608,12 +608,12 @@ public class GenTezUtils {
       }
     }
     // Filter operator
-    filterDynamicValuePredicatesCollection = new DynamicValuePredicateContext();
     for (Operator<?> op : ts.getChildOperators()) {
       if (!(op instanceof FilterOperator)) {
         continue;
       }
       FilterDesc filterDesc = ((FilterOperator) op).getConf();
+      filterDynamicValuePredicatesCollection = new DynamicValuePredicateContext();
       collectDynamicValuePredicates(filterDesc.getPredicate(),
               filterDynamicValuePredicatesCollection);
       for (ExprNodeDesc nodeToRemove : filterDynamicValuePredicatesCollection
