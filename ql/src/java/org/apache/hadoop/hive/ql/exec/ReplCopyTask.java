@@ -213,7 +213,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
           }
           // Set stmt id 0 for bootstrap load as the directory needs to be searched during incremental load to avoid any
           // duplicate copy from the source. Check HIVE-21197 for more detail.
-          int stmtId = (writeId == ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID) ?
+          int stmtId = (writeId.equals(ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID)) ?
                   ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID :
                   driverContext.getCtx().getHiveTxnManager().getStmtIdAndIncrement();
           toPath = new Path(toPath, AcidUtils.baseOrDeltaSubdir(work.getDeleteDestIfExist(), writeId, writeId, stmtId));
