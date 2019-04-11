@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.List;
 
 public class RenameTableHandler extends AbstractMessageHandler {

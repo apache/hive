@@ -259,8 +259,9 @@ public class ReplUtils {
 
   public static Long getMigrationCurrentTblWriteId(HiveConf conf) {
     String writeIdString = conf.get(ReplUtils.REPL_CURRENT_TBL_WRITE_ID);
-    if (writeIdString == null)
+    if (writeIdString == null) {
       return null;
+    }
     return Long.parseLong(writeIdString);
   }
 }
