@@ -67,7 +67,13 @@ public class TestStatsReplicationScenarios {
   private String primaryDbName, replicatedDbName;
   private static HiveConf conf;
   private static boolean hasAutogather;
-  private static String acidTableKindToUse;
+
+  enum AcidTableKind {
+    FULL_ACID,
+    INSERT_ONLY
+  }
+
+  private static AcidTableKind acidTableKindToUse;
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
@@ -80,7 +86,7 @@ public class TestStatsReplicationScenarios {
 
   static void internalBeforeClassSetup(Map<String, String> primaryOverrides,
                                        Map<String, String> replicaOverrides, Class clazz,
-                                       boolean autogather, String acidTableKind)
+                                       boolean autogather, AcidTableKind acidTableKind)
       throws Exception {
     conf = new HiveConf(clazz);
     conf.set("dfs.client.use.datanode.hostname", "true");
@@ -237,13 +243,14 @@ public class TestStatsReplicationScenarios {
   }
 
   private String getCreateTableProperties() {
-    if (acidTableKindToUse != null) {
-      if (acidTableKindToUse.equals("orc")) {
-        return " stored as orc TBLPROPERTIES('transactional'='true')";
-      } else if (acidTableKindToUse.equals("mm")) {
-        return " TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only')";
-      }
+    if (acidTableKindToUse == AcidTableKind.FULL_ACID) {
+      return " stored as orc TBLPROPERTIES('transactional'='true')";
     }
+
+    if (acidTableKindToUse == AcidTableKind.INSERT_ONLY) {
+      return " TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only')";
+    }
+
     return "";
   }
 
@@ -523,7 +530,7 @@ public class TestStatsReplicationScenarios {
     String localDir = "./test.dat";
     String inPath = localDir + "/000000_0";
     String tableStorage = "";
-    if (acidTableKindToUse != null && acidTableKindToUse.equals("orc")) {
+    if (acidTableKindToUse == AcidTableKind.FULL_ACID) {
       tableStorage = "stored as orc";
     }
 
@@ -641,7 +648,7 @@ public class TestStatsReplicationScenarios {
             metadataOnly, false);
 
     // Incremental dump with transactional DML operations
-    if (acidTableKindToUse != null && acidTableKindToUse.equals("orc")) {
+    if (acidTableKindToUse == AcidTableKind.FULL_ACID) {
       applyTransactionalDMLOperations(tableNames);
       lastReplicationId = dumpLoadVerify(tableNames, lastReplicationId, parallelBootstrap,
               metadataOnly, false);

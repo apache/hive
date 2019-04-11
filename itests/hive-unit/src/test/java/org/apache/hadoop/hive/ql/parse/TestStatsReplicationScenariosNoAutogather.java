@@ -44,6 +44,7 @@ public class TestStatsReplicationScenariosNoAutogather extends TestStatsReplicat
     overrides.put(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
         GzipJSONMessageEncoder.class.getCanonicalName());
 
-    internalBeforeClassSetup(overrides, overrides, TestReplicationScenarios.class, false, null);
+    internalBeforeClassSetup(overrides, overrides, TestStatsReplicationScenariosNoAutogather.class,
+            false, null);
   }
 }

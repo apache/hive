@@ -49,6 +49,7 @@ public class TestStatsReplicationScenariosACID extends TestStatsReplicationScena
     overrides.put(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE.varname, "nonstrict");
 
 
-    internalBeforeClassSetup(overrides, overrides, TestReplicationScenarios.class, true, "orc");
+    internalBeforeClassSetup(overrides, overrides, TestStatsReplicationScenariosACID.class, true,
+            AcidTableKind.FULL_ACID);
   }
 }

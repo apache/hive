@@ -49,6 +49,7 @@ public class TestStatsReplicationScenariosMM extends TestStatsReplicationScenari
     overrides.put(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE.varname, "nonstrict");
 
 
-    internalBeforeClassSetup(overrides, overrides, TestReplicationScenarios.class, true, "mm");
+    internalBeforeClassSetup(overrides, overrides, TestStatsReplicationScenariosMM.class, true,
+            AcidTableKind.INSERT_ONLY);
   }
 }

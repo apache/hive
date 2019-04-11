@@ -50,6 +50,7 @@ public class TestStatsReplicationScenariosMMNoAutogather extends TestStatsReplic
     overrides.put("mapred.input.dir.recursive", "true");
 
 
-    internalBeforeClassSetup(overrides, overrides, TestReplicationScenarios.class, false, "mm");
+    internalBeforeClassSetup(overrides, overrides,
+            TestStatsReplicationScenariosMMNoAutogather.class, false, AcidTableKind.INSERT_ONLY);
   }
 }
