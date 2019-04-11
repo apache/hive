@@ -505,7 +505,7 @@ public class WarehouseInstance implements Closeable {
   List<ColumnStatisticsObj> getPartitionColumnStatistics(String dbName, String tableName,
                                                          String partName, List<String> colNames)
           throws Exception {
-   return client.getPartitionColumnStatistics(dbName, tableName,
+    return client.getPartitionColumnStatistics(dbName, tableName,
                                               Collections.singletonList(partName), colNames).get(0);
   }
 

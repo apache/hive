@@ -23,8 +23,6 @@ import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncod
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,8 +42,8 @@ public class TestStatsReplicationScenariosMMNoAutogather extends TestStatsReplic
     overrides.put(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "true");
     overrides.put(HiveConf.ConfVars.HIVE_TXN_MANAGER.varname,
               "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
-    overrides.put(MetastoreConf.ConfVars.CAPABILITY_CHECK.getHiveName(),"false");
-    overrides.put(HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT.varname,"1s");
+    overrides.put(MetastoreConf.ConfVars.CAPABILITY_CHECK.getHiveName(), "false");
+    overrides.put(HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT.varname, "1s");
     overrides.put(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE.varname, "nonstrict");
     overrides.put("mapred.input.dir.recursive", "true");
 

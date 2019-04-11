@@ -17,14 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +39,7 @@ public class TestStatsReplicationScenariosMigrationNoAutogather extends TestStat
     overrides.put(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
             GzipJSONMessageEncoder.class.getCanonicalName());
 
-    HashMap<String, String> replicaConfigs = new HashMap<String, String>() {{
+    Map<String, String> replicaConfigs = new HashMap<String, String>() {{
       put("hive.support.concurrency", "true");
       put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
       put("hive.metastore.client.capability.check", "false");
@@ -56,7 +53,7 @@ public class TestStatsReplicationScenariosMigrationNoAutogather extends TestStat
     }};
     replicaConfigs.putAll(overrides);
 
-    HashMap<String, String> primaryConfigs = new HashMap<String, String>() {{
+    Map<String, String> primaryConfigs = new HashMap<String, String>() {{
       put("hive.metastore.client.capability.check", "false");
       put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
       put("hive.exec.dynamic.partition.mode", "nonstrict");
@@ -71,6 +68,6 @@ public class TestStatsReplicationScenariosMigrationNoAutogather extends TestStat
     primaryConfigs.putAll(overrides);
 
     internalBeforeClassSetup(primaryConfigs, replicaConfigs,
-            TestStatsReplicationScenariosMigrationNoAutogather.class, false,null);
+            TestStatsReplicationScenariosMigrationNoAutogather.class, false, null);
   }
 }
