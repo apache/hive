@@ -39,7 +39,7 @@ public class AddDependencyToLeaves implements DAGTraversal.Function {
 
   @Override
   public void process(Task<? extends Serializable> task) {
-    if (task.getChildTasks() == null) {
+    if ((task.getChildTasks() == null) || (task.getChildTasks().isEmpty())) {
       postDependencyCollectionTasks.forEach(task::addDependentTask);
     }
   }

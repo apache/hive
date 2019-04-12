@@ -44,6 +44,8 @@ import org.apache.hadoop.hive.ql.ddl.table.misc.AlterTableSetPropertiesDesc;
 import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.util.AddDependencyToLeaves;
+import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -191,8 +193,11 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
     Map<String, String> mapProps = new HashMap<>();
     mapProps.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, Boolean.TRUE.toString());
     AlterTableSetPropertiesDesc alterTblDesc = new AlterTableSetPropertiesDesc(newTableName, null, null, false,
-        mapProps, false, false, null);
-    addExportTask(rootTasks, exportTask, TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc)));
+            mapProps, false, false, null);
+    Task<DDLWork> alterTableTask = TaskFactory.get(
+            new DDLWork(getInputs(), getOutputs(), alterTblDesc));
+    alterTableTask.addDependentTask(exportTask);
+    DAGTraversal.traverse(rootTasks, new AddDependencyToLeaves(alterTableTask));
 
     // Now make a task to drop temp table
     // {@link DDLSemanticAnalyzer#analyzeDropTable(ASTNode ast, TableType expectedType)
@@ -248,34 +253,31 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
     return rewrittenQueryStr;
   }
 
-  /**
-   * Makes the exportTask run after all other tasks of the "insert into T ..." are done.
-   */
-  private void addExportTask(List<Task<? extends Serializable>> rootTasks,
-      Task<ExportWork> exportTask, Task<DDLWork> alterTable) {
-    for (Task<? extends  Serializable> t : rootTasks) {
-      if (t.getNumChild() <= 0) {
-        //todo: ConditionalTask#addDependentTask(Task) doesn't do the right thing: HIVE-18978
-        t.addDependentTask(alterTable);
-        //this is a leaf so add exportTask to follow it
-        alterTable.addDependentTask(exportTask);
-      } else {
-        addExportTask(t.getDependentTasks(), exportTask, alterTable);
-      }
-    }
-  }
-
   private void removeStatsTasks(List<Task<? extends Serializable>> rootTasks) {
     List<Task<? extends Serializable>> statsTasks = findStatsTasks(rootTasks, null);
     if (statsTasks == null) {
       return;
     }
-    for (Task<? extends Serializable> statsTask : statsTasks) {
+    for (Task<? extends Serializable> statsTask : new ArrayList<>(statsTasks)) {
       if (statsTask.getParentTasks() == null) {
         continue; //should never happen
       }
-      for (Task<? extends Serializable> t : new ArrayList<>(statsTask.getParentTasks())) {
-        t.removeDependentTask(statsTask);
+
+      // Save child tasks to be added directly to the parent task.
+      List<Task<? extends Serializable>> children = statsTask.getChildTasks();
+      for (Task<? extends Serializable> child : children) {
+        statsTask.removeDependentTask(child);
+      }
+      for (Task<? extends Serializable> parent : new ArrayList<>(statsTask.getParentTasks())) {
+        parent.removeDependentTask(statsTask);
+        LOG.error("Parent " + parent + " Child " + statsTask);
+
+        if (children == null) {
+          continue;
+        }
+        for (Task<? extends Serializable> child : new ArrayList<>(children)) {
+          parent.addDependentTask(child);
+        }
       }
     }
   }
@@ -286,6 +288,10 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
       if (t instanceof StatsTask) {
         if (statsTasks == null) {
           statsTasks = new ArrayList<>();
+        }
+        if (statsTasks.contains(t)) {
+          // If current stats task is already visited once, then skip traversing it's children.
+          continue;
         }
         statsTasks.add(t);
       }

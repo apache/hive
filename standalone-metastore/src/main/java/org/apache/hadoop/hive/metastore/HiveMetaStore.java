@@ -42,6 +42,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -83,6 +84,8 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.ZKDeRegisterWatcher;
 import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.metastore.api.*;
@@ -1998,7 +2001,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         List<SQLNotNullConstraint> notNullConstraints, List<SQLDefaultConstraint> defaultConstraints,
                                    List<SQLCheckConstraint> checkConstraints)
         throws AlreadyExistsException, MetaException,
-            InvalidObjectException, NoSuchObjectException, InvalidInputException {
+        InvalidObjectException, NoSuchObjectException, InvalidInputException {
+
+      ColumnStatistics colStats = null;
+      // If the given table has column statistics, save it here. We will update it later.
+      // We don't want it to be part of the Table object being created, lest the create table
+      // event will also have the col stats which we don't want.
+      if (tbl.isSetColStats()) {
+        colStats = tbl.getColStats();
+        tbl.unsetColStats();
+      }
+
       if (!MetaStoreUtils.validateName(tbl.getTableName(), conf)) {
         throw new InvalidObjectException(tbl.getTableName()
             + " is not a valid object name");
@@ -2223,13 +2236,22 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
 
-      // If the table has column statistics, update it into the metastore. This feature is used
-      // by replication to replicate table level statistics.
-      if (tbl.isSetColStats()) {
-        // We do not replicate statistics for a transactional table right now and hence we do not
-        // expect a transactional table to have column statistics here. So passing null
-        // validWriteIds is fine for now.
-        updateTableColumnStatsInternal(tbl.getColStats(), null, tbl.getWriteId());
+      // If the table has column statistics, update it into the metastore. We need a valid
+      // writeId list to update column statistics for a transactional table. But during bootstrap
+      // replication, where we use this feature, we do not have a valid writeId list which was
+      // used to update the stats. But we know for sure that the writeId associated with the
+      // stats was valid then (otherwise stats update would have failed on the source). So, craft
+      // a valid transaction list with only that writeId and use it to update the stats.
+      if (colStats != null) {
+        long writeId = tbl.getWriteId();
+        String validWriteIds = null;
+        if (writeId > 0) {
+          ValidWriteIdList validWriteIdList =
+                  new ValidReaderWriteIdList(tbl.getDbName() + "." + tbl.getTableName(),
+                                              new long[0], new BitSet(), writeId);
+          validWriteIds = validWriteIdList.toString();
+        }
+        updateTableColumnStatsInternal(colStats, validWriteIds, tbl.getWriteId());
       }
     }
 
@@ -3741,6 +3763,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Map<String, String> transactionalListenerResponses = Collections.emptyMap();
       Database db = null;
 
+      List<ColumnStatistics> partsColStats = new ArrayList<>(parts.size());
+      List<Long> partsWriteIds = new ArrayList<>(parts.size());
+
       try {
         ms.openTransaction();
         tbl = ms.getTable(catName, dbName, tblName);
@@ -3763,6 +3788,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             throw new MetaException("Partition does not belong to target table " +
                 getCatalogQualifiedTableName(catName, dbName, tblName) + ": " +
                     part);
+          }
+
+          // Collect partition column stats to be updated if present. Partition objects passed down
+          // here at the time of replication may have statistics in them, which is required to be
+          // updated in the metadata. But we don't want it to be part of the Partition object when
+          // it's being created or altered, lest it becomes part of the notification event.
+          if (part.isSetColStats()) {
+            partsColStats.add(part.getColStats());
+            part.unsetColStats();
+            partsWriteIds.add(part.getWriteId());
           }
 
           boolean shouldAdd = startAddPartition(ms, part, ifNotExists);
@@ -3853,11 +3888,23 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         }
 
-        // Update partition column statistics if available
-        for (Partition newPart : newParts) {
-          if (newPart.isSetColStats()) {
-            updatePartitonColStatsInternal(tbl, newPart.getColStats(), null, newPart.getWriteId());
+        // Update partition column statistics if available. We need a valid writeId list to
+        // update column statistics for a transactional table. But during bootstrap replication,
+        // where we use this feature, we do not have a valid writeId list which was used to
+        // update the stats. But we know for sure that the writeId associated with the stats was
+        // valid then (otherwise stats update would have failed on the source). So, craft a valid
+        // transaction list with only that writeId and use it to update the stats.
+        int cnt = 0;
+        for (ColumnStatistics partColStats: partsColStats) {
+          long writeId = partsWriteIds.get(cnt++);
+          String validWriteIds = null;
+          if (writeId > 0) {
+            ValidWriteIdList validWriteIdList =
+                    new ValidReaderWriteIdList(tbl.getDbName() + "." + tbl.getTableName(),
+                            new long[0], new BitSet(), writeId);
+            validWriteIds = validWriteIdList.toString();
           }
+          updatePartitonColStatsInternal(tbl, partColStats, validWriteIds, writeId);
         }
 
         success = ms.commitTransaction();

@@ -20,10 +20,17 @@ package org.apache.hadoop.hive.ql.parse;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
+import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
+import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
+import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArguments;
 import org.apache.hadoop.hive.shims.Utils;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -43,6 +50,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 
@@ -60,35 +68,52 @@ public class TestStatsReplicationScenarios {
   private static HiveConf conf;
   private static boolean hasAutogather;
 
+  enum AcidTableKind {
+    FULL_ACID,
+    INSERT_ONLY
+  }
+
+  private static AcidTableKind acidTableKindToUse;
+
   @BeforeClass
   public static void classLevelSetup() throws Exception {
     Map<String, String> overrides = new HashMap<>();
     overrides.put(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
         GzipJSONMessageEncoder.class.getCanonicalName());
 
-    internalBeforeClassSetup(overrides, TestReplicationScenarios.class, true);
+    internalBeforeClassSetup(overrides, overrides, TestReplicationScenarios.class, true, null);
   }
 
-  static void internalBeforeClassSetup(Map<String, String> overrides, Class clazz,
-                                       boolean autogather)
+  static void internalBeforeClassSetup(Map<String, String> primaryOverrides,
+                                       Map<String, String> replicaOverrides, Class clazz,
+                                       boolean autogather, AcidTableKind acidTableKind)
       throws Exception {
     conf = new HiveConf(clazz);
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =
         new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
-    Map<String, String> localOverrides = new HashMap<String, String>() {{
+    Map<String, String> additionalOverrides = new HashMap<String, String>() {{
         put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
         put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
       }};
-    localOverrides.putAll(overrides);
-    replica = new WarehouseInstance(LOG, miniDFSCluster, localOverrides);
+    Map<String, String> overrides = new HashMap<>();
+
+    overrides.putAll(additionalOverrides);
+    overrides.putAll(replicaOverrides);
+    replica = new WarehouseInstance(LOG, miniDFSCluster, overrides);
 
     // Run with autogather false on primary if requested
     hasAutogather = autogather;
-    localOverrides.put(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname,
-                        autogather ? "true" : "false");
-    primary = new WarehouseInstance(LOG, miniDFSCluster, localOverrides);
+    additionalOverrides.put(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname,
+            autogather ? "true" : "false");
+    overrides.clear();
+    overrides.putAll(additionalOverrides);
+    overrides.putAll(primaryOverrides);
+    primary = new WarehouseInstance(LOG, miniDFSCluster, overrides);
+
+    // Use transactional tables
+    acidTableKindToUse = acidTableKind;
   }
 
   @AfterClass
@@ -128,7 +153,8 @@ public class TestStatsReplicationScenarios {
 
   private void verifyReplicatedStatsForTable(String tableName) throws Throwable {
     // Test column stats
-    Assert.assertEquals(primary.getTableColumnStatistics(primaryDbName, tableName),
+    Assert.assertEquals("Mismatching column statistics for  table " + tableName,
+                        primary.getTableColumnStatistics(primaryDbName, tableName),
                         replica.getTableColumnStatistics(replicatedDbName, tableName));
 
     // Test table level stats
@@ -136,8 +162,9 @@ public class TestStatsReplicationScenarios {
             collectStatsParams(replica.getTable(replicatedDbName, tableName).getParameters());
     Map<String, String> pParams =
             collectStatsParams(primary.getTable(primaryDbName, tableName).getParameters());
-    Assert.assertEquals(pParams, rParams);
+    Assert.assertEquals("Mismatch in stats parameters for table " + tableName, pParams, rParams);
 
+    primary.getTable(primaryDbName, tableName).getPartitionKeys();
     verifyReplicatedStatsForPartitionsOfTable(tableName);
   }
 
@@ -151,18 +178,24 @@ public class TestStatsReplicationScenarios {
       return;
     }
 
+    List<FieldSchema> partKeys = primary.getTable(primaryDbName, tableName).getPartitionKeys();
     for (Partition pPart : pParts) {
       Partition rPart = replica.getPartition(replicatedDbName, tableName,
               pPart.getValues());
 
       Map<String, String> rParams = collectStatsParams(rPart.getParameters());
       Map<String, String> pParams = collectStatsParams(pPart.getParameters());
-      Assert.assertEquals(pParams, rParams);
-    }
+      String partName = Warehouse.makePartName(partKeys, pPart.getValues());
+      Assert.assertEquals("Mismatch in stats parameters for partition " + partName + " of table " + tableName,
+                          pParams, rParams);
 
-    // Test partition column stats for all partitions
-    Assert.assertEquals(primary.getAllPartitionColumnStatistics(primaryDbName, tableName),
-                        replica.getAllPartitionColumnStatistics(replicatedDbName, tableName));
+      // Test partition column stats for the partition
+      Assert.assertEquals("Mismatching column statistics for partition " + partName + "of table " + tableName,
+                          primary.getPartitionColumnStatistics(primaryDbName, tableName, partName,
+                                  StatsSetupConst.getColumnsHavingStats(pParams)),
+                          replica.getPartitionColumnStatistics(replicatedDbName, tableName, partName,
+                                  StatsSetupConst.getColumnsHavingStats(rParams)));
+    }
   }
 
   private void verifyNoStatsReplicationForMetadataOnly(String tableName) throws Throwable {
@@ -170,17 +203,18 @@ public class TestStatsReplicationScenarios {
     Assert.assertTrue(replica.getTableColumnStatistics(replicatedDbName, tableName).isEmpty());
 
     // When no data is replicated, the basic stats parameters for table should look as if it's a
-    // new table created on replica. Based on the create table rules the basic stats may be true
-    // or false. Either is fine with us so don't bother checking exact values.
+    // new table created on replica i.e. zero or null.
     Map<String, String> rParams =
             collectStatsParams(replica.getTable(replicatedDbName, tableName).getParameters());
-    Map<String, String> expectedFalseParams = new HashMap<>();
-    Map<String, String> expectedTrueParams = new HashMap<>();
-    StatsSetupConst.setStatsStateForCreateTable(expectedTrueParams,
-            replica.getTableColNames(replicatedDbName, tableName), StatsSetupConst.TRUE);
-    StatsSetupConst.setStatsStateForCreateTable(expectedFalseParams,
-            replica.getTableColNames(replicatedDbName, tableName), StatsSetupConst.FALSE);
-    Assert.assertTrue(rParams.equals(expectedFalseParams) || rParams.equals(expectedTrueParams));
+    for (String param : StatsSetupConst.supportedStats) {
+      String val = rParams.get(param);
+      Assert.assertTrue("parameter " + param + " of table " + tableName + " is expected to be " +
+              "null or 0", val == null || val.trim().equals("0"));
+    }
+
+    // As long as the above conditions are met, it doesn't matter whether basic and column stats
+    // state are set to true or false. If those are false, actual values are immaterial. If they
+    // are true, the values assured above represent the correct state of no data.
 
     verifyNoPartitionStatsReplicationForMetadataOnly(tableName);
   }
@@ -196,7 +230,8 @@ public class TestStatsReplicationScenarios {
 
     // Partitions are not replicated in metadata only replication.
     List<Partition> rParts = replica.getAllPartitions(replicatedDbName, tableName);
-    Assert.assertTrue(rParts == null || rParts.isEmpty());
+    Assert.assertTrue("Partitions replicated in a metadata only dump",
+            rParts == null || rParts.isEmpty());
 
     // Test partition column stats for all partitions
     Map<String, List<ColumnStatisticsObj>> rPartColStats =
@@ -205,6 +240,18 @@ public class TestStatsReplicationScenarios {
       List<ColumnStatisticsObj> colStats = entry.getValue();
       Assert.assertTrue(colStats == null || colStats.isEmpty());
     }
+  }
+
+  private String getCreateTableProperties() {
+    if (acidTableKindToUse == AcidTableKind.FULL_ACID) {
+      return " stored as orc TBLPROPERTIES('transactional'='true')";
+    }
+
+    if (acidTableKindToUse == AcidTableKind.INSERT_ONLY) {
+      return " TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only')";
+    }
+
+    return "";
   }
 
   private List<String> createBootStrapData() throws Throwable {
@@ -216,16 +263,19 @@ public class TestStatsReplicationScenarios {
     String ndTableName = "ndTable";
     // Partitioned table without data during bootstrap and hence no stats.
     String ndPartTableName = "ndPTable";
+    String tblCreateExtra = getCreateTableProperties();
 
     primary.run("use " + primaryDbName)
-            .run("create table " + simpleTableName + " (id int)")
+            .run("create table " + simpleTableName + " (id int)" + tblCreateExtra)
             .run("insert into " + simpleTableName + " values (1), (2)")
-            .run("create table " + partTableName + " (place string) partitioned by (country string)")
+            .run("create table " + partTableName + " (place string) partitioned by (country string)"
+                    + tblCreateExtra)
             .run("insert into " + partTableName + " partition(country='india') values ('bangalore')")
             .run("insert into " + partTableName + " partition(country='us') values ('austin')")
             .run("insert into " + partTableName + " partition(country='france') values ('paris')")
-            .run("create table " + ndTableName + " (str string)")
-            .run("create table " + ndPartTableName + " (val string) partitioned by (pk int)");
+            .run("create table " + ndTableName + " (str string)" + tblCreateExtra)
+            .run("create table " + ndPartTableName + " (val string) partitioned by (pk int)" +
+                    tblCreateExtra);
 
     List<String> tableNames = new ArrayList<>(Arrays.asList(simpleTableName, partTableName,
             ndTableName, ndPartTableName));
@@ -246,13 +296,14 @@ public class TestStatsReplicationScenarios {
    * Dumps primarydb on primary, loads it on replica as replicadb, verifies that the statistics
    * loaded are same as the ones on primary.
    * @param tableNames, names of tables on primary expected to be loaded
-   * @param lastReplicationId of the last dump, for incremental dump/load
    * @param parallelLoad, if true, parallel bootstrap load is used
    * @param metadataOnly, only metadata is dumped and loaded.
+   * @param lastReplicationId of the last dump, for incremental dump/load
+   * @param failRetry
    * @return lastReplicationId of the dump performed.
    */
   private String dumpLoadVerify(List<String> tableNames, String lastReplicationId,
-                                boolean parallelLoad, boolean metadataOnly)
+                                boolean parallelLoad, boolean metadataOnly, boolean failRetry)
           throws Throwable {
     List<String> withClauseList;
     // Parallel load works only for bootstrap.
@@ -269,15 +320,24 @@ public class TestStatsReplicationScenarios {
     WarehouseInstance.Tuple dumpTuple = primary.run("use " + primaryDbName)
             .dump(primaryDbName, lastReplicationId, withClauseList);
 
+
     // Load, if necessary changing configuration.
     if (parallelLoad) {
       replica.hiveConf.setBoolVar(HiveConf.ConfVars.EXECPARALLEL, true);
     }
 
-    replica.load(replicatedDbName, dumpTuple.dumpLocation)
-            .run("use " + replicatedDbName)
-            .run("show tables")
-            .verifyResults(tableNames.toArray(new String[1]));
+    // Fail load if for testing failure and retry scenario. Fail the load while setting
+    // checkpoint for a table in the middle of list of tables.
+    if (failRetry) {
+      if (lastReplicationId == null) {
+        failBootstrapLoad(dumpTuple, tableNames.size()/2);
+      } else {
+        failIncrementalLoad(dumpTuple);
+      }
+    }
+
+    // Load, possibly a retry
+    replica.load(replicatedDbName, dumpTuple.dumpLocation);
 
     // Metadata load may not load all the events.
     if (!metadataOnly) {
@@ -301,12 +361,108 @@ public class TestStatsReplicationScenarios {
     return dumpTuple.lastReplicationId;
   }
 
+  /**
+   * Run a bootstrap that will fail.
+   * @param tuple the location of bootstrap dump
+   */
+  private void failBootstrapLoad(WarehouseInstance.Tuple tuple, int failAfterNumTables) throws Throwable {
+    // fail setting ckpt directory property for the second table so that we test the case when
+    // bootstrap load fails after some but not all tables are loaded.
+    BehaviourInjection<CallerArguments, Boolean> callerVerifier
+            = new BehaviourInjection<CallerArguments, Boolean>() {
+      int cntTables = 0;
+      String prevTable = null;
+      @Nullable
+      @Override
+      public Boolean apply(@Nullable CallerArguments args) {
+        if (prevTable == null ||
+                !prevTable.equalsIgnoreCase(args.tblName)) {
+          cntTables++;
+        }
+        prevTable = args.tblName;
+        if (args.dbName.equalsIgnoreCase(replicatedDbName) && cntTables > failAfterNumTables) {
+          injectionPathCalled = true;
+          LOG.warn("Verifier - DB : " + args.dbName + " TABLE : " + args.tblName);
+          return false;
+        }
+        return true;
+      }
+    };
+
+    InjectableBehaviourObjectStore.setAlterTableModifier(callerVerifier);
+    try {
+      replica.loadFailure(replicatedDbName, tuple.dumpLocation);
+      callerVerifier.assertInjectionsPerformed(true, false);
+    } finally {
+      InjectableBehaviourObjectStore.resetAlterTableModifier();
+    }
+  }
+
+  private void failIncrementalLoad(WarehouseInstance.Tuple dumpTuple) throws Throwable {
+    // fail add notification when second update table stats event is encountered. Thus we
+    // test successful application as well as failed application of this event.
+    BehaviourInjection<NotificationEvent, Boolean> callerVerifier
+            = new BehaviourInjection<NotificationEvent, Boolean>() {
+      int cntEvents = 0;
+      @Override
+      public Boolean apply(NotificationEvent entry) {
+        cntEvents++;
+        if (entry.getEventType().equalsIgnoreCase(EventMessage.EventType.UPDATE_TABLE_COLUMN_STAT.toString()) &&
+            cntEvents > 1) {
+          injectionPathCalled = true;
+          LOG.warn("Verifier - DB: " + entry.getDbName()
+                  + " Table: " + entry.getTableName()
+                  + " Event: " + entry.getEventType());
+          return false;
+        }
+        return true;
+      }
+    };
+
+    InjectableBehaviourObjectStore.setAddNotificationModifier(callerVerifier);
+    try {
+      replica.loadFailure(replicatedDbName, dumpTuple.dumpLocation);
+    } finally {
+      InjectableBehaviourObjectStore.resetAddNotificationModifier();
+    }
+    callerVerifier.assertInjectionsPerformed(true, false);
+
+    // fail add notification when second update partition stats event is encountered. Thus we test
+    // successful application as well as failed application of this event.
+    callerVerifier = new BehaviourInjection<NotificationEvent, Boolean>() {
+      int cntEvents = 0;
+
+      @Override
+      public Boolean apply(NotificationEvent entry) {
+        cntEvents++;
+        if (entry.getEventType().equalsIgnoreCase(EventMessage.EventType.UPDATE_PARTITION_COLUMN_STAT.toString()) &&
+            cntEvents > 1) {
+          injectionPathCalled = true;
+          LOG.warn("Verifier - DB: " + entry.getDbName()
+                  + " Table: " + entry.getTableName()
+                  + " Event: " + entry.getEventType());
+          return false;
+        }
+        return true;
+      }
+    };
+
+    InjectableBehaviourObjectStore.setAddNotificationModifier(callerVerifier);
+    try {
+      replica.loadFailure(replicatedDbName, dumpTuple.dumpLocation);
+    } finally {
+      InjectableBehaviourObjectStore.resetAddNotificationModifier();
+    }
+    callerVerifier.assertInjectionsPerformed(true, false);
+  }
+
   private void createIncrementalData(List<String> tableNames) throws Throwable {
     // Annotations for this table are same as createBootStrapData
     String simpleTableName = "sTable";
     String partTableName = "pTable";
     String ndTableName = "ndTable";
     String ndPartTableName = "ndPTable";
+    String tblCreateExtra = getCreateTableProperties();
 
     Assert.assertTrue(tableNames.containsAll(Arrays.asList(simpleTableName, partTableName,
                                                          ndTableName, ndPartTableName)));
@@ -324,14 +480,15 @@ public class TestStatsReplicationScenarios {
             .run("insert into " + partTableName + "(country, place) values ('us', 'chicago')")
             // new partition
             .run("insert into " + partTableName + "(country, place) values ('australia', 'perth')")
-            .run("create table " + incTableName + " (config string, enabled boolean)")
+            .run("create table " + incTableName + " (config string, enabled boolean)" +
+                    tblCreateExtra)
             .run("insert into " + incTableName + " values ('conf1', true)")
             .run("insert into " + incTableName + " values ('conf2', false)")
             .run("insert into " + ndPartTableName + "(pk, val) values (1, 'one')")
             .run("insert into " + ndPartTableName + "(pk, val) values (1, 'another one')")
             .run("insert into " + ndPartTableName + "(pk, val) values (2, 'two')")
             .run("create table " + incPartTableName +
-                    "(val string) partitioned by (tvalue boolean)")
+                    "(val string) partitioned by (tvalue boolean)" + tblCreateExtra)
             .run("insert into " + incPartTableName + "(tvalue, val) values (true, 'true')")
             .run("insert into " + incPartTableName + "(tvalue, val) values (false, 'false')");
 
@@ -347,29 +504,183 @@ public class TestStatsReplicationScenarios {
     }
   }
 
-  private void testStatsReplicationCommon(boolean parallelBootstrap, boolean metadataOnly) throws Throwable {
+  private void applyDMLOperations(List<String> tableNames) throws Throwable {
+    // Annotations for this table are same as createBootStrapData
+    String simpleTableName = "sTable";
+    String partTableName = "pTable";
+    String ndTableName = "ndTable";
+    String ndPartTableName = "ndPTable";
+    String incTableName = "iTable"; // New table
+    String tblCreateExtra = getCreateTableProperties();
+
+    Assert.assertTrue(tableNames.containsAll(Arrays.asList(simpleTableName, partTableName,
+            ndTableName, ndPartTableName, incTableName)));
+
+    String ctasTableName = "ctasTable"; // Table created through CTAS
+    String ctasPartTableName = "ctasPartTable"; // Table created through CTAS
+    // Tables created through import
+    String eximTableName = "eximTable";
+    String eximPartTableName = "eximPartTable";
+    // Tables created through load
+    String loadTableName = "loadTable";
+    String loadPartTableName = "loadPartTable";
+
+    String exportPath = "'hdfs:///tmp/" + primaryDbName + "/" + incTableName + "/'";
+    String exportPartPath = "'hdfs:///tmp/" + primaryDbName + "/" + partTableName + "/'";
+    String localDir = "./test.dat";
+    String inPath = localDir + "/000000_0";
+    String tableStorage = "";
+    if (acidTableKindToUse == AcidTableKind.FULL_ACID) {
+      tableStorage = "stored as orc";
+    }
+
+    primary.run("use " + primaryDbName)
+            // insert overwrite
+            .run("insert overwrite table " + simpleTableName + " values (5), (6), (7)")
+            .run("insert overwrite table " + partTableName + " partition (country='india') " +
+                    " values ('bombay')")
+            // truncate
+            .run("truncate table " + ndTableName)
+            .run("truncate table " + ndPartTableName + " partition (pk=1)")
+            // CTAS
+            .run("create table " + ctasTableName + " as select * from " + incTableName)
+            .run("create table " + ctasPartTableName + " as select * from " + partTableName)
+            // Import
+            .run("export table " + partTableName + " to " + exportPartPath)
+            .run("import table " + eximPartTableName + " from " + exportPartPath)
+            .run("export table " + incTableName + " to " + exportPath)
+            .run("import table " + eximTableName + " from " + exportPath)
+            // load
+            .run("insert overwrite local directory '" + localDir + "'" + tableStorage + " select " +
+                    "* from " + simpleTableName)
+            .run("create table " + loadTableName + " (id int)" + tblCreateExtra)
+            .run("load data local inpath '" + inPath + "' overwrite into table " + loadTableName)
+            .run("create table " + loadPartTableName + " (id int) partitioned by (key int) " + tblCreateExtra)
+            .run("load data local inpath '" + inPath + "' overwrite into table "
+                    + loadPartTableName + " partition (key=1)");
+
+    tableNames.add(ctasTableName);
+    tableNames.add(ctasPartTableName);
+    tableNames.add(eximTableName);
+    tableNames.add(eximPartTableName);
+    tableNames.add(loadTableName);
+    tableNames.add(loadPartTableName);
+
+    // Run analyze on each of the tables, if they are not being gathered automatically.
+    if (!hasAutogather) {
+      for (String name : tableNames) {
+        primary.run("use " + primaryDbName)
+                .run("analyze table " + name + " compute statistics for columns");
+      }
+    }
+  }
+
+  private void applyTransactionalDMLOperations(List<String> tableNames) throws Throwable {
+    // Annotations for this table are same as createBootStrapData
+    String partTableName = "pTable";
+    String ndTableName = "ndTable";
+    String incTableName = "iTable";
+    String eximTableName = "eximTable";
+    String eximPartTableName = "eximPartTable";
+
+    Assert.assertTrue(tableNames.containsAll(Arrays.asList(partTableName, ndTableName,
+            eximPartTableName, eximTableName, incTableName)));
+
+    primary.run("update " + partTableName + " set place = 'mumbai' where place = 'bombay'")
+           .run("delete from " + partTableName + " where place = 'chicago'")
+            .run("merge into " + eximPartTableName + " as T using " + partTableName + " as U "
+                    + " on T.country = U.country "
+                    + " when matched and T.place != U.place then update set place = U.place"
+                    + " when not matched then insert values (U.country, U.place)")
+            .run("update " + incTableName + " set enabled = false where config = 'conf1'")
+            .run("merge into " + eximTableName + " as T using " + incTableName + " as U "
+                    + " on T.config = U.config"
+                    + " when matched and T.enabled != U.enabled then update set enabled = U.enabled"
+                    + " when not matched then insert values (U.config, U.enabled)")
+           .run("delete from " + ndTableName);
+
+    // Run analyze on each of the tables, if they are not being gathered automatically.
+    if (!hasAutogather) {
+      for (String name : tableNames) {
+        primary.run("use " + primaryDbName)
+                .run("analyze table " + name + " compute statistics for columns");
+      }
+    }
+  }
+
+  private void applyDDLOperations(List<String> tableNames) throws Throwable {
+    // Annotations for this table are same as createBootStrapData
+    String simpleTableName = "sTable";
+    String partTableName = "pTable";
+    String incTableName = "iTable";
+    String ctasTableName = "ctasTable"; // Table created through CTAS
+
+    Assert.assertTrue(tableNames.containsAll(Arrays.asList(simpleTableName, partTableName,
+            incTableName, ctasTableName)));
+
+    String renamedTableName = "rnTable";
+
+    primary.run("use " + primaryDbName)
+            .run("alter table " + simpleTableName + " add columns (val int)")
+            .run("alter table " + incTableName + " change config configuration string")
+            .run("alter table " + ctasTableName + " rename to " + renamedTableName)
+            .run("alter table " + partTableName +
+                    " partition(country='us') rename to partition (country='usa')");
+
+    tableNames.remove(ctasTableName);
+    tableNames.add(renamedTableName);
+  }
+
+  private void testStatsReplicationCommon(boolean parallelBootstrap, boolean metadataOnly,
+                                          boolean failRetry) throws Throwable {
     List<String> tableNames = createBootStrapData();
     String lastReplicationId = dumpLoadVerify(tableNames, null, parallelBootstrap,
-            metadataOnly);
+            metadataOnly, failRetry);
 
     // Incremental dump
     createIncrementalData(tableNames);
     lastReplicationId = dumpLoadVerify(tableNames, lastReplicationId, parallelBootstrap,
-            metadataOnly);
+            metadataOnly, failRetry);
+
+    // Incremental dump with Insert overwrite operation
+    applyDMLOperations(tableNames);
+    lastReplicationId = dumpLoadVerify(tableNames, lastReplicationId, parallelBootstrap,
+            metadataOnly, false);
+
+    // Incremental dump with transactional DML operations
+    if (acidTableKindToUse == AcidTableKind.FULL_ACID) {
+      applyTransactionalDMLOperations(tableNames);
+      lastReplicationId = dumpLoadVerify(tableNames, lastReplicationId, parallelBootstrap,
+              metadataOnly, false);
+    }
+
+    // Incremental dump with DDL operations
+    applyDDLOperations(tableNames);
+    lastReplicationId = dumpLoadVerify(tableNames, lastReplicationId, parallelBootstrap,
+            metadataOnly, false);
   }
 
   @Test
-  public void testForNonAcidTables() throws Throwable {
-    testStatsReplicationCommon(false, false);
+  public void testNonParallelBootstrapLoad() throws Throwable {
+    LOG.info("Testing " + testName.getClass().getName() + "." + testName.getMethodName());
+    testStatsReplicationCommon(false, false, false);
   }
 
   @Test
-  public void testForNonAcidTablesParallelBootstrapLoad() throws Throwable {
-    testStatsReplicationCommon(true, false);
+  public void testForParallelBootstrapLoad() throws Throwable {
+    LOG.info("Testing " + testName.getClass().getName() + "." + testName.getMethodName());
+    testStatsReplicationCommon(true, false, false);
   }
 
   @Test
-  public void testNonAcidMetadataOnlyDump() throws Throwable {
-    testStatsReplicationCommon(false, true);
+  public void testMetadataOnlyDump() throws Throwable {
+    LOG.info("Testing " + testName.getClass().getName() + "." + testName.getMethodName());
+    testStatsReplicationCommon(false, true, false);
+  }
+
+  @Test
+  public void testRetryFailure() throws Throwable {
+    LOG.info("Testing " + testName.getClass().getName() + "." + testName.getMethodName());
+    testStatsReplicationCommon(false, false, true);
   }
 }

@@ -237,7 +237,7 @@ public class WarehouseInstance implements Closeable {
 
   WarehouseInstance runFailure(String command) throws Throwable {
     CommandProcessorResponse ret = driver.run(command);
-    if (ret.getException() == null) {
+    if ((ret.getException() == null) && (ret.getResponseCode() == 0)) {
       throw new RuntimeException("command execution passed for a invalid command" + command);
     }
     return this;
@@ -245,7 +245,7 @@ public class WarehouseInstance implements Closeable {
 
   WarehouseInstance runFailure(String command, int errorCode) throws Throwable {
     CommandProcessorResponse ret = driver.run(command);
-    if (ret.getException() == null) {
+    if ((ret.getException() == null) && (ret.getResponseCode() == 0)) {
       throw new RuntimeException("command execution passed for a invalid command" + command);
     }
     if (ret.getResponseCode() != errorCode) {
@@ -483,19 +483,18 @@ public class WarehouseInstance implements Closeable {
    * Get statistics for given set of columns of a given table in the given database
    * @param dbName - the database where the table resides
    * @param tableName - tablename whose statistics are to be retrieved
-   * @param colNames - columns whose statistics is to be retrieved.
    * @return - list of ColumnStatisticsObj objects in the order of the specified columns
    */
   public Map<String, List<ColumnStatisticsObj>> getAllPartitionColumnStatistics(String dbName,
                                                                     String tableName) throws Exception {
     List<String> colNames = new ArrayList();
     client.getFields(dbName, tableName).forEach(fs -> colNames.add(fs.getName()));
-    return getAllPartitionColumnStatistics(dbName, tableName, colNames);
+    return client.getPartitionColumnStatistics(dbName, tableName,
+            client.listPartitionNames(dbName, tableName, (short) -1), colNames);
   }
 
   /**
-   * Get statistics for given set of columns for all the partitions of a given table in the given
-   * database.
+   * Get statistics for a given partition of the given table in the given database.
    * @param dbName - the database where the table resides
    * @param tableName - name of the partitioned table in the database
    * @param colNames - columns whose statistics is to be retrieved
@@ -503,12 +502,11 @@ public class WarehouseInstance implements Closeable {
    * ordered according to the given list of columns.
    * @throws Exception
    */
-  Map<String, List<ColumnStatisticsObj>> getAllPartitionColumnStatistics(String dbName,
-                                                                         String tableName,
-                                                                         List<String> colNames)
+  List<ColumnStatisticsObj> getPartitionColumnStatistics(String dbName, String tableName,
+                                                         String partName, List<String> colNames)
           throws Exception {
     return client.getPartitionColumnStatistics(dbName, tableName,
-            client.listPartitionNames(dbName, tableName, (short) -1), colNames);
+                                              Collections.singletonList(partName), colNames).get(0);
   }
 
   public List<Partition> getAllPartitions(String dbName, String tableName) throws Exception {

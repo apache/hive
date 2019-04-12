@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -106,11 +107,10 @@ public class FSTableEvent implements TableEvent {
         // If the conversion is from non transactional to transactional table
         if (AcidUtils.isTransactionalTable(table)) {
           replicationSpec().setMigratingToTxnTable();
-          // There won't be any writeId associated with statistics on source non-transactional
-          // table. We will need to associate a cooked up writeId on target for those. But that's
-          // not done yet. Till then we don't replicate statistics for ACID table even if it's
-          // available on the source.
-          table.getTTable().unsetColStats();
+          // For migrated tables associate bootstrap writeId when replicating stats.
+          if (table.getTTable().isSetColStats()) {
+            table.getTTable().setWriteId(ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID);
+          }
         }
         if (TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
           // since we have converted to an external table now after applying the migration rules the
@@ -196,15 +196,15 @@ public class FSTableEvent implements TableEvent {
       }
       partsDesc.setReplicationSpec(replicationSpec());
 
-      // Right now, we do not have a way of associating a writeId with statistics for a table
-      // converted to a transactional table if it was non-transactional on the source. So, do not
-      // update statistics for converted tables even if available on the source.
-      if (partition.isSetColStats() && !replicationSpec().isMigratingToTxnTable()) {
+      if (partition.isSetColStats()) {
         ColumnStatistics colStats = partition.getColStats();
         ColumnStatisticsDesc colStatsDesc = new ColumnStatisticsDesc(colStats.getStatsDesc());
         colStatsDesc.setTableName(tblDesc.getTableName());
         colStatsDesc.setDbName(tblDesc.getDatabaseName());
         partDesc.setColStats(new ColumnStatistics(colStatsDesc, colStats.getStatsObj()));
+        long writeId = replicationSpec().isMigratingToTxnTable() ?
+                ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID : partition.getWriteId();
+        partDesc.setWriteId(writeId);
       }
       return partsDesc;
     } catch (Exception e) {

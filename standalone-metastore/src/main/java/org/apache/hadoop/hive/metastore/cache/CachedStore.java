@@ -2094,7 +2094,7 @@ public class CachedStore implements RawStore, Configurable {
       if (!areTxnStatsSupported) {
         StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
       } else {
-        String errorMsg = ObjectStore.verifyStatsChangeCtx(
+        String errorMsg = ObjectStore.verifyStatsChangeCtx(dbName + "." + tblName,
                 table.getParameters(), newParams, writeId, validWriteIds, true);
         if (errorMsg != null) {
           throw new MetaException(errorMsg);

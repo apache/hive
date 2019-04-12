@@ -282,9 +282,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
 
     // If we are loading a table during replication, the stats will also be replicated
-    // and hence accurate if it's a non-transactional table. For transactional table we
-    // do not replicate stats yet.
-    return AcidUtils.isTransactionalTable(table.getParameters());
+    // and hence accurate. No need to reset those.
+    return false;
   }
 
   private final static class TaskInformation {
@@ -397,11 +396,11 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         // for transactional table if write id is not set during replication from a cluster with STRICT_MANAGED set
         // to false then set it now.
         if (tbd.getWriteId() <= 0 && AcidUtils.isTransactionalTable(table.getParameters())) {
-          String writeId = conf.get(ReplUtils.REPL_CURRENT_TBL_WRITE_ID);
+          Long writeId = ReplUtils.getMigrationCurrentTblWriteId(conf);
           if (writeId == null) {
             throw new HiveException("MoveTask : Write id is not set in the config by open txn task for migration");
           }
-          tbd.setWriteId(Long.parseLong(writeId));
+          tbd.setWriteId(writeId);
           tbd.setStmtId(driverContext.getCtx().getHiveTxnManager().getStmtIdAndIncrement());
         }
 

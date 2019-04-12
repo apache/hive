@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.table.constaint.AlterTableAddConstraintOperation;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -138,11 +139,32 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
     try {
       environmentContext.putToProperties(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE, alterTable.getType().name());
       if (partitions == null) {
-          context.getDb().alterTable(desc.getTableName(), table, desc.isCascade(), environmentContext, true);
+        long writeId = desc.getWriteId() != null ? desc.getWriteId() : 0;
+        if (desc.getReplicationSpec() != null &&
+                desc.getReplicationSpec().isMigratingToTxnTable()) {
+          Long tmpWriteId = ReplUtils.getMigrationCurrentTblWriteId(context.getConf());
+          if (tmpWriteId == null) {
+            throw new HiveException("DDLTask : Write id is not set in the config by open txn task for migration");
+          }
+          writeId = tmpWriteId;
+        }
+        context.getDb().alterTable(desc.getTableName(), table, desc.isCascade(), environmentContext,
+                true, writeId);
       } else {
         // Note: this is necessary for UPDATE_STATISTICS command, that operates via ADDPROPS (why?).
         //       For any other updates, we don't want to do txn check on partitions when altering table.
-        boolean isTxn = desc.getPartitionSpec() != null && desc.getType() == AlterTableType.ADDPROPS;
+        boolean isTxn = false;
+        if (desc.getPartitionSpec() != null && desc.getType() == AlterTableType.ADDPROPS) {
+          // ADDPROPS is used to add replication properties like repl.last.id, which isn't
+          // transactional change. In case of replication check for transactional properties
+          // explicitly.
+          Map<String, String> props = desc.getProps();
+          if (desc.getReplicationSpec() != null && desc.getReplicationSpec().isInReplicationScope()) {
+            isTxn = (props.get(StatsSetupConst.COLUMN_STATS_ACCURATE) != null);
+          } else {
+            isTxn = true;
+          }
+        }
         context.getDb().alterPartitions(Warehouse.getQualifiedName(table.getTTable()), partitions, environmentContext,
             isTxn);
       }
