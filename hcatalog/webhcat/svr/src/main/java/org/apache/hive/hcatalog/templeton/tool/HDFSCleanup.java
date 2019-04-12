@@ -134,7 +134,7 @@ public class HDFSCleanup extends Thread {
    * @throws IOException
    */
   private void checkFiles(FileSystem fs) throws IOException {
-    long now = new Date().getTime();
+    long now = System.currentTimeMillis();
     for (Type type : Type.values()) {
       try {
         for (FileStatus status : fs.listStatus(new Path(

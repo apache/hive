@@ -150,7 +150,7 @@ public class ZooKeeperCleanup extends Thread {
       JobStateTracker tracker = new JobStateTracker(node, zk, true,
         appConf.get(TempletonStorage.STORAGE_ROOT +
           ZooKeeperStorage.TRACKINGDIR));
-      long now = new Date().getTime();
+      long now = System.currentTimeMillis();
       state = new JobState(tracker.getJobID(), appConf);
 
       // Set the default to 0 -- if the created date is null, there was
