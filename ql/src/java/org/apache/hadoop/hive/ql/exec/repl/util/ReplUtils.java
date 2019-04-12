@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.ReplConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
+import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -161,6 +163,33 @@ public class ReplUtils {
     return false;
   }
 
+  public static boolean isTableMigratingToTransactional(HiveConf conf,
+                                                 org.apache.hadoop.hive.metastore.api.Table tableObj)
+  throws TException, IOException {
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES) &&
+            !AcidUtils.isTransactionalTable(tableObj) &&
+            TableType.valueOf(tableObj.getTableType()) == TableType.MANAGED_TABLE) {
+      //TODO : isPathOwnByHive is hard coded to true, need to get it from repl dump metadata.
+      HiveStrictManagedMigration.TableMigrationOption migrationOption =
+              HiveStrictManagedMigration.determineMigrationTypeAutomatically(tableObj, TableType.MANAGED_TABLE,
+                      null, conf, null, true);
+      return migrationOption == MANAGED;
+    }
+    return false;
+  }
+
+  private static void addOpenTxnTaskForMigration(String actualDbName, String actualTblName,
+                                            HiveConf conf,
+                                         UpdatedMetaDataTracker updatedMetaDataTracker,
+                                         List<Task<? extends Serializable>> taskList,
+                                         Task<? extends Serializable> childTask) {
+    Task<? extends Serializable> replTxnTask = TaskFactory.get(new ReplTxnWork(actualDbName, actualTblName,
+            ReplTxnWork.OperationType.REPL_MIGRATION_OPEN_TXN), conf);
+    replTxnTask.addDependentTask(childTask);
+    updatedMetaDataTracker.setNeedCommitTxn(true);
+    taskList.add(replTxnTask);
+  }
+
   public static List<Task<? extends Serializable>> addOpenTxnTaskForMigration(String actualDbName,
                                                                   String actualTblName, HiveConf conf,
                                                                   UpdatedMetaDataTracker updatedMetaDataTracker,
@@ -169,25 +198,36 @@ public class ReplUtils {
           throws IOException, TException {
     List<Task<? extends Serializable>> taskList = new ArrayList<>();
     taskList.add(childTask);
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES) && updatedMetaDataTracker != null &&
-            !AcidUtils.isTransactionalTable(tableObj) &&
-            TableType.valueOf(tableObj.getTableType()) == TableType.MANAGED_TABLE) {
-      //TODO : isPathOwnByHive is hard coded to true, need to get it from repl dump metadata.
-      HiveStrictManagedMigration.TableMigrationOption migrationOption =
-              HiveStrictManagedMigration.determineMigrationTypeAutomatically(tableObj, TableType.MANAGED_TABLE,
-                      null, conf, null, true);
-      if (migrationOption == MANAGED) {
-        //if conversion to managed table.
-        Task<? extends Serializable> replTxnTask = TaskFactory.get(new ReplTxnWork(actualDbName, actualTblName,
-                        ReplTxnWork.OperationType.REPL_MIGRATION_OPEN_TXN), conf);
-        replTxnTask.addDependentTask(childTask);
-        updatedMetaDataTracker.setNeedCommitTxn(true);
-        taskList.add(replTxnTask);
-      }
+    if (isTableMigratingToTransactional(conf, tableObj) && updatedMetaDataTracker != null) {
+      addOpenTxnTaskForMigration(actualDbName, actualTblName, conf, updatedMetaDataTracker,
+              taskList, childTask);
     }
     return taskList;
   }
 
+  public static List<Task<? extends Serializable>> addTasksForLoadingColStats(ColumnStatistics colStats,
+                                                                              HiveConf conf,
+                                                                              UpdatedMetaDataTracker updatedMetadata,
+                                                                              org.apache.hadoop.hive.metastore.api.Table tableObj,
+                                                                              long writeId)
+          throws IOException, TException {
+    List<Task<? extends Serializable>> taskList = new ArrayList<>();
+    boolean isMigratingToTxn = ReplUtils.isTableMigratingToTransactional(conf, tableObj);
+    ColumnStatsUpdateWork work = new ColumnStatsUpdateWork(colStats, isMigratingToTxn);
+    work.setWriteId(writeId);
+    Task<?> task = TaskFactory.get(work, conf);
+    taskList.add(task);
+    // If the table is going to be migrated to a transactional table we will need to open
+    // and commit a transaction to associate a valid writeId with the statistics.
+    if (isMigratingToTxn) {
+      ReplUtils.addOpenTxnTaskForMigration(colStats.getStatsDesc().getDbName(),
+              colStats.getStatsDesc().getTableName(), conf, updatedMetadata, taskList,
+              task);
+    }
+
+    return taskList;
+
+  }
   // Path filters to filter only events (directories) excluding "_bootstrap"
   public static PathFilter getEventsDirectoryFilter(final FileSystem fs) {
     return p -> {
@@ -215,5 +255,13 @@ public class ReplUtils {
     }
     envContext.putToProperties(ReplConst.REPL_DATA_LOCATION_CHANGED, ReplConst.TRUE);
     return envContext;
+  }
+
+  public static Long getMigrationCurrentTblWriteId(HiveConf conf) {
+    String writeIdString = conf.get(ReplUtils.REPL_CURRENT_TBL_WRITE_ID);
+    if (writeIdString == null) {
+      return null;
+    }
+    return Long.parseLong(writeIdString);
   }
 }

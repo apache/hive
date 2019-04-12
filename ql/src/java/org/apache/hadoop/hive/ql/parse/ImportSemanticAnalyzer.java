@@ -25,7 +25,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -288,11 +287,6 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         //if the conversion is from non transactional to transactional table
         if (TxnUtils.isTransactionalTable(tblObj)) {
           replicationSpec.setMigratingToTxnTable();
-          // There won't be any writeId associated with statistics on source non-transactional
-          // table. We will need to associate a cooked up writeId on target for those. But that's
-          // not done yet. Till then we don't replicate statistics for ACID table even if it's
-          // available on the source.
-          tblObj.unsetColStats();
         }
         tblDesc = getBaseCreateTableDescFromTable(dbname, tblObj);
         if (TableType.valueOf(tblObj.getTableType()) == TableType.EXTERNAL_TABLE) {
@@ -311,11 +305,6 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean inReplicationScope = false;
     if ((replicationSpec != null) && replicationSpec.isInReplicationScope()) {
       tblDesc.setReplicationSpec(replicationSpec);
-      // Statistics for a non-transactional table will be replicated separately. Don't bother
-      // with it here.
-      if (TxnUtils.isTransactionalTable(tblDesc.getTblProps())) {
-        StatsSetupConst.setBasicStatsState(tblDesc.getTblProps(), StatsSetupConst.FALSE);
-      }
       inReplicationScope = true;
       tblDesc.setReplWriteId(writeId);
       tblDesc.setOwnerName(tblObj.getOwner());
@@ -345,13 +334,6 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       AddPartitionDesc partsDesc =
               getBaseAddPartitionDescFromPartition(fromPath, dbname, tblDesc, partition,
                       replicationSpec, x.getConf());
-      if (inReplicationScope) {
-        // Statistics for a non-transactional table will be replicated separately. Don't bother
-        // with it here.
-        if (TxnUtils.isTransactionalTable(tblDesc.getTblProps())) {
-          StatsSetupConst.setBasicStatsState(partsDesc.getPartition(0).getPartParams(), StatsSetupConst.FALSE);
-        }
-      }
       partitionDescs.add(partsDesc);
     }
 
@@ -454,6 +436,9 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     } else {
       partDesc.setLocation(new Path(fromPath,
               Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues())).toString());
+    }
+    if (tblDesc.getReplWriteId() != null) {
+      partDesc.setWriteId(tblDesc.getReplWriteId());
     }
     return partsDesc;
   }
@@ -667,8 +652,14 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         copyTask = TaskFactory.get(new CopyWork(new Path(srcLocation), destPath, false));
       }
 
-      Task<?> addPartTask = TaskFactory.get(
-              new DDLWork(x.getInputs(), x.getOutputs(), addPartitionDesc), x.getConf());
+      Task<?> addPartTask = null;
+      if (x.getEventType() != DumpType.EVENT_COMMIT_TXN) {
+        // During replication, by the time we are applying commit transaction event, we expect
+        // the partition/s to be already added or altered by previous events. So no need to
+        // create add partition event again.
+        addPartTask = TaskFactory.get(
+                new DDLWork(x.getInputs(), x.getOutputs(), addPartitionDesc), x.getConf());
+      }
 
       MoveWork moveWork = new MoveWork(x.getInputs(), x.getOutputs(),
               null, null, false);
@@ -704,15 +695,20 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         if (x.getEventType() == DumpType.EVENT_INSERT) {
           copyTask.addDependentTask(TaskFactory.get(moveWork, x.getConf()));
         } else {
-          copyTask.addDependentTask(addPartTask);
+          if (addPartTask != null) {
+            copyTask.addDependentTask(addPartTask);
+          }
         }
         return copyTask;
       }
       Task<?> loadPartTask = TaskFactory.get(moveWork, x.getConf());
       copyTask.addDependentTask(loadPartTask);
-      addPartTask.addDependentTask(loadPartTask);
-      x.getTasks().add(copyTask);
-      return addPartTask;
+      if (addPartTask != null) {
+        addPartTask.addDependentTask(loadPartTask);
+        x.getTasks().add(copyTask);
+        return addPartTask;
+      }
+      return copyTask;
     }
   }
 
@@ -1225,19 +1221,19 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         lockType = WriteEntity.WriteType.DDL_SHARED;
       }
 
-      Task t = createTableTask(tblDesc, x);
       table = createNewTableMetadataObject(tblDesc, true);
 
+      List<Task<?>> dependentTasks = null;
       if (isPartitioned(tblDesc)) {
+        dependentTasks = new ArrayList<>(partitionDescs.size());
         for (AddPartitionDesc addPartitionDesc : partitionDescs) {
           addPartitionDesc.setReplicationSpec(replicationSpec);
           if (!replicationSpec.isMetadataOnly()) {
-            t.addDependentTask(
-                    addSinglePartition(tblDesc, table, wh, addPartitionDesc, replicationSpec, x,
-                            writeId, stmtId));
+            dependentTasks.add(addSinglePartition(tblDesc, table, wh, addPartitionDesc,
+                                                replicationSpec, x, writeId, stmtId));
           } else {
-            t.addDependentTask(alterSinglePartition(tblDesc, table, wh, addPartitionDesc,
-                    replicationSpec, null, x));
+            dependentTasks.add(alterSinglePartition(tblDesc, table, wh, addPartitionDesc,
+                                                  replicationSpec, null, x));
           }
           if (updatedMetadata != null) {
             updatedMetadata.addPartition(table.getDbName(), table.getTableName(),
@@ -1247,17 +1243,37 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       } else if (!replicationSpec.isMetadataOnly()
               && !shouldSkipDataCopyInReplScope(tblDesc, replicationSpec)) {
         x.getLOG().debug("adding dependent CopyWork/MoveWork for table");
-        t.addDependentTask(loadTable(fromURI, table, replicationSpec.isReplace(),
-                new Path(tblDesc.getLocation()), replicationSpec, x, writeId, stmtId));
+        dependentTasks = new ArrayList<>(1);
+        dependentTasks.add(loadTable(fromURI, table, replicationSpec.isReplace(),
+                                  new Path(tblDesc.getLocation()), replicationSpec,
+                                  x, writeId, stmtId));
       }
 
-      if (dropTblTask != null) {
-        // Drop first and then create
-        dropTblTask.addDependentTask(t);
-        x.getTasks().add(dropTblTask);
+      // During replication, by the time we replay a commit transaction event, the table should
+      // have been already created when replaying previous events. So no need to create table
+      // again.
+      if (x.getEventType() != DumpType.EVENT_COMMIT_TXN) {
+        Task t = createTableTask(tblDesc, x);
+        if (dependentTasks != null) {
+          dependentTasks.forEach(task -> t.addDependentTask(task));
+        }
+        if (dropTblTask != null) {
+          // Drop first and then create
+          dropTblTask.addDependentTask(t);
+          x.getTasks().add(dropTblTask);
+        } else {
+          // Simply create
+          x.getTasks().add(t);
+        }
       } else {
-        // Simply create
-        x.getTasks().add(t);
+        // We should not require to create a drop table task when replaying a commit transaction
+        // event. That should have been done when replaying create table event itself.
+        assert dropTblTask == null;
+
+        // Add all the tasks created above directly
+        if (dependentTasks != null) {
+          x.getTasks().addAll(dependentTasks);
+        }
       }
     } else {
       // If table of current event has partition flag different from existing table, it means, some

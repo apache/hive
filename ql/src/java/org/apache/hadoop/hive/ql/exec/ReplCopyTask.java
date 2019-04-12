@@ -206,15 +206,14 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
           // getDeleteDestIfExist returns true if it is repl load for replace/insert overwrite event and
           // hence need to create base directory. If false, then it is repl load for regular insert into or
           // load flow and hence just create delta directory.
-          String writeIdString = conf.get(ReplUtils.REPL_CURRENT_TBL_WRITE_ID);
-          if (writeIdString == null) {
+          Long writeId = ReplUtils.getMigrationCurrentTblWriteId(conf);
+          if (writeId == null) {
             console.printError("ReplCopyTask : Write id is not set in the config by open txn task for migration");
             return 6;
           }
-          long writeId = Long.parseLong(writeIdString);
           // Set stmt id 0 for bootstrap load as the directory needs to be searched during incremental load to avoid any
           // duplicate copy from the source. Check HIVE-21197 for more detail.
-          int stmtId = (writeId == ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID) ?
+          int stmtId = (writeId.equals(ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID)) ?
                   ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID :
                   driverContext.getCtx().getHiveTxnManager().getStmtIdAndIncrement();
           toPath = new Path(toPath, AcidUtils.baseOrDeltaSubdir(work.getDeleteDestIfExist(), writeId, writeId, stmtId));
