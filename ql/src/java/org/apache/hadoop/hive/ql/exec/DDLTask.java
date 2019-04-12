@@ -190,6 +190,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRoleGrant;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveV1Authorizer;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.wm.ExecutionTrigger;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
@@ -595,11 +596,21 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private int createWMTrigger(Hive db, CreateWMTriggerDesc desc) throws HiveException {
+    validateTrigger(desc.getTrigger());
     db.createWMTrigger(desc.getTrigger());
     return 0;
   }
 
+  private void validateTrigger(final WMTrigger trigger) throws HiveException {
+    try {
+      ExecutionTrigger.fromWMTrigger(trigger);
+    } catch (IllegalArgumentException e) {
+      throw new HiveException(e);
+    }
+  }
+
   private int alterWMTrigger(Hive db, AlterWMTriggerDesc desc) throws HiveException {
+    validateTrigger(desc.getTrigger());
     db.alterWMTrigger(desc.getTrigger());
     return 0;
   }
