@@ -1,0 +1,521 @@
+PREHOOK: query: CREATE EXTERNAL TABLE logs(
+facility STRING,
+severity STRING,
+version STRING,
+ts TIMESTAMP,
+hostname STRING,
+app_name STRING,
+proc_id STRING,
+msg_id STRING,
+structured_data MAP<STRING,STRING>,
+msg BINARY,
+unmatched BINARY
+)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.log.syslog.SyslogSerDe'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@logs
+POSTHOOK: query: CREATE EXTERNAL TABLE logs(
+facility STRING,
+severity STRING,
+version STRING,
+ts TIMESTAMP,
+hostname STRING,
+app_name STRING,
+proc_id STRING,
+msg_id STRING,
+structured_data MAP<STRING,STRING>,
+msg BINARY,
+unmatched BINARY
+)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.log.syslog.SyslogSerDe'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@logs
+PREHOOK: query: load data local inpath '../../data/files/rfc5424-hs2.log' into table logs
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@logs
+POSTHOOK: query: load data local inpath '../../data/files/rfc5424-hs2.log' into table logs
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@logs
+PREHOOK: query: load data local inpath '../../data/files/rfc5424-hs2-2.log' into table logs
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@logs
+POSTHOOK: query: load data local inpath '../../data/files/rfc5424-hs2-2.log' into table logs
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@logs
+PREHOOK: query: select count(*) from logs where severity="ERROR"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from logs where severity="ERROR"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs
+#### A masked pattern was here ####
+3
+PREHOOK: query: select count(*) from logs
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from logs
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs
+#### A masked pattern was here ####
+1137
+PREHOOK: query: select count(*) from logs where unmatched is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from logs where unmatched is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs
+#### A masked pattern was here ####
+939
+PREHOOK: query: select count(*) from logs where unmatched is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from logs where unmatched is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs
+#### A masked pattern was here ####
+198
+PREHOOK: query: select severity,count(*) from logs group by severity order by severity
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs
+#### A masked pattern was here ####
+POSTHOOK: query: select severity,count(*) from logs group by severity order by severity
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs
+#### A masked pattern was here ####
+DEBUG	188
+ERROR	3
+INFO	726
+NULL	198
+WARN	22
+PREHOOK: query: select severity,count(*) from logs where ts between "2019-03-21 07:00:00" and "2019-03-21 07:06:00" group by severity
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs
+#### A masked pattern was here ####
+POSTHOOK: query: select severity,count(*) from logs where ts between "2019-03-21 07:00:00" and "2019-03-21 07:06:00" group by severity
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs
+#### A masked pattern was here ####
+PREHOOK: query: select severity,count(*) from logs where ts between "2019-03-21 07:06:00" and "2019-03-21 07:07:00" group by severity
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs
+#### A masked pattern was here ####
+POSTHOOK: query: select severity,count(*) from logs where ts between "2019-03-21 07:06:00" and "2019-03-21 07:07:00" group by severity
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs
+#### A masked pattern was here ####
+DEBUG	50
+INFO	376
+WARN	19
+PREHOOK: query: select severity,count(*) from logs where ts between "2019-03-21 07:07:00" and "2019-03-21 07:08:00" group by severity
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs
+#### A masked pattern was here ####
+POSTHOOK: query: select severity,count(*) from logs where ts between "2019-03-21 07:07:00" and "2019-03-21 07:08:00" group by severity
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs
+#### A masked pattern was here ####
+DEBUG	107
+ERROR	3
+INFO	161
+WARN	3
+PREHOOK: query: select severity,count(*) from logs where ts between "2019-03-21 07:08:00" and "2019-03-21 08:08:00" group by severity
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs
+#### A masked pattern was here ####
+POSTHOOK: query: select severity,count(*) from logs where ts between "2019-03-21 07:08:00" and "2019-03-21 08:08:00" group by severity
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs
+#### A masked pattern was here ####
+PREHOOK: query: select severity,count(*) from logs where ts between "2019-03-22 01:00:00" and "2019-03-21 01:08:00" group by severity
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs
+#### A masked pattern was here ####
+POSTHOOK: query: select severity,count(*) from logs where ts between "2019-03-22 01:00:00" and "2019-03-21 01:08:00" group by severity
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs
+#### A masked pattern was here ####
+PREHOOK: query: select severity,count(*) from logs where ts between "2019-03-22 01:08:00" and "2019-03-21 01:09:00" group by severity
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs
+#### A masked pattern was here ####
+POSTHOOK: query: select severity,count(*) from logs where ts between "2019-03-22 01:08:00" and "2019-03-21 01:09:00" group by severity
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs
+#### A masked pattern was here ####
+PREHOOK: query: select severity,count(*) from logs where ts between "2019-03-22 01:09:00" and "2019-03-21 01:10:00" group by severity
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs
+#### A masked pattern was here ####
+POSTHOOK: query: select severity,count(*) from logs where ts between "2019-03-22 01:09:00" and "2019-03-21 01:10:00" group by severity
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs
+#### A masked pattern was here ####
+PREHOOK: query: select ts,severity,structured_data["thread"],structured_data["class"] from logs where severity="ERROR" ORDER BY ts
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs
+#### A masked pattern was here ####
+POSTHOOK: query: select ts,severity,structured_data["thread"],structured_data["class"] from logs where severity="ERROR" ORDER BY ts
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs
+#### A masked pattern was here ####
+2019-03-21 07:07:09.857	ERROR	HiveServer2-Background-Pool: Thread-85	metadata.Hive
+2019-03-21 07:07:17.035	ERROR	HiveServer2-Background-Pool: Thread-92	ql.Driver
+2019-03-21 07:07:17.105	ERROR	HiveServer2-Background-Pool: Thread-92	operation.Operation
+PREHOOK: query: select ts,severity,structured_data["thread"],structured_data["class"],app_name from logs where severity="WARN" ORDER BY ts
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs
+#### A masked pattern was here ####
+POSTHOOK: query: select ts,severity,structured_data["thread"],structured_data["class"],app_name from logs where severity="WARN" ORDER BY ts
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs
+#### A masked pattern was here ####
+2019-03-21 07:06:15.136	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:15.137	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:15.137	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:15.284	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:15.284	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:15.284	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:18.555	WARN	main	session.SessionState	hiveserver2
+2019-03-21 07:06:19.798	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:19.798	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:19.798	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:20.142	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:20.143	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:20.143	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:20.143	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:20.405	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:20.405	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:20.405	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:20.408	WARN	main	thrift.ThriftCLIService	hiveserver2
+2019-03-21 07:06:20.626	WARN	main	utils.ZKPaths	hiveserver2
+2019-03-21 07:07:20.145	WARN	NotificationEventPoll 0	conf.HiveConf	hiveserver2
+2019-03-21 07:07:20.145	WARN	NotificationEventPoll 0	conf.HiveConf	hiveserver2
+2019-03-21 07:07:20.146	WARN	NotificationEventPoll 0	conf.HiveConf	hiveserver2
+PREHOOK: query: select decode(unmatched, 'UTF-8') from logs where unmatched is not null limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs
+#### A masked pattern was here ####
+POSTHOOK: query: select decode(unmatched, 'UTF-8') from logs where unmatched is not null limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs
+#### A masked pattern was here ####
++ '[' '' '!=' yarn ']'
++ '[' hiveserver2 == data-load ']'
++ '[' hiveserver2 == query-coordinator ']'
++ '[' hiveserver2 == query-executor ']'
++ . /fluentd-utils.sh
++ return
++ start_fluentd
+#### A masked pattern was here ####
+++ set -x
+PREHOOK: query: CREATE EXTERNAL TABLE logs2(
+facility STRING,
+severity STRING,
+version STRING,
+ts TIMESTAMP,
+hostname STRING,
+app_name STRING,
+proc_id STRING,
+msg_id STRING,
+structured_data MAP<STRING,STRING>,
+msg BINARY,
+unmatched BINARY
+)
+PARTITIONED BY(dt DATE,ns STRING,app STRING)
+STORED BY 'org.apache.hadoop.hive.ql.log.syslog.SyslogStorageHandler'
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@logs2
+POSTHOOK: query: CREATE EXTERNAL TABLE logs2(
+facility STRING,
+severity STRING,
+version STRING,
+ts TIMESTAMP,
+hostname STRING,
+app_name STRING,
+proc_id STRING,
+msg_id STRING,
+structured_data MAP<STRING,STRING>,
+msg BINARY,
+unmatched BINARY
+)
+PARTITIONED BY(dt DATE,ns STRING,app STRING)
+STORED BY 'org.apache.hadoop.hive.ql.log.syslog.SyslogStorageHandler'
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@logs2
+PREHOOK: query: MSCK REPAIR TABLE logs2
+PREHOOK: type: MSCK
+PREHOOK: Output: default@logs2
+POSTHOOK: query: MSCK REPAIR TABLE logs2
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@logs2
+Partitions not in metastore:	logs2:dt=2019-01-03/ns=foo/app=hs2	logs2:dt=2019-11-23/ns=bar/app=hs2
+#### A masked pattern was here ####
+PREHOOK: query: select severity,count(*) from logs2 group by severity order by severity
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs2
+PREHOOK: Input: default@logs2@dt=2019-01-03/ns=foo/app=hs2
+PREHOOK: Input: default@logs2@dt=2019-11-23/ns=bar/app=hs2
+#### A masked pattern was here ####
+POSTHOOK: query: select severity,count(*) from logs2 group by severity order by severity
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs2
+POSTHOOK: Input: default@logs2@dt=2019-01-03/ns=foo/app=hs2
+POSTHOOK: Input: default@logs2@dt=2019-11-23/ns=bar/app=hs2
+#### A masked pattern was here ####
+DEBUG	314
+ERROR	6
+INFO	1074
+NULL	74
+WARN	44
+PREHOOK: query: select count(*) from logs2 where severity="INFO" and dt='2019-01-03'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs2
+PREHOOK: Input: default@logs2@dt=2019-01-03/ns=foo/app=hs2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from logs2 where severity="INFO" and dt='2019-01-03'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs2
+POSTHOOK: Input: default@logs2@dt=2019-01-03/ns=foo/app=hs2
+#### A masked pattern was here ####
+537
+PREHOOK: query: select count(*) from logs2 where severity="INFO" and ns='foo'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs2
+PREHOOK: Input: default@logs2@dt=2019-01-03/ns=foo/app=hs2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from logs2 where severity="INFO" and ns='foo'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs2
+POSTHOOK: Input: default@logs2@dt=2019-01-03/ns=foo/app=hs2
+#### A masked pattern was here ####
+537
+PREHOOK: query: select count(*) from logs2 where severity="INFO" and dt='2019-11-23'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs2
+PREHOOK: Input: default@logs2@dt=2019-11-23/ns=bar/app=hs2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from logs2 where severity="INFO" and dt='2019-11-23'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs2
+POSTHOOK: Input: default@logs2@dt=2019-11-23/ns=bar/app=hs2
+#### A masked pattern was here ####
+537
+PREHOOK: query: select count(*) from logs2 where severity="INFO" and ns='bar'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs2
+PREHOOK: Input: default@logs2@dt=2019-11-23/ns=bar/app=hs2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from logs2 where severity="INFO" and ns='bar'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs2
+POSTHOOK: Input: default@logs2@dt=2019-11-23/ns=bar/app=hs2
+#### A masked pattern was here ####
+537
+PREHOOK: query: select count(*) from logs2 where severity="INFO"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs2
+PREHOOK: Input: default@logs2@dt=2019-01-03/ns=foo/app=hs2
+PREHOOK: Input: default@logs2@dt=2019-11-23/ns=bar/app=hs2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from logs2 where severity="INFO"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs2
+POSTHOOK: Input: default@logs2@dt=2019-01-03/ns=foo/app=hs2
+POSTHOOK: Input: default@logs2@dt=2019-11-23/ns=bar/app=hs2
+#### A masked pattern was here ####
+1074
+PREHOOK: query: select count(*) from logs2 where severity="INFO" and app='hs2'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs2
+PREHOOK: Input: default@logs2@dt=2019-01-03/ns=foo/app=hs2
+PREHOOK: Input: default@logs2@dt=2019-11-23/ns=bar/app=hs2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from logs2 where severity="INFO" and app='hs2'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs2
+POSTHOOK: Input: default@logs2@dt=2019-01-03/ns=foo/app=hs2
+POSTHOOK: Input: default@logs2@dt=2019-11-23/ns=bar/app=hs2
+#### A masked pattern was here ####
+1074
+PREHOOK: query: select count(*) from logs2 where severity="INFO" and app='non-existent'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from logs2 where severity="INFO" and app='non-existent'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs2
+#### A masked pattern was here ####
+0
+PREHOOK: query: select count(*) from logs2 where ns='foo'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs2
+PREHOOK: Input: default@logs2@dt=2019-01-03/ns=foo/app=hs2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from logs2 where ns='foo'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs2
+POSTHOOK: Input: default@logs2@dt=2019-01-03/ns=foo/app=hs2
+#### A masked pattern was here ####
+756
+PREHOOK: query: select count(*) from logs2 where ns='bar'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs2
+PREHOOK: Input: default@logs2@dt=2019-11-23/ns=bar/app=hs2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from logs2 where ns='bar'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs2
+POSTHOOK: Input: default@logs2@dt=2019-11-23/ns=bar/app=hs2
+#### A masked pattern was here ####
+756
+PREHOOK: query: select count(*) from logs2 where unmatched is null and dt between '2019-01-03' and '2019-11-23'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs2
+PREHOOK: Input: default@logs2@dt=2019-01-03/ns=foo/app=hs2
+PREHOOK: Input: default@logs2@dt=2019-11-23/ns=bar/app=hs2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from logs2 where unmatched is null and dt between '2019-01-03' and '2019-11-23'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs2
+POSTHOOK: Input: default@logs2@dt=2019-01-03/ns=foo/app=hs2
+POSTHOOK: Input: default@logs2@dt=2019-11-23/ns=bar/app=hs2
+#### A masked pattern was here ####
+1438
+PREHOOK: query: select count(*) from logs2 where unmatched is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs2
+PREHOOK: Input: default@logs2@dt=2019-01-03/ns=foo/app=hs2
+PREHOOK: Input: default@logs2@dt=2019-11-23/ns=bar/app=hs2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from logs2 where unmatched is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs2
+POSTHOOK: Input: default@logs2@dt=2019-01-03/ns=foo/app=hs2
+POSTHOOK: Input: default@logs2@dt=2019-11-23/ns=bar/app=hs2
+#### A masked pattern was here ####
+74
+PREHOOK: query: select ts,severity,structured_data["thread"],structured_data["class"] from logs2 where severity="ERROR" order by ts
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs2
+PREHOOK: Input: default@logs2@dt=2019-01-03/ns=foo/app=hs2
+PREHOOK: Input: default@logs2@dt=2019-11-23/ns=bar/app=hs2
+#### A masked pattern was here ####
+POSTHOOK: query: select ts,severity,structured_data["thread"],structured_data["class"] from logs2 where severity="ERROR" order by ts
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs2
+POSTHOOK: Input: default@logs2@dt=2019-01-03/ns=foo/app=hs2
+POSTHOOK: Input: default@logs2@dt=2019-11-23/ns=bar/app=hs2
+#### A masked pattern was here ####
+2019-03-21 07:07:09.857	ERROR	HiveServer2-Background-Pool: Thread-85	metadata.Hive
+2019-03-21 07:07:09.857	ERROR	HiveServer2-Background-Pool: Thread-85	metadata.Hive
+2019-03-21 07:07:17.035	ERROR	HiveServer2-Background-Pool: Thread-92	ql.Driver
+2019-03-21 07:07:17.035	ERROR	HiveServer2-Background-Pool: Thread-92	ql.Driver
+2019-03-21 07:07:17.105	ERROR	HiveServer2-Background-Pool: Thread-92	operation.Operation
+2019-03-21 07:07:17.105	ERROR	HiveServer2-Background-Pool: Thread-92	operation.Operation
+PREHOOK: query: select ts,severity,structured_data["thread"],structured_data["class"],app_name from logs2 where severity="WARN" order by ts
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs2
+PREHOOK: Input: default@logs2@dt=2019-01-03/ns=foo/app=hs2
+PREHOOK: Input: default@logs2@dt=2019-11-23/ns=bar/app=hs2
+#### A masked pattern was here ####
+POSTHOOK: query: select ts,severity,structured_data["thread"],structured_data["class"],app_name from logs2 where severity="WARN" order by ts
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs2
+POSTHOOK: Input: default@logs2@dt=2019-01-03/ns=foo/app=hs2
+POSTHOOK: Input: default@logs2@dt=2019-11-23/ns=bar/app=hs2
+#### A masked pattern was here ####
+2019-03-21 07:06:15.136	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:15.136	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:15.137	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:15.137	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:15.137	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:15.137	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:15.284	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:15.284	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:15.284	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:15.284	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:15.284	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:15.284	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:18.555	WARN	main	session.SessionState	hiveserver2
+2019-03-21 07:06:18.555	WARN	main	session.SessionState	hiveserver2
+2019-03-21 07:06:19.798	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:19.798	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:19.798	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:19.798	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:19.798	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:19.798	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:20.142	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:20.142	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:20.143	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:20.143	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:20.143	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:20.143	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:20.143	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:20.143	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:20.405	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:20.405	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:20.405	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:20.405	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:20.405	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:20.405	WARN	main	conf.HiveConf	hiveserver2
+2019-03-21 07:06:20.408	WARN	main	thrift.ThriftCLIService	hiveserver2
+2019-03-21 07:06:20.408	WARN	main	thrift.ThriftCLIService	hiveserver2
+2019-03-21 07:06:20.626	WARN	main	utils.ZKPaths	hiveserver2
+2019-03-21 07:06:20.626	WARN	main	utils.ZKPaths	hiveserver2
+2019-03-21 07:07:20.145	WARN	NotificationEventPoll 0	conf.HiveConf	hiveserver2
+2019-03-21 07:07:20.145	WARN	NotificationEventPoll 0	conf.HiveConf	hiveserver2
+2019-03-21 07:07:20.145	WARN	NotificationEventPoll 0	conf.HiveConf	hiveserver2
+2019-03-21 07:07:20.145	WARN	NotificationEventPoll 0	conf.HiveConf	hiveserver2
+2019-03-21 07:07:20.146	WARN	NotificationEventPoll 0	conf.HiveConf	hiveserver2
+2019-03-21 07:07:20.146	WARN	NotificationEventPoll 0	conf.HiveConf	hiveserver2
+PREHOOK: query: select decode(unmatched, 'UTF-8') from logs where unmatched is not null limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs
+#### A masked pattern was here ####
+POSTHOOK: query: select decode(unmatched, 'UTF-8') from logs where unmatched is not null limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs
+#### A masked pattern was here ####
++ '[' '' '!=' yarn ']'
++ '[' hiveserver2 == data-load ']'
++ '[' hiveserver2 == query-coordinator ']'
++ '[' hiveserver2 == query-executor ']'
++ . /fluentd-utils.sh
++ return
++ start_fluentd
+#### A masked pattern was here ####
+++ set -x
+PREHOOK: query: drop table logs
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@logs
+PREHOOK: Output: default@logs
+POSTHOOK: query: drop table logs
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@logs
+POSTHOOK: Output: default@logs
+PREHOOK: query: drop table logs2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@logs2
+PREHOOK: Output: default@logs2
+POSTHOOK: query: drop table logs2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@logs2
+POSTHOOK: Output: default@logs2

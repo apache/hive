@@ -170,6 +170,9 @@ public class SchemaToolCommandLine {
         .withDescription("Database a moving table is going to.  This is " +
             "required if you are moving a table.")
         .create("toDatabase");
+    Option retentionPeriod = OptionBuilder.hasArg()
+      .withDescription("Specify logs table retention period")
+      .create("retentionPeriod");
 
     Options options = new Options();
     options.addOption(help);
@@ -195,6 +198,7 @@ public class SchemaToolCommandLine {
     options.addOption(hivePasswdOpt);
     options.addOption(hiveDbOpt);
     options.addOption(yesOpt);
+    options.addOption(retentionPeriod);
     if (additionalOptions != null) options.addOptionGroup(additionalOptions);
 
     return options;

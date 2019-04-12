@@ -441,6 +441,8 @@ public class MetastoreSchemaTool {
         task = new SchemaToolTaskCreateLogsTable();
       } else if (cmdLine.hasOption("dropAllDatabases")) {
         task = new SchemaToolTaskDrop();
+      } else if (cmdLine.hasOption("createLogsTable")) {
+        task = new SchemaToolTaskCreateLogsTable();
       } else {
         throw new HiveMetaException("No task defined!");
       }
