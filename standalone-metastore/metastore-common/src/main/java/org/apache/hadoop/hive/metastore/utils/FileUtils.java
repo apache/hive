@@ -594,4 +594,13 @@ public class FileUtils {
       nextFile = null;
     }
   }
+
+  public static String getLocationOwner(String location, Configuration conf) {
+    try {
+      Path path = new Path(location);
+      return path.getFileSystem(conf).getFileStatus(path).getOwner();
+    } catch (Exception e) {
+      throw new RuntimeException(e.getMessage());
+    }
+  }
 }

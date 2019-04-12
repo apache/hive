@@ -41,6 +41,8 @@ public abstract class CreateTableMessage extends HCatEventMessage {
 
   public abstract String getTableType();
 
+  public abstract String getLocOwner();
+
   @Override
   public HCatEventMessage checkValid() {
     if (getTable() == null)

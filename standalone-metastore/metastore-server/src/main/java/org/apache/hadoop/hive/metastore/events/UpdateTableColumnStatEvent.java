@@ -21,10 +21,11 @@ package org.apache.hadoop.hive.metastore.events;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -38,6 +39,7 @@ public class UpdateTableColumnStatEvent extends ListenerEvent {
   private long writeId;
   private Map<String, String> parameters;
   private Table tableObj;
+  private final String locOwner;
 
   /**
    * @param colStats Columns statistics Info.
@@ -54,6 +56,11 @@ public class UpdateTableColumnStatEvent extends ListenerEvent {
     this.writeId = writeId;
     this.parameters = parameters;
     this.tableObj = tableObj;
+    if (TableType.MANAGED_TABLE.toString().equalsIgnoreCase(tableObj.getTableType())) {
+      locOwner = FileUtils.getLocationOwner(tableObj.getSd().getLocation(), handler.getConf());
+    } else {
+      locOwner = null;
+    }
   }
 
   /**
@@ -66,6 +73,7 @@ public class UpdateTableColumnStatEvent extends ListenerEvent {
     this.writeId = 0;
     this.parameters = null;
     this.tableObj = null;
+    this.locOwner = null;
   }
 
   public ColumnStatistics getColStats() {
@@ -82,5 +90,9 @@ public class UpdateTableColumnStatEvent extends ListenerEvent {
 
   public Table getTableObj() {
     return tableObj;
+  }
+
+  public String getLocOwner() {
+    return locOwner;
   }
 }

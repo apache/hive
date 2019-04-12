@@ -36,7 +36,7 @@ import com.google.common.collect.Lists;
 public class JSONCreateTableMessage extends CreateTableMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableType, tableObjJson;
+  String server, servicePrincipal, db, table, tableType, tableObjJson, locOwner;
   @JsonProperty
   Long timestamp;
   @JsonProperty
@@ -49,25 +49,26 @@ public class JSONCreateTableMessage extends CreateTableMessage {
   }
 
   public JSONCreateTableMessage(String server, String servicePrincipal, String db, String table,
-      String tableType, Long timestamp) {
+      String tableType, String locOwner, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = db;
     this.table = table;
     this.tableType = tableType;
     this.timestamp = timestamp;
+    this.locOwner = locOwner;
     checkValid();
   }
 
-  public JSONCreateTableMessage(String server, String servicePrincipal, String db, String table,
+  public JSONCreateTableMessage(String server, String servicePrincipal, String db, String table, String locOwner,
       Long timestamp) {
-    this(server, servicePrincipal, db, table, null, timestamp);
+    this(server, servicePrincipal, db, table, null, locOwner, timestamp);
   }
 
   public JSONCreateTableMessage(String server, String servicePrincipal, Table tableObj,
-      Iterator<String> fileIter, Long timestamp) {
+      Iterator<String> fileIter, String locOwner, Long timestamp) {
     this(server, servicePrincipal, tableObj.getDbName(), tableObj.getTableName(),
-        tableObj.getTableType(), timestamp);
+        tableObj.getTableType(), locOwner, timestamp);
     try {
       this.tableObjJson = MessageBuilder.createTableObjJson(tableObj);
     } catch (TException e) {
@@ -117,6 +118,11 @@ public class JSONCreateTableMessage extends CreateTableMessage {
 
   public String getTableObjJson() {
     return tableObjJson;
+  }
+
+  @Override
+  public String getLocOwner() {
+    return locOwner;
   }
 
   @Override

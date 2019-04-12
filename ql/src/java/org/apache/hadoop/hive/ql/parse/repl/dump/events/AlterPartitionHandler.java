@@ -104,19 +104,23 @@ class AlterPartitionHandler extends AbstractEventHandler<AlterPartitionMessage> 
       return;
     }
 
+    withinContext.replicationSpec.setForceMigrateToExternalTable(withinContext.hiveConf, eventMessage.getLocOwner());
+
     if (Scenario.ALTER == scenario) {
       withinContext.replicationSpec.setIsMetadataOnly(true);
-      List<Partition> partitions = new ArrayList<>();
-      partitions.add(new Partition(qlMdTable, after));
-      Path metaDataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
-      EximUtil.createExportDump(
-          metaDataPath.getFileSystem(withinContext.hiveConf),
-          metaDataPath,
-          qlMdTable,
-          partitions,
-          withinContext.replicationSpec,
-          withinContext.hiveConf);
     }
+
+    List<Partition> partitions = new ArrayList<>();
+    partitions.add(new Partition(qlMdTable, after));
+    Path metaDataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
+    EximUtil.createExportDump(
+            metaDataPath.getFileSystem(withinContext.hiveConf),
+            metaDataPath,
+            qlMdTable,
+            partitions,
+            withinContext.replicationSpec,
+            withinContext.hiveConf);
+
     DumpMetaData dmd = withinContext.createDmd(this);
     dmd.setPayload(eventMessageAsJSON);
     dmd.write();

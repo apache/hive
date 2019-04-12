@@ -206,7 +206,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     FileIterator fileIter = MetaStoreUtils.isExternalTable(t)
                               ? null : new FileIterator(t.getSd().getLocation());
     CreateTableMessage msg =
-        MessageBuilder.getInstance().buildCreateTableMessage(t, fileIter);
+        MessageBuilder.getInstance().buildCreateTableMessage(t, fileIter, tableEvent.getLocOwner());
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.CREATE_TABLE.toString(),
             msgEncoder.getSerializer().serialize(msg));
@@ -243,7 +243,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     Table after = tableEvent.getNewTable();
     AlterTableMessage msg = MessageBuilder.getInstance()
         .buildAlterTableMessage(before, after, tableEvent.getIsTruncateOp(),
-            tableEvent.getWriteId());
+            tableEvent.getWriteId(), tableEvent.getLocOwner());
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.ALTER_TABLE.toString(),
             msgEncoder.getSerializer().serialize(msg)
@@ -361,7 +361,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     PartitionFilesIterator fileIter = MetaStoreUtils.isExternalTable(t)
             ? null : new PartitionFilesIterator(partitionEvent.getPartitionIterator(), t);
     EventMessage msg = MessageBuilder.getInstance()
-        .buildAddPartitionMessage(t, partitionEvent.getPartitionIterator(), fileIter);
+        .buildAddPartitionMessage(t, partitionEvent.getPartitionIterator(), fileIter, partitionEvent.getLocOwner());
     MessageSerializer serializer = msgEncoder.getSerializer();
 
     NotificationEvent event = new NotificationEvent(0, now(),
@@ -401,7 +401,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     AlterPartitionMessage msg = MessageBuilder.getInstance()
         .buildAlterPartitionMessage(partitionEvent.getTable(), before, after,
             partitionEvent.getIsTruncateOp(),
-            partitionEvent.getWriteId());
+            partitionEvent.getWriteId(), partitionEvent.getLocOwner());
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.ALTER_PARTITION.toString(),
             msgEncoder.getSerializer().serialize(msg));
@@ -540,7 +540,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     Table tableObj = insertEvent.getTableObj();
     InsertMessage msg = MessageBuilder.getInstance().buildInsertMessage(tableObj,
         insertEvent.getPartitionObj(), insertEvent.isReplace(),
-        new FileChksumIterator(insertEvent.getFiles(), insertEvent.getFileChecksums()));
+        new FileChksumIterator(insertEvent.getFiles(), insertEvent.getFileChecksums()), insertEvent.getLocOwner());
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.INSERT.toString(),
             msgEncoder.getSerializer().serialize(msg));
@@ -759,7 +759,8 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
             .buildUpdateTableColumnStatMessage(updateTableColumnStatEvent.getColStats(),
                     updateTableColumnStatEvent.getTableObj(),
                     updateTableColumnStatEvent.getTableParameters(),
-                    updateTableColumnStatEvent.getWriteId());
+                    updateTableColumnStatEvent.getWriteId(),
+                    updateTableColumnStatEvent.getLocOwner());
     NotificationEvent event = new NotificationEvent(0, now(), EventType.UPDATE_TABLE_COLUMN_STAT.toString(),
                     msgEncoder.getSerializer().serialize(msg));
     ColumnStatisticsDesc statDesc = updateTableColumnStatEvent.getColStats().getStatsDesc();
@@ -789,7 +790,8 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
                     updatePartColStatEvent.getPartVals(),
                     updatePartColStatEvent.getPartParameters(),
                     updatePartColStatEvent.getTableObj(),
-                    updatePartColStatEvent.getWriteId());
+                    updatePartColStatEvent.getWriteId(),
+                    updatePartColStatEvent.getLocOwner());
     NotificationEvent event = new NotificationEvent(0, now(), EventType.UPDATE_PARTITION_COLUMN_STAT.toString(),
                     msgEncoder.getSerializer().serialize(msg));
     ColumnStatisticsDesc statDesc = updatePartColStatEvent.getPartColStats().getStatsDesc();

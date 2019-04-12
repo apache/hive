@@ -42,4 +42,6 @@ public abstract class AlterTableMessage extends HCatEventMessage {
   }
 
   public abstract Long getWriteId();
+
+  public abstract String getLocOwner();
 }

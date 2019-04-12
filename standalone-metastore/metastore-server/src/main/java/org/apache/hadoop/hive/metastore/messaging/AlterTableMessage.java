@@ -57,4 +57,6 @@ public abstract class AlterTableMessage extends EventMessage {
   }
 
   public abstract Long getWriteId();
+
+  public abstract String getLocOwner();
 }

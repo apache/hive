@@ -36,7 +36,7 @@ public class JSONUpdateTableColumnStatMessage extends UpdateTableColumnStatMessa
   private Long writeId, timestamp;
 
   @JsonProperty
-  private String server, servicePrincipal, database;
+  private String server, servicePrincipal, database, locOwner;
 
   @JsonProperty
   private String colStatsJson;
@@ -55,11 +55,12 @@ public class JSONUpdateTableColumnStatMessage extends UpdateTableColumnStatMessa
 
   public JSONUpdateTableColumnStatMessage(String server, String servicePrincipal, Long timestamp,
                       ColumnStatistics colStats, Table tableObj, Map<String, String> parameters,
-                                           long writeId) {
+                                           long writeId, String locOwner) {
     this.timestamp = timestamp;
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.writeId = writeId;
+    this.locOwner = locOwner;
     this.database = colStats.getStatsDesc().getDbName();
     try {
       this.colStatsJson = MessageBuilder.createTableColumnStatJson(colStats);
@@ -112,6 +113,11 @@ public class JSONUpdateTableColumnStatMessage extends UpdateTableColumnStatMessa
   @Override
   public Map<String, String> getParameters() {
     return parameters;
+  }
+
+  @Override
+  public String getLocOwner() {
+    return locOwner;
   }
 
   @Override

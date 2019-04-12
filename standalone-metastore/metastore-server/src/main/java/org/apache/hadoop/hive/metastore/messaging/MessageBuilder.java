@@ -178,14 +178,14 @@ public class MessageBuilder {
     return new JSONDropDatabaseMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, db, now());
   }
 
-  public CreateTableMessage buildCreateTableMessage(Table table, Iterator<String> fileIter) {
-    return new JSONCreateTableMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, table, fileIter, now());
+  public CreateTableMessage buildCreateTableMessage(Table table, Iterator<String> fileIter, String locOwner) {
+    return new JSONCreateTableMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, table, fileIter, locOwner, now());
   }
 
   public AlterTableMessage buildAlterTableMessage(Table before, Table after, boolean isTruncateOp,
-      Long writeId) {
+      Long writeId, String locOwner) {
     return new JSONAlterTableMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, before, after,
-        isTruncateOp, writeId, now());
+        isTruncateOp, writeId, locOwner, now());
   }
 
   public DropTableMessage buildDropTableMessage(Table table) {
@@ -193,15 +193,15 @@ public class MessageBuilder {
   }
 
   public AddPartitionMessage buildAddPartitionMessage(Table table,
-      Iterator<Partition> partitionsIterator, Iterator<PartitionFiles> partitionFileIter) {
+      Iterator<Partition> partitionsIterator, Iterator<PartitionFiles> partitionFileIter, String locOwner) {
     return new JSONAddPartitionMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, table,
-        partitionsIterator, partitionFileIter, now());
+        partitionsIterator, partitionFileIter, locOwner, now());
   }
 
   public AlterPartitionMessage buildAlterPartitionMessage(Table table, Partition before,
-      Partition after, boolean isTruncateOp, Long writeId) {
+      Partition after, boolean isTruncateOp, Long writeId, String locOwner) {
     return new JSONAlterPartitionMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL,
-        table, before, after, isTruncateOp, writeId, now());
+        table, before, after, isTruncateOp, writeId, locOwner, now());
   }
 
   public DropPartitionMessage buildDropPartitionMessage(Table table,
@@ -219,9 +219,9 @@ public class MessageBuilder {
   }
 
   public InsertMessage buildInsertMessage(Table tableObj, Partition partObj,
-      boolean replace, Iterator<String> fileIter) {
+      boolean replace, Iterator<String> fileIter, String locOwner) {
     return new JSONInsertMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL,
-        tableObj, partObj, replace, fileIter, now());
+        tableObj, partObj, replace, fileIter, locOwner, now());
   }
 
   public AddPrimaryKeyMessage buildAddPrimaryKeyMessage(List<SQLPrimaryKey> pks) {
@@ -289,9 +289,10 @@ public class MessageBuilder {
   public JSONUpdateTableColumnStatMessage buildUpdateTableColumnStatMessage(ColumnStatistics colStats,
                                                                             Table tableObj,
                                                                             Map<String, String> parameters,
-                                                                            long writeId) {
+                                                                            long writeId,
+                                                                            String locOwner) {
     return new JSONUpdateTableColumnStatMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, now(),
-            colStats, tableObj, parameters, writeId);
+            colStats, tableObj, parameters, writeId, locOwner);
   }
 
   public JSONDeleteTableColumnStatMessage buildDeleteTableColumnStatMessage(String dbName, String colName) {
@@ -300,9 +301,9 @@ public class MessageBuilder {
 
   public JSONUpdatePartitionColumnStatMessage buildUpdatePartitionColumnStatMessage(ColumnStatistics colStats,
                                                             List<String> partVals, Map<String, String> parameters,
-                                                            Table tableObj, long writeId) {
+                                                            Table tableObj, long writeId, String locOwner) {
     return new JSONUpdatePartitionColumnStatMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, now(), colStats, partVals,
-            parameters, tableObj, writeId);
+            parameters, tableObj, writeId, locOwner);
   }
 
   public JSONDeletePartitionColumnStatMessage buildDeletePartitionColumnStatMessage(String dbName, String colName,

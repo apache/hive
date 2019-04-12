@@ -34,7 +34,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class JSONAlterPartitionMessage extends AlterPartitionMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableType, tableObjJson;
+  String server, servicePrincipal, db, table, tableType, tableObjJson, locOwner;
 
   @JsonProperty
   String isTruncateOp;
@@ -55,7 +55,8 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
   }
 
   public JSONAlterPartitionMessage(String server, String servicePrincipal, Table tableObj,
-      Partition partitionObjBefore, Partition partitionObjAfter, boolean isTruncateOp, Long writeId, Long timestamp) {
+      Partition partitionObjBefore, Partition partitionObjAfter, boolean isTruncateOp, Long writeId,
+                                   String locOwner, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = tableObj.getDbName();
@@ -65,6 +66,7 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
     this.timestamp = timestamp;
     this.keyValues = MessageBuilder.getPartitionKeyValues(tableObj, partitionObjBefore);
     this.writeId = writeId;
+    this.locOwner = locOwner;
     try {
       this.tableObjJson = MessageBuilder.createTableObjJson(tableObj);
       this.partitionObjBeforeJson = MessageBuilder.createPartitionObjJson(partitionObjBefore);
@@ -147,6 +149,11 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
   @Override
   public Long getWriteId() {
     return writeId == null ? 0 : writeId;
+  }
+
+  @Override
+  public String getLocOwner() {
+    return locOwner;
   }
 
   @Override

@@ -17,12 +17,18 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.UpdatePartitionColumnStatMessage;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
+
+import java.util.ArrayList;
+import java.util.List;
 
 class UpdatePartColStatHandler extends AbstractEventHandler<UpdatePartitionColumnStatMessage> {
 
@@ -56,6 +62,18 @@ class UpdatePartColStatHandler extends AbstractEventHandler<UpdatePartitionColum
                               withinContext.hiveConf)) {
       return;
     }
+
+    Table qlMdTable = new Table(tableObj);
+    Path metaDataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
+    withinContext.replicationSpec.setForceMigrateToExternalTable(withinContext.hiveConf, eventMessage.getLocOwner());
+
+    EximUtil.createExportDump(
+            metaDataPath.getFileSystem(withinContext.hiveConf),
+            metaDataPath,
+            qlMdTable,
+            null,
+            withinContext.replicationSpec,
+            withinContext.hiveConf);
 
     DumpMetaData dmd = withinContext.createDmd(this);
     dmd.setPayload(eventMessageAsJSON);

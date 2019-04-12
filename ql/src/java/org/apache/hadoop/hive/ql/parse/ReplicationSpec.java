@@ -19,11 +19,11 @@ package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
 import javax.annotation.Nullable;
-import java.text.Collator;
 import java.util.Map;
 
 /**
@@ -46,6 +46,8 @@ public class ReplicationSpec {
   private String validWriteIdList = null; // WriteIds snapshot for replicating ACID/MM tables.
   //TxnIds snapshot
   private String validTxnList = null;
+  private boolean forceMigrateToExternalTable = false;
+
   private Type specType = Type.DEFAULT; // DEFAULT means REPL_LOAD or BOOTSTRAP_DUMP or EXPORT
   private boolean isMigratingToTxnTable = false;
   private boolean isMigratingToExternalTable = false;
@@ -60,7 +62,8 @@ public class ReplicationSpec {
     LAZY("repl.lazy"),
     IS_REPLACE("repl.is.replace"),
     VALID_WRITEID_LIST("repl.valid.writeid.list"),
-    VALID_TXN_LIST("repl.valid.txnid.list")
+    VALID_TXN_LIST("repl.valid.txnid.list"),
+    FORCE_MIGRATE_TO_EXTERNAL_TABLE("repl.force.migrate.to.external.table")
     ;
     private final String keyName;
 
@@ -128,6 +131,7 @@ public class ReplicationSpec {
     this.isLazy = isLazy;
     this.isReplace = isReplace;
     this.specType = Type.DEFAULT;
+    this.forceMigrateToExternalTable = false;
   }
 
   public ReplicationSpec(Function<String, String> keyFetcher) {
@@ -150,6 +154,8 @@ public class ReplicationSpec {
     this.isReplace = Boolean.parseBoolean(keyFetcher.apply(ReplicationSpec.KEY.IS_REPLACE.toString()));
     this.validWriteIdList = keyFetcher.apply(ReplicationSpec.KEY.VALID_WRITEID_LIST.toString());
     this.validTxnList = keyFetcher.apply(KEY.VALID_TXN_LIST.toString());
+    this.forceMigrateToExternalTable
+            = Boolean.parseBoolean(keyFetcher.apply(KEY.FORCE_MIGRATE_TO_EXTERNAL_TABLE.toString()));
   }
 
   /**
@@ -357,6 +363,18 @@ public class ReplicationSpec {
     this.validTxnList = validTxnList;
   }
 
+  public boolean forceMigrateToExternalTable() {
+    return forceMigrateToExternalTable;
+  }
+
+  public void setForceMigrateToExternalTable(boolean forceMigrateToExternalTable) {
+    this.forceMigrateToExternalTable = forceMigrateToExternalTable;
+  }
+
+  public void setForceMigrateToExternalTable(HiveConf conf, String user) {
+    String ownerName = conf.get(HiveConf.ConfVars.STRICT_MANAGED_TABLES_MIGRATION_OWNER.varname, "hive");
+    setForceMigrateToExternalTable((user != null) && !ownerName.equals(user));
+  }
 
   /**
    * @return whether the current replication dumped object related to ACID/Mm table
@@ -390,6 +408,8 @@ public class ReplicationSpec {
         return getValidWriteIdList();
       case VALID_TXN_LIST:
         return getValidTxnList();
+      case FORCE_MIGRATE_TO_EXTERNAL_TABLE:
+        return String.valueOf(forceMigrateToExternalTable());
     }
     return null;
   }

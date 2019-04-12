@@ -69,6 +69,8 @@ class CreateTableHandler extends AbstractEventHandler<CreateTableMessage> {
       qlMdTable.setStatsStateLikeNewTable();
     }
 
+    withinContext.replicationSpec.setForceMigrateToExternalTable(withinContext.hiveConf, eventMessage.getLocOwner());
+
     Path metaDataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
     EximUtil.createExportDump(
         metaDataPath.getFileSystem(withinContext.hiveConf),

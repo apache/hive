@@ -367,7 +367,7 @@ public class HiveStrictManagedMigration {
 
   void checkOwnerPermsOptions() {
     if (runOptions.shouldModifyManagedTableOwner) {
-      ownerName = conf.get("strict.managed.tables.migration.owner", "hive");
+      ownerName = conf.get(HiveConf.ConfVars.STRICT_MANAGED_TABLES_MIGRATION_OWNER.varname, "hive");
       groupName = conf.get("strict.managed.tables.migration.group", null);
     }
     if (runOptions.shouldModifyManagedTablePermissions) {
@@ -474,7 +474,7 @@ public class HiveStrictManagedMigration {
 
     TableMigrationOption migrationOption = runOptions.migrationOption;
     if (migrationOption == TableMigrationOption.AUTOMATIC) {
-      migrationOption = determineMigrationTypeAutomatically(tableObj, tableType, ownerName, conf, hms, null);
+      migrationOption = determineMigrationTypeAutomatically(tableObj, tableType, ownerName, conf, hms, false);
     }
 
     failedValidationChecks = migrateTable(tableObj, tableType, migrationOption, runOptions.dryRun,
@@ -672,7 +672,7 @@ public class HiveStrictManagedMigration {
   }
 
   public static TableMigrationOption determineMigrationTypeAutomatically(Table tableObj, TableType tableType,
-     String ownerName, Configuration conf, IMetaStoreClient hms, Boolean isPathOwnedByHive)
+     String ownerName, Configuration conf, IMetaStoreClient hms, boolean forceMigrateToExternalTbl)
       throws IOException, MetaException, TException {
     TableMigrationOption result = TableMigrationOption.NONE;
     String msg;
@@ -682,7 +682,7 @@ public class HiveStrictManagedMigration {
         // Always keep transactional tables as managed tables.
         result = TableMigrationOption.MANAGED;
       } else {
-        String reason = shouldTableBeExternal(tableObj, ownerName, conf, hms, isPathOwnedByHive);
+        String reason = shouldTableBeExternal(tableObj, ownerName, conf, hms, forceMigrateToExternalTbl);
         if (reason != null) {
           LOG.debug("Converting {} to external table. {}", getQualifiedName(tableObj), reason);
           result = TableMigrationOption.EXTERNAL;
@@ -840,8 +840,13 @@ public class HiveStrictManagedMigration {
   }
 
   static String shouldTableBeExternal(Table tableObj, String ownerName, Configuration conf,
-                                      IMetaStoreClient hms, Boolean isPathOwnedByHive)
-          throws IOException, MetaException, TException {
+                                      IMetaStoreClient hms, boolean forceMigrateToExternalTbl)
+          throws IOException, TException {
+    if (forceMigrateToExternalTbl) {
+      // For replication flow, the path ownership must be verified at source cluster itself.
+      return String.format("Source cluster requested to forcefully convert to external table.");
+    }
+
     if (MetaStoreUtils.isNonNativeTable(tableObj)) {
       return "Table is a non-native (StorageHandler) table";
     }
@@ -852,15 +857,12 @@ public class HiveStrictManagedMigration {
     if (HiveStrictManagedUtils.isListBucketedTable(tableObj)) {
       return "Table is a list bucketed table";
     }
+
     // If any table/partition directory is not owned by hive,
     // then assume table is using storage-based auth - set external.
     // Transactional tables should still remain transactional,
     // but we should have already checked for that before this point.
-    if (isPathOwnedByHive != null) {
-      // for replication flow, the path ownership must be verified at source cluster itself.
-      return isPathOwnedByHive ? null :
-              String.format("One or more table directories is not owned by hive or non-HDFS path at source cluster");
-    } else if (shouldTablePathBeExternal(tableObj, ownerName, conf, hms)) {
+    if ((ownerName != null ) && shouldTablePathBeExternal(tableObj, ownerName, conf, hms)) {
       return String.format("One or more table directories not owned by %s, or non-HDFS path", ownerName);
     }
 

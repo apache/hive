@@ -139,6 +139,8 @@ public class TableExport {
           replicationSpec,
           conf);
       logger.debug("_metadata file written into " + paths.metaDataExportFile().toString());
+    } catch (FileNotFoundException e) {
+      throw new SemanticException(ErrorMsg.FILE_NOT_FOUND.format(e.getMessage()), e);
     } catch (Exception e) {
       // the path used above should not be used on a second try as each dump request is written to a unique location.
       // however if we want to keep the dump location clean we might want to delete the paths

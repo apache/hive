@@ -50,6 +50,8 @@ public abstract class AddPartitionMessage extends HCatEventMessage {
    */
   public abstract List<Map<String, String>> getPartitions ();
 
+  public abstract String getLocOwner();
+
   @Override
   public HCatEventMessage checkValid() {
     if (getTable() == null)

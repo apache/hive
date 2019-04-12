@@ -38,7 +38,7 @@ public class JSONUpdatePartitionColumnStatMessage extends UpdatePartitionColumnS
   private Long writeId, timestamp;
 
   @JsonProperty
-  private String server, servicePrincipal, database;
+  private String server, servicePrincipal, database, locOwner;
 
   @JsonProperty
   private String colStatsJson;
@@ -61,13 +61,15 @@ public class JSONUpdatePartitionColumnStatMessage extends UpdatePartitionColumnS
   public JSONUpdatePartitionColumnStatMessage(String server, String servicePrincipal, Long timestamp,
                                               ColumnStatistics colStats, List<String> partVals,
                                               Map<String, String> parameters,
-                                              Table tableObj, long writeId) {
+                                              Table tableObj, long writeId,
+                                              String locOwner) {
     this.timestamp = timestamp;
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.writeId = writeId;
     this.database = colStats.getStatsDesc().getDbName();
     this.partVals = partVals;
+    this.locOwner = locOwner;
     try {
       this.colStatsJson = MessageBuilder.createTableColumnStatJson(colStats);
       this.tableObjJson = MessageBuilder.createTableObjJson(tableObj);
@@ -124,6 +126,11 @@ public class JSONUpdatePartitionColumnStatMessage extends UpdatePartitionColumnS
   @Override
   public Table getTableObject() throws Exception {
     return  (Table) MessageBuilder.getTObj(tableObjJson, Table.class);
+  }
+
+  @Override
+  public String getLocOwner() {
+    return locOwner;
   }
 
   @Override

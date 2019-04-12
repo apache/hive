@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.repl.util;
 
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.ReplConst;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -32,8 +33,11 @@ import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
+import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
@@ -164,15 +168,15 @@ public class ReplUtils {
   }
 
   public static boolean isTableMigratingToTransactional(HiveConf conf,
-                                                 org.apache.hadoop.hive.metastore.api.Table tableObj)
+                                                        org.apache.hadoop.hive.metastore.api.Table tableObj,
+                                                        boolean forceMigrateToExternalTable)
   throws TException, IOException {
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES) &&
             !AcidUtils.isTransactionalTable(tableObj) &&
             TableType.valueOf(tableObj.getTableType()) == TableType.MANAGED_TABLE) {
-      //TODO : isPathOwnByHive is hard coded to true, need to get it from repl dump metadata.
       HiveStrictManagedMigration.TableMigrationOption migrationOption =
               HiveStrictManagedMigration.determineMigrationTypeAutomatically(tableObj, TableType.MANAGED_TABLE,
-                      null, conf, null, true);
+                      null, conf, null, forceMigrateToExternalTable);
       return migrationOption == MANAGED;
     }
     return false;
@@ -194,11 +198,13 @@ public class ReplUtils {
                                                                   String actualTblName, HiveConf conf,
                                                                   UpdatedMetaDataTracker updatedMetaDataTracker,
                                                                   Task<? extends Serializable> childTask,
-                                                                  org.apache.hadoop.hive.metastore.api.Table tableObj)
+                                                                  org.apache.hadoop.hive.metastore.api.Table tableObj,
+                                                                  boolean forceMigrateToExternalTable)
           throws IOException, TException {
     List<Task<? extends Serializable>> taskList = new ArrayList<>();
     taskList.add(childTask);
-    if (isTableMigratingToTransactional(conf, tableObj) && updatedMetaDataTracker != null) {
+    if ((updatedMetaDataTracker != null)
+            && isTableMigratingToTransactional(conf, tableObj, forceMigrateToExternalTable)) {
       addOpenTxnTaskForMigration(actualDbName, actualTblName, conf, updatedMetaDataTracker,
               taskList, childTask);
     }
@@ -206,13 +212,14 @@ public class ReplUtils {
   }
 
   public static List<Task<? extends Serializable>> addTasksForLoadingColStats(ColumnStatistics colStats,
-                                                                              HiveConf conf,
-                                                                              UpdatedMetaDataTracker updatedMetadata,
-                                                                              org.apache.hadoop.hive.metastore.api.Table tableObj,
-                                                                              long writeId)
+                                                            HiveConf conf,
+                                                            UpdatedMetaDataTracker updatedMetadata,
+                                                            org.apache.hadoop.hive.metastore.api.Table tableObj,
+                                                            long writeId,
+                                                            boolean forceMigrateToExternalTable)
           throws IOException, TException {
     List<Task<? extends Serializable>> taskList = new ArrayList<>();
-    boolean isMigratingToTxn = ReplUtils.isTableMigratingToTransactional(conf, tableObj);
+    boolean isMigratingToTxn = ReplUtils.isTableMigratingToTransactional(conf, tableObj, forceMigrateToExternalTable);
     ColumnStatsUpdateWork work = new ColumnStatsUpdateWork(colStats, isMigratingToTxn);
     work.setWriteId(writeId);
     Task<?> task = TaskFactory.get(work, conf);
@@ -263,5 +270,22 @@ public class ReplUtils {
       return null;
     }
     return Long.parseLong(writeIdString);
+  }
+
+  // If metadata file exists in the event/bootstrap dump path, then use it to decide if we need to
+  // force migrate to external table.
+  // This method can be used by REPL LOAD event message handlers to read forceMigrateToExternalTable
+  // flag from metadata file.
+  public static boolean forceMigrateToExternalTable(HiveConf conf, String dumpMetadataDir)
+          throws IOException, SemanticException {
+    FileSystem fs = FileSystem.get(new Path(dumpMetadataDir).toUri(), conf);
+    Path metadataFile = new Path(dumpMetadataDir, EximUtil.METADATA_NAME);
+    if (fs.exists(metadataFile)) {
+      MetaData metaData =
+              EximUtil.readMetaData(fs, new Path(dumpMetadataDir, EximUtil.METADATA_NAME));
+      ReplicationSpec replicationSpec = metaData.getReplicationSpec();
+      return replicationSpec.forceMigrateToExternalTable();
+    }
+    return false;
   }
 }

@@ -41,4 +41,6 @@ public abstract class UpdatePartitionColumnStatMessage extends EventMessage {
   public abstract List<String> getPartVals();
 
   public abstract Table getTableObject() throws Exception;
+
+  public abstract String getLocOwner();
 }

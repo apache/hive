@@ -28,7 +28,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 public class JSONCreateTableMessage extends CreateTableMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableType;
+  String server, servicePrincipal, db, table, tableType, locOwner;
 
   @JsonProperty
   Long timestamp;
@@ -38,19 +38,20 @@ public class JSONCreateTableMessage extends CreateTableMessage {
    */
   public JSONCreateTableMessage() {}
 
-  public JSONCreateTableMessage(String server, String servicePrincipal, String db, String table,
+  public JSONCreateTableMessage(String server, String servicePrincipal, String db, String table, String locOwner,
       Long timestamp) {
-    this(server, servicePrincipal, db, table, null, timestamp);
+    this(server, servicePrincipal, db, table, null, locOwner, timestamp);
   }
 
   public JSONCreateTableMessage(String server, String servicePrincipal, String db, String table,
-      String tableType, Long timestamp) {
+      String tableType, String locOwner, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = db;
     this.table = table;
     this.tableType = tableType;
     this.timestamp = timestamp;
+    this.locOwner = locOwner;
     checkValid();
   }
 
@@ -72,6 +73,11 @@ public class JSONCreateTableMessage extends CreateTableMessage {
   @Override
   public String getTableType() {
     if (tableType != null) return tableType; else return "";
+  }
+
+  @Override
+  public String getLocOwner() {
+    return locOwner;
   }
 
   @Override

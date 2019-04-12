@@ -47,8 +47,10 @@ public class TruncateTableHandler extends AbstractMessageHandler {
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, null);
 
     try {
+      // User firing the repl load command sets the config for hive user to be used.
       return ReplUtils.addOpenTxnTaskForMigration(actualDbName, actualTblName,
-              context.hiveConf, updatedMetadata, truncateTableTask, msg.getTableObjBefore());
+              context.hiveConf, updatedMetadata, truncateTableTask, msg.getTableObjBefore(),
+              ReplUtils.forceMigrateToExternalTable(context.hiveConf, context.location));
     } catch (Exception e) {
       throw new SemanticException(e.getMessage());
     }

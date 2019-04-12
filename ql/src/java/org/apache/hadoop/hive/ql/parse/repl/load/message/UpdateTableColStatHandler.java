@@ -52,7 +52,8 @@ public class UpdateTableColStatHandler extends AbstractMessageHandler {
 
         try {
             return ReplUtils.addTasksForLoadingColStats(colStats, context.hiveConf, updatedMetadata,
-                    utcsm.getTableObject(), utcsm.getWriteId());
+                    utcsm.getTableObject(), utcsm.getWriteId(),
+                    ReplUtils.forceMigrateToExternalTable(context.hiveConf, context.location));
         } catch(Exception e) {
             throw new SemanticException(e);
         }

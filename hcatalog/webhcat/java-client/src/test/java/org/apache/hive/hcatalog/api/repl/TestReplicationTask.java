@@ -73,7 +73,7 @@ public class TestReplicationTask extends TestCase{
     t.setDbName("testdb");
     t.setTableName("testtable");
     NotificationEvent event = new NotificationEvent(0, (int)System.currentTimeMillis(),
-        HCatConstants.HCAT_CREATE_TABLE_EVENT, msgFactory.buildCreateTableMessage(t).toString());
+        HCatConstants.HCAT_CREATE_TABLE_EVENT, msgFactory.buildCreateTableMessage(t, null).toString());
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
 

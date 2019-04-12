@@ -120,7 +120,8 @@ public class NotificationListener extends MetaStoreEventListener {
       Table table = partitionEvent.getTable();
       String topicName = getTopicName(table);
       if (topicName != null && !topicName.equals("")) {
-        send(messageFactory.buildAddPartitionMessage(table, partitionEvent.getPartitionIterator()), topicName);
+        send(messageFactory.buildAddPartitionMessage(table, partitionEvent.getPartitionIterator(),
+                partitionEvent.getLocOwner()), topicName);
       } else {
         LOG.info("Topic name not found in metastore. Suppressing HCatalog notification for "
             + partitionEvent.getTable().getDbName()
@@ -141,7 +142,7 @@ public class NotificationListener extends MetaStoreEventListener {
 
       String topicName = getTopicName(ape.getTable());
       send(messageFactory.buildAlterPartitionMessage(ape.getTable(),before, after,
-              ape.getWriteId()), topicName);
+              ape.getWriteId(), ape.getLocOwner()), topicName);
     }
   }
 
@@ -221,7 +222,7 @@ public class NotificationListener extends MetaStoreEventListener {
         throw me;
       }
       String topicName = getTopicPrefix(conf) + "." + newTbl.getDbName().toLowerCase();
-      send(messageFactory.buildCreateTableMessage(newTbl), topicName);
+      send(messageFactory.buildCreateTableMessage(newTbl, tableEvent.getLocOwner()), topicName);
     }
   }
 
@@ -255,7 +256,8 @@ public class NotificationListener extends MetaStoreEventListener {
       // DB topic - Alan.
       String topicName = getTopicPrefix(tableEvent.getIHMSHandler().getConf()) + "." +
           after.getDbName().toLowerCase();
-      send(messageFactory.buildAlterTableMessage(before, after, tableEvent.getWriteId()), topicName);
+      send(messageFactory.buildAlterTableMessage(before, after, tableEvent.getWriteId(),
+              tableEvent.getLocOwner()), topicName);
     }
   }
 

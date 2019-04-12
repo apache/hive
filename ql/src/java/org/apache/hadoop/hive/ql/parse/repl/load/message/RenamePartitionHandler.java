@@ -56,7 +56,10 @@ public class RenamePartitionHandler extends AbstractMessageHandler {
         oldPartSpec.put(fs.getName(), beforeIterator.next());
         newPartSpec.put(fs.getName(), afterIterator.next());
       }
-      if (ReplUtils.isTableMigratingToTransactional(context.hiveConf, tableObj)) {
+
+      boolean forceMigrateToExternalTable
+              = ReplUtils.forceMigrateToExternalTable(context.hiveConf, context.location);
+      if (ReplUtils.isTableMigratingToTransactional(context.hiveConf, tableObj, forceMigrateToExternalTable)) {
         replicationSpec.setMigratingToTxnTable();
       }
 
@@ -69,7 +72,7 @@ public class RenamePartitionHandler extends AbstractMessageHandler {
                         renamePtnTask.getId(), oldPartSpec, newPartSpec);
       updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, newPartSpec);
       return ReplUtils.addOpenTxnTaskForMigration(actualDbName, actualTblName,
-              context.hiveConf, updatedMetadata, renamePtnTask, tableObj);
+              context.hiveConf, updatedMetadata, renamePtnTask, tableObj, forceMigrateToExternalTable);
     } catch (Exception e) {
       throw (e instanceof SemanticException)
               ? (SemanticException) e

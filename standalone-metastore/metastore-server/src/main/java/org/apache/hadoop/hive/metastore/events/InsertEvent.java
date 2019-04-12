@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.ClientCapabilities;
 import org.apache.hadoop.hive.metastore.api.ClientCapability;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
@@ -32,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
 
@@ -46,6 +48,7 @@ public class InsertEvent extends ListenerEvent {
   private final boolean replace;
   private final List<String> files;
   private List<String> fileChecksums = new ArrayList<>();
+  private final String locOwner;
 
   /**
    *
@@ -89,6 +92,13 @@ public class InsertEvent extends ListenerEvent {
     if (insertData.isSetFilesAddedChecksum()) {
       fileChecksums = insertData.getFilesAddedChecksum();
     }
+
+    // The table location owner is same as partition location owner if the database is source of replication.
+    if (TableType.MANAGED_TABLE.toString().equalsIgnoreCase(tableObj.getTableType())) {
+      locOwner = FileUtils.getLocationOwner(tableObj.getSd().getLocation(), handler.getConf());
+    } else {
+      locOwner = null;
+    }
   }
 
   /**
@@ -128,5 +138,9 @@ public class InsertEvent extends ListenerEvent {
    */
   public List<String> getFileChecksums() {
     return fileChecksums;
+  }
+
+  public String getLocOwner() {
+    return locOwner;
   }
 }

@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.io;
 
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
@@ -70,7 +73,8 @@ public class TableSerializer implements JsonWriter.Serializer {
     }
   }
 
-  private Table updatePropertiesInTable(Table table, ReplicationSpec additionalPropertiesProvider) {
+  private Table updatePropertiesInTable(Table table, ReplicationSpec additionalPropertiesProvider)
+          throws IOException {
     // Remove all the entries from the parameters which are added by repl tasks internally.
     Map<String, String> parameters = table.getParameters();
     if (parameters != null) {
@@ -95,6 +99,13 @@ public class TableSerializer implements JsonWriter.Serializer {
       // uncomment this else section, but currently unneeded. Will require a lot of golden file
       // regen if we do so.
     }
+
+    // For managed table, need to check if need to force migrate to external table based on location
+    // ownership.
+    if (tableHandle.getTableType() == TableType.MANAGED_TABLE) {
+      checkAndSetForceMigrateToExternalTable(additionalPropertiesProvider,
+              new Path(table.getSd().getLocation()));
+    }
     return table;
   }
 
@@ -103,10 +114,57 @@ public class TableSerializer implements JsonWriter.Serializer {
     writer.jsonGenerator.writeStartArray();
     if (partitions != null) {
       for (org.apache.hadoop.hive.ql.metadata.Partition partition : partitions) {
+        // For managed table, need to check if need to force migrate to external table based on location
+        // ownership.
+        if (tableHandle.getTableType() == TableType.MANAGED_TABLE) {
+          checkAndSetForceMigrateToExternalTable(additionalPropertiesProvider, partition.getDataLocation());
+        }
         new PartitionSerializer(partition.getTPartition())
             .writeTo(writer, additionalPropertiesProvider);
       }
     }
     writer.jsonGenerator.writeEndArray();
+  }
+
+  private void checkAndSetForceMigrateToExternalTable(ReplicationSpec replicationSpec, Path dataLocation)
+          throws IOException {
+    // If the source cluster is already enabled for strict managed tables, then conversion rules are
+    // not applicable.
+    if (hiveConf.getBoolean(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES.varname, false)) {
+      return;
+    }
+
+    // Conversion rules are applicable only in replication flow. Export flow shouldn't do this check.
+    if ((replicationSpec == null) || !replicationSpec.isInReplicationScope()) {
+      return;
+    }
+
+    // In case of incremental dump, the ownership check should be done against location owner information
+    // stored in the event. Shouldn't check it from actual file system as location might be deleted.
+    if (replicationSpec.getReplSpecType() == ReplicationSpec.Type.INCREMENTAL_DUMP) {
+      return;
+    }
+
+    // If the table is already marked for force migrate to external table, then it shouldn't be changed.
+    // Even if table or even one partition is not owned by strict managed table's owner, then we should
+    // force migrate to external table. So, we shouldn't overwrite this flag if it was already true.
+    if (replicationSpec.forceMigrateToExternalTable()) {
+      return;
+    }
+
+    try {
+      FileStatus fileStatus = dataLocation.getFileSystem(hiveConf).getFileStatus(dataLocation);
+      String hiveOwner = hiveConf.get(HiveConf.ConfVars.STRICT_MANAGED_TABLES_MIGRATION_OWNER.varname, "hive");
+
+      // If the location owner is not same as the config, then the table should be converted to external
+      // table if replicated to a cluster with strict managed enabled.
+      replicationSpec.setForceMigrateToExternalTable(!hiveOwner.equals(fileStatus.getOwner()));
+      LOG.debug("Owner of path " + dataLocation + " is " +  fileStatus.getOwner()
+              + ", " + HiveConf.ConfVars.STRICT_MANAGED_TABLES_MIGRATION_OWNER.varname + " = " + hiveOwner
+              + ", forceMigrateToExternalTable = " + replicationSpec.forceMigrateToExternalTable());
+    } catch (IOException e) {
+      LOG.error("Failed to get location owner ", e);
+      throw e;
+    }
   }
 }

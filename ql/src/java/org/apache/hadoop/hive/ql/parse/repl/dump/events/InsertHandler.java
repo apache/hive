@@ -73,6 +73,7 @@ class InsertHandler extends AbstractEventHandler<InsertMessage> {
 
     // Mark the replace type based on INSERT-INTO or INSERT_OVERWRITE operation
     withinContext.replicationSpec.setIsReplace(eventMessage.isReplace());
+    withinContext.replicationSpec.setForceMigrateToExternalTable(withinContext.hiveConf, eventMessage.getLocOwner());
     EximUtil.createExportDump(metaDataPath.getFileSystem(withinContext.hiveConf), metaDataPath,
         qlMdTable, qlPtns,
         withinContext.replicationSpec,

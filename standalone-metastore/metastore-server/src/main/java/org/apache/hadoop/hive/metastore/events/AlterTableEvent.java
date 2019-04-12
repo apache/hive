@@ -22,7 +22,9 @@ package org.apache.hadoop.hive.metastore.events;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 
 @InterfaceAudience.Public
 @InterfaceStability.Stable
@@ -31,7 +33,8 @@ public class AlterTableEvent extends ListenerEvent {
   private final Table newTable;
   private final Table oldTable;
   private final boolean isTruncateOp;
-  private Long writeId;
+  private final Long writeId;
+  private final String locOwner;
 
   public AlterTableEvent (Table oldTable, Table newTable, boolean isTruncateOp, boolean status,
                           Long writeId, IHMSHandler handler) {
@@ -40,6 +43,14 @@ public class AlterTableEvent extends ListenerEvent {
     this.newTable = newTable;
     this.isTruncateOp = isTruncateOp;
     this.writeId = writeId;
+
+    // It is assumed that table type conversion from managed to external or external to managed
+    // is not allowed in case of table is enabled for replication.
+    if (TableType.MANAGED_TABLE.toString().equalsIgnoreCase(newTable.getTableType())) {
+      locOwner = FileUtils.getLocationOwner(newTable.getSd().getLocation(), handler.getConf());
+    } else {
+      locOwner = null;
+    }
   }
 
   /**
@@ -65,5 +76,9 @@ public class AlterTableEvent extends ListenerEvent {
 
   public Long getWriteId() {
     return writeId;
+  }
+
+  public String getLocOwner() {
+    return locOwner;
   }
 }

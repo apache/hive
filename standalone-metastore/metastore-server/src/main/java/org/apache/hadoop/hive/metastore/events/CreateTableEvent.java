@@ -21,17 +21,25 @@ package org.apache.hadoop.hive.metastore.events;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 
 @InterfaceAudience.Public
 @InterfaceStability.Stable
 public class CreateTableEvent extends ListenerEvent {
 
   private final Table table;
+  private final String locOwner;
 
   public CreateTableEvent (Table table, boolean status, IHMSHandler handler) {
     super (status, handler);
     this.table = table;
+    if (TableType.MANAGED_TABLE.toString().equalsIgnoreCase(table.getTableType())) {
+      locOwner = FileUtils.getLocationOwner(table.getSd().getLocation(), handler.getConf());
+    } else {
+      locOwner = null;
+    }
   }
 
   /**
@@ -39,5 +47,9 @@ public class CreateTableEvent extends ListenerEvent {
    */
   public Table getTable () {
     return table;
+  }
+
+  public String getLocOwner() {
+    return locOwner;
   }
 }

@@ -37,6 +37,8 @@ public abstract class CreateTableMessage extends EventMessage {
 
   public abstract Table getTableObj() throws Exception;
 
+  public abstract String getLocOwner();
+
   /**
    * Get list of files created as a result of this DML operation
    *

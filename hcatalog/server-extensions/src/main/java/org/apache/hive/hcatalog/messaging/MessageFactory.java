@@ -117,9 +117,10 @@ public abstract class MessageFactory {
   /**
    * Factory method for CreateTableMessage.
    * @param table The Table being created.
+   * @param locOwner Owner of the table location.
    * @return CreateTableMessage instance.
    */
-  public abstract CreateTableMessage buildCreateTableMessage(Table table);
+  public abstract CreateTableMessage buildCreateTableMessage(Table table, String locOwner);
 
   /**
    * Factory method for AlterTableMessage.  Unlike most of these calls, this one can return null,
@@ -129,9 +130,10 @@ public abstract class MessageFactory {
    * @param before The table before the alter
    * @param after The table after the alter
    * @param writeId writeId under which alter is done (for ACID tables)
+   * @param locOwner Owner of the table location.
    * @return
    */
-  public abstract AlterTableMessage buildAlterTableMessage(Table before, Table after, Long writeId);
+  public abstract AlterTableMessage buildAlterTableMessage(Table before, Table after, Long writeId, String locOwner);
 
   /**
    * Factory method for DropTableMessage.
@@ -140,13 +142,15 @@ public abstract class MessageFactory {
    */
   public abstract DropTableMessage buildDropTableMessage(Table table);
 
-    /**
-     * Factory method for AddPartitionMessage.
-     * @param table The Table to which the partitions are added.
-     * @param partitions The iterator to set of Partitions being added.
-     * @return AddPartitionMessage instance.
-     */
-  public abstract AddPartitionMessage buildAddPartitionMessage(Table table, Iterator<Partition> partitions);
+  /**
+   * Factory method for AddPartitionMessage.
+   * @param table The Table to which the partitions are added.
+   * @param partitions The iterator to set of Partitions being added.
+   * @param locOwner Owner of the table/partition location.
+   * @return AddPartitionMessage instance.
+   */
+  public abstract AddPartitionMessage buildAddPartitionMessage(Table table, Iterator<Partition> partitions,
+                                                               String locOwner);
 
   /**
    * Factory method for building AlterPartitionMessage
@@ -154,10 +158,11 @@ public abstract class MessageFactory {
    * @param before The partition before it was altered
    * @param after The partition after it was altered
    * @param writeId writeId under which alter is done (for ACID tables)
+   * @param locOwner Owner of the table/partition location.
    * @return a new AlterPartitionMessage
    */
   public abstract AlterPartitionMessage buildAlterPartitionMessage(Table table, Partition before,
-                                                                   Partition after, Long writeId);
+                                                                   Partition after, Long writeId,  String locOwner);
 
   /**
    * Factory method for DropPartitionMessage.
@@ -188,10 +193,11 @@ public abstract class MessageFactory {
    * @param partVals Partition values for the partition that the insert occurred in, may be null
    *                 if the insert was done into a non-partitioned table
    * @param files List of files created as a result of the insert, may be null.
+   * @param locOwner Owner of the table/partition location.
    * @return instance of InsertMessage
    */
   public abstract InsertMessage buildInsertMessage(String db, String table,
-                                                   Map<String,String> partVals, List<String> files);
+                                                   Map<String,String> partVals, List<String> files, String locOwner);
 
   /**
    * Factory method for building insert message
@@ -200,8 +206,9 @@ public abstract class MessageFactory {
    * @param partVals Partition values for the partition that the insert occurred in, may be null
    *                 if the insert was done into a non-partitioned table
    * @param files List of files created as a result of the insert, may be null.
+   * @param locOwner Owner of the table/partition location.
    * @return instance of InsertMessage
    */
   public abstract InsertMessage buildInsertMessage(String db, Table table,
-      Map<String,String> partVals, List<String> files);
+      Map<String,String> partVals, List<String> files, String locOwner);
 }

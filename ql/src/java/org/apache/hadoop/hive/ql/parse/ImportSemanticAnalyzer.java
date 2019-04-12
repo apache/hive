@@ -201,16 +201,18 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private static void upgradeTableDesc(org.apache.hadoop.hive.metastore.api.Table tableObj, MetaData rv,
-                                       EximUtil.SemanticAnalyzerWrapperContext x)
+  private static void upgradeTableDesc(org.apache.hadoop.hive.metastore.api.Table tableObj,
+                                       EximUtil.SemanticAnalyzerWrapperContext x,
+                                       boolean forceMigrateToExternalTable)
           throws IOException, TException, HiveException {
-    x.getLOG().debug("Converting table " + tableObj.getTableName() + " of type " + tableObj.getTableType() +
-            " with para " + tableObj.getParameters());
-    //TODO : isPathOwnedByHive is hard coded to true, need to get it from repl dump metadata.
+    x.getLOG().debug("Converting table " + tableObj.getTableName() + " of type " + tableObj.getTableType()
+            + " with para " + tableObj.getParameters()
+            + " forceMigrateToExternalTable  " + forceMigrateToExternalTable);
+
     TableType tableType = TableType.valueOf(tableObj.getTableType());
     HiveStrictManagedMigration.TableMigrationOption migrationOption =
             HiveStrictManagedMigration.determineMigrationTypeAutomatically(tableObj, tableType,
-                    null, x.getConf(), x.getHive().getMSC(), true);
+                    null, x.getConf(), x.getHive().getMSC(), forceMigrateToExternalTable);
     HiveStrictManagedMigration.migrateTable(tableObj, tableType, migrationOption, false,
             getHiveUpdater(x.getConf()), x.getHive().getMSC(), x.getConf());
     x.getLOG().debug("Converted table " + tableObj.getTableName() + " of type " + tableObj.getTableType() +
@@ -282,8 +284,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       if (!TxnUtils.isTransactionalTable(tblObj) && replicationSpec.isInReplicationScope() &&
               x.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES) &&
               (TableType.valueOf(tblObj.getTableType()) == TableType.MANAGED_TABLE)) {
-        //TODO : dump metadata should be read to make sure that migration is required.
-        upgradeTableDesc(tblObj, rv, x);
+        upgradeTableDesc(tblObj, x, replicationSpec.forceMigrateToExternalTable());
         //if the conversion is from non transactional to transactional table
         if (TxnUtils.isTransactionalTable(tblObj)) {
           replicationSpec.setMigratingToTxnTable();

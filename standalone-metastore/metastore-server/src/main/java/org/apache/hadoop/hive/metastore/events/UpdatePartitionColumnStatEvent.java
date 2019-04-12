@@ -21,8 +21,10 @@ package org.apache.hadoop.hive.metastore.events;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -39,6 +41,7 @@ public class UpdatePartitionColumnStatEvent extends ListenerEvent {
   private Map<String, String> parameters;
   private List<String> partVals;
   private Table tableObj;
+  private final String locOwner;
 
   /**
    * @param statsObj Columns statistics Info.
@@ -56,6 +59,11 @@ public class UpdatePartitionColumnStatEvent extends ListenerEvent {
     this.parameters = parameters;
     this.partVals = partVals;
     this.tableObj = tableObj;
+    if (TableType.MANAGED_TABLE.toString().equalsIgnoreCase(tableObj.getTableType())) {
+      locOwner = FileUtils.getLocationOwner(tableObj.getSd().getLocation(), handler.getConf());
+    } else {
+      locOwner = null;
+    }
   }
 
   /**
@@ -65,12 +73,7 @@ public class UpdatePartitionColumnStatEvent extends ListenerEvent {
    */
   public UpdatePartitionColumnStatEvent(ColumnStatistics statsObj, List<String> partVals,
                                         Table tableObj, IHMSHandler handler) {
-    super(true, handler);
-    this.partColStats = statsObj;
-    this.partVals = partVals;
-    this.writeId = 0;
-    this.parameters = null;
-    this.tableObj = tableObj;
+    this(statsObj, partVals, null, tableObj, 0, handler);
   }
 
   public ColumnStatistics getPartColStats() {
@@ -89,5 +92,11 @@ public class UpdatePartitionColumnStatEvent extends ListenerEvent {
     return partVals;
   }
 
-  public Table getTableObj() { return tableObj; }
+  public Table getTableObj() {
+    return tableObj;
+  }
+
+  public String getLocOwner() {
+    return locOwner;
+  }
 }

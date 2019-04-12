@@ -17,9 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.UpdateTableColumnStatMessage;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
@@ -45,6 +48,17 @@ class UpdateTableColStatHandler extends AbstractEventHandler<UpdateTableColumnSt
     if (withinContext.replicationSpec.isMetadataOnly()) {
       return;
     }
+
+    Path metaDataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
+    withinContext.replicationSpec.setForceMigrateToExternalTable(withinContext.hiveConf, eventMessage.getLocOwner());
+
+    EximUtil.createExportDump(
+            metaDataPath.getFileSystem(withinContext.hiveConf),
+            metaDataPath,
+            qlMdTable,
+            null,
+            withinContext.replicationSpec,
+            withinContext.hiveConf);
 
     DumpMetaData dmd = withinContext.createDmd(this);
     dmd.setPayload(eventMessageAsJSON);

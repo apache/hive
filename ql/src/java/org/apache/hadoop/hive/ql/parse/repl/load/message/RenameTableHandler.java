@@ -63,7 +63,9 @@ public class RenameTableHandler extends AbstractMessageHandler {
       String oldName = StatsUtils.getFullyQualifiedTableName(oldDbName, tableObjBefore.getTableName());
       String newName = StatsUtils.getFullyQualifiedTableName(newDbName, tableObjAfter.getTableName());
       ReplicationSpec replicationSpec = context.eventOnlyReplicationSpec();
-      if (ReplUtils.isTableMigratingToTransactional(context.hiveConf, tableObjAfter)) {
+      boolean forceMigrateToExternalTable
+              = ReplUtils.forceMigrateToExternalTable(context.hiveConf, context.location);
+      if (ReplUtils.isTableMigratingToTransactional(context.hiveConf, tableObjAfter, forceMigrateToExternalTable)) {
         replicationSpec.setMigratingToTxnTable();
       }
       AlterTableDesc renameTableDesc = new AlterTableDesc(
@@ -82,7 +84,7 @@ public class RenameTableHandler extends AbstractMessageHandler {
       // tablesUpdated. However, we explicitly don't support repl of that sort, and error out above
       // if so. If that should ever change, this will need reworking.
       return ReplUtils.addOpenTxnTaskForMigration(oldDbName, tableObjBefore.getTableName(),
-              context.hiveConf, updatedMetadata, renameTableTask, tableObjAfter);
+              context.hiveConf, updatedMetadata, renameTableTask, tableObjAfter, forceMigrateToExternalTable);
     } catch (Exception e) {
       throw (e instanceof SemanticException)
           ? (SemanticException) e

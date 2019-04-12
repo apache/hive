@@ -31,7 +31,7 @@ import java.util.Map;
 public class JSONAddPartitionMessage extends AddPartitionMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableType;
+  String server, servicePrincipal, db, table, tableType, locOwner;
 
   @JsonProperty
   Long timestamp;
@@ -45,12 +45,12 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
   public JSONAddPartitionMessage() {}
 
   public JSONAddPartitionMessage(String server, String servicePrincipal, String db, String table,
-                                 List<Map<String,String>> partitions, Long timestamp) {
-    this(server, servicePrincipal, db, table, null, partitions, timestamp);
+                                 List<Map<String,String>> partitions, String locOwner, Long timestamp) {
+    this(server, servicePrincipal, db, table, null, partitions, locOwner, timestamp);
   }
 
   public JSONAddPartitionMessage(String server, String servicePrincipal, String db, String table,
-                   String tableType, List<Map<String,String>> partitions, Long timestamp) {
+                   String tableType, List<Map<String,String>> partitions, String locOwner, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = db;
@@ -58,6 +58,7 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
     this.tableType = tableType;
     this.partitions = partitions;
     this.timestamp = timestamp;
+    this.locOwner = locOwner;
     checkValid();
   }
 
@@ -83,6 +84,11 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
 
   @Override
   public List<Map<String, String>> getPartitions () { return partitions; }
+
+  @Override
+  public String getLocOwner() {
+    return locOwner;
+  }
 
   @Override
   public String toString() {

@@ -35,6 +35,8 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import org.apache.hadoop.hive.ql.parse.WarehouseInstance;
+import org.apache.hadoop.hive.ql.parse.ReplicationTestUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,6 +116,7 @@ public class TestReplicationWithTableMigration {
       put("hive.support.concurrency", "false");
       put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
       put("hive.strict.managed.tables", "false");
+      put("strict.managed.tables.migration.owner", System.getProperty("user.name"));
     }};
     configsForPrimary.putAll(overrideConfigs);
     primary = new WarehouseInstance(LOG, miniDFSCluster, configsForPrimary);
@@ -475,5 +478,74 @@ public class TestReplicationWithTableMigration {
     tuple = prepareDataAndDump(primaryDbName, tuple.lastReplicationId);
     replica.load(replicatedDbName, tuple.dumpLocation, withConfigs);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
+  }
+
+  @Test
+  public void testForceMigrateToExternalTableBasedOnLocationOwnership() throws Throwable {
+    primary.run("use " + primaryDbName)
+            .run("create table tbl (fld int)")
+            .run("insert into tbl values (1)")
+            .run("create table tbl_part (fld int) partitioned by (part int)")
+            .run("insert into tbl_part partition (part = 1) values (1)")
+            .run("insert into tbl_part partition (part = 2) values (2)");
+
+    assertFalse(MetaStoreUtils.isExternalTable(primary.getTable(primaryDbName, "tbl")));
+    assertFalse(MetaStoreUtils.isExternalTable(primary.getTable(primaryDbName, "tbl_part")));
+
+    Table table = primary.getTable(primaryDbName, "tbl");
+    Path location = new Path(table.getSd().getLocation());
+    FileSystem fs = location.getFileSystem(primary.getConf());
+    fs.setOwner(location, "junk", "junk");
+    Path partLoc = new Path(primary.getPartition(primaryDbName,
+            "tbl_part", Collections.singletonList("1")).getSd().getLocation());
+    fs.setOwner(partLoc, "junk", "junk");
+
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run(" select fld from tbl")
+            .verifyResult("1")
+            .run(" select fld from tbl_part")
+            .verifyResults(new String[] {"1", "2"});
+
+    assertTrue(MetaStoreUtils.isExternalTable(replica.getTable(replicatedDbName, "tbl")));
+    assertTrue(MetaStoreUtils.isExternalTable(replica.getTable(replicatedDbName, "tbl_part")));
+
+    // Create locations with owner is set to junk and use it to create table/partition.
+    Path newLoc = new Path(location.getParent(), "tbl_inc");
+    assertTrue(fs.mkdirs(newLoc));
+    fs.setOwner(newLoc, "junk", "junk");
+
+    Path newLocPart = new Path(location.getParent(), "tbl_inc_part");
+    assertTrue(fs.mkdirs(newLocPart));
+    fs.setOwner(newLocPart, "junk", "junk");
+
+    primary.run("use " + primaryDbName)
+            .run("create table tbl_inc (fld int, fld1 int) location '" + newLoc.toUri() + "'")
+            .run("insert into tbl_inc values (1, 2)")
+            .run("create table tbl_inc_part (fld int) partitioned by (part string) location '" + newLocPart.toUri() + "'")
+            .run("insert into tbl_inc_part partition (part = 'part1') values (1)")
+            .run("insert into tbl_inc_part partition (part = 'part2') values (2)");
+
+    assertFalse(MetaStoreUtils.isExternalTable(primary.getTable(primaryDbName, "tbl_inc")));
+    assertFalse(MetaStoreUtils.isExternalTable(primary.getTable(primaryDbName, "tbl_inc_part")));
+
+    // Just to make sure the current location is not referred to decide the ownership, let's revert
+    // the ownership back to original owner. This shouldn't impact the conversion to external table as
+    // the incremental repl dump refers to location owner info stored in events.
+    String originalOwner = System.getProperty("user.name");
+    fs.setOwner(newLoc, originalOwner, originalOwner);
+    fs.setOwner(newLocPart, originalOwner, originalOwner);
+
+    tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
+    replica.load(replicatedDbName, tuple.dumpLocation)
+           .run("use " + replicatedDbName)
+            .run(" select fld from tbl_inc")
+            .verifyResult("1")
+            .run(" select fld from tbl_inc_part")
+            .verifyResults(new String[] {"1", "2"});
+
+    assertTrue(MetaStoreUtils.isExternalTable(replica.getTable(replicatedDbName, "tbl_inc")));
+    assertTrue(MetaStoreUtils.isExternalTable(replica.getTable(replicatedDbName, "tbl_inc_part")));
   }
 }

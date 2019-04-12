@@ -31,7 +31,7 @@ import java.util.Map;
 public class JSONInsertMessage extends InsertMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableType;
+  String server, servicePrincipal, db, table, tableType, locOwner;
 
   @JsonProperty
   Long timestamp;
@@ -48,13 +48,13 @@ public class JSONInsertMessage extends InsertMessage {
   public JSONInsertMessage() {}
 
   public JSONInsertMessage(String server, String servicePrincipal, String db, String table,
-                           Map<String,String> partKeyVals, List<String> files, Long timestamp) {
-    this(server, servicePrincipal, db, table, null, partKeyVals, files, timestamp);
+                           Map<String,String> partKeyVals, List<String> files, String locOwner, Long timestamp) {
+    this(server, servicePrincipal, db, table, null, partKeyVals, files, locOwner, timestamp);
   }
 
   public JSONInsertMessage(String server, String servicePrincipal, String db, String table,
                            String tableType, Map<String,String> partKeyVals, List<String> files,
-                           Long timestamp) {
+                           String locOwner, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = db;
@@ -63,6 +63,7 @@ public class JSONInsertMessage extends InsertMessage {
     this.timestamp = timestamp;
     this.partKeyVals = partKeyVals;
     this.files = files;
+    this.locOwner = locOwner;
     checkValid();
   }
 
@@ -96,6 +97,11 @@ public class JSONInsertMessage extends InsertMessage {
 
   @Override
   public Long getTimestamp() { return timestamp; }
+
+  @Override
+  public String getLocOwner() {
+    return locOwner;
+  }
 
   @Override
   public String toString() {

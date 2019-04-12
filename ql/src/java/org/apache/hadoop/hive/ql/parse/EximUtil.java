@@ -301,10 +301,10 @@ public class EximUtil {
     }
 
     try (JsonWriter writer = new JsonWriter(fs, metadataPath)) {
+      new TableSerializer(tableHandle, partitions, hiveConf).writeTo(writer, replicationSpec);
       if (replicationSpec.isInReplicationScope()) {
         new ReplicationSpecSerializer().writeTo(writer, replicationSpec);
       }
-      new TableSerializer(tableHandle, partitions, hiveConf).writeTo(writer, replicationSpec);
     }
   }
 

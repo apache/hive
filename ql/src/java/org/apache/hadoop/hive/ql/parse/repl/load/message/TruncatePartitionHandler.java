@@ -66,8 +66,10 @@ public class TruncatePartitionHandler extends AbstractMessageHandler {
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, partSpec);
 
     try {
+      // User firing the repl load command sets the config for hive user to be used.
       return ReplUtils.addOpenTxnTaskForMigration(actualDbName, actualTblName,
-              context.hiveConf, updatedMetadata, truncatePtnTask, tblObj);
+              context.hiveConf, updatedMetadata, truncatePtnTask, tblObj,
+              ReplUtils.forceMigrateToExternalTable(context.hiveConf, context.location));
     } catch (Exception e) {
       throw new SemanticException(e.getMessage());
     }

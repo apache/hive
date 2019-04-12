@@ -38,4 +38,6 @@ public abstract class UpdateTableColumnStatMessage extends EventMessage {
   public abstract Map<String, String> getParameters();
 
   public abstract Table getTableObject() throws Exception;
+
+  public abstract String getLocOwner();
 }

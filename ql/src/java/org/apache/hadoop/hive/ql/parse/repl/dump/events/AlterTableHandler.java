@@ -93,25 +93,28 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
 
     if (Scenario.ALTER == scenario) {
       withinContext.replicationSpec.setIsMetadataOnly(true);
-      Table qlMdTableAfter = new Table(after);
-      Path metaDataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
-
-      // If we are not dumping metadata about a table, we shouldn't be dumping basic statistics
-      // as well, since that won't be accurate. So reset them to what they would look like for an
-      // empty table.
-      if (withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY)) {
-        qlMdTableAfter.setStatsStateLikeNewTable();
-      }
-
-      EximUtil.createExportDump(
-          metaDataPath.getFileSystem(withinContext.hiveConf),
-          metaDataPath,
-          qlMdTableAfter,
-          null,
-          withinContext.replicationSpec,
-          withinContext.hiveConf);
     }
- 
+
+    Table qlMdTableAfter = new Table(after);
+    Path metaDataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
+
+    // If we are not dumping metadata about a table, we shouldn't be dumping basic statistics
+    // as well, since that won't be accurate. So reset them to what they would look like for an
+    // empty table.
+    if (withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY)) {
+      qlMdTableAfter.setStatsStateLikeNewTable();
+    }
+
+    withinContext.replicationSpec.setForceMigrateToExternalTable(withinContext.hiveConf, eventMessage.getLocOwner());
+
+    EximUtil.createExportDump(
+        metaDataPath.getFileSystem(withinContext.hiveConf),
+        metaDataPath,
+        qlMdTableAfter,
+        null,
+        withinContext.replicationSpec,
+        withinContext.hiveConf);
+
     DumpMetaData dmd = withinContext.createDmd(this);
     dmd.setPayload(eventMessageAsJSON);
     dmd.write();

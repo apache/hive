@@ -56,6 +56,8 @@ public abstract class InsertMessage extends HCatEventMessage {
    */
   public abstract List<String> getFiles();
 
+  public abstract String getLocOwner();
+
   @Override
   public HCatEventMessage checkValid() {
     if (getTable() == null)

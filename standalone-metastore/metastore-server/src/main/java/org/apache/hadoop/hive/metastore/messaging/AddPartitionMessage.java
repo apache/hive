@@ -65,4 +65,5 @@ public abstract class AddPartitionMessage extends EventMessage {
    */
   public abstract Iterable<PartitionFiles> getPartitionFilesIter();
 
+  public abstract String getLocOwner();
 }
