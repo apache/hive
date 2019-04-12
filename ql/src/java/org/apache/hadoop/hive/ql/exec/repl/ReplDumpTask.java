@@ -367,9 +367,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       // added/modified by concurrent txns which are later than current txn. So, need to set last repl Id of this table
       // as bootstrap dump's last repl Id.
       tuple.replicationSpec.setCurrentReplicationState(String.valueOf(lastReplId));
-
-      // For now we do not replicate stats for ACID table. So, wipe out column stats if any.
-      tableSpec.tableHandle.getTTable().unsetColStats();
     }
     MmContext mmCtx = MmContext.createIfNeeded(tableSpec.tableHandle);
     new TableExport(
