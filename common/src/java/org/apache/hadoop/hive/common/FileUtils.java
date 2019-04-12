@@ -480,13 +480,6 @@ public final class FileUtils {
       return true;
     }
 
-    // check all children
-    for (FileStatus childStatus : subDirsToCheck) {
-      // check children recursively - recurse is true if we're here.
-      if (!isActionPermittedForFileHierarchy(fs, childStatus, userName, action, true)) {
-        return false;
-      }
-    }
     return true;
   }
 
@@ -556,14 +549,6 @@ public final class FileUtils {
     if ((!fileStatus.isDir()) || (!recurse)) {
       // no sub dirs to be checked
       return true;
-    }
-    // check all children
-    FileStatus[] childStatuses = fs.listStatus(fileStatus.getPath());
-    for (FileStatus childStatus : childStatuses) {
-      // check children recursively - recurse is true if we're here.
-      if (!checkIsOwnerOfFileHierarchy(fs, childStatus, userName, true)) {
-        return false;
-      }
     }
     return true;
   }
