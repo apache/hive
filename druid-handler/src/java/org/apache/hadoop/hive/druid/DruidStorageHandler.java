@@ -559,7 +559,7 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
             return new URL(String.format("http://%s/druid/coordinator/v1/datasources/%s/segments/%s",
                 coordinatorAddress,
                 dataSegment.getDataSource(),
-                dataSegment.getIdentifier()));
+                dataSegment.getId().toString()));
           } catch (MalformedURLException e) {
             Throwables.propagate(e);
           }
@@ -604,7 +604,7 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
   @VisibleForTesting void deleteSegment(DataSegment segment) throws SegmentLoadingException {
 
     final Path path = DruidStorageHandlerUtils.getPath(segment);
-    LOG.info("removing segment {}, located at path {}", segment.getIdentifier(), path);
+    LOG.info("removing segment {}, located at path {}", segment.getId().toString(), path);
 
     try {
       if (path.getName().endsWith(".zip")) {
@@ -691,7 +691,7 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
         try {
           deleteSegment(dataSegment);
         } catch (SegmentLoadingException e) {
-          LOG.error(String.format("Error while deleting segment [%s]", dataSegment.getIdentifier()), e);
+          LOG.error(String.format("Error while deleting segment [%s]", dataSegment.getId().toString()), e);
         }
       }
     }

@@ -140,7 +140,7 @@ public class KafkaTuningConfig implements TuningConfig, AppenderatorConfig {
     return maxBytesInMemory;
   }
 
-  @Override @JsonProperty public int getMaxRowsPerSegment() {
+  @Override @JsonProperty public Integer getMaxRowsPerSegment() {
     return maxRowsPerSegment;
   }
 
