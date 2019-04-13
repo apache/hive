@@ -48,7 +48,7 @@ public class AddPartitionEvent extends ListenerEvent {
     this.partitionSpecProxy = partitionSpec;
 
     // The table location owner is same as partition location owner if the database is source of replication.
-    if (TableType.MANAGED_TABLE.toString().equalsIgnoreCase(table.getTableType())) {
+    if (status && (TableType.MANAGED_TABLE.toString().equalsIgnoreCase(table.getTableType()))) {
       locOwner = FileUtils.getLocationOwner(table.getSd().getLocation(), handler.getConf());
     } else {
       locOwner = null;

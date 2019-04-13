@@ -20,15 +20,11 @@ package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.UpdatePartitionColumnStatMessage;
-import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
-
-import java.util.ArrayList;
-import java.util.List;
 
 class UpdatePartColStatHandler extends AbstractEventHandler<UpdatePartitionColumnStatMessage> {
 

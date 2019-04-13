@@ -112,7 +112,7 @@ public class JSONMessageFactory extends MessageFactory {
                                                           Long writeId, String locOwner) {
     return new JSONAlterPartitionMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL,
         before.getDbName(), before.getTableName(), table.getTableType(),
-        MessageBuilder.getPartitionKeyValues(table,before), writeId, locOwner, now());
+        MessageBuilder.getPartitionKeyValues(table, before), writeId, locOwner, now());
   }
 
   @Override

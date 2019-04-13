@@ -37,16 +37,16 @@ import com.google.common.collect.Lists;
 public class JSONInsertMessage extends InsertMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableType, tableObjJson, ptnObjJson, locOwner;
+  private String server, servicePrincipal, db, table, tableType, tableObjJson, ptnObjJson, locOwner;
 
   @JsonProperty
-  Long timestamp;
+  private Long timestamp;
 
   @JsonProperty
-  String replace;
+  private String replace;
 
   @JsonProperty
-  List<String> files;
+  private List<String> files;
 
   /**
    * Default constructor, needed for Jackson.

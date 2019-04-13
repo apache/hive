@@ -197,7 +197,8 @@ public abstract class MessageFactory {
    * @return instance of InsertMessage
    */
   public abstract InsertMessage buildInsertMessage(String db, String table,
-                                                   Map<String,String> partVals, List<String> files, String locOwner);
+                                                   Map<String, String> partVals, List<String> files,
+                                                   String locOwner);
 
   /**
    * Factory method for building insert message
@@ -210,5 +211,6 @@ public abstract class MessageFactory {
    * @return instance of InsertMessage
    */
   public abstract InsertMessage buildInsertMessage(String db, Table table,
-      Map<String,String> partVals, List<String> files, String locOwner);
+                                                   Map<String, String> partVals, List<String> files,
+                                                   String locOwner);
 }

@@ -3936,7 +3936,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!listeners.isEmpty()) {
           MetaStoreListenerNotifier.notifyEvent(listeners,
                                                 EventType.ADD_PARTITION,
-                                                new AddPartitionEvent(tbl, partitionSpecProxy, true, this),
+                                                new AddPartitionEvent(tbl, partitionSpecProxy, success, this),
                                                 null,
                                                 transactionalListenerResponses, ms);
         }

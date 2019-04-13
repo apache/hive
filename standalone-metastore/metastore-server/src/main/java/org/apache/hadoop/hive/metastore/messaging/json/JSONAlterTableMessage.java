@@ -31,13 +31,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class JSONAlterTableMessage extends AlterTableMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableType, tableObjBeforeJson, tableObjAfterJson, locOwner;
+  private String server, servicePrincipal, db, table, tableType, tableObjBeforeJson, tableObjAfterJson, locOwner;
 
   @JsonProperty
-  String isTruncateOp;
+  private String isTruncateOp;
 
   @JsonProperty
-  Long timestamp, writeId;
+  private Long timestamp, writeId;
 
   /**
    * Default constructor, needed for Jackson.

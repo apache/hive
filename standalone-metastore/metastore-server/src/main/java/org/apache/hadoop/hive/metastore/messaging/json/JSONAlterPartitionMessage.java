@@ -34,19 +34,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class JSONAlterPartitionMessage extends AlterPartitionMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableType, tableObjJson, locOwner;
+  private String server, servicePrincipal, db, table, tableType, tableObjJson, locOwner;
 
   @JsonProperty
-  String isTruncateOp;
+  private String isTruncateOp;
 
   @JsonProperty
-  Long timestamp, writeId;
+  private Long timestamp, writeId;
 
   @JsonProperty
-  Map<String, String> keyValues;
+  private Map<String, String> keyValues;
 
   @JsonProperty
-  String partitionObjBeforeJson, partitionObjAfterJson;
+  private String partitionObjBeforeJson, partitionObjAfterJson;
 
   /**
    * Default constructor, needed for Jackson.

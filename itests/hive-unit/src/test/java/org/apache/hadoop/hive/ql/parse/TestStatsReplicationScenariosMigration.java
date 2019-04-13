@@ -40,30 +40,31 @@ public class TestStatsReplicationScenariosMigration extends TestStatsReplication
             GzipJSONMessageEncoder.class.getCanonicalName());
 
     Map<String, String> replicaConfigs = new HashMap<String, String>() {{
-      put("hive.support.concurrency", "true");
-      put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
-      put("hive.metastore.client.capability.check", "false");
-      put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
-      put("hive.exec.dynamic.partition.mode", "nonstrict");
-      put("hive.strict.checks.bucketing", "false");
-      put("hive.mapred.mode", "nonstrict");
-      put("mapred.input.dir.recursive", "true");
-      put("hive.metastore.disallow.incompatible.col.type.changes", "false");
-      put("hive.strict.managed.tables", "true");
+        put("hive.support.concurrency", "true");
+        put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+        put("hive.metastore.client.capability.check", "false");
+        put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
+        put("hive.exec.dynamic.partition.mode", "nonstrict");
+        put("hive.strict.checks.bucketing", "false");
+        put("hive.mapred.mode", "nonstrict");
+        put("mapred.input.dir.recursive", "true");
+        put("hive.metastore.disallow.incompatible.col.type.changes", "false");
+        put("hive.strict.managed.tables", "true");
     }};
     replicaConfigs.putAll(overrides);
 
     Map<String, String> primaryConfigs = new HashMap<String, String>() {{
-      put("hive.metastore.client.capability.check", "false");
-      put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
-      put("hive.exec.dynamic.partition.mode", "nonstrict");
-      put("hive.strict.checks.bucketing", "false");
-      put("hive.mapred.mode", "nonstrict");
-      put("mapred.input.dir.recursive", "true");
-      put("hive.metastore.disallow.incompatible.col.type.changes", "false");
-      put("hive.support.concurrency", "false");
-      put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
-      put("hive.strict.managed.tables", "false");
+        put("hive.metastore.client.capability.check", "false");
+        put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
+        put("hive.exec.dynamic.partition.mode", "nonstrict");
+        put("hive.strict.checks.bucketing", "false");
+        put("hive.mapred.mode", "nonstrict");
+        put("mapred.input.dir.recursive", "true");
+        put("hive.metastore.disallow.incompatible.col.type.changes", "false");
+        put("hive.support.concurrency", "false");
+        put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
+        put("hive.strict.managed.tables", "false");
+        put("strict.managed.tables.migration.owner", System.getProperty("user.name"));
     }};
     primaryConfigs.putAll(overrides);
 

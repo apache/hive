@@ -35,7 +35,7 @@ public class CreateTableEvent extends ListenerEvent {
   public CreateTableEvent (Table table, boolean status, IHMSHandler handler) {
     super (status, handler);
     this.table = table;
-    if (TableType.MANAGED_TABLE.toString().equalsIgnoreCase(table.getTableType())) {
+    if (status && (TableType.MANAGED_TABLE.toString().equalsIgnoreCase(table.getTableType()))) {
       locOwner = FileUtils.getLocationOwner(table.getSd().getLocation(), handler.getConf());
     } else {
       locOwner = null;

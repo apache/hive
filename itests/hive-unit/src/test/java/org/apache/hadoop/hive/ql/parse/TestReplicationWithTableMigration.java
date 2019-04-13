@@ -35,8 +35,6 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
-import org.apache.hadoop.hive.ql.parse.WarehouseInstance;
-import org.apache.hadoop.hive.ql.parse.ReplicationTestUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,33 +88,33 @@ public class TestReplicationWithTableMigration {
         new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
     final DistributedFileSystem fs = miniDFSCluster.getFileSystem();
     HashMap<String, String> hiveConfigs = new HashMap<String, String>() {{
-      put("fs.defaultFS", fs.getUri().toString());
-      put("hive.support.concurrency", "true");
-      put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
-      put("hive.metastore.client.capability.check", "false");
-      put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
-      put("hive.exec.dynamic.partition.mode", "nonstrict");
-      put("hive.strict.checks.bucketing", "false");
-      put("hive.mapred.mode", "nonstrict");
-      put("mapred.input.dir.recursive", "true");
-      put("hive.metastore.disallow.incompatible.col.type.changes", "false");
-      put("hive.strict.managed.tables", "true");
+        put("fs.defaultFS", fs.getUri().toString());
+        put("hive.support.concurrency", "true");
+        put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+        put("hive.metastore.client.capability.check", "false");
+        put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
+        put("hive.exec.dynamic.partition.mode", "nonstrict");
+        put("hive.strict.checks.bucketing", "false");
+        put("hive.mapred.mode", "nonstrict");
+        put("mapred.input.dir.recursive", "true");
+        put("hive.metastore.disallow.incompatible.col.type.changes", "false");
+        put("hive.strict.managed.tables", "true");
     }};
     replica = new WarehouseInstance(LOG, miniDFSCluster, hiveConfigs);
 
     HashMap<String, String> configsForPrimary = new HashMap<String, String>() {{
-      put("fs.defaultFS", fs.getUri().toString());
-      put("hive.metastore.client.capability.check", "false");
-      put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
-      put("hive.exec.dynamic.partition.mode", "nonstrict");
-      put("hive.strict.checks.bucketing", "false");
-      put("hive.mapred.mode", "nonstrict");
-      put("mapred.input.dir.recursive", "true");
-      put("hive.metastore.disallow.incompatible.col.type.changes", "false");
-      put("hive.support.concurrency", "false");
-      put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
-      put("hive.strict.managed.tables", "false");
-      put("strict.managed.tables.migration.owner", System.getProperty("user.name"));
+        put("fs.defaultFS", fs.getUri().toString());
+        put("hive.metastore.client.capability.check", "false");
+        put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
+        put("hive.exec.dynamic.partition.mode", "nonstrict");
+        put("hive.strict.checks.bucketing", "false");
+        put("hive.mapred.mode", "nonstrict");
+        put("mapred.input.dir.recursive", "true");
+        put("hive.metastore.disallow.incompatible.col.type.changes", "false");
+        put("hive.support.concurrency", "false");
+        put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
+        put("hive.strict.managed.tables", "false");
+        put("strict.managed.tables.migration.owner", System.getProperty("user.name"));
     }};
     configsForPrimary.putAll(overrideConfigs);
     primary = new WarehouseInstance(LOG, miniDFSCluster, configsForPrimary);
@@ -523,7 +521,8 @@ public class TestReplicationWithTableMigration {
     primary.run("use " + primaryDbName)
             .run("create table tbl_inc (fld int, fld1 int) location '" + newLoc.toUri() + "'")
             .run("insert into tbl_inc values (1, 2)")
-            .run("create table tbl_inc_part (fld int) partitioned by (part string) location '" + newLocPart.toUri() + "'")
+            .run("create table tbl_inc_part (fld int) partitioned by (part string) location '"
+                    + newLocPart.toUri() + "'")
             .run("insert into tbl_inc_part partition (part = 'part1') values (1)")
             .run("insert into tbl_inc_part partition (part = 'part2') values (2)");
 

@@ -600,7 +600,8 @@ public class FileUtils {
       Path path = new Path(location);
       return path.getFileSystem(conf).getFileStatus(path).getOwner();
     } catch (Exception e) {
-      throw new RuntimeException(e.getMessage());
+      // If the path is removed or renamed by this time, just return null.
+      return null;
     }
   }
 }

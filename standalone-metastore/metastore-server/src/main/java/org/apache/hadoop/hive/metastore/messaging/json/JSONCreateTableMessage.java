@@ -36,11 +36,11 @@ import com.google.common.collect.Lists;
 public class JSONCreateTableMessage extends CreateTableMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableType, tableObjJson, locOwner;
+  private String server, servicePrincipal, db, table, tableType, tableObjJson, locOwner;
   @JsonProperty
-  Long timestamp;
+  private Long timestamp;
   @JsonProperty
-  List<String> files;
+  private List<String> files;
 
   /**
    * Default constructor, needed for Jackson.

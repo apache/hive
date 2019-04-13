@@ -48,12 +48,12 @@ public class JSONInsertMessage extends InsertMessage {
   public JSONInsertMessage() {}
 
   public JSONInsertMessage(String server, String servicePrincipal, String db, String table,
-                           Map<String,String> partKeyVals, List<String> files, String locOwner, Long timestamp) {
+                           Map<String, String> partKeyVals, List<String> files, String locOwner, Long timestamp) {
     this(server, servicePrincipal, db, table, null, partKeyVals, files, locOwner, timestamp);
   }
 
   public JSONInsertMessage(String server, String servicePrincipal, String db, String table,
-                           String tableType, Map<String,String> partKeyVals, List<String> files,
+                           String tableType, Map<String, String> partKeyVals, List<String> files,
                            String locOwner, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;

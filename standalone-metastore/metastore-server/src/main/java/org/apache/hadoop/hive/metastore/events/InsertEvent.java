@@ -94,7 +94,7 @@ public class InsertEvent extends ListenerEvent {
     }
 
     // The table location owner is same as partition location owner if the database is source of replication.
-    if (TableType.MANAGED_TABLE.toString().equalsIgnoreCase(tableObj.getTableType())) {
+    if (status && (TableType.MANAGED_TABLE.toString().equalsIgnoreCase(tableObj.getTableType()))) {
       locOwner = FileUtils.getLocationOwner(tableObj.getSd().getLocation(), handler.getConf());
     } else {
       locOwner = null;

@@ -46,7 +46,7 @@ public class AlterTableEvent extends ListenerEvent {
 
     // It is assumed that table type conversion from managed to external or external to managed
     // is not allowed in case of table is enabled for replication.
-    if (TableType.MANAGED_TABLE.toString().equalsIgnoreCase(newTable.getTableType())) {
+    if (status && (TableType.MANAGED_TABLE.toString().equalsIgnoreCase(newTable.getTableType()))) {
       locOwner = FileUtils.getLocationOwner(newTable.getSd().getLocation(), handler.getConf());
     } else {
       locOwner = null;

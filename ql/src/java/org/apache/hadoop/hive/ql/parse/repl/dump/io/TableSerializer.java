@@ -128,7 +128,7 @@ public class TableSerializer implements JsonWriter.Serializer {
 
   private void checkAndSetForceMigrateToExternalTable(ReplicationSpec replicationSpec, Path dataLocation)
           throws IOException {
-    // If the source cluster is already enabled for strict managed tables, then conversion rules are
+    // If the source cluster is already enabled for strict managed tables, then migration rules are
     // not applicable.
     if (hiveConf.getBoolean(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES.varname, false)) {
       return;

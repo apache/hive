@@ -671,10 +671,14 @@ public class HiveStrictManagedMigration {
     }
   }
 
-  public static TableMigrationOption determineMigrationTypeAutomatically(Table tableObj, TableType tableType,
-     String ownerName, Configuration conf, IMetaStoreClient hms, boolean forceMigrateToExternalTbl)
-      throws IOException, MetaException, TException {
-    TableMigrationOption result = TableMigrationOption.NONE;
+  public static TableMigrationOption determineMigrationTypeAutomatically(Table tableObj,
+                                                                         TableType tableType,
+                                                                         String ownerName,
+                                                                         Configuration conf,
+                                                                         IMetaStoreClient hms,
+                                                                         boolean forceMigrateToExternalTbl)
+      throws IOException, TException {
+    TableMigrationOption result;
     String msg;
     switch (tableType) {
     case MANAGED_TABLE:
@@ -862,7 +866,7 @@ public class HiveStrictManagedMigration {
     // then assume table is using storage-based auth - set external.
     // Transactional tables should still remain transactional,
     // but we should have already checked for that before this point.
-    if ((ownerName != null ) && shouldTablePathBeExternal(tableObj, ownerName, conf, hms)) {
+    if ((ownerName != null) && shouldTablePathBeExternal(tableObj, ownerName, conf, hms)) {
       return String.format("One or more table directories not owned by %s, or non-HDFS path", ownerName);
     }
 

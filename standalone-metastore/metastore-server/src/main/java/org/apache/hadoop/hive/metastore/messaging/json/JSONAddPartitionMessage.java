@@ -44,19 +44,19 @@ import com.google.common.collect.Lists;
 public class JSONAddPartitionMessage extends AddPartitionMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableType, tableObjJson, locOwner;
+  private String server, servicePrincipal, db, table, tableType, tableObjJson, locOwner;
 
   @JsonProperty
-  Long timestamp;
+  private Long timestamp;
 
   @JsonProperty
-  List<Map<String, String>> partitions;
+  private List<Map<String, String>> partitions;
 
   @JsonProperty
-  List<String> partitionListJson;
+  private List<String> partitionListJson;
 
   @JsonProperty
-  List<PartitionFiles> partitionFiles;
+  private List<PartitionFiles> partitionFiles;
 
   /**
    * Default Constructor. Required for Jackson.

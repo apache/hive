@@ -372,6 +372,11 @@ public class ReplicationSpec {
   }
 
   public void setForceMigrateToExternalTable(HiveConf conf, String user) {
+    // If the source cluster is already enabled for strict managed tables, then force migration is
+    // not applicable.
+    if (conf.getBoolean(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES.varname, false)) {
+      return;
+    }
     String ownerName = conf.get(HiveConf.ConfVars.STRICT_MANAGED_TABLES_MIGRATION_OWNER.varname, "hive");
     setForceMigrateToExternalTable((user != null) && !ownerName.equals(user));
   }

@@ -42,7 +42,7 @@ public class JSONUpdateTableColumnStatMessage extends UpdateTableColumnStatMessa
   private String colStatsJson;
 
   @JsonProperty
-  Map<String, String> parameters;
+  private Map<String, String> parameters;
 
   @JsonProperty
   private String tableObjJson;

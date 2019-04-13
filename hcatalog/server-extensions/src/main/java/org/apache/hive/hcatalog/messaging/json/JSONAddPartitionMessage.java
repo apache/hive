@@ -45,12 +45,12 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
   public JSONAddPartitionMessage() {}
 
   public JSONAddPartitionMessage(String server, String servicePrincipal, String db, String table,
-                                 List<Map<String,String>> partitions, String locOwner, Long timestamp) {
+                                 List<Map<String, String>> partitions, String locOwner, Long timestamp) {
     this(server, servicePrincipal, db, table, null, partitions, locOwner, timestamp);
   }
 
   public JSONAddPartitionMessage(String server, String servicePrincipal, String db, String table,
-                   String tableType, List<Map<String,String>> partitions, String locOwner, Long timestamp) {
+                   String tableType, List<Map<String, String>> partitions, String locOwner, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = db;
