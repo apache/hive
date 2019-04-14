@@ -808,11 +808,13 @@ public class HiveAlterHandler implements AlterHandler {
   private void checkTableTypeConversion(Database db, Table oldTbl, Table newTbl)
           throws InvalidOperationException {
     // If the given DB is enabled for replication and strict managed is false, then table type cannot be changed.
-    // This is to avoid migration scenarios which causes ACID table to be converted to external at replica.
+    // This is to avoid migration scenarios which causes Managed ACID table to be converted to external at replica.
     // As ACID tables cannot be converted to external table and vice versa, we need to restrict this conversion at
     // primary as well.
-    if (!oldTbl.getTableType().equalsIgnoreCase(newTbl.getTableType())
-        && !conf.getBoolean(MetastoreConf.ConfVars.STRICT_MANAGED_TABLES.getHiveName(), false)
+    // Currently, table type conversion is allowed only between managed and external table types.
+    // But, to be future proof, any table type conversion is restricted on a replication enabled DB.
+    if (!conf.getBoolean(MetastoreConf.ConfVars.STRICT_MANAGED_TABLES.getHiveName(), false)
+        && !oldTbl.getTableType().equalsIgnoreCase(newTbl.getTableType())
         && ReplChangeManager.isSourceOfReplication(db)) {
       throw new InvalidOperationException("Table type cannot be changed from " + oldTbl.getTableType()
               + " to " + newTbl.getTableType() + " for the table " +

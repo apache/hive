@@ -52,6 +52,7 @@ public class TestReplScenariosWithStrictManaged extends BaseReplicationAcrossIns
             .run("create table t2 (id int) partitioned by (key int) stored as orc")
             .run("insert into table t2 partition(key=10) values (1)")
             .runFailure("alter table t1 set tblproperties('EXTERNAL'='true')")
+            .runFailure("alter table t1 set tblproperties('EXTERNAL'='true', 'TRANSACTIONAL'='false')")
             .runFailure("alter table t2 set tblproperties('EXTERNAL'='true')");
   }
 
@@ -64,6 +65,7 @@ public class TestReplScenariosWithStrictManaged extends BaseReplicationAcrossIns
             .run("create external table t2 (place string) partitioned by (country string)")
             .run("insert into table t2 partition(country='india') values ('bangalore')")
             .runFailure("alter table t1 set tblproperties('EXTERNAL'='false')")
+            .runFailure("alter table t1 set tblproperties('EXTERNAL'='false', 'TRANSACTIONAL'='true')")
             .runFailure("alter table t2 set tblproperties('EXTERNAL'='false')");
   }
 }
