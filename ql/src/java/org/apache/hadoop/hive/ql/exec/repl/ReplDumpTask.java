@@ -268,7 +268,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           // Dump the table to be bootstrapped if required.
           if (shouldBootstrapDumpTable(table)) {
             HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(table);
-            dumpTable(dbName, tableName, validTxnList.toString(), dbRoot, bootDumpBeginReplId, hiveDb,
+            dumpTable(dbName, tableName, validTxnList == null ? null : validTxnList.toString(),
+                    dbRoot, bootDumpBeginReplId,
+                    hiveDb,
                       tableTuple);
           }
         }
