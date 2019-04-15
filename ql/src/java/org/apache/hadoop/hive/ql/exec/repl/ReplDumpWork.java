@@ -67,13 +67,6 @@ public class ReplDumpWork implements Serializable {
 
   // Override any user specification that changes the last event to be dumped.
   void overrideLastEventToDump(Hive fromDb, long bootstrapLastId) throws Exception {
-    // If no last event is specified get the current last from the metastore.
-    if (eventTo == null) {
-      eventTo = fromDb.getMSC().getCurrentNotificationEventId().getEventId();
-      LoggerFactory.getLogger(this.getClass())
-          .debug("eventTo not specified, using current event id : {}", eventTo);
-    }
-
     // If we are bootstrapping ACID tables, we need to dump all the events upto the event id at
     // the beginning of the bootstrap dump and also not dump any event after that. So we override
     // both, the last event as well as any user specified limit on the number of events. See
@@ -84,6 +77,14 @@ public class ReplDumpWork implements Serializable {
       LoggerFactory.getLogger(this.getClass())
               .debug("eventTo restricted to event id : {} because of bootstrap of ACID tables",
                       eventTo);
+      return;
+    }
+
+    // If no last event is specified get the current last from the metastore.
+    if (eventTo == null) {
+      eventTo = fromDb.getMSC().getCurrentNotificationEventId().getEventId();
+      LoggerFactory.getLogger(this.getClass())
+          .debug("eventTo not specified, using current event id : {}", eventTo);
     }
   }
 }

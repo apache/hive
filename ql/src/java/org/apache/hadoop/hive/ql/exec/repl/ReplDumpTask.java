@@ -173,7 +173,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private Long incrementalDump(Path dumpRoot, DumpMetaData dmd, Path cmRoot, Hive hiveDb) throws Exception {
     Long lastReplId;// get list of events matching dbPattern & tblPattern
     // go through each event, and dump out each event to a event-level dump dir inside dumproot
-    ValidTxnList validTxnList = null;
+    String validTxnList = null;
     long waitUntilTime = 0;
     long bootDumpBeginReplId = -1;
 
@@ -187,7 +187,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       LOG.info("Dump for bootstrapping ACID tables during an incremental dump for db {} and table {}",
               work.dbNameOrPattern,
               work.tableNameOrPattern);
-      validTxnList = getTxnMgr().getValidTxns();
       long timeoutInMs = HiveConf.getTimeVar(conf,
               HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
       waitUntilTime = System.currentTimeMillis() + timeoutInMs;
@@ -248,7 +247,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     // If required wait more for any transactions open at the time of starting the ACID bootstrap.
     if (conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES)) {
       assert (waitUntilTime > 0);
-      validTxnList = getValidTxnListForReplDump(hiveDb, validTxnList, waitUntilTime);
+      validTxnList = getValidTxnListForReplDump(hiveDb, waitUntilTime);
     }
 
     // Examine all the tables if required.
@@ -268,10 +267,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           // Dump the table to be bootstrapped if required.
           if (shouldBootstrapDumpTable(table)) {
             HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(table);
-            dumpTable(dbName, tableName, validTxnList == null ? null : validTxnList.toString(),
-                    dbRoot, bootDumpBeginReplId,
-                    hiveDb,
-                      tableTuple);
+            dumpTable(dbName, tableName, validTxnList, dbRoot, bootDumpBeginReplId, hiveDb,
+                    tableTuple);
           }
         }
       }
@@ -319,19 +316,11 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     assert (bootDumpBeginReplId >= 0L);
 
     LOG.info("Bootstrap Dump for db {} and table {}", work.dbNameOrPattern, work.tableNameOrPattern);
-    // Key design point for REPL DUMP is to not have any txns older than current txn in which dump runs.
-    // This is needed to ensure that Repl dump doesn't copy any data files written by any open txns
-    // mainly for streaming ingest case where one delta file shall have data from committed/aborted/open txns.
-    // It may also have data inconsistency if the on-going txns doesn't have corresponding open/write
-    // events captured which means, catch-up incremental phase won't be able to replicate those txns.
-    // So, the logic is to wait for configured amount of time to see if all open txns < current txn is
-    // getting aborted/committed. If not, then we forcefully abort those txns just like AcidHouseKeeperService.
-    ValidTxnList validTxnList = getTxnMgr().getValidTxns();
     long timeoutInMs = HiveConf.getTimeVar(conf,
             HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
     long waitUntilTime = System.currentTimeMillis() + timeoutInMs;
 
-    validTxnList = getValidTxnListForReplDump(hiveDb, validTxnList, waitUntilTime);
+    String validTxnList = getValidTxnListForReplDump(hiveDb, waitUntilTime);
     for (String dbName : Utils.matchesDb(hiveDb, work.dbNameOrPattern)) {
       LOG.debug("ReplicationSemanticAnalyzer: analyzeReplDump dumping db: " + dbName);
       Database db = hiveDb.getDatabase(dbName);
@@ -372,7 +361,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               LOG.debug("Adding table {} to external tables list", tblName);
               writer.dataLocationDump(tableTuple.object);
             }
-            dumpTable(dbName, tblName, validTxnList.toString(), dbRoot, bootDumpBeginReplId, hiveDb,
+            dumpTable(dbName, tblName, validTxnList, dbRoot, bootDumpBeginReplId, hiveDb,
                 tableTuple);
           } catch (InvalidTableException te) {
             // Bootstrap dump shouldn't fail if the table is dropped/renamed while dumping it.
@@ -471,13 +460,22 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return openTxns;
   }
 
-  ValidTxnList getValidTxnListForReplDump(Hive hiveDb, ValidTxnList validTxnList,
-                                          long waitUntilTime)
-          throws HiveException {
+  // Get list of valid transactions for Repl Dump. Also wait for a given amount of time for the
+  // open transactions to finish. Abort any open transactions after the wait is over.
+  String getValidTxnListForReplDump(Hive hiveDb, long waitUntilTime) throws HiveException {
+    // Key design point for REPL DUMP is to not have any txns older than current txn in which
+    // dump runs. This is needed to ensure that Repl dump doesn't copy any data files written by
+    // any open txns mainly for streaming ingest case where one delta file shall have data from
+    // committed/aborted/open txns. It may also have data inconsistency if the on-going txns
+    // doesn't have corresponding open/write events captured which means, catch-up incremental
+    // phase won't be able to replicate those txns. So, the logic is to wait for the given amount
+    // of time to see if all open txns < current txn is getting aborted/committed. If not, then
+    // we forcefully abort those txns just like AcidHouseKeeperService.
+    ValidTxnList validTxnList = getTxnMgr().getValidTxns();
     while (System.currentTimeMillis() < waitUntilTime) {
       // If there are no txns which are open for the given ValidTxnList snapshot, then just return it.
       if (getOpenTxns(validTxnList).isEmpty()) {
-        return validTxnList;
+        return validTxnList.toString();
       }
 
       // Wait for 1 minute and check again.
@@ -501,7 +499,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         throw new IllegalStateException("REPL DUMP triggered abort txns failed for unknown reasons.");
       }
     }
-    return validTxnList;
+    return validTxnList.toString();
   }
 
   private ReplicationSpec getNewReplicationSpec(String evState, String objState,

@@ -83,9 +83,8 @@ public class TestReplDumpTask {
     }
 
     @Override
-    ValidTxnList getValidTxnListForReplDump(Hive hiveDb, ValidTxnList validTxnList,
-                                            long waitUntilTime) {
-      return validTxnList;
+    String getValidTxnListForReplDump(Hive hiveDb, long waitUntilTime) {
+      return "";
     }
 
     @Override
