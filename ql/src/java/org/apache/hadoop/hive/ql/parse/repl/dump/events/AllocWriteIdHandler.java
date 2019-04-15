@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.AllocWriteIdMessage;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
@@ -44,10 +45,7 @@ class AllocWriteIdHandler extends AbstractEventHandler<AllocWriteIdMessage> {
       return;
     }
 
-    // Also only for testing, we do not include ACID tables in the dump (and replicate) if config
-    // says so.
-    if (withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL) &&
-        !withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_INCLUDE_ACID_TABLES)) {
+    if (!ReplUtils.includeAcidTableInDump(withinContext.hiveConf)) {
       return;
     }
 

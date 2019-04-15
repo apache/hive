@@ -88,6 +88,10 @@ public class ReplUtils {
   // duplicate check. Note : Stmt id is not used for base directory now, but to avoid misuse later, its maintained.
   public static final int REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID = 0;
 
+  // Configuration to enable/disable dumping ACID tables. Used only for testing and shouldn't be
+  // seen in production or in case of tests other than the ones where it's required.
+  public static final String REPL_DUMP_INCLUDE_ACID_TABLES = "hive.repl.dump.include.acid.tables";
+
   /**
    * Bootstrap REPL LOAD operation type on the examined object based on ckpt state.
    */
@@ -263,5 +267,14 @@ public class ReplUtils {
       return null;
     }
     return Long.parseLong(writeIdString);
+  }
+
+  // Only for testing, we do not include ACID tables in the dump (and replicate) if config says so.
+  public static boolean includeAcidTableInDump(HiveConf conf) {
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)) {
+      return conf.getBoolean(REPL_DUMP_INCLUDE_ACID_TABLES, true);
+    }
+
+    return true;
   }
 }

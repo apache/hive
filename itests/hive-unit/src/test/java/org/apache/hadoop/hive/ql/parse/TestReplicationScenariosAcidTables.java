@@ -84,9 +84,9 @@ public class TestReplicationScenariosAcidTables {
     REPL_TEST_ACID_INSERT_UNION
   }
   private static List<String> dumpWithoutAcidClause = Collections.singletonList(
-          "'" + HiveConf.ConfVars.REPL_DUMP_INCLUDE_ACID_TABLES.varname + "'='false'");
+          "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='false'");
   private static List<String> dumpWithAcidBootstrapClause = Arrays.asList(
-          "'" + HiveConf.ConfVars.REPL_DUMP_INCLUDE_ACID_TABLES.varname + "'='true'",
+          "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='true'",
           "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES + "'='true'");
   private List<String> acidTableNames = new LinkedList<>();
   private List<String> nonAcidTableNames = new LinkedList<>();

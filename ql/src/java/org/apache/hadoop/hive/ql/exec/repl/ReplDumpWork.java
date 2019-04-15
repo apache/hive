@@ -71,7 +71,7 @@ public class ReplDumpWork implements Serializable {
     // the beginning of the bootstrap dump and also not dump any event after that. So we override
     // both, the last event as well as any user specified limit on the number of events. See
     // bootstrampDump() for more details.
-    if (bootstrapLastId >= 0) {
+    if (bootstrapLastId > 0) {
       eventTo = bootstrapLastId;
       maxEventLimit = null;
       LoggerFactory.getLogger(this.getClass())
