@@ -199,7 +199,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     // same factory, restricting by message format is effectively a guard against
     // older leftover data that would cause us problems.
 
-    work.overrideEventTo(hiveDb, bootDumpBeginReplId);
+    work.overrideLastEventToDump(hiveDb, bootDumpBeginReplId);
 
     IMetaStoreClient.NotificationFilter evFilter = new AndFilter(
         new DatabaseAndTableFilter(work.dbNameOrPattern, work.tableNameOrPattern),
