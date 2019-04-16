@@ -17,8 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.AllocWriteIdMessage;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
@@ -35,6 +37,18 @@ class AllocWriteIdHandler extends AbstractEventHandler<AllocWriteIdMessage> {
   @Override
   public void handle(Context withinContext) throws Exception {
     LOG.info("Processing#{} ALLOC_WRITE_ID message : {}", fromEventId(), eventMessageAsJSON);
+
+    // If we are bootstrapping ACID table during an incremental dump, the events corresponding to
+    // these ACID tables are not dumped. Hence we do not need to allocate any writeId on the
+    // target and hence we do not need to dump these events.
+    if (withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES)) {
+      return;
+    }
+
+    if (!ReplUtils.includeAcidTableInDump(withinContext.hiveConf)) {
+      return;
+    }
+
     DumpMetaData dmd = withinContext.createDmd(this);
     dmd.setPayload(eventMessageAsJSON);
     dmd.write();
