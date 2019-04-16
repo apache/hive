@@ -15302,6 +15302,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * INSERT INTO T PARTITION(partCol1,partCol2...) SELECT col1, ... partCol1,partCol2...
    */
   protected void addPartitionColsToInsert(List<FieldSchema> partCols, StringBuilder rewrittenQueryStr) {
+    addPartitionColsToInsert(partCols, null, rewrittenQueryStr);
+  }
+
+  /**
+   * Append list of partition columns to Insert statement. If user specified partition spec, then
+   * use it to get/set the value for partition column else use dynamic partition mode with no value.
+   * Static partition mode:
+   * INSERT INTO T PARTITION(partCol1=val1,partCol2...) SELECT col1, ... partCol1,partCol2...
+   * Dynamic partition mode:
+   * INSERT INTO T PARTITION(partCol1,partCol2...) SELECT col1, ... partCol1,partCol2...
+   */
+  protected void addPartitionColsToInsert(List<FieldSchema> partCols,
+                                          Map<String, String> partSpec,
+                                          StringBuilder rewrittenQueryStr) {
     // If the table is partitioned we have to put the partition() clause in
     if (partCols != null && partCols.size() > 0) {
       rewrittenQueryStr.append(" partition (");
@@ -15312,8 +15326,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         } else {
           rewrittenQueryStr.append(", ");
         }
-        //would be nice if there was a way to determine if quotes are needed
+        // Would be nice if there was a way to determine if quotes are needed
         rewrittenQueryStr.append(HiveUtils.unparseIdentifier(fschema.getName(), this.conf));
+        String partVal = (partSpec != null) ? partSpec.get(fschema.getName()) : null;
+        if (partVal != null) {
+          rewrittenQueryStr.append("=").append(partVal);
+        }
       }
       rewrittenQueryStr.append(")");
     }
