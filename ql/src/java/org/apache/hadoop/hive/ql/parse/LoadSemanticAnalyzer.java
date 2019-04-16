@@ -471,11 +471,6 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     String tempTblName = table.getTableName() + tempTblNameSuffix;
     tempTableObj.setTableName(tempTblName);
 
-    // Move all the partition columns at the end of table columns
-    tempTableObj.setFields(table.getAllCols());
-    // wipe out partition columns
-    tempTableObj.setPartCols(new ArrayList<>());
-
     // Reset table params
     tempTableObj.setParameters(new HashMap<>());
 
@@ -490,12 +485,62 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
       }
     }
 
+    // Make the columns list for the temp table (input data file).
+    // Move all the partition columns at the end of table columns.
+    ArrayList<FieldSchema> colList = new ArrayList<FieldSchema>();
+    colList.addAll(table.getCols());
+
+    // inpPartSpec is a mapping from partition column name to its value.
+    Map<String, String> inpPartSpec = null;
+
+    // Partition spec was already validated by caller when create TableSpec object.
+    // So, need not validate inpPartSpec here.
+    List<FieldSchema> parts = table.getPartCols();
+    if (tableTree.getChildCount() >= 2) {
+      ASTNode partSpecNode = (ASTNode) tableTree.getChild(1);
+      inpPartSpec = new HashMap<>(partSpecNode.getChildCount());
+
+      for (int i = 0; i < partSpecNode.getChildCount(); ++i) {
+        ASTNode partSpecValNode = (ASTNode) partSpecNode.getChild(i);
+        String partVal = null;
+        String partColName = unescapeIdentifier(partSpecValNode.getChild(0).getText().toLowerCase());
+
+        if (partSpecValNode.getChildCount() >= 2) { // in the form of T partition (ds="2010-03-03")
+          // Not stripping quotes here as we need to use it as it is while framing PARTITION clause
+          // in INSERT query.
+          partVal = partSpecValNode.getChild(1).getText();
+        }
+        inpPartSpec.put(partColName, partVal);
+      }
+
+      // Add only dynamic partition columns to the temp table (input data file).
+      // For static partitions, values would be obtained from partition(key=value...) clause.
+      for (FieldSchema fs : parts) {
+        String partKey = fs.getName();
+
+        // If a partition value is not there, then it is dynamic partition key.
+        if (inpPartSpec.get(partKey) == null) {
+          colList.add(fs);
+        }
+      }
+    } else {
+      // No static partitions specified and hence all are dynamic partition keys and need to be part
+      // of temp table (input data file).
+      colList.addAll(parts);
+    }
+
+    // Set columns list for temp table.
+    tempTableObj.setFields(colList);
+
+    // Wipe out partition columns
+    tempTableObj.setPartCols(new ArrayList<>());
+
     // Step 2 : create the Insert query
     StringBuilder rewrittenQueryStr = new StringBuilder();
 
     rewrittenQueryStr.append("insert into table ");
     rewrittenQueryStr.append(getFullTableNameForSQL((ASTNode)(tableTree.getChild(0))));
-    addPartitionColsToInsert(table.getPartCols(), rewrittenQueryStr);
+    addPartitionColsToInsert(table.getPartCols(), inpPartSpec, rewrittenQueryStr);
     rewrittenQueryStr.append(" select * from ");
     rewrittenQueryStr.append(tempTblName);
 
