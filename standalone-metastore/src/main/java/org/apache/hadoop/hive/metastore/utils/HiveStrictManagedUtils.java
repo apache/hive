@@ -63,6 +63,10 @@ public class HiveStrictManagedUtils {
         if (isAvroTableWithExternalSchema(table)) {
           return createValidationError(table, "Managed Avro table has externally defined schema.");
         }
+      } else if (tableType == TableType.EXTERNAL_TABLE) {
+        if (MetaStoreUtils.isTransactionalTable(table.getParameters())) {
+          return createValidationError(table, "Table is marked as a external table but it is transactional.");
+        }
       }
     }
 

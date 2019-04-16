@@ -147,6 +147,12 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
     }
 
     if (transactionalValuePresent) {
+      if (oldTable.getTableType().equals(TableType.MANAGED_TABLE.toString())
+              && newTable.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
+        throw new MetaException(Warehouse.getQualifiedName(newTable) +
+                " cannot be converted to external table as it is transactional table.");
+      }
+
       //normalize prop name
       parameters.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, transactionalValue);
     }
