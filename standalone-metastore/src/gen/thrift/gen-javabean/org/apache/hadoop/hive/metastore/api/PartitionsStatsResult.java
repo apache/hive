@@ -363,26 +363,26 @@ import org.slf4j.LoggerFactory;
           case 1: // PART_STATS
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map432 = iprot.readMapBegin();
-                struct.partStats = new HashMap<String,List<ColumnStatisticsObj>>(2*_map432.size);
-                String _key433;
-                List<ColumnStatisticsObj> _val434;
-                for (int _i435 = 0; _i435 < _map432.size; ++_i435)
+                org.apache.thrift.protocol.TMap _map440 = iprot.readMapBegin();
+                struct.partStats = new HashMap<String,List<ColumnStatisticsObj>>(2*_map440.size);
+                String _key441;
+                List<ColumnStatisticsObj> _val442;
+                for (int _i443 = 0; _i443 < _map440.size; ++_i443)
                 {
-                  _key433 = iprot.readString();
+                  _key441 = iprot.readString();
                   {
-                    org.apache.thrift.protocol.TList _list436 = iprot.readListBegin();
-                    _val434 = new ArrayList<ColumnStatisticsObj>(_list436.size);
-                    ColumnStatisticsObj _elem437;
-                    for (int _i438 = 0; _i438 < _list436.size; ++_i438)
+                    org.apache.thrift.protocol.TList _list444 = iprot.readListBegin();
+                    _val442 = new ArrayList<ColumnStatisticsObj>(_list444.size);
+                    ColumnStatisticsObj _elem445;
+                    for (int _i446 = 0; _i446 < _list444.size; ++_i446)
                     {
-                      _elem437 = new ColumnStatisticsObj();
-                      _elem437.read(iprot);
-                      _val434.add(_elem437);
+                      _elem445 = new ColumnStatisticsObj();
+                      _elem445.read(iprot);
+                      _val442.add(_elem445);
                     }
                     iprot.readListEnd();
                   }
-                  struct.partStats.put(_key433, _val434);
+                  struct.partStats.put(_key441, _val442);
                 }
                 iprot.readMapEnd();
               }
@@ -408,14 +408,14 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(PART_STATS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.LIST, struct.partStats.size()));
-          for (Map.Entry<String, List<ColumnStatisticsObj>> _iter439 : struct.partStats.entrySet())
+          for (Map.Entry<String, List<ColumnStatisticsObj>> _iter447 : struct.partStats.entrySet())
           {
-            oprot.writeString(_iter439.getKey());
+            oprot.writeString(_iter447.getKey());
             {
-              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, _iter439.getValue().size()));
-              for (ColumnStatisticsObj _iter440 : _iter439.getValue())
+              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, _iter447.getValue().size()));
+              for (ColumnStatisticsObj _iter448 : _iter447.getValue())
               {
-                _iter440.write(oprot);
+                _iter448.write(oprot);
               }
               oprot.writeListEnd();
             }
@@ -443,14 +443,14 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.partStats.size());
-        for (Map.Entry<String, List<ColumnStatisticsObj>> _iter441 : struct.partStats.entrySet())
+        for (Map.Entry<String, List<ColumnStatisticsObj>> _iter449 : struct.partStats.entrySet())
         {
-          oprot.writeString(_iter441.getKey());
+          oprot.writeString(_iter449.getKey());
           {
-            oprot.writeI32(_iter441.getValue().size());
-            for (ColumnStatisticsObj _iter442 : _iter441.getValue())
+            oprot.writeI32(_iter449.getValue().size());
+            for (ColumnStatisticsObj _iter450 : _iter449.getValue())
             {
-              _iter442.write(oprot);
+              _iter450.write(oprot);
             }
           }
         }
@@ -461,25 +461,25 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, PartitionsStatsResult struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TMap _map443 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.LIST, iprot.readI32());
-        struct.partStats = new HashMap<String,List<ColumnStatisticsObj>>(2*_map443.size);
-        String _key444;
-        List<ColumnStatisticsObj> _val445;
-        for (int _i446 = 0; _i446 < _map443.size; ++_i446)
+        org.apache.thrift.protocol.TMap _map451 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.LIST, iprot.readI32());
+        struct.partStats = new HashMap<String,List<ColumnStatisticsObj>>(2*_map451.size);
+        String _key452;
+        List<ColumnStatisticsObj> _val453;
+        for (int _i454 = 0; _i454 < _map451.size; ++_i454)
         {
-          _key444 = iprot.readString();
+          _key452 = iprot.readString();
           {
-            org.apache.thrift.protocol.TList _list447 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-            _val445 = new ArrayList<ColumnStatisticsObj>(_list447.size);
-            ColumnStatisticsObj _elem448;
-            for (int _i449 = 0; _i449 < _list447.size; ++_i449)
+            org.apache.thrift.protocol.TList _list455 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+            _val453 = new ArrayList<ColumnStatisticsObj>(_list455.size);
+            ColumnStatisticsObj _elem456;
+            for (int _i457 = 0; _i457 < _list455.size; ++_i457)
             {
-              _elem448 = new ColumnStatisticsObj();
-              _elem448.read(iprot);
-              _val445.add(_elem448);
+              _elem456 = new ColumnStatisticsObj();
+              _elem456.read(iprot);
+              _val453.add(_elem456);
             }
           }
-          struct.partStats.put(_key444, _val445);
+          struct.partStats.put(_key452, _val453);
         }
       }
       struct.setPartStatsIsSet(true);

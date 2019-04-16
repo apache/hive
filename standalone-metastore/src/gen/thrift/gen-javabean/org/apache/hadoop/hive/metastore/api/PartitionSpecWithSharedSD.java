@@ -434,14 +434,14 @@ import org.slf4j.LoggerFactory;
           case 1: // PARTITIONS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list252 = iprot.readListBegin();
-                struct.partitions = new ArrayList<PartitionWithoutSD>(_list252.size);
-                PartitionWithoutSD _elem253;
-                for (int _i254 = 0; _i254 < _list252.size; ++_i254)
+                org.apache.thrift.protocol.TList _list260 = iprot.readListBegin();
+                struct.partitions = new ArrayList<PartitionWithoutSD>(_list260.size);
+                PartitionWithoutSD _elem261;
+                for (int _i262 = 0; _i262 < _list260.size; ++_i262)
                 {
-                  _elem253 = new PartitionWithoutSD();
-                  _elem253.read(iprot);
-                  struct.partitions.add(_elem253);
+                  _elem261 = new PartitionWithoutSD();
+                  _elem261.read(iprot);
+                  struct.partitions.add(_elem261);
                 }
                 iprot.readListEnd();
               }
@@ -476,9 +476,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(PARTITIONS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.partitions.size()));
-          for (PartitionWithoutSD _iter255 : struct.partitions)
+          for (PartitionWithoutSD _iter263 : struct.partitions)
           {
-            _iter255.write(oprot);
+            _iter263.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -517,9 +517,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetPartitions()) {
         {
           oprot.writeI32(struct.partitions.size());
-          for (PartitionWithoutSD _iter256 : struct.partitions)
+          for (PartitionWithoutSD _iter264 : struct.partitions)
           {
-            _iter256.write(oprot);
+            _iter264.write(oprot);
           }
         }
       }
@@ -534,14 +534,14 @@ import org.slf4j.LoggerFactory;
       BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list257 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.partitions = new ArrayList<PartitionWithoutSD>(_list257.size);
-          PartitionWithoutSD _elem258;
-          for (int _i259 = 0; _i259 < _list257.size; ++_i259)
+          org.apache.thrift.protocol.TList _list265 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.partitions = new ArrayList<PartitionWithoutSD>(_list265.size);
+          PartitionWithoutSD _elem266;
+          for (int _i267 = 0; _i267 < _list265.size; ++_i267)
           {
-            _elem258 = new PartitionWithoutSD();
-            _elem258.read(iprot);
-            struct.partitions.add(_elem258);
+            _elem266 = new PartitionWithoutSD();
+            _elem266.read(iprot);
+            struct.partitions.add(_elem266);
           }
         }
         struct.setPartitionsIsSet(true);

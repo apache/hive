@@ -311,6 +311,8 @@ class SkewedInfo;
 
 class StorageDescriptor;
 
+class CreationMetadata;
+
 class Table;
 
 class Partition;
@@ -443,9 +445,9 @@ class AbortTxnRequest;
 
 class AbortTxnsRequest;
 
-class CommitTxnRequest;
-
 class WriteEventInfo;
+
+class CommitTxnRequest;
 
 class ReplTblWriteIdStateRequest;
 
@@ -455,9 +457,9 @@ class TableValidWriteIds;
 
 class GetValidWriteIdsResponse;
 
-class AllocateTableWriteIdsRequest;
-
 class TxnToWriteId;
+
+class AllocateTableWriteIdsRequest;
 
 class AllocateTableWriteIdsResponse;
 
@@ -496,8 +498,6 @@ class ShowCompactResponse;
 class AddDynamicPartitions;
 
 class BasicTxnInfo;
-
-class CreationMetadata;
 
 class NotificationEventRequest;
 
@@ -3117,6 +3117,82 @@ class StorageDescriptor {
 void swap(StorageDescriptor &a, StorageDescriptor &b);
 
 inline std::ostream& operator<<(std::ostream& out, const StorageDescriptor& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _CreationMetadata__isset {
+  _CreationMetadata__isset() : validTxnList(false), materializationTime(false) {}
+  bool validTxnList :1;
+  bool materializationTime :1;
+} _CreationMetadata__isset;
+
+class CreationMetadata {
+ public:
+
+  CreationMetadata(const CreationMetadata&);
+  CreationMetadata& operator=(const CreationMetadata&);
+  CreationMetadata() : catName(), dbName(), tblName(), validTxnList(), materializationTime(0) {
+  }
+
+  virtual ~CreationMetadata() throw();
+  std::string catName;
+  std::string dbName;
+  std::string tblName;
+  std::set<std::string>  tablesUsed;
+  std::string validTxnList;
+  int64_t materializationTime;
+
+  _CreationMetadata__isset __isset;
+
+  void __set_catName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tblName(const std::string& val);
+
+  void __set_tablesUsed(const std::set<std::string> & val);
+
+  void __set_validTxnList(const std::string& val);
+
+  void __set_materializationTime(const int64_t val);
+
+  bool operator == (const CreationMetadata & rhs) const
+  {
+    if (!(catName == rhs.catName))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tblName == rhs.tblName))
+      return false;
+    if (!(tablesUsed == rhs.tablesUsed))
+      return false;
+    if (__isset.validTxnList != rhs.__isset.validTxnList)
+      return false;
+    else if (__isset.validTxnList && !(validTxnList == rhs.validTxnList))
+      return false;
+    if (__isset.materializationTime != rhs.__isset.materializationTime)
+      return false;
+    else if (__isset.materializationTime && !(materializationTime == rhs.materializationTime))
+      return false;
+    return true;
+  }
+  bool operator != (const CreationMetadata &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CreationMetadata & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CreationMetadata &a, CreationMetadata &b);
+
+inline std::ostream& operator<<(std::ostream& out, const CreationMetadata& obj)
 {
   obj.printTo(out);
   return out;
@@ -7006,67 +7082,6 @@ inline std::ostream& operator<<(std::ostream& out, const AbortTxnsRequest& obj)
   return out;
 }
 
-typedef struct _CommitTxnRequest__isset {
-  _CommitTxnRequest__isset() : replPolicy(false), writeEventInfos(false) {}
-  bool replPolicy :1;
-  bool writeEventInfos :1;
-} _CommitTxnRequest__isset;
-
-class CommitTxnRequest {
- public:
-
-  CommitTxnRequest(const CommitTxnRequest&);
-  CommitTxnRequest& operator=(const CommitTxnRequest&);
-  CommitTxnRequest() : txnid(0), replPolicy() {
-  }
-
-  virtual ~CommitTxnRequest() throw();
-  int64_t txnid;
-  std::string replPolicy;
-  std::vector<WriteEventInfo>  writeEventInfos;
-
-  _CommitTxnRequest__isset __isset;
-
-  void __set_txnid(const int64_t val);
-
-  void __set_replPolicy(const std::string& val);
-
-  void __set_writeEventInfos(const std::vector<WriteEventInfo> & val);
-
-  bool operator == (const CommitTxnRequest & rhs) const
-  {
-    if (!(txnid == rhs.txnid))
-      return false;
-    if (__isset.replPolicy != rhs.__isset.replPolicy)
-      return false;
-    else if (__isset.replPolicy && !(replPolicy == rhs.replPolicy))
-      return false;
-    if (__isset.writeEventInfos != rhs.__isset.writeEventInfos)
-      return false;
-    else if (__isset.writeEventInfos && !(writeEventInfos == rhs.writeEventInfos))
-      return false;
-    return true;
-  }
-  bool operator != (const CommitTxnRequest &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const CommitTxnRequest & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(CommitTxnRequest &a, CommitTxnRequest &b);
-
-inline std::ostream& operator<<(std::ostream& out, const CommitTxnRequest& obj)
-{
-  obj.printTo(out);
-  return out;
-}
-
 typedef struct _WriteEventInfo__isset {
   _WriteEventInfo__isset() : partition(false), tableObj(false), partitionObj(false) {}
   bool partition :1;
@@ -7146,6 +7161,67 @@ class WriteEventInfo {
 void swap(WriteEventInfo &a, WriteEventInfo &b);
 
 inline std::ostream& operator<<(std::ostream& out, const WriteEventInfo& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _CommitTxnRequest__isset {
+  _CommitTxnRequest__isset() : replPolicy(false), writeEventInfos(false) {}
+  bool replPolicy :1;
+  bool writeEventInfos :1;
+} _CommitTxnRequest__isset;
+
+class CommitTxnRequest {
+ public:
+
+  CommitTxnRequest(const CommitTxnRequest&);
+  CommitTxnRequest& operator=(const CommitTxnRequest&);
+  CommitTxnRequest() : txnid(0), replPolicy() {
+  }
+
+  virtual ~CommitTxnRequest() throw();
+  int64_t txnid;
+  std::string replPolicy;
+  std::vector<WriteEventInfo>  writeEventInfos;
+
+  _CommitTxnRequest__isset __isset;
+
+  void __set_txnid(const int64_t val);
+
+  void __set_replPolicy(const std::string& val);
+
+  void __set_writeEventInfos(const std::vector<WriteEventInfo> & val);
+
+  bool operator == (const CommitTxnRequest & rhs) const
+  {
+    if (!(txnid == rhs.txnid))
+      return false;
+    if (__isset.replPolicy != rhs.__isset.replPolicy)
+      return false;
+    else if (__isset.replPolicy && !(replPolicy == rhs.replPolicy))
+      return false;
+    if (__isset.writeEventInfos != rhs.__isset.writeEventInfos)
+      return false;
+    else if (__isset.writeEventInfos && !(writeEventInfos == rhs.writeEventInfos))
+      return false;
+    return true;
+  }
+  bool operator != (const CommitTxnRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CommitTxnRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CommitTxnRequest &a, CommitTxnRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const CommitTxnRequest& obj)
 {
   obj.printTo(out);
   return out;
@@ -7377,6 +7453,51 @@ inline std::ostream& operator<<(std::ostream& out, const GetValidWriteIdsRespons
   return out;
 }
 
+
+class TxnToWriteId {
+ public:
+
+  TxnToWriteId(const TxnToWriteId&);
+  TxnToWriteId& operator=(const TxnToWriteId&);
+  TxnToWriteId() : txnId(0), writeId(0) {
+  }
+
+  virtual ~TxnToWriteId() throw();
+  int64_t txnId;
+  int64_t writeId;
+
+  void __set_txnId(const int64_t val);
+
+  void __set_writeId(const int64_t val);
+
+  bool operator == (const TxnToWriteId & rhs) const
+  {
+    if (!(txnId == rhs.txnId))
+      return false;
+    if (!(writeId == rhs.writeId))
+      return false;
+    return true;
+  }
+  bool operator != (const TxnToWriteId &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TxnToWriteId & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(TxnToWriteId &a, TxnToWriteId &b);
+
+inline std::ostream& operator<<(std::ostream& out, const TxnToWriteId& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
 typedef struct _AllocateTableWriteIdsRequest__isset {
   _AllocateTableWriteIdsRequest__isset() : txnIds(false), replPolicy(false), srcTxnToWriteIdList(false) {}
   bool txnIds :1;
@@ -7446,51 +7567,6 @@ class AllocateTableWriteIdsRequest {
 void swap(AllocateTableWriteIdsRequest &a, AllocateTableWriteIdsRequest &b);
 
 inline std::ostream& operator<<(std::ostream& out, const AllocateTableWriteIdsRequest& obj)
-{
-  obj.printTo(out);
-  return out;
-}
-
-
-class TxnToWriteId {
- public:
-
-  TxnToWriteId(const TxnToWriteId&);
-  TxnToWriteId& operator=(const TxnToWriteId&);
-  TxnToWriteId() : txnId(0), writeId(0) {
-  }
-
-  virtual ~TxnToWriteId() throw();
-  int64_t txnId;
-  int64_t writeId;
-
-  void __set_txnId(const int64_t val);
-
-  void __set_writeId(const int64_t val);
-
-  bool operator == (const TxnToWriteId & rhs) const
-  {
-    if (!(txnId == rhs.txnId))
-      return false;
-    if (!(writeId == rhs.writeId))
-      return false;
-    return true;
-  }
-  bool operator != (const TxnToWriteId &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const TxnToWriteId & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(TxnToWriteId &a, TxnToWriteId &b);
-
-inline std::ostream& operator<<(std::ostream& out, const TxnToWriteId& obj)
 {
   obj.printTo(out);
   return out;
@@ -8752,82 +8828,6 @@ class BasicTxnInfo {
 void swap(BasicTxnInfo &a, BasicTxnInfo &b);
 
 inline std::ostream& operator<<(std::ostream& out, const BasicTxnInfo& obj)
-{
-  obj.printTo(out);
-  return out;
-}
-
-typedef struct _CreationMetadata__isset {
-  _CreationMetadata__isset() : validTxnList(false), materializationTime(false) {}
-  bool validTxnList :1;
-  bool materializationTime :1;
-} _CreationMetadata__isset;
-
-class CreationMetadata {
- public:
-
-  CreationMetadata(const CreationMetadata&);
-  CreationMetadata& operator=(const CreationMetadata&);
-  CreationMetadata() : catName(), dbName(), tblName(), validTxnList(), materializationTime(0) {
-  }
-
-  virtual ~CreationMetadata() throw();
-  std::string catName;
-  std::string dbName;
-  std::string tblName;
-  std::set<std::string>  tablesUsed;
-  std::string validTxnList;
-  int64_t materializationTime;
-
-  _CreationMetadata__isset __isset;
-
-  void __set_catName(const std::string& val);
-
-  void __set_dbName(const std::string& val);
-
-  void __set_tblName(const std::string& val);
-
-  void __set_tablesUsed(const std::set<std::string> & val);
-
-  void __set_validTxnList(const std::string& val);
-
-  void __set_materializationTime(const int64_t val);
-
-  bool operator == (const CreationMetadata & rhs) const
-  {
-    if (!(catName == rhs.catName))
-      return false;
-    if (!(dbName == rhs.dbName))
-      return false;
-    if (!(tblName == rhs.tblName))
-      return false;
-    if (!(tablesUsed == rhs.tablesUsed))
-      return false;
-    if (__isset.validTxnList != rhs.__isset.validTxnList)
-      return false;
-    else if (__isset.validTxnList && !(validTxnList == rhs.validTxnList))
-      return false;
-    if (__isset.materializationTime != rhs.__isset.materializationTime)
-      return false;
-    else if (__isset.materializationTime && !(materializationTime == rhs.materializationTime))
-      return false;
-    return true;
-  }
-  bool operator != (const CreationMetadata &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const CreationMetadata & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(CreationMetadata &a, CreationMetadata &b);
-
-inline std::ostream& operator<<(std::ostream& out, const CreationMetadata& obj)
 {
   obj.printTo(out);
   return out;

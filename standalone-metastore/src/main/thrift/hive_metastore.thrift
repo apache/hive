@@ -413,6 +413,15 @@ struct StorageDescriptor {
   12: optional bool   storedAsSubDirectories       // stored as subdirectories or not
 }
 
+struct CreationMetadata {
+    1: required string catName
+    2: required string dbName,
+    3: required string tblName,
+    4: required set<string> tablesUsed,
+    5: optional string validTxnList,
+    6: optional i64 materializationTime
+}
+
 // table information
 struct Table {
   1: string tableName,                // name of the table
@@ -866,13 +875,6 @@ struct AbortTxnsRequest {
     1: required list<i64> txn_ids,
 }
 
-struct CommitTxnRequest {
-    1: required i64 txnid,
-    2: optional string replPolicy,
-    // Information related to write operations done in this transaction.
-    3: optional list<WriteEventInfo> writeEventInfos,
-}
-
 struct WriteEventInfo {
     1: required i64    writeId,
     2: required string database,
@@ -881,6 +883,13 @@ struct WriteEventInfo {
     5: optional string partition,
     6: optional string tableObj, // repl txn task does not need table object for commit
     7: optional string partitionObj,
+}
+
+struct CommitTxnRequest {
+    1: required i64 txnid,
+    2: optional string replPolicy,
+    // Information related to write operations done in this transaction.
+    3: optional list<WriteEventInfo> writeEventInfos,
 }
 
 struct ReplTblWriteIdStateRequest {
@@ -912,6 +921,12 @@ struct GetValidWriteIdsResponse {
     1: required list<TableValidWriteIds> tblValidWriteIds,
 }
 
+// Map for allocated write id against the txn for which it is allocated
+struct TxnToWriteId {
+    1: required i64 txnId,
+    2: required i64 writeId,
+}
+
 // Request msg to allocate table write ids for the given list of txns
 struct AllocateTableWriteIdsRequest {
     1: required string dbName,
@@ -922,12 +937,6 @@ struct AllocateTableWriteIdsRequest {
     4: optional string replPolicy,
     // The list is assumed to be sorted by both txnids and write ids. The write id list is assumed to be contiguous.
     5: optional list<TxnToWriteId> srcTxnToWriteIdList,
-}
-
-// Map for allocated write id against the txn for which it is allocated
-struct TxnToWriteId {
-    1: required i64 txnId,
-    2: required i64 writeId,
 }
 
 struct AllocateTableWriteIdsResponse {
@@ -1069,14 +1078,6 @@ struct BasicTxnInfo {
     6: optional string partitionname
 }
 
-struct CreationMetadata {
-    1: required string catName
-    2: required string dbName,
-    3: required string tblName,
-    4: required set<string> tablesUsed,
-    5: optional string validTxnList,
-    6: optional i64 materializationTime
-}
 
 struct NotificationEventRequest {
     1: required i64 lastEvent,
