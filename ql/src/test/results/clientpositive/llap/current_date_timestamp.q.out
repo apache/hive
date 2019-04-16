@@ -59,7 +59,7 @@ POSTHOOK: query: explain extended select current_timestamp() from alltypesorc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST(TIMESTAMP '2012-01-01 01:02:03.000000000' AS TIMESTAMP(9)) AS `$f0`
+OPTIMIZED SQL: SELECT CAST(TIMESTAMP '2012-01-01 01:02:03.000000000' AS TIMESTAMP) AS `$f0`
 FROM `default`.`alltypesorc`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
