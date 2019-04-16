@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -195,6 +196,17 @@ public class Utils {
                   && !hiveConf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES);
         }
         return shouldReplicateExternalTables;
+      }
+
+      if (AcidUtils.isTransactionalTable(tableHandle.getTTable())) {
+        if (!ReplUtils.includeAcidTableInDump(hiveConf)) {
+          return false;
+        }
+
+        // Skip dumping events related to ACID tables if bootstrap is enabled on it
+        if (isEventDump) {
+          return !hiveConf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES);
+        }
       }
     }
     return true;

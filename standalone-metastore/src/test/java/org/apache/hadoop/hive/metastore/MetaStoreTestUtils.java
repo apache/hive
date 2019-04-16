@@ -119,10 +119,11 @@ public class MetaStoreTestUtils {
     return MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
   }
 
-  public static int startMetaStoreWithRetry(Configuration conf, boolean keepJdbcUri)
+  public static int startMetaStoreWithRetry(Configuration conf, boolean keepJdbcUri,
+                                            boolean keepWarehousePath)
       throws Exception {
     return MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf,
-        keepJdbcUri, false);
+            keepJdbcUri, keepWarehousePath, false);
   }
 
   public static int startMetaStoreWithRetry() throws Exception {
@@ -132,13 +133,13 @@ public class MetaStoreTestUtils {
 
   public static int startMetaStoreWithRetry(HadoopThriftAuthBridge bridge,
                                             Configuration conf) throws Exception {
-    return MetaStoreTestUtils.startMetaStoreWithRetry(bridge, conf, false, false);
+    return MetaStoreTestUtils.startMetaStoreWithRetry(bridge, conf, false, false, false);
   }
 
   public static int startMetaStoreWithRetry(HadoopThriftAuthBridge bridge,
                                             Configuration conf, boolean withHouseKeepingThreads)
           throws Exception {
-    return MetaStoreTestUtils.startMetaStoreWithRetry(bridge, conf, false, withHouseKeepingThreads);
+    return MetaStoreTestUtils.startMetaStoreWithRetry(bridge, conf, false, false, withHouseKeepingThreads);
   }
 
   /**
@@ -149,21 +150,27 @@ public class MetaStoreTestUtils {
    * @param bridge The Thrift bridge to uses
    * @param conf The configuration to use
    * @param keepJdbcUri If set to true, then the JDBC url is not changed
+   * @param keepWarehousePath If set to true, then the Warehouse directory is not changed
    * @param withHouseKeepingThreads
    * @return The port on which the MetaStore finally started
    * @throws Exception
    */
   public static int startMetaStoreWithRetry(HadoopThriftAuthBridge bridge,
-      Configuration conf, boolean keepJdbcUri, boolean withHouseKeepingThreads) throws Exception {
+                                            Configuration conf, boolean keepJdbcUri,
+                                            boolean keepWarehousePath,
+                                            boolean withHouseKeepingThreads) throws Exception {
     Exception metaStoreException = null;
     String warehouseDir = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE);
 
     for (int tryCount = 0; tryCount < MetaStoreTestUtils.RETRY_COUNT; tryCount++) {
       try {
         int metaStorePort = findFreePort();
-        // Setting metastore instance specific warehouse directory, postfixing with port
-        Path postfixedWarehouseDir = new Path(warehouseDir, String.valueOf(metaStorePort));
-        MetastoreConf.setVar(conf, ConfVars.WAREHOUSE, postfixedWarehouseDir.toString());
+        if (!keepWarehousePath) {
+          // Setting metastore instance specific warehouse directory, postfixing with port
+          Path postfixedWarehouseDir = new Path(warehouseDir, String.valueOf(metaStorePort));
+          MetastoreConf.setVar(conf, ConfVars.WAREHOUSE, postfixedWarehouseDir.toString());
+          warehouseDir = postfixedWarehouseDir.toString();
+        }
 
         String jdbcUrl = MetastoreConf.getVar(conf, ConfVars.CONNECT_URL_KEY);
         if (!keepJdbcUri) {
@@ -188,11 +195,11 @@ public class MetaStoreTestUtils {
           fs.mkdirs(wh.getWhRoot());
           fs.setPermission(wh.getWhRoot(),
               new FsPermission(FsAction.ALL, FsAction.ALL, FsAction.ALL));
-          LOG.info("MetaStore warehouse root dir ({}) is created", postfixedWarehouseDir);
+          LOG.info("MetaStore warehouse root dir ({}) is created", warehouseDir);
         }
 
         LOG.info("MetaStore Thrift Server started on port: {} with warehouse dir: {} with " +
-            "jdbcUrl: {}", metaStorePort, postfixedWarehouseDir, jdbcUrl);
+            "jdbcUrl: {}", metaStorePort, warehouseDir, jdbcUrl);
         return metaStorePort;
       } catch (ConnectException ce) {
         metaStoreException = ce;

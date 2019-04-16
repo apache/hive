@@ -155,7 +155,7 @@ public class WarehouseInstance implements Closeable {
       hiveConf.set(entry.getKey(), entry.getValue());
     }
 
-    MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf, true);
+    MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf, true, true);
 
     // Add the below mentioned dependency in metastore/pom.xml file. For postgres need to copy postgresql-42.2.1.jar to
     // .m2//repository/postgresql/postgresql/9.3-1102.jdbc41/postgresql-9.3-1102.jdbc41.jar.
