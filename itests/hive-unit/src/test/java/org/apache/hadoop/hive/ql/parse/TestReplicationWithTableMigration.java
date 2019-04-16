@@ -409,6 +409,55 @@ public class TestReplicationWithTableMigration {
   }
 
   @Test
+  public void testBootstrapConvertedExternalTableAutoPurgeDataOnDrop() throws Throwable {
+    WarehouseInstance.Tuple bootstrap = primary.run("use " + primaryDbName)
+            .run("create table avro_tbl partitioned by (country string) ROW FORMAT SERDE "
+                    + "'org.apache.hadoop.hive.serde2.avro.AvroSerDe' stored as avro "
+                    + "tblproperties ('avro.schema.url'='" + avroSchemaFile.toUri().toString() + "')")
+            .run("insert into avro_tbl partition (country='india') values ('another', 13)")
+            .dump(primaryDbName, null);
+
+    replica.load(replicatedDbName, bootstrap.dumpLocation);
+    Path dataLocation = assertTablePath(replicatedDbName, "avro_tbl");
+
+    WarehouseInstance.Tuple incremental = primary.run("use " + primaryDbName)
+            .run("drop table avro_tbl")
+            .dump(primaryDbName, bootstrap.lastReplicationId);
+    replica.load(replicatedDbName, incremental.dumpLocation);
+
+    // After drop, the external table data location should be auto deleted as it is converted one.
+    assertFalse(replica.miniDFSCluster.getFileSystem().exists(dataLocation));
+  }
+
+  @Test
+  public void testIncConvertedExternalTableAutoDeleteDataDirOnDrop() throws Throwable {
+    WarehouseInstance.Tuple bootstrap = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, bootstrap.dumpLocation);
+
+    WarehouseInstance.Tuple incremental = primary.run("use " + primaryDbName)
+            .run("create table avro_tbl ROW FORMAT SERDE "
+                    + "'org.apache.hadoop.hive.serde2.avro.AvroSerDe' stored as avro "
+                    + "tblproperties ('avro.schema.url'='" + avroSchemaFile.toUri().toString() + "')")
+            .run("insert into avro_tbl values ('str', 13)")
+            .dump(primaryDbName, bootstrap.lastReplicationId);
+    replica.load(replicatedDbName, incremental.dumpLocation);
+
+    // Data location is valid and is under default external warehouse directory.
+    Table avroTable = replica.getTable(replicatedDbName, "avro_tbl");
+    assertTrue(MetaStoreUtils.isExternalTable(avroTable));
+    Path dataLocation = new Path(avroTable.getSd().getLocation());
+    assertTrue(replica.miniDFSCluster.getFileSystem().exists(dataLocation));
+
+    incremental = primary.run("use " + primaryDbName)
+            .run("drop table avro_tbl")
+            .dump(primaryDbName, incremental.lastReplicationId);
+    replica.load(replicatedDbName, incremental.dumpLocation);
+
+    // After drop, the external table data location should be auto deleted as it is converted one.
+    assertFalse(replica.miniDFSCluster.getFileSystem().exists(dataLocation));
+  }
+
+  @Test
   public void testBootstrapLoadMigrationToAcidWithMoveOptimization() throws Throwable {
     List<String> withConfigs =
             Collections.singletonList("'hive.repl.enable.move.optimization'='true'");
