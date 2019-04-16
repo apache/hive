@@ -424,6 +424,15 @@ struct StorageDescriptor {
   12: optional bool   storedAsSubDirectories       // stored as subdirectories or not
 }
 
+struct CreationMetadata {
+    1: required string catName
+    2: required string dbName,
+    3: required string tblName,
+    4: required set<string> tablesUsed,
+    5: optional string validTxnList,
+    6: optional i64 materializationTime
+}
+
 // table information
 struct Table {
   1: optional i64 id,                 // id of the table. It will be ignored if set. It's only for
@@ -927,6 +936,15 @@ struct CommitTxnKeyValue {
     3: required string value,
 }
 
+struct ReplLastIdInfo {
+    1: required string database,
+    2: required i64    lastReplId,
+    3: optional string table,
+    4: optional string catalog,
+    5: optional list<string> partitionList,
+    6: optional bool needUpdateDBReplId,
+}
+
 struct CommitTxnRequest {
     1: required i64 txnid,
     2: optional string replPolicy,
@@ -938,15 +956,6 @@ struct CommitTxnRequest {
 
     // Information to update the last repl id of table/partition along with commit txn (replication from 2.6 to 3.0)
     5: optional ReplLastIdInfo replLastIdInfo,
-}
-
-struct ReplLastIdInfo {
-    1: required string database,
-    2: required i64    lastReplId,
-    3: optional string table,
-    4: optional string catalog,
-    5: optional list<string> partitionList,
-    6: optional bool needUpdateDBReplId,
 }
 
 struct WriteEventInfo {
@@ -989,6 +998,12 @@ struct GetValidWriteIdsResponse {
     1: required list<TableValidWriteIds> tblValidWriteIds,
 }
 
+// Map for allocated write id against the txn for which it is allocated
+struct TxnToWriteId {
+    1: required i64 txnId,
+    2: required i64 writeId,
+}
+
 // Request msg to allocate table write ids for the given list of txns
 struct AllocateTableWriteIdsRequest {
     1: required string dbName,
@@ -999,12 +1014,6 @@ struct AllocateTableWriteIdsRequest {
     4: optional string replPolicy,
     // The list is assumed to be sorted by both txnids and write ids. The write id list is assumed to be contiguous.
     5: optional list<TxnToWriteId> srcTxnToWriteIdList,
-}
-
-// Map for allocated write id against the txn for which it is allocated
-struct TxnToWriteId {
-    1: required i64 txnId,
-    2: required i64 writeId,
 }
 
 struct AllocateTableWriteIdsResponse {
@@ -1099,10 +1108,6 @@ struct CompactionRequest {
     6: optional map<string, string> properties
 }
 
-struct OptionalCompactionInfoStruct {
-    1: optional CompactionInfoStruct ci,
-}
-
 struct CompactionInfoStruct {
     1: required i64 id,
     2: required string dbname,
@@ -1116,6 +1121,10 @@ struct CompactionInfoStruct {
     10: optional string workerId
     11: optional i64 start
     12: optional i64 highestWriteId
+}
+
+struct OptionalCompactionInfoStruct {
+    1: optional CompactionInfoStruct ci,
 }
 
 struct CompactionResponse {
@@ -1165,14 +1174,6 @@ struct BasicTxnInfo {
     6: optional string partitionname
 }
 
-struct CreationMetadata {
-    1: required string catName
-    2: required string dbName,
-    3: required string tblName,
-    4: required set<string> tablesUsed,
-    5: optional string validTxnList,
-    6: optional i64 materializationTime
-}
 
 struct NotificationEventRequest {
     1: required i64 lastEvent,
