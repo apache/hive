@@ -476,4 +476,32 @@ public class TestReplicationWithTableMigration {
     replica.load(replicatedDbName, tuple.dumpLocation, withConfigs);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
   }
+
+  @Test
+  public void dynamicallyConvertManagedToExternalTable() throws Throwable {
+    // With Strict managed disabled but Db enabled for replication, it is not possible to convert
+    // external table to managed table.
+    primary.run("use " + primaryDbName)
+            .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc ")
+            .run("insert into t1 values(1)")
+            .run("create table t2 partitioned by (country string) ROW FORMAT SERDE "
+                    + "'org.apache.hadoop.hive.serde2.avro.AvroSerDe' stored as avro "
+                    + "tblproperties ('avro.schema.url'='" + avroSchemaFile.toUri().toString() + "')")
+            .run("insert into t2 partition (country='india') values ('another', 13)")
+            .runFailure("alter table t1 set tblproperties('EXTERNAL'='true')")
+            .runFailure("alter table t2 set tblproperties('EXTERNAL'='true')");
+  }
+
+  @Test
+  public void dynamicallyConvertExternalToManagedTable() throws Throwable {
+    // With Strict managed disabled but Db enabled for replication, it is not possible to convert
+    // external table to managed table.
+    primary.run("use " + primaryDbName)
+            .run("create external table t1 (id int) stored as orc")
+            .run("insert into table t1 values (1)")
+            .run("create external table t2 (place string) partitioned by (country string)")
+            .run("insert into table t2 partition(country='india') values ('bangalore')")
+            .runFailure("alter table t1 set tblproperties('EXTERNAL'='false')")
+            .runFailure("alter table t2 set tblproperties('EXTERNAL'='false')");
+  }
 }
