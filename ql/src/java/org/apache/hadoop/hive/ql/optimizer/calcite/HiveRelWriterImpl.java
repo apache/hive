@@ -43,26 +43,16 @@ public class HiveRelWriterImpl extends RelJsonWriter {
 
   //~ Methods ------------------------------------------------------------------
 
+  @Override
   protected void explain_(RelNode rel, List<Pair<String, Object>> values) {
     super.explain_(rel, values);
-    // TODO: The following is hackish since we do not have visibility over relList
-    // and we do not want to bring all the writer utilities from Calcite. It should
-    // be changed once we move to new Calcite version and relList is visible for
-    // subclasses.
-    try {
-      final RelMetadataQuery mq = rel.getCluster().getMetadataQuery();
-      Field fs = RelJsonWriter.class.getDeclaredField("relList");
-      fs.setAccessible(true);
-      List<Object> relList = (List<Object>) fs.get(this);
-      Map<String, Object> map = (Map<String, Object>) relList.get(relList.size() - 1);
-      map.put("rowCount", mq.getRowCount(rel));
-      if (rel.getInputs().size() == 0) {
-        // This is a leaf, we will print the average row size and schema
-        map.put("avgRowSize", mq.getAverageRowSize(rel));
-        map.put("rowType", rel.getRowType().toString());
-      }
-    } catch (Exception e) {
-      LOG.warn("Failed to add additional fields in json writer", e);
+    RelMetadataQuery mq = rel.getCluster().getMetadataQuery();
+    Map<String, Object> map = (Map<String, Object>) relList.get(relList.size() - 1);
+    map.put("rowCount", mq.getRowCount(rel));
+    if (rel.getInputs().size() == 0) {
+      // This is a leaf, we will print the average row size and schema
+      map.put("avgRowSize", mq.getAverageRowSize(rel));
+      map.put("rowType", relJson.toJson(rel.getRowType()));
     }
   }
 

@@ -139,11 +139,11 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.WRITE_EVENT_INFOS, new org.apache.thrift.meta_data.FieldMetaData("writeEventInfos", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT            , "WriteEventInfo"))));
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, WriteEventInfo.class))));
     tmpMap.put(_Fields.KEY_VALUE, new org.apache.thrift.meta_data.FieldMetaData("keyValue", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, CommitTxnKeyValue.class)));
     tmpMap.put(_Fields.REPL_LAST_ID_INFO, new org.apache.thrift.meta_data.FieldMetaData("replLastIdInfo", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT        , "ReplLastIdInfo")));
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ReplLastIdInfo.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CommitTxnRequest.class, metaDataMap);
   }
@@ -171,7 +171,7 @@ import org.slf4j.LoggerFactory;
     if (other.isSetWriteEventInfos()) {
       List<WriteEventInfo> __this__writeEventInfos = new ArrayList<WriteEventInfo>(other.writeEventInfos.size());
       for (WriteEventInfo other_element : other.writeEventInfos) {
-        __this__writeEventInfos.add(other_element);
+        __this__writeEventInfos.add(new WriteEventInfo(other_element));
       }
       this.writeEventInfos = __this__writeEventInfos;
     }
@@ -179,7 +179,7 @@ import org.slf4j.LoggerFactory;
       this.keyValue = new CommitTxnKeyValue(other.keyValue);
     }
     if (other.isSetReplLastIdInfo()) {
-      this.replLastIdInfo = other.replLastIdInfo;
+      this.replLastIdInfo = new ReplLastIdInfo(other.replLastIdInfo);
     }
   }
 
@@ -641,6 +641,9 @@ import org.slf4j.LoggerFactory;
     if (keyValue != null) {
       keyValue.validate();
     }
+    if (replLastIdInfo != null) {
+      replLastIdInfo.validate();
+    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -698,14 +701,14 @@ import org.slf4j.LoggerFactory;
           case 3: // WRITE_EVENT_INFOS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list618 = iprot.readListBegin();
-                struct.writeEventInfos = new ArrayList<WriteEventInfo>(_list618.size);
-                WriteEventInfo _elem619;
-                for (int _i620 = 0; _i620 < _list618.size; ++_i620)
+                org.apache.thrift.protocol.TList _list634 = iprot.readListBegin();
+                struct.writeEventInfos = new ArrayList<WriteEventInfo>(_list634.size);
+                WriteEventInfo _elem635;
+                for (int _i636 = 0; _i636 < _list634.size; ++_i636)
                 {
-                  _elem619 = new WriteEventInfo();
-                  _elem619.read(iprot);
-                  struct.writeEventInfos.add(_elem619);
+                  _elem635 = new WriteEventInfo();
+                  _elem635.read(iprot);
+                  struct.writeEventInfos.add(_elem635);
                 }
                 iprot.readListEnd();
               }
@@ -760,9 +763,9 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(WRITE_EVENT_INFOS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.writeEventInfos.size()));
-            for (WriteEventInfo _iter621 : struct.writeEventInfos)
+            for (WriteEventInfo _iter637 : struct.writeEventInfos)
             {
-              _iter621.write(oprot);
+              _iter637.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -821,9 +824,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetWriteEventInfos()) {
         {
           oprot.writeI32(struct.writeEventInfos.size());
-          for (WriteEventInfo _iter622 : struct.writeEventInfos)
+          for (WriteEventInfo _iter638 : struct.writeEventInfos)
           {
-            _iter622.write(oprot);
+            _iter638.write(oprot);
           }
         }
       }
@@ -847,14 +850,14 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list623 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.writeEventInfos = new ArrayList<WriteEventInfo>(_list623.size);
-          WriteEventInfo _elem624;
-          for (int _i625 = 0; _i625 < _list623.size; ++_i625)
+          org.apache.thrift.protocol.TList _list639 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.writeEventInfos = new ArrayList<WriteEventInfo>(_list639.size);
+          WriteEventInfo _elem640;
+          for (int _i641 = 0; _i641 < _list639.size; ++_i641)
           {
-            _elem624 = new WriteEventInfo();
-            _elem624.read(iprot);
-            struct.writeEventInfos.add(_elem624);
+            _elem640 = new WriteEventInfo();
+            _elem640.read(iprot);
+            struct.writeEventInfos.add(_elem640);
           }
         }
         struct.setWriteEventInfosIsSet(true);

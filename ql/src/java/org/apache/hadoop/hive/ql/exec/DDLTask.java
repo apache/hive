@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import static org.apache.commons.lang.StringUtils.join;
-
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -27,8 +25,8 @@ import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -95,7 +93,6 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils.PartSpecInfo;
-import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
@@ -146,7 +143,6 @@ import org.apache.hadoop.hive.ql.plan.CreateOrDropTriggerToPoolMappingDesc;
 import org.apache.hadoop.hive.ql.plan.CreateResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.CreateWMTriggerDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
-import org.apache.hadoop.hive.ql.plan.DescFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.DropPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.DropResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.DropWMMappingDesc;
@@ -174,7 +170,6 @@ import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowCompactionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowConfDesc;
-import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowGrantDesc;
 import org.apache.hadoop.hive.ql.plan.ShowLocksDesc;
 import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
@@ -195,7 +190,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRoleGrant;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveV1Authorizer;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.ql.wm.ExecutionTrigger;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
@@ -213,7 +208,6 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hadoop.tools.HadoopArchives;
 import org.apache.hadoop.util.ToolRunner;
-import org.apache.hive.common.util.AnnotationUtils;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -326,19 +320,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         return msck(db, msckDesc);
       }
 
-      DescFunctionDesc descFunc = work.getDescFunctionDesc();
-      if (descFunc != null) {
-        return describeFunction(db, descFunc);
-      }
-
       ShowColumnsDesc showCols = work.getShowColumnsDesc();
       if (showCols != null) {
         return showColumns(db, showCols);
-      }
-
-      ShowFunctionsDesc showFuncs = work.getShowFuncsDesc();
-      if (showFuncs != null) {
-        return showFunctions(db, showFuncs);
       }
 
       ShowLocksDesc showLocks = work.getShowLocksDesc();
@@ -600,8 +584,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     }
     if (pm != null) {
-      pm.updateTriggers(appliedRp);
-      LOG.info("Updated tez session pool manager with active resource plan: {}", name);
+      Collection<String> appliedTriggers = pm.updateTriggers(appliedRp);
+      LOG.info("Updated tez session pool manager with active resource plan: {} appliedTriggers: {}", name, appliedTriggers);
     }
     return 0;
   }
@@ -612,11 +596,21 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private int createWMTrigger(Hive db, CreateWMTriggerDesc desc) throws HiveException {
+    validateTrigger(desc.getTrigger());
     db.createWMTrigger(desc.getTrigger());
     return 0;
   }
 
+  private void validateTrigger(final WMTrigger trigger) throws HiveException {
+    try {
+      ExecutionTrigger.fromWMTrigger(trigger);
+    } catch (IllegalArgumentException e) {
+      throw new HiveException(e);
+    }
+  }
+
   private int alterWMTrigger(Hive db, AlterWMTriggerDesc desc) throws HiveException {
+    validateTrigger(desc.getTrigger());
     db.alterWMTrigger(desc.getTrigger());
     return 0;
   }
@@ -1039,7 +1033,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
     Partition part = db.getPartition(tbl, oldPartSpec, false);
     part.setValues(renamePartitionDesc.getNewPartSpec());
-    db.renamePartition(tbl, oldPartSpec, part);
+    long writeId = renamePartitionDesc.getWriteId();
+    if (renamePartitionDesc.getReplicationSpec() != null
+            && renamePartitionDesc.getReplicationSpec().isMigratingToTxnTable()) {
+      Long tmpWriteId = ReplUtils.getMigrationCurrentTblWriteId(conf);
+      if (tmpWriteId == null) {
+        throw new HiveException("DDLTask : Write id is not set in the config by open txn task for migration");
+      }
+      writeId = tmpWriteId;
+    }
+    db.renamePartition(tbl, oldPartSpec, part, writeId);
     Partition newPart = db.getPartition(tbl, renamePartitionDesc.getNewPartSpec(), false);
     work.getInputs().add(new ReadEntity(oldPart));
     // We've already obtained a lock on the table, don't lock the partition too
@@ -1971,59 +1974,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   /**
-   * Write a list of the user defined functions to a file.
-   * @param db
-   *
-   * @param showFuncs
-   *          are the functions we're interested in.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
-   */
-  private int showFunctions(Hive db, ShowFunctionsDesc showFuncs) throws HiveException {
-    // get the tables for the desired patten - populate the output stream
-    Set<String> funcs = null;
-    if (showFuncs.getPattern() != null) {
-      LOG.debug("pattern: {}", showFuncs.getPattern());
-      if (showFuncs.getIsLikePattern()) {
-         funcs = FunctionRegistry.getFunctionNamesByLikePattern(showFuncs.getPattern());
-      } else {
-         console.printInfo("SHOW FUNCTIONS is deprecated, please use SHOW FUNCTIONS LIKE instead.");
-         funcs = FunctionRegistry.getFunctionNames(showFuncs.getPattern());
-      }
-      LOG.info("Found {} function(s) matching the SHOW FUNCTIONS statement.", funcs.size());
-    } else {
-      funcs = FunctionRegistry.getFunctionNames();
-    }
-
-    // write the results in the file
-    DataOutputStream outStream = getOutputStream(showFuncs.getResFile());
-    try {
-      SortedSet<String> sortedFuncs = new TreeSet<String>(funcs);
-      // To remove the primitive types
-      sortedFuncs.removeAll(serdeConstants.PrimitiveTypes);
-      Iterator<String> iterFuncs = sortedFuncs.iterator();
-
-      while (iterFuncs.hasNext()) {
-        // create a row per table name
-        outStream.writeBytes(iterFuncs.next());
-        outStream.write(terminator);
-      }
-    } catch (FileNotFoundException e) {
-      LOG.warn("show function: ", e);
-      return 1;
-    } catch (IOException e) {
-      LOG.warn("show function: ", e);
-      return 1;
-    } catch (Exception e) {
-      throw new HiveException(e);
-    } finally {
-      IOUtils.closeStream(outStream);
-    }
-    return 0;
-  }
-
-  /**
    * Write a list of the current locks to a file.
    * @param db
    *
@@ -2369,80 +2319,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
-  /**
-   * Shows a description of a function.
-   * @param db
-   *
-   * @param descFunc
-   *          is the function we are describing
-   * @throws HiveException
-   */
-  private int describeFunction(Hive db, DescFunctionDesc descFunc) throws HiveException, SQLException {
-    String funcName = descFunc.getName();
-
-    // write the results in the file
-    DataOutputStream outStream = getOutputStream(descFunc.getResFile());
-    try {
-      // get the function documentation
-      Description desc = null;
-      Class<?> funcClass = null;
-      FunctionInfo functionInfo = FunctionRegistry.getFunctionInfo(funcName);
-      if (functionInfo != null) {
-        funcClass = functionInfo.getFunctionClass();
-      }
-      if (funcClass != null) {
-        desc = AnnotationUtils.getAnnotation(funcClass, Description.class);
-      }
-      if (desc != null) {
-        outStream.writeBytes(desc.value().replace("_FUNC_", funcName));
-        if (descFunc.isExtended()) {
-          Set<String> synonyms = FunctionRegistry.getFunctionSynonyms(funcName);
-          if (synonyms.size() > 0) {
-            outStream.writeBytes("\nSynonyms: " + join(synonyms, ", "));
-          }
-          if (desc.extended().length() > 0) {
-            outStream.writeBytes("\n"
-                + desc.extended().replace("_FUNC_", funcName));
-          }
-        }
-      } else {
-        if (funcClass != null) {
-          outStream.writeBytes("There is no documentation for function '"
-              + funcName + "'");
-        } else {
-          outStream.writeBytes("Function '" + funcName + "' does not exist.");
-        }
-      }
-
-      outStream.write(terminator);
-      if (descFunc.isExtended()) {
-        if (funcClass != null) {
-          outStream.writeBytes("Function class:" + funcClass.getName() + "\n");
-        }
-        if (functionInfo != null) {
-          outStream.writeBytes("Function type:" + functionInfo.getFunctionType() + "\n");
-          FunctionResource[] resources = functionInfo.getResources();
-          if (resources != null) {
-            for (FunctionResource resource : resources) {
-              outStream.writeBytes("Resource:" + resource.getResourceURI() + "\n");
-            }
-          }
-        }
-      }
-    } catch (FileNotFoundException e) {
-      LOG.warn("describe function: ", e);
-      return 1;
-    } catch (IOException e) {
-      LOG.warn("describe function: ", e);
-      return 1;
-    } catch (Exception e) {
-      throw new HiveException(e);
-    } finally {
-      IOUtils.closeStream(outStream);
-    }
-    return 0;
-  }
-
   private void writeToFile(String data, String file) throws IOException {
     Path resFile = new Path(file);
     FileSystem fs = resFile.getFileSystem(conf);
@@ -2604,11 +2480,32 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
       environmentContext.putToProperties(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE, alterTbl.getOp().name());
       if (allPartitions == null) {
-        db.alterTable(alterTbl.getOldName(), tbl, alterTbl.getIsCascade(), environmentContext, true);
+        long writeId = alterTbl.getWriteId() != null ? alterTbl.getWriteId() : 0;
+        if (alterTbl.getReplicationSpec() != null &&
+                alterTbl.getReplicationSpec().isMigratingToTxnTable()) {
+          Long tmpWriteId = ReplUtils.getMigrationCurrentTblWriteId(conf);
+          if (tmpWriteId == null) {
+            throw new HiveException("DDLTask : Write id is not set in the config by open txn task for migration");
+          }
+          writeId = tmpWriteId;
+        }
+        db.alterTable(alterTbl.getOldName(), tbl, alterTbl.getIsCascade(), environmentContext,
+                true, writeId);
       } else {
         // Note: this is necessary for UPDATE_STATISTICS command, that operates via ADDPROPS (why?).
         //       For any other updates, we don't want to do txn check on partitions when altering table.
-        boolean isTxn = alterTbl.getPartSpec() != null && alterTbl.getOp() == AlterTableTypes.ADDPROPS;
+        boolean isTxn = false;
+        if (alterTbl.getPartSpec() != null && alterTbl.getOp() == AlterTableTypes.ADDPROPS) {
+          // ADDPROPS is used to add replication properties like repl.last.id, which isn't
+          // transactional change. In case of replication check for transactional properties
+          // explicitly.
+          Map<String, String> props = alterTbl.getProps();
+          if (alterTbl.getReplicationSpec() != null && alterTbl.getReplicationSpec().isInReplicationScope()) {
+            isTxn = (props.get(StatsSetupConst.COLUMN_STATS_ACCURATE) != null);
+          } else {
+            isTxn = true;
+          }
+        }
         db.alterPartitions(Warehouse.getQualifiedName(tbl.getTTable()), allPartitions, environmentContext, isTxn);
       }
       // Add constraints if necessary

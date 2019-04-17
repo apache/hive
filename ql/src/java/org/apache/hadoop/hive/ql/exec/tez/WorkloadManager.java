@@ -30,6 +30,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -76,6 +77,7 @@ import org.apache.hadoop.hive.ql.wm.TriggerActionHandler;
 import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.metrics2.MetricsSystem;
 import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.Ref;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.codehaus.jackson.annotate.JsonAutoDetect;
@@ -427,9 +429,6 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       final String reason = killCtx.reason;
       LOG.info("Killing query for {}", toKill);
       workPool.submit(() -> {
-        SessionState ss = new SessionState(new HiveConf());
-        ss.setIsHiveServerQuery(true);
-        SessionState.start(ss);
         // Note: we get query ID here, rather than in the caller, where it would be more correct
         //       because we know which exact query we intend to kill. This is valid because we
         //       are not expecting query ID to change - we never reuse the session for which a
@@ -441,13 +440,17 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
             WmEvent wmEvent = new WmEvent(WmEvent.EventType.KILL);
             LOG.info("Invoking KillQuery for " + queryId + ": " + reason);
             try {
+              UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
+              SessionState ss = new SessionState(new HiveConf(), ugi.getShortUserName());
+              ss.setIsHiveServerQuery(true);
+              SessionState.start(ss);
               kq.killQuery(queryId, reason, toKill.getConf());
               addKillQueryResult(toKill, true);
               killCtx.killSessionFuture.set(true);
               wmEvent.endEvent(toKill);
               LOG.debug("Killed " + queryId);
               return;
-            } catch (HiveException ex) {
+            } catch (HiveException|IOException ex) {
               LOG.error("Failed to kill " + queryId + "; will try to restart AM instead" , ex);
             }
           } else {

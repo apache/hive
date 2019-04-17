@@ -16,7 +16,5 @@
  * limitations under the License.
  */
 
-/**
- * JDBC external table rules that pushes down operators as much as possible to the external jdbc table.
- */
-package org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc;
+/** Function related DDL operation descriptions and operations. */
+package org.apache.hadoop.hive.ql.ddl.function;

@@ -81,6 +81,8 @@ import org.apache.hadoop.hive.ql.ddl.database.ShowCreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.ShowDatabasesDesc;
 import org.apache.hadoop.hive.ql.ddl.database.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.UnlockDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.function.DescFunctionDesc;
+import org.apache.hadoop.hive.ql.ddl.function.ShowFunctionsDesc;
 import org.apache.hadoop.hive.ql.ddl.table.DescTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.DropTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.LockTableDesc;
@@ -139,7 +141,6 @@ import org.apache.hadoop.hive.ql.plan.CreateWMTriggerDesc;
 import org.apache.hadoop.hive.ql.plan.DDLDesc;
 import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
-import org.apache.hadoop.hive.ql.plan.DescFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.DropPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.DropResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.DropWMMappingDesc;
@@ -162,7 +163,6 @@ import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowCompactionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowConfDesc;
-import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowGrantDesc;
 import org.apache.hadoop.hive.ql.plan.ShowLocksDesc;
 import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
@@ -2800,9 +2800,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     } else {
       showFuncsDesc = new ShowFunctionsDesc(ctx.getResFile());
     }
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showFuncsDesc)));
-    setFetchTask(createFetchTask(showFuncsDesc.getSchema()));
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), showFuncsDesc)));
+    setFetchTask(createFetchTask(ShowFunctionsDesc.getSchema()));
   }
 
   /**
@@ -3153,11 +3152,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("Unexpected Tokens at DESCRIBE FUNCTION");
     }
 
-    DescFunctionDesc descFuncDesc = new DescFunctionDesc(ctx.getResFile(),
-        funcName, isExtended);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        descFuncDesc)));
-    setFetchTask(createFetchTask(descFuncDesc.getSchema()));
+    DescFunctionDesc descFuncDesc = new DescFunctionDesc(ctx.getResFile(), funcName, isExtended);
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), descFuncDesc)));
+    setFetchTask(createFetchTask(DescFunctionDesc.getSchema()));
   }
 
 

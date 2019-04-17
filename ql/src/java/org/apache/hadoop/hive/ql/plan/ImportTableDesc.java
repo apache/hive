@@ -88,7 +88,8 @@ public class ImportTableDesc {
                 null,
             null,
             null,
-                table.getColStats());
+                table.getColStats(),
+                table.getTTable().getWriteId());
         this.createTblDesc.setStoredAsSubDirectories(table.getSd().isStoredAsSubDirectories());
         break;
       case VIEW:
@@ -381,5 +382,12 @@ public class ImportTableDesc {
       default:
         throw new RuntimeException("Invalid table type : " + getDescType());
     }
+  }
+
+  public Long getReplWriteId() {
+    if (this.createTblDesc != null) {
+      return this.createTblDesc.getReplWriteId();
+    }
+    return -1L;
   }
 }

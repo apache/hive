@@ -37,12 +37,10 @@ public class DDLWork implements Serializable {
   private DropPartitionDesc dropPartitionDesc;
   private AlterTableDesc alterTblDesc;
   private ShowColumnsDesc showColumnsDesc;
-  private ShowFunctionsDesc showFuncsDesc;
   private ShowLocksDesc showLocksDesc;
   private ShowCompactionsDesc showCompactionsDesc;
   private ShowTxnsDesc showTxnsDesc;
   private AbortTxnsDesc abortTxnsDesc;
-  private DescFunctionDesc descFunctionDesc;
   private ShowPartitionsDesc showPartsDesc;
   private AddPartitionDesc addPartitionDesc;
   private RenamePartitionDesc renamePartitionDesc;
@@ -134,16 +132,6 @@ public class DDLWork implements Serializable {
   }
 
   /**
-   * @param showFuncsDesc
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      ShowFunctionsDesc showFuncsDesc) {
-    this(inputs, outputs);
-
-    this.showFuncsDesc = showFuncsDesc;
-  }
-
-  /**
    * @param showLocksDesc
    */
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
@@ -169,16 +157,6 @@ public class DDLWork implements Serializable {
                  AbortTxnsDesc abortTxnsDesc) {
     this(inputs, outputs);
     this.abortTxnsDesc = abortTxnsDesc;
-  }
-
-   /**
-   * @param descFuncDesc
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      DescFunctionDesc descFuncDesc) {
-    this(inputs, outputs);
-
-    descFunctionDesc = descFuncDesc;
   }
 
   /**
@@ -402,14 +380,6 @@ public class DDLWork implements Serializable {
   }
 
   /**
-   * @return the showFuncsDesc
-   */
-  @Explain(displayName = "Show Function Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public ShowFunctionsDesc getShowFuncsDesc() {
-    return showFuncsDesc;
-  }
-
-  /**
    * @return the showLocksDesc
    */
   @Explain(displayName = "Show Lock Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -430,14 +400,6 @@ public class DDLWork implements Serializable {
   @Explain(displayName = "Abort Transactions Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public AbortTxnsDesc getAbortTxnsDesc() {
     return abortTxnsDesc;
-  }
-
-  /**
-   * @return the descFuncDesc
-   */
-  @Explain(displayName = "Show Function Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public DescFunctionDesc getDescFunctionDesc() {
-    return descFunctionDesc;
   }
 
   @Explain(displayName = "Kill Query Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })

@@ -21,9 +21,12 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionState.HiveResources;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -113,9 +116,9 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
     }
     initTriggers(conf);
     if (resourcePlan != null) {
-      updateTriggers(resourcePlan);
-      LOG.info("Updated tez session pool manager with active resource plan: {}",
-          resourcePlan.getPlan().getName());
+      Collection<String> appliedTriggers = updateTriggers(resourcePlan);
+      LOG.info("Updated tez session pool manager with triggers {} from active resource plan: {}",
+          appliedTriggers, resourcePlan.getPlan().getName());
     }
   }
 
@@ -531,7 +534,8 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
     }
   }
 
-  public void updateTriggers(final WMFullResourcePlan appliedRp) {
+  public Collection<String> updateTriggers(final WMFullResourcePlan appliedRp) {
+    Set<String> triggerNames = new HashSet<>();
     if (sessionTriggerProvider != null) {
       List<WMTrigger> wmTriggers = appliedRp != null ? appliedRp.getTriggers() : null;
       List<Trigger> triggers = new ArrayList<>();
@@ -539,11 +543,14 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
         for (WMTrigger wmTrigger : wmTriggers) {
           if (wmTrigger.isSetIsInUnmanaged() && wmTrigger.isIsInUnmanaged()) {
             triggers.add(ExecutionTrigger.fromWMTrigger(wmTrigger));
+            triggerNames.add(wmTrigger.getTriggerName());
           }
         }
       }
       sessionTriggerProvider.setTriggers(Collections.unmodifiableList(triggers));
     }
+
+    return triggerNames;
   }
 
   /** Called by TezSessionPoolSession when closed. */

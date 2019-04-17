@@ -1,0 +1,53 @@
+PREHOOK: query: EXPLAIN DESC FUNCTION replace
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: EXPLAIN DESC FUNCTION replace
+POSTHOOK: type: DESCFUNCTION
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Describe Function
+      name: replace
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DESC FUNCTION replace
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESC FUNCTION replace
+POSTHOOK: type: DESCFUNCTION
+replace(str, search, rep) - replace all substrings of 'str' that match 'search' with 'rep'
+PREHOOK: query: EXPLAIN DESC FUNCTION EXTENDED replace
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: EXPLAIN DESC FUNCTION EXTENDED replace
+POSTHOOK: type: DESCFUNCTION
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Describe Function
+      name: replace
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DESC FUNCTION EXTENDED replace
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESC FUNCTION EXTENDED replace
+POSTHOOK: type: DESCFUNCTION
+replace(str, search, rep) - replace all substrings of 'str' that match 'search' with 'rep'
+Example:
+  > SELECT replace('Hack and Hue', 'H', 'BL') FROM src LIMIT 1;
+  'BLack and BLue'
+Function class:org.apache.hadoop.hive.ql.udf.UDFReplace
+Function type:BUILTIN

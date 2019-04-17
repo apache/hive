@@ -953,7 +953,7 @@ public class TestTxnCommands2 {
   public void testEmptyInTblproperties() throws Exception {
     runStatementOnDriver("create table t1 " + "(a int, b int) stored as orc TBLPROPERTIES ('serialization.null.format'='', 'transactional'='true')");
     runStatementOnDriver("insert into t1 " + "(a,b) values(1,7),(3,7)");
-    runStatementOnDriver("update t1" + " set b = -2 where b = 2");
+    runStatementOnDriver("update t1" + " set b = -2 where a = 1");
     runStatementOnDriver("alter table t1 " + " compact 'MAJOR'");
     runWorker(hiveConf);
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);

@@ -4059,6 +4059,18 @@ FAILED: ParseException line 2:50 mismatched input '>=' expecting > near 'ELAPSED
 FAILED: ParseException line 2:50 mismatched input '<' expecting > near 'ELAPSED_TIME' in comparisionOperator
 FAILED: ParseException line 2:50 mismatched input '<=' expecting > near 'ELAPSED_TIME' in comparisionOperator
 FAILED: ParseException line 2:50 mismatched input '=' expecting > near 'ELAPSED_TIME' in comparisionOperator
+PREHOOK: query: CREATE TRIGGER plan_1.trigger_2 WHEN BYTES_READ > '10k' DO KILL
+PREHOOK: type: CREATE TRIGGER
+PREHOOK: Output: dummyHostnameForTest
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. java.lang.IllegalArgumentException: Invalid size unit k
+PREHOOK: query: CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME > '10 millis' DO KILL
+PREHOOK: type: CREATE TRIGGER
+PREHOOK: Output: dummyHostnameForTest
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. java.lang.IllegalArgumentException: Invalid time unit millis
+PREHOOK: query: CREATE TRIGGER plan_1.trigger_2 WHEN BYTES_READ > '-1000' DO KILL
+PREHOOK: type: CREATE TRIGGER
+PREHOOK: Output: dummyHostnameForTest
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. java.lang.IllegalArgumentException: Illegal value for counter limit. Expected a positive long value.
 PREHOOK: query: CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME > '30hour' DO MOVE TO slow_pool
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
@@ -4074,10 +4086,10 @@ POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
 plan_1	default	trigger_1	BYTES_READ > '10kb'	KILL
 plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
-PREHOOK: query: ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '1min' DO KILL
+PREHOOK: query: ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '1GB' DO KILL
 PREHOOK: type: ALTER TRIGGER
 PREHOOK: Output: dummyHostnameForTest
-POSTHOOK: query: ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '1min' DO KILL
+POSTHOOK: query: ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '1GB' DO KILL
 POSTHOOK: type: ALTER TRIGGER
 PREHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 PREHOOK: type: QUERY
@@ -4087,7 +4099,7 @@ POSTHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
-plan_1	default	trigger_1	BYTES_READ > '1min'	KILL
+plan_1	default	trigger_1	BYTES_READ > '1GB'	KILL
 plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
 PREHOOK: query: DROP TRIGGER plan_1.trigger_1
 PREHOOK: type: DROP TRIGGER
@@ -4107,10 +4119,10 @@ PREHOOK: query: CREATE TRIGGER plan_2.trigger_1 WHEN BYTES_READ > '100mb' DO MOV
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
-PREHOOK: query: CREATE TRIGGER `table`.`table` WHEN BYTES_WRITTEN > '100KB' DO MOVE TO `table`
+PREHOOK: query: CREATE TRIGGER `table`.`table` WHEN BYTES_WRITTEN > '100KB' DO MOVE TO `default`
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
-POSTHOOK: query: CREATE TRIGGER `table`.`table` WHEN BYTES_WRITTEN > '100KB' DO MOVE TO `table`
+POSTHOOK: query: CREATE TRIGGER `table`.`table` WHEN BYTES_WRITTEN > '100KB' DO MOVE TO `default`
 POSTHOOK: type: CREATE TRIGGER
 PREHOOK: query: CREATE TRIGGER `table`.`trigger` WHEN BYTES_WRITTEN > '100MB' DO MOVE TO `default`
 PREHOOK: type: CREATE TRIGGER
@@ -4142,7 +4154,7 @@ POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
 plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
 table	default	database	BYTES_WRITTEN > "1GB"	MOVE TO default
-table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO table
+table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO default
 table	default	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
 table	default	trigger1	ELAPSED_TIME > 10	KILL
 table	default	trigger2	ELAPSED_TIME > '1hour'	KILL
@@ -4160,7 +4172,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
 plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
-table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO table
+table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO default
 table	default	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
 table	default	trigger1	ELAPSED_TIME > 10	KILL
 table	default	trigger2	ELAPSED_TIME > '1hour'	KILL
@@ -4232,7 +4244,7 @@ POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
 plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
 plan_2	default	trigger_1	BYTES_READ > 0	MOVE TO null_pool
-table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO table
+table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO default
 table	default	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
 table	default	trigger1	ELAPSED_TIME > 10	KILL
 table	default	trigger2	ELAPSED_TIME > '1hour'	KILL
@@ -4615,13 +4627,13 @@ POSTHOOK: query: SHOW RESOURCE PLAN `table`
 POSTHOOK: type: SHOW RESOURCEPLAN
 table[status=DISABLED,parallelism=1,defaultPool=null]
  +  table[allocFraction=0.0,schedulingPolicy=fifo,parallelism=1]
-     |  trigger table: if (BYTES_WRITTEN > '100KB') { MOVE TO table }
+     |  trigger table: if (BYTES_WRITTEN > '100KB') { MOVE TO default }
      +  pool[allocFraction=0.9,schedulingPolicy=fair,parallelism=3]
          +  child2[allocFraction=0.7,schedulingPolicy=fair,parallelism=3]
              |  trigger trigger1: if (ELAPSED_TIME > 10) { KILL }
              |  trigger trigger2: if (ELAPSED_TIME > '1hour') { KILL }
          +  child1[allocFraction=0.3,schedulingPolicy=fair,parallelism=1]
-             |  trigger table: if (BYTES_WRITTEN > '100KB') { MOVE TO table }
+             |  trigger table: if (BYTES_WRITTEN > '100KB') { MOVE TO default }
              |  trigger trigger1: if (ELAPSED_TIME > 10) { KILL }
  +  <unmanaged queries>
      |  trigger trigger1: if (ELAPSED_TIME > 10) { KILL }
@@ -4871,7 +4883,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
 plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
-table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO table
+table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO default
 table	default	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
 table	default	trigger1	ELAPSED_TIME > 10	KILL
 table	default	trigger2	ELAPSED_TIME > '1hour'	KILL
@@ -4977,7 +4989,7 @@ plan_4a	default	trigger_1	BYTES_READ > '10GB'	KILL
 plan_4a	default	trigger_2	BYTES_READ > '11GB'	KILL
 plan_4b	default	trigger_1	BYTES_READ > '10GB'	KILL
 plan_4b	default	trigger_2	BYTES_READ > '11GB'	KILL
-table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO table
+table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO default
 table	default	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
 table	default	trigger1	ELAPSED_TIME > 10	KILL
 table	default	trigger2	ELAPSED_TIME > '1hour'	KILL
