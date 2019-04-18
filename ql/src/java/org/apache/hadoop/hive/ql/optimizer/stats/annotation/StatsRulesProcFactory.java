@@ -84,7 +84,12 @@ import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMin;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
@@ -1479,6 +1484,7 @@ public class StatsRulesProcFactory {
       // if UDAFs are present, new columns needs to be added
       if (!aggDesc.isEmpty() && stats != null) {
         List<ColStatistics> aggColStats = Lists.newArrayList();
+        int idx = 0;
         for (ColumnInfo ci : rs.getSignature()) {
 
           // if the columns in row schema is not contained in column
@@ -1492,6 +1498,7 @@ public class StatsRulesProcFactory {
             cs.setCountDistint(stats.getNumRows());
             cs.setNumNulls(0);
             cs.setAvgColLen(StatsUtils.getAvgColLenOf(conf, ci.getObjectInspector(), colType));
+            computeAggregateColumnMinMax(cs, conf, aggDesc.get(idx++), colType, parentStats);
             aggColStats.add(cs);
           }
         }
@@ -1522,6 +1529,77 @@ public class StatsRulesProcFactory {
         LOG.debug("[0] STATS-" + gop.toString() + ": " + stats.extendedToString());
       }
       return null;
+    }
+
+    /**
+     * If possible, sets the min / max value for the column based on the aggregate function
+     * being calculated and its input.
+     */
+    private static void computeAggregateColumnMinMax(ColStatistics cs, HiveConf conf, AggregationDesc agg, String aggType,
+        Statistics parentStats) throws SemanticException {
+      if (agg.getParameters() != null && agg.getParameters().size() == 1) {
+        ColStatistics parentCS = StatsUtils.getColStatisticsFromExpression(
+            conf, parentStats, agg.getParameters().get(0));
+        if (parentCS != null && parentCS.getRange() != null &&
+            parentCS.getRange().minValue != null && parentCS.getRange().maxValue != null) {
+          long valuesCount = agg.getDistinct() ?
+              parentCS.getCountDistint() :
+              parentStats.getNumRows() - parentCS.getNumNulls();
+          Range range = parentCS.getRange();
+          // Get the aggregate function matching the name in the query.
+          GenericUDAFResolver udaf =
+              FunctionRegistry.getGenericUDAFResolver(agg.getGenericUDAFName());
+          if (udaf instanceof GenericUDAFCount) {
+            cs.setRange(new Range(0, valuesCount));
+          } else if (udaf instanceof GenericUDAFMax || udaf instanceof GenericUDAFMin) {
+            cs.setRange(new Range(range.minValue, range.maxValue));
+          } else if (udaf instanceof GenericUDAFSum) {
+            switch (aggType) {
+            case serdeConstants.TINYINT_TYPE_NAME:
+            case serdeConstants.SMALLINT_TYPE_NAME:
+            case serdeConstants.DATE_TYPE_NAME:
+            case serdeConstants.INT_TYPE_NAME:
+            case serdeConstants.BIGINT_TYPE_NAME:
+              long maxValueLong = range.maxValue.longValue();
+              long minValueLong = range.minValue.longValue();
+              // If min value is less or equal to max value (legal)
+              if (minValueLong <= maxValueLong && minValueLong >= 0) {
+                // min = minValue, max = (minValue + maxValue) * 0.5 * parentNumRows
+                cs.setRange(new Range(
+                    minValueLong,
+                    StatsUtils.safeMult(
+                        StatsUtils.safeMult(StatsUtils.safeAdd(minValueLong, maxValueLong), 0.5),
+                        valuesCount)));
+              }
+              break;
+            case serdeConstants.FLOAT_TYPE_NAME:
+            case serdeConstants.DOUBLE_TYPE_NAME:
+              double maxValueDouble = range.maxValue.doubleValue();
+              double minValueDouble = range.minValue.doubleValue();
+              // If min value is less or equal to max value (legal)
+              if (minValueDouble <= maxValueDouble && minValueDouble >= 0) {
+                // min = minValue, max = (minValue + maxValue) * 0.5 * parentNumRows
+                cs.setRange(new Range(
+                    minValueDouble,
+                    (minValueDouble + maxValueDouble) * 0.5 * valuesCount));
+              }
+              break;
+            default:
+              if (aggType.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
+                BigDecimal maxValueBD = new BigDecimal(range.maxValue.toString());
+                BigDecimal minValueBD = new BigDecimal(range.minValue.toString());
+                // If min value is less or equal to max value (legal)
+                if (minValueBD.compareTo(maxValueBD) <= 0 && minValueBD.compareTo(BigDecimal.ZERO) >= 0) {
+                  // min = minValue, max = (minValue + maxValue) * 0.5 * parentNumRows
+                  cs.setRange(new Range(
+                      minValueBD,
+                      minValueBD.add(maxValueBD).multiply(new BigDecimal(0.5)).multiply(new BigDecimal(valuesCount))));
+                }
+              }
+            }
+          }
+        }
+      }
     }
 
     private long getParentNumRows(GroupByOperator op, List<ExprNodeDesc> gbyKeys, HiveConf conf) {
