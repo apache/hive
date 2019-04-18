@@ -147,9 +147,15 @@
                   <createDependencyReducedPom>false</createDependencyReducedPom>
                   <artifactSet>
                     <includes>
-                      <include>org.apache.kafka:*</include>
+                      <include>org.apache.kafka:kafka-clients</include>
                     </includes>
                   </artifactSet>
+                  <relocations>
+                    <relocation>
+                      <pattern>org.apache.kafka</pattern>
+                      <shadedPattern>org.apache.kafkaesque</shadedPattern>
+                    </relocation>
+                  </relocations>
                   <filters>
                     <filter>
                       <artifact>*:*</artifact>
