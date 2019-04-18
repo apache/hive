@@ -54,14 +54,14 @@ public class ShowFunctionsOperation extends DDLOperation {
   private Set<String> fetchFunctions() {
     Set<String> funcs = null;
     if (desc.getPattern() != null) {
-      LOG.debug("pattern: {}", desc.getPattern());
       if (desc.getIsLikePattern()) {
         funcs = FunctionRegistry.getFunctionNamesByLikePattern(desc.getPattern());
       } else {
         context.getConsole().printInfo("SHOW FUNCTIONS is deprecated, please use SHOW FUNCTIONS LIKE instead.");
         funcs = FunctionRegistry.getFunctionNames(desc.getPattern());
       }
-      LOG.info("Found {} function(s) matching the SHOW FUNCTIONS statement.", funcs.size());
+      LOG.info("Found {} function(s) using pattern {} matching the SHOW FUNCTIONS statement.", funcs.size(),
+          desc.getPattern());
     } else {
       funcs = FunctionRegistry.getFunctionNames();
     }

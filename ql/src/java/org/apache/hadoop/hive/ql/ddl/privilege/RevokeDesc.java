@@ -16,73 +16,56 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.privilege;
 
 import java.io.Serializable;
 import java.util.List;
+
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-
+/**
+ * DDL task description for REVOKE commands.
+ */
 @Explain(displayName="Revoke", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class RevokeDesc extends DDLDesc implements Serializable, Cloneable {
-
+public class RevokeDesc implements DDLDesc, Serializable, Cloneable {
   private static final long serialVersionUID = 1L;
 
-  private List<PrivilegeDesc> privileges;
-
-  private List<PrincipalDesc> principals;
-
-  private PrivilegeObjectDesc privilegeSubjectDesc;
-
-  private boolean grantOption;
-
-  public RevokeDesc(){
+  static {
+    DDLTask2.registerOperation(RevokeDesc.class, RevokeOperation.class);
   }
 
-  public RevokeDesc(List<PrivilegeDesc> privileges,
-      List<PrincipalDesc> principals, PrivilegeObjectDesc privilegeSubjectDesc) {
-    this(privileges, principals, privilegeSubjectDesc, false);
-  }
+  private final List<PrivilegeDesc> privileges;
+  private final List<PrincipalDesc> principals;
+  private final PrivilegeObjectDesc privilegeSubject;
+  private final boolean grantOption;
 
-  public RevokeDesc(List<PrivilegeDesc> privileges,
-        List<PrincipalDesc> principals, PrivilegeObjectDesc privilegeSubjectDesc, boolean grantOption) {
-    super();
+  public RevokeDesc(List<PrivilegeDesc> privileges, List<PrincipalDesc> principals,
+      PrivilegeObjectDesc privilegeSubject, boolean grantOption) {
     this.privileges = privileges;
     this.principals = principals;
-    this.privilegeSubjectDesc = privilegeSubjectDesc;
+    this.privilegeSubject = privilegeSubject;
     this.grantOption = grantOption;
   }
 
+  @Explain(displayName = "Privileges", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public List<PrivilegeDesc> getPrivileges() {
     return privileges;
   }
 
-  public void setPrivileges(List<PrivilegeDesc> privileges) {
-    this.privileges = privileges;
-  }
-
+  @Explain(displayName = "Principals", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public List<PrincipalDesc> getPrincipals() {
     return principals;
   }
 
-  public void setPrincipals(List<PrincipalDesc> principals) {
-    this.principals = principals;
-  }
-
-  public PrivilegeObjectDesc getPrivilegeSubjectDesc() {
-    return privilegeSubjectDesc;
-  }
-
-  public void setPrivilegeSubjectDesc(PrivilegeObjectDesc privilegeSubjectDesc) {
-    this.privilegeSubjectDesc = privilegeSubjectDesc;
+  @Explain(skipHeader = true, explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public PrivilegeObjectDesc getPrivilegeSubject() {
+    return privilegeSubject;
   }
 
   public boolean isGrantOption() {
     return grantOption;
   }
-
-  public void setGrantOption(boolean grantOption) {
-    this.grantOption = grantOption;
-  }
-  
 }

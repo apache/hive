@@ -32,14 +32,11 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class ShowCreateTableDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
+  public static final String SCHEMA = "createtab_stmt#string";
+
   static {
     DDLTask2.registerOperation(ShowCreateTableDesc.class, ShowCreateTableOperation.class);
   }
-
-  /**
-   * Thrift ddl for the result of showcreatetable.
-   */
-  public static final String SCHEMA = "createtab_stmt#string";
 
   private final String resFile;
   private final String tableName;

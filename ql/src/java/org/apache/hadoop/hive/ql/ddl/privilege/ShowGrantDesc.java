@@ -15,64 +15,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.privilege;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-
-@Explain(displayName="show grant desc", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class ShowGrantDesc {
-  
-  private PrincipalDesc principalDesc;
-
-  private PrivilegeObjectDesc hiveObj;
-  
-  private String resFile;
-
-  /**
-   * thrift ddl for the result of show grant.
-   */
-  private static final String tabularSchema =
+/**
+ * DDL task description for SHOW GRANT commands.
+ */
+@Explain(displayName="Show grant desc", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class ShowGrantDesc implements DDLDesc {
+  public static final String SCHEMA =
       "database,table,partition,column,principal_name,principal_type,privilege," +
       "grant_option,grant_time,grantor#" +
       "string:string:string:string:string:string:string:boolean:bigint:string";
 
-  public ShowGrantDesc(){
-  }
-  
-  public ShowGrantDesc(String resFile, PrincipalDesc principalDesc,
-      PrivilegeObjectDesc subjectObj) {
-    this.resFile = resFile;
-    this.principalDesc = principalDesc;
-    this.hiveObj = subjectObj;
+  static {
+    DDLTask2.registerOperation(ShowGrantDesc.class, ShowGrantOperation.class);
   }
 
-  public static String getSchema() {
-    return tabularSchema;
+  private final String resFile;
+  private final PrincipalDesc principal;
+  private final PrivilegeObjectDesc hiveObj;
+
+  public ShowGrantDesc(String resFile, PrincipalDesc principal, PrivilegeObjectDesc hiveObj) {
+    this.resFile = resFile;
+    this.principal = principal;
+    this.hiveObj = hiveObj;
   }
 
   @Explain(displayName="principal desc", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public PrincipalDesc getPrincipalDesc() {
-    return principalDesc;
+    return principal;
   }
 
-  public void setPrincipalDesc(PrincipalDesc principalDesc) {
-    this.principalDesc = principalDesc;
-  }
-
-  @Explain(displayName="object", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(skipHeader = true,  explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public PrivilegeObjectDesc getHiveObj() {
     return hiveObj;
   }
 
-  public void setHiveObj(PrivilegeObjectDesc subjectObj) {
-    this.hiveObj = subjectObj;
-  }
-  
   public String getResFile() {
     return resFile;
-  }
-
-  public void setResFile(String resFile) {
-    this.resFile = resFile;
   }
 }
