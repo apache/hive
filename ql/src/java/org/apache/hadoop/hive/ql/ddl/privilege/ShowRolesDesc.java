@@ -16,49 +16,35 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.privilege;
 
 import java.io.Serializable;
 
-import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-
-@Explain(displayName = "Principal", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class PrincipalDesc implements Serializable, Cloneable {
-
+/**
+ * DDL task description for SHOW ROLES commands.
+ */
+@Explain(displayName = "Show Roles", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class ShowRolesDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
-  private String name;
+  public static final String SCHEMA = "role#string";
 
-  private PrincipalType type;
-
-  public PrincipalDesc(String name, PrincipalType type) {
-    super();
-    this.name = name;
-    this.type = type;
+  static {
+    DDLTask2.registerOperation(ShowRolesDesc.class, ShowRolesOperation.class);
   }
 
-  public PrincipalDesc() {
-    super();
+  private final String resFile;
+
+  public ShowRolesDesc(String resFile) {
+    this.resFile = resFile;
   }
 
-  @Explain(displayName="name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getName() {
-    return name;
+  public String getResFile() {
+    return resFile;
   }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  @Explain(displayName="type", explainLevels = { Level.EXTENDED })
-  public PrincipalType getType() {
-    return type;
-  }
-
-  public void setType(PrincipalType type) {
-    this.type = type;
-  }
-
 }

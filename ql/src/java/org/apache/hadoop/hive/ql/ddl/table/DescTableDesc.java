@@ -35,6 +35,14 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class DescTableDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
+  private static final String SCHEMA = "col_name,data_type,comment#string:string:string";
+  private static final String COL_STATS_SCHEMA = "col_name,data_type,min,max,num_nulls," +
+      "distinct_count,avg_col_len,max_col_len,num_trues,num_falses,bitVector,comment" +
+      "#string:string:string:string:string:string:string:string:string:string:string:string";
+  public static String getSchema(boolean colStats) {
+    return colStats ? COL_STATS_SCHEMA : SCHEMA;
+  }
+
   static {
     DDLTask2.registerOperation(DescTableDesc.class, DescTableOperation.class);
   }
@@ -81,20 +89,5 @@ public class DescTableDesc implements DDLDesc, Serializable {
 
   public boolean isFormatted() {
     return isFormatted;
-  }
-
-  /**
-   * thrift ddl for the result of describe table.
-   */
-  private static final String SCHEMA = "col_name,data_type,comment#string:string:string";
-  private static final String COL_STATS_SCHEMA = "col_name,data_type,min,max,num_nulls,"
-      + "distinct_count,avg_col_len,max_col_len,num_trues,num_falses,bitVector,comment"
-      + "#string:string:string:string:string:string:string:string:string:string:string:string";
-
-  public static String getSchema(boolean colStats) {
-    if (colStats) {
-      return COL_STATS_SCHEMA;
-    }
-    return SCHEMA;
   }
 }
