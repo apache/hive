@@ -1317,11 +1317,13 @@ public class SharedCache {
         //in case of retry, ignore second try.
         return;
       }
-      byte[] sdHash = tblWrapper.getSdHash();
-      if (sdHash != null) {
-        decrSd(sdHash);
+      if (tblWrapper != null) {
+        byte[] sdHash = tblWrapper.getSdHash();
+        if (sdHash != null) {
+          decrSd(sdHash);
+        }
+        isTableCacheDirty.set(true);
       }
-      isTableCacheDirty.set(true);
     } finally {
       cacheLock.writeLock().unlock();
     }
@@ -1438,25 +1440,30 @@ public class SharedCache {
 
   public void refreshTablesInCache(String catName, String dbName, List<Table> tables) {
     try {
-      cacheLock.writeLock().lock();
       if (isTableCacheDirty.compareAndSet(true, false)) {
         LOG.debug("Skipping table cache update; the table list we have is dirty.");
         return;
       }
-      Map<String, TableWrapper> newTableCache = new HashMap<>();
+      Map<String, TableWrapper> newCacheForDB = new TreeMap<>();
       for (Table tbl : tables) {
         String tblName = StringUtils.normalizeIdentifier(tbl.getTableName());
-        TableWrapper tblWrapper =
-            tableCache.get(CacheUtils.buildTableKey(catName, dbName, tblName));
+        TableWrapper tblWrapper = tableCache.get(CacheUtils.buildTableKey(catName, dbName, tblName));
         if (tblWrapper != null) {
           tblWrapper.updateTableObj(tbl, this);
         } else {
           tblWrapper = createTableWrapper(catName, dbName, tblName, tbl);
         }
-        newTableCache.put(CacheUtils.buildTableKey(catName, dbName, tblName), tblWrapper);
+        newCacheForDB.put(CacheUtils.buildTableKey(catName, dbName, tblName), tblWrapper);
       }
-      tableCache.clear();
-      tableCache = newTableCache;
+      cacheLock.writeLock().lock();
+      Iterator<Entry<String, TableWrapper>> entryIterator = tableCache.entrySet().iterator();
+      while (entryIterator.hasNext()) {
+        String key = entryIterator.next().getKey();
+        if (key.startsWith(CacheUtils.buildDbKeyWithDelimiterSuffix(catName, dbName))) {
+          entryIterator.remove();
+        }
+      }
+      tableCache.putAll(newCacheForDB);
     } finally {
       cacheLock.writeLock().unlock();
     }
