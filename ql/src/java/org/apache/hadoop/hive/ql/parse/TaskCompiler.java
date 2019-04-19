@@ -32,9 +32,12 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.alter.AlterMaterializedViewRewriteDesc;
 import org.apache.hadoop.hive.ql.ddl.table.CreateTableDesc;
-import org.apache.hadoop.hive.ql.exec.DDLTask;
+import org.apache.hadoop.hive.ql.ddl.table.CreateViewDesc;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MaterializedViewDesc;
@@ -61,8 +64,6 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContex
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
-import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
@@ -118,7 +119,7 @@ public abstract class TaskCompiler {
     this.console = console;
   }
 
-  @SuppressWarnings({"nls", "unchecked"})
+  @SuppressWarnings("nls")
   public void compile(final ParseContext pCtx,
       final List<Task<? extends Serializable>> rootTasks,
       final HashSet<ReadEntity> inputs, final HashSet<WriteEntity> outputs) throws SemanticException {
@@ -364,7 +365,7 @@ public abstract class TaskCompiler {
     } else if (pCtx.getQueryProperties().isMaterializedView()) {
       // generate a DDL task and make it a dependent task of the leaf
       CreateViewDesc viewDesc = pCtx.getCreateViewDesc();
-      Task<? extends Serializable> crtViewTask = TaskFactory.get(new DDLWork(
+      Task<? extends Serializable> crtViewTask = TaskFactory.get(new DDLWork2(
           inputs, outputs, viewDesc));
       patchUpAfterCTASorMaterializedView(rootTasks, outputs, crtViewTask, CollectionUtils.isEmpty(viewDesc.getPartColNames()));
     } else if (pCtx.getMaterializedViewUpdateDesc() != null) {
@@ -544,28 +545,26 @@ public abstract class TaskCompiler {
     }
 
     // Add task to insert / delete materialized view from registry if needed
-    if (createTask instanceof DDLTask) {
-      DDLTask ddlTask = (DDLTask) createTask;
-      DDLWork work = ddlTask.getWork();
-      String tableName = null;
-      boolean retrieveAndInclude = false;
-      boolean disableRewrite = false;
-      if (work.getCreateViewDesc() != null && work.getCreateViewDesc().isMaterialized()) {
-        tableName = work.getCreateViewDesc().getViewName();
-        retrieveAndInclude = work.getCreateViewDesc().isRewriteEnabled();
-      } else if (work.getAlterMaterializedViewDesc() != null) {
-        tableName = work.getAlterMaterializedViewDesc().getMaterializedViewName();
-        if (work.getAlterMaterializedViewDesc().isRewriteEnable()) {
-          retrieveAndInclude = true;
-        } else {
-          disableRewrite = true;
+    if (createTask instanceof DDLTask2) {
+      DDLTask2 ddlTask = (DDLTask2)createTask;
+      DDLWork2 work = ddlTask.getWork();
+      DDLDesc desc = work.getDDLDesc();
+      if (desc instanceof CreateViewDesc) {
+        CreateViewDesc createViewDesc = (CreateViewDesc)desc;
+        if (createViewDesc.isMaterialized()) {
+          String tableName = createViewDesc.getViewName();
+          boolean retrieveAndInclude = createViewDesc.isRewriteEnabled();
+          targetTask.addDependentTask(TaskFactory.get(
+              new MaterializedViewDesc(tableName, retrieveAndInclude, false, false), conf));
         }
-      } else {
-        return;
+      } else if (desc instanceof AlterMaterializedViewRewriteDesc) {
+        AlterMaterializedViewRewriteDesc alterMVRewriteDesc = (AlterMaterializedViewRewriteDesc)desc;
+        String tableName = alterMVRewriteDesc.getMaterializedViewName();
+        boolean retrieveAndInclude = alterMVRewriteDesc.isRewriteEnable();
+        boolean disableRewrite = !alterMVRewriteDesc.isRewriteEnable();
+        targetTask.addDependentTask(
+            TaskFactory.get(new MaterializedViewDesc(tableName, retrieveAndInclude, disableRewrite, false), conf));
       }
-      targetTask.addDependentTask(
-          TaskFactory.get(
-              new MaterializedViewDesc(tableName, retrieveAndInclude, disableRewrite, false), conf));
     }
   }
 
@@ -591,7 +590,6 @@ public abstract class TaskCompiler {
    * appropriate metadata to be used during execution.
    *
    */
-  @SuppressWarnings("unchecked")
   protected void genColumnStatsTask(AnalyzeRewriteContext analyzeRewrite,
       List<LoadFileDesc> loadFileWork, Map<String, StatsTask> map,
       int outerQueryLimit, int numBitVector) throws SemanticException {

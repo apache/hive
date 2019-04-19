@@ -24,7 +24,7 @@ import com.google.common.base.Objects;
 
 /**
  * Llap daemon JVM info. These are some additional metrics that are not exposed via
- * {@link org.apache.hadoop.metrics.jvm.JvmMetrics}
+ * {@link org.apache.hadoop.hive.common.JvmMetrics}
  *
  * NOTE: These metrics are for sinks supported by hadoop-metrics2. There is already a /jmx endpoint
  * that gives all these info.

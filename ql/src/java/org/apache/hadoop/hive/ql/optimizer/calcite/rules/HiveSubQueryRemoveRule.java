@@ -27,6 +27,7 @@ import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rex.LogicVisitor;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.rex.RexNode;
@@ -53,7 +54,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveSubQRemoveRelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.SubqueryConf;
@@ -83,6 +83,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
         HiveRelFactories.HIVE_BUILDER, "SubQueryRemoveRule:Filter");
     this.conf = conf;
   }
+  @Override
   public void onMatch(RelOptRuleCall call) {
     final RelNode relNode = call.rel(0);
     final HiveSubQRemoveRelBuilder builder =
@@ -105,15 +106,14 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
       SubqueryConf subqueryConfig = filter.getCluster().getPlanner().
           getContext().unwrap(SubqueryConf.class);
       boolean isCorrScalarQuery = subqueryConfig.getCorrScalarRexSQWithAgg().contains(e.rel);
-      boolean hasNoWindowingAndNoGby =
-          subqueryConfig.getScalarAggWithoutGbyWindowing().contains(e.rel);
 
-      final RexNode target = apply(e, HiveFilter.getVariablesSet(e), logic,
-          builder, 1, fieldCount, isCorrScalarQuery, hasNoWindowingAndNoGby);
+      final RexNode target = apply(call.getMetadataQuery(), e, HiveFilter.getVariablesSet(e), logic,
+          builder, 1, fieldCount, isCorrScalarQuery);
       final RexShuttle shuttle = new ReplaceSubQueryShuttle(e, target);
       builder.filter(shuttle.apply(filter.getCondition()));
       builder.project(fields(builder, filter.getRowType().getFieldCount()));
-      call.transformTo(builder.build());
+      RelNode newRel = builder.build();
+      call.transformTo(newRel);
     } else if(relNode instanceof Project) {
       // if subquery is in PROJECT
       final Project project = call.rel(0);
@@ -130,11 +130,9 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
       SubqueryConf subqueryConfig =
           project.getCluster().getPlanner().getContext().unwrap(SubqueryConf.class);
       boolean isCorrScalarQuery = subqueryConfig.getCorrScalarRexSQWithAgg().contains(e.rel);
-      boolean hasNoWindowingAndNoGby =
-          subqueryConfig.getScalarAggWithoutGbyWindowing().contains(e.rel);
 
-      final RexNode target = apply(e, HiveFilter.getVariablesSet(e),
-          logic, builder, 1, fieldCount, isCorrScalarQuery, hasNoWindowingAndNoGby);
+      final RexNode target = apply(call.getMetadataQuery(), e, HiveFilter.getVariablesSet(e),
+          logic, builder, 1, fieldCount, isCorrScalarQuery);
       final RexShuttle shuttle = new ReplaceSubQueryShuttle(e, target);
       builder.project(shuttle.apply(project.getProjects()),
           project.getRowType().getFieldNames());
@@ -164,23 +162,17 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
     return relAgg.getAggCallList().get(0).getType().getSqlTypeName();
   }
 
-  protected RexNode apply(RexSubQuery e, Set<CorrelationId> variablesSet,
-                          RelOptUtil.Logic logic,
-                          HiveSubQRemoveRelBuilder builder, int inputCount, int offset,
-                          boolean isCorrScalarAgg,
-                          boolean hasNoWindowingAndNoGby) {
+  protected RexNode apply(RelMetadataQuery mq, RexSubQuery e, Set<CorrelationId> variablesSet,
+      RelOptUtil.Logic logic,
+      HiveSubQRemoveRelBuilder builder, int inputCount, int offset,
+      boolean isCorrScalarAgg) {
     switch (e.getKind()) {
     case SCALAR_QUERY:
       // if scalar query has aggregate and no windowing and no gby avoid adding sq_count_check
       // since it is guaranteed to produce at most one row
-      if(!hasNoWindowingAndNoGby) {
-        final List<RexNode> parentQueryFields = new ArrayList<>();
-        if (conf.getBoolVar(ConfVars.HIVE_REMOVE_SQ_COUNT_CHECK)) {
-          // we want to have project after join since sq_count_check's count() expression wouldn't
-          // be needed further up
-          parentQueryFields.addAll(builder.fields());
-        }
-
+      Double maxRowCount = mq.getMaxRowCount(e.rel);
+      boolean shouldIntroSQCountCheck = maxRowCount== null || maxRowCount > 1.0;
+      if(shouldIntroSQCountCheck) {
         builder.push(e.rel);
         // returns single row/column
         builder.aggregate(builder.groupKey(), builder.count(false, "cnt"));
@@ -199,12 +191,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
         } else {
           builder.join(JoinRelType.INNER, builder.literal(true), variablesSet);
         }
-
-        if (conf.getBoolVar(ConfVars.HIVE_REMOVE_SQ_COUNT_CHECK)) {
-          builder.project(parentQueryFields);
-        } else {
-          offset++;
-        }
+        offset++;
       }
       if(isCorrScalarAgg) {
         // Transformation :
@@ -298,8 +285,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
 
       builder.push(e.rel);
       final List<RexNode> fields = new ArrayList<>();
-      switch (e.getKind()) {
-      case IN:
+      if(e.getKind() == SqlKind.IN) {
         fields.addAll(builder.fields());
         // Transformation: sq_count_check(count(*), true) FILTER is generated on top
         //  of subquery which is then joined (LEFT or INNER) with outer query
@@ -507,6 +493,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
     /** Returns whether a {@link Project} contains a sub-query. */
     public static final Predicate<RelNode> RELNODE_PREDICATE=
         new Predicate<RelNode>() {
+          @Override
           public boolean apply(RelNode relNode) {
             if (relNode instanceof Project) {
               Project project = (Project)relNode;

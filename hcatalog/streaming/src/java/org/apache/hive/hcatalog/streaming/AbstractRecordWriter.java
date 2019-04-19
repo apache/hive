@@ -54,7 +54,7 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * @deprecated as of Hive 3.0.0, replaced by {@link org.apache.hive.streaming.AbstractRecordWriter}
+ * @deprecated as of Hive 3.0.0, replaced by org.apache.hive.streaming.AbstractRecordWriter
  */
 @Deprecated
 public abstract class AbstractRecordWriter implements RecordWriter {

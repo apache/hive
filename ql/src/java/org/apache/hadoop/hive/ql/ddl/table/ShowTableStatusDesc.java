@@ -33,14 +33,11 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class ShowTableStatusDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
+  public static final String SCHEMA = "tab_name#string";
+
   static {
     DDLTask2.registerOperation(ShowTableStatusDesc.class, ShowTableStatusOperation.class);
   }
-
-  /**
-   * Thrift ddl for the result of show tables.
-   */
-  public static final String SCHEMA = "tab_name#string";
 
   private final String resFile;
   private final String dbName;

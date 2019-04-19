@@ -1522,6 +1522,11 @@ POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(14 AS INTEGER) AS `key`, `value`
+FROM (SELECT `value`
+FROM `default`.`pcr_t1`
+WHERE `ds` IN ('2000-04-08', '2000-04-09') AND `key` = 14
+ORDER BY `value`) AS `t1`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1712,6 +1717,10 @@ POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`
+FROM `default`.`pcr_t1`
+WHERE `ds` IN ('2000-04-08', '2000-04-09')
+ORDER BY `key`, `value`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1942,7 +1951,7 @@ POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`
 FROM `default`.`pcr_t1`
-WHERE `ds` >= '2000-04-08' OR `ds` IS NOT NULL
+WHERE `ds` >= '2000-04-08' OR `ds` < '2000-04-10'
 ORDER BY `key`, `value`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1954,7 +1963,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
-            filterExpr: ((ds >= '2000-04-08') or ds is not null) (type: boolean)
+            filterExpr: ((ds >= '2000-04-08') or (ds < '2000-04-10')) (type: boolean)
             Statistics: Num rows: 60 Data size: 5640 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
@@ -2241,6 +2250,10 @@ POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`
+FROM `default`.`pcr_t1`
+WHERE ROW(`key`, `ds`) IN (ROW(1, '2000-04-08'), ROW(2, '2000-04-09'))
+ORDER BY `key`, `value`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3055,6 +3068,10 @@ POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-11
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`
+FROM `default`.`pcr_t1`
+WHERE `ds` > '2000-04-08' AND `ds` < '2000-04-11' OR `ds` BETWEEN '2000-04-08' AND '2000-04-11' AND `key` = 2
+ORDER BY `key`, `value`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -5052,6 +5069,11 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
+FROM (SELECT `key`, `value`, `hr`
+FROM `default`.`srcpart`
+WHERE `hr` IN ('11', '12') AND `ds` = '2008-04-08' AND `key` = 11
+ORDER BY `key`, `hr`) AS `t1`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -34,7 +34,7 @@ public class HiveBurnInClient {
   /**
    * Creates 2 tables to query from
    *
-   * @param num
+   * @param con
    */
   public static void createTables(Connection con) throws SQLException {
     Statement stmt = con.createStatement();

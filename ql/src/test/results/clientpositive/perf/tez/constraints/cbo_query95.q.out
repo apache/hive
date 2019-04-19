@@ -103,7 +103,7 @@ HiveAggregate(group=[{}], agg#0=[count(DISTINCT $6)], agg#1=[sum($7)], agg#2=[su
               HiveFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($11), IS NOT NULL($13))])
                 HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
             HiveProject(d_date_sk=[$0], d_date=[$2])
-              HiveFilter(condition=[BETWEEN(false, CAST($2):TIMESTAMP(9), 1999-05-01 00:00:00, 1999-06-30 00:00:00)])
+              HiveFilter(condition=[BETWEEN(false, CAST($2):TIMESTAMP(9), 1999-05-01 00:00:00:TIMESTAMP(9), 1999-06-30 00:00:00:TIMESTAMP(9))])
                 HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
         HiveProject(web_site_sk=[$0])
           HiveFilter(condition=[=($14, _UTF-16LE'pri')])

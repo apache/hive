@@ -1069,10 +1069,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1_n2
-                  filterExpr: (CAST( name AS STRING) = 'Sales') (type: boolean)
+                  filterExpr: (name = 'Sales') (type: boolean)
                   Statistics: Num rows: 3 Data size: 291 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (CAST( name AS STRING) = 'Sales') (type: boolean)
+                    predicate: (name = 'Sales') (type: boolean)
                     Statistics: Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c (type: bigint)
@@ -1103,7 +1103,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: 'Sales' (type: varchar(256)), COALESCE(_col1,0) (type: bigint)
+                  expressions: 'Sales' (type: varchar(256)), COALESCE(_col1,0L) (type: bigint)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 97 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -1195,10 +1195,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1_n2
-                  filterExpr: (CAST( name AS STRING) = 'Sales') (type: boolean)
+                  filterExpr: (name = 'Sales') (type: boolean)
                   Statistics: Num rows: 3 Data size: 303 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (CAST( name AS STRING) = 'Sales') (type: boolean)
+                    predicate: (name = 'Sales') (type: boolean)
                     Statistics: Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: deptno (type: int), c (type: bigint)
@@ -1229,7 +1229,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: int), 'Sales' (type: varchar(256)), COALESCE(_col1,0) (type: bigint)
+                  expressions: _col0 (type: int), 'Sales' (type: varchar(256)), COALESCE(_col1,0L) (type: bigint)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator

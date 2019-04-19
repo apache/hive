@@ -34,17 +34,13 @@ public class DDLWork implements Serializable {
 
   // TODO: this can probably be replaced with much less code via dynamic dispatch and/or templates.
   private InsertCommitHookDesc insertCommitHookDesc;
-  private AlterMaterializedViewDesc alterMVDesc;
-  private CreateViewDesc createVwDesc;
   private DropPartitionDesc dropPartitionDesc;
   private AlterTableDesc alterTblDesc;
   private ShowColumnsDesc showColumnsDesc;
-  private ShowFunctionsDesc showFuncsDesc;
   private ShowLocksDesc showLocksDesc;
   private ShowCompactionsDesc showCompactionsDesc;
   private ShowTxnsDesc showTxnsDesc;
   private AbortTxnsDesc abortTxnsDesc;
-  private DescFunctionDesc descFunctionDesc;
   private ShowPartitionsDesc showPartsDesc;
   private AddPartitionDesc addPartitionDesc;
   private RenamePartitionDesc renamePartitionDesc;
@@ -53,12 +49,6 @@ public class DDLWork implements Serializable {
   private AlterTableAlterPartDesc alterTableAlterPartDesc;
   private AlterTableExchangePartition alterTableExchangePartition;
   private KillQueryDesc killQueryDesc;
-
-  private RoleDDLDesc roleDDLDesc;
-  private GrantDesc grantDesc;
-  private ShowGrantDesc showGrantDesc;
-  private RevokeDesc revokeDesc;
-  private GrantRevokeRoleDDL grantRevokeRoleDDL;
 
   private ShowConfDesc showConfDesc;
 
@@ -118,31 +108,6 @@ public class DDLWork implements Serializable {
     this.alterTblDesc = alterTblDesc;
   }
 
-  /**
-   * @param alterMVDesc
-   *          alter materialized view descriptor
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      AlterMaterializedViewDesc alterMVDesc) {
-    this(inputs, outputs);
-    this.alterMVDesc = alterMVDesc;
-  }
-
-  /**
-   * @param createVwDesc
-   *          create view descriptor
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      CreateViewDesc createVwDesc) {
-    this(inputs, outputs);
-
-    this.createVwDesc = createVwDesc;
-  }
-
-  /**
-   * @param dropTblDesc
-   *          drop table descriptor
-   */
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       DropPartitionDesc dropPartitionDesc) {
     this(inputs, outputs);
@@ -158,16 +123,6 @@ public class DDLWork implements Serializable {
     this(inputs, outputs);
 
     this.showColumnsDesc = showColumnsDesc;
-  }
-
-  /**
-   * @param showFuncsDesc
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      ShowFunctionsDesc showFuncsDesc) {
-    this(inputs, outputs);
-
-    this.showFuncsDesc = showFuncsDesc;
   }
 
   /**
@@ -196,16 +151,6 @@ public class DDLWork implements Serializable {
                  AbortTxnsDesc abortTxnsDesc) {
     this(inputs, outputs);
     this.abortTxnsDesc = abortTxnsDesc;
-  }
-
-   /**
-   * @param descFuncDesc
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      DescFunctionDesc descFuncDesc) {
-    this(inputs, outputs);
-
-    descFunctionDesc = descFuncDesc;
   }
 
   /**
@@ -257,36 +202,6 @@ public class DDLWork implements Serializable {
     this(inputs, outputs);
 
     msckDesc = checkDesc;
-  }
-
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      RoleDDLDesc roleDDLDesc) {
-    this(inputs, outputs);
-    this.roleDDLDesc = roleDDLDesc;
-  }
-
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      GrantDesc grantDesc) {
-    this(inputs, outputs);
-    this.grantDesc = grantDesc;
-  }
-
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      ShowGrantDesc showGrant) {
-    this(inputs, outputs);
-    this.showGrantDesc = showGrant;
-  }
-
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      RevokeDesc revokeDesc) {
-    this(inputs, outputs);
-    this.revokeDesc = revokeDesc;
-  }
-
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      GrantRevokeRoleDDL grantRevokeRoleDDL) {
-    this(inputs, outputs);
-    this.grantRevokeRoleDDL = grantRevokeRoleDDL;
   }
 
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
@@ -405,14 +320,6 @@ public class DDLWork implements Serializable {
   }
 
   /**
-   * @return the createTblDesc
-   */
-  @Explain(displayName = "Create View Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public CreateViewDesc getCreateViewDesc() {
-    return createVwDesc;
-  }
-
-  /**
    * @return the dropTblDesc
    */
   @Explain(displayName = "Drop Partition Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -428,29 +335,12 @@ public class DDLWork implements Serializable {
     return alterTblDesc;
   }
 
-
-  /**
-   * @return the alterMVDesc
-   */
-  @Explain(displayName = "Alter Materialized View Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public AlterMaterializedViewDesc getAlterMaterializedViewDesc() {
-    return alterMVDesc;
-  }
-
   /**
    * @return the showColumnsDesc
    */
   @Explain(displayName = "Show Columns Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public ShowColumnsDesc getShowColumnsDesc() {
     return showColumnsDesc;
-  }
-
-  /**
-   * @return the showFuncsDesc
-   */
-  @Explain(displayName = "Show Function Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public ShowFunctionsDesc getShowFuncsDesc() {
-    return showFuncsDesc;
   }
 
   /**
@@ -474,14 +364,6 @@ public class DDLWork implements Serializable {
   @Explain(displayName = "Abort Transactions Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public AbortTxnsDesc getAbortTxnsDesc() {
     return abortTxnsDesc;
-  }
-
-  /**
-   * @return the descFuncDesc
-   */
-  @Explain(displayName = "Show Function Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public DescFunctionDesc getDescFunctionDesc() {
-    return descFunctionDesc;
   }
 
   @Explain(displayName = "Kill Query Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -532,35 +414,6 @@ public class DDLWork implements Serializable {
 
   public HashSet<WriteEntity> getOutputs() {
     return outputs;
-  }
-
-  /**
-   * @return role ddl desc
-   */
-  public RoleDDLDesc getRoleDDLDesc() {
-    return roleDDLDesc;
-  }
-
-  /**
-   * @return grant desc
-   */
-  public GrantDesc getGrantDesc() {
-    return grantDesc;
-  }
-
-  /**
-   * @return show grant desc
-   */
-  public ShowGrantDesc getShowGrantDesc() {
-    return showGrantDesc;
-  }
-
-  public RevokeDesc getRevokeDesc() {
-    return revokeDesc;
-  }
-
-  public GrantRevokeRoleDDL getGrantRevokeRoleDDL() {
-    return grantRevokeRoleDDL;
   }
 
   /**

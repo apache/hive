@@ -43,7 +43,7 @@ public class OpenTxnEvent extends ListenerEvent {
   }
 
   /**
-   * @return List<Long> txnIds
+   * @return List&lt;Long&gt; txnIds
    */
   public List<Long> getTxnIds() {
     return txnIds;

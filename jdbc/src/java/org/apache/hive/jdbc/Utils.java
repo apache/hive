@@ -307,8 +307,8 @@ public class Utils {
   /**
    * Parse JDBC connection URL
    * The new format of the URL is:
-   * jdbc:hive2://<host1>:<port1>,<host2>:<port2>/dbName;sess_var_list?hive_conf_list#hive_var_list
-   * where the optional sess, conf and var lists are semicolon separated <key>=<val> pairs.
+   * jdbc:hive2://&lt;host1&gt;:&lt;port1&gt;,&lt;host2&gt;:&lt;port2&gt;/dbName;sess_var_list?hive_conf_list#hive_var_list
+   * where the optional sess, conf and var lists are semicolon separated &lt;key&gt;=&lt;val&gt; pairs.
    * For utilizing dynamic service discovery with HiveServer2 multiple comma separated host:port pairs can
    * be specified as shown above.
    * The JDBC driver resolves the list of uris and picks a specific server instance to connect to.
@@ -451,6 +451,17 @@ public class Utils {
       if (info.containsKey(JdbcConnectionParams.AUTH_PASSWD)) {
         connParams.getSessionVars().put(JdbcConnectionParams.AUTH_PASSWD,
             info.getProperty(JdbcConnectionParams.AUTH_PASSWD));
+      }
+    }
+
+    if (!connParams.getSessionVars().containsKey(JdbcConnectionParams.AUTH_PASSWD)) {
+      if (info.containsKey(JdbcConnectionParams.AUTH_USER)) {
+        connParams.getSessionVars().put(JdbcConnectionParams.AUTH_USER,
+                info.getProperty(JdbcConnectionParams.AUTH_USER));
+      }
+      if (info.containsKey(JdbcConnectionParams.AUTH_PASSWD)) {
+        connParams.getSessionVars().put(JdbcConnectionParams.AUTH_PASSWD,
+                info.getProperty(JdbcConnectionParams.AUTH_PASSWD));
       }
     }
 

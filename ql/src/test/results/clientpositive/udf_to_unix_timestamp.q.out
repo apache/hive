@@ -105,10 +105,10 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          filterExpr: (to_unix_timestamp(key) > 10) (type: boolean)
+          filterExpr: (to_unix_timestamp(key) > 10L) (type: boolean)
           Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
-            predicate: (to_unix_timestamp(key) > 10) (type: boolean)
+            predicate: (to_unix_timestamp(key) > 10L) (type: boolean)
             Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string), value (type: string)
@@ -134,10 +134,10 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          filterExpr: (to_unix_timestamp(key) > 10) (type: boolean)
+          filterExpr: (to_unix_timestamp(key) > 10L) (type: boolean)
           Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
-            predicate: (to_unix_timestamp(key) > 10) (type: boolean)
+            predicate: (to_unix_timestamp(key) > 10L) (type: boolean)
             Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string), value (type: string)

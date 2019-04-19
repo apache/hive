@@ -26,7 +26,7 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc_n4 where c="apple"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc_n4
 #### A masked pattern was here ####
--252951929000
+604329584500
 PREHOOK: query: select sum(hash(*)) from newtypesorc_n4 where c="apple"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc_n4
@@ -35,7 +35,7 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc_n4 where c="apple"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc_n4
 #### A masked pattern was here ####
--252951929000
+604329584500
 PREHOOK: query: select sum(hash(*)) from newtypesorc_n4 where c!="apple"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc_n4
@@ -98,7 +98,7 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc_n4 where c="apple "
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc_n4
 #### A masked pattern was here ####
--252951929000
+604329584500
 PREHOOK: query: select sum(hash(*)) from newtypesorc_n4 where c="apple "
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc_n4
@@ -107,7 +107,7 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc_n4 where c="apple "
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc_n4
 #### A masked pattern was here ####
--252951929000
+604329584500
 PREHOOK: query: select sum(hash(*)) from newtypesorc_n4 where c in ("apple", "carrot")
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc_n4

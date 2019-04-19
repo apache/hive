@@ -260,10 +260,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cart_history
-            filterExpr: s is not null (type: boolean)
+            filterExpr: (s is not null and time is not null) (type: boolean)
             Statistics: Num rows: 6 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: s is not null (type: boolean)
+              predicate: (s is not null and time is not null) (type: boolean)
               Statistics: Num rows: 6 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: s (type: string), time (type: int)
@@ -277,10 +277,10 @@ STAGE PLANS:
                   value expressions: _col1 (type: int)
           TableScan
             alias: purchase_history
-            filterExpr: s is not null (type: boolean)
+            filterExpr: (s is not null and time is not null) (type: boolean)
             Statistics: Num rows: 4 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: s is not null (type: boolean)
+              predicate: (s is not null and time is not null) (type: boolean)
               Statistics: Num rows: 4 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: s (type: string), time (type: int)
@@ -495,10 +495,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cart_history
-            filterExpr: s is not null (type: boolean)
+            filterExpr: (s is not null and time is not null) (type: boolean)
             Statistics: Num rows: 6 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: s is not null (type: boolean)
+              predicate: (s is not null and time is not null) (type: boolean)
               Statistics: Num rows: 6 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: s (type: string), time (type: int)
@@ -512,10 +512,10 @@ STAGE PLANS:
                   value expressions: _col1 (type: int)
           TableScan
             alias: purchase_history
-            filterExpr: s is not null (type: boolean)
+            filterExpr: (s is not null and time is not null) (type: boolean)
             Statistics: Num rows: 4 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: s is not null (type: boolean)
+              predicate: (s is not null and time is not null) (type: boolean)
               Statistics: Num rows: 4 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: s (type: string), time (type: int)

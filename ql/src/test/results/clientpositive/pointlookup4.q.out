@@ -271,6 +271,10 @@ POSTHOOK: Input: default@pcr_t1_n0
 POSTHOOK: Input: default@pcr_t1_n0@ds1=2000-04-08/ds2=2001-04-08
 POSTHOOK: Input: default@pcr_t1_n0@ds1=2000-04-09/ds2=2001-04-09
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, `ds1`, `ds2`
+FROM `default`.`pcr_t1_n0`
+WHERE ROW(`key`, `ds1`, `ds2`) IN (ROW(1, '2000-04-08', '2001-04-08'), ROW(2, '2000-04-09', '2001-04-09'))
+ORDER BY `key`, `value`, `ds1`, `ds2`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

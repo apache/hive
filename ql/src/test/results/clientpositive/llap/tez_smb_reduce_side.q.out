@@ -87,20 +87,24 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
-                  Group By Operator
-                    aggregations: count(value)
-                    keys: key (type: string)
-                    minReductionHashAggr: 0.0
-                    mode: hash
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count(value)
+                      keys: key (type: string)
+                      minReductionHashAggr: 0.0
+                      mode: hash
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col1 (type: bigint)
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
@@ -697,15 +701,15 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col2, _col3, _col5
                 Statistics: Num rows: 5 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: CASE WHEN ((_col2 = 0L)) THEN (true) WHEN (_col2 is null) THEN (true) WHEN (_col5 is not null) THEN (false) WHEN (_col0 is null) THEN (null) WHEN ((_col3 < _col2)) THEN (false) ELSE (true) END (type: boolean)
-                  Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                  predicate: (((_col3 < _col2) is not true or (_col2 = 0L) or _col2 is null or _col5 is not null or _col0 is null) and (_col0 is not null or (_col2 = 0L) or _col2 is null or _col5 is not null) and (_col5 is null or (_col2 = 0L) or _col2 is null)) (type: boolean)
+                  Statistics: Num rows: 5 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -920,15 +924,15 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col2, _col3, _col5
                 Statistics: Num rows: 5 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: CASE WHEN ((_col2 = 0L)) THEN (true) WHEN (_col2 is null) THEN (true) WHEN (_col5 is not null) THEN (false) WHEN (_col0 is null) THEN (null) WHEN ((_col3 < _col2)) THEN (false) ELSE (true) END (type: boolean)
-                  Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                  predicate: (((_col3 < _col2) is not true or (_col2 = 0L) or _col2 is null or _col5 is not null or _col0 is null) and (_col0 is not null or (_col2 = 0L) or _col2 is null or _col5 is not null) and (_col5 is null or (_col2 = 0L) or _col2 is null)) (type: boolean)
+                  Statistics: Num rows: 5 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

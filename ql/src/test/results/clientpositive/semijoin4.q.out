@@ -90,10 +90,10 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: t2
-            filterExpr: ((tinyint_col_21 = -92Y) and tinyint_col_18 is not null and decimal2709_col_9 is not null) (type: boolean)
+            filterExpr: ((tinyint_col_21 = -92Y) and UDFToLong(tinyint_col_18) is not null and decimal2709_col_9 is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((tinyint_col_21 = -92Y) and decimal2709_col_9 is not null and tinyint_col_18 is not null) (type: boolean)
+              predicate: ((tinyint_col_21 = -92Y) and UDFToLong(tinyint_col_18) is not null and decimal2709_col_9 is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: decimal2709_col_9 (type: decimal(27,9)), UDFToLong(tinyint_col_18) (type: bigint)

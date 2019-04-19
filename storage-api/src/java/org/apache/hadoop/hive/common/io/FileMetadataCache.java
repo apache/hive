@@ -57,8 +57,6 @@ public interface FileMetadataCache {
   /**
    * Puts the metadata for a given file (e.g. a footer buffer into cache).
    * @param fileKey The file key.
-   * @param length The footer length.
-   * @param is The stream to read the footer from.
    * @return The buffer or buffers representing the cached footer.
    *         The caller must decref this buffer when done.
    */

@@ -247,11 +247,15 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s3
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
-                  Select Operator
-                    expressions: key (type: int), value (type: string), ds (type: string)
-                    outputColumnNames: _col0, _col1, _col2
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
+                    Select Operator
+                      expressions: key (type: int), value (type: string), ds (type: string)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
             Map Operator Tree:
                 TableScan
                   alias: s1

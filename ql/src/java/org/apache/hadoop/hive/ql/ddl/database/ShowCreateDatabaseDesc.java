@@ -33,17 +33,14 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class ShowCreateDatabaseDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
+  public static final String SCHEMA = "createdb_stmt#string";
+
   static {
     DDLTask2.registerOperation(ShowCreateDatabaseDesc.class, ShowCreateDatabaseOperation.class);
   }
 
   private final String resFile;
   private final String dbName;
-
-  /**
-   * Thrift ddl for the result of showcreatedatabase.
-   */
-  public static final String SCHEMA = "createdb_stmt#string";
 
   public ShowCreateDatabaseDesc(String dbName, String resFile) {
     this.dbName = dbName;

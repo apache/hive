@@ -1372,12 +1372,11 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-1
-      Create View Operator:
-        Create View
-          columns: key string, value string
-          expanded text: select distinct `src`.`key`, `src`.`value` from `default`.`src` order by `src`.`key` limit 2
-          name: default.sdi
-          original text: select distinct * from src order by key limit 2
+    Create View
+      columns: key string, value string
+      expanded text: select distinct `src`.`key`, `src`.`value` from `default`.`src` order by `src`.`key` limit 2
+      name: default.sdi
+      original text: select distinct * from src order by key limit 2
 
 PREHOOK: query: create view sdi as select distinct * from src order by key limit 2
 PREHOOK: type: CREATEVIEW
@@ -3858,12 +3857,11 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-1
-      Create View Operator:
-        Create View
-          columns: key string, value string
-          expanded text: select distinct `src`.`key`, `src`.`value` from `default`.`src` order by `src`.`key` limit 2
-          name: default.sdi
-          original text: select distinct * from src order by key limit 2
+    Create View
+      columns: key string, value string
+      expanded text: select distinct `src`.`key`, `src`.`value` from `default`.`src` order by `src`.`key` limit 2
+      name: default.sdi
+      original text: select distinct * from src order by key limit 2
 
 PREHOOK: query: create view sdi as select distinct * from src order by key limit 2
 PREHOOK: type: CREATEVIEW

@@ -41,7 +41,7 @@ import java.util.NoSuchElementException;
  * As an example, here's the wordcount reduce:
  * 
  * new GenericMR().reduce(System.in, System.out, new Reducer() { public void
- * reduce(String key, Iterator<String[]> records, Output output) throws
+ * reduce(String key, Iterator&lt;String[]&gt; records, Output output) throws
  * Exception { int count = 0;
  * 
  * while (records.hasNext()) { count += Integer.parseInt(records.next()[1]); }

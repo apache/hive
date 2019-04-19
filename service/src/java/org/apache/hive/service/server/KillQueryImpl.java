@@ -162,7 +162,7 @@ public class KillQueryImpl implements KillQuery {
             killChildYarnJobs(conf, queryTag);
           } else {
             // no privilege to cancel
-            throw new HiveSQLException("No privilege");
+            throw new HiveSQLException("No privilege to kill query id");
           }
           break;
         case TAG:
@@ -174,7 +174,7 @@ public class KillQueryImpl implements KillQuery {
           }
           killChildYarnJobs(conf, queryIdOrTag);
           if (numCanceled == 0) {
-            throw new HiveSQLException("No privilege");
+            throw new HiveSQLException("No privilege to kill query tag");
           }
           break;
         case UNKNOWN:

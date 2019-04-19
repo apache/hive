@@ -1312,6 +1312,19 @@ public class TestJdbcWithMiniHS2 {
     assertEquals(3, res.getInt(1));
     assertFalse("no more results", res.next());
 
+    //try creating same function again which should fail with AlreadyExistsException
+    String createSameFunctionAgain =
+            "CREATE FUNCTION example_add AS '" + testUdfClassName + "' USING JAR '" + jarFilePath + "'";
+    try {
+      stmt.execute(createSameFunctionAgain);
+    }catch (Exception e){
+      assertTrue("recreating same function failed with AlreadyExistsException ", e.getMessage().contains("AlreadyExistsException"));
+    }
+
+    // Call describe to see if function still available in registry
+    res = stmt.executeQuery("DESCRIBE FUNCTION " + testDbName + ".example_add");
+    checkForNotExist(res);
+
     // A new connection should be able to call describe/use function without issue
     Connection conn2 = getConnection(testDbName);
     Statement stmt2 = conn2.createStatement();

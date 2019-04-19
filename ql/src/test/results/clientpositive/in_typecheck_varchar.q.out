@@ -36,10 +36,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ax
-            filterExpr: ((CAST( s AS STRING) = 'a') and (CAST( t AS STRING) = 'a')) (type: boolean)
+            filterExpr: ((s = 'a') and (t = 'a')) (type: boolean)
             Statistics: Num rows: 3 Data size: 513 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((CAST( s AS STRING) = 'a') and (CAST( t AS STRING) = 'a')) (type: boolean)
+              predicate: ((s = 'a') and (t = 'a')) (type: boolean)
               Statistics: Num rows: 1 Data size: 171 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 Statistics: Num rows: 1 Data size: 171 Basic stats: COMPLETE Column stats: COMPLETE
@@ -107,10 +107,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ax
-            filterExpr: (struct(CAST( s AS STRING),CAST( t AS STRING))) IN (const struct('a','a'), const struct('b','bb')) (type: boolean)
+            filterExpr: (struct(s,t)) IN (const struct('a','a'), const struct('b','bb')) (type: boolean)
             Statistics: Num rows: 3 Data size: 513 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (struct(CAST( s AS STRING),CAST( t AS STRING))) IN (const struct('a','a'), const struct('b','bb')) (type: boolean)
+              predicate: (struct(s,t)) IN (const struct('a','a'), const struct('b','bb')) (type: boolean)
               Statistics: Num rows: 1 Data size: 171 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 Statistics: Num rows: 1 Data size: 171 Basic stats: COMPLETE Column stats: COMPLETE
@@ -124,7 +124,6 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint)
-      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
