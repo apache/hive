@@ -34,25 +34,13 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class ShowTablesDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
+  private static final String TABLES_VIEWS_SCHEMA = "tab_name#string";
+  private static final String EXTENDED_TABLES_SCHEMA = "tab_name,table_type#string,string";
+  private static final String MATERIALIZED_VIEWS_SCHEMA = "mv_name,rewrite_enabled,mode#string:string:string";
+
   static {
     DDLTask2.registerOperation(ShowTablesDesc.class, ShowTablesOperation.class);
   }
-
-  /**
-   * thrift ddl for the result of show tables and show views.
-   */
-  private static final String TABLES_VIEWS_SCHEMA = "tab_name#string";
-
-  /**
-   * thrift ddl for the result of show extended tables.
-   */
-  private static final String EXTENDED_TABLES_SCHEMA = "tab_name,table_type#string,string";
-
-  /**
-   * thrift ddl for the result of show tables.
-   */
-  private static final String MATERIALIZED_VIEWS_SCHEMA =
-      "mv_name,rewrite_enabled,mode#string:string:string";
 
   private final String resFile;
   private final String dbName;

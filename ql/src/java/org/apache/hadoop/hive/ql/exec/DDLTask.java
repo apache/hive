@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -44,7 +43,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
@@ -70,7 +68,6 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
@@ -149,8 +146,6 @@ import org.apache.hadoop.hive.ql.plan.DropWMMappingDesc;
 import org.apache.hadoop.hive.ql.plan.DropWMPoolDesc;
 import org.apache.hadoop.hive.ql.plan.DropWMTriggerDesc;
 import org.apache.hadoop.hive.ql.plan.FileMergeDesc;
-import org.apache.hadoop.hive.ql.plan.GrantDesc;
-import org.apache.hadoop.hive.ql.plan.GrantRevokeRoleDDL;
 import org.apache.hadoop.hive.ql.plan.InsertCommitHookDesc;
 import org.apache.hadoop.hive.ql.plan.KillQueryDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
@@ -159,18 +154,12 @@ import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.OrcFileMergeDesc;
-import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
-import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
-import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
 import org.apache.hadoop.hive.ql.plan.RCFileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ReplRemoveFirstIncLoadPendFlagDesc;
-import org.apache.hadoop.hive.ql.plan.RevokeDesc;
-import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowCompactionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowConfDesc;
-import org.apache.hadoop.hive.ql.plan.ShowGrantDesc;
 import org.apache.hadoop.hive.ql.plan.ShowLocksDesc;
 import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowResourcePlanDesc;
@@ -178,17 +167,6 @@ import org.apache.hadoop.hive.ql.plan.ShowTxnsDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
-import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationTranslator;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizationTranslator;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilege;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeInfo;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRoleGrant;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveV1Authorizer;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.wm.ExecutionTrigger;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -231,7 +209,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private static String INTERMEDIATE_EXTRACTED_DIR_SUFFIX;
 
   private MetaDataFormatter formatter;
-  private final HiveAuthorizationTranslator defaultAuthorizationTranslator = new DefaultHiveAuthorizationTranslator();
 
   @Override
   public boolean requireLock() {
@@ -353,35 +330,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       ShowConfDesc showConf = work.getShowConfDesc();
       if (showConf != null) {
         return showConf(db, showConf);
-      }
-
-      RoleDDLDesc roleDDLDesc = work.getRoleDDLDesc();
-      if (roleDDLDesc != null) {
-        return roleDDL(db, roleDDLDesc);
-      }
-
-      GrantDesc grantDesc = work.getGrantDesc();
-      if (grantDesc != null) {
-        return grantOrRevokePrivileges(db, grantDesc.getPrincipals(), grantDesc
-            .getPrivileges(), grantDesc.getPrivilegeSubjectDesc(), grantDesc.getGrantor(),
-            grantDesc.getGrantorType(), grantDesc.isGrantOption(), true);
-      }
-
-      RevokeDesc revokeDesc = work.getRevokeDesc();
-      if (revokeDesc != null) {
-        return grantOrRevokePrivileges(db, revokeDesc.getPrincipals(), revokeDesc
-            .getPrivileges(), revokeDesc.getPrivilegeSubjectDesc(), null, null,
-            revokeDesc.isGrantOption(), false);
-      }
-
-      ShowGrantDesc showGrantDesc = work.getShowGrantDesc();
-      if (showGrantDesc != null) {
-        return showGrants(db, showGrantDesc);
-      }
-
-      GrantRevokeRoleDDL grantOrRevokeRoleDDL = work.getGrantRevokeRoleDDL();
-      if (grantOrRevokeRoleDDL != null) {
-        return grantOrRevokeRole(db, grantOrRevokeRoleDDL);
       }
 
       AlterTablePartMergeFilesDesc mergeFilesDesc = work.getMergeFilesDesc();
@@ -813,165 +761,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       setException(subtask.getException());
     }
     return ret;
-  }
-
-  private HiveAuthorizer getSessionAuthorizer(Hive db) {
-    HiveAuthorizer authorizer = SessionState.get().getAuthorizerV2();
-    if (authorizer == null) {
-      authorizer = new HiveV1Authorizer(conf, db);
-    }
-    return authorizer;
-  }
-
-  private int grantOrRevokeRole(Hive db, GrantRevokeRoleDDL grantOrRevokeRoleDDL)
-      throws HiveException {
-    HiveAuthorizer authorizer = getSessionAuthorizer(db);
-    //convert to the types needed for plugin api
-    HivePrincipal grantorPrinc = null;
-    if(grantOrRevokeRoleDDL.getGrantor() != null){
-      grantorPrinc = new HivePrincipal(grantOrRevokeRoleDDL.getGrantor(),
-          AuthorizationUtils.getHivePrincipalType(grantOrRevokeRoleDDL.getGrantorType()));
-    }
-    List<HivePrincipal> principals = AuthorizationUtils.getHivePrincipals(
-        grantOrRevokeRoleDDL.getPrincipalDesc(), getAuthorizationTranslator(authorizer));
-    List<String> roles = grantOrRevokeRoleDDL.getRoles();
-
-    boolean grantOption = grantOrRevokeRoleDDL.isGrantOption();
-    if (grantOrRevokeRoleDDL.getGrant()) {
-      authorizer.grantRole(principals, roles, grantOption, grantorPrinc);
-    } else {
-      authorizer.revokeRole(principals, roles, grantOption, grantorPrinc);
-    }
-    return 0;
-  }
-
-  private HiveAuthorizationTranslator getAuthorizationTranslator(HiveAuthorizer authorizer)
-      throws HiveAuthzPluginException {
-    if (authorizer.getHiveAuthorizationTranslator() == null) {
-      return defaultAuthorizationTranslator;
-    } else {
-      return (HiveAuthorizationTranslator)authorizer.getHiveAuthorizationTranslator();
-    }
-  }
-
-  private int showGrants(Hive db, ShowGrantDesc showGrantDesc) throws HiveException {
-
-    HiveAuthorizer authorizer = getSessionAuthorizer(db);
-    try {
-      List<HivePrivilegeInfo> privInfos = authorizer.showPrivileges(
-          getAuthorizationTranslator(authorizer).getHivePrincipal(showGrantDesc.getPrincipalDesc()),
-          getAuthorizationTranslator(authorizer).getHivePrivilegeObject(showGrantDesc.getHiveObj()));
-      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
-      writeToFile(writeGrantInfo(privInfos, testMode), showGrantDesc.getResFile());
-    } catch (IOException e) {
-      throw new HiveException("Error in show grant statement", e);
-    }
-    return 0;
-  }
-
-  private int grantOrRevokePrivileges(Hive db, List<PrincipalDesc> principals,
-      List<PrivilegeDesc> privileges, PrivilegeObjectDesc privSubjectDesc,
-      String grantor, PrincipalType grantorType, boolean grantOption, boolean isGrant)
-          throws HiveException {
-
-    HiveAuthorizer authorizer = getSessionAuthorizer(db);
-
-    //Convert to object types used by the authorization plugin interface
-    List<HivePrincipal> hivePrincipals = AuthorizationUtils.getHivePrincipals(
-        principals, getAuthorizationTranslator(authorizer));
-    List<HivePrivilege> hivePrivileges = AuthorizationUtils.getHivePrivileges(
-        privileges, getAuthorizationTranslator(authorizer));
-    HivePrivilegeObject hivePrivObject = getAuthorizationTranslator(authorizer)
-        .getHivePrivilegeObject(privSubjectDesc);
-
-    HivePrincipal grantorPrincipal = new HivePrincipal(
-        grantor, AuthorizationUtils.getHivePrincipalType(grantorType));
-
-    if(isGrant){
-      authorizer.grantPrivileges(hivePrincipals, hivePrivileges, hivePrivObject,
-          grantorPrincipal, grantOption);
-    }else {
-      authorizer.revokePrivileges(hivePrincipals, hivePrivileges,
-          hivePrivObject, grantorPrincipal, grantOption);
-    }
-    //no exception thrown, so looks good
-    return 0;
-  }
-
-  private int roleDDL(Hive db, RoleDDLDesc roleDDLDesc) throws Exception {
-    HiveAuthorizer authorizer = getSessionAuthorizer(db);
-    RoleDDLDesc.RoleOperation operation = roleDDLDesc.getOperation();
-    //call the appropriate hive authorizer function
-    switch(operation){
-    case CREATE_ROLE:
-      authorizer.createRole(roleDDLDesc.getName(), null);
-      break;
-    case DROP_ROLE:
-      authorizer.dropRole(roleDDLDesc.getName());
-      break;
-    case SHOW_ROLE_GRANT:
-      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
-      List<HiveRoleGrant> roles = authorizer.getRoleGrantInfoForPrincipal(
-          AuthorizationUtils.getHivePrincipal(roleDDLDesc.getName(), roleDDLDesc.getPrincipalType()));
-      writeToFile(writeRolesGrantedInfo(roles, testMode), roleDDLDesc.getResFile());
-      break;
-    case SHOW_ROLES:
-      List<String> allRoles = authorizer.getAllRoles();
-      writeListToFileAfterSort(allRoles, roleDDLDesc.getResFile());
-      break;
-    case SHOW_CURRENT_ROLE:
-      List<String> roleNames = authorizer.getCurrentRoleNames();
-      writeListToFileAfterSort(roleNames, roleDDLDesc.getResFile());
-      break;
-    case SET_ROLE:
-      authorizer.setCurrentRole(roleDDLDesc.getName());
-      break;
-    case SHOW_ROLE_PRINCIPALS:
-      testMode = conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
-      List<HiveRoleGrant> roleGrants = authorizer.getPrincipalGrantInfoForRole(roleDDLDesc.getName());
-      writeToFile(writeHiveRoleGrantInfo(roleGrants, testMode), roleDDLDesc.getResFile());
-      break;
-    default:
-      throw new HiveException("Unkown role operation "
-          + operation.getOperationName());
-    }
-
-    return 0;
-  }
-
-  private String writeHiveRoleGrantInfo(List<HiveRoleGrant> roleGrants, boolean testMode) {
-    if (roleGrants == null || roleGrants.isEmpty()) {
-      return "";
-    }
-    StringBuilder builder = new StringBuilder();
-    // sort the list to get sorted (deterministic) output (for ease of testing)
-    Collections.sort(roleGrants);
-    for (HiveRoleGrant roleGrant : roleGrants) {
-      // schema:
-      // principal_name,principal_type,grant_option,grantor,grantor_type,grant_time
-      appendNonNull(builder, roleGrant.getPrincipalName(), true);
-      appendNonNull(builder, roleGrant.getPrincipalType());
-      appendNonNull(builder, roleGrant.isGrantOption());
-      appendNonNull(builder, roleGrant.getGrantor());
-      appendNonNull(builder, roleGrant.getGrantorType());
-      appendNonNull(builder, testMode ? -1 : roleGrant.getGrantTime() * 1000L);
-    }
-    return builder.toString();
-  }
-
-  /**
-   * Write list of string entries into given file
-   * @param entries
-   * @param resFile
-   * @throws IOException
-   */
-  private void writeListToFileAfterSort(List<String> entries, String resFile) throws IOException {
-    Collections.sort(entries);
-    StringBuilder sb = new StringBuilder();
-    for(String entry : entries){
-      appendNonNull(sb, entry, true);
-    }
-    writeToFile(sb.toString(), resFile);
   }
 
   /**
@@ -2317,93 +2106,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
     LOG.info("kill query called ({})", desc.getQueryIds());
     return 0;
-  }
-
-  private void writeToFile(String data, String file) throws IOException {
-    Path resFile = new Path(file);
-    FileSystem fs = resFile.getFileSystem(conf);
-    FSDataOutputStream out = fs.create(resFile);
-    try {
-      if (data != null && !data.isEmpty()) {
-        OutputStreamWriter writer = new OutputStreamWriter(out, "UTF-8");
-        writer.write(data);
-        writer.write((char) terminator);
-        writer.flush();
-      }
-    } finally {
-      IOUtils.closeStream(out);
-    }
-  }
-
-  private String writeGrantInfo(List<HivePrivilegeInfo> privileges, boolean testMode) {
-    if (privileges == null || privileges.isEmpty()) {
-      return "";
-    }
-    StringBuilder builder = new StringBuilder();
-    //sort the list to get sorted (deterministic) output (for ease of testing)
-    Collections.sort(privileges, new Comparator<HivePrivilegeInfo>() {
-      @Override
-      public int compare(HivePrivilegeInfo o1, HivePrivilegeInfo o2) {
-        int compare = o1.getObject().compareTo(o2.getObject());
-        if (compare == 0) {
-          compare = o1.getPrincipal().compareTo(o2.getPrincipal());
-        }
-        if (compare == 0) {
-          compare = o1.getPrivilege().compareTo(o2.getPrivilege());
-        }
-        return compare;
-      }
-    });
-
-    for (HivePrivilegeInfo privilege : privileges) {
-      HivePrincipal principal = privilege.getPrincipal();
-      HivePrivilegeObject resource = privilege.getObject();
-      HivePrincipal grantor = privilege.getGrantorPrincipal();
-
-      appendNonNull(builder, resource.getDbname(), true);
-      appendNonNull(builder, resource.getObjectName());
-      appendNonNull(builder, resource.getPartKeys());
-      appendNonNull(builder, resource.getColumns());
-      appendNonNull(builder, principal.getName());
-      appendNonNull(builder, principal.getType());
-      appendNonNull(builder, privilege.getPrivilege().getName());
-      appendNonNull(builder, privilege.isGrantOption());
-      appendNonNull(builder, testMode ? -1 : privilege.getGrantTime() * 1000L);
-      appendNonNull(builder, grantor.getName());
-    }
-    return builder.toString();
-  }
-
-  private String writeRolesGrantedInfo(List<HiveRoleGrant> roles, boolean testMode) {
-    if (roles == null || roles.isEmpty()) {
-      return "";
-    }
-    StringBuilder builder = new StringBuilder();
-    //sort the list to get sorted (deterministic) output (for ease of testing)
-    Collections.sort(roles);
-    for (HiveRoleGrant role : roles) {
-      appendNonNull(builder, role.getRoleName(), true);
-      appendNonNull(builder, role.isGrantOption());
-      appendNonNull(builder, testMode ? -1 : role.getGrantTime() * 1000L);
-      appendNonNull(builder, role.getGrantor());
-    }
-    return builder.toString();
-  }
-
-  private StringBuilder appendNonNull(StringBuilder builder, Object value) {
-    return appendNonNull(builder, value, false);
-  }
-
-  private StringBuilder appendNonNull(StringBuilder builder, Object value, boolean firstColumn) {
-    if (!firstColumn) {
-      builder.append((char)separator);
-    } else if (builder.length() > 0) {
-      builder.append((char)terminator);
-    }
-    if (value != null) {
-      builder.append(value);
-    }
-    return builder;
   }
 
   /**
