@@ -3179,8 +3179,8 @@ public class GenVectorCode extends Task {
     // Read the template into a string;
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
-    templateString = templateString.replaceAll("<ClassName>", className);
-    templateString = templateString.replaceAll("<Operator>", operatorName.toLowerCase());
+    templateString = templateString.replace("<ClassName>", className);
+    templateString = templateString.replace("<Operator>", operatorName.toLowerCase());
 
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
        className, templateString);

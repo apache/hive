@@ -67,7 +67,7 @@ public class StringCompare implements PrimitiveComparison {
 
   @Override
   public boolean like(byte[] value) {
-    String temp = new String(value).replaceAll("%", "[\\\\\\w]+?");
+    String temp = new String(value).replace("%", "[\\\\\\w]+?");
     Pattern pattern = Pattern.compile(temp);
     boolean match = pattern.matcher(constant).matches();
     return match;
