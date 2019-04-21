@@ -1908,6 +1908,24 @@ public class Driver implements CommandProcessor {
           }
         }
       }
+      String checkMissLevel = conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_FINAL_CHECK_MISS_STAGE);
+      if (!"none".equals(checkMissLevel)) {
+        ArrayList<String> isTraveled = new ArrayList<>();
+        if (!checkTaskExecuteFinished(plan.getRootTasks(), isTraveled)) {
+          SQLState = "08S01";
+          errorMessage = "FAILED: Some Execute Stage miss error";
+          invokeFailureHooks(perfLogger, hookContext, errorMessage, null);
+          errorMessage = hookContext.getErrorMessage();
+          console.printError(errorMessage);
+
+          // in case we decided to run everything in local mode, restore the
+          // the jobtracker setting to its initial value
+          ctx.restoreOriginalTracker();
+
+          return ErrorMsg.EXECUTION_MISS_STAGE.getErrorCode();
+        }
+      }
+
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.RUN_TASKS);
 
       // in case we decided to run everything in local mode, restore the
@@ -2057,6 +2075,34 @@ public class Driver implements CommandProcessor {
 
     return (0);
   }
+
+  private boolean checkTaskExecuteFinished(List<Task<? extends Serializable>> rootTasks, List<String> isTraveled) {
+    boolean ret = true;
+    if (rootTasks != null) {
+      for (Task task : rootTasks) {
+        // avoid repeat check
+        if (isTraveled.contains(task.getId())) {
+          continue;
+        } else {
+          isTraveled.add(task.getId());
+        }
+
+        if (!task.done()) {
+          return false;
+        }
+
+        List<Task<? extends Serializable>> childTasks = null;
+        if (task instanceof ConditionalTask) {
+          childTasks = ((ConditionalTask)task).getResTasks();
+        } else {
+          childTasks = task.getDependentTasks();
+        }
+        ret &= checkTaskExecuteFinished(childTasks, isTraveled);
+      }
+    }
+    return ret;
+  }
+
 
   private void releasePlan(QueryPlan plan) {
     // Plan maybe null if Driver.close is called in another thread for the same Driver object

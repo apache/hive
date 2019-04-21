@@ -172,6 +172,10 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
     return listTasks;
   }
 
+  public List<Task<? extends Serializable>> getResTasks() {
+    return resTasks;
+  }
+
   /**
    * @param listTasks
    *          the listTasks to set
