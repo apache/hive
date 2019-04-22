@@ -115,9 +115,33 @@ public class HiveJsonReader {
 
   /**
    * Enumeration that defines all on/off features for this reader.
+   * <ul>
+   * <li>{@link #COL_INDEX_PARSING}</li>
+   * <li>{@link #PRIMITIVE_TO_WRITABLE}</li>
+   * <li>{@link #IGNORE_UKNOWN_FIELDS}</li>
+   * </ul>
    */
   public enum Feature {
-    COL_INDEX_PARSING, PRIMITIVE_TO_WRITABLE, IGNORE_UKNOWN_FIELDS
+    /**
+     * Enables an optimization to look up each JSON field based on its index in
+     * the Hive schema.
+     */
+    COL_INDEX_PARSING,
+
+    /**
+     * If this feature is enabled, when a JSON node is parsed, its value will be
+     * returned as a Hadoop Writable object. Otherwise, the Java native value is
+     * returned.
+     */
+    PRIMITIVE_TO_WRITABLE,
+
+    /**
+     * If the JSON object being parsed includes a field that is not included in
+     * the Hive schema, enabling this feature will cause the JSON reader to
+     * produce a log warnings. If this feature is disabled, an Exception will be
+     * thrown and parsing will stop.
+     */
+    IGNORE_UKNOWN_FIELDS
   }
 
   /**
@@ -179,7 +203,8 @@ public class HiveJsonReader {
    *
    * @param rootNode The root node to process
    * @param oi The ObjectInspector to use
-   * @return The value in this node (may be a complex type if nested)
+   * @return The value in this node. Return value may be null, primitive, and
+   *         may be a complex type if nested.
    * @throws SerDeException The SerDe is not configured correctly
    */
   private Object visitNode(final JsonNode rootNode, final ObjectInspector oi)

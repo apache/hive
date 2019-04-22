@@ -187,7 +187,7 @@ public class JsonSerDe extends AbstractSerDe {
       return jsonReader.parseStruct(
           new ByteArrayInputStream((t.getBytes()), 0, t.getLength()));
     } catch (Exception e) {
-      LOG.warn("Error parsing JSON text [{}].", t, e);
+      LOG.debug("Problem parsing JSON text [{}].", t, e);
       throw new SerDeException(e);
     }
   }
