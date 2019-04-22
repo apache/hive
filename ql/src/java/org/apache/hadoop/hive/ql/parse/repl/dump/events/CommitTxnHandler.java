@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
@@ -107,12 +108,32 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
 
     if (!withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY)) {
 
+      boolean replicatingAcidEvents = true;
+      if (withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES)) {
+        // We do not dump ACID table related events when taking a bootstrap dump of ACID tables as
+        // part of an incremental dump. So we shouldn't be dumping any changes to ACID table as
+        // part of the commit. At the same time we need to dump the commit transaction event so
+        // that replication can end a transaction opened when replaying open transaction event.
+        LOG.debug("writeEventsInfoList will be removed from commit message because we are " +
+                "bootstrapping acid tables.");
+        replicatingAcidEvents = false;
+      } else if (!ReplUtils.includeAcidTableInDump(withinContext.hiveConf)) {
+        // Similar to the above condition, only for testing purposes, if the config doesn't allow
+        // ACID tables to be replicated, we don't dump any changes to the ACID tables as part of
+        // commit.
+        LOG.debug("writeEventsInfoList will be removed from commit message because we are " +
+                "not dumping acid tables.");
+        replicatingAcidEvents = false;
+      }
       String contextDbName =  withinContext.dbName == null ? null :
               StringUtils.normalizeIdentifier(withinContext.dbName);
       String contextTableName =  withinContext.tableName == null ? null :
               StringUtils.normalizeIdentifier(withinContext.tableName);
-      List<WriteEventInfo> writeEventInfoList = HiveMetaStore.HMSHandler.getMSForConf(withinContext.hiveConf).
-          getAllWriteEventInfo(eventMessage.getTxnId(), contextDbName, contextTableName);
+      List<WriteEventInfo> writeEventInfoList = null;
+      if (replicatingAcidEvents) {
+        writeEventInfoList = HiveMetaStore.HMSHandler.getMSForConf(withinContext.hiveConf).
+                getAllWriteEventInfo(eventMessage.getTxnId(), contextDbName, contextTableName);
+      }
       int numEntry = (writeEventInfoList != null ? writeEventInfoList.size() : 0);
       if (numEntry != 0) {
         eventMessage.addWriteEventInfo(writeEventInfoList);

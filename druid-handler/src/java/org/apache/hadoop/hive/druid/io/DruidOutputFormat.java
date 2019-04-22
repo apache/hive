@@ -19,19 +19,19 @@
 package org.apache.hadoop.hive.druid.io;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import io.druid.data.input.impl.DimensionSchema;
-import io.druid.data.input.impl.DimensionsSpec;
-import io.druid.data.input.impl.InputRowParser;
-import io.druid.data.input.impl.MapInputRowParser;
-import io.druid.data.input.impl.TimeAndDimsParseSpec;
-import io.druid.data.input.impl.TimestampSpec;
-import io.druid.java.util.common.Pair;
-import io.druid.query.aggregation.AggregatorFactory;
-import io.druid.segment.IndexSpec;
-import io.druid.segment.indexing.DataSchema;
-import io.druid.segment.indexing.RealtimeTuningConfig;
-import io.druid.segment.indexing.granularity.GranularitySpec;
-import io.druid.segment.realtime.plumber.CustomVersioningPolicy;
+import org.apache.druid.data.input.impl.DimensionSchema;
+import org.apache.druid.data.input.impl.DimensionsSpec;
+import org.apache.druid.data.input.impl.InputRowParser;
+import org.apache.druid.data.input.impl.MapInputRowParser;
+import org.apache.druid.data.input.impl.TimeAndDimsParseSpec;
+import org.apache.druid.data.input.impl.TimestampSpec;
+import org.apache.druid.java.util.common.Pair;
+import org.apache.druid.query.aggregation.AggregatorFactory;
+import org.apache.druid.segment.IndexSpec;
+import org.apache.druid.segment.indexing.DataSchema;
+import org.apache.druid.segment.indexing.RealtimeTuningConfig;
+import org.apache.druid.segment.indexing.granularity.GranularitySpec;
+import org.apache.druid.segment.realtime.plumber.CustomVersioningPolicy;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
@@ -155,6 +155,7 @@ public class DruidOutputFormat implements HiveOutputFormat<NullWritable, DruidWr
     RealtimeTuningConfig realtimeTuningConfig = new RealtimeTuningConfig(maxRowInMemory,
             null,
             null,
+            null,
             new File(basePersistDirectory, dataSource),
             new CustomVersioningPolicy(version),
             null,
@@ -167,7 +168,8 @@ public class DruidOutputFormat implements HiveOutputFormat<NullWritable, DruidWr
             true,
             null,
             0L,
-        null
+        null,
+            null
     );
 
     LOG.debug(String.format("running with Data schema [%s] ", dataSchema));

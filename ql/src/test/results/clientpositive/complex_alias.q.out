@@ -85,6 +85,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 keys: col0 (type: int)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
@@ -147,10 +148,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: agg1
-            filterExpr: (col0 = col0) (type: boolean)
+            filterExpr: col0 is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (col0 = col0) (type: boolean)
+              predicate: col0 is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: '42' (type: string), col0 (type: int)
@@ -160,6 +161,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     keys: _col0 (type: string), _col1 (type: int)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
@@ -170,10 +172,10 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: agg1
-            filterExpr: (col0 = col0) (type: boolean)
+            filterExpr: col0 is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (col0 = col0) (type: boolean)
+              predicate: col0 is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: '41' (type: string), col0 (type: int)
@@ -183,6 +185,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     keys: _col0 (type: string), _col1 (type: int)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE

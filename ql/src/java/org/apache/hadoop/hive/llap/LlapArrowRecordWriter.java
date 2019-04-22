@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
  * calls to the {@link #write(Writable, Writable)} method only serve as a signal that
  * a new batch has been loaded to the associated VectorSchemaRoot.
  * Payload data for writing is indirectly made available by reference:
- * ArrowStreamWriter -> VectorSchemaRoot -> List<FieldVector>
+ * ArrowStreamWriter -&gt; VectorSchemaRoot -&gt; List&lt;FieldVector&gt;
  * i.e. both they key and value are ignored once a reference to the VectorSchemaRoot
  * is obtained.
  */

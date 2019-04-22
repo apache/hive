@@ -28,7 +28,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import com.google.common.io.Resources;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hive.ptest.execution.JIRAService.BuildInfo;
 import org.apache.hive.ptest.execution.conf.Context;

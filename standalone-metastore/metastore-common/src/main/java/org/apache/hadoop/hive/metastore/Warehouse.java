@@ -590,7 +590,7 @@ public class Warehouse {
    * pairs to create the Path for the partition directory
    *
    * @param db - parent database which is used to get the base location of the partition directory
-   * @param tableName - table name for the partitions
+   * @param table - table for the partitions
    * @param pm - Partition key value pairs
    * @return
    * @throws MetaException

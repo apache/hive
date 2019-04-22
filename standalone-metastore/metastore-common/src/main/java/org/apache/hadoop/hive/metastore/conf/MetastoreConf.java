@@ -266,7 +266,7 @@ public class MetastoreConf {
         "hive.metastore.aggregate.stats.cache.clean.until", 0.8,
         "The cleaner thread cleans until cache reaches this % full size."),
     AGGREGATE_STATS_CACHE_ENABLED("metastore.aggregate.stats.cache.enabled",
-        "hive.metastore.aggregate.stats.cache.enabled", true,
+        "hive.metastore.aggregate.stats.cache.enabled", false,
         "Whether aggregate stats caching is enabled or not."),
     AGGREGATE_STATS_CACHE_FPP("metastore.aggregate.stats.cache.fpp",
         "hive.metastore.aggregate.stats.cache.fpp", 0.01,
@@ -697,25 +697,25 @@ public class MetastoreConf {
     METRICS_REPORTERS("metastore.metrics.reporters", "metastore.metrics.reporters", "json,jmx",
         new StringSetValidator("json", "jmx", "console", "hadoop", "slf4j"),
         "A comma separated list of metrics reporters to start"),
-    MSCK_PATH_VALIDATION("msck.path.validation", "hive.msck.path.validation", "throw",
+    MSCK_PATH_VALIDATION("metastore.msck.path.validation", "hive.msck.path.validation", "throw",
       new StringSetValidator("throw", "skip", "ignore"), "The approach msck should take with HDFS " +
       "directories that are partition-like but contain unsupported characters. 'throw' (an " +
       "exception) is the default; 'skip' will skip the invalid directories and still repair the" +
       " others; 'ignore' will skip the validation (legacy behavior, causes bugs in many cases)"),
-    MSCK_REPAIR_BATCH_SIZE("msck.repair.batch.size",
+    MSCK_REPAIR_BATCH_SIZE("metastore.msck.repair.batch.size",
       "hive.msck.repair.batch.size", 3000,
       "Batch size for the msck repair command. If the value is greater than zero,\n "
         + "it will execute batch wise with the configured batch size. In case of errors while\n"
         + "adding unknown partitions the batch size is automatically reduced by half in the subsequent\n"
         + "retry attempt. The default value is 3000 which means it will execute in the batches of 3000."),
-    MSCK_REPAIR_BATCH_MAX_RETRIES("msck.repair.batch.max.retries", "hive.msck.repair.batch.max.retries", 4,
+    MSCK_REPAIR_BATCH_MAX_RETRIES("metastore.msck.repair.batch.max.retries", "hive.msck.repair.batch.max.retries", 4,
       "Maximum number of retries for the msck repair command when adding unknown partitions.\n "
         + "If the value is greater than zero it will retry adding unknown partitions until the maximum\n"
         + "number of attempts is reached or batch size is reduced to 0, whichever is earlier.\n"
         + "In each retry attempt it will reduce the batch size by a factor of 2 until it reaches zero.\n"
         + "If the value is set to zero it will retry until the batch size becomes zero as described above."),
-    MSCK_REPAIR_ENABLE_PARTITION_RETENTION("msck.repair.enable.partition.retention",
-      "msck.repair.enable.partition.retention", false,
+    MSCK_REPAIR_ENABLE_PARTITION_RETENTION("metastore.msck.repair.enable.partition.retention",
+      "metastore.msck.repair.enable.partition.retention", false,
       "If 'partition.retention.period' table property is set, this flag determines whether MSCK REPAIR\n" +
       "command should handle partition retention. If enabled, and if a specific partition's age exceeded\n" +
       "retention period the partition will be dropped along with data"),

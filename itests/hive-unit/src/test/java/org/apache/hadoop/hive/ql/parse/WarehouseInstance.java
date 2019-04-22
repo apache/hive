@@ -155,7 +155,7 @@ public class WarehouseInstance implements Closeable {
       hiveConf.set(entry.getKey(), entry.getValue());
     }
 
-    MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf, true);
+    MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf, true, true);
 
     // Add the below mentioned dependency in metastore/pom.xml file. For postgres need to copy postgresql-42.2.1.jar to
     // .m2//repository/postgresql/postgresql/9.3-1102.jdbc41/postgresql-9.3-1102.jdbc41.jar.
@@ -243,6 +243,18 @@ public class WarehouseInstance implements Closeable {
     return this;
   }
 
+  WarehouseInstance runFailure(String command, int errorCode) throws Throwable {
+    CommandProcessorResponse ret = driver.run(command);
+    if (ret.getException() == null) {
+      throw new RuntimeException("command execution passed for a invalid command" + command);
+    }
+    if (ret.getResponseCode() != errorCode) {
+      throw new RuntimeException("Command: " + command + " returned incorrect error code: "
+              + ret.getResponseCode() + " instead of " + errorCode);
+    }
+    return this;
+  }
+
   Tuple dump(String dbName, String lastReplicationId, List<String> withClauseOptions)
       throws Throwable {
     String dumpCommand =
@@ -288,7 +300,7 @@ public class WarehouseInstance implements Closeable {
   WarehouseInstance load(String replicatedDbName, String dumpLocation, List<String> withClauseOptions)
           throws Throwable {
     String replLoadCmd = "REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'";
-    if (!withClauseOptions.isEmpty()) {
+    if ((withClauseOptions != null) && !withClauseOptions.isEmpty()) {
       replLoadCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
     run("EXPLAIN " + replLoadCmd);
@@ -303,24 +315,33 @@ public class WarehouseInstance implements Closeable {
 
   WarehouseInstance status(String replicatedDbName, List<String> withClauseOptions) throws Throwable {
     String replStatusCmd = "REPL STATUS " + replicatedDbName;
-    if (!withClauseOptions.isEmpty()) {
+    if ((withClauseOptions != null) && !withClauseOptions.isEmpty()) {
       replStatusCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
     return run(replStatusCmd);
   }
 
   WarehouseInstance loadFailure(String replicatedDbName, String dumpLocation) throws Throwable {
-    runFailure("REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
+    loadFailure(replicatedDbName, dumpLocation, null);
     return this;
   }
 
   WarehouseInstance loadFailure(String replicatedDbName, String dumpLocation, List<String> withClauseOptions)
           throws Throwable {
     String replLoadCmd = "REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'";
-    if (!withClauseOptions.isEmpty()) {
+    if ((withClauseOptions != null) && !withClauseOptions.isEmpty()) {
       replLoadCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
     return runFailure(replLoadCmd);
+  }
+
+  WarehouseInstance loadFailure(String replicatedDbName, String dumpLocation, List<String> withClauseOptions,
+                                int errorCode) throws Throwable {
+    String replLoadCmd = "REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'";
+    if ((withClauseOptions != null) && !withClauseOptions.isEmpty()) {
+      replLoadCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
+    }
+    return runFailure(replLoadCmd, errorCode);
   }
 
   WarehouseInstance verifyResult(String data) throws IOException {
@@ -462,19 +483,18 @@ public class WarehouseInstance implements Closeable {
    * Get statistics for given set of columns of a given table in the given database
    * @param dbName - the database where the table resides
    * @param tableName - tablename whose statistics are to be retrieved
-   * @param colNames - columns whose statistics is to be retrieved.
    * @return - list of ColumnStatisticsObj objects in the order of the specified columns
    */
   public Map<String, List<ColumnStatisticsObj>> getAllPartitionColumnStatistics(String dbName,
                                                                     String tableName) throws Exception {
     List<String> colNames = new ArrayList();
     client.getFields(dbName, tableName).forEach(fs -> colNames.add(fs.getName()));
-    return getAllPartitionColumnStatistics(dbName, tableName, colNames);
+    return client.getPartitionColumnStatistics(dbName, tableName,
+            client.listPartitionNames(dbName, tableName, (short) -1), colNames);
   }
 
   /**
-   * Get statistics for given set of columns for all the partitions of a given table in the given
-   * database.
+   * Get statistics for a given partition of the given table in the given database.
    * @param dbName - the database where the table resides
    * @param tableName - name of the partitioned table in the database
    * @param colNames - columns whose statistics is to be retrieved
@@ -482,12 +502,11 @@ public class WarehouseInstance implements Closeable {
    * ordered according to the given list of columns.
    * @throws Exception
    */
-  Map<String, List<ColumnStatisticsObj>> getAllPartitionColumnStatistics(String dbName,
-                                                                         String tableName,
-                                                                         List<String> colNames)
+  List<ColumnStatisticsObj> getPartitionColumnStatistics(String dbName, String tableName,
+                                                         String partName, List<String> colNames)
           throws Exception {
     return client.getPartitionColumnStatistics(dbName, tableName,
-            client.listPartitionNames(dbName, tableName, (short) -1), colNames);
+                                              Collections.singletonList(partName), colNames).get(0);
   }
 
   public List<Partition> getAllPartitions(String dbName, String tableName) throws Exception {

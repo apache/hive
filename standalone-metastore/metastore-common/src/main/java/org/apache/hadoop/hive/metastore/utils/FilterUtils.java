@@ -325,7 +325,6 @@ public class FilterUtils {
    * could improve performance when filtering partitions.
    * @param dbName the database name
    * @param tblName the table name contained in the database
-   * @return if the
    * @throws NoSuchObjectException if the database or table is filtered out
    */
   public static void checkDbAndTableFilters(boolean isFilterEnabled,

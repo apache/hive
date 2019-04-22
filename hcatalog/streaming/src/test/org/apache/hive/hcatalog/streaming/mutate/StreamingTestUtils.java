@@ -90,6 +90,11 @@ public class StreamingTestUtils {
     }
 
     @Override
+    public String getScheme() {
+      return "raw";
+    }
+
+    @Override
     public FileStatus getFileStatus(Path path) throws IOException {
       File file = pathToFile(path);
       if (!file.exists()) {

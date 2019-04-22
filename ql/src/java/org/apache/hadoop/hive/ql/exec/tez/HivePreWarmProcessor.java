@@ -47,7 +47,7 @@ import javax.crypto.Mac;
  * A simple sleep processor implementation that sleeps for the configured
  * time in milliseconds.
  *
- * @see Config for configuring the HivePreWarmProcessor
+ * @see Configuration for configuring the HivePreWarmProcessor
  */
 public class HivePreWarmProcessor extends AbstractLogicalIOProcessor {
 

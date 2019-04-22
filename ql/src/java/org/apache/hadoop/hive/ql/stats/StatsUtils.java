@@ -787,7 +787,7 @@ public class StatsUtils {
   }
 
   /**
-   * Get sum of all values in the list that are >0
+   * Get sum of all values in the list that are &gt;0
    * @param vals
    *          - list of values
    * @return sum
@@ -1967,10 +1967,7 @@ public class StatsUtils {
     if (useColStats) {
       List<ColStatistics> colStats = stats.getColumnStats();
       for (ColStatistics cs : colStats) {
-        long oldNumNulls = cs.getNumNulls();
         long oldDV = cs.getCountDistint();
-        long newNumNulls = Math.round(ratio * oldNumNulls);
-        cs.setNumNulls(newNumNulls);
         if (affectedColumns.contains(cs.getColumnName())) {
           long newDV = oldDV;
 
@@ -1987,6 +1984,8 @@ public class StatsUtils {
         if (oldDV > newNumRows) {
           cs.setCountDistint(newNumRows);
         }
+        long newNumNulls = Math.round(ratio * cs.getNumNulls());
+        cs.setNumNulls(newNumNulls > newNumRows ? newNumRows: newNumNulls);
       }
       stats.setColumnStats(colStats);
       long newDataSize = StatsUtils.getDataSizeFromColumnStats(newNumRows, colStats);
@@ -1995,5 +1994,53 @@ public class StatsUtils {
       long newDataSize = (long) (ratio * stats.getDataSize());
       stats.setDataSize(StatsUtils.getMaxIfOverflow(newDataSize));
     }
+  }
+
+  public static long computeNDVGroupingColumns(List<ColStatistics> colStats, Statistics parentStats,
+      boolean expDecay) {
+    List<Long> ndvValues =
+        extractNDVGroupingColumns(colStats, parentStats);
+    if (ndvValues == null) {
+      return 0L;
+    }
+    if (ndvValues.isEmpty()) {
+      // No grouping columns, one row
+      return 1L;
+    }
+    if (expDecay) {
+      return addWithExpDecay(ndvValues);
+    } else {
+      return ndvValues.stream().reduce(1L, StatsUtils::safeMult);
+    }
+  }
+
+  private static List<Long> extractNDVGroupingColumns(List<ColStatistics> colStats, Statistics parentStats) {
+    List<Long> ndvValues = new ArrayList<>(colStats.size());
+
+    // compute product of distinct values of grouping columns
+    for (ColStatistics cs : colStats) {
+      if (cs != null) {
+        long ndv = cs.getCountDistint();
+        if (cs.getNumNulls() > 0) {
+          ndv = StatsUtils.safeAdd(ndv, 1);
+        }
+        ndvValues.add(ndv);
+      } else {
+        if (parentStats.getColumnStatsState().equals(Statistics.State.COMPLETE)) {
+          // the column must be an aggregate column inserted by GBY. We
+          // don't have to account for this column when computing product
+          // of NDVs
+          continue;
+        } else {
+          // partial column statistics on grouping attributes case.
+          // if column statistics on grouping attribute is missing, then
+          // assume worst case.
+          ndvValues = null;
+        }
+        break;
+      }
+    }
+
+    return ndvValues;
   }
 }

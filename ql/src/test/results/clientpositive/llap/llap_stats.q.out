@@ -161,6 +161,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: compute_stats(ctinyint, 'hll'), compute_stats(csmallint, 'hll')
                       keys: cint (type: int)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 5 Data size: 4260 Basic stats: COMPLETE Column stats: PARTIAL

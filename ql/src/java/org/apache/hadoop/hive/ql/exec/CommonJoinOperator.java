@@ -72,8 +72,8 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
    * evaluated before emitting rows. Currently, relevant only for outer joins.
    *
    * For instance, given the query:
-   *     select * from t1 right outer join t2 on t1.c1 + t2.c2 > t1.c3;
-   * The expression evaluator for t1.c1 + t2.c2 > t1.c3 will be stored in this list.
+   *     select * from t1 right outer join t2 on t1.c1 + t2.c2 &gt; t1.c3;
+   * The expression evaluator for t1.c1 + t2.c2 &gt; t1.c3 will be stored in this list.
    */
   protected transient List<ExprNodeEvaluator> residualJoinFilters;
 
@@ -448,21 +448,21 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
    *   a = 100, 10 | 100, 20 | 100, 30
    *   b = 100, 10 | 100, 20 | 100, 30
    *
-   * the query "a FO b ON a.k=b.k AND a.v>10 AND b.v>30" makes filter map
-   *   0(a) = [1(b),1] : a.v>10
-   *   1(b) = [0(a),1] : b.v>30
+   * the query "a FO b ON a.k=b.k AND a.v&gt;10 AND b.v&gt;30" makes filter map
+   *   0(a) = [1(b),1] : a.v&gt;10
+   *   1(b) = [0(a),1] : b.v&gt;30
    *
    * for filtered rows in a (100,10) create a-NULL
    * for filtered rows in b (100,10) (100,20) (100,30) create NULL-b
    *
-   * with 0(a) = [1(b),1] : a.v>10
+   * with 0(a) = [1(b),1] : a.v&gt;10
    *   100, 10 = 00000010 (filtered)
    *   100, 20 = 00000000 (valid)
    *   100, 30 = 00000000 (valid)
    * -------------------------
    *       sum = 00000000 : for valid rows in b, there is at least one pair in a
    *
-   * with 1(b) = [0(a),1] : b.v>30
+   * with 1(b) = [0(a),1] : b.v&gt;30
    *   100, 10 = 00000001 (filtered)
    *   100, 20 = 00000001 (filtered)
    *   100, 30 = 00000001 (filtered)

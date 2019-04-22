@@ -17,12 +17,11 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Create Table Operator:
-        Create Table
-          columns: key int, value string
-          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-          output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
-          name: default.dest1_n85
+    Create Table
+      columns: key int, value string
+      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+      output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
+      name: default.dest1_n85
 
 PREHOOK: query: CREATE TABLE dest1_n85(key INT, value STRING) STORED AS
   INPUTFORMAT 'org.apache.hadoop.mapred.SequenceFileInputFormat'

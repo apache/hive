@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -43,6 +44,9 @@ public class ReplLoadWork implements Serializable {
   final String dbNameToLoadIn;
   final String tableNameToLoadIn;
   final String dumpDirectory;
+  final String bootstrapDumpToCleanTables;
+  boolean needCleanTablesFromBootstrap;
+
   private final ConstraintEventsIterator constraintsIterator;
   private int loadTaskRunCount = 0;
   private DatabaseEvent.State state = null;
@@ -65,6 +69,9 @@ public class ReplLoadWork implements Serializable {
     sessionStateLineageState = lineageState;
     this.dumpDirectory = dumpDirectory;
     this.dbNameToLoadIn = dbNameToLoadIn;
+    this.bootstrapDumpToCleanTables = hiveConf.get(ReplUtils.REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG);
+    this.needCleanTablesFromBootstrap = StringUtils.isNotBlank(this.bootstrapDumpToCleanTables);
+
     rootTask = null;
     if (isIncrementalDump) {
       incrementalLoadTasksBuilder =
@@ -78,14 +85,15 @@ public class ReplLoadWork implements Serializable {
       Path incBootstrapDir = new Path(dumpDirectory, ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME);
       FileSystem fs = incBootstrapDir.getFileSystem(hiveConf);
       if (fs.exists(incBootstrapDir)) {
-        this.bootstrapIterator = new BootstrapEventsIterator(incBootstrapDir.toString(), dbNameToLoadIn, hiveConf);
+        this.bootstrapIterator = new BootstrapEventsIterator(incBootstrapDir.toString(), dbNameToLoadIn,
+                true, hiveConf);
         this.constraintsIterator = new ConstraintEventsIterator(dumpDirectory, hiveConf);
       } else {
         this.bootstrapIterator = null;
         this.constraintsIterator = null;
       }
     } else {
-      this.bootstrapIterator = new BootstrapEventsIterator(dumpDirectory, dbNameToLoadIn, hiveConf);
+      this.bootstrapIterator = new BootstrapEventsIterator(dumpDirectory, dbNameToLoadIn, true, hiveConf);
       this.constraintsIterator = new ConstraintEventsIterator(dumpDirectory, hiveConf);
       incrementalLoadTasksBuilder = null;
     }

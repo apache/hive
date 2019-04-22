@@ -48,15 +48,14 @@ STAGE PLANS:
     Dependency Collection
 
   Stage: Stage-4
-      Create Table Operator:
-        Create Table
-          columns: key string, value string
-          input format: org.apache.hadoop.mapred.TextInputFormat
+    Create Table
+      columns: key string, value string
+      input format: org.apache.hadoop.mapred.TextInputFormat
 #### A masked pattern was here ####
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.foo
-          isTemporary: true
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.foo
+      isTemporary: true
 
   Stage: Stage-3
     Stats Work
@@ -128,15 +127,14 @@ STAGE PLANS:
     Dependency Collection
 
   Stage: Stage-4
-      Create Table Operator:
-        Create Table
-          columns: key string, value string
-          input format: org.apache.hadoop.mapred.TextInputFormat
+    Create Table
+      columns: key string, value string
+      input format: org.apache.hadoop.mapred.TextInputFormat
 #### A masked pattern was here ####
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.bar
-          isTemporary: true
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      name: default.bar
+      isTemporary: true
 
   Stage: Stage-3
     Stats Work

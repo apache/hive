@@ -318,11 +318,11 @@ public class VectorizedOrcAcidRowBatchReader
       RecordIdentifier k = keyInterval.getMinKey();
       b = SearchArgumentFactory.newBuilder();
       b.startAnd()  //not(ot < 7) -> ot >=7
-          .startNot().lessThan("originalTransaction",
+          .startNot().lessThan(OrcRecordUpdater.ORIGINAL_WRITEID_FIELD_NAME,
           PredicateLeaf.Type.LONG, k.getWriteId()).end();
       b.startNot().lessThan(
-          "bucket", PredicateLeaf.Type.LONG, minBucketProp).end();
-      b.startNot().lessThan("rowId",
+          OrcRecordUpdater.BUCKET_FIELD_NAME, PredicateLeaf.Type.LONG, minBucketProp).end();
+      b.startNot().lessThan(OrcRecordUpdater.ROW_ID_FIELD_NAME,
           PredicateLeaf.Type.LONG, minRowId).end();
       b.end();
     }
@@ -332,16 +332,20 @@ public class VectorizedOrcAcidRowBatchReader
         b = SearchArgumentFactory.newBuilder();
       }
       b.startAnd().lessThanEquals(
-          "originalTransaction", PredicateLeaf.Type.LONG, k.getWriteId());
-      b.lessThanEquals("bucket", PredicateLeaf.Type.LONG, maxBucketProp);
-      b.lessThanEquals("rowId", PredicateLeaf.Type.LONG, maxRowId);
+          OrcRecordUpdater.ORIGINAL_WRITEID_FIELD_NAME, PredicateLeaf.Type.LONG, k.getWriteId());
+      b.lessThanEquals(OrcRecordUpdater.BUCKET_FIELD_NAME, PredicateLeaf.Type.LONG, maxBucketProp);
+      b.lessThanEquals(OrcRecordUpdater.ROW_ID_FIELD_NAME, PredicateLeaf.Type.LONG, maxRowId);
       b.end();
     }
     if(b != null) {
       deleteEventSarg = b.build();
       LOG.info("deleteReader SARG(" + deleteEventSarg + ") ");
       deleteEventReaderOptions.searchArgument(deleteEventSarg,
-          new String[] {"originalTransaction", "bucket", "rowId"});
+          new String[] {
+              OrcRecordUpdater.ORIGINAL_WRITEID_FIELD_NAME,
+              OrcRecordUpdater.BUCKET_FIELD_NAME,
+              OrcRecordUpdater.ROW_ID_FIELD_NAME
+          });
       return;
     }
     deleteEventReaderOptions.searchArgument(null, null);
@@ -718,7 +722,7 @@ public class VectorizedOrcAcidRowBatchReader
     int bucketProperty = BucketCodec.V1.encode(new AcidOutputFormat.Options(conf)
         //statementId is from directory name (or 0 if there is none)
       .statementId(syntheticTxnInfo.statementId).bucket(bucketId));
-    AcidUtils.Directory directoryState = AcidUtils.getAcidState( syntheticTxnInfo.folder, conf,
+    AcidUtils.Directory directoryState = AcidUtils.getAcidState(syntheticTxnInfo.folder, conf,
         validWriteIdList, false, true);
     for (HadoopShims.HdfsFileStatusWithId f : directoryState.getOriginalFiles()) {
       int bucketIdFromPath = AcidUtils.parseBucketId(f.getFileStatus().getPath());
@@ -798,10 +802,10 @@ public class VectorizedOrcAcidRowBatchReader
   /**
    * There are 2 types of schema from the {@link #baseReader} that this handles.  In the case
    * the data was written to a transactional table from the start, every row is decorated with
-   * transaction related info and looks like <op, owid, writerId, rowid, cwid, <f1, ... fn>>.
+   * transaction related info and looks like &lt;op, owid, writerId, rowid, cwid, &lt;f1, ... fn&gt;&gt;.
    *
    * The other case is when data was written to non-transactional table and thus only has the user
-   * data: <f1, ... fn>.  Then this table was then converted to a transactional table but the data
+   * data: &lt;f1, ... fn&gt;.  Then this table was then converted to a transactional table but the data
    * files are not changed until major compaction.  These are the "original" files.
    *
    * In this case we may need to decorate the outgoing data with transactional column values at

@@ -55,7 +55,6 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
@@ -681,7 +680,7 @@ public class Table implements Serializable {
    * Returns a list of all the columns of the table (data columns + partition
    * columns in that order.
    *
-   * @return List<FieldSchema>
+   * @return List&lt;FieldSchema&gt;
    */
   public List<FieldSchema> getAllCols() {
     ArrayList<FieldSchema> f_list = new ArrayList<FieldSchema>();
@@ -919,7 +918,7 @@ public class Table implements Serializable {
   }
 
   /**
-   * Creates a partition name -> value spec map object
+   * Creates a partition name -&gt; value spec map object
    *
    * @param tp
    *          Use the information from this partition.
@@ -1119,12 +1118,6 @@ public class Table implements Serializable {
    * table or during replication.
    */
   public void setStatsStateLikeNewTable() {
-    // We do not replicate statistics for
-    // an ACID Table right now, so don't touch them right now.
-    if (AcidUtils.isTransactionalTable(this)) {
-      return;
-    }
-
     if (isPartitioned()) {
       StatsSetupConst.setStatsStateForCreateTable(getParameters(), null,
               StatsSetupConst.FALSE);

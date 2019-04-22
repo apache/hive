@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,8 @@ import org.apache.calcite.rex.RexFieldAccess;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexPermuteInputsShuttle;
+import org.apache.calcite.rex.RexTableInputRef;
+import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitor;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.validate.SqlValidator;
@@ -60,7 +63,6 @@ import org.apache.calcite.util.mapping.MappingType;
 import org.apache.calcite.util.mapping.Mappings;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
@@ -171,7 +173,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
       }
 
       Set<RelDataTypeField> inputExtraFields =
-              Collections.<RelDataTypeField>emptySet();
+          Collections.<RelDataTypeField>emptySet();
       TrimResult trimResult =
           trimChild(join, input, inputFieldsUsed.build(), inputExtraFields);
       newInputs.add(trimResult.left);
@@ -210,7 +212,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
 
     // Build new join.
     final RexVisitor<RexNode> shuttle = new RexPermuteInputsShuttle(
-            mapping, newInputs.toArray(new RelNode[newInputs.size()]));
+        mapping, newInputs.toArray(new RelNode[newInputs.size()]));
     RexNode newConditionExpr = conditionExpr.accept(shuttle);
 
     List<RexNode> newJoinFilters = Lists.newArrayList();
@@ -220,14 +222,14 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     }
 
     final RelDataType newRowType = RelOptUtil.permute(join.getCluster().getTypeFactory(),
-            join.getRowType(), mapping);
+        join.getRowType(), mapping);
     final RelNode newJoin = new HiveMultiJoin(join.getCluster(),
-            newInputs,
-            newConditionExpr,
-            newRowType,
-            join.getJoinInputs(),
-            join.getJoinTypes(),
-            newJoinFilters);
+        newInputs,
+        newConditionExpr,
+        newRowType,
+        join.getJoinInputs(),
+        join.getJoinTypes(),
+        newJoinFilters);
 
     return new TrimResult(newJoin, mapping);
   }
@@ -269,7 +271,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
   }
 
   private static RelNode project(DruidQuery dq, ImmutableBitSet fieldsUsed,
-          Set<RelDataTypeField> extraFields, RelBuilder relBuilder) {
+      Set<RelDataTypeField> extraFields, RelBuilder relBuilder) {
     final int fieldCount = dq.getRowType().getFieldCount();
     if (fieldsUsed.equals(ImmutableBitSet.range(fieldCount))
         && extraFields.isEmpty()) {
@@ -319,44 +321,100 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
   // because if not and it consist of keys (unique + not null OR pk), we can safely remove rest of the columns
   // if those are columns are not being used further up
   private ImmutableBitSet generateGroupSetIfCardinalitySame(final Aggregate aggregate,
-                                        final ImmutableBitSet originalGroupSet, final ImmutableBitSet fieldsUsed) {
-    Pair<RelOptTable, List<Integer>> tabToOrgCol = HiveRelOptUtil.getColumnOriginSet(aggregate.getInput(),
-                                                                                     originalGroupSet);
-    if(tabToOrgCol == null) {
-      return originalGroupSet;
-    }
-    RelOptHiveTable tbl = (RelOptHiveTable)tabToOrgCol.left;
-    List<Integer> backtrackedGBList = tabToOrgCol.right;
-    ImmutableBitSet backtrackedGBSet = ImmutableBitSet.builder().addAll(backtrackedGBList).build();
+      final ImmutableBitSet originalGroupSet, final ImmutableBitSet fieldsUsed) {
 
-    List<ImmutableBitSet> allKeys = tbl.getNonNullableKeys();
-    ImmutableBitSet currentKey = null;
-    for(ImmutableBitSet key:allKeys) {
-      if(backtrackedGBSet.contains(key)) {
-        // only if grouping sets consist of keys
-        currentKey = key;
-        break;
+    RexBuilder rexBuilder = aggregate.getCluster().getRexBuilder();
+    RelMetadataQuery mq = aggregate.getCluster().getMetadataQuery();
+
+    // map from backtracked table ref to list of gb keys and list of corresponding backtracked columns
+    Map<RexTableInputRef.RelTableRef, List<Pair<Integer, Integer>>> mapGBKeysLineage= new HashMap<>();
+
+    // map from table ref to list of columns (from gb keys) which are candidate to be removed
+    Map<RexTableInputRef.RelTableRef, List<Integer>> candidateKeys = new HashMap<>();
+
+    for(int key:originalGroupSet) {
+      RexNode inputRef = rexBuilder.makeInputRef(aggregate.getInput(), key);
+      Set<RexNode> exprLineage = mq.getExpressionLineage(aggregate.getInput(), inputRef);
+      if(exprLineage != null && exprLineage.size() == 1){
+        RexNode expr = exprLineage.iterator().next();
+        if(expr instanceof RexTableInputRef) {
+          RexTableInputRef tblRef = (RexTableInputRef)expr;
+          if(mapGBKeysLineage.containsKey(tblRef.getTableRef())) {
+            mapGBKeysLineage.get(tblRef.getTableRef()).add(Pair.of(tblRef.getIndex(), key));
+          } else {
+            List<Pair<Integer, Integer>> newList = new ArrayList<>();
+            newList.add(Pair.of(tblRef.getIndex(), key));
+            mapGBKeysLineage.put(tblRef.getTableRef(), newList);
+          }
+        } else if(RexUtil.isDeterministic(expr)){
+          // even though we weren't able to backtrack this key it could still be candidate for removal
+          // if rest of the columns contain pk/unique
+          Set<RexTableInputRef.RelTableRef> tableRefs = RexUtil.gatherTableReferences(Lists.newArrayList(expr));
+          if(tableRefs.size() == 1) {
+            RexTableInputRef.RelTableRef tblRef = tableRefs.iterator().next();
+            if(candidateKeys.containsKey(tblRef)) {
+              List<Integer> candidateGBKeys = candidateKeys.get(tblRef);
+              candidateGBKeys.add(key);
+            } else {
+              List<Integer> candidateGBKeys =  new ArrayList<>();
+              candidateGBKeys.add(key);
+              candidateKeys.put(tblRef, candidateGBKeys);
+            }
+          }
+        }
       }
-    }
-    if(currentKey == null || currentKey.isEmpty()) {
-      return originalGroupSet;
     }
 
     // we want to delete all columns in original GB set except the key
     ImmutableBitSet.Builder builder = ImmutableBitSet.builder();
 
-    // we have established that this gb set contains keys and it is safe to remove rest of the columns
-    for(int i=0; i<backtrackedGBList.size(); i++) {
-      Integer backtrackedCol = backtrackedGBList.get(i);
-      int orgCol = originalGroupSet.nth(i);
-      if(fieldsUsed.get((orgCol))
-          || currentKey.get(backtrackedCol)) {
-        // keep the columns which are being used or are part of keys
-        builder.set(orgCol);
+    for(Map.Entry<RexTableInputRef.RelTableRef, List<Pair<Integer, Integer>>> entry:mapGBKeysLineage.entrySet()) {
+      RelOptHiveTable tbl = (RelOptHiveTable)entry.getKey().getTable();
+      List<Pair<Integer, Integer>> gbKeyCols = entry.getValue();
+
+      ImmutableBitSet.Builder btBuilder = ImmutableBitSet.builder();
+      gbKeyCols.forEach(pair -> btBuilder.set(pair.left));
+      ImmutableBitSet backtrackedGBSet = btBuilder.build();
+
+      List<ImmutableBitSet> allKeys = tbl.getNonNullableKeys();
+      ImmutableBitSet currentKey = null;
+      for(ImmutableBitSet key:allKeys) {
+        if(backtrackedGBSet.contains(key)) {
+          // only if grouping sets consist of keys
+          currentKey = key;
+          break;
+        }
+      }
+      if(currentKey == null || currentKey.isEmpty()) {
+        continue;
+      }
+
+      // we have established that this gb set contains keys and it is safe to remove rest of the columns
+      for(Pair<Integer, Integer> gbKeyColPair:gbKeyCols) {
+        Integer backtrackedCol = gbKeyColPair.left;
+        Integer orgCol =  gbKeyColPair.right;
+        if(!fieldsUsed.get(orgCol)
+            && !currentKey.get(backtrackedCol)) {
+          // this could could be removed
+          builder.set(orgCol);
+        }
+      }
+      // remove candidate keys if possible
+      if(candidateKeys.containsKey(entry.getKey())) {
+        List<Integer> candidateGbKeys= candidateKeys.get(entry.getKey());
+        for(Integer keyToRemove:candidateGbKeys) {
+          if(!fieldsUsed.get(keyToRemove)) {
+            builder.set(keyToRemove);
+          }
+        }
       }
     }
-    return builder.build();
+    ImmutableBitSet keysToRemove = builder.build();
+    ImmutableBitSet newGroupSet = originalGroupSet.except(keysToRemove);
+    assert(!newGroupSet.isEmpty());
+    return newGroupSet;
   }
+
   // if gby keys consist of pk/uk non-pk/non-uk columns are removed if they are not being used
   private ImmutableBitSet generateNewGroupset(Aggregate aggregate, ImmutableBitSet fieldsUsed) {
 
@@ -415,7 +473,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
    *
    */
   private Aggregate rewriteGBConstantKeys(Aggregate aggregate, ImmutableBitSet fieldsUsed,
-                                          Set<RelDataTypeField> extraFields) {
+      ImmutableBitSet aggCallFields) {
     if ((aggregate.getIndicatorCount() > 0)
         || (aggregate.getGroupSet().isEmpty())
         || fieldsUsed.contains(aggregate.getGroupSet())) {
@@ -445,7 +503,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
 
     if (allConstants) {
       for (int i = 0; i < rowType.getFieldCount(); i++) {
-        if (aggregate.getGroupSet().get(i)) {
+        if (aggregate.getGroupSet().get(i) && !aggCallFields.get(i)) {
           newProjects.add(rexBuilder.makeLiteral(true));
         } else {
           newProjects.add(rexBuilder.makeInputRef(input, i));
@@ -454,7 +512,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
       relBuilder.push(input);
       relBuilder.project(newProjects);
       Aggregate newAggregate = new HiveAggregate(aggregate.getCluster(), aggregate.getTraitSet(), relBuilder.build(),
-                                                 aggregate.getGroupSet(), null, aggregate.getAggCallList());
+          aggregate.getGroupSet(), null, aggregate.getAggCallList());
       return newAggregate;
     }
     return aggregate;
@@ -475,23 +533,32 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     //
     // But group and indicator fields stay, even if they are not used.
 
-    aggregate = rewriteGBConstantKeys(aggregate, fieldsUsed, extraFields);
-
-    final RelDataType rowType = aggregate.getRowType();
-
     // Compute which input fields are used.
-    // 1. group fields are always used
-    final ImmutableBitSet.Builder inputFieldsUsed =
-        aggregate.getGroupSet().rebuild();
-    // 2. agg functions
+
+
+    // agg functions
+    // agg functions are added first (before group sets) because rewriteGBConstantsKeys
+    // needs it
+    final ImmutableBitSet.Builder aggCallFieldsUsedBuilder =  ImmutableBitSet.builder();
     for (AggregateCall aggCall : aggregate.getAggCallList()) {
       for (int i : aggCall.getArgList()) {
-        inputFieldsUsed.set(i);
+        aggCallFieldsUsedBuilder.set(i);
       }
       if (aggCall.filterArg >= 0) {
-        inputFieldsUsed.set(aggCall.filterArg);
+        aggCallFieldsUsedBuilder.set(aggCall.filterArg);
       }
     }
+
+    // transform if group by contain constant keys
+    ImmutableBitSet aggCallFieldsUsed = aggCallFieldsUsedBuilder.build();
+    aggregate = rewriteGBConstantKeys(aggregate, fieldsUsed, aggCallFieldsUsed);
+
+    // add group fields
+    final ImmutableBitSet.Builder inputFieldsUsed =  aggregate.getGroupSet().rebuild();
+    inputFieldsUsed.addAll(aggCallFieldsUsed);
+
+
+    final RelDataType rowType = aggregate.getRowType();
 
     // Create input with trimmed columns.
     final RelNode input = aggregate.getInput();
@@ -524,7 +591,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     if (input == newInput
         && fieldsUsed.equals(ImmutableBitSet.range(rowType.getFieldCount()))) {
       return result(aggregate,
-                    Mappings.createIdentity(rowType.getFieldCount()));
+          Mappings.createIdentity(rowType.getFieldCount()));
     }
 
     // update the group by keys based on inputMapping
@@ -557,7 +624,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     } else {
       newGroupSets = ImmutableList.copyOf(
           Iterables.transform(aggregate.getGroupSets(),
-            input1 -> Mappings.apply(inputMapping, input1)));
+              input1 -> Mappings.apply(inputMapping, input1)));
     }
 
     // Populate mapping of where to find the fields. System, group key and
@@ -583,8 +650,8 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
             : relBuilder.field(Mappings.apply(inputMapping, aggCall.filterArg));
         RelBuilder.AggCall newAggCall =
             relBuilder.aggregateCall(aggCall.getAggregation(),
-                                     aggCall.isDistinct(), aggCall.isApproximate(),
-                                     filterArg, aggCall.name, args);
+                aggCall.isDistinct(), aggCall.isApproximate(),
+                filterArg, aggCall.name, args);
         mapping.set(j, updatedGroupCount +  newAggCallList.size());
         newAggCallList.add(newAggCall);
       }

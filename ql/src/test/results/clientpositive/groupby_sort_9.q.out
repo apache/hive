@@ -74,6 +74,7 @@ STAGE PLANS:
                 aggregations: count()
                 bucketGroup: true
                 keys: key (type: string)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 12 Data size: 2256 Basic stats: COMPLETE Column stats: NONE

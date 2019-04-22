@@ -30,6 +30,8 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.ddl.database.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.UnlockDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.table.LockTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.UnlockTableDesc;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -38,8 +40,6 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.plan.LockTableDesc;
-import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 
 /**
  * An implementation HiveTxnManager that includes internal methods that all

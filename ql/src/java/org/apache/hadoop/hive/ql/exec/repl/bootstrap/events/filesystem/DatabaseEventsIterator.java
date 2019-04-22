@@ -106,7 +106,7 @@ class DatabaseEventsIterator implements Iterator<BootstrapEvent> {
     }
   }
 
-  public Path dbLevelPath() {
+  Path dbLevelPath() {
     return this.dbLevelPath;
   }
 

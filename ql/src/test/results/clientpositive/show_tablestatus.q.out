@@ -10,6 +10,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
+    Show Table Status
+      database: default
+      pattern: src
 
   Stage: Stage-1
     Fetch Operator

@@ -132,8 +132,8 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
   /**
    * Fixes tmpPath to point to the correct partition. Initialize operator will
    * set tmpPath and taskTmpPath based on root table directory. So initially,
-   * tmpPath will be <prefix>/_tmp.-ext-10000 and taskTmpPath will be
-   * <prefix>/_task_tmp.-ext-10000. The depth of these two paths will be 0.
+   * tmpPath will be &lt;prefix&gt;/_tmp.-ext-10000 and taskTmpPath will be
+   * &lt;prefix&gt;/_task_tmp.-ext-10000. The depth of these two paths will be 0.
    * Now, in case of dynamic partitioning or list bucketing the inputPath will
    * have additional sub-directories under root table directory. This function
    * updates the tmpPath and taskTmpPath to reflect these additional
@@ -146,10 +146,10 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
    * Note: The path difference between inputPath and tmpDepth can be DP or DP+LB.
    * This method will automatically handle it.
    *
-   * Continuing the example above, if inputPath is <prefix>/-ext-10000/hr=a1/,
+   * Continuing the example above, if inputPath is &lt;prefix&gt;/-ext-10000/hr=a1/,
    * newPath will be hr=a1/. Then, tmpPath and taskTmpPath will be updated to
-   * <prefix>/-ext-10000/hr=a1/_tmp.ext-10000 and
-   * <prefix>/-ext-10000/hr=a1/_task_tmp.ext-10000 respectively.
+   * &lt;prefix&gt;/-ext-10000/hr=a1/_tmp.ext-10000 and
+   * &lt;prefix&gt;/-ext-10000/hr=a1/_task_tmp.ext-10000 respectively.
    * We have list_bucket_dml_6.q cover this case: DP + LP + multiple skewed
    * values + merge.
    *

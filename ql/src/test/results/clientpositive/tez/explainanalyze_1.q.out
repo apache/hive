@@ -96,8 +96,7 @@ Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 Stage-3
   Stats Work{}
     Stage-4
-      Create Table Operator:
-        name:default.t_n28
+      Create Table{"name:":"default.t_n28"}
         Stage-0
           Move Operator
             Stage-1

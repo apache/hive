@@ -29,7 +29,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-OPTIMIZED SQL: SELECT `key`, `value`, IF(MOD(CAST(`key` AS DOUBLE), CAST(100 AS DOUBLE)) = 0, 'a1', 'b1') AS `_o__c2`
+OPTIMIZED SQL: SELECT `key`, `value`, IF(CAST(`key` AS DOUBLE) % 100 = 0, 'a1', 'b1') AS `_o__c2`
 FROM `default`.`srcpart`
 WHERE `ds` = '2008-04-08'
 STAGE DEPENDENCIES:
@@ -88,6 +88,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                   keys: ds (type: string), hr (type: string)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 316 Data size: 365928 Basic stats: COMPLETE Column stats: COMPLETE
@@ -404,7 +405,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-OPTIMIZED SQL: SELECT `key`, `value`, IF(MOD(CAST(`key` AS DOUBLE), CAST(100 AS DOUBLE)) = 0, 'a1', 'b1') AS `_o__c2`
+OPTIMIZED SQL: SELECT `key`, `value`, IF(CAST(`key` AS DOUBLE) % 100 = 0, 'a1', 'b1') AS `_o__c2`
 FROM `default`.`srcpart`
 WHERE `ds` = '2008-04-08'
 STAGE DEPENDENCIES:
@@ -468,6 +469,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                   keys: ds (type: string), hr (type: string)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 316 Data size: 365928 Basic stats: COMPLETE Column stats: COMPLETE

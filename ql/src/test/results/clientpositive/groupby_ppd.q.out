@@ -37,6 +37,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: _col0 (type: int)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
@@ -60,6 +61,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: _col0 (type: int)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE

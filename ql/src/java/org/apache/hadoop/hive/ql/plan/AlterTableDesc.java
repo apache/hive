@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
@@ -929,7 +930,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
   }
 
   /**
-   * @param cascade the isCascade to set
+   * @param isCascade the isCascade to set
    */
   public void setIsCascade(boolean isCascade) {
     this.isCascade = isCascade;

@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat;
 import org.apache.hadoop.hive.druid.io.HiveDruidSplit;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 
-import io.druid.query.Query;
+import org.apache.druid.query.Query;
 import junit.framework.TestCase;
 
 /**
@@ -54,6 +54,7 @@ import junit.framework.TestCase;
           + "\"granularity\":\"DAY\","
           + "\"aggregations\":[],"
           + "\"postAggregations\":[],"
+          + "\"limit\":2147483647,"
           + "\"context\":{\"queryId\":\"\"}}, [localhost:8082]}]";
 
   private static final String

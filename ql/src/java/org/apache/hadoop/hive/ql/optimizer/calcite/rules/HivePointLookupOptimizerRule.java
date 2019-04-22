@@ -74,8 +74,8 @@ import com.google.common.collect.Sets;
  *
  * Similarily
  * <pre>
- * v1 <= c1 and c1 <= v2
- * <pre>
+ * v1 &lt;= c1 and c1 &lt;= v2
+ * </pre>
  * is rewritten to <p>c1 between v1 and v2</p>
  */
 public abstract class HivePointLookupOptimizerRule extends RelOptRule {

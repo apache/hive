@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Test;
 

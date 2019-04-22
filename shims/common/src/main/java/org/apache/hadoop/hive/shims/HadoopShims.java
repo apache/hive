@@ -500,10 +500,11 @@ public interface HadoopShims {
    * @param srcPaths List of Path to the source files or directories to copy
    * @param dst Path to the destination file or directory
    * @param conf The hadoop configuration object
-   * @param doAsUser The user to perform the distcp as
+   * @param proxyUser The user to perform the distcp as
    * @return True if it is successfull; False otherwise.
    */
-  public boolean runDistCpAs(List<Path> srcPaths, Path dst, Configuration conf, String doAsUser) throws IOException;
+  boolean runDistCpAs(List<Path> srcPaths, Path dst, Configuration conf, UserGroupInformation proxyUser)
+          throws IOException;
 
   /**
    * Copies a source dir/file to a destination by orchestrating the copy between hdfs nodes.

@@ -2383,6 +2383,282 @@ LEFT OUTER JOIN \"WM_POOL\" ON \"WM_POOL\".\"POOL_ID\" = \"WM_MAPPING\".\"POOL_I
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@WM_MAPPINGS
 POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `COMPACTION_QUEUE` (
+  `CQ_ID` bigint,
+  `CQ_DATABASE` string,
+  `CQ_TABLE` string,
+  `CQ_PARTITION` string,
+  `CQ_STATE` string,
+  `CQ_TYPE` string,
+  `CQ_TBLPROPERTIES` string,
+  `CQ_WORKER_ID` string,
+  `CQ_START` bigint,
+  `CQ_RUN_AS` string,
+  `CQ_HIGHEST_WRITE_ID` bigint,
+  `CQ_HADOOP_JOB_ID` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"COMPACTION_QUEUE\".\"CQ_ID\",
+  \"COMPACTION_QUEUE\".\"CQ_DATABASE\",
+  \"COMPACTION_QUEUE\".\"CQ_TABLE\",
+  \"COMPACTION_QUEUE\".\"CQ_PARTITION\",
+  \"COMPACTION_QUEUE\".\"CQ_STATE\",
+  \"COMPACTION_QUEUE\".\"CQ_TYPE\",
+  \"COMPACTION_QUEUE\".\"CQ_TBLPROPERTIES\",
+  \"COMPACTION_QUEUE\".\"CQ_WORKER_ID\",
+  \"COMPACTION_QUEUE\".\"CQ_START\",
+  \"COMPACTION_QUEUE\".\"CQ_RUN_AS\",
+  \"COMPACTION_QUEUE\".\"CQ_HIGHEST_WRITE_ID\",
+  \"COMPACTION_QUEUE\".\"CQ_HADOOP_JOB_ID\"
+FROM \"COMPACTION_QUEUE\"
+"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@COMPACTION_QUEUE
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `COMPACTION_QUEUE` (
+  `CQ_ID` bigint,
+  `CQ_DATABASE` string,
+  `CQ_TABLE` string,
+  `CQ_PARTITION` string,
+  `CQ_STATE` string,
+  `CQ_TYPE` string,
+  `CQ_TBLPROPERTIES` string,
+  `CQ_WORKER_ID` string,
+  `CQ_START` bigint,
+  `CQ_RUN_AS` string,
+  `CQ_HIGHEST_WRITE_ID` bigint,
+  `CQ_HADOOP_JOB_ID` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"COMPACTION_QUEUE\".\"CQ_ID\",
+  \"COMPACTION_QUEUE\".\"CQ_DATABASE\",
+  \"COMPACTION_QUEUE\".\"CQ_TABLE\",
+  \"COMPACTION_QUEUE\".\"CQ_PARTITION\",
+  \"COMPACTION_QUEUE\".\"CQ_STATE\",
+  \"COMPACTION_QUEUE\".\"CQ_TYPE\",
+  \"COMPACTION_QUEUE\".\"CQ_TBLPROPERTIES\",
+  \"COMPACTION_QUEUE\".\"CQ_WORKER_ID\",
+  \"COMPACTION_QUEUE\".\"CQ_START\",
+  \"COMPACTION_QUEUE\".\"CQ_RUN_AS\",
+  \"COMPACTION_QUEUE\".\"CQ_HIGHEST_WRITE_ID\",
+  \"COMPACTION_QUEUE\".\"CQ_HADOOP_JOB_ID\"
+FROM \"COMPACTION_QUEUE\"
+"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@COMPACTION_QUEUE
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `COMPLETED_COMPACTIONS` (
+  `CC_ID` bigint,
+  `CC_DATABASE` string,
+  `CC_TABLE` string,
+  `CC_PARTITION` string,
+  `CC_STATE` string,
+  `CC_TYPE` string,
+  `CC_TBLPROPERTIES` string,
+  `CC_WORKER_ID` string,
+  `CC_START` bigint,
+  `CC_END` bigint,
+  `CC_RUN_AS` string,
+  `CC_HIGHEST_WRITE_ID` bigint,
+  `CC_HADOOP_JOB_ID` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"COMPLETED_COMPACTIONS\".\"CC_ID\",
+  \"COMPLETED_COMPACTIONS\".\"CC_DATABASE\",
+  \"COMPLETED_COMPACTIONS\".\"CC_TABLE\",
+  \"COMPLETED_COMPACTIONS\".\"CC_PARTITION\",
+  \"COMPLETED_COMPACTIONS\".\"CC_STATE\",
+  \"COMPLETED_COMPACTIONS\".\"CC_TYPE\",
+  \"COMPLETED_COMPACTIONS\".\"CC_TBLPROPERTIES\",
+  \"COMPLETED_COMPACTIONS\".\"CC_WORKER_ID\",
+  \"COMPLETED_COMPACTIONS\".\"CC_START\",
+  \"COMPLETED_COMPACTIONS\".\"CC_END\",
+  \"COMPLETED_COMPACTIONS\".\"CC_RUN_AS\",
+  \"COMPLETED_COMPACTIONS\".\"CC_HIGHEST_WRITE_ID\",
+  \"COMPLETED_COMPACTIONS\".\"CC_HADOOP_JOB_ID\"
+FROM \"COMPLETED_COMPACTIONS\"
+"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@COMPLETED_COMPACTIONS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `COMPLETED_COMPACTIONS` (
+  `CC_ID` bigint,
+  `CC_DATABASE` string,
+  `CC_TABLE` string,
+  `CC_PARTITION` string,
+  `CC_STATE` string,
+  `CC_TYPE` string,
+  `CC_TBLPROPERTIES` string,
+  `CC_WORKER_ID` string,
+  `CC_START` bigint,
+  `CC_END` bigint,
+  `CC_RUN_AS` string,
+  `CC_HIGHEST_WRITE_ID` bigint,
+  `CC_HADOOP_JOB_ID` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"COMPLETED_COMPACTIONS\".\"CC_ID\",
+  \"COMPLETED_COMPACTIONS\".\"CC_DATABASE\",
+  \"COMPLETED_COMPACTIONS\".\"CC_TABLE\",
+  \"COMPLETED_COMPACTIONS\".\"CC_PARTITION\",
+  \"COMPLETED_COMPACTIONS\".\"CC_STATE\",
+  \"COMPLETED_COMPACTIONS\".\"CC_TYPE\",
+  \"COMPLETED_COMPACTIONS\".\"CC_TBLPROPERTIES\",
+  \"COMPLETED_COMPACTIONS\".\"CC_WORKER_ID\",
+  \"COMPLETED_COMPACTIONS\".\"CC_START\",
+  \"COMPLETED_COMPACTIONS\".\"CC_END\",
+  \"COMPLETED_COMPACTIONS\".\"CC_RUN_AS\",
+  \"COMPLETED_COMPACTIONS\".\"CC_HIGHEST_WRITE_ID\",
+  \"COMPLETED_COMPACTIONS\".\"CC_HADOOP_JOB_ID\"
+FROM \"COMPLETED_COMPACTIONS\"
+"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@COMPLETED_COMPACTIONS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE OR REPLACE VIEW `COMPACTIONS`
+(
+  `C_ID`,
+  `C_CATALOG`,
+  `C_DATABASE`,
+  `C_TABLE`,
+  `C_PARTITION`,
+  `C_TYPE`,
+  `C_STATE`,
+  `C_HOSTNAME`,
+  `C_WORKER_ID`,
+  `C_START`,
+  `C_DURATION`,
+  `C_HADOOP_JOB_ID`,
+  `C_RUN_AS`,
+  `C_HIGHEST_WRITE_ID`
+) AS
+SELECT
+  CC_ID,
+  'default',
+  CC_DATABASE,
+  CC_TABLE,
+  CC_PARTITION,
+  CASE WHEN CC_TYPE = 'i' THEN 'minor' WHEN CC_TYPE = 'a' THEN 'major' ELSE 'UNKNOWN' END,
+  CASE WHEN CC_STATE = 'f' THEN 'failed' WHEN CC_STATE = 's' THEN 'succeeded' WHEN CC_STATE = 'a' THEN 'attempted' ELSE 'UNKNOWN' END,
+  CASE WHEN CC_WORKER_ID IS NULL THEN cast (null as string) ELSE split(CC_WORKER_ID,"-")[0] END,
+  CASE WHEN CC_WORKER_ID IS NULL THEN cast (null as string) ELSE split(CC_WORKER_ID,"-")[1] END,
+  CC_START,
+  CASE WHEN CC_END IS NULL THEN cast (null as string) ELSE CC_END-CC_START END,
+  CC_HADOOP_JOB_ID,
+  CC_RUN_AS,
+  CC_HIGHEST_WRITE_ID
+FROM COMPLETED_COMPACTIONS
+UNION ALL
+SELECT
+  CQ_ID,
+  'default',
+  CQ_DATABASE,
+  CQ_TABLE,
+  CQ_PARTITION,
+  CASE WHEN CQ_TYPE = 'i' THEN 'minor' WHEN CQ_TYPE = 'a' THEN 'major' ELSE 'UNKNOWN' END,
+  CASE WHEN CQ_STATE = 'i' THEN 'initiated' WHEN CQ_STATE = 'w' THEN 'working' WHEN CQ_STATE = 'r' THEN 'ready for cleaning' ELSE 'UNKNOWN' END,
+  CASE WHEN CQ_WORKER_ID IS NULL THEN NULL ELSE split(CQ_WORKER_ID,"-")[0] END,
+  CASE WHEN CQ_WORKER_ID IS NULL THEN NULL ELSE split(CQ_WORKER_ID,"-")[1] END,
+  CQ_START,
+  cast (null as string),
+  CQ_HADOOP_JOB_ID,
+  CQ_RUN_AS,
+  CQ_HIGHEST_WRITE_ID
+FROM COMPACTION_QUEUE
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: sys@compaction_queue
+PREHOOK: Input: sys@completed_compactions
+PREHOOK: Output: SYS@COMPACTIONS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE OR REPLACE VIEW `COMPACTIONS`
+(
+  `C_ID`,
+  `C_CATALOG`,
+  `C_DATABASE`,
+  `C_TABLE`,
+  `C_PARTITION`,
+  `C_TYPE`,
+  `C_STATE`,
+  `C_HOSTNAME`,
+  `C_WORKER_ID`,
+  `C_START`,
+  `C_DURATION`,
+  `C_HADOOP_JOB_ID`,
+  `C_RUN_AS`,
+  `C_HIGHEST_WRITE_ID`
+) AS
+SELECT
+  CC_ID,
+  'default',
+  CC_DATABASE,
+  CC_TABLE,
+  CC_PARTITION,
+  CASE WHEN CC_TYPE = 'i' THEN 'minor' WHEN CC_TYPE = 'a' THEN 'major' ELSE 'UNKNOWN' END,
+  CASE WHEN CC_STATE = 'f' THEN 'failed' WHEN CC_STATE = 's' THEN 'succeeded' WHEN CC_STATE = 'a' THEN 'attempted' ELSE 'UNKNOWN' END,
+  CASE WHEN CC_WORKER_ID IS NULL THEN cast (null as string) ELSE split(CC_WORKER_ID,"-")[0] END,
+  CASE WHEN CC_WORKER_ID IS NULL THEN cast (null as string) ELSE split(CC_WORKER_ID,"-")[1] END,
+  CC_START,
+  CASE WHEN CC_END IS NULL THEN cast (null as string) ELSE CC_END-CC_START END,
+  CC_HADOOP_JOB_ID,
+  CC_RUN_AS,
+  CC_HIGHEST_WRITE_ID
+FROM COMPLETED_COMPACTIONS
+UNION ALL
+SELECT
+  CQ_ID,
+  'default',
+  CQ_DATABASE,
+  CQ_TABLE,
+  CQ_PARTITION,
+  CASE WHEN CQ_TYPE = 'i' THEN 'minor' WHEN CQ_TYPE = 'a' THEN 'major' ELSE 'UNKNOWN' END,
+  CASE WHEN CQ_STATE = 'i' THEN 'initiated' WHEN CQ_STATE = 'w' THEN 'working' WHEN CQ_STATE = 'r' THEN 'ready for cleaning' ELSE 'UNKNOWN' END,
+  CASE WHEN CQ_WORKER_ID IS NULL THEN NULL ELSE split(CQ_WORKER_ID,"-")[0] END,
+  CASE WHEN CQ_WORKER_ID IS NULL THEN NULL ELSE split(CQ_WORKER_ID,"-")[1] END,
+  CQ_START,
+  cast (null as string),
+  CQ_HADOOP_JOB_ID,
+  CQ_RUN_AS,
+  CQ_HIGHEST_WRITE_ID
+FROM COMPACTION_QUEUE
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: sys@compaction_queue
+POSTHOOK: Input: sys@completed_compactions
+POSTHOOK: Output: SYS@COMPACTIONS
+POSTHOOK: Output: database:sys
+POSTHOOK: Lineage: COMPACTIONS.c_catalog EXPRESSION []
+POSTHOOK: Lineage: COMPACTIONS.c_database EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_database, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_database, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_duration EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_end, type:bigint, comment:from deserializer), (completed_compactions)completed_compactions.FieldSchema(name:cc_start, type:bigint, comment:from deserializer), ]
+#### A masked pattern was here ####
+POSTHOOK: Lineage: COMPACTIONS.c_highest_write_id EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_highest_write_id, type:bigint, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_highest_write_id, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_hostname EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_worker_id, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_worker_id, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_id EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_id, type:bigint, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_id, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_partition EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_partition, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_partition, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_run_as EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_run_as, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_run_as, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_start EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_start, type:bigint, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_start, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_state EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_state, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_state, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_table EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_table, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_table, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_type EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_type, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_type, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_worker_id EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_worker_id, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_worker_id, type:string, comment:from deserializer), ]
 PREHOOK: query: CREATE DATABASE IF NOT EXISTS INFORMATION_SCHEMA
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:INFORMATION_SCHEMA
@@ -3177,6 +3453,120 @@ POSTHOOK: Lineage: VIEWS.table_catalog SIMPLE []
 POSTHOOK: Lineage: VIEWS.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: VIEWS.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: VIEWS.view_definition SIMPLE [(tbls)t.FieldSchema(name:view_original_text, type:string, comment:from deserializer), ]
+PREHOOK: query: CREATE OR REPLACE VIEW `COMPACTIONS`
+(
+  `C_ID`,
+  `C_CATALOG`,
+  `C_DATABASE`,
+  `C_TABLE`,
+  `C_PARTITION`,
+  `C_TYPE`,
+  `C_STATE`,
+  `C_HOSTNAME`,
+  `C_WORKER_ID`,
+  `C_START`,
+  `C_DURATION`,
+  `C_HADOOP_JOB_ID`,
+  `C_RUN_AS`,
+  `C_HIGHEST_WRITE_ID`
+) AS
+SELECT DISTINCT
+  C_ID,
+  C_CATALOG,
+  C_DATABASE,
+  C_TABLE,
+  C_PARTITION,
+  C_TYPE,
+  C_STATE,
+  C_HOSTNAME,
+  C_WORKER_ID,
+  C_START,
+  C_DURATION,
+  C_HADOOP_JOB_ID,
+  C_RUN_AS,
+  C_HIGHEST_WRITE_ID
+FROM
+  `sys`.`COMPACTIONS` C JOIN `sys`.`TBLS` T ON (C.`C_TABLE` = T.`TBL_NAME`)
+                        JOIN `sys`.`DBS` D ON (C.`C_DATABASE` = D.`NAME`)
+                        LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
+WHERE
+  (NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer())
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: sys@compaction_queue
+PREHOOK: Input: sys@compactions
+PREHOOK: Input: sys@completed_compactions
+PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@tbl_privs
+PREHOOK: Input: sys@tbls
+PREHOOK: Output: INFORMATION_SCHEMA@COMPACTIONS
+PREHOOK: Output: database:information_schema
+POSTHOOK: query: CREATE OR REPLACE VIEW `COMPACTIONS`
+(
+  `C_ID`,
+  `C_CATALOG`,
+  `C_DATABASE`,
+  `C_TABLE`,
+  `C_PARTITION`,
+  `C_TYPE`,
+  `C_STATE`,
+  `C_HOSTNAME`,
+  `C_WORKER_ID`,
+  `C_START`,
+  `C_DURATION`,
+  `C_HADOOP_JOB_ID`,
+  `C_RUN_AS`,
+  `C_HIGHEST_WRITE_ID`
+) AS
+SELECT DISTINCT
+  C_ID,
+  C_CATALOG,
+  C_DATABASE,
+  C_TABLE,
+  C_PARTITION,
+  C_TYPE,
+  C_STATE,
+  C_HOSTNAME,
+  C_WORKER_ID,
+  C_START,
+  C_DURATION,
+  C_HADOOP_JOB_ID,
+  C_RUN_AS,
+  C_HIGHEST_WRITE_ID
+FROM
+  `sys`.`COMPACTIONS` C JOIN `sys`.`TBLS` T ON (C.`C_TABLE` = T.`TBL_NAME`)
+                        JOIN `sys`.`DBS` D ON (C.`C_DATABASE` = D.`NAME`)
+                        LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
+WHERE
+  (NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer())
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: sys@compaction_queue
+POSTHOOK: Input: sys@compactions
+POSTHOOK: Input: sys@completed_compactions
+POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@tbl_privs
+POSTHOOK: Input: sys@tbls
+POSTHOOK: Output: INFORMATION_SCHEMA@COMPACTIONS
+POSTHOOK: Output: database:information_schema
+POSTHOOK: Lineage: COMPACTIONS.c_catalog EXPRESSION []
+POSTHOOK: Lineage: COMPACTIONS.c_database EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_database, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_database, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_duration EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_end, type:bigint, comment:from deserializer), (completed_compactions)completed_compactions.FieldSchema(name:cc_start, type:bigint, comment:from deserializer), ]
+#### A masked pattern was here ####
+POSTHOOK: Lineage: COMPACTIONS.c_highest_write_id EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_highest_write_id, type:bigint, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_highest_write_id, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_hostname EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_worker_id, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_worker_id, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_id EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_id, type:bigint, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_id, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_partition EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_partition, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_partition, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_run_as EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_run_as, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_run_as, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_start EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_start, type:bigint, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_start, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_state EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_state, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_state, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_table EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_table, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_table, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_type EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_type, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_type, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_worker_id EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_worker_id, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_worker_id, type:string, comment:from deserializer), ]
 PREHOOK: query: SHOW RESOURCE PLANS
 PREHOOK: type: SHOW RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3669,6 +4059,18 @@ FAILED: ParseException line 2:50 mismatched input '>=' expecting > near 'ELAPSED
 FAILED: ParseException line 2:50 mismatched input '<' expecting > near 'ELAPSED_TIME' in comparisionOperator
 FAILED: ParseException line 2:50 mismatched input '<=' expecting > near 'ELAPSED_TIME' in comparisionOperator
 FAILED: ParseException line 2:50 mismatched input '=' expecting > near 'ELAPSED_TIME' in comparisionOperator
+PREHOOK: query: CREATE TRIGGER plan_1.trigger_2 WHEN BYTES_READ > '10k' DO KILL
+PREHOOK: type: CREATE TRIGGER
+PREHOOK: Output: dummyHostnameForTest
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. java.lang.IllegalArgumentException: Invalid size unit k
+PREHOOK: query: CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME > '10 millis' DO KILL
+PREHOOK: type: CREATE TRIGGER
+PREHOOK: Output: dummyHostnameForTest
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. java.lang.IllegalArgumentException: Invalid time unit millis
+PREHOOK: query: CREATE TRIGGER plan_1.trigger_2 WHEN BYTES_READ > '-1000' DO KILL
+PREHOOK: type: CREATE TRIGGER
+PREHOOK: Output: dummyHostnameForTest
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. java.lang.IllegalArgumentException: Illegal value for counter limit. Expected a positive long value.
 PREHOOK: query: CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME > '30hour' DO MOVE TO slow_pool
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
@@ -3684,10 +4086,10 @@ POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
 plan_1	default	trigger_1	BYTES_READ > '10kb'	KILL
 plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
-PREHOOK: query: ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '1min' DO KILL
+PREHOOK: query: ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '1GB' DO KILL
 PREHOOK: type: ALTER TRIGGER
 PREHOOK: Output: dummyHostnameForTest
-POSTHOOK: query: ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '1min' DO KILL
+POSTHOOK: query: ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '1GB' DO KILL
 POSTHOOK: type: ALTER TRIGGER
 PREHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 PREHOOK: type: QUERY
@@ -3697,7 +4099,7 @@ POSTHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
-plan_1	default	trigger_1	BYTES_READ > '1min'	KILL
+plan_1	default	trigger_1	BYTES_READ > '1GB'	KILL
 plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
 PREHOOK: query: DROP TRIGGER plan_1.trigger_1
 PREHOOK: type: DROP TRIGGER
@@ -3717,10 +4119,10 @@ PREHOOK: query: CREATE TRIGGER plan_2.trigger_1 WHEN BYTES_READ > '100mb' DO MOV
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
-PREHOOK: query: CREATE TRIGGER `table`.`table` WHEN BYTES_WRITTEN > '100KB' DO MOVE TO `table`
+PREHOOK: query: CREATE TRIGGER `table`.`table` WHEN BYTES_WRITTEN > '100KB' DO MOVE TO `default`
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
-POSTHOOK: query: CREATE TRIGGER `table`.`table` WHEN BYTES_WRITTEN > '100KB' DO MOVE TO `table`
+POSTHOOK: query: CREATE TRIGGER `table`.`table` WHEN BYTES_WRITTEN > '100KB' DO MOVE TO `default`
 POSTHOOK: type: CREATE TRIGGER
 PREHOOK: query: CREATE TRIGGER `table`.`trigger` WHEN BYTES_WRITTEN > '100MB' DO MOVE TO `default`
 PREHOOK: type: CREATE TRIGGER
@@ -3752,7 +4154,7 @@ POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
 plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
 table	default	database	BYTES_WRITTEN > "1GB"	MOVE TO default
-table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO table
+table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO default
 table	default	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
 table	default	trigger1	ELAPSED_TIME > 10	KILL
 table	default	trigger2	ELAPSED_TIME > '1hour'	KILL
@@ -3770,7 +4172,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
 plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
-table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO table
+table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO default
 table	default	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
 table	default	trigger1	ELAPSED_TIME > 10	KILL
 table	default	trigger2	ELAPSED_TIME > '1hour'	KILL
@@ -3842,7 +4244,7 @@ POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
 plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
 plan_2	default	trigger_1	BYTES_READ > 0	MOVE TO null_pool
-table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO table
+table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO default
 table	default	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
 table	default	trigger1	ELAPSED_TIME > 10	KILL
 table	default	trigger2	ELAPSED_TIME > '1hour'	KILL
@@ -4225,13 +4627,13 @@ POSTHOOK: query: SHOW RESOURCE PLAN `table`
 POSTHOOK: type: SHOW RESOURCEPLAN
 table[status=DISABLED,parallelism=1,defaultPool=null]
  +  table[allocFraction=0.0,schedulingPolicy=fifo,parallelism=1]
-     |  trigger table: if (BYTES_WRITTEN > '100KB') { MOVE TO table }
+     |  trigger table: if (BYTES_WRITTEN > '100KB') { MOVE TO default }
      +  pool[allocFraction=0.9,schedulingPolicy=fair,parallelism=3]
          +  child2[allocFraction=0.7,schedulingPolicy=fair,parallelism=3]
              |  trigger trigger1: if (ELAPSED_TIME > 10) { KILL }
              |  trigger trigger2: if (ELAPSED_TIME > '1hour') { KILL }
          +  child1[allocFraction=0.3,schedulingPolicy=fair,parallelism=1]
-             |  trigger table: if (BYTES_WRITTEN > '100KB') { MOVE TO table }
+             |  trigger table: if (BYTES_WRITTEN > '100KB') { MOVE TO default }
              |  trigger trigger1: if (ELAPSED_TIME > 10) { KILL }
  +  <unmanaged queries>
      |  trigger trigger1: if (ELAPSED_TIME > 10) { KILL }
@@ -4481,7 +4883,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
 plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
-table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO table
+table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO default
 table	default	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
 table	default	trigger1	ELAPSED_TIME > 10	KILL
 table	default	trigger2	ELAPSED_TIME > '1hour'	KILL
@@ -4587,7 +4989,7 @@ plan_4a	default	trigger_1	BYTES_READ > '10GB'	KILL
 plan_4a	default	trigger_2	BYTES_READ > '11GB'	KILL
 plan_4b	default	trigger_1	BYTES_READ > '10GB'	KILL
 plan_4b	default	trigger_2	BYTES_READ > '11GB'	KILL
-table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO table
+table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO default
 table	default	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
 table	default	trigger1	ELAPSED_TIME > 10	KILL
 table	default	trigger2	ELAPSED_TIME > '1hour'	KILL

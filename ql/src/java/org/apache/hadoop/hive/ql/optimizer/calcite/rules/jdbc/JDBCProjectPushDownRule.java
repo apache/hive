@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * JDBCProjectPushDownRule convert a {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject}
- * into a {@link org.apache.calcite.adapter.jdbc.JdbcRules.JdbcAggregateRule.JdbcProject}
+ * into a {@link JdbcProject}
  * and pushes it down below the {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter}}
  * operator so it will be sent to the external table.
  */
@@ -68,14 +68,14 @@ public class JDBCProjectPushDownRule extends RelOptRule {
     final HiveProject project = call.rel(0);
     final HiveJdbcConverter converter = call.rel(1);
 
-    Project newHiveProject = project.copy(project.getTraitSet(), converter.getInput(),
-            project.getProjects(), project.getRowType());
-    JdbcProject newJdbcProject =
-            (JdbcProject) new JdbcProjectRule(converter.getJdbcConvention()).convert(newHiveProject);
-    if (newJdbcProject != null) {
-      RelNode converterRes = converter.copy(converter.getTraitSet(), Arrays.asList(newJdbcProject));
-      call.transformTo(converterRes);
-    }
+    JdbcProject jdbcProject = new JdbcProject(
+        project.getCluster(),
+        project.getTraitSet().replace(converter.getJdbcConvention()),
+        converter.getInput(),
+        project.getProjects(),
+        project.getRowType());
+
+    call.transformTo(converter.copy(converter.getTraitSet(), jdbcProject));
   }
 
 };

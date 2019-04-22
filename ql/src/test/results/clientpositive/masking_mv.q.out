@@ -63,6 +63,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: compute_stats(col1, 'hll')
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
@@ -100,13 +101,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-8
-      Create View Operator:
-        Create View
-          columns: key int
-          expanded text: select `masking_test_n_mv`.`key` from `default`.`masking_test_n_mv`
-          name: default.masking_test_view_n_mv
-          original text: select key from masking_test_n_mv
-          rewrite enabled: true
+    Create View
+      columns: key int
+      expanded text: select `masking_test_n_mv`.`key` from `default`.`masking_test_n_mv`
+      name: default.masking_test_view_n_mv
+      original text: select key from masking_test_n_mv
+      rewrite enabled: true
 
   Stage: Stage-2
     Stats Work
@@ -292,6 +292,7 @@ STAGE PLANS:
               Statistics: Num rows: 83 Data size: 332 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 keys: key (type: int)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 41 Data size: 164 Basic stats: COMPLETE Column stats: COMPLETE
@@ -368,6 +369,7 @@ STAGE PLANS:
                 Statistics: Num rows: 83 Data size: 7885 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 41 Data size: 7544 Basic stats: COMPLETE Column stats: COMPLETE
@@ -445,6 +447,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: sum(_col1)
                   keys: _col0 (type: string)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 41 Data size: 7872 Basic stats: COMPLETE Column stats: COMPLETE
@@ -537,6 +540,7 @@ STAGE PLANS:
                 Statistics: Num rows: 83 Data size: 7885 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 41 Data size: 7544 Basic stats: COMPLETE Column stats: COMPLETE
@@ -618,6 +622,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: sum(_col1)
                   keys: _col0 (type: string)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 41 Data size: 7872 Basic stats: COMPLETE Column stats: COMPLETE
@@ -730,6 +735,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: compute_stats(col1, 'hll')
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
@@ -767,13 +773,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-8
-      Create View Operator:
-        Create View
-          columns: key int
-          expanded text: select `srctnx`.`key` from `default`.`srcTnx`
-          name: default.masking_test_view_n_mv_2
-          original text: select key from srcTnx
-          rewrite enabled: true
+    Create View
+      columns: key int
+      expanded text: select `srctnx`.`key` from `default`.`srcTnx`
+      name: default.masking_test_view_n_mv_2
+      original text: select key from srcTnx
+      rewrite enabled: true
 
   Stage: Stage-2
     Stats Work

@@ -75,14 +75,14 @@
     <datanucleus-core.version>4.1.17</datanucleus-core.version>
     <datanucleus-jdo.version>3.2.0-m3</datanucleus-jdo.version>
     <datanucleus-rdbms.version>4.1.19</datanucleus-rdbms.version>
-    <derby.version>10.10.2.0</derby.version>
+    <derby.version>10.14.1.0</derby.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2
     </dropwizard-metrics-hadoop-metrics2-reporter.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <guava.version>19.0</guava.version>
     <hadoop.version>3.1.0</hadoop.version>
     <hikaricp.version>2.6.1</hikaricp.version>
-    <jackson.version>2.9.5</jackson.version>
+    <jackson.version>2.9.8</jackson.version>
     <javolution.version>5.5.1</javolution.version>
     <junit.version>4.11</junit.version>
     <libfb303.version>0.9.3</libfb303.version>

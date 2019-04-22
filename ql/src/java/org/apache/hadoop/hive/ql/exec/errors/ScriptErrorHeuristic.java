@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
  *
  * Conditions to check:
  *
- * 1. "Script failed with code <some number>" is in the log
+ * 1. "Script failed with code &lt;some number&gt;" is in the log
  *
  */
 

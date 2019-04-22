@@ -1,3 +1,21 @@
+PREHOOK: query: EXPLAIN SHOW FUNCTIONS
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: EXPLAIN SHOW FUNCTIONS
+POSTHOOK: type: SHOWFUNCTIONS
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Functions
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: SHOW FUNCTIONS
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS
@@ -168,6 +186,7 @@ mask_show_last_n
 matchpath
 max
 md5
+mid
 min
 minute
 mod
@@ -193,9 +212,12 @@ parse_url_tuple
 percent_rank
 percentile
 percentile_approx
+percentile_cont
+percentile_disc
 pi
 pmod
 posexplode
+position
 positive
 pow
 power
@@ -302,6 +324,25 @@ xpath_string
 year
 |
 ~
+PREHOOK: query: EXPLAIN SHOW FUNCTIONS '^c.*'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: EXPLAIN SHOW FUNCTIONS '^c.*'
+POSTHOOK: type: SHOWFUNCTIONS
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Functions
+      pattern: ^c.*
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: SHOW FUNCTIONS '^c.*'
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS '^c.*'
@@ -410,6 +451,25 @@ PREHOOK: query: SHOW FUNCTIONS '***'
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS '***'
 POSTHOOK: type: SHOWFUNCTIONS
+PREHOOK: query: EXPLAIN SHOW FUNCTIONS LIKE 'When'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: EXPLAIN SHOW FUNCTIONS LIKE 'When'
+POSTHOOK: type: SHOWFUNCTIONS
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Functions
+      pattern: When
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: SHOW FUNCTIONS LIKE 'When'
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS LIKE 'When'
@@ -437,6 +497,7 @@ mask_show_last_n
 matchpath
 max
 md5
+mid
 min
 minute
 mod

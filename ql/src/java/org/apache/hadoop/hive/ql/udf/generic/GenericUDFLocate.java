@@ -42,7 +42,7 @@ import org.apache.hadoop.io.Text;
  * </pre>
  * <p>
  */
-@Description(name = "locate",
+@Description(name = "locate,position",
     value = "_FUNC_(substr, str[, pos]) - Returns the position of the first "
     + "occurance of substr in str after position pos",
     extended = "Example:\n"

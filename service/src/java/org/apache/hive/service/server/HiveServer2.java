@@ -76,6 +76,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.events.NotificationEventPoll;
+import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
 import org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.PolicyProviderContainer;
@@ -240,6 +241,9 @@ public class HiveServer2 extends CompositeService {
     if (llapHosts != null && !llapHosts.isEmpty()) {
       LlapRegistryService.getClient(hiveConf);
     }
+
+    // Initialize metadata provider class
+    CalcitePlanner.initializeMetadataProviderClass();
 
     try {
       sessionHive = Hive.get(hiveConf);
@@ -728,23 +732,21 @@ public class HiveServer2 extends CompositeService {
   private void startOrReconnectTezSessions() {
     LOG.info("Starting/Reconnecting tez sessions..");
     // TODO: add tez session reconnect after TEZ-3875
-    WMFullResourcePlan resourcePlan = null;
-    if (!StringUtils.isEmpty(wmQueue)) {
-      try {
-        resourcePlan = sessionHive.getActiveResourcePlan();
-      } catch (HiveException e) {
-        if (!HiveConf.getBoolVar(getHiveConf(), ConfVars.HIVE_IN_TEST_SSL)) {
-          throw new RuntimeException(e);
-        } else {
-          resourcePlan = null; // Ignore errors in SSL tests where the connection is misconfigured.
-        }
+    WMFullResourcePlan resourcePlan;
+    try {
+      resourcePlan = sessionHive.getActiveResourcePlan();
+    } catch (HiveException e) {
+      if (!HiveConf.getBoolVar(getHiveConf(), ConfVars.HIVE_IN_TEST_SSL)) {
+        throw new RuntimeException(e);
+      } else {
+        resourcePlan = null; // Ignore errors in SSL tests where the connection is misconfigured.
       }
+    }
 
-      if (resourcePlan == null && HiveConf.getBoolVar(
-          getHiveConf(), ConfVars.HIVE_IN_TEST)) {
-        LOG.info("Creating a default resource plan for test");
-        resourcePlan = createTestResourcePlan();
-      }
+    if (resourcePlan == null && HiveConf.getBoolVar(
+      getHiveConf(), ConfVars.HIVE_IN_TEST)) {
+      LOG.info("Creating a default resource plan for test");
+      resourcePlan = createTestResourcePlan();
     }
     initAndStartTezSessionPoolManager(resourcePlan);
     initAndStartWorkloadManager(resourcePlan);
@@ -759,7 +761,8 @@ public class HiveServer2 extends CompositeService {
     // SessionState.get() return null during createTezDir
     try {
       // will be invoked anyway in TezTask. Doing it early to initialize triggers for non-pool tez session.
-      LOG.info("Initializing tez session pool manager");
+      LOG.info("Initializing tez session pool manager. Active resource plan: {}",
+        resourcePlan == null || resourcePlan.getPlan() == null ? "null" : resourcePlan.getPlan().getName());
       tezSessionPoolManager = TezSessionPoolManager.getInstance();
       HiveConf hiveConf = getHiveConf();
       if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS)) {
@@ -777,7 +780,8 @@ public class HiveServer2 extends CompositeService {
   private void initAndStartWorkloadManager(final WMFullResourcePlan resourcePlan) {
     if (!StringUtils.isEmpty(wmQueue)) {
       // Initialize workload management.
-      LOG.info("Initializing workload management");
+      LOG.info("Initializing workload management. Active resource plan: {}",
+        resourcePlan == null || resourcePlan.getPlan() == null ? "null" : resourcePlan.getPlan().getName());
       try {
         wm = WorkloadManager.create(wmQueue, getHiveConf(), resourcePlan);
         wm.start();
@@ -786,7 +790,8 @@ public class HiveServer2 extends CompositeService {
         throw new ServiceException("Unable to instantiate and start Workload Manager", e);
       }
     } else {
-      LOG.info("Workload management is not enabled.");
+      LOG.info("Workload management is not enabled as {} config is not set",
+        ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE.varname);
     }
   }
 

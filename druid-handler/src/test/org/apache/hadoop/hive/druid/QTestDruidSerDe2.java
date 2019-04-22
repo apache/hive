@@ -25,8 +25,8 @@ import org.apache.hadoop.util.StringUtils;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
-import io.druid.query.metadata.metadata.SegmentAnalysis;
-import io.druid.query.metadata.metadata.SegmentMetadataQuery;
+import org.apache.druid.query.metadata.metadata.SegmentAnalysis;
+import org.apache.druid.query.metadata.metadata.SegmentMetadataQuery;
 
 /**
  * Druid SerDe to be used in tests.

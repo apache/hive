@@ -28,9 +28,9 @@ import org.apache.hadoop.io.NullWritable;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
-import io.druid.query.Result;
-import io.druid.query.select.EventHolder;
-import io.druid.query.select.SelectResultValue;
+import org.apache.druid.query.Result;
+import org.apache.druid.query.select.EventHolder;
+import org.apache.druid.query.select.SelectResultValue;
 
 /**
  * Record reader for results for Druid SelectQuery.

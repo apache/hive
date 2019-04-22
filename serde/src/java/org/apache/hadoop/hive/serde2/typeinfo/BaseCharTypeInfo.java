@@ -54,17 +54,44 @@ public abstract class BaseCharTypeInfo extends PrimitiveTypeInfo {
     return getQualifiedName(typeName, length);
   }
 
-  public static String getQualifiedName(String typeName, int length) {
-    StringBuilder sb = new StringBuilder(typeName);
-    sb.append("(");
-    sb.append(length);
-    sb.append(")");
-    return sb.toString();
+  /**
+   * Utility method to build the fully qualified data type. For example:
+   * (char,16) becomes char(16).
+   *
+   * @param typeName The name of the data type (char or varchar)
+   * @param length The maximum length of the data type
+   * @return A fully qualified field name
+   */
+  protected String getQualifiedName(String typeName, int length) {
+    return typeName + '(' + length + ')';
   }
 
   @Override
   public void setTypeName(String typeName) {
     // type name should already be set by subclass
     return;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + length;
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!super.equals(obj)) {
+      return false;
+    }
+    BaseCharTypeInfo other = (BaseCharTypeInfo) obj;
+    if (length != other.length) {
+      return false;
+    }
+    return true;
   }
 }

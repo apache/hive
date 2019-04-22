@@ -685,23 +685,24 @@ public class HiveConnection implements java.sql.Connection {
           saslProps.put(Sasl.QOP, "auth-conf,auth-int,auth");
         }
         saslProps.put(Sasl.SERVER_AUTH, "true");
-        if (sessConfMap.containsKey(JdbcConnectionParams.AUTH_PRINCIPAL)) {
-          transport = KerberosSaslHelper.getKerberosTransport(
-              sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL), host,
-              socketTransport, saslProps, assumeSubject);
-        } else {
+        String tokenStr = null;
+        if (JdbcConnectionParams.AUTH_TOKEN.equals(sessConfMap.get(JdbcConnectionParams.AUTH_TYPE))) {
           // If there's a delegation token available then use token based connection
-          String tokenStr = getClientDelegationToken(sessConfMap);
-          if (tokenStr != null) {
-            transport = KerberosSaslHelper.getTokenTransport(tokenStr,
-                host, socketTransport, saslProps);
-          } else {
-            // we are using PLAIN Sasl connection with user/password
-            String userName = getUserName();
-            String passwd = getPassword();
-            // Overlay the SASL transport on top of the base socket transport (SSL or non-SSL)
-            transport = PlainSaslHelper.getPlainTransport(userName, passwd, socketTransport);
-          }
+          tokenStr = getClientDelegationToken(sessConfMap);
+        }
+        if (tokenStr != null) {
+          transport = KerberosSaslHelper.getTokenTransport(tokenStr,
+                  host, socketTransport, saslProps);
+        } else if(sessConfMap.containsKey(JdbcConnectionParams.AUTH_PRINCIPAL)){
+          transport = KerberosSaslHelper.getKerberosTransport(
+                  sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL), host,
+                  socketTransport, saslProps, assumeSubject);
+        } else {
+          // we are using PLAIN Sasl connection with user/password
+          String userName = getUserName();
+          String passwd = getPassword();
+          // Overlay the SASL transport on top of the base socket transport (SSL or non-SSL)
+          transport = PlainSaslHelper.getPlainTransport(userName, passwd, socketTransport);
         }
       } else {
         // Raw socket connection (non-sasl)
@@ -760,34 +761,54 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   // Lookup the delegation token. First in the connection URL, then Configuration
-  private String getClientDelegationToken(Map<String, String> jdbcConnConf)
-      throws SQLException {
+  private String getClientDelegationToken(Map<String, String> jdbcConnConf) throws SQLException {
     String tokenStr = null;
-    if (JdbcConnectionParams.AUTH_TOKEN.equalsIgnoreCase(jdbcConnConf.get(JdbcConnectionParams.AUTH_TYPE))) {
-      // check delegation token in job conf if any
+    if (!JdbcConnectionParams.AUTH_TOKEN.equalsIgnoreCase(jdbcConnConf.get(JdbcConnectionParams.AUTH_TYPE))) {
+      return null;
+    }
+    DelegationTokenFetcher fetcher = new DelegationTokenFetcher();
+    try {
+      tokenStr = fetcher.getTokenStringFromFile();
+    } catch (IOException e) {
+      LOG.warn("Cannot get token from environment variable $HADOOP_TOKEN_FILE_LOCATION=" +
+              System.getenv(UserGroupInformation.HADOOP_TOKEN_FILE_LOCATION));
+    }
+    if (tokenStr == null) {
       try {
-        if (System.getenv(UserGroupInformation.HADOOP_TOKEN_FILE_LOCATION) != null) {
-          try {
-            Credentials cred = new Credentials();
-            DataInputStream dis = new DataInputStream(new FileInputStream(System.getenv(UserGroupInformation
-                    .HADOOP_TOKEN_FILE_LOCATION)));
-            cred.readTokenStorageStream(dis);
-            dis.close();
-            Token<? extends TokenIdentifier> token = cred.getToken(new Text("hive"));
-            tokenStr = token.encodeToUrlString();
-          } catch (IOException e) {
-            LOG.warn("Cannot get token from environment variable $HADOOP_TOKEN_FILE_LOCATION=" +
-                    System.getenv(UserGroupInformation.HADOOP_TOKEN_FILE_LOCATION));
-          }
-        }
-        if (tokenStr == null) {
-          tokenStr = SessionUtils.getTokenStrForm(HiveAuthConstants.HS2_CLIENT_TOKEN);
-        }
+        return fetcher.getTokenFromSession();
       } catch (IOException e) {
         throw new SQLException("Error reading token ", e);
       }
     }
     return tokenStr;
+  }
+
+  static class DelegationTokenFetcher {
+    String getTokenStringFromFile() throws IOException {
+      if (System.getenv(UserGroupInformation.HADOOP_TOKEN_FILE_LOCATION) == null) {
+        return null;
+      }
+      Credentials cred = new Credentials();
+      try (DataInputStream dis = new DataInputStream(new FileInputStream(System.getenv(UserGroupInformation
+              .HADOOP_TOKEN_FILE_LOCATION)))) {
+        cred.readTokenStorageStream(dis);
+      }
+      return getTokenFromCredential(cred, "hive");
+    }
+
+    String getTokenFromCredential(Credentials cred, String key) throws IOException {
+      Token<? extends TokenIdentifier> token = cred.getToken(new Text(key));
+      if (token == null) {
+        LOG.warn("Delegation token with key: [hive] cannot be found.");
+        return null;
+      }
+      return token.encodeToUrlString();
+    }
+
+    String getTokenFromSession() throws IOException {
+      LOG.debug("Fetching delegation token from session.");
+      return SessionUtils.getTokenStrForm(HiveAuthConstants.HS2_CLIENT_TOKEN);
+    }
   }
 
   private void openSession() throws SQLException {

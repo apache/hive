@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.ql.ddl.DDLWork2;
 import org.apache.hadoop.hive.ql.ddl.database.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.CreateDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.DatabaseEvent;
@@ -31,7 +32,6 @@ import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.ReplLoadOpType;
 
@@ -60,30 +60,26 @@ public class LoadDatabase {
     isTableLevelLoad = tblNameToLoadIn != null && !tblNameToLoadIn.isEmpty();
   }
 
-  public TaskTracker tasks() throws SemanticException {
-    try {
-      Database dbInMetadata = readDbMetadata();
-      String dbName = dbInMetadata.getName();
-      Task<? extends Serializable> dbRootTask = null;
-      ReplLoadOpType loadDbType = getLoadDbType(dbName);
-      switch (loadDbType) {
-        case LOAD_NEW:
-          dbRootTask = createDbTask(dbInMetadata);
-          break;
-        case LOAD_REPLACE:
-          dbRootTask = alterDbTask(dbInMetadata);
-          break;
-        default:
-          break;
-      }
-      if (dbRootTask != null) {
-        dbRootTask.addDependentTask(setOwnerInfoTask(dbInMetadata));
-        tracker.addTask(dbRootTask);
-      }
-      return tracker;
-    } catch (Exception e) {
-      throw new SemanticException(e.getMessage(), e);
+  public TaskTracker tasks() throws Exception {
+    Database dbInMetadata = readDbMetadata();
+    String dbName = dbInMetadata.getName();
+    Task<? extends Serializable> dbRootTask = null;
+    ReplLoadOpType loadDbType = getLoadDbType(dbName);
+    switch (loadDbType) {
+      case LOAD_NEW:
+        dbRootTask = createDbTask(dbInMetadata);
+        break;
+      case LOAD_REPLACE:
+        dbRootTask = alterDbTask(dbInMetadata);
+        break;
+      default:
+        break;
     }
+    if (dbRootTask != null) {
+      dbRootTask.addDependentTask(setOwnerInfoTask(dbInMetadata));
+      tracker.addTask(dbRootTask);
+    }
+    return tracker;
   }
 
   Database readDbMetadata() throws SemanticException {

@@ -90,7 +90,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveInterruptCallback;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
@@ -211,6 +210,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 
@@ -255,6 +255,11 @@ public final class Utilities {
 
   private static final Object INPUT_SUMMARY_LOCK = new Object();
   private static final Object ROOT_HDFS_DIR_LOCK  = new Object();
+
+  @FunctionalInterface
+  public interface SupplierWithCheckedException<T, X extends Exception> {
+    T get() throws X;
+  }
 
   /**
    * ReduceField:
@@ -1204,6 +1209,18 @@ public final class Utilities {
     }
   }
 
+  public static void moveSpecifiedFiles(FileSystem fs, Path dst, Set<Path> filesToMove)
+      throws IOException, HiveException {
+    if (!fs.exists(dst)) {
+      fs.mkdirs(dst);
+    }
+
+    for (Path path: filesToMove) {
+      FileStatus fsStatus = fs.getFileStatus(path);
+      Utilities.moveFile(fs, fsStatus, dst);
+    }
+  }
+
   private static void moveFile(FileSystem fs, FileStatus file, Path dst) throws IOException,
       HiveException {
     Path srcFilePath = file.getPath();
@@ -1463,6 +1480,18 @@ public final class Utilities {
     return snew.toString();
   }
 
+
+  public static boolean shouldAvoidRename(FileSinkDesc conf, Configuration hConf) {
+    // we are avoiding rename/move only if following conditions are met
+    //  * execution engine is tez
+    //  * query cache is disabled
+    //  * if it is select query
+    if (conf != null && conf.getIsQuery() && conf.getFilesToFetch() != null
+        && HiveConf.getVar(hConf, ConfVars.HIVE_EXECUTION_ENGINE).equalsIgnoreCase("tez")){
+      return true;
+    }
+    return false;
+  }
   /**
    * returns null if path is not exist
    */
@@ -1476,42 +1505,32 @@ public final class Utilities {
   }
 
   public static void mvFileToFinalPath(Path specPath, Configuration hconf,
-      boolean success, Logger log, DynamicPartitionCtx dpCtx, FileSinkDesc conf,
-      Reporter reporter) throws IOException,
+                                       boolean success, Logger log, DynamicPartitionCtx dpCtx, FileSinkDesc conf,
+                                       Reporter reporter) throws IOException,
       HiveException {
 
-    //
-    // Runaway task attempts (which are unable to be killed by MR/YARN) can cause HIVE-17113,
-    // where they can write duplicate output files to tmpPath after de-duplicating the files,
-    // but before tmpPath is moved to specPath.
-    // Fixing this issue will be done differently for blobstore (e.g. S3)
-    // vs non-blobstore (local filesystem, HDFS) filesystems due to differences in
-    // implementation - a directory move in a blobstore effectively results in file-by-file
-    // moves for every file in a directory, while in HDFS/localFS a directory move is just a
-    // single filesystem operation.
-    // - For non-blobstore FS, do the following:
-    //   1) Rename tmpPath to a new directory name to prevent additional files
-    //      from being added by runaway processes.
-    //   2) Remove duplicates from the temp directory
-    //   3) Rename/move the temp directory to specPath
-    //
-    // - For blobstore FS, do the following:
-    //   1) Remove duplicates from tmpPath
-    //   2) Use moveSpecifiedFiles() to perform a file-by-file move of the de-duped files
-    //      to specPath. On blobstore FS, assuming n files in the directory, this results
-    //      in n file moves, compared to 2*n file moves with the previous solution
-    //      (each directory move would result in a file-by-file move of the files in the directory)
-    //
+    // There are following two paths this could could take based on the value of shouldAvoidRename
+    //  shouldAvoidRename indicate if tmpPath should be renamed/moved or now.
+    //    if false:
+    //      Skip renaming/moving the tmpPath
+    //      Deduplicate and keep a list of files
+    //      Pass on the list of files to conf (to be used later by fetch operator)
+    //    if true:
+    //       1) Rename tmpPath to a new directory name to prevent additional files
+    //          from being added by runaway processes.
+    //       2) Remove duplicates from the temp directory
+    //       3) Rename/move the temp directory to specPath
+
     FileSystem fs = specPath.getFileSystem(hconf);
-    boolean isBlobStorage = BlobStorageUtils.isBlobStorageFileSystem(hconf, fs);
     Path tmpPath = Utilities.toTempPath(specPath);
     Path taskTmpPath = Utilities.toTaskTempPath(specPath);
     if (success) {
-      if (!isBlobStorage && fs.exists(tmpPath)) {
+      if (!shouldAvoidRename(conf, hconf) && fs.exists(tmpPath)) {
         //   1) Rename tmpPath to a new directory name to prevent additional files
         //      from being added by runaway processes.
         Path tmpPathOriginal = tmpPath;
         tmpPath = new Path(tmpPath.getParent(), tmpPath.getName() + ".moved");
+        LOG.debug("Moving/Renaming " + tmpPathOriginal + " to " + tmpPath);
         Utilities.rename(fs, tmpPathOriginal, tmpPath);
       }
 
@@ -1521,7 +1540,7 @@ public final class Utilities {
       FileStatus[] statuses = statusList.toArray(new FileStatus[statusList.size()]);
       if(statuses != null && statuses.length > 0) {
         PerfLogger perfLogger = SessionState.getPerfLogger();
-        Set<Path> filesKept = new HashSet<Path>();
+        Set<FileStatus> filesKept = new HashSet<>();
         perfLogger.PerfLogBegin("FileSinkOperator", "RemoveTempOrDuplicateFiles");
         // remove any tmp file or double-committed output files
         List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(
@@ -1532,24 +1551,23 @@ public final class Utilities {
           perfLogger.PerfLogBegin("FileSinkOperator", "CreateEmptyBuckets");
           createEmptyBuckets(
               hconf, emptyBuckets, conf.getCompressed(), conf.getTableInfo(), reporter);
-          filesKept.addAll(emptyBuckets);
+          for(Path p:emptyBuckets) {
+            FileStatus[] items = fs.listStatus(p);
+            filesKept.addAll(Arrays.asList(items));
+          }
           perfLogger.PerfLogEnd("FileSinkOperator", "CreateEmptyBuckets");
         }
 
         // move to the file destination
         Utilities.FILE_OP_LOGGER.trace("Moving tmp dir: {} to: {}", tmpPath, specPath);
-
-        perfLogger.PerfLogBegin("FileSinkOperator", "RenameOrMoveFiles");
-        if (isBlobStorage) {
-          // HIVE-17113 - avoid copying files that may have been written to the temp dir by runaway tasks,
-          // by moving just the files we've tracked from removeTempOrDuplicateFiles().
-          Utilities.moveSpecifiedFiles(fs, tmpPath, specPath, filesKept);
+        if(shouldAvoidRename(conf, hconf)){
+          LOG.debug("Skipping rename/move files. Files to be kept are: " + filesKept.toString());
+          conf.getFilesToFetch().addAll(filesKept);
         } else {
-          // For non-blobstore case, can just move the directory - the initial directory rename
-          // at the start of this method should prevent files written by runaway tasks.
+          perfLogger.PerfLogBegin("FileSinkOperator", "RenameOrMoveFiles");
           Utilities.renameOrMoveFiles(fs, tmpPath, specPath);
+          perfLogger.PerfLogEnd("FileSinkOperator", "RenameOrMoveFiles");
         }
-        perfLogger.PerfLogEnd("FileSinkOperator", "RenameOrMoveFiles");
       }
     } else {
       Utilities.FILE_OP_LOGGER.trace("deleting tmpPath {}", tmpPath);
@@ -1607,9 +1625,9 @@ public final class Utilities {
     }
   }
 
-  private static void addFilesToPathSet(Collection<FileStatus> files, Set<Path> fileSet) {
+  private static void addFilesToPathSet(Collection<FileStatus> files, Set<FileStatus> fileSet) {
     for (FileStatus file : files) {
-      fileSet.add(file.getPath());
+      fileSet.add(file);
     }
   }
 
@@ -1642,7 +1660,7 @@ public final class Utilities {
    * @return a list of path names corresponding to should-be-created empty buckets.
    */
   public static List<Path> removeTempOrDuplicateFiles(FileSystem fs, FileStatus[] fileStats,
-      DynamicPartitionCtx dpCtx, FileSinkDesc conf, Configuration hconf, Set<Path> filesKept, boolean isBaseDir)
+      DynamicPartitionCtx dpCtx, FileSinkDesc conf, Configuration hconf, Set<FileStatus> filesKept, boolean isBaseDir)
           throws IOException {
     int dpLevels = dpCtx == null ? 0 : dpCtx.getNumDPCols(),
         numBuckets = (conf != null && conf.getTable() != null) ? conf.getTable().getNumBuckets() : 0;
@@ -1666,7 +1684,7 @@ public final class Utilities {
 
   public static List<Path> removeTempOrDuplicateFiles(FileSystem fs, FileStatus[] fileStats,
       String unionSuffix, int dpLevels, int numBuckets, Configuration hconf, Long writeId,
-      int stmtId, boolean isMmTable, Set<Path> filesKept, boolean isBaseDir) throws IOException {
+      int stmtId, boolean isMmTable, Set<FileStatus> filesKept, boolean isBaseDir) throws IOException {
     if (fileStats == null) {
       return null;
     }
@@ -2215,7 +2233,7 @@ public final class Utilities {
    * If there is no db name part, set the current sessions default db
    * @param dbtable
    * @return String array with two elements, first is db name, second is table name
-   * @throws HiveException
+   * @throws SemanticException
    */
   public static String[] getDbTableName(String dbtable) throws SemanticException {
     return getDbTableName(SessionState.get().getCurrentDatabase(), dbtable);
@@ -2468,7 +2486,8 @@ public final class Utilities {
                 new ThreadFactoryBuilder().setDaemon(true)
                         .setNameFormat("Get-Input-Summary-%d").build());
       } else {
-        executor = null;
+        LOG.info("Not using thread pool for getContentSummary");
+        executor = MoreExecutors.newDirectExecutorService();
       }
       getInputSummaryWithPool(ctx, Collections.unmodifiableSet(pathNeedProcess),
           work, summary, executor);
@@ -2495,6 +2514,7 @@ public final class Utilities {
       final ExecutorService executor) throws IOException {
     Preconditions.checkNotNull(ctx);
     Preconditions.checkNotNull(pathNeedProcess);
+    Preconditions.checkNotNull(executor);
 
     List<Future<?>> futures = new ArrayList<Future<?>>(pathNeedProcess.size());
     final AtomicLong totalLength = new AtomicLong(0L);
@@ -2511,9 +2531,7 @@ public final class Utilities {
             LOG.debug("Failed to close filesystem", ignore);
           }
         }
-        if (executor != null) {
-          executor.shutdownNow();
-        }
+        executor.shutdownNow();
       }
     });
     try {
@@ -2606,41 +2624,29 @@ public final class Utilities {
           }
         };
 
-        if (executor == null) {
-          r.run();
-        } else {
-          Future<?> future = executor.submit(r);
-          futures.add(future);
-        }
+        futures.add(executor.submit(r));
       }
 
-      if (executor != null) {
-        for (Future<?> future : futures) {
-          boolean executorDone = false;
-          do {
-            try {
-              future.get();
-              executorDone = true;
-            } catch (InterruptedException e) {
-              LOG.info("Interrupted when waiting threads", e);
-              Thread.currentThread().interrupt();
-              break;
-            } catch (ExecutionException e) {
-              throw new IOException(e);
-            }
-          } while (!executorDone);
+      for (Future<?> future : futures) {
+        try {
+          future.get();
+        } catch (InterruptedException e) {
+          LOG.info("Interrupted when waiting threads", e);
+          Thread.currentThread().interrupt();
+          break;
+        } catch (ExecutionException e) {
+          throw new IOException(e);
         }
-        executor.shutdown();
       }
+      executor.shutdown();
+
       HiveInterruptUtils.checkInterrupted();
 
       summary[0] += totalLength.get();
       summary[1] += totalFileCount.get();
       summary[2] += totalDirectoryCount.get();
     } finally {
-      if (executor != null) {
-        executor.shutdownNow();
-      }
+      executor.shutdownNow();
       HiveInterruptUtils.remove(interrup);
     }
   }
@@ -3928,9 +3934,9 @@ public final class Utilities {
   }
 
   /**
-   * Checks if the current HiveServer2 logging operation level is >= PERFORMANCE.
+   * Checks if the current HiveServer2 logging operation level is &gt;= PERFORMANCE.
    * @param conf Hive configuration.
-   * @return true if current HiveServer2 logging operation level is >= PERFORMANCE.
+   * @return true if current HiveServer2 logging operation level is &gt;= PERFORMANCE.
    * Else, false.
    */
   public static boolean isPerfOrAboveLogging(HiveConf conf) {
@@ -4588,5 +4594,10 @@ public final class Utilities {
       }
     }
     return passwd;
+  }
+
+  public static SupplierWithCheckedException<FileSystem, IOException> getFsSupplier(final Path path,
+    final Configuration conf) {
+    return () -> path.getFileSystem(conf);
   }
 }

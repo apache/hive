@@ -320,7 +320,7 @@ Stage-0
                                         Select Operator [SEL_660] (rows=817 width=4)
                                           Output:["_col0"]
                                           Filter Operator [FIL_659] (rows=817 width=12)
-                                            predicate:((((hd_dep_count = 3) and hd_vehicle_count is not null) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and (hd_dep_count) IN (3, 0, 1) and (hd_vehicle_count <= 5))
+                                            predicate:((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and ((hd_vehicle_count <= 5) or (hd_vehicle_count <= 2) or (hd_vehicle_count <= 3)) and (hd_dep_count) IN (3, 0, 1))
                                             TableScan [TS_3] (rows=7200 width=12)
                                               default@household_demographics,household_demographics,Tbl:COMPLETE,Col:COMPLETE,Output:["hd_demo_sk","hd_dep_count","hd_vehicle_count"]
                                     <-Map 56 [SIMPLE_EDGE] vectorized

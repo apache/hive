@@ -19,7 +19,7 @@
 package org.apache.hive.hcatalog.streaming;
 
 import com.google.common.collect.Lists;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;

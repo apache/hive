@@ -28,6 +28,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.table.CreateTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.CreateViewDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -85,7 +88,8 @@ public class ImportTableDesc {
                 null,
             null,
             null,
-                table.getColStats());
+                table.getColStats(),
+                table.getTTable().getWriteId());
         this.createTblDesc.setStoredAsSubDirectories(table.getSd().isStoredAsSubDirectories());
         break;
       case VIEW:
@@ -323,9 +327,9 @@ public class ImportTableDesc {
       HiveConf conf) {
     switch (getDescType()) {
     case TABLE:
-        return TaskFactory.get(new DDLWork(inputs, outputs, createTblDesc), conf);
+      return TaskFactory.get(new DDLWork2(inputs, outputs, createTblDesc), conf);
     case VIEW:
-        return TaskFactory.get(new DDLWork(inputs, outputs, createViewDesc), conf);
+      return TaskFactory.get(new DDLWork2(inputs, outputs, createViewDesc), conf);
     }
     return null;
   }
@@ -365,5 +369,25 @@ public class ImportTableDesc {
     if (this.createTblDesc != null) {
       this.createTblDesc.setReplWriteId(replWriteId);
     }
+  }
+
+  public void setOwnerName(String ownerName) {
+    switch (getDescType()) {
+      case TABLE:
+        createTblDesc.setOwnerName(ownerName);
+        break;
+      case VIEW:
+        createViewDesc.setOwnerName(ownerName);
+        break;
+      default:
+        throw new RuntimeException("Invalid table type : " + getDescType());
+    }
+  }
+
+  public Long getReplWriteId() {
+    if (this.createTblDesc != null) {
+      return this.createTblDesc.getReplWriteId();
+    }
+    return -1L;
   }
 }

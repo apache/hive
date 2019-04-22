@@ -217,9 +217,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key = '2') or (key = '3')) (type: boolean)
+                    predicate: (((key = '2') or (key = '3')) and key is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), val (type: string)
@@ -257,7 +258,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key <> '2') and (key <> '3')) (type: boolean)
+                    predicate: (((key <> '2') and (key <> '3')) and key is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), val (type: string)
@@ -451,6 +452,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 330 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -481,6 +483,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 330 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -535,9 +538,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key = '2') or (key = '3')) (type: boolean)
+                    predicate: (((key = '2') or (key = '3')) and key is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
@@ -573,7 +577,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key <> '2') and (key <> '3')) (type: boolean)
+                    predicate: (((key <> '2') and (key <> '3')) and key is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
@@ -611,6 +615,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 330 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -641,6 +646,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 330 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE

@@ -62,7 +62,7 @@ public class VectorMapJoinFastBytesHashMapStore implements MemoryEstimate {
    *      ---------------------------------
    *                                       |
    *                                       v
-   *       <5 0's for Next Relative Offset> <Key Bytes> <Value Length> <Value Bytes>
+   *       &lt;5 0's for Next Relative Offset&gt; &lt;Key Bytes&gt; &lt;Value Length&gt; &lt;Value Bytes&gt;
    *                NEXT (NONE)                 KEY                        VALUE
    *
    * NOTE: AbsoluteOffset.byteLength = 5
@@ -76,7 +76,7 @@ public class VectorMapJoinFastBytesHashMapStore implements MemoryEstimate {
    *      ---------------------------------
    *                                       |
    *                                       v
-   *      <5 0's for Next Relative Offset> [Big Key Length] <Key Bytes> <Value Length> <Value Bytes>
+   *      &lt;5 0's for Next Relative Offset&gt; [Big Key Length] &lt;Key Bytes&gt; &lt;Value Length&gt; &lt;Value Bytes&gt;
    *                NEXT (NONE)                optional        KEY                        VALUE
    *
    *  3) Two elements when key length is small and stored in reference word:
@@ -88,7 +88,7 @@ public class VectorMapJoinFastBytesHashMapStore implements MemoryEstimate {
    *      ------------------------------------
    *                                         |
    *                                         v
-   *      <Next Value Rel Offset as 5 bytes> <Key Bytes> <Value Bytes>
+   *      &lt;Next Value Rel Offset as 5 bytes&gt; &lt;Key Bytes&gt; &lt;Value Bytes&gt;
    *         |     NEXT                         KEY         VALUE
    *         |
    *         | first record absolute offset + relative offset
@@ -96,7 +96,7 @@ public class VectorMapJoinFastBytesHashMapStore implements MemoryEstimate {
    *         --------
    *                 |
    *                 v
-   *                <5 0's Padding for Next Value Ref> <Value Length> <Value Bytes>
+   *                &lt;5 0's Padding for Next Value Ref&gt; &lt;Value Length&gt; &lt;Value Bytes&gt;
    *                     NEXT (NONE)                                     VALUE
    *
    *  4) Three elements showing how first record updated to point to new value and
@@ -109,20 +109,20 @@ public class VectorMapJoinFastBytesHashMapStore implements MemoryEstimate {
    *      ------------------------------------
    *                                         |
    *                                         v
-   *      <Next Value Rel Offset as 5 bytes> <Key Bytes> <Value Bytes>
+   *      &lt;Next Value Rel Offset as 5 bytes&gt; &lt;Key Bytes&gt; &lt;Value Bytes&gt;
    *         |     NEXT                         KEY         VALUE
    *         |
    *         | first record absolute offset + relative offset
    *         |
    *         |
-   *         |      <5 0's Padding for Next Value Ref> <Value Length> <Value Bytes>
+   *         |      &lt;5 0's Padding for Next Value Ref&gt; &lt;Value Length&gt; &lt;Value Bytes&gt;
    *         |      ^    NEXT (NONE)                                    VALUE
    *         |      |
    *         |      ------
    *         |            |
    *         |            | new record absolute offset - (minus) relative offset
    *         |            |
-   *          -----><Next Value Rel Offset as 5 bytes> <Value Length> <Value Bytes>
+   *          -----&gt;&lt;Next Value Rel Offset as 5 bytes&gt; &lt;Value Length&gt; &lt;Value Bytes&gt;
    *                     NEXT                                            VALUE
    *
    *
@@ -136,26 +136,26 @@ public class VectorMapJoinFastBytesHashMapStore implements MemoryEstimate {
    *      ------------------------------------
    *                                         |
    *                                         v
-   *      <Next Value Rel Offset as 5 bytes> <Key Bytes> <Value Length> <Value Bytes>
+   *      &lt;Next Value Rel Offset as 5 bytes&gt; &lt;Key Bytes&gt; &lt;Value Length&gt; &lt;Value Bytes&gt;
    *         |     NEXT                          KEY                      VALUE
    *         |
    *         | first record absolute offset + relative offset
    *         |
    *         |
-   *         |      <5 0's Padding for Next Value Ref> <Value Length> <Value Bytes>
+   *         |      &lt;5 0's Padding for Next Value Ref&gt; &lt;Value Length&gt; &lt;Value Bytes&gt;
    *         |      ^    NEXT (NONE)                                     VALUE
    *         |      |
    *         |      ------
    *         |            | record absolute offset - (minus) relative offset
    *         |            |
-   *         |      <Next Value Rel Offset as 5 bytes> <Value Length> <Value Bytes>
+   *         |      &lt;Next Value Rel Offset as 5 bytes&gt; &lt;Value Length&gt; &lt;Value Bytes&gt;
    *         |      ^       NEXT                                         VALUE
    *         |      |
    *         |      ------
    *         |            |
    *         |            | new record absolute offset - (minus) relative offset
    *         |            |
-   *          -----><Next Value Rel Offset as 5 bytes> <Value Length> <Value Bytes>
+   *          -----&gt;&lt;Next Value Rel Offset as 5 bytes&gt; &lt;Value Length&gt; &lt;Value Bytes&gt;
    *                        NEXT                                         VALUE
    *
    *

@@ -95,6 +95,7 @@ STAGE PLANS:
                       Statistics: Num rows: 250 Data size: 43792 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
@@ -201,6 +202,7 @@ STAGE PLANS:
                       Statistics: Num rows: 250 Data size: 43792 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
@@ -311,12 +313,13 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 700 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -327,10 +330,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

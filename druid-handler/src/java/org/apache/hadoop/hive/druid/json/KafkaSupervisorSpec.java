@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.druid.json;
 
-import io.druid.segment.indexing.DataSchema;
+import org.apache.druid.segment.indexing.DataSchema;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -62,7 +62,14 @@ import java.util.Map;
                 null,
                 null,
                 null,
-                null);
+                null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null);
     this.ioConfig = Preconditions.checkNotNull(ioConfig, "ioConfig");
     this.context = context;
   }

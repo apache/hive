@@ -29,7 +29,7 @@ import java.util.Date;
 import java.util.Random;
 import java.util.TimeZone;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hadoop.hive.ql.udf.UDFDayOfMonth;
 import org.apache.hadoop.hive.ql.udf.UDFHour;

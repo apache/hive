@@ -63,6 +63,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: compute_stats(col1, 'hll')
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
@@ -100,13 +101,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-8
-      Create View Operator:
-        Create View
-          columns: key int
-          expanded text: select `masking_test_n_mv`.`key` from `default`.`masking_test_n_mv`
-          name: default.masking_test_view_n_mv
-          original text: select key from masking_test_n_mv
-          rewrite enabled: true
+    Create View
+      columns: key int
+      expanded text: select `masking_test_n_mv`.`key` from `default`.`masking_test_n_mv`
+      name: default.masking_test_view_n_mv
+      original text: select key from masking_test_n_mv
+      rewrite enabled: true
 
   Stage: Stage-2
     Stats Work

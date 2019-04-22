@@ -32,6 +32,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@dest_j1_n1
+OPTIMIZED SQL: SELECT `t5`.`key`, `t5`.`value`, `t3`.`value` AS `value1`
+FROM (SELECT `key`, `value`
+FROM `default`.`src`
+WHERE `key` < 20 AND CAST(`key` AS DOUBLE) BETWEEN 20 AND 100
+UNION ALL
+SELECT `key`, `value`
+FROM `default`.`src`
+WHERE `key` > 100 AND CAST(`key` AS DOUBLE) BETWEEN 20 AND 100) AS `t3`
+INNER JOIN (SELECT `key`, `value`
+FROM `default`.`src1`
+WHERE CAST(`key` AS DOUBLE) BETWEEN 20 AND 100 AND `key` IS NOT NULL) AS `t5` ON `t3`.`key` = `t5`.`key`
 STAGE DEPENDENCIES:
   Stage-7 is a root stage
   Stage-6 depends on stages: Stage-7
@@ -137,6 +148,7 @@ STAGE PLANS:
                         Statistics: Num rows: 46 Data size: 12236 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll'), compute_stats(val2, 'hll')
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: COMPLETE
@@ -225,6 +237,7 @@ STAGE PLANS:
                         Statistics: Num rows: 46 Data size: 12236 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll'), compute_stats(val2, 'hll')
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: COMPLETE

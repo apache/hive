@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
  * previously closed. The {@link MutatorCoordinator} will seamlessly handle transitions between groups, creating and
  * closing {@link Mutator Mutators} as needed to write to the appropriate partition and bucket. New partitions will be
  * created in the meta store if {@link AcidTable#createPartitions()} is set.
- * <p/>
+ * <p>
  * {@link #insert(List, Object) Insert} events must be artificially assigned appropriate bucket ids in the preceding
  * grouping phase so that they are grouped correctly. Note that any write id or row id assigned to the
  * {@link RecordIdentifier RecordIdentifier} of such events will be ignored by both the coordinator and the underlying

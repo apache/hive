@@ -139,12 +139,11 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-1
-      Create View Operator:
-        Create View
-          columns: id int, _c1 string
-          expanded text: SELECT `items`.`id`, `items`.`info`['price'] FROM `default`.`items`
-          name: default.priceview
-          original text: SELECT items.id, items.info['price'] FROM items
+    Create View
+      columns: id int, _c1 string
+      expanded text: SELECT `items`.`id`, `items`.`info`['price'] FROM `default`.`items`
+      name: default.priceview
+      original text: SELECT items.id, items.info['price'] FROM items
 
 PREHOOK: query: CREATE VIEW priceview AS SELECT items.id, items.info['price'] FROM items
 PREHOOK: type: CREATEVIEW

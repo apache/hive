@@ -20,7 +20,7 @@ package org.apache.hive.service.cli;
 
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hive.service.rpc.thrift.TStatus;

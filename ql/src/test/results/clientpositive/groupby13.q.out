@@ -54,6 +54,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations: max(_col2)
                 keys: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -89,3 +90,53 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: create table aGBY (i int, j string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@aGBY
+POSTHOOK: query: create table aGBY (i int, j string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@aGBY
+PREHOOK: query: insert into aGBY values ( 1, 'a'),(2,'b')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@agby
+POSTHOOK: query: insert into aGBY values ( 1, 'a'),(2,'b')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@agby
+POSTHOOK: Lineage: agby.i SCRIPT []
+POSTHOOK: Lineage: agby.j SCRIPT []
+PREHOOK: query: explain cbo select min(j) from aGBY where j='a' group by j
+PREHOOK: type: QUERY
+PREHOOK: Input: default@agby
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select min(j) from aGBY where j='a' group by j
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@agby
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(_o__c0=[$1])
+  HiveAggregate(group=[{0}], agg#0=[min($0)])
+    HiveProject($f0=[CAST(_UTF-16LE'a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+      HiveFilter(condition=[=($1, _UTF-16LE'a')])
+        HiveTableScan(table=[[default, agby]], table:alias=[agby])
+
+PREHOOK: query: select min(j) from aGBY where j='a' group by j
+PREHOOK: type: QUERY
+PREHOOK: Input: default@agby
+#### A masked pattern was here ####
+POSTHOOK: query: select min(j) from aGBY where j='a' group by j
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@agby
+#### A masked pattern was here ####
+a
+PREHOOK: query: drop table aGBY
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@agby
+PREHOOK: Output: default@agby
+POSTHOOK: query: drop table aGBY
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@agby
+POSTHOOK: Output: default@agby

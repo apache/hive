@@ -193,6 +193,7 @@ public final class FunctionRegistry {
 
   static {
     system.registerGenericUDF("concat", GenericUDFConcat.class);
+    system.registerUDF("mid", UDFSubstr.class, false);
     system.registerUDF("substr", UDFSubstr.class, false);
     system.registerUDF("substring", UDFSubstr.class, false);
     system.registerGenericUDF("substring_index", GenericUDFSubstringIndex.class);
@@ -472,6 +473,8 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("bloom_filter", new GenericUDAFBloomFilter());
     system.registerGenericUDAF("approx_distinct", new GenericUDAFApproximateDistinct());
     system.registerUDAF("percentile", UDAFPercentile.class);
+    system.registerGenericUDAF("percentile_cont", new GenericUDAFPercentileCont());
+    system.registerGenericUDAF("percentile_disc", new GenericUDAFPercentileDisc());
 
 
     // Generic UDFs
@@ -498,6 +501,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("in_file", GenericUDFInFile.class);
     system.registerGenericUDF("instr", GenericUDFInstr.class);
     system.registerGenericUDF("locate", GenericUDFLocate.class);
+    system.registerGenericUDF("position", GenericUDFLocate.class);
     system.registerGenericUDF("elt", GenericUDFElt.class);
     system.registerGenericUDF("concat_ws", GenericUDFConcatWS.class);
     system.registerGenericUDF("sort_array", GenericUDFSortArray.class);
@@ -563,6 +567,8 @@ public final class FunctionRegistry {
     system.registerHiddenBuiltIn(GenericUDFOPDTIPlus.class);
     system.registerHiddenBuiltIn(GenericUDFOPNumericMinus.class);
     system.registerHiddenBuiltIn(GenericUDFOPNumericPlus.class);
+    // No operator for nullsafe not equal, but add as built-in to allow for LLAP.
+    system.registerHiddenBuiltIn(GenericUDFOPNotEqualNS.class);
 
     // mask UDFs
     system.registerGenericUDF(GenericUDFMask.UDF_NAME, GenericUDFMask.class);
@@ -726,8 +732,8 @@ public final class FunctionRegistry {
    * return a TypeInfo corresponding to the common PrimitiveCategory, and with type qualifiers
    * (if applicable) that match the 2 TypeInfo types.
    * Examples:
-   *   varchar(10), varchar(20), primitive category varchar => varchar(20)
-   *   date, string, primitive category string => string
+   *   varchar(10), varchar(20), primitive category varchar =&gt; varchar(20)
+   *   date, string, primitive category string =&gt; string
    * @param a  TypeInfo of the first type
    * @param b  TypeInfo of the second type
    * @param typeCategory PrimitiveCategory of the designated common type between a and b
@@ -1382,7 +1388,6 @@ public final class FunctionRegistry {
   /**
    * A shortcut to get the "index" GenericUDF. This is used for getting elements
    * out of array and getting values out of map.
-   * @throws SemanticException
    */
   public static GenericUDF getGenericUDFForIndex() {
     try {
@@ -1394,7 +1399,6 @@ public final class FunctionRegistry {
 
   /**
    * A shortcut to get the "and" GenericUDF.
-   * @throws SemanticException
    */
   public static GenericUDF getGenericUDFForAnd() {
     try {

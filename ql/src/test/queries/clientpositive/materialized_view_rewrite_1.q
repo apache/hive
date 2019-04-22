@@ -167,3 +167,41 @@ select name from emps_n3 group by name;
 select name from emps_n3 group by name;
 
 drop materialized view mv1_n2;
+
+-- NEW 1
+create materialized view mv1_n2 as
+select deptno, name, count(*) as c
+from depts_n2
+group by deptno, name;
+
+explain
+select name, count(*) as c
+from depts_n2
+where name = 'Sales'
+group by name;
+
+select name, count(*) as c
+from depts_n2
+where name = 'Sales'
+group by name;
+
+drop materialized view mv1_n2;
+
+-- NEW 2
+create materialized view mv1_n2 as
+select deptno, name, locationid, count(*) as c
+from depts_n2
+group by deptno, name, locationid;
+
+explain
+select deptno, name, count(*) as c
+from depts_n2
+where name = 'Sales'
+group by deptno, name;
+
+select deptno, name, count(*) as c
+from depts_n2
+where name = 'Sales'
+group by deptno, name;
+
+drop materialized view mv1_n2;

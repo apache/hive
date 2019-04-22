@@ -63,12 +63,12 @@ import com.google.common.annotations.VisibleForTesting;
  * To bind to the correct metastore, HiveConf object has to be created from hive-site.xml or HIVE_CONF_DIR.
  * If hive conf is manually created, metastore uri has to be set correctly. If hive conf object is not specified,
  * "thrift://localhost:9083" will be used as default.
- * <br/><br/>
+ * <br><br>
  * NOTE: The streaming connection APIs and record writer APIs are not thread-safe. Streaming connection creation,
  * begin/commit/abort transactions, write and close has to be called in the same thread. If close() or
  * abortTransaction() has to be triggered from a separate thread it has to be co-ordinated via external variables or
  * synchronization mechanism
- * <br/><br/>
+ * <br><br>
  * Example usage:
  * <pre>{@code
  * // create delimited record writer whose schema exactly matches table schema

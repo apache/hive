@@ -184,10 +184,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
-                  filterExpr: (((ss_sales_price >= 100) or (ss_sales_price <= 150) or ss_sales_price is not null or (ss_sales_price <= 200)) and ((ss_net_profit >= 0) or (ss_net_profit <= 2000) or ss_net_profit is not null or (ss_net_profit <= 3000) or (ss_net_profit <= 25000)) and (ss_sales_price BETWEEN 100 AND 150 or ss_sales_price BETWEEN 50 AND 100 or ss_sales_price BETWEEN 150 AND 200) and ss_store_sk is not null and ss_cdemo_sk is not null and ss_addr_sk is not null and ss_sold_date_sk is not null) (type: boolean)
+                  filterExpr: (((ss_sales_price >= 100) or (ss_sales_price <= 150) or (ss_sales_price >= 50) or (ss_sales_price <= 100) or (ss_sales_price >= 150) or (ss_sales_price <= 200)) and ((ss_net_profit >= 0) or (ss_net_profit <= 2000) or (ss_net_profit >= 150) or (ss_net_profit <= 3000) or (ss_net_profit >= 50) or (ss_net_profit <= 25000)) and (ss_sales_price BETWEEN 100 AND 150 or ss_sales_price BETWEEN 50 AND 100 or ss_sales_price BETWEEN 150 AND 200) and ss_store_sk is not null and ss_cdemo_sk is not null and ss_addr_sk is not null and ss_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((ss_net_profit >= 0) or (ss_net_profit <= 2000) or ss_net_profit is not null or (ss_net_profit <= 3000) or (ss_net_profit <= 25000)) and ((ss_sales_price >= 100) or (ss_sales_price <= 150) or ss_sales_price is not null or (ss_sales_price <= 200)) and (ss_sales_price BETWEEN 100 AND 150 or ss_sales_price BETWEEN 50 AND 100 or ss_sales_price BETWEEN 150 AND 200) and ss_addr_sk is not null and ss_cdemo_sk is not null and ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
+                    predicate: (((ss_net_profit >= 0) or (ss_net_profit <= 2000) or (ss_net_profit >= 150) or (ss_net_profit <= 3000) or (ss_net_profit >= 50) or (ss_net_profit <= 25000)) and ((ss_sales_price >= 100) or (ss_sales_price <= 150) or (ss_sales_price >= 50) or (ss_sales_price <= 100) or (ss_sales_price >= 150) or (ss_sales_price <= 200)) and (ss_sales_price BETWEEN 100 AND 150 or ss_sales_price BETWEEN 50 AND 100 or ss_sales_price BETWEEN 150 AND 200) and ss_addr_sk is not null and ss_cdemo_sk is not null and ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
                     Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_sold_date_sk (type: int), ss_cdemo_sk (type: int), ss_addr_sk (type: int), ss_store_sk (type: int), ss_quantity (type: int), ss_net_profit BETWEEN 0 AND 2000 (type: boolean), ss_net_profit BETWEEN 150 AND 3000 (type: boolean), ss_net_profit BETWEEN 50 AND 25000 (type: boolean)
@@ -317,6 +317,7 @@ STAGE PLANS:
                     Statistics: Num rows: 210828817 Data size: 18599379519 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(_col4)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE

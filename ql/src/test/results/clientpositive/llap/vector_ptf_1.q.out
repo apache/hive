@@ -93,6 +93,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0, 1]
                       keys: name (type: string), age (type: int)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 100 Data size: 18816 Basic stats: COMPLETE Column stats: NONE

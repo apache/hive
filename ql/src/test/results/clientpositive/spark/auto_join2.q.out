@@ -33,10 +33,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src2
-                  filterExpr: key is not null (type: boolean)
+                  filterExpr: (key is not null and UDFToDouble(key) is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: key is not null (type: boolean)
+                    predicate: (UDFToDouble(key) is not null and key is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), UDFToDouble(key) (type: double)
@@ -53,10 +53,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src3
-                  filterExpr: key is not null (type: boolean)
+                  filterExpr: UDFToDouble(key) is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: key is not null (type: boolean)
+                    predicate: UDFToDouble(key) is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: value (type: string), UDFToDouble(key) (type: double)
@@ -78,10 +78,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src1
-                  filterExpr: key is not null (type: boolean)
+                  filterExpr: (key is not null and UDFToDouble(key) is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: key is not null (type: boolean)
+                    predicate: (UDFToDouble(key) is not null and key is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), UDFToDouble(key) (type: double)

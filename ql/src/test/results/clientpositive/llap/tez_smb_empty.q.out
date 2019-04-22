@@ -176,6 +176,7 @@ STAGE PLANS:
                         Statistics: Num rows: 266 Data size: 1064 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count()
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -246,11 +247,15 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s3
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
-                  Select Operator
-                    expressions: key (type: int), value (type: string), ds (type: string)
-                    outputColumnNames: _col0, _col1, _col2
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
+                    Select Operator
+                      expressions: key (type: int), value (type: string), ds (type: string)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
             Map Operator Tree:
                 TableScan
                   alias: s1
@@ -634,6 +639,7 @@ STAGE PLANS:
                 Statistics: Num rows: 420 Data size: 1680 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
@@ -774,6 +780,7 @@ STAGE PLANS:
                 Statistics: Num rows: 292 Data size: 1170 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
@@ -872,6 +879,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count()
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -971,6 +979,7 @@ STAGE PLANS:
                         Statistics: Num rows: 266 Data size: 1064 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count()
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE

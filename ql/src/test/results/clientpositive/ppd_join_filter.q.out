@@ -32,7 +32,7 @@ OPTIMIZED SQL: SELECT `t0`.`key`, `t4`.`k2`, `t4`.`k3`
 FROM (SELECT `key`
 FROM `default`.`src`
 WHERE `key` IS NOT NULL) AS `t0`
-INNER JOIN (SELECT `key`, CAST(MIN(`key`) AS DOUBLE) + CAST(2 AS DOUBLE) AS `k2`, CAST(MIN(`key`) AS DOUBLE) + CAST(3 AS DOUBLE) AS `k3`
+INNER JOIN (SELECT `key`, CAST(MIN(`key`) AS DOUBLE) + 2 AS `k2`, CAST(MIN(`key`) AS DOUBLE) + 3 AS `k3`
 FROM `default`.`src`
 WHERE `key` IS NOT NULL
 GROUP BY `key`
@@ -58,6 +58,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations: min(key)
                 keys: key (type: string)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 67750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -381,7 +382,7 @@ OPTIMIZED SQL: SELECT `t0`.`key`, `t4`.`k2`, `t4`.`k3`
 FROM (SELECT `key`
 FROM `default`.`src`
 WHERE `key` IS NOT NULL) AS `t0`
-INNER JOIN (SELECT `key`, CAST(MIN(`key`) AS DOUBLE) + CAST(2 AS DOUBLE) AS `k2`, CAST(MIN(`key`) AS DOUBLE) + CAST(3 AS DOUBLE) AS `k3`
+INNER JOIN (SELECT `key`, CAST(MIN(`key`) AS DOUBLE) + 2 AS `k2`, CAST(MIN(`key`) AS DOUBLE) + 3 AS `k3`
 FROM `default`.`src`
 WHERE `key` IS NOT NULL
 GROUP BY `key`
@@ -407,6 +408,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations: min(key)
                 keys: key (type: string)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 67750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -730,7 +732,7 @@ OPTIMIZED SQL: SELECT `t0`.`key`, `t4`.`k2`, `t4`.`k3`
 FROM (SELECT `key`
 FROM `default`.`src`
 WHERE `key` IS NOT NULL) AS `t0`
-INNER JOIN (SELECT `key`, CAST(MIN(`key`) AS DOUBLE) + CAST(2 AS DOUBLE) AS `k2`, CAST(MIN(`key`) AS DOUBLE) + CAST(3 AS DOUBLE) AS `k3`
+INNER JOIN (SELECT `key`, CAST(MIN(`key`) AS DOUBLE) + 2 AS `k2`, CAST(MIN(`key`) AS DOUBLE) + 3 AS `k3`
 FROM `default`.`src`
 WHERE `key` IS NOT NULL
 GROUP BY `key`
@@ -755,6 +757,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations: min(key)
                 keys: key (type: string)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 67750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1077,7 +1080,7 @@ OPTIMIZED SQL: SELECT `t0`.`key`, `t4`.`k2`, `t4`.`k3`
 FROM (SELECT `key`
 FROM `default`.`src`
 WHERE `key` IS NOT NULL) AS `t0`
-INNER JOIN (SELECT `key`, CAST(MIN(`key`) AS DOUBLE) + CAST(2 AS DOUBLE) AS `k2`, CAST(MIN(`key`) AS DOUBLE) + CAST(3 AS DOUBLE) AS `k3`
+INNER JOIN (SELECT `key`, CAST(MIN(`key`) AS DOUBLE) + 2 AS `k2`, CAST(MIN(`key`) AS DOUBLE) + 3 AS `k3`
 FROM `default`.`src`
 WHERE `key` IS NOT NULL
 GROUP BY `key`
@@ -1103,6 +1106,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations: min(key)
                 keys: key (type: string)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 67750 Basic stats: COMPLETE Column stats: COMPLETE

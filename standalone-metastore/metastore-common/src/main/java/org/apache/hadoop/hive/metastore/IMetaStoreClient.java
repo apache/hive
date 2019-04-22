@@ -2708,7 +2708,6 @@ public interface IMetaStoreClient {
       throws MetaException, TException;
 
   /**
-   * @param revokePrivileges
    * @param authorizer
    * @param objToRefresh
    * @return true on success
@@ -2894,7 +2893,7 @@ public interface IMetaStoreClient {
 
   /**
    * Get a structure that details valid write ids.
-   * @param fullTableName full table name of format <db_name>.<table_name>
+   * @param fullTableName full table name of format &lt;db_name&gt;.&lt;table_name&gt;
    * @return list of valid write ids for the given table
    * @throws TException
    */
@@ -2902,7 +2901,7 @@ public interface IMetaStoreClient {
 
   /**
    * Get a structure that details valid write ids.
-   * @param fullTableName full table name of format <db_name>.<table_name>
+   * @param fullTableName full table name of format &lt;db_name&gt;.&lt;table_name&gt;
    * @param writeId The write id to get the corresponding txn
    * @return list of valid write ids for the given table
    * @throws TException
@@ -2911,7 +2910,7 @@ public interface IMetaStoreClient {
 
   /**
    * Get a structure that details valid write ids list for all tables read by current txn.
-   * @param tablesList list of tables (format: <db_name>.<table_name>) read from the current transaction
+   * @param tablesList list of tables (format: &lt;db_name&gt;.&lt;table_name&gt;) read from the current transaction
    *                   for which needs to populate the valid write ids
    * @param validTxnList snapshot of valid txns for the current txn
    * @return list of valid write ids for the given list of tables.
@@ -3948,4 +3947,11 @@ public interface IMetaStoreClient {
    * @throws TException
    */
   void setHadoopJobid(String jobId, long cqId) throws MetaException, TException;
+
+  /**
+   * Gets the version string of the metastore server which this client is connected to
+   *
+   * @return String representation of the version number of Metastore server (eg: 3.1.0-SNAPSHOT)
+   */
+  String getServerVersion() throws TException;
 }

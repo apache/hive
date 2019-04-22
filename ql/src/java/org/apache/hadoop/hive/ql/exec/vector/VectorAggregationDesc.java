@@ -47,22 +47,22 @@ import com.google.common.base.Preconditions;
  *
  *    (Notice the these names are a subset of GroupByDesc.Mode...)
  *
- *        PARTIAL1       Original data            --> Partial aggregation data
+ *        PARTIAL1       Original data            --&gt; Partial aggregation data
  *
- *        PARTIAL2       Partial aggregation data --> Partial aggregation data
+ *        PARTIAL2       Partial aggregation data --&gt; Partial aggregation data
  *
- *        FINAL          Partial aggregation data --> Full aggregation data
+ *        FINAL          Partial aggregation data --&gt; Full aggregation data
  *
- *        COMPLETE       Original data            --> Full aggregation data
+ *        COMPLETE       Original data            --&gt; Full aggregation data
  *
  *
- * SIMPLEST CASE --> The data type/semantics of original data, partial aggregation
+ * SIMPLEST CASE --&gt; The data type/semantics of original data, partial aggregation
  *     data, and full aggregation data ARE THE SAME.  E.g. MIN, MAX, SUM.  The different
  *     modes can be handled by one aggregation class.
  *
  *     This case has a null for the Mode.
  *
- * FOR OTHERS --> The data type/semantics of partial aggregation data and full aggregation data
+ * FOR OTHERS --&gt; The data type/semantics of partial aggregation data and full aggregation data
  *    ARE THE SAME but different than original data.  This results in 2 aggregation classes:
  *
  *       1) A class that takes original rows and outputs partial/full aggregation
@@ -75,7 +75,7 @@ import com.google.common.base.Preconditions;
  *
  *    E.g. COUNT(*) and COUNT(column)
  *
- * OTHERWISE FULL --> The data type/semantics of partial aggregation data is different than
+ * OTHERWISE FULL --&gt; The data type/semantics of partial aggregation data is different than
  *    original data and full aggregation data.
  *
  *    E.g. AVG uses a STRUCT with count and sum for partial aggregation data.  It divides

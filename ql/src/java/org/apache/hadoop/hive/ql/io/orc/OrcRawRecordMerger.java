@@ -463,7 +463,8 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
          */
         //the split is from something other than the 1st file of the logical bucket - compute offset
         AcidUtils.Directory directoryState
-                = AcidUtils.getAcidState(mergerOptions.getRootPath(), conf, validWriteIdList, false, true);
+                = AcidUtils.getAcidState(mergerOptions.getRootPath(), conf, validWriteIdList, false,
+          true);
         for (HadoopShims.HdfsFileStatusWithId f : directoryState.getOriginalFiles()) {
           int bucketIdFromPath = AcidUtils.parseBucketId(f.getFileStatus().getPath());
           if (bucketIdFromPath != bucketId) {
@@ -741,10 +742,10 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       }
     }
     if (rowOffset > 0) {
-      minKey = new RecordIdentifier(0, bucketProperty, rowOffset - 1);
+      minKey = new RecordIdentifier(tfp.syntheticWriteId, bucketProperty, rowOffset - 1);
     }
     if (!isTail) {
-      maxKey = new RecordIdentifier(0, bucketProperty, rowOffset + rowLength - 1);
+      maxKey = new RecordIdentifier(tfp.syntheticWriteId, bucketProperty, rowOffset + rowLength - 1);
     }
     return new KeyInterval(minKey, maxKey);
   }

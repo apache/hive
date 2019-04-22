@@ -22,7 +22,7 @@ POSTHOOK: query: create table alias_test_03(a INT, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alias_test_03
-Warning: Shuffle Join JOIN[12][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain
                          select * from
                          alias_test_01 alias01
@@ -74,6 +74,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: b (type: string)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
@@ -150,17 +151,21 @@ STAGE PLANS:
               value expressions: _col1 (type: string), _col3 (type: int), _col4 (type: string)
           TableScan
             alias: alias03
+            filterExpr: a is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: a (type: int), b (type: string)
-              outputColumnNames: _col0, _col1
+            Filter Operator
+              predicate: a is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
-                Map-reduce partition columns: _col0 (type: int)
+              Select Operator
+                expressions: a (type: int), b (type: string)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: string)
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:

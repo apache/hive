@@ -715,11 +715,16 @@ public class CachedStore implements RawStore, Configurable {
           }
         } else {
           // TODO: prewarm and update can probably be merged.
-          update();
+          try {
+            update();
+          } catch (Exception e) {
+            LOG.error("periodical refresh fail ", e);
+          }
         }
       } else {
         try {
           triggerPreWarm(rawStore);
+          shouldRunPrewarm = false;
         } catch (Exception e) {
           LOG.error("Prewarm failure", e);
           return;
@@ -808,10 +813,9 @@ public class CachedStore implements RawStore, Configurable {
       rawStore.openTransaction();
       try {
         Table table = rawStore.getTable(catName, dbName, tblName);
-        if (!table.isSetPartitionKeys()) {
+        if (table != null && !table.isSetPartitionKeys()) {
           List<String> colNames = MetaStoreUtils.getColumnNamesForTable(table);
           Deadline.startTimer("getTableColumnStatistics");
-
           ColumnStatistics tableColStats =
               rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames);
           Deadline.stopTimer();
@@ -852,18 +856,22 @@ public class CachedStore implements RawStore, Configurable {
       rawStore.openTransaction();
       try {
         Table table = rawStore.getTable(catName, dbName, tblName);
-        List<String> colNames = MetaStoreUtils.getColumnNamesForTable(table);
-        List<String> partNames = rawStore.listPartitionNames(catName, dbName, tblName, (short) -1);
-        // Get partition column stats for this table
-        Deadline.startTimer("getPartitionColumnStatistics");
-        List<ColumnStatistics> partitionColStats =
-            rawStore.getPartitionColumnStatistics(catName, dbName, tblName, partNames, colNames);
-        Deadline.stopTimer();
-        sharedCache.refreshPartitionColStatsInCache(catName, dbName, tblName, partitionColStats);
-        List<Partition> parts = rawStore.getPartitionsByNames(catName, dbName, tblName, partNames);
-        // Also save partitions for consistency as they have the stats state.
-        for (Partition part : parts) {
-          sharedCache.alterPartitionInCache(catName, dbName, tblName, part.getValues(), part);
+        if (table != null) {
+          List<String> colNames = MetaStoreUtils.getColumnNamesForTable(table);
+          List<String> partNames = rawStore.listPartitionNames(catName, dbName, tblName, (short) -1);
+          // Get partition column stats for this table
+          Deadline.startTimer("getPartitionColumnStatistics");
+          List<ColumnStatistics> partitionColStats =
+                  rawStore.getPartitionColumnStatistics(catName, dbName, tblName, partNames, colNames);
+          Deadline.stopTimer();
+          sharedCache.refreshPartitionColStatsInCache(catName, dbName, tblName, partitionColStats);
+          Deadline.startTimer("getPartitionsByNames");
+          List<Partition> parts = rawStore.getPartitionsByNames(catName, dbName, tblName, partNames);
+          Deadline.stopTimer();
+          // Also save partitions for consistency as they have the stats state.
+          for (Partition part : parts) {
+            sharedCache.alterPartitionInCache(catName, dbName, tblName, part.getValues(), part);
+          }
         }
         committed = rawStore.commitTransaction();
       } catch (MetaException | NoSuchObjectException e) {
@@ -882,6 +890,9 @@ public class CachedStore implements RawStore, Configurable {
                                                        String tblName) {
       try {
         Table table = rawStore.getTable(catName, dbName, tblName);
+        if (table == null) {
+          return;
+        }
         List<String> partNames = rawStore.listPartitionNames(catName, dbName, tblName, (short) -1);
         List<String> colNames = MetaStoreUtils.getColumnNamesForTable(table);
         if ((partNames != null) && (partNames.size() > 0)) {
@@ -2058,7 +2069,7 @@ public class CachedStore implements RawStore, Configurable {
       if (!areTxnStatsSupported) {
         StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
       } else {
-        String errorMsg = ObjectStore.verifyStatsChangeCtx(
+        String errorMsg = ObjectStore.verifyStatsChangeCtx(TableName.getDbTable(dbName, tblName),
                 table.getParameters(), newParams, writeId, validWriteIds, true);
         if (errorMsg != null) {
           throw new MetaException(errorMsg);

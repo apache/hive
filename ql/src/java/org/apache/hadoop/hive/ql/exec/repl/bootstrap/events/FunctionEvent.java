@@ -24,8 +24,8 @@ import org.apache.hadoop.fs.Path;
  * <p>
  * Since the bootstrap and incremental for functions is handled similarly. There
  * is additional work to make sure we pass the event object from both places.
- *
- * @see org.apache.hadoop.hive.ql.parse.repl.load.message.CreateFunctionHandler.FunctionDescBuilder
+ * <p>
+ * FunctionDescBuilder in {@link org.apache.hadoop.hive.ql.parse.repl.load.message.CreateFunctionHandler}
  * would be merged here mostly.
  */
 public interface FunctionEvent extends BootstrapEvent {

@@ -18,11 +18,6 @@
 
 package org.apache.hadoop.hive.ql.ddl;
 
-import java.io.DataOutputStream;
-
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,14 +33,5 @@ public abstract class DDLOperation {
     this.context = context;
   }
 
-  public abstract int execute() throws HiveException;
-
-  protected DataOutputStream getOutputStream(Path outputFile) throws HiveException {
-    try {
-      FileSystem fs = outputFile.getFileSystem(context.getConf());
-      return fs.create(outputFile);
-    } catch (Exception e) {
-      throw new HiveException(e);
-    }
-  }
+  public abstract int execute() throws Exception;
 }

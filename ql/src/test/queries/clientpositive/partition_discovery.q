@@ -42,13 +42,13 @@ dfs ${system:test.dfs.mkdir} ${system:test.warehouse.dir}/repairtable_n9/p1=c/p2
 dfs -touchz ${system:test.warehouse.dir}/repairtable_n9/p1=a/p2=b/datafile;
 dfs -touchz ${system:test.warehouse.dir}/repairtable_n9/p1=c/p2=d/datafile;
 
-set msck.repair.enable.partition.retention=false;
+set metastore.msck.repair.enable.partition.retention=false;
 MSCK REPAIR TABLE default.repairtable_n9;
 show partitions default.repairtable_n9;
 
 !sleep 12;
 
-set msck.repair.enable.partition.retention=true;
+set metastore.msck.repair.enable.partition.retention=true;
 -- msck does not drop partitions, so this still should be no-op
 MSCK REPAIR TABLE default.repairtable_n9;
 show partitions default.repairtable_n9;
@@ -65,10 +65,26 @@ dfs ${system:test.dfs.mkdir} ${system:test.warehouse.dir}/repairtable_n10/p1=c/p
 dfs -touchz ${system:test.warehouse.dir}/repairtable_n10/p1=a/p2=b/datafile;
 dfs -touchz ${system:test.warehouse.dir}/repairtable_n10/p1=c/p2=d/datafile;
 
-set msck.repair.enable.partition.retention=false;
+set metastore.msck.repair.enable.partition.retention=false;
 !sleep 12;
 MSCK REPAIR TABLE default.repairtable_n10;
 show partitions default.repairtable_n10;
+
+
+CREATE EXTERNAL TABLE repairtable_n11 LIKE repairtable_n10;
+describe formatted repairtable_n11;
+
+ALTER TABLE repairtable_n10 SET TBLPROPERTIES('discover.partitions'='false');
+describe formatted repairtable_n10;
+
+-- tbl params are not retained by default
+CREATE EXTERNAL TABLE repairtable_n12 LIKE repairtable_n10;
+describe formatted repairtable_n12;
+
+set hive.ddl.createtablelike.properties.whitelist=discover.partitions;
+-- with tbl params retainer
+CREATE EXTERNAL TABLE repairtable_n13 LIKE repairtable_n10;
+describe formatted repairtable_n13;
 
 
 DROP TABLE default.repairtable_n7;

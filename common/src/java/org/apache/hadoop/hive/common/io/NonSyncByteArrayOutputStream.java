@@ -21,12 +21,22 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
 
 /**
  * A thread-not-safe version of ByteArrayOutputStream, which removes all
  * synchronized modifiers.
  */
 public class NonSyncByteArrayOutputStream extends ByteArrayOutputStream {
+
+  /**
+   * The maximum size of array to allocate.
+   * Some VMs reserve some header words in an array.
+   * Attempts to allocate larger arrays may result in
+   * OutOfMemoryError: Requested array size exceeds VM limit
+   */
+  private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
+
   public NonSyncByteArrayOutputStream(int size) {
     super(size);
   }
@@ -71,18 +81,22 @@ public class NonSyncByteArrayOutputStream extends ByteArrayOutputStream {
     count += 1;
   }
 
-  private int enLargeBuffer(int increment) {
-    int temp = count + increment;
-    int newLen = temp;
-    if (temp > buf.length) {
-      if ((buf.length << 1) > temp) {
-        newLen = buf.length << 1;
+  private void enLargeBuffer(final int increment) {
+    final int requestCapacity = Math.addExact(count, increment);
+    final int currentCapacity = buf.length;
+
+    if (requestCapacity > currentCapacity) {
+      // Increase size by a factor of 1.5x
+      int newCapacity = currentCapacity + (currentCapacity >> 1);
+
+      // Check for overflow scenarios
+      if (newCapacity < 0 || newCapacity > MAX_ARRAY_SIZE) {
+        newCapacity = MAX_ARRAY_SIZE;
+      } else if (newCapacity < requestCapacity) {
+        newCapacity = requestCapacity;
       }
-      byte newbuf[] = new byte[newLen];
-      System.arraycopy(buf, 0, newbuf, 0, count);
-      buf = newbuf;
+      buf = Arrays.copyOf(buf, newCapacity);
     }
-    return newLen;
   }
 
   /**
@@ -93,7 +107,8 @@ public class NonSyncByteArrayOutputStream extends ByteArrayOutputStream {
     if ((off < 0) || (off > b.length) || (len < 0) || ((off + len) > b.length)
         || ((off + len) < 0)) {
       throw new IndexOutOfBoundsException();
-    } else if (len == 0) {
+    }
+    if (len == 0) {
       return;
     }
     enLargeBuffer(len);
