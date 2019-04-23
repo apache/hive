@@ -1510,6 +1510,17 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   /** {@inheritDoc} */
   @Override
+  public List<Table> getAllMaterializedViewObjectsForRewriting() throws MetaException {
+    try {
+      return filterHook.filterTables(client.get_all_materialized_view_objects_for_rewriting());
+    } catch (Exception e) {
+      MetaStoreUtils.logAndThrowMetaException(e);
+    }
+    return null;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public List<String> getMaterializedViewsForRewriting(String dbname) throws MetaException {
     try {
       return filterHook.filterTableNames(null, dbname, client.get_materialized_views_for_rewriting(dbname));

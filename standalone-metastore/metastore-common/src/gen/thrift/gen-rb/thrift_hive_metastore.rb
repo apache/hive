@@ -627,6 +627,22 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_tables_by_type failed: unknown result')
     end
 
+    def get_all_materialized_view_objects_for_rewriting()
+      send_get_all_materialized_view_objects_for_rewriting()
+      return recv_get_all_materialized_view_objects_for_rewriting()
+    end
+
+    def send_get_all_materialized_view_objects_for_rewriting()
+      send_message('get_all_materialized_view_objects_for_rewriting', Get_all_materialized_view_objects_for_rewriting_args)
+    end
+
+    def recv_get_all_materialized_view_objects_for_rewriting()
+      result = receive_message(Get_all_materialized_view_objects_for_rewriting_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_all_materialized_view_objects_for_rewriting failed: unknown result')
+    end
+
     def get_materialized_views_for_rewriting(db_name)
       send_get_materialized_views_for_rewriting(db_name)
       return recv_get_materialized_views_for_rewriting()
@@ -4209,6 +4225,17 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'get_tables_by_type', seqid)
+    end
+
+    def process_get_all_materialized_view_objects_for_rewriting(seqid, iprot, oprot)
+      args = read_args(iprot, Get_all_materialized_view_objects_for_rewriting_args)
+      result = Get_all_materialized_view_objects_for_rewriting_result.new()
+      begin
+        result.success = @handler.get_all_materialized_view_objects_for_rewriting()
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_all_materialized_view_objects_for_rewriting', seqid)
     end
 
     def process_get_materialized_views_for_rewriting(seqid, iprot, oprot)
@@ -7838,6 +7865,39 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_all_materialized_view_objects_for_rewriting_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_all_materialized_view_objects_for_rewriting_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Table}},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 

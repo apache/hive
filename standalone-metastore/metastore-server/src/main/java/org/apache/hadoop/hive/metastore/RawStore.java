@@ -399,6 +399,15 @@ public interface RawStore extends Configurable {
       throws MetaException;
 
   /**
+   * Retrieve all materialized views.
+   * @return all materialized views in a catalog
+   * @throws MetaException error querying the RDBMS
+   * @throws NoSuchObjectException no such database
+   */
+  List<Table> getAllMaterializedViewObjectsForRewriting(String catName)
+      throws MetaException;
+
+  /**
    * Get list of materialized views in a database.
    * @param catName catalog name
    * @param dbName database name
