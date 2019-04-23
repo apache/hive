@@ -61,6 +61,9 @@ public class TestGenericUDFDateFormat extends TestCase {
     runAndVerifyStr("2015-04-09 10:30", fmtText, "Thursday", udf);
     runAndVerifyStr("2015-04-10 10:30:45.123", fmtText, "Friday", udf);
     runAndVerifyStr("2015-04-11T10:30:45", fmtText, "Saturday", udf);
+    runAndVerifyStr("2015-04-11T10:30:45Z", fmtText, "Saturday", udf);
+    runAndVerifyStr("2015-04-11T10:30:45+01:00", fmtText, "Saturday", udf);
+    runAndVerifyStr("2015-04-11T10:30:45-01:00", fmtText, "Saturday", udf);
     runAndVerifyStr("2015-04-12 10", fmtText, "Sunday", udf);
   }
 

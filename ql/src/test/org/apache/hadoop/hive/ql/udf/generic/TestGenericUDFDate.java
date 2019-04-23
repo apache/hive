@@ -112,4 +112,42 @@ public class TestGenericUDFDate extends TestCase {
     }
   }
 
+  public void testValidToDate() throws HiveException {
+    runAndVerifyString("2015-04-22", "2015-04-22");
+    runAndVerifyTs("2015-04-23T10:11", "2015-04-23");
+    runAndVerifyTs("2015-04-23 10:11:45", "2015-04-23");
+    runAndVerifyTs("2015-04-23T10:11:45Z", "2015-04-23");
+    runAndVerifyTs("2015-04-23T10:11:45+01:00", "2015-04-23");
+    runAndVerifyTs("2015-04-23T10:11:45-01:00", "2015-04-23");
+  }
+
+  private void runAndVerifyTs(String string, String expected)
+          throws HiveException {
+    GenericUDFDate udf = new GenericUDFDate();
+    ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
+    ObjectInspector[] arguments = {valueOI};
+
+    udf.initialize(arguments);
+    DeferredObject valueObj0 = new DeferredJavaObject(string != null ? new TimestampWritableV2(
+            Timestamp.valueOf(string)) : null);
+    DeferredObject[] args = { valueObj0};
+    DateWritableV2 output = (DateWritableV2) udf.evaluate(args);
+
+    assertEquals(expected, output.toString());
+  }
+
+  private void runAndVerifyString(String string, String expected)
+          throws HiveException {
+    GenericUDFDate udf = new GenericUDFDate();
+    ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+    ObjectInspector[] arguments = {valueOI};
+
+    udf.initialize(arguments);
+    DeferredObject valueObj0 = new DeferredJavaObject(string != null ? new Text(string) : null);
+    DeferredObject[] args = { valueObj0};
+    DateWritableV2 output = (DateWritableV2) udf.evaluate(args);
+
+    assertEquals(expected, output.toString());
+  }
+
 }

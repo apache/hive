@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.common.type;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -160,7 +161,12 @@ public class Timestamp implements Comparable<Timestamp> {
       try {
         localDateTime = LocalDateTime.parse(s);
       } catch (DateTimeParseException e2) {
-        throw new IllegalArgumentException("Cannot create timestamp, parsing error");
+        // Try ISO-8601 format with Zones
+        try {
+          localDateTime = OffsetDateTime.parse(s).toLocalDateTime();
+        } catch (DateTimeParseException e3) {
+          throw new IllegalArgumentException("Cannot create timestamp, parsing error");
+        }
       }
     }
     return new Timestamp(localDateTime);
