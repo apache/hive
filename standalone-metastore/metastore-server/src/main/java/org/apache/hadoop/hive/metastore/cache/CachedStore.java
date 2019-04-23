@@ -1444,6 +1444,12 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
+  public List<Table> getAllMaterializedViewObjectsForRewriting(String catName) throws MetaException {
+    // TODO fucntionCache
+    return rawStore.getAllMaterializedViewObjectsForRewriting(catName);
+  }
+
+  @Override
   public List<String> getMaterializedViewsForRewriting(String catName, String dbName)
       throws MetaException, NoSuchObjectException {
     return rawStore.getMaterializedViewsForRewriting(catName, dbName);
