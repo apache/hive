@@ -207,6 +207,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_tables_by_type\n");
   }
 
+  void get_all_materialized_view_objects_for_rewriting(std::vector<Table> & _return) {
+    // Your implementation goes here
+    printf("get_all_materialized_view_objects_for_rewriting\n");
+  }
+
   void get_materialized_views_for_rewriting(std::vector<std::string> & _return, const std::string& db_name) {
     // Your implementation goes here
     printf("get_materialized_views_for_rewriting\n");
