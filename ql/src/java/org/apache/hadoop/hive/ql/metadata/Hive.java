@@ -1548,20 +1548,18 @@ public class Hive {
    * @throws HiveException
    */
   public List<RelOptMaterialization> getAllValidMaterializedViews(List<String> tablesUsed, boolean forceMVContentsUpToDate,
-                                                                  HiveTxnManager txnMgr) throws HiveException {
+      HiveTxnManager txnMgr) throws HiveException {
     // Final result
     List<RelOptMaterialization> result = new ArrayList<>();
     try {
-      for (String dbName : getMSC().getAllDatabases()) {
-        // From metastore (for security)
-        List<String> materializedViewNames = getMaterializedViewsForRewriting(dbName);
-        if (materializedViewNames.isEmpty()) {
-          // Bail out: empty list
-          continue;
-        }
-        result.addAll(getValidMaterializedViews(dbName, materializedViewNames,
-                                                tablesUsed, forceMVContentsUpToDate, txnMgr));
+      // From metastore (for security)
+      List<Table> materializedViews = getAllMaterializedViewObjectsForRewriting();
+      if (materializedViews.isEmpty()) {
+        // Bail out: empty list
+        return result;
       }
+      result.addAll(getValidMaterializedViews(materializedViews,
+          tablesUsed, forceMVContentsUpToDate, txnMgr));
       return result;
     } catch (Exception e) {
       throw new HiveException(e);
@@ -1570,11 +1568,11 @@ public class Hive {
 
   public List<RelOptMaterialization> getValidMaterializedView(String dbName, String materializedViewName,
       List<String> tablesUsed, boolean forceMVContentsUpToDate, HiveTxnManager txnMgr) throws HiveException {
-    return getValidMaterializedViews(dbName, ImmutableList.of(materializedViewName),
+    return getValidMaterializedViews(ImmutableList.of(getTable(dbName, materializedViewName)),
             tablesUsed, forceMVContentsUpToDate, txnMgr);
   }
 
-  private List<RelOptMaterialization> getValidMaterializedViews(String dbName, List<String> materializedViewNames,
+  private List<RelOptMaterialization> getValidMaterializedViews(List<Table> materializedViewTables,
       List<String> tablesUsed, boolean forceMVContentsUpToDate, HiveTxnManager txnMgr) throws HiveException {
     final String validTxnsList = conf.get(ValidTxnList.VALID_TXNS_KEY);
     final ValidTxnWriteIdList currentTxnWriteIds = txnMgr.getValidWriteIds(tablesUsed, validTxnsList);
@@ -1588,7 +1586,6 @@ public class Hive {
     try {
       // Final result
       List<RelOptMaterialization> result = new ArrayList<>();
-      List<Table> materializedViewTables = getTableObjects(dbName, materializedViewNames);
       for (Table materializedViewTable : materializedViewTables) {
         final Boolean outdated = isOutdatedMaterializedView(materializedViewTable, currentTxnWriteIds,
             defaultTimeWindow, tablesUsed, forceMVContentsUpToDate);
@@ -1623,7 +1620,7 @@ public class Hive {
         // It passed the test, load
         RelOptMaterialization materialization =
             HiveMaterializedViewsRegistry.get().getRewritingMaterializedView(
-                dbName, materializedViewTable.getTableName());
+                materializedViewTable.getDbName(), materializedViewTable.getTableName());
         if (materialization != null) {
           RelNode viewScan = materialization.tableRel;
           RelOptHiveTable cachedMaterializedViewTable;
@@ -1790,6 +1787,21 @@ public class Hive {
     final RelNode modifiedQueryRel = augmentMaterializationPlanner.findBestExp();
     return new RelOptMaterialization(materialization.tableRel, modifiedQueryRel,
         null, materialization.qualifiedTableName);
+  }
+
+  public List<Table> getAllMaterializedViewObjectsForRewriting() throws HiveException {
+    try {
+      return Lists.transform(getMSC().getAllMaterializedViewObjectsForRewriting(),
+          new com.google.common.base.Function<org.apache.hadoop.hive.metastore.api.Table, Table>() {
+            @Override
+            public Table apply(org.apache.hadoop.hive.metastore.api.Table table) {
+              return new Table(table);
+            }
+          }
+      );
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
   }
 
   /**

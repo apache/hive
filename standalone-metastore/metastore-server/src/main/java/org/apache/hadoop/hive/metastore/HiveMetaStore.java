@@ -5375,6 +5375,27 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public List<Table> get_all_materialized_view_objects_for_rewriting()
+        throws MetaException {
+      startFunction("get_all_materialized_view_objects_for_rewriting");
+
+      List<Table> ret = null;
+      Exception ex = null;
+      try {
+        ret = getMS().getAllMaterializedViewObjectsForRewriting(DEFAULT_CATALOG_NAME);
+      } catch (MetaException e) {
+        ex = e;
+        throw e;
+      } catch (Exception e) {
+        ex = e;
+        throw newMetaException(e);
+      } finally {
+        endFunction("get_all_materialized_view_objects_for_rewriting", ret != null, ex);
+      }
+      return ret;
+    }
+
+    @Override
     public List<String> get_materialized_views_for_rewriting(final String dbname)
         throws MetaException {
       startFunction("get_materialized_views_for_rewriting", ": db=" + dbname);

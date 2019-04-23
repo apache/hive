@@ -1938,6 +1938,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   TruncateTableResponse truncate_table_req(1:TruncateTableRequest req) throws(1:MetaException o1)
   list<string> get_tables(1: string db_name, 2: string pattern) throws (1: MetaException o1)
   list<string> get_tables_by_type(1: string db_name, 2: string pattern, 3: string tableType) throws (1: MetaException o1)
+  list<Table> get_all_materialized_view_objects_for_rewriting() throws (1:MetaException o1)
   list<string> get_materialized_views_for_rewriting(1: string db_name) throws (1: MetaException o1)
   list<TableMeta> get_table_meta(1: string db_patterns, 2: string tbl_patterns, 3: list<string> tbl_types)
                        throws (1: MetaException o1)
