@@ -40,10 +40,6 @@ public class CacheUtils {
     return buildKey(catName.toLowerCase(), dbName.toLowerCase());
   }
 
-  public static String buildDbKeyWithDelimiterSuffix(String catName, String dbName) {
-    return buildKey(catName.toLowerCase(), dbName.toLowerCase()) + delimit;
-  }
-
   /**
    * Builds a key for the partition cache which is concatenation of partition values, each value
    * separated by a delimiter

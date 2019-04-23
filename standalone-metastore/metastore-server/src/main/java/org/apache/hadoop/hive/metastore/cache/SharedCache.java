@@ -1317,13 +1317,11 @@ public class SharedCache {
         //in case of retry, ignore second try.
         return;
       }
-      if (tblWrapper != null) {
-        byte[] sdHash = tblWrapper.getSdHash();
-        if (sdHash != null) {
-          decrSd(sdHash);
-        }
-        isTableCacheDirty.set(true);
+      byte[] sdHash = tblWrapper.getSdHash();
+      if (sdHash != null) {
+        decrSd(sdHash);
       }
+      isTableCacheDirty.set(true);
     } finally {
       cacheLock.writeLock().unlock();
     }
@@ -1440,30 +1438,25 @@ public class SharedCache {
 
   public void refreshTablesInCache(String catName, String dbName, List<Table> tables) {
     try {
+      cacheLock.writeLock().lock();
       if (isTableCacheDirty.compareAndSet(true, false)) {
         LOG.debug("Skipping table cache update; the table list we have is dirty.");
         return;
       }
-      Map<String, TableWrapper> newCacheForDB = new TreeMap<>();
+      Map<String, TableWrapper> newTableCache = new HashMap<>();
       for (Table tbl : tables) {
         String tblName = StringUtils.normalizeIdentifier(tbl.getTableName());
-        TableWrapper tblWrapper = tableCache.get(CacheUtils.buildTableKey(catName, dbName, tblName));
+        TableWrapper tblWrapper =
+            tableCache.get(CacheUtils.buildTableKey(catName, dbName, tblName));
         if (tblWrapper != null) {
           tblWrapper.updateTableObj(tbl, this);
         } else {
           tblWrapper = createTableWrapper(catName, dbName, tblName, tbl);
         }
-        newCacheForDB.put(CacheUtils.buildTableKey(catName, dbName, tblName), tblWrapper);
+        newTableCache.put(CacheUtils.buildTableKey(catName, dbName, tblName), tblWrapper);
       }
-      cacheLock.writeLock().lock();
-      Iterator<Entry<String, TableWrapper>> entryIterator = tableCache.entrySet().iterator();
-      while (entryIterator.hasNext()) {
-        String key = entryIterator.next().getKey();
-        if (key.startsWith(CacheUtils.buildDbKeyWithDelimiterSuffix(catName, dbName))) {
-          entryIterator.remove();
-        }
-      }
-      tableCache.putAll(newCacheForDB);
+      tableCache.clear();
+      tableCache = newTableCache;
     } finally {
       cacheLock.writeLock().unlock();
     }
