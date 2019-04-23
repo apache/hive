@@ -60,8 +60,10 @@ public class HiveAggregateSplitRule extends RelOptRule {
     // If any aggregate is the grouping id, bail out
     // If any aggregate call has a filter, bail out
     // If any aggregate functions do not support splitting, bail out
-    final List<SqlAggFunction> topAggFunctions = new ArrayList<>();
-    for (AggregateCall aggregateCall : aggregate.getAggCallList()) {
+    final ImmutableBitSet bottomAggregateGroupSet = aggregate.getGroupSet();
+    final List<AggregateCall> topAggregateCalls = new ArrayList<>();
+    for (int i = 0; i < aggregate.getAggCallList().size(); i++) {
+      AggregateCall aggregateCall = aggregate.getAggCallList().get(i);
       if (aggregateCall.isDistinct()) {
         return;
       }
@@ -76,10 +78,14 @@ public class HiveAggregateSplitRule extends RelOptRule {
       if (aggFunction == null) {
         return;
       }
-      topAggFunctions.add(aggFunction);
+      topAggregateCalls.add(
+          AggregateCall.create(aggFunction,
+              aggregateCall.isDistinct(), aggregateCall.isApproximate(),
+              ImmutableList.of(bottomAggregateGroupSet.cardinality() + i), -1,
+              aggregateCall.collation, aggregateCall.type,
+              aggregateCall.name));
     }
 
-    final ImmutableBitSet bottomAggregateGroupSet = aggregate.getGroupSet();
     if (aggregate.getCluster().getMetadataQuery().areColumnsUnique(aggregate.getInput(), bottomAggregateGroupSet)) {
       // Nothing to do, probably already pushed
       return;
@@ -91,17 +97,6 @@ public class HiveAggregateSplitRule extends RelOptRule {
     bottomAggregateGroupSet.forEach(k -> map.put(k, map.size()));
     ImmutableList<ImmutableBitSet> topAggregateGroupSets = ImmutableBitSet.ORDERING.immutableSortedCopy(
         ImmutableBitSet.permute(aggregate.groupSets, map));
-
-    final List<AggregateCall> topAggregateCalls = new ArrayList<>();
-    for (int i = 0; i < aggregate.getAggCallList().size(); i++) {
-      AggregateCall aggregateCall = aggregate.getAggCallList().get(i);
-      topAggregateCalls.add(
-          AggregateCall.create(topAggFunctions.get(i),
-              aggregateCall.isDistinct(), aggregateCall.isApproximate(),
-              ImmutableList.of(topAggregateGroupSet.cardinality() + i), -1,
-              aggregateCall.collation, aggregateCall.type,
-              aggregateCall.name));
-    }
 
     relBuilder.push(aggregate.getInput())
         .aggregate(relBuilder.groupKey(bottomAggregateGroupSet), aggregate.getAggCallList())
