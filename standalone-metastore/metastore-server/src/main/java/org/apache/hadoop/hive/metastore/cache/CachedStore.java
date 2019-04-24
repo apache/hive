@@ -724,7 +724,6 @@ public class CachedStore implements RawStore, Configurable {
       } else {
         try {
           triggerPreWarm(rawStore);
-          shouldRunPrewarm = false;
         } catch (Exception e) {
           LOG.error("Prewarm failure", e);
           return;
@@ -816,6 +815,7 @@ public class CachedStore implements RawStore, Configurable {
         if (table != null && !table.isSetPartitionKeys()) {
           List<String> colNames = MetaStoreUtils.getColumnNamesForTable(table);
           Deadline.startTimer("getTableColumnStatistics");
+
           ColumnStatistics tableColStats =
               rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames);
           Deadline.stopTimer();
@@ -865,9 +865,7 @@ public class CachedStore implements RawStore, Configurable {
                   rawStore.getPartitionColumnStatistics(catName, dbName, tblName, partNames, colNames);
           Deadline.stopTimer();
           sharedCache.refreshPartitionColStatsInCache(catName, dbName, tblName, partitionColStats);
-          Deadline.startTimer("getPartitionsByNames");
           List<Partition> parts = rawStore.getPartitionsByNames(catName, dbName, tblName, partNames);
-          Deadline.stopTimer();
           // Also save partitions for consistency as they have the stats state.
           for (Partition part : parts) {
             sharedCache.alterPartitionInCache(catName, dbName, tblName, part.getValues(), part);
