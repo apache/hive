@@ -288,6 +288,13 @@ public class QOutProcessor {
     ppm.add(new PatternReplacementPair(Pattern.compile("for Spark session.*?:"),
             "#SPARK_SESSION_ID#:"));
 
+    ppm.add(new PatternReplacementPair(Pattern.compile("\"CBOPlan\".*,\"optimizedSQL\""),
+        "\"CBOPlan\":\"###Masked###\",\"optimizedSQL\""));
+    ppm.add(new PatternReplacementPair(Pattern.compile("\"DagId:\".*,\"Edges:\""),
+        "\"DagId:\":\"###Masked###\",\"Edges:\""));
+    ppm.add(new PatternReplacementPair(Pattern.compile("\"DagName:\".*,\"Vertices:\""),
+        "\"DagName:\":\"###Masked###\",\"Vertices:\""));
+
     ppm.add(new PatternReplacementPair(Pattern.compile("rowcount = [0-9]+(\\.[0-9]+(E[0-9]+)?)?, cumulative cost = \\{.*\\}, id = [0-9]*"),
         "rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###"));
 
