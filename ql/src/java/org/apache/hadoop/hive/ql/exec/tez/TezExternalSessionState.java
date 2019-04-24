@@ -71,11 +71,7 @@ public class TezExternalSessionState extends TezSessionState {
           throws IOException, LoginException, URISyntaxException, TezException {
     initQueueAndUser();
 
-    // TODO: is the resource stuff really needed for external?
-    //       It's used in Tez object construction (session, DAG), so keep it around for now.
-    appJarLr = createJarLocalResource(utils.getExecJarPathLocal(conf));
-    Map<String, LocalResource> commonLocalResources = new HashMap<>();
-    boolean llapMode = addLlapJarsIfNeeded(commonLocalResources);
+    boolean llapMode = isLlapMode();
 
     Map<String, String> amEnv = new HashMap<String, String>();
     MRHelpers.updateEnvBasedOnMRAMEnv(conf, amEnv);
@@ -85,11 +81,11 @@ public class TezExternalSessionState extends TezSessionState {
     Credentials llapCredentials = createLlapCredentials(llapMode, tezConfig);
 
     final TezClient session = TezClient.newBuilder("HIVE-" + getSessionId(), tezConfig)
-        .setIsSession(true).setLocalResources(commonLocalResources)
+        .setIsSession(true)
         .setCredentials(llapCredentials).setServicePluginDescriptor(spd)
         .build();
 
-    LOG.info("Opening new Tez Session (id: " + getSessionId() + ")");
+    LOG.info("Opening new External Tez Session (id: " + getSessionId() + ")");
     TezJobMonitor.initShutdownHook();
 
     // External sessions doesn't support async mode (getClient should be much cheaper than open,

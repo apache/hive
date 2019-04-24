@@ -274,7 +274,7 @@ public class TezSessionState implements TezSession {
     return true;
   }
 
-  private boolean isLlapMode() {
+  protected boolean isLlapMode() {
     return "llap".equalsIgnoreCase(HiveConf.getVar(
         conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE));
   }
