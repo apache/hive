@@ -2362,7 +2362,7 @@ public class Hive {
             ((null != oldPart) || AcidUtils.isTransactionalTable(tbl));
   }
 
-  private void listFilesInsideAcidDirectory(Path acidDir, FileSystem srcFs, List<Path> newFiles) throws IOException {
+  public void listFilesInsideAcidDirectory(Path acidDir, FileSystem srcFs, List<Path> newFiles) throws IOException {
     // list out all the files/directory in the path
     FileStatus[] acidFiles;
     acidFiles = srcFs.listStatus(acidDir);
@@ -3261,7 +3261,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     tpart.getSd().setLocation(partPath);
   }
 
-  private void addWriteNotificationLog(Table tbl, Map<String, String> partitionSpec,
+  public void addWriteNotificationLog(Table tbl, Map<String, String> partitionSpec,
                                        List<Path> newFiles, Long writeId) throws HiveException {
     if (!conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML)) {
       LOG.debug("write notification log is ignored as dml event logging is disabled");

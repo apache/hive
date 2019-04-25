@@ -203,9 +203,8 @@ public class BaseReplicationScenariosAcidTables {
 
   void prepareIncAcidData(String dbName) throws Throwable {
     primary.run("use " + dbName)
-            .run("create table t6 (str string) stored as orc tblproperties " +
-                    "(\"transactional\"=\"true\")")
-            .run("insert into t6 values ('aaa'), ('bbb')")
+            .run("create table t6 stored as orc tblproperties (\"transactional\"=\"true\")" +
+                    " as select * from t1")
             .run("alter table t2 add columns (placetype string)")
             .run("update t2 set placetype = 'city'");
     acidTableNames.add("t6");
@@ -213,8 +212,8 @@ public class BaseReplicationScenariosAcidTables {
 
   private void verifyIncAcidLoad(String dbName) throws Throwable {
     replica.run("use " + dbName)
-            .run("select str from t6 order by str")
-            .verifyResults(new String[]{"aaa", "bbb"})
+            .run("select id from t6 order by id")
+            .verifyResults(new String[]{"1", "2"})
             .run("select country from t2 order by country")
             .verifyResults(new String[] {"france", "india", "us"})
             .run("select distinct placetype from t2")
@@ -244,8 +243,8 @@ public class BaseReplicationScenariosAcidTables {
 
   private void verifyInc2AcidLoad(String dbName) throws Throwable {
     replica.run("use " + dbName)
-            .run("select str from t6 order by str")
-            .verifyResults(new String[]{"aaa", "bbb"})
+            .run("select id from t6 order by id")
+            .verifyResults(new String[]{"1", "2"})
             .run("select country from t2 order by country")
             .verifyResults(new String[] {"france", "india", "us"})
             .run("select distinct placetype from t2")
