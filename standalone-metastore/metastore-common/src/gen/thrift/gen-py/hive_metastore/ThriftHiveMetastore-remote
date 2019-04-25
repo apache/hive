@@ -61,6 +61,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  TruncateTableResponse truncate_table_req(TruncateTableRequest req)')
   print('   get_tables(string db_name, string pattern)')
   print('   get_tables_by_type(string db_name, string pattern, string tableType)')
+  print('   get_all_materialized_view_objects_for_rewriting()')
   print('   get_materialized_views_for_rewriting(string db_name)')
   print('   get_table_meta(string db_patterns, string tbl_patterns,  tbl_types)')
   print('   get_all_tables(string db_name)')
@@ -537,6 +538,12 @@ elif cmd == 'get_tables_by_type':
     print('get_tables_by_type requires 3 args')
     sys.exit(1)
   pp.pprint(client.get_tables_by_type(args[0],args[1],args[2],))
+
+elif cmd == 'get_all_materialized_view_objects_for_rewriting':
+  if len(args) != 0:
+    print('get_all_materialized_view_objects_for_rewriting requires 0 args')
+    sys.exit(1)
+  pp.pprint(client.get_all_materialized_view_objects_for_rewriting())
 
 elif cmd == 'get_materialized_views_for_rewriting':
   if len(args) != 1:

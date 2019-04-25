@@ -73,12 +73,13 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
   private long[] scratchLongs;
   private byte[] scratchBuffer;
 
-  private Field root;
+  private final Field root;
   private Deque<Field> stack = new ArrayDeque<>();
   private LazyBinarySerDe.BooleanRef warnedOnceNullMapKey;
 
   private static class Field {
-    Category type;
+    // Make sure the root.type never changes from STRUCT
+    final Category type;
 
     int fieldCount;
     int fieldIndex;
@@ -89,6 +90,15 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
 
     Field(Category type) {
       this.type = type;
+    }
+
+    public void clean() {
+      fieldCount = 0;
+      fieldIndex = 0;
+      byteSizeStart = 0;
+      start = 0;
+      nullOffset = 0;
+      nullByte = 0;
     }
   }
 
@@ -101,6 +111,7 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
 
   // Not public since we must have the field count and other information.
   private LazyBinarySerializeWrite() {
+    this.root = new Field(STRUCT);
   }
 
   /*
@@ -133,7 +144,7 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
   }
 
   private void resetWithoutOutput() {
-    root = new Field(STRUCT);
+    root.clean();
     root.fieldCount = rootFieldCount;
     stack.clear();
     stack.push(root);
