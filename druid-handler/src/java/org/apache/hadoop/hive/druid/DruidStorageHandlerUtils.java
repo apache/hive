@@ -75,7 +75,7 @@ import org.apache.druid.segment.data.RoaringBitmapSerdeFactory;
 import org.apache.druid.segment.indexing.granularity.GranularitySpec;
 import org.apache.druid.segment.indexing.granularity.UniformGranularitySpec;
 import org.apache.druid.segment.loading.DataSegmentPusher;
-import org.apache.druid.segment.realtime.appenderator.SegmentIdentifier;
+import org.apache.druid.segment.realtime.appenderator.SegmentIdWithShardSpec;
 import org.apache.druid.segment.writeout.TmpFileSegmentWriteOutMediumFactory;
 import org.apache.druid.storage.hdfs.HdfsDataSegmentPusher;
 import org.apache.druid.storage.hdfs.HdfsDataSegmentPusherConfig;
@@ -464,7 +464,7 @@ public final class DruidStorageHandlerUtils {
               existingChunks.size()));
         }
         // Find out the segment with latest version and maximum partition number
-        SegmentIdentifier max = null;
+        SegmentIdWithShardSpec max = null;
         final ShardSpec newShardSpec;
         final String newVersion;
         if (!existingChunks.isEmpty()) {
@@ -474,7 +474,7 @@ public final class DruidStorageHandlerUtils {
             if (max == null || max.getShardSpec().getPartitionNum() < existing.getObject()
                 .getShardSpec()
                 .getPartitionNum()) {
-              max = SegmentIdentifier.fromDataSegment(existing.getObject());
+              max = SegmentIdWithShardSpec.fromDataSegment(existing.getObject());
             }
           }
         }
@@ -514,7 +514,7 @@ public final class DruidStorageHandlerUtils {
 
       for (final DataSegment segment : finalSegmentsToPublish) {
 
-        batch.add(new ImmutableMap.Builder<String, Object>().put("id", segment.getIdentifier())
+        batch.add(new ImmutableMap.Builder<String, Object>().put("id", segment.getId().toString())
             .put("dataSource", segment.getDataSource())
             .put("created_date", new DateTime().toString())
             .put("start", segment.getInterval().getStart().toString())
@@ -525,7 +525,7 @@ public final class DruidStorageHandlerUtils {
             .put("payload", JSON_MAPPER.writeValueAsBytes(segment))
             .build());
 
-        LOG.info("Published {}", segment.getIdentifier());
+        LOG.info("Published {}", segment.getId().toString());
       }
       batch.execute();
 
@@ -584,7 +584,7 @@ public final class DruidStorageHandlerUtils {
    * @return a sanitize file name
    */
   public static Path makeSegmentDescriptorOutputPath(DataSegment pushedSegment, Path segmentsDescriptorDir) {
-    return new Path(segmentsDescriptorDir, String.format("%s.json", pushedSegment.getIdentifier().replace(":", "")));
+    return new Path(segmentsDescriptorDir, String.format("%s.json", pushedSegment.getId().toString().replace(":", "")));
   }
 
   public static String createScanAllQuery(String dataSourceName, List<String> columns) throws JsonProcessingException {

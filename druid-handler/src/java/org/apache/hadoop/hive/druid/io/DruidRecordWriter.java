@@ -34,7 +34,7 @@ import org.apache.druid.segment.loading.DataSegmentPusher;
 import org.apache.druid.segment.realtime.FireDepartmentMetrics;
 import org.apache.druid.segment.realtime.appenderator.Appenderator;
 import org.apache.druid.segment.realtime.appenderator.Appenderators;
-import org.apache.druid.segment.realtime.appenderator.SegmentIdentifier;
+import org.apache.druid.segment.realtime.appenderator.SegmentIdWithShardSpec;
 import org.apache.druid.segment.realtime.appenderator.SegmentNotWritableException;
 import org.apache.druid.segment.realtime.appenderator.SegmentsAndMetadata;
 import org.apache.druid.segment.realtime.plumber.Committers;
@@ -81,7 +81,7 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
 
   private final Path segmentsDescriptorDir;
 
-  private SegmentIdentifier currentOpenSegment = null;
+  private SegmentIdWithShardSpec currentOpenSegment = null;
 
   private final int maxPartitionSize;
 
@@ -128,15 +128,15 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
    *
    * @return segmentIdentifier with of the truncatedTime and maybe push the current open segment.
    */
-  private SegmentIdentifier getSegmentIdentifierAndMaybePush(long truncatedTime) {
+  private SegmentIdWithShardSpec getSegmentIdentifierAndMaybePush(long truncatedTime) {
 
     DateTime truncatedDateTime = segmentGranularity.bucketStart(DateTimes.utc(truncatedTime));
     final Interval interval = new Interval(truncatedDateTime, segmentGranularity.increment(truncatedDateTime));
 
-    SegmentIdentifier retVal;
+    SegmentIdWithShardSpec retVal;
     if (currentOpenSegment == null) {
       currentOpenSegment =
-          new SegmentIdentifier(dataSchema.getDataSource(),
+          new SegmentIdWithShardSpec(dataSchema.getDataSource(),
               interval,
               tuningConfig.getVersioningPolicy().getVersion(interval),
               new LinearShardSpec(0));
@@ -148,37 +148,37 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
         return retVal;
       } else {
         retVal =
-            new SegmentIdentifier(dataSchema.getDataSource(),
+            new SegmentIdWithShardSpec(dataSchema.getDataSource(),
                 interval,
                 tuningConfig.getVersioningPolicy().getVersion(interval),
                 new LinearShardSpec(currentOpenSegment.getShardSpec().getPartitionNum() + 1));
         pushSegments(Lists.newArrayList(currentOpenSegment));
         LOG.info("Creating new partition for segment {}, partition num {}",
-            retVal.getIdentifierAsString(),
+            retVal.toString(),
             retVal.getShardSpec().getPartitionNum());
         currentOpenSegment = retVal;
         return retVal;
       }
     } else {
       retVal =
-          new SegmentIdentifier(dataSchema.getDataSource(),
+          new SegmentIdWithShardSpec(dataSchema.getDataSource(),
               interval,
               tuningConfig.getVersioningPolicy().getVersion(interval),
               new LinearShardSpec(0));
       pushSegments(Lists.newArrayList(currentOpenSegment));
-      LOG.info("Creating segment {}", retVal.getIdentifierAsString());
+      LOG.info("Creating segment {}", retVal.toString());
       currentOpenSegment = retVal;
       return retVal;
     }
   }
 
-  private void pushSegments(List<SegmentIdentifier> segmentsToPush) {
+  private void pushSegments(List<SegmentIdWithShardSpec> segmentsToPush) {
     try {
       SegmentsAndMetadata segmentsAndMetadata = appenderator.push(segmentsToPush, committerSupplier.get(), false).get();
       final Set<String> pushedSegmentIdentifierHashSet = new HashSet<>();
 
       for (DataSegment pushedSegment : segmentsAndMetadata.getSegments()) {
-        pushedSegmentIdentifierHashSet.add(SegmentIdentifier.fromDataSegment(pushedSegment).getIdentifierAsString());
+        pushedSegmentIdentifierHashSet.add(SegmentIdWithShardSpec.fromDataSegment(pushedSegment).toString());
         final Path
             segmentDescriptorOutputPath =
             DruidStorageHandlerUtils.makeSegmentDescriptorOutputPath(pushedSegment, segmentsDescriptorDir);
@@ -191,7 +191,7 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
       final Set<String>
           toPushSegmentsHashSet =
           segmentsToPush.stream()
-              .map(SegmentIdentifier::getIdentifierAsString)
+              .map(SegmentIdWithShardSpec::toString)
               .collect(Collectors.toCollection(HashSet::new));
 
       if (!pushedSegmentIdentifierHashSet.equals(toPushSegmentsHashSet)) {
@@ -199,7 +199,7 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
             Joiner.on(", ").join(toPushSegmentsHashSet),
             Joiner.on(", ").join(pushedSegmentIdentifierHashSet)));
       }
-      for (SegmentIdentifier dataSegmentId : segmentsToPush) {
+      for (SegmentIdWithShardSpec dataSegmentId : segmentsToPush) {
         LOG.info("Dropping segment {}", dataSegmentId.toString());
         appenderator.drop(dataSegmentId).get();
       }
@@ -242,14 +242,14 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
               || !currentOpenSegment.getInterval().equals(interval)) {
             pushSegments(ImmutableList.of(currentOpenSegment));
             currentOpenSegment =
-                new SegmentIdentifier(dataSchema.getDataSource(),
+                new SegmentIdWithShardSpec(dataSchema.getDataSource(),
                     interval,
                     tuningConfig.getVersioningPolicy().getVersion(interval),
                     new LinearShardSpec(partitionNumber));
           }
         } else {
           currentOpenSegment =
-              new SegmentIdentifier(dataSchema.getDataSource(),
+              new SegmentIdWithShardSpec(dataSchema.getDataSource(),
                   interval,
                   tuningConfig.getVersioningPolicy().getVersion(interval),
                   new LinearShardSpec(partitionNumber));
@@ -276,7 +276,7 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
   @Override public void close(boolean abort) throws IOException {
     try {
       if (!abort) {
-        final List<SegmentIdentifier> segmentsToPush = Lists.newArrayList();
+        final List<SegmentIdWithShardSpec> segmentsToPush = Lists.newArrayList();
         segmentsToPush.addAll(appenderator.getSegments());
         pushSegments(segmentsToPush);
       }
