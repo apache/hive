@@ -66,8 +66,8 @@ public class StreamingTestUtils {
 
   public void prepareTransactionDatabase(HiveConf conf) throws Exception {
     TxnDbUtil.setConfValues(conf);
-    TxnDbUtil.cleanDb();
-    TxnDbUtil.prepDb();
+    TxnDbUtil.cleanDb(conf);
+    TxnDbUtil.prepDb(conf);
   }
 
   public IMetaStoreClient newMetaStoreClient(HiveConf conf) throws Exception {

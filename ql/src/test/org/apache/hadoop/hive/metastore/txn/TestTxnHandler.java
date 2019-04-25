@@ -1543,13 +1543,13 @@ public class TestTxnHandler {
 
   @Before
   public void setUp() throws Exception {
-    TxnDbUtil.prepDb();
+    TxnDbUtil.prepDb(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
   }
 
   @After
   public void tearDown() throws Exception {
-    TxnDbUtil.cleanDb();
+    TxnDbUtil.cleanDb(conf);
   }
 
   private long openTxn() throws MetaException {
