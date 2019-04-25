@@ -137,7 +137,7 @@ public class TestTxnUtils {
     ResultSet rs = null;
 
     try {
-      conn = TxnDbUtil.getConnection();
+      conn = TxnDbUtil.getConnection(conf);
       stmt = conn.createStatement();
       for (String query : queries) {
         rs = stmt.executeQuery(query);
@@ -201,14 +201,13 @@ public class TestTxnUtils {
 
   @Before
   public void setUp() throws Exception {
-    tearDown();
     conf = new HiveConf(this.getClass());
     TxnDbUtil.setConfValues(conf);
-    TxnDbUtil.prepDb();
+    TxnDbUtil.prepDb(conf);
   }
 
   @After
   public void tearDown() throws Exception {
-    TxnDbUtil.cleanDb();
+    TxnDbUtil.cleanDb(conf);
   }
 }

@@ -95,7 +95,7 @@ public abstract class CompactorTest {
   protected CompactorTest() throws Exception {
     conf = new HiveConf();
     TxnDbUtil.setConfValues(conf);
-    TxnDbUtil.cleanDb();
+    TxnDbUtil.cleanDb(conf);
     ms = new HiveMetaStoreClient(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
     tmpdir = new File (Files.createTempDirectory("compactor_test_table_").toString());

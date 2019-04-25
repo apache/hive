@@ -99,7 +99,6 @@ public class TestTxnCommands {
 
   @Before
   public void setUp() throws Exception {
-    tearDown();
     hiveConf = new HiveConf(this.getClass());
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
@@ -110,7 +109,7 @@ public class TestTxnCommands {
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     hiveConf.setBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK, true);
     TxnDbUtil.setConfValues(hiveConf);
-    TxnDbUtil.prepDb();
+    TxnDbUtil.prepDb(hiveConf);
     File f = new File(TEST_WAREHOUSE_DIR);
     if (f.exists()) {
       FileUtil.fullyDelete(f);
@@ -144,7 +143,7 @@ public class TestTxnCommands {
         d = null;
       }
     } finally {
-      TxnDbUtil.cleanDb();
+      TxnDbUtil.cleanDb(hiveConf);
       FileUtils.deleteDirectory(new File(TEST_DATA_DIR));
     }
   }
@@ -469,7 +468,7 @@ public class TestTxnCommands {
     Assert.assertNotNull(txnInfo);
     Assert.assertEquals(2, txnInfo.getId());
     Assert.assertEquals(TxnState.OPEN, txnInfo.getState());
-    String s =TxnDbUtil.queryToString("select TXN_STARTED, TXN_LAST_HEARTBEAT from TXNS where TXN_ID = " + txnInfo.getId(), false);
+    String s =TxnDbUtil.queryToString(hiveConf, "select TXN_STARTED, TXN_LAST_HEARTBEAT from TXNS where TXN_ID = " + txnInfo.getId(), false);
     String[] vals = s.split("\\s+");
     Assert.assertEquals("Didn't get expected timestamps", 2, vals.length);
     long lastHeartbeat = Long.parseLong(vals[1]);
@@ -493,7 +492,7 @@ public class TestTxnCommands {
     TestDbTxnManager2.checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", Table.ACIDTBL.name, null, slr.getLocks());
 
     //should've done several heartbeats
-    s =TxnDbUtil.queryToString("select TXN_STARTED, TXN_LAST_HEARTBEAT from TXNS where TXN_ID = " + txnInfo.getId(), false);
+    s =TxnDbUtil.queryToString(hiveConf, "select TXN_STARTED, TXN_LAST_HEARTBEAT from TXNS where TXN_ID = " + txnInfo.getId(), false);
     vals = s.split("\\s+");
     Assert.assertEquals("Didn't get expected timestamps", 2, vals.length);
     Assert.assertTrue("Heartbeat didn't progress: (old,new) (" + lastHeartbeat + "," + vals[1]+ ")",

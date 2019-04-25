@@ -2331,7 +2331,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       // Set up the transaction/locking db in the derby metastore
       TxnDbUtil.setConfValues(conf);
       try {
-        TxnDbUtil.prepDb();
+        TxnDbUtil.prepDb(conf);
       } catch (Exception e) {
         // We may have already created the tables and thus don't need to redo it.
         if (e.getMessage() != null && !e.getMessage().contains("already exists")) {

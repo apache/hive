@@ -203,8 +203,8 @@ public class TestStreaming {
 
 
     //1) Start from a clean slate (metastore)
-    TxnDbUtil.cleanDb();
-    TxnDbUtil.prepDb();
+    TxnDbUtil.cleanDb(conf);
+    TxnDbUtil.prepDb(conf);
 
     //2) obtain metastore clients
     msClient = new HiveMetaStoreClient(conf);
