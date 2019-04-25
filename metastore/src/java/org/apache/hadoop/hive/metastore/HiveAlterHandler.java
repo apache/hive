@@ -146,9 +146,12 @@ public class HiveAlterHandler implements AlterHandler {
         throw new InvalidOperationException("table " + dbname + "." + name + " doesn't exist");
       }
 
-      if (HiveConf.getBoolVar(hiveConf,
-            HiveConf.ConfVars.METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
-            false)) {
+      // Views derive the column type from the base table definition.  So the view definition
+      // can be altered to change the column types.  The column type compatibility checks should
+      // be done only for non-views.
+      if (HiveConf
+          .getBoolVar(hiveConf, HiveConf.ConfVars.METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
+              false) && !oldt.getTableType().equals(TableType.VIRTUAL_VIEW.toString())) {
         // Throws InvalidOperationException if the new column types are not
         // compatible with the current column types.
         MetaStoreUtils.throwExceptionIfIncompatibleColTypeChange(
