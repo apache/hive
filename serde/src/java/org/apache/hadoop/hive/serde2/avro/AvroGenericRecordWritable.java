@@ -24,6 +24,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.rmi.server.UID;
+import java.time.ZoneId;
 
 import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileStream;
@@ -47,6 +48,9 @@ public class AvroGenericRecordWritable implements Writable{
 
   // Schema that exists in the Avro data file.
   private Schema fileSchema;
+
+  // Time zone file was written in, from metadata
+  private ZoneId writerTimezone = null;
 
   /**
    * Unique Id determine which record reader created this record
@@ -72,6 +76,10 @@ public class AvroGenericRecordWritable implements Writable{
 
   public AvroGenericRecordWritable(GenericRecord record) {
     this.record = record;
+  }
+
+  public AvroGenericRecordWritable(ZoneId writerTimezone) {
+    this.writerTimezone = writerTimezone;
   }
 
   @Override
@@ -140,5 +148,9 @@ public class AvroGenericRecordWritable implements Writable{
 
   public void setFileSchema(Schema originalSchema) {
     this.fileSchema = originalSchema;
+  }
+
+  public ZoneId getWriterTimezone() {
+    return writerTimezone;
   }
 }

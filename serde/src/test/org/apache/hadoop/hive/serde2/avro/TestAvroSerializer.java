@@ -25,6 +25,7 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.generic.GenericEnumSymbol;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveDecimalV1;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -118,6 +119,13 @@ public class TestAvroSerializer {
   @Test
   public void canSerializeDoubles() throws SerDeException, IOException {
     singleFieldTest("double1", 24.00000001, "\"double\"");
+  }
+
+  @Test
+  public void canSerializeTimestamps() throws SerDeException, IOException {
+    singleFieldTest("timestamp1", Timestamp.valueOf("2011-01-01 00:00:00").toEpochMilli(),
+        "\"" + AvroSerDe.AVRO_LONG_TYPE_NAME + "\"," +
+        "\"logicalType\":\"" + AvroSerDe.TIMESTAMP_TYPE_NAME + "\"");
   }
 
   @Test
