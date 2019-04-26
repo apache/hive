@@ -18,21 +18,23 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.util.Iterator;
+
 import org.apache.hadoop.hive.ql.exec.MapredContext;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.net.URLClassLoader;
-import java.util.Arrays;
-import java.util.Iterator;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 
 public abstract class SparkRecordHandler {
   protected static final String CLASS_NAME = SparkRecordHandler.class.getName();
@@ -60,16 +62,7 @@ public abstract class SparkRecordHandler {
     rp = reporter;
 
     LOG.info("maximum memory = " + memoryMXBean.getHeapMemoryUsage().getMax());
-
-    try {
-      LOG.info("conf classpath = "
-        + Arrays.asList(((URLClassLoader) job.getClassLoader()).getURLs()));
-      LOG.info("thread classpath = "
-        + Arrays.asList(((URLClassLoader) Thread.currentThread()
-        .getContextClassLoader()).getURLs()));
-    } catch (Exception e) {
-      LOG.info("cannot get classpath: " + e.getMessage());
-    }
+    Utilities.tryLoggingClassPaths(job, LOG);
   }
 
   /**

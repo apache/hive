@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,14 +53,30 @@ public class SparkClientUtilities {
 
   /**
    * Add new elements to the classpath.
+   * Returns currently known class paths as best effort. For system class loader, this may return empty.
+   * In such cases we will anyway create new child class loader in {@link #addToClassPath(Map, Configuration, File)},
+   * so all new class paths will be added and next time we will have a URLClassLoader to work with.
+   */
+  private static List<URL> getCurrentClassPaths(ClassLoader parentLoader) {
+    if(parentLoader instanceof URLClassLoader) {
+      return Lists.newArrayList(((URLClassLoader) parentLoader).getURLs());
+    } else {
+      return Collections.emptyList();
+    }
+  }
+
+  /**
+   * Add new elements to the classpath by creating a child ClassLoader containing both old and new paths.
+   * This method supports downloading HDFS files to local FS if missing from cache or later timestamp.
+   * However, this method has no tricks working around HIVE-11878, like UDFClassLoader....
    *
    * @param newPaths Map of classpath elements and corresponding timestamp
    * @return locally accessible files corresponding to the newPaths
    */
   public static List<String> addToClassPath(Map<String, Long> newPaths, Configuration conf,
       File localTmpDir) throws Exception {
-    URLClassLoader loader = (URLClassLoader) Thread.currentThread().getContextClassLoader();
-    List<URL> curPath = Lists.newArrayList(loader.getURLs());
+    ClassLoader parentLoader = Thread.currentThread().getContextClassLoader();
+    List<URL> curPath = getCurrentClassPaths(parentLoader);
     List<String> localNewPaths = new ArrayList<>();
 
     boolean newPathAdded = false;
@@ -75,7 +92,7 @@ public class SparkClientUtilities {
 
     if (newPathAdded) {
       URLClassLoader newLoader =
-          new URLClassLoader(curPath.toArray(new URL[curPath.size()]), loader);
+          new URLClassLoader(curPath.toArray(new URL[curPath.size()]), parentLoader);
       Thread.currentThread().setContextClassLoader(newLoader);
     }
     return localNewPaths;
