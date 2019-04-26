@@ -121,7 +121,7 @@ STAGE PLANS:
           TableScan
             alias: testa
             filterExpr: ((part1 = 'CA') and (part2 = 'ABC')) (type: boolean)
-            Statistics: Num rows: 2 Data size: 4596 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 2 Data size: 4876 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: rand() (type: double)
               outputColumnNames: _col0
@@ -177,7 +177,7 @@ STAGE PLANS:
           TableScan
             alias: testa
             filterExpr: ((part1 = 'CA') and (part2 = 'ABC')) (type: boolean)
-            Statistics: Num rows: 2 Data size: 4596 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 2 Data size: 4876 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: rand() (type: double)
               outputColumnNames: _col0
