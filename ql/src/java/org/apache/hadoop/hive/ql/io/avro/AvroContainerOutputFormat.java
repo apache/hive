@@ -24,12 +24,14 @@ import static org.apache.avro.mapred.AvroOutputFormat.DEFLATE_LEVEL_KEY;
 
 import java.io.IOException;
 import java.util.Properties;
+import java.util.TimeZone;
 
 import org.apache.avro.Schema;
 import org.apache.avro.file.CodecFactory;
 import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
+import org.apache.hadoop.hive.serde2.avro.AvroSerDe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -76,6 +78,8 @@ public class AvroContainerOutputFormat
       dfw.setCodec(factory);
     }
 
+    // add writer.time.zone property to file metadata
+    dfw.setMeta(AvroSerDe.WRITER_TIME_ZONE, TimeZone.getDefault().toZoneId().toString());
     dfw.create(schema, path.getFileSystem(jobConf).create(path));
     return new AvroGenericRecordWriter(dfw);
   }
