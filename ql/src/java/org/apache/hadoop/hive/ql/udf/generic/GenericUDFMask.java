@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.vector.*;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.*;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -47,6 +49,7 @@ import org.apache.hadoop.io.LongWritable;
                       + "    monthValue - value to replace month field in a date with. Specify -1 to retain original value. Valid values: 0-11. Default value: 0\n "
                       + "    yearValue  - value to replace year field in a date with. Specify -1 to retain original value. Default value: 0\n "
            )
+@VectorizedExpressions({ UDFMaskVectorString.class, UDFMaskVectorLong.class, UDFMaskVectorDate.class})
 public class GenericUDFMask extends BaseMaskUDF {
   public static final String UDF_NAME = "mask";
 

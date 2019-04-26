@@ -1,0 +1,429 @@
+PREHOOK: query: create table tmask(t tinyint, s smallint, i int, bg bigint, f float, db double, dc decimal (10,3), n numeric,
+	d date, ts timestamp,
+	str string, vr varchar(10), ch char(4),
+	b boolean, bin binary)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmask
+POSTHOOK: query: create table tmask(t tinyint, s smallint, i int, bg bigint, f float, db double, dc decimal (10,3), n numeric,
+	d date, ts timestamp,
+	str string, vr varchar(10), ch char(4),
+	b boolean, bin binary)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmask
+PREHOOK: query: insert into tmask values(1,2,345,4455433,5.6,5644.455,10.20, 579.00, '2019-09-09', current_timestamp(), 'string1', 'varchar1', 'ch1', true, 'bin'),
+		(NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),
+		(9,7,3450,7455433,5.08,5944.455,10.20, 579.00, '1019-09-09', current_timestamp(), 'string2', 'varchar2', 'ch2', false, 'bin2'),
+		(NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tmask
+POSTHOOK: query: insert into tmask values(1,2,345,4455433,5.6,5644.455,10.20, 579.00, '2019-09-09', current_timestamp(), 'string1', 'varchar1', 'ch1', true, 'bin'),
+		(NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),
+		(9,7,3450,7455433,5.08,5944.455,10.20, 579.00, '1019-09-09', current_timestamp(), 'string2', 'varchar2', 'ch2', false, 'bin2'),
+		(NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tmask
+POSTHOOK: Lineage: tmask.b SCRIPT []
+POSTHOOK: Lineage: tmask.bg SCRIPT []
+POSTHOOK: Lineage: tmask.bin SCRIPT []
+POSTHOOK: Lineage: tmask.ch SCRIPT []
+POSTHOOK: Lineage: tmask.d SCRIPT []
+POSTHOOK: Lineage: tmask.db SCRIPT []
+POSTHOOK: Lineage: tmask.dc SCRIPT []
+POSTHOOK: Lineage: tmask.f SCRIPT []
+POSTHOOK: Lineage: tmask.i SCRIPT []
+POSTHOOK: Lineage: tmask.n SCRIPT []
+POSTHOOK: Lineage: tmask.s SCRIPT []
+POSTHOOK: Lineage: tmask.str SCRIPT []
+POSTHOOK: Lineage: tmask.t SCRIPT []
+POSTHOOK: Lineage: tmask.ts SCRIPT []
+POSTHOOK: Lineage: tmask.vr SCRIPT []
+PREHOOK: query: explain VECTORIZATION DETAIL select mask(d), mask(ts) from tmask where s > 0 and i < 10000000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmask
+#### A masked pattern was here ####
+POSTHOOK: query: explain VECTORIZATION DETAIL select mask(d), mask(ts) from tmask where s > 0 and i < 10000000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmask
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tmask
+                  filterExpr: ((s > 0S) and (i < 10000000)) (type: boolean)
+                  Statistics: Num rows: 4 Data size: 352 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:s:smallint, 2:i:int, 3:bg:bigint, 4:f:float, 5:db:double, 6:dc:decimal(10,3)/DECIMAL_64, 7:n:decimal(10,0)/DECIMAL_64, 8:d:date, 9:ts:timestamp, 10:str:string, 11:vr:varchar(10), 12:ch:char(4), 13:b:boolean, 14:bin:binary, 15:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColGreaterLongScalar(col 1:smallint, val 0), FilterLongColLessLongScalar(col 2:int, val 10000000))
+                    predicate: ((i < 10000000) and (s > 0S)) (type: boolean)
+                    Statistics: Num rows: 4 Data size: 352 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: mask(d) (type: date), mask(ts) (type: timestamp)
+                      outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [16, 17]
+                          selectExpressions: UDFMaskVectorDate(col 8:date) -> 16:date, VectorUDFAdaptor(mask(ts)) -> 17:timestamp
+                      Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        File Sink Vectorization:
+                            className: VectorFileSinkOperator
+                            native: false
+                        Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 15
+                    includeColumns: [1, 2, 8, 9]
+                    dataColumns: t:tinyint, s:smallint, i:int, bg:bigint, f:float, db:double, dc:decimal(10,3)/DECIMAL_64, n:decimal(10,0)/DECIMAL_64, d:date, ts:timestamp, str:string, vr:varchar(10), ch:char(4), b:boolean, bin:binary
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, timestamp]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select mask(d), mask(ts) from tmask where s > 0 and i < 10000000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmask
+#### A masked pattern was here ####
+POSTHOOK: query: select mask(d), mask(ts) from tmask where s > 0 and i < 10000000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmask
+#### A masked pattern was here ####
+0001-01-01	NULL
+0001-01-01	NULL
+PREHOOK: query: select mask(d), mask(ts) from tmask where s > 0 and i < 10000000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmask
+#### A masked pattern was here ####
+POSTHOOK: query: select mask(d), mask(ts) from tmask where s > 0 and i < 10000000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmask
+#### A masked pattern was here ####
+0001-01-01	NULL
+0001-01-01	NULL
+PREHOOK: query: explain VECTORIZATION DETAIL select mask(t), mask(s), mask(i), mask(bg), mask(f), mask(db), mask(dc), mask(n) from tmask
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmask
+#### A masked pattern was here ####
+POSTHOOK: query: explain VECTORIZATION DETAIL select mask(t), mask(s), mask(i), mask(bg), mask(f), mask(db), mask(dc), mask(n) from tmask
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmask
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tmask
+                  Statistics: Num rows: 4 Data size: 768 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:s:smallint, 2:i:int, 3:bg:bigint, 4:f:float, 5:db:double, 6:dc:decimal(10,3)/DECIMAL_64, 7:n:decimal(10,0)/DECIMAL_64, 8:d:date, 9:ts:timestamp, 10:str:string, 11:vr:varchar(10), 12:ch:char(4), 13:b:boolean, 14:bin:binary, 15:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Select Operator
+                    expressions: mask(t) (type: tinyint), mask(s) (type: smallint), mask(i) (type: int), mask(bg) (type: bigint), mask(f) (type: float), mask(db) (type: double), mask(dc) (type: decimal(38,18)), mask(n) (type: decimal(38,18))
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [16, 17, 18, 19, 20, 21, 22, 23]
+                        selectExpressions: UDFMaskVectorLong(col 0:tinyint) -> 16:tinyint, UDFMaskVectorLong(col 1:smallint) -> 17:smallint, UDFMaskVectorLong(col 2:int) -> 18:int, UDFMaskVectorLong(col 3:bigint) -> 19:bigint, VectorUDFAdaptor(mask(f)) -> 20:float, VectorUDFAdaptor(mask(db)) -> 21:double, VectorUDFAdaptor(mask(dc)) -> 22:decimal(38,18), VectorUDFAdaptor(mask(n)) -> 23:decimal(38,18)
+                    Statistics: Num rows: 4 Data size: 1024 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 4 Data size: 1024 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 15
+                    includeColumns: [0, 1, 2, 3, 4, 5, 6, 7]
+                    dataColumns: t:tinyint, s:smallint, i:int, bg:bigint, f:float, db:double, dc:decimal(10,3)/DECIMAL_64, n:decimal(10,0)/DECIMAL_64, d:date, ts:timestamp, str:string, vr:varchar(10), ch:char(4), b:boolean, bin:binary
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, bigint, bigint, double, double, decimal(38,18), decimal(38,18)]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select mask(t), mask(s), mask(i), mask(bg), mask(f), mask(db), mask(dc), mask(n) from tmask
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmask
+#### A masked pattern was here ####
+POSTHOOK: query: select mask(t), mask(s), mask(i), mask(bg), mask(f), mask(db), mask(dc), mask(n) from tmask
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmask
+#### A masked pattern was here ####
+1	1	111	1111111	NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+1	1	1111	1111111	NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: select mask(t), mask(s), mask(i), mask(bg), mask(f), mask(db), mask(dc), mask(n) from tmask
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmask
+#### A masked pattern was here ####
+POSTHOOK: query: select mask(t), mask(s), mask(i), mask(bg), mask(f), mask(db), mask(dc), mask(n) from tmask
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmask
+#### A masked pattern was here ####
+1	1	111	1111111	NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+1	1	1111	1111111	NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: explain VECTORIZATION DETAIL select mask(str), mask(vr), mask(ch), mask(b), mask(bin) from tmask
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmask
+#### A masked pattern was here ####
+POSTHOOK: query: explain VECTORIZATION DETAIL select mask(str), mask(vr), mask(ch), mask(b), mask(bin) from tmask
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmask
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tmask
+                  Statistics: Num rows: 4 Data size: 942 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:s:smallint, 2:i:int, 3:bg:bigint, 4:f:float, 5:db:double, 6:dc:decimal(10,3)/DECIMAL_64, 7:n:decimal(10,0)/DECIMAL_64, 8:d:date, 9:ts:timestamp, 10:str:string, 11:vr:varchar(10), 12:ch:char(4), 13:b:boolean, 14:bin:binary, 15:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Select Operator
+                    expressions: mask(str) (type: string), mask(vr) (type: varchar(65535)), mask(ch) (type: char(255)), mask(b) (type: boolean), mask(bin) (type: binary)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [16, 17, 18, 19, 20]
+                        selectExpressions: UDFMaskVectorString(col 10:string) -> 16:string, UDFMaskVectorString(col 11:varchar(10)) -> 17:varchar(65535), UDFMaskVectorString(col 12:char(4)) -> 18:char(255), UDFMaskVectorLong(col 13:boolean) -> 19:boolean, VectorUDFAdaptor(mask(bin)) -> 20:binary
+                    Statistics: Num rows: 4 Data size: 265160 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 4 Data size: 265160 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 15
+                    includeColumns: [10, 11, 12, 13, 14]
+                    dataColumns: t:tinyint, s:smallint, i:int, bg:bigint, f:float, db:double, dc:decimal(10,3)/DECIMAL_64, n:decimal(10,0)/DECIMAL_64, d:date, ts:timestamp, str:string, vr:varchar(10), ch:char(4), b:boolean, bin:binary
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [string, string, string, bigint, string]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select mask(str), mask(vr), mask(ch), mask(b), mask(bin) from tmask
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmask
+#### A masked pattern was here ####
+POSTHOOK: query: select mask(str), mask(vr), mask(ch), mask(b), mask(bin) from tmask
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmask
+#### A masked pattern was here ####
+xxxxxxn	xxxxxxxn	xxn                                                                                                                                                                                                                                                            	NULL	NULL
+NULL	NULL	NULL	NULL	NULL
+xxxxxxn	xxxxxxxn	xxn                                                                                                                                                                                                                                                            	NULL	NULL
+NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: select mask(str), mask(vr), mask(ch), mask(b), mask(bin) from tmask
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmask
+#### A masked pattern was here ####
+POSTHOOK: query: select mask(str), mask(vr), mask(ch), mask(b), mask(bin) from tmask
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmask
+#### A masked pattern was here ####
+xxxxxxn	xxxxxxxn	xxn                                                                                                                                                                                                                                                            	NULL	NULL
+NULL	NULL	NULL	NULL	NULL
+xxxxxxn	xxxxxxxn	xxn                                                                                                                                                                                                                                                            	NULL	NULL
+NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: create temporary table tmask_temp(t date, s string, i string, bg string, f string, db string, dc string, n string,
+	d string, ts string,
+	str string, vr string, ch string,
+	b string, bin string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmask_temp
+POSTHOOK: query: create temporary table tmask_temp(t date, s string, i string, bg string, f string, db string, dc string, n string,
+	d string, ts string,
+	str string, vr string, ch string,
+	b string, bin string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmask_temp
+PREHOOK: query: insert into tmask_temp select mask(d), mask(ts), mask(t), mask(s), mask(i), mask(bg), mask(f), mask(db), mask(dc), mask(n),
+    mask(str), mask(vr), mask(ch), mask(b), mask(bin) from tmask
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmask
+PREHOOK: Output: default@tmask_temp
+POSTHOOK: query: insert into tmask_temp select mask(d), mask(ts), mask(t), mask(s), mask(i), mask(bg), mask(f), mask(db), mask(dc), mask(n),
+    mask(str), mask(vr), mask(ch), mask(b), mask(bin) from tmask
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmask
+POSTHOOK: Output: default@tmask_temp
+POSTHOOK: Lineage: tmask_temp.b EXPRESSION [(tmask)tmask.FieldSchema(name:b, type:boolean, comment:null), ]
+POSTHOOK: Lineage: tmask_temp.bg EXPRESSION [(tmask)tmask.FieldSchema(name:s, type:smallint, comment:null), ]
+POSTHOOK: Lineage: tmask_temp.bin EXPRESSION [(tmask)tmask.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: tmask_temp.ch EXPRESSION [(tmask)tmask.FieldSchema(name:ch, type:char(4), comment:null), ]
+POSTHOOK: Lineage: tmask_temp.d EXPRESSION [(tmask)tmask.FieldSchema(name:dc, type:decimal(10,3), comment:null), ]
+POSTHOOK: Lineage: tmask_temp.db EXPRESSION [(tmask)tmask.FieldSchema(name:bg, type:bigint, comment:null), ]
+POSTHOOK: Lineage: tmask_temp.dc EXPRESSION [(tmask)tmask.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: tmask_temp.f EXPRESSION [(tmask)tmask.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: tmask_temp.i EXPRESSION [(tmask)tmask.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: tmask_temp.n EXPRESSION [(tmask)tmask.FieldSchema(name:db, type:double, comment:null), ]
+POSTHOOK: Lineage: tmask_temp.s EXPRESSION [(tmask)tmask.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: tmask_temp.str EXPRESSION [(tmask)tmask.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: tmask_temp.t EXPRESSION [(tmask)tmask.FieldSchema(name:d, type:date, comment:null), ]
+POSTHOOK: Lineage: tmask_temp.ts EXPRESSION [(tmask)tmask.FieldSchema(name:n, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: tmask_temp.vr EXPRESSION [(tmask)tmask.FieldSchema(name:vr, type:varchar(10), comment:null), ]
+PREHOOK: query: select count(*) from tmask_temp group by (t,s,i,bg,f,db,dc,n,d,ts,str,vr,ch,b,bin)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmask_temp
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from tmask_temp group by (t,s,i,bg,f,db,dc,n,d,ts,str,vr,ch,b,bin)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmask_temp
+#### A masked pattern was here ####
+1
+2
+1
+PREHOOK: query: insert into tmask_temp select mask(d), mask(ts), mask(t), mask(s), mask(i), mask(bg), mask(f), mask(db), mask(dc), mask(n),
+    mask(str), mask(vr), mask(ch), mask(b), mask(bin) from tmask
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmask
+PREHOOK: Output: default@tmask_temp
+POSTHOOK: query: insert into tmask_temp select mask(d), mask(ts), mask(t), mask(s), mask(i), mask(bg), mask(f), mask(db), mask(dc), mask(n),
+    mask(str), mask(vr), mask(ch), mask(b), mask(bin) from tmask
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmask
+POSTHOOK: Output: default@tmask_temp
+POSTHOOK: Lineage: tmask_temp.b EXPRESSION [(tmask)tmask.FieldSchema(name:b, type:boolean, comment:null), ]
+POSTHOOK: Lineage: tmask_temp.bg EXPRESSION [(tmask)tmask.FieldSchema(name:s, type:smallint, comment:null), ]
+POSTHOOK: Lineage: tmask_temp.bin EXPRESSION [(tmask)tmask.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: tmask_temp.ch EXPRESSION [(tmask)tmask.FieldSchema(name:ch, type:char(4), comment:null), ]
+POSTHOOK: Lineage: tmask_temp.d EXPRESSION [(tmask)tmask.FieldSchema(name:dc, type:decimal(10,3), comment:null), ]
+POSTHOOK: Lineage: tmask_temp.db EXPRESSION [(tmask)tmask.FieldSchema(name:bg, type:bigint, comment:null), ]
+POSTHOOK: Lineage: tmask_temp.dc EXPRESSION [(tmask)tmask.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: tmask_temp.f EXPRESSION [(tmask)tmask.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: tmask_temp.i EXPRESSION [(tmask)tmask.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: tmask_temp.n EXPRESSION [(tmask)tmask.FieldSchema(name:db, type:double, comment:null), ]
+POSTHOOK: Lineage: tmask_temp.s EXPRESSION [(tmask)tmask.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: tmask_temp.str EXPRESSION [(tmask)tmask.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: tmask_temp.t EXPRESSION [(tmask)tmask.FieldSchema(name:d, type:date, comment:null), ]
+POSTHOOK: Lineage: tmask_temp.ts EXPRESSION [(tmask)tmask.FieldSchema(name:n, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: tmask_temp.vr EXPRESSION [(tmask)tmask.FieldSchema(name:vr, type:varchar(10), comment:null), ]
+PREHOOK: query: select count(*) from tmask_temp group by (t,s,i,bg,f,db,dc,n,d,ts,str,vr,ch,b,bin)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmask_temp
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from tmask_temp group by (t,s,i,bg,f,db,dc,n,d,ts,str,vr,ch,b,bin)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmask_temp
+#### A masked pattern was here ####
+2
+4
+2
+PREHOOK: query: DROP TABLE tmask
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tmask
+PREHOOK: Output: default@tmask
+POSTHOOK: query: DROP TABLE tmask
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tmask
+POSTHOOK: Output: default@tmask
