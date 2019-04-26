@@ -84,7 +84,7 @@ import java.security.MessageDigest;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -1097,14 +1097,26 @@ public class MetaStoreUtils {
   }
 
   /**
+   * Returns currently known class paths as best effort. For system class loader, this may return empty.
+   * In such cases we will anyway create new child class loader in {@link #addToClassPath(ClassLoader, String[])},
+   * so all new class paths will be added and next time we will have a URLClassLoader to work with.
+   */
+  private static List<URL> getCurrentClassPaths(ClassLoader parentLoader) {
+    if(parentLoader instanceof URLClassLoader) {
+      return Lists.newArrayList(((URLClassLoader) parentLoader).getURLs());
+    } else {
+      return Collections.emptyList();
+    }
+  }
+
+  /**
    * Add new elements to the classpath.
    *
    * @param newPaths
    *          Array of classpath elements
    */
   public static ClassLoader addToClassPath(ClassLoader cloader, String[] newPaths) throws Exception {
-    URLClassLoader loader = (URLClassLoader) cloader;
-    List<URL> curPath = Arrays.asList(loader.getURLs());
+    List<URL> curPath = getCurrentClassPaths(cloader);
     ArrayList<URL> newPath = new ArrayList<>(curPath.size());
 
     // get a list with the current classpath components
@@ -1120,7 +1132,7 @@ public class MetaStoreUtils {
       }
     }
 
-    return new URLClassLoader(curPath.toArray(new URL[0]), loader);
+    return new URLClassLoader(curPath.toArray(new URL[0]), cloader);
   }
 
   /**
