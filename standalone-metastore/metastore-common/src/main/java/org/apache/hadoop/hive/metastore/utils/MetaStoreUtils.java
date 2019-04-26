@@ -17,14 +17,13 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
-import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -33,13 +32,13 @@ import java.util.TimeZone;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
 import static java.util.regex.Pattern.compile;
 
 import javax.annotation.Nullable;
 
+import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
@@ -379,14 +378,26 @@ public class MetaStoreUtils {
   }
 
   /**
+   * Returns currently known class paths as best effort. For system class loader, this may return
+   * In such cases we will anyway create new child class loader in {@link #addToClassPath(ClassLo
+   * so all new class paths will be added and next time we will have a URLClassLoader to work wit
+   */
+  private static List<URL> getCurrentClassPaths(ClassLoader parentLoader) {
+    if(parentLoader instanceof URLClassLoader) {
+      return Lists.newArrayList(((URLClassLoader) parentLoader).getURLs());
+    } else {
+      return Collections.emptyList();
+    }
+  }
+
+  /**
    * Add new elements to the classpath.
    *
    * @param newPaths
    *          Array of classpath elements
    */
   public static ClassLoader addToClassPath(ClassLoader cloader, String[] newPaths) throws Exception {
-    URLClassLoader loader = (URLClassLoader) cloader;
-    List<URL> curPath = Arrays.asList(loader.getURLs());
+    List<URL> curPath = getCurrentClassPaths(cloader);
     ArrayList<URL> newPath = new ArrayList<>(curPath.size());
 
     // get a list with the current classpath components
@@ -402,7 +413,7 @@ public class MetaStoreUtils {
       }
     }
 
-    return new URLClassLoader(curPath.toArray(new URL[0]), loader);
+    return new URLClassLoader(curPath.toArray(new URL[0]), cloader);
   }
 
   /**
