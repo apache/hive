@@ -554,7 +554,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   // Do not include join cost
                   this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan));
                 }
-              } else if (explainConfig.isExtended() || explainConfig.isFormatted()) {
+              } else if (explainConfig.isFormatted()) {
+                this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
+                this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
+              } else if (explainConfig.isExtended()) {
                 this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
               }
             }
