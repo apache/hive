@@ -1047,7 +1047,7 @@ public class Driver implements IDriver {
       if (conf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_SHOW_GRAPH)) {
         JSONObject jsonPlan = task.getJSONPlan(
             null, rootTasks, sem.getFetchTask(), true, true, true, sem.getCboInfo(),
-            plan.getOptimizedQueryString());
+            plan.getOptimizedCBOPlan(), plan.getOptimizedQueryString());
         if (jsonPlan.getJSONObject(ExplainTask.STAGE_DEPENDENCIES) != null &&
             jsonPlan.getJSONObject(ExplainTask.STAGE_DEPENDENCIES).length() <=
                 conf.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_MAX_GRAPH_SIZE)) {
@@ -1057,7 +1057,7 @@ public class Driver implements IDriver {
         }
       } else {
         task.getJSONPlan(ps, rootTasks, sem.getFetchTask(), false, true, true, sem.getCboInfo(),
-            plan.getOptimizedQueryString());
+            plan.getOptimizedCBOPlan(), plan.getOptimizedQueryString());
         ret = baos.toString();
       }
     } catch (Exception e) {
