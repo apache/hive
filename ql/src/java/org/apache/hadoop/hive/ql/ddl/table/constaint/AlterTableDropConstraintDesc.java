@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.ddl.table.constaint;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
@@ -34,20 +34,24 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class AlterTableDropConstraintDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
-  private final String tableName;
+  private final TableName tableName;
   private final ReplicationSpec replicationSpec;
   private final String constraintName;
 
-  public AlterTableDropConstraintDesc(String tableName, ReplicationSpec replicationSpec, String constraintName)
+  public AlterTableDropConstraintDesc(TableName tableName, ReplicationSpec replicationSpec, String constraintName)
       throws SemanticException  {
-    this.tableName = String.join(".", Utilities.getDbTableName(tableName));
+    this.tableName = tableName;
     this.replicationSpec = replicationSpec;
     this.constraintName = constraintName;
   }
 
-  @Explain(displayName = "table name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getTableName() {
+  public TableName getTableName() {
     return tableName;
+  }
+
+  @Explain(displayName = "table name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getDbTableName() {
+    return tableName.getNotEmptyDbTable();
   }
 
   public ReplicationSpec getReplicationSpec() {

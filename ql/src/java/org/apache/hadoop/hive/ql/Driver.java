@@ -100,6 +100,7 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContextImpl;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
@@ -1074,8 +1075,8 @@ public class Driver implements IDriver {
           fsd1.getDirName().compareTo(fsd2.getDirName()));
         for (FileSinkDesc desc : acidSinks) {
           TableDesc tableInfo = desc.getTableInfo();
-          long writeId = queryTxnMgr.getTableWriteId(Utilities.getDatabaseName(tableInfo.getTableName()),
-                  Utilities.getTableName(tableInfo.getTableName()));
+          final TableName tn = HiveTableName.ofNullable(tableInfo.getTableName());
+          long writeId = queryTxnMgr.getTableWriteId(tn.getDb(), tn.getTable());
           desc.setTableWriteId(writeId);
 
           /**
@@ -1105,8 +1106,8 @@ public class Driver implements IDriver {
       boolean hasAcidDdl = acidDdlDesc != null && acidDdlDesc.mayNeedWriteId();
       if (hasAcidDdl) {
         String fqTableName = acidDdlDesc.getFullTableName();
-        long writeId = queryTxnMgr.getTableWriteId(
-            Utilities.getDatabaseName(fqTableName), Utilities.getTableName(fqTableName));
+        final TableName tn = HiveTableName.ofNullableWithNoDefault(fqTableName);
+        long writeId = queryTxnMgr.getTableWriteId(tn.getDb(), tn.getTable());
         acidDdlDesc.setWriteId(writeId);
       }
 

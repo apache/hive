@@ -306,7 +306,7 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
       // table name. If columns have separate authorization domain, it
       // must be honored
       DescTableDesc descTable = (DescTableDesc)ddlDesc;
-      String tableName = extractTableName(descTable.getTableName());
+      String tableName = extractTableName(descTable.getDbTableName());
       authorizeTable(cntxt.getHive(), tableName, Privilege.SELECT);
     } else if (ddlDesc instanceof ShowTableStatusDesc) {
       ShowTableStatusDesc showTableStatus = (ShowTableStatusDesc)ddlDesc;
@@ -336,7 +336,7 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
     } else if (ddlDesc instanceof AlterTableSetLocationDesc) {
       AlterTableSetLocationDesc alterTable = (AlterTableSetLocationDesc)ddlDesc;
       Table table = hive.getTable(SessionState.get().getCurrentDatabase(),
-          Utilities.getDbTableName(alterTable.getTableName())[1], false);
+          Utilities.getDbTableName(alterTable.getDbTableName())[1], false);
 
       Partition part = null;
       if (alterTable.getPartitionSpec() != null) {

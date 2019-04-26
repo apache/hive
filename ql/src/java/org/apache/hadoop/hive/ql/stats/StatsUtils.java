@@ -1765,10 +1765,12 @@ public class StatsUtils {
     return result;
   }
 
+  @Deprecated
   public static String getFullyQualifiedTableName(String dbName, String tabName) {
     return getFullyQualifiedName(dbName, tabName);
   }
 
+  @Deprecated
   private static String getFullyQualifiedName(String... names) {
     List<String> nonNullAndEmptyNames = Lists.newArrayList();
     for (String name : names) {

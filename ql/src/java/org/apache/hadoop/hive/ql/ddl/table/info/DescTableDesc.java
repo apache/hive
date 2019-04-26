@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -44,13 +45,13 @@ public class DescTableDesc implements DDLDesc, Serializable {
   );
 
   private final String resFile;
-  private final String tableName;
+  private final TableName tableName;
   private final Map<String, String> partitionSpec;
   private final String columnPath;
   private final boolean isExtended;
   private final boolean isFormatted;
 
-  public DescTableDesc(Path resFile, String tableName, Map<String, String> partitionSpec, String columnPath,
+  public DescTableDesc(Path resFile, TableName tableName, Map<String, String> partitionSpec, String columnPath,
       boolean isExtended, boolean isFormatted) {
     this.resFile = resFile.toString();
     this.tableName = tableName;
@@ -66,7 +67,11 @@ public class DescTableDesc implements DDLDesc, Serializable {
   }
 
   @Explain(displayName = "table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getTableName() {
+  public String getDbTableName() {
+    return tableName.getNotEmptyDbTable();
+  }
+
+  public TableName getTableName() {
     return tableName;
   }
 

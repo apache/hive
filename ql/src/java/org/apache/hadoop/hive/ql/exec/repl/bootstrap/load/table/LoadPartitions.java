@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
@@ -349,7 +350,7 @@ public class LoadPartitions {
     Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecsExpr =
             ReplUtils.genPartSpecs(table, Collections.singletonList(partSpec));
     if (partSpecsExpr.size() > 0) {
-      AlterTableDropPartitionDesc dropPtnDesc = new AlterTableDropPartitionDesc(table.getFullyQualifiedName(),
+      AlterTableDropPartitionDesc dropPtnDesc = new AlterTableDropPartitionDesc(HiveTableName.of(table),
           partSpecsExpr, true, event.replicationSpec());
       dropPtnTask = TaskFactory.get(
               new DDLWork(new HashSet<>(), new HashSet<>(), dropPtnDesc), context.hiveConf

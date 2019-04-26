@@ -1085,7 +1085,7 @@ public class Hive {
     List<SQLCheckConstraint> checkConstraints)
             throws HiveException {
     try {
-      if (tbl.getDbName() == null || "".equals(tbl.getDbName().trim())) {
+      if (org.apache.commons.lang3.StringUtils.isBlank(tbl.getDbName())) {
         tbl.setDbName(SessionState.get().getCurrentDatabase());
       }
       if (tbl.getCols().size() == 0 || tbl.getSd().getColsSize() == 0) {
@@ -1334,6 +1334,21 @@ public class Hive {
   /**
    * Returns metadata of the table
    *
+   * @param tableName
+   *          the tableName object
+   * @return the table
+   * @exception HiveException
+   *              if there's an internal error or if the table doesn't exist
+   */
+  public Table getTable(TableName tableName) throws HiveException {
+
+    return tableName.getDb() == null ? this.getTable(tableName.getTable(), true) : this
+        .getTable(tableName.getDb(), tableName.getTable(), true);
+  }
+
+  /**
+   * Returns metadata of the table
+   *
    * @param dbName
    *          the name of the database
    * @param tableName
@@ -1349,7 +1364,7 @@ public class Hive {
   }
 
   /**
-   * Returns metadata of the table
+   * Returns metadata of the table.
    *
    * @param dbName
    *          the name of the database

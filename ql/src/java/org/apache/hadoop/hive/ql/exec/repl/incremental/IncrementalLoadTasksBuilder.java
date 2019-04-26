@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.repl.incremental;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -50,7 +51,6 @@ import org.apache.hadoop.hive.ql.parse.repl.load.log.IncrementalLoadLogger;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.MessageHandler;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
-import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.slf4j.Logger;
 
 import java.io.Serializable;
@@ -251,8 +251,8 @@ public class IncrementalLoadTasksBuilder {
     HashMap<String, String> mapProp = new HashMap<>();
     mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), replState);
 
-    String fqTableName = StatsUtils.getFullyQualifiedTableName(dbName, tableName);
-    AlterTableSetPropertiesDesc alterTblDesc = new AlterTableSetPropertiesDesc(fqTableName, partSpec,
+    TableName tName = TableName.fromString(tableName, null, dbName);
+    AlterTableSetPropertiesDesc alterTblDesc = new AlterTableSetPropertiesDesc(tName, partSpec,
         new ReplicationSpec(replState, replState), false, mapProp, false, false, null);
 
     Task<?> updateReplIdTask = TaskFactory.get(new DDLWork(inputs, outputs, alterTblDesc), conf);

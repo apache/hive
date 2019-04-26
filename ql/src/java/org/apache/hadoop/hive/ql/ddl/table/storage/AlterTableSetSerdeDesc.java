@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.ddl.table.storage;
 
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -35,7 +36,7 @@ public class AlterTableSetSerdeDesc extends AbstractAlterTableDesc {
 
   private final String serdeName;
 
-  public AlterTableSetSerdeDesc(String tableName, Map<String, String> partitionSpec, Map<String, String> props,
+  public AlterTableSetSerdeDesc(TableName tableName, Map<String, String> partitionSpec, Map<String, String> props,
       String serdeName) throws SemanticException {
     super(AlterTableType.SET_SERDE, tableName, partitionSpec, null, false, false, props);
     this.serdeName = serdeName;

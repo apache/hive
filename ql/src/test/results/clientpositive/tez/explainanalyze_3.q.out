@@ -174,7 +174,7 @@ POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: newdb@tab_n2
 POSTHOOK: Output: newdb@tab_n2
 Stage-0
-  Rename Table{"new table name:":"newDB.newName","table name:":"newDB.tab_n2"}
+  Rename Table{"table name:":"newDB.tab_n2","new table name:":"newDB.newName"}
 
 PREHOOK: query: drop table tab_n2
 PREHOOK: type: DROPTABLE

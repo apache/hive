@@ -130,8 +130,8 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Rename Table
-      new table name: target.src
       table name: source.src
+      new table name: target.src
 
 PREHOOK: query: ALTER TABLE source.src RENAME TO target.src
 PREHOOK: type: ALTERTABLE_RENAME
@@ -176,8 +176,8 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Rename Table
-      new table name: target.srcpart
       table name: source.srcpart
+      new table name: target.srcpart
 
 PREHOOK: query: ALTER TABLE source.srcpart RENAME TO target.srcpart
 PREHOOK: type: ALTERTABLE_RENAME

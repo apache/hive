@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 
 /**
@@ -36,7 +37,7 @@ public class AlterTableRenameOperation extends AbstractAlterTableOperation<Alter
 
   @Override
   public int execute() throws HiveException {
-    String[] names = Utilities.getDbTableName(desc.getTableName());
+    String[] names = Utilities.getDbTableName(desc.getDbTableName());
     if (Utils.isBootstrapDumpInProgress(context.getDb(), names[0])) {
       LOG.error("DDLTask: Rename Table not allowed as bootstrap dump in progress");
       throw new HiveException("Rename Table: Not allowed as bootstrap dump in progress");
@@ -47,7 +48,6 @@ public class AlterTableRenameOperation extends AbstractAlterTableOperation<Alter
 
   @Override
   protected void doAlteration(Table table, Partition partition) throws HiveException {
-    table.setDbName(Utilities.getDatabaseName(desc.getNewName()));
-    table.setTableName(Utilities.getTableName(desc.getNewName()));
+    HiveTableName.setFrom(desc.getNewName(), table);
   }
 }
