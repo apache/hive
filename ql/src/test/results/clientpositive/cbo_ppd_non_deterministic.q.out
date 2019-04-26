@@ -120,7 +120,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: testa
+<<<<<<< HEAD
             Statistics: Num rows: 2 Data size: 4580 Basic stats: COMPLETE Column stats: NONE
+=======
+            filterExpr: ((part1 = 'CA') and (part2 = 'ABC')) (type: boolean)
+            Statistics: Num rows: 2 Data size: 4876 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> 4ff0b1f40e... HIVE-21291: Restore historical way of handling timestamps in Avro while keeping the new semantics at the same time (Karen Coppage, reviewed by Jesus Camacho Rodriguez)
             Select Operator
               expressions: rand() (type: double)
               outputColumnNames: _col0
@@ -175,7 +180,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: testa
+<<<<<<< HEAD
             Statistics: Num rows: 2 Data size: 4580 Basic stats: COMPLETE Column stats: NONE
+=======
+            filterExpr: ((part1 = 'CA') and (part2 = 'ABC')) (type: boolean)
+            Statistics: Num rows: 2 Data size: 4876 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> 4ff0b1f40e... HIVE-21291: Restore historical way of handling timestamps in Avro while keeping the new semantics at the same time (Karen Coppage, reviewed by Jesus Camacho Rodriguez)
             Select Operator
               expressions: rand() (type: double)
               outputColumnNames: _col0
