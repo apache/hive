@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class ShowDatabasesDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
-  /** Thrift ddl for the result of show databases. */
   public static final String SHOW_DATABASES_SCHEMA = "database_name#string";
 
   static {

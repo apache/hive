@@ -50,12 +50,6 @@ public class DDLWork implements Serializable {
   private AlterTableExchangePartition alterTableExchangePartition;
   private KillQueryDesc killQueryDesc;
 
-  private RoleDDLDesc roleDDLDesc;
-  private GrantDesc grantDesc;
-  private ShowGrantDesc showGrantDesc;
-  private RevokeDesc revokeDesc;
-  private GrantRevokeRoleDDL grantRevokeRoleDDL;
-
   private ShowConfDesc showConfDesc;
 
   private CreateResourcePlanDesc createResourcePlanDesc;
@@ -210,36 +204,6 @@ public class DDLWork implements Serializable {
     this(inputs, outputs);
 
     msckDesc = checkDesc;
-  }
-
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      RoleDDLDesc roleDDLDesc) {
-    this(inputs, outputs);
-    this.roleDDLDesc = roleDDLDesc;
-  }
-
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      GrantDesc grantDesc) {
-    this(inputs, outputs);
-    this.grantDesc = grantDesc;
-  }
-
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      ShowGrantDesc showGrant) {
-    this(inputs, outputs);
-    this.showGrantDesc = showGrant;
-  }
-
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      RevokeDesc revokeDesc) {
-    this(inputs, outputs);
-    this.revokeDesc = revokeDesc;
-  }
-
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      GrantRevokeRoleDDL grantRevokeRoleDDL) {
-    this(inputs, outputs);
-    this.grantRevokeRoleDDL = grantRevokeRoleDDL;
   }
 
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
@@ -446,35 +410,6 @@ public class DDLWork implements Serializable {
 
   public HashSet<WriteEntity> getOutputs() {
     return outputs;
-  }
-
-  /**
-   * @return role ddl desc
-   */
-  public RoleDDLDesc getRoleDDLDesc() {
-    return roleDDLDesc;
-  }
-
-  /**
-   * @return grant desc
-   */
-  public GrantDesc getGrantDesc() {
-    return grantDesc;
-  }
-
-  /**
-   * @return show grant desc
-   */
-  public ShowGrantDesc getShowGrantDesc() {
-    return showGrantDesc;
-  }
-
-  public RevokeDesc getRevokeDesc() {
-    return revokeDesc;
-  }
-
-  public GrantRevokeRoleDDL getGrantRevokeRoleDDL() {
-    return grantRevokeRoleDDL;
   }
 
   /**

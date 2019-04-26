@@ -32,14 +32,11 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class ShowTablePropertiesDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
+  public static final String SCHEMA = "prpt_name,prpt_value#string:string";
+
   static {
     DDLTask2.registerOperation(ShowTablePropertiesDesc.class, ShowTablePropertiesOperation.class);
   }
-
-  /**
-   * Thrift ddl for the result of showtblproperties.
-   */
-  public static final String SCHEMA = "prpt_name,prpt_value#string:string";
 
   private final String resFile;
   private final String tableName;

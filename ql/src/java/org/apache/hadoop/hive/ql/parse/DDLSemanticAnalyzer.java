@@ -84,6 +84,11 @@ import org.apache.hadoop.hive.ql.ddl.database.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.function.DescFunctionDesc;
 import org.apache.hadoop.hive.ql.ddl.function.ShowFunctionsDesc;
+import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
+import org.apache.hadoop.hive.ql.ddl.privilege.ShowGrantDesc;
+import org.apache.hadoop.hive.ql.ddl.privilege.ShowPrincipalsDesc;
+import org.apache.hadoop.hive.ql.ddl.privilege.ShowRoleGrantDesc;
+import org.apache.hadoop.hive.ql.ddl.privilege.ShowRolesDesc;
 import org.apache.hadoop.hive.ql.ddl.table.DescTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.DropTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.LockTableDesc;
@@ -158,13 +163,10 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
 import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
-import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowCompactionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowConfDesc;
-import org.apache.hadoop.hive.ql.plan.ShowGrantDesc;
 import org.apache.hadoop.hive.ql.plan.ShowLocksDesc;
 import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowResourcePlanDesc;
@@ -673,20 +675,18 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void analyzeSetShowRole(ASTNode ast) throws SemanticException {
     switch (ast.getChildCount()) {
-      case 0:
-        ctx.setResFile(ctx.getLocalTmpPath());
-        rootTasks.add(hiveAuthorizationTaskFactory.createShowCurrentRoleTask(
-        getInputs(), getOutputs(), ctx.getResFile()));
-        setFetchTask(createFetchTask(RoleDDLDesc.getRoleNameSchema()));
-        break;
-      case 1:
-        rootTasks.add(hiveAuthorizationTaskFactory.createSetRoleTask(
-        BaseSemanticAnalyzer.unescapeIdentifier(ast.getChild(0).getText()),
-        getInputs(), getOutputs()));
-        break;
-      default:
-        throw new SemanticException("Internal error. ASTNode expected to have 0 or 1 child. "
-        + ast.dump());
+    case 0:
+      ctx.setResFile(ctx.getLocalTmpPath());
+      rootTasks.add(hiveAuthorizationTaskFactory.createShowCurrentRoleTask(
+          getInputs(), getOutputs(), ctx.getResFile()));
+      setFetchTask(createFetchTask(ShowRolesDesc.SCHEMA));
+      break;
+    case 1:
+      rootTasks.add(hiveAuthorizationTaskFactory.createSetRoleTask(
+          BaseSemanticAnalyzer.unescapeIdentifier(ast.getChild(0).getText()), getInputs(), getOutputs()));
+      break;
+    default:
+      throw new SemanticException("Internal error. ASTNode expected to have 0 or 1 child. " + ast.dump());
     }
   }
 
@@ -707,7 +707,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         createShowGrantTask(ast, ctx.getResFile(), getInputs(), getOutputs());
     if(task != null) {
       rootTasks.add(task);
-      setFetchTask(createFetchTask(ShowGrantDesc.getSchema()));
+      setFetchTask(createFetchTask(ShowGrantDesc.SCHEMA));
     }
   }
 
@@ -748,17 +748,17 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         createShowRoleGrantTask(ast, ctx.getResFile(), getInputs(), getOutputs());
     if(task != null) {
       rootTasks.add(task);
-      setFetchTask(createFetchTask(RoleDDLDesc.getRoleShowGrantSchema()));
+      setFetchTask(createFetchTask(ShowRoleGrantDesc.SCHEMA));
     }
   }
 
   private void analyzeShowRolePrincipals(ASTNode ast) throws SemanticException {
-    Task<DDLWork> roleDDLTask = (Task<DDLWork>) hiveAuthorizationTaskFactory
+    Task<?> roleDDLTask = (Task<?>) hiveAuthorizationTaskFactory
         .createShowRolePrincipalsTask(ast, ctx.getResFile(), getInputs(), getOutputs());
 
     if (roleDDLTask != null) {
       rootTasks.add(roleDDLTask);
-      setFetchTask(createFetchTask(RoleDDLDesc.getShowRolePrincipalsSchema()));
+      setFetchTask(createFetchTask(ShowPrincipalsDesc.SCHEMA));
     }
   }
 
@@ -769,7 +769,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (roleDDLTask != null) {
       rootTasks.add(roleDDLTask);
-      setFetchTask(createFetchTask(RoleDDLDesc.getRoleNameSchema()));
+      setFetchTask(createFetchTask(ShowRolesDesc.SCHEMA));
     }
   }
 
@@ -1612,7 +1612,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
             partSpec == null ? new HashMap<>() : partSpec);
         ltd.setLbCtx(lbCtx);
-        @SuppressWarnings("unchecked")
         Task<MoveWork> moveTsk =
             TaskFactory.get(new MoveWork(null, null, ltd, null, false));
         truncateTask.addDependentTask(moveTsk);
@@ -2809,7 +2808,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       showFuncsDesc = new ShowFunctionsDesc(ctx.getResFile());
     }
     rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), showFuncsDesc)));
-    setFetchTask(createFetchTask(ShowFunctionsDesc.getSchema()));
+    setFetchTask(createFetchTask(ShowFunctionsDesc.SCHEMA));
   }
 
   /**
@@ -3162,7 +3161,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     DescFunctionDesc descFuncDesc = new DescFunctionDesc(ctx.getResFile(), funcName, isExtended);
     rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), descFuncDesc)));
-    setFetchTask(createFetchTask(DescFunctionDesc.getSchema()));
+    setFetchTask(createFetchTask(DescFunctionDesc.SCHEMA));
   }
 
 
@@ -4117,7 +4116,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
      * Throw an error if the user tries to use the DDL with
      * hive.internal.ddl.list.bucketing.enable set to false.
      */
-    HiveConf hiveConf = SessionState.get().getConf();
+    SessionState.get().getConf();
 
     Table tab = getTable(qualified);
 
@@ -4261,7 +4260,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
      * Throw an error if the user tries to use the DDL with
      * hive.internal.ddl.list.bucketing.enable set to false.
      */
-    HiveConf hiveConf = SessionState.get().getConf();
+    SessionState.get().getConf();
     /**
      * Retrieve mappings from parser
      */

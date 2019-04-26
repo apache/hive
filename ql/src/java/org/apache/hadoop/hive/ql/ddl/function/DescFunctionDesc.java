@@ -33,16 +33,10 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class DescFunctionDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
+  public static final String SCHEMA = "tab_name#string";
+
   static {
     DDLTask2.registerOperation(DescFunctionDesc.class, DescFunctionOperation.class);
-  }
-
-  /**
-   * Thrift ddl for the result of show tables.
-   */
-  private static final String SCHEMA = "tab_name#string";
-  public static String getSchema() {
-    return SCHEMA;
   }
 
   private final String resFile;

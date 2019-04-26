@@ -16,34 +16,32 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.privilege;
 
-import java.util.HashMap;
+import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-
+/**
+ * Represents a privilege object.
+ */
 @Explain(displayName="privilege subject", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class PrivilegeObjectDesc {
+public class PrivilegeObjectDesc implements Serializable {
+  private static final long serialVersionUID = 1L;
 
-  //default type is table
-  private boolean table = true;
+  private final boolean table;
+  private final String object;
+  private final Map<String, String> partSpec;
+  private final List<String> columns;
 
-  private String object;
-
-  private HashMap<String, String> partSpec;
-
-  private List<String> columns;
-
-  public PrivilegeObjectDesc(boolean isTable, String object,
-      HashMap<String, String> partSpec) {
-    super();
+  public PrivilegeObjectDesc(boolean isTable, String object, Map<String, String> partSpec, List<String> columns) {
     this.table = isTable;
     this.object = object;
     this.partSpec = partSpec;
-  }
-
-  public PrivilegeObjectDesc() {
+    this.columns = columns;
   }
 
   @Explain(displayName="is table")
@@ -51,33 +49,17 @@ public class PrivilegeObjectDesc {
     return table;
   }
 
-  public void setTable(boolean isTable) {
-    this.table = isTable;
-  }
-
   @Explain(displayName="object", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getObject() {
     return object;
   }
 
-  public void setObject(String object) {
-    this.object = object;
-  }
-
   @Explain(displayName="partition spec", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public HashMap<String, String> getPartSpec() {
+  public Map<String, String> getPartSpec() {
     return partSpec;
-  }
-
-  public void setPartSpec(HashMap<String, String> partSpec) {
-    this.partSpec = partSpec;
   }
 
   public List<String> getColumns() {
     return columns;
-  }
-
-  public void setColumns(List<String> columns) {
-    this.columns = columns;
   }
 }
