@@ -631,6 +631,12 @@ public class HiveConf extends Configuration {
         true),
     HIVE_MAPJOIN_TESTING_NO_HASH_TABLE_LOAD("hive.mapjoin.testing.no.hash.table.load", false, "internal use only, true when in testing map join",
         true),
+    HIVE_ADDITIONAL_PARTIAL_MASKS_PATTERN("hive.qtest.additional.partial.mask.pattern", "",
+        "internal use only, used in only qtests. Provide additional partial masks pattern" +
+         "for qtests as a ',' separated list"),
+    HIVE_ADDITIONAL_PARTIAL_MASKS_REPLACEMENT_TEXT("hive.qtest.additional.partial.mask.replacement.text", "",
+        "internal use only, used in only qtests. Provide additional partial masks replacement" +
+        "text for qtests as a ',' separated list"),
 
     HIVE_IN_REPL_TEST_FILES_SORTED("hive.in.repl.test.files.sorted", false,
       "internal usage only, set to true if the file listing is required in sorted order during bootstrap load", true),
