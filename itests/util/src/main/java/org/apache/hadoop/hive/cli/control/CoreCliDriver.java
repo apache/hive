@@ -23,6 +23,8 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
@@ -187,7 +189,9 @@ public class CoreCliDriver extends CliAdapter {
         qt.failed(ecode, fname, debugHint);
       }
 
+      setupAdditionalPartialMasks();
       QTestProcessExecResult result = qt.checkCliDriverResults(fname);
+      resetAdditionalPartialMasks();
       if (result.getReturnCode() != 0) {
         failed = true;
         String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ? debugHint
@@ -205,5 +209,25 @@ public class CoreCliDriver extends CliAdapter {
       System.err.println(message);
     }
     assertTrue("Test passed", true);
+  }
+
+  private void setupAdditionalPartialMasks() {
+    String patternStr = HiveConf.getVar(qt.getConf(), ConfVars.HIVE_ADDITIONAL_PARTIAL_MASKS_PATTERN);
+    String replacementStr = HiveConf.getVar(qt.getConf(), ConfVars.HIVE_ADDITIONAL_PARTIAL_MASKS_REPLACEMENT_TEXT);
+    if (patternStr != null  && replacementStr != null && !replacementStr.isEmpty() && !patternStr.isEmpty()) {
+      String[] patterns = patternStr.split(",");
+      String[] replacements = replacementStr.split(",");
+      if (patterns.length != replacements.length) {
+        throw new RuntimeException("Count mismatch for additional partial masks and their replacements");
+      }
+      for (int i = 0; i < patterns.length; i++) {
+        qt.getQOutProcessor().addPatternWithMaskComment(patterns[i],
+            String.format("### %s ###", replacements[i]));
+      }
+    }
+  }
+
+  private void resetAdditionalPartialMasks() {
+    qt.getQOutProcessor().resetPatternwithMaskComments();
   }
 }
