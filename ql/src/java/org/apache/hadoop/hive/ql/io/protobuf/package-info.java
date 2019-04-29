@@ -19,5 +19,5 @@
 /**
  * This package contains contributed input format.
  */
-package org.apache.hadoop.hive.contrib.input;
+package org.apache.hadoop.hive.ql.io.protobuf;
 

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.contrib.input;
+package org.apache.hadoop.hive.ql.io.protobuf;
 
 import java.io.EOFException;
 import java.io.IOException;

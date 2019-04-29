@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.contrib.serde2;
+package org.apache.hadoop.hive.ql.io.protobuf;
 
 import java.util.Properties;
 
@@ -58,5 +58,10 @@ public class ProtobufBytesWritableSerDe extends ProtobufSerDe {
     } catch (InvalidProtocolBufferException e) {
       throw new SerDeException("Unable to parse proto message", e);
     }
+  }
+
+  @Override
+  public Class<? extends Writable> getSerializedClass() {
+    return BytesWritable.class;
   }
 }

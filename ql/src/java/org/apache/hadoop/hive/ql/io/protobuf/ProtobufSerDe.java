@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.contrib.serde2;
+package org.apache.hadoop.hive.ql.io.protobuf;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Writable;
-import org.apache.tez.dag.history.logging.proto.ProtoMessageWritable;
 
 import com.google.common.collect.Sets;
 import com.google.protobuf.ByteString;
@@ -108,11 +107,6 @@ public abstract class ProtobufSerDe extends AbstractSerDe {
       throw new SerDeException("Error trying to get descriptor for class: " + protoClass.getName(),
           e);
     }
-  }
-
-  @Override
-  public Class<? extends Writable> getSerializedClass() {
-    return ProtoMessageWritable.class;
   }
 
   @Override
