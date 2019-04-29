@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArg
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -671,6 +672,27 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     // Re-bootstrapping from different bootstrap dump without clean tables config should fail.
     replica.loadFailure(replicatedDbName, tupleNewIncWithExternalBootstrap.dumpLocation, loadWithClause,
             ErrorMsg.REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID.getErrorCode());
+  }
+
+  @Test
+  public void testExternalTableDataPath() throws Exception {
+    HiveConf conf = primary.getConf();
+    Path basePath = new Path("/");
+    Path sourcePath = new Path("/abc/xyz");
+    Path dataPath = ReplExternalTables.externalTableDataPath(conf, basePath, sourcePath);
+    assertTrue(dataPath.toUri().getPath().equalsIgnoreCase("/abc/xyz"));
+
+    basePath = new Path("/tmp");
+    dataPath = ReplExternalTables.externalTableDataPath(conf, basePath, sourcePath);
+    assertTrue(dataPath.toUri().getPath().equalsIgnoreCase("/tmp/abc/xyz"));
+
+    basePath = new Path("/tmp/");
+    dataPath = ReplExternalTables.externalTableDataPath(conf, basePath, sourcePath);
+    assertTrue(dataPath.toUri().getPath().equalsIgnoreCase("/tmp/abc/xyz"));
+
+    basePath = new Path("/tmp/tmp1//");
+    dataPath = ReplExternalTables.externalTableDataPath(conf, basePath, sourcePath);
+    assertTrue(dataPath.toUri().getPath().equalsIgnoreCase("/tmp/tmp1/abc/xyz"));
   }
 
   private List<String> externalTableBasePathWithClause() throws IOException, SemanticException {
