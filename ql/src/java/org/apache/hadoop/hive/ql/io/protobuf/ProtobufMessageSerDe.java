@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.contrib.serde2;
+package org.apache.hadoop.hive.ql.io.protobuf;
 
 import org.apache.hadoop.io.Writable;
 import org.apache.tez.dag.history.logging.proto.ProtoMessageWritable;
@@ -34,4 +34,8 @@ public class ProtobufMessageSerDe extends ProtobufSerDe {
     return ((ProtoMessageWritable<Message>)writable).getMessage();
   }
 
+  @Override
+  public Class<? extends Writable> getSerializedClass() {
+    return ProtoMessageWritable.class;
+  }
 }
