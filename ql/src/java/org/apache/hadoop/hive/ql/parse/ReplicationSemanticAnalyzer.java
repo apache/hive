@@ -31,12 +31,12 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
+import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
 import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
@@ -397,12 +397,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     for (String location : new Reader(conf, loadPath, isIncrementalPhase).sourceLocationsToCopy()) {
       Path sourcePath = new Path(location);
-      String targetPathWithoutSchemeAndAuth = basePath.toUri().getPath() + sourcePath.toUri().getPath();
-      Path fullyQualifiedTargetUri = PathBuilder.fullyQualifiedHDFSUri(
-          new Path(targetPathWithoutSchemeAndAuth),
-          basePath.getFileSystem(conf)
-      );
-      list.add(new DirCopyWork(sourcePath, fullyQualifiedTargetUri));
+      Path targetPath = ReplExternalTables.externalTableDataPath(conf, basePath, sourcePath);
+      list.add(new DirCopyWork(sourcePath, targetPath));
     }
     return list;
   }
