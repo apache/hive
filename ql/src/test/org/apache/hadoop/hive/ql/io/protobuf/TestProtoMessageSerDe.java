@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.contrib.serde2;
+package org.apache.hadoop.hive.ql.io.protobuf;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -30,10 +30,13 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.contrib.serde2.SampleProtos.AllTypes;
-import org.apache.hadoop.hive.contrib.serde2.SampleProtos.AllTypes.Enum1;
-import org.apache.hadoop.hive.contrib.serde2.SampleProtos.MapFieldEntry;
-import org.apache.hadoop.hive.contrib.serde2.SampleProtos.Mesg1;
+import org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.AllTypes;
+import org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.AllTypes.Enum1;
+import org.apache.hadoop.hive.ql.io.protobuf.ProtobufBytesWritableSerDe;
+import org.apache.hadoop.hive.ql.io.protobuf.ProtobufMessageSerDe;
+import org.apache.hadoop.hive.ql.io.protobuf.ProtobufSerDe;
+import org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.MapFieldEntry;
+import org.apache.hadoop.hive.ql.io.protobuf.SampleProtos.Mesg1;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;

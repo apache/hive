@@ -126,7 +126,7 @@ public class TestVectorDeserializeOrcWriter {
       }
 
       @Override
-      public void consumeData(Object data) throws InterruptedException {
+      public void consumeData(EncodedColumnBatch data) throws InterruptedException {
       }
     };
   }

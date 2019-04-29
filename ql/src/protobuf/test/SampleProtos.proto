@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-option java_package = "org.apache.hadoop.hive.contrib.serde2";
+option java_package = "org.apache.hadoop.hive.ql.io.protobuf";
 option java_outer_classname = "SampleProtos";
 
 message MapFieldEntry {
