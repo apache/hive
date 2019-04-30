@@ -317,18 +317,6 @@ class StorageDescriptor;
 
 class CreationMetadata;
 
-class Table;
-
-class Partition;
-
-class PartitionWithoutSD;
-
-class PartitionSpecWithSharedSD;
-
-class PartitionListComposingSpec;
-
-class PartitionSpec;
-
 class BooleanColumnStatsData;
 
 class DoubleColumnStatsData;
@@ -354,6 +342,18 @@ class ColumnStatisticsObj;
 class ColumnStatisticsDesc;
 
 class ColumnStatistics;
+
+class Table;
+
+class Partition;
+
+class PartitionWithoutSD;
+
+class PartitionSpecWithSharedSD;
+
+class PartitionListComposingSpec;
+
+class PartitionSpec;
 
 class AggrStats;
 
@@ -3335,588 +3335,6 @@ inline std::ostream& operator<<(std::ostream& out, const CreationMetadata& obj)
   return out;
 }
 
-typedef struct _Table__isset {
-  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), catName(false), ownerType(true), writeId(true), isStatsCompliant(false), colStats(false) {}
-  bool tableName :1;
-  bool dbName :1;
-  bool owner :1;
-  bool createTime :1;
-  bool lastAccessTime :1;
-  bool retention :1;
-  bool sd :1;
-  bool partitionKeys :1;
-  bool parameters :1;
-  bool viewOriginalText :1;
-  bool viewExpandedText :1;
-  bool tableType :1;
-  bool privileges :1;
-  bool temporary :1;
-  bool rewriteEnabled :1;
-  bool creationMetadata :1;
-  bool catName :1;
-  bool ownerType :1;
-  bool writeId :1;
-  bool isStatsCompliant :1;
-  bool colStats :1;
-} _Table__isset;
-
-class Table {
- public:
-
-  Table(const Table&);
-  Table& operator=(const Table&);
-  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false), rewriteEnabled(0), catName(), ownerType((PrincipalType::type)1), writeId(-1LL), isStatsCompliant(0) {
-    ownerType = (PrincipalType::type)1;
-
-  }
-
-  virtual ~Table() throw();
-  std::string tableName;
-  std::string dbName;
-  std::string owner;
-  int32_t createTime;
-  int32_t lastAccessTime;
-  int32_t retention;
-  StorageDescriptor sd;
-  std::vector<FieldSchema>  partitionKeys;
-  std::map<std::string, std::string>  parameters;
-  std::string viewOriginalText;
-  std::string viewExpandedText;
-  std::string tableType;
-  PrincipalPrivilegeSet privileges;
-  bool temporary;
-  bool rewriteEnabled;
-  CreationMetadata creationMetadata;
-  std::string catName;
-  PrincipalType::type ownerType;
-  int64_t writeId;
-  bool isStatsCompliant;
-  ColumnStatistics colStats;
-
-  _Table__isset __isset;
-
-  void __set_tableName(const std::string& val);
-
-  void __set_dbName(const std::string& val);
-
-  void __set_owner(const std::string& val);
-
-  void __set_createTime(const int32_t val);
-
-  void __set_lastAccessTime(const int32_t val);
-
-  void __set_retention(const int32_t val);
-
-  void __set_sd(const StorageDescriptor& val);
-
-  void __set_partitionKeys(const std::vector<FieldSchema> & val);
-
-  void __set_parameters(const std::map<std::string, std::string> & val);
-
-  void __set_viewOriginalText(const std::string& val);
-
-  void __set_viewExpandedText(const std::string& val);
-
-  void __set_tableType(const std::string& val);
-
-  void __set_privileges(const PrincipalPrivilegeSet& val);
-
-  void __set_temporary(const bool val);
-
-  void __set_rewriteEnabled(const bool val);
-
-  void __set_creationMetadata(const CreationMetadata& val);
-
-  void __set_catName(const std::string& val);
-
-  void __set_ownerType(const PrincipalType::type val);
-
-  void __set_writeId(const int64_t val);
-
-  void __set_isStatsCompliant(const bool val);
-
-  void __set_colStats(const ColumnStatistics& val);
-
-  bool operator == (const Table & rhs) const
-  {
-    if (!(tableName == rhs.tableName))
-      return false;
-    if (!(dbName == rhs.dbName))
-      return false;
-    if (!(owner == rhs.owner))
-      return false;
-    if (!(createTime == rhs.createTime))
-      return false;
-    if (!(lastAccessTime == rhs.lastAccessTime))
-      return false;
-    if (!(retention == rhs.retention))
-      return false;
-    if (!(sd == rhs.sd))
-      return false;
-    if (!(partitionKeys == rhs.partitionKeys))
-      return false;
-    if (!(parameters == rhs.parameters))
-      return false;
-    if (!(viewOriginalText == rhs.viewOriginalText))
-      return false;
-    if (!(viewExpandedText == rhs.viewExpandedText))
-      return false;
-    if (!(tableType == rhs.tableType))
-      return false;
-    if (__isset.privileges != rhs.__isset.privileges)
-      return false;
-    else if (__isset.privileges && !(privileges == rhs.privileges))
-      return false;
-    if (__isset.temporary != rhs.__isset.temporary)
-      return false;
-    else if (__isset.temporary && !(temporary == rhs.temporary))
-      return false;
-    if (__isset.rewriteEnabled != rhs.__isset.rewriteEnabled)
-      return false;
-    else if (__isset.rewriteEnabled && !(rewriteEnabled == rhs.rewriteEnabled))
-      return false;
-    if (__isset.creationMetadata != rhs.__isset.creationMetadata)
-      return false;
-    else if (__isset.creationMetadata && !(creationMetadata == rhs.creationMetadata))
-      return false;
-    if (__isset.catName != rhs.__isset.catName)
-      return false;
-    else if (__isset.catName && !(catName == rhs.catName))
-      return false;
-    if (__isset.ownerType != rhs.__isset.ownerType)
-      return false;
-    else if (__isset.ownerType && !(ownerType == rhs.ownerType))
-      return false;
-    if (__isset.writeId != rhs.__isset.writeId)
-      return false;
-    else if (__isset.writeId && !(writeId == rhs.writeId))
-      return false;
-    if (__isset.isStatsCompliant != rhs.__isset.isStatsCompliant)
-      return false;
-    else if (__isset.isStatsCompliant && !(isStatsCompliant == rhs.isStatsCompliant))
-      return false;
-    if (__isset.colStats != rhs.__isset.colStats)
-      return false;
-    else if (__isset.colStats && !(colStats == rhs.colStats))
-      return false;
-    return true;
-  }
-  bool operator != (const Table &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const Table & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(Table &a, Table &b);
-
-inline std::ostream& operator<<(std::ostream& out, const Table& obj)
-{
-  obj.printTo(out);
-  return out;
-}
-
-typedef struct _Partition__isset {
-  _Partition__isset() : values(false), dbName(false), tableName(false), createTime(false), lastAccessTime(false), sd(false), parameters(false), privileges(false), catName(false), writeId(true), isStatsCompliant(false), colStats(false) {}
-  bool values :1;
-  bool dbName :1;
-  bool tableName :1;
-  bool createTime :1;
-  bool lastAccessTime :1;
-  bool sd :1;
-  bool parameters :1;
-  bool privileges :1;
-  bool catName :1;
-  bool writeId :1;
-  bool isStatsCompliant :1;
-  bool colStats :1;
-} _Partition__isset;
-
-class Partition {
- public:
-
-  Partition(const Partition&);
-  Partition& operator=(const Partition&);
-  Partition() : dbName(), tableName(), createTime(0), lastAccessTime(0), catName(), writeId(-1LL), isStatsCompliant(0) {
-  }
-
-  virtual ~Partition() throw();
-  std::vector<std::string>  values;
-  std::string dbName;
-  std::string tableName;
-  int32_t createTime;
-  int32_t lastAccessTime;
-  StorageDescriptor sd;
-  std::map<std::string, std::string>  parameters;
-  PrincipalPrivilegeSet privileges;
-  std::string catName;
-  int64_t writeId;
-  bool isStatsCompliant;
-  ColumnStatistics colStats;
-
-  _Partition__isset __isset;
-
-  void __set_values(const std::vector<std::string> & val);
-
-  void __set_dbName(const std::string& val);
-
-  void __set_tableName(const std::string& val);
-
-  void __set_createTime(const int32_t val);
-
-  void __set_lastAccessTime(const int32_t val);
-
-  void __set_sd(const StorageDescriptor& val);
-
-  void __set_parameters(const std::map<std::string, std::string> & val);
-
-  void __set_privileges(const PrincipalPrivilegeSet& val);
-
-  void __set_catName(const std::string& val);
-
-  void __set_writeId(const int64_t val);
-
-  void __set_isStatsCompliant(const bool val);
-
-  void __set_colStats(const ColumnStatistics& val);
-
-  bool operator == (const Partition & rhs) const
-  {
-    if (!(values == rhs.values))
-      return false;
-    if (!(dbName == rhs.dbName))
-      return false;
-    if (!(tableName == rhs.tableName))
-      return false;
-    if (!(createTime == rhs.createTime))
-      return false;
-    if (!(lastAccessTime == rhs.lastAccessTime))
-      return false;
-    if (!(sd == rhs.sd))
-      return false;
-    if (!(parameters == rhs.parameters))
-      return false;
-    if (__isset.privileges != rhs.__isset.privileges)
-      return false;
-    else if (__isset.privileges && !(privileges == rhs.privileges))
-      return false;
-    if (__isset.catName != rhs.__isset.catName)
-      return false;
-    else if (__isset.catName && !(catName == rhs.catName))
-      return false;
-    if (__isset.writeId != rhs.__isset.writeId)
-      return false;
-    else if (__isset.writeId && !(writeId == rhs.writeId))
-      return false;
-    if (__isset.isStatsCompliant != rhs.__isset.isStatsCompliant)
-      return false;
-    else if (__isset.isStatsCompliant && !(isStatsCompliant == rhs.isStatsCompliant))
-      return false;
-    if (__isset.colStats != rhs.__isset.colStats)
-      return false;
-    else if (__isset.colStats && !(colStats == rhs.colStats))
-      return false;
-    return true;
-  }
-  bool operator != (const Partition &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const Partition & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(Partition &a, Partition &b);
-
-inline std::ostream& operator<<(std::ostream& out, const Partition& obj)
-{
-  obj.printTo(out);
-  return out;
-}
-
-typedef struct _PartitionWithoutSD__isset {
-  _PartitionWithoutSD__isset() : values(false), createTime(false), lastAccessTime(false), relativePath(false), parameters(false), privileges(false) {}
-  bool values :1;
-  bool createTime :1;
-  bool lastAccessTime :1;
-  bool relativePath :1;
-  bool parameters :1;
-  bool privileges :1;
-} _PartitionWithoutSD__isset;
-
-class PartitionWithoutSD {
- public:
-
-  PartitionWithoutSD(const PartitionWithoutSD&);
-  PartitionWithoutSD& operator=(const PartitionWithoutSD&);
-  PartitionWithoutSD() : createTime(0), lastAccessTime(0), relativePath() {
-  }
-
-  virtual ~PartitionWithoutSD() throw();
-  std::vector<std::string>  values;
-  int32_t createTime;
-  int32_t lastAccessTime;
-  std::string relativePath;
-  std::map<std::string, std::string>  parameters;
-  PrincipalPrivilegeSet privileges;
-
-  _PartitionWithoutSD__isset __isset;
-
-  void __set_values(const std::vector<std::string> & val);
-
-  void __set_createTime(const int32_t val);
-
-  void __set_lastAccessTime(const int32_t val);
-
-  void __set_relativePath(const std::string& val);
-
-  void __set_parameters(const std::map<std::string, std::string> & val);
-
-  void __set_privileges(const PrincipalPrivilegeSet& val);
-
-  bool operator == (const PartitionWithoutSD & rhs) const
-  {
-    if (!(values == rhs.values))
-      return false;
-    if (!(createTime == rhs.createTime))
-      return false;
-    if (!(lastAccessTime == rhs.lastAccessTime))
-      return false;
-    if (!(relativePath == rhs.relativePath))
-      return false;
-    if (!(parameters == rhs.parameters))
-      return false;
-    if (__isset.privileges != rhs.__isset.privileges)
-      return false;
-    else if (__isset.privileges && !(privileges == rhs.privileges))
-      return false;
-    return true;
-  }
-  bool operator != (const PartitionWithoutSD &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const PartitionWithoutSD & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(PartitionWithoutSD &a, PartitionWithoutSD &b);
-
-inline std::ostream& operator<<(std::ostream& out, const PartitionWithoutSD& obj)
-{
-  obj.printTo(out);
-  return out;
-}
-
-typedef struct _PartitionSpecWithSharedSD__isset {
-  _PartitionSpecWithSharedSD__isset() : partitions(false), sd(false) {}
-  bool partitions :1;
-  bool sd :1;
-} _PartitionSpecWithSharedSD__isset;
-
-class PartitionSpecWithSharedSD {
- public:
-
-  PartitionSpecWithSharedSD(const PartitionSpecWithSharedSD&);
-  PartitionSpecWithSharedSD& operator=(const PartitionSpecWithSharedSD&);
-  PartitionSpecWithSharedSD() {
-  }
-
-  virtual ~PartitionSpecWithSharedSD() throw();
-  std::vector<PartitionWithoutSD>  partitions;
-  StorageDescriptor sd;
-
-  _PartitionSpecWithSharedSD__isset __isset;
-
-  void __set_partitions(const std::vector<PartitionWithoutSD> & val);
-
-  void __set_sd(const StorageDescriptor& val);
-
-  bool operator == (const PartitionSpecWithSharedSD & rhs) const
-  {
-    if (!(partitions == rhs.partitions))
-      return false;
-    if (!(sd == rhs.sd))
-      return false;
-    return true;
-  }
-  bool operator != (const PartitionSpecWithSharedSD &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const PartitionSpecWithSharedSD & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(PartitionSpecWithSharedSD &a, PartitionSpecWithSharedSD &b);
-
-inline std::ostream& operator<<(std::ostream& out, const PartitionSpecWithSharedSD& obj)
-{
-  obj.printTo(out);
-  return out;
-}
-
-typedef struct _PartitionListComposingSpec__isset {
-  _PartitionListComposingSpec__isset() : partitions(false) {}
-  bool partitions :1;
-} _PartitionListComposingSpec__isset;
-
-class PartitionListComposingSpec {
- public:
-
-  PartitionListComposingSpec(const PartitionListComposingSpec&);
-  PartitionListComposingSpec& operator=(const PartitionListComposingSpec&);
-  PartitionListComposingSpec() {
-  }
-
-  virtual ~PartitionListComposingSpec() throw();
-  std::vector<Partition>  partitions;
-
-  _PartitionListComposingSpec__isset __isset;
-
-  void __set_partitions(const std::vector<Partition> & val);
-
-  bool operator == (const PartitionListComposingSpec & rhs) const
-  {
-    if (!(partitions == rhs.partitions))
-      return false;
-    return true;
-  }
-  bool operator != (const PartitionListComposingSpec &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const PartitionListComposingSpec & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(PartitionListComposingSpec &a, PartitionListComposingSpec &b);
-
-inline std::ostream& operator<<(std::ostream& out, const PartitionListComposingSpec& obj)
-{
-  obj.printTo(out);
-  return out;
-}
-
-typedef struct _PartitionSpec__isset {
-  _PartitionSpec__isset() : dbName(false), tableName(false), rootPath(false), sharedSDPartitionSpec(false), partitionList(false), catName(false), writeId(true), isStatsCompliant(false) {}
-  bool dbName :1;
-  bool tableName :1;
-  bool rootPath :1;
-  bool sharedSDPartitionSpec :1;
-  bool partitionList :1;
-  bool catName :1;
-  bool writeId :1;
-  bool isStatsCompliant :1;
-} _PartitionSpec__isset;
-
-class PartitionSpec {
- public:
-
-  PartitionSpec(const PartitionSpec&);
-  PartitionSpec& operator=(const PartitionSpec&);
-  PartitionSpec() : dbName(), tableName(), rootPath(), catName(), writeId(-1LL), isStatsCompliant(0) {
-  }
-
-  virtual ~PartitionSpec() throw();
-  std::string dbName;
-  std::string tableName;
-  std::string rootPath;
-  PartitionSpecWithSharedSD sharedSDPartitionSpec;
-  PartitionListComposingSpec partitionList;
-  std::string catName;
-  int64_t writeId;
-  bool isStatsCompliant;
-
-  _PartitionSpec__isset __isset;
-
-  void __set_dbName(const std::string& val);
-
-  void __set_tableName(const std::string& val);
-
-  void __set_rootPath(const std::string& val);
-
-  void __set_sharedSDPartitionSpec(const PartitionSpecWithSharedSD& val);
-
-  void __set_partitionList(const PartitionListComposingSpec& val);
-
-  void __set_catName(const std::string& val);
-
-  void __set_writeId(const int64_t val);
-
-  void __set_isStatsCompliant(const bool val);
-
-  bool operator == (const PartitionSpec & rhs) const
-  {
-    if (!(dbName == rhs.dbName))
-      return false;
-    if (!(tableName == rhs.tableName))
-      return false;
-    if (!(rootPath == rhs.rootPath))
-      return false;
-    if (__isset.sharedSDPartitionSpec != rhs.__isset.sharedSDPartitionSpec)
-      return false;
-    else if (__isset.sharedSDPartitionSpec && !(sharedSDPartitionSpec == rhs.sharedSDPartitionSpec))
-      return false;
-    if (__isset.partitionList != rhs.__isset.partitionList)
-      return false;
-    else if (__isset.partitionList && !(partitionList == rhs.partitionList))
-      return false;
-    if (__isset.catName != rhs.__isset.catName)
-      return false;
-    else if (__isset.catName && !(catName == rhs.catName))
-      return false;
-    if (__isset.writeId != rhs.__isset.writeId)
-      return false;
-    else if (__isset.writeId && !(writeId == rhs.writeId))
-      return false;
-    if (__isset.isStatsCompliant != rhs.__isset.isStatsCompliant)
-      return false;
-    else if (__isset.isStatsCompliant && !(isStatsCompliant == rhs.isStatsCompliant))
-      return false;
-    return true;
-  }
-  bool operator != (const PartitionSpec &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const PartitionSpec & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(PartitionSpec &a, PartitionSpec &b);
-
-inline std::ostream& operator<<(std::ostream& out, const PartitionSpec& obj)
-{
-  obj.printTo(out);
-  return out;
-}
-
 typedef struct _BooleanColumnStatsData__isset {
   _BooleanColumnStatsData__isset() : bitVectors(false) {}
   bool bitVectors :1;
@@ -4756,6 +4174,588 @@ class ColumnStatistics {
 void swap(ColumnStatistics &a, ColumnStatistics &b);
 
 inline std::ostream& operator<<(std::ostream& out, const ColumnStatistics& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _Table__isset {
+  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), catName(false), ownerType(true), writeId(true), isStatsCompliant(false), colStats(false) {}
+  bool tableName :1;
+  bool dbName :1;
+  bool owner :1;
+  bool createTime :1;
+  bool lastAccessTime :1;
+  bool retention :1;
+  bool sd :1;
+  bool partitionKeys :1;
+  bool parameters :1;
+  bool viewOriginalText :1;
+  bool viewExpandedText :1;
+  bool tableType :1;
+  bool privileges :1;
+  bool temporary :1;
+  bool rewriteEnabled :1;
+  bool creationMetadata :1;
+  bool catName :1;
+  bool ownerType :1;
+  bool writeId :1;
+  bool isStatsCompliant :1;
+  bool colStats :1;
+} _Table__isset;
+
+class Table {
+ public:
+
+  Table(const Table&);
+  Table& operator=(const Table&);
+  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false), rewriteEnabled(0), catName(), ownerType((PrincipalType::type)1), writeId(-1LL), isStatsCompliant(0) {
+    ownerType = (PrincipalType::type)1;
+
+  }
+
+  virtual ~Table() throw();
+  std::string tableName;
+  std::string dbName;
+  std::string owner;
+  int32_t createTime;
+  int32_t lastAccessTime;
+  int32_t retention;
+  StorageDescriptor sd;
+  std::vector<FieldSchema>  partitionKeys;
+  std::map<std::string, std::string>  parameters;
+  std::string viewOriginalText;
+  std::string viewExpandedText;
+  std::string tableType;
+  PrincipalPrivilegeSet privileges;
+  bool temporary;
+  bool rewriteEnabled;
+  CreationMetadata creationMetadata;
+  std::string catName;
+  PrincipalType::type ownerType;
+  int64_t writeId;
+  bool isStatsCompliant;
+  ColumnStatistics colStats;
+
+  _Table__isset __isset;
+
+  void __set_tableName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_owner(const std::string& val);
+
+  void __set_createTime(const int32_t val);
+
+  void __set_lastAccessTime(const int32_t val);
+
+  void __set_retention(const int32_t val);
+
+  void __set_sd(const StorageDescriptor& val);
+
+  void __set_partitionKeys(const std::vector<FieldSchema> & val);
+
+  void __set_parameters(const std::map<std::string, std::string> & val);
+
+  void __set_viewOriginalText(const std::string& val);
+
+  void __set_viewExpandedText(const std::string& val);
+
+  void __set_tableType(const std::string& val);
+
+  void __set_privileges(const PrincipalPrivilegeSet& val);
+
+  void __set_temporary(const bool val);
+
+  void __set_rewriteEnabled(const bool val);
+
+  void __set_creationMetadata(const CreationMetadata& val);
+
+  void __set_catName(const std::string& val);
+
+  void __set_ownerType(const PrincipalType::type val);
+
+  void __set_writeId(const int64_t val);
+
+  void __set_isStatsCompliant(const bool val);
+
+  void __set_colStats(const ColumnStatistics& val);
+
+  bool operator == (const Table & rhs) const
+  {
+    if (!(tableName == rhs.tableName))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(owner == rhs.owner))
+      return false;
+    if (!(createTime == rhs.createTime))
+      return false;
+    if (!(lastAccessTime == rhs.lastAccessTime))
+      return false;
+    if (!(retention == rhs.retention))
+      return false;
+    if (!(sd == rhs.sd))
+      return false;
+    if (!(partitionKeys == rhs.partitionKeys))
+      return false;
+    if (!(parameters == rhs.parameters))
+      return false;
+    if (!(viewOriginalText == rhs.viewOriginalText))
+      return false;
+    if (!(viewExpandedText == rhs.viewExpandedText))
+      return false;
+    if (!(tableType == rhs.tableType))
+      return false;
+    if (__isset.privileges != rhs.__isset.privileges)
+      return false;
+    else if (__isset.privileges && !(privileges == rhs.privileges))
+      return false;
+    if (__isset.temporary != rhs.__isset.temporary)
+      return false;
+    else if (__isset.temporary && !(temporary == rhs.temporary))
+      return false;
+    if (__isset.rewriteEnabled != rhs.__isset.rewriteEnabled)
+      return false;
+    else if (__isset.rewriteEnabled && !(rewriteEnabled == rhs.rewriteEnabled))
+      return false;
+    if (__isset.creationMetadata != rhs.__isset.creationMetadata)
+      return false;
+    else if (__isset.creationMetadata && !(creationMetadata == rhs.creationMetadata))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
+      return false;
+    if (__isset.ownerType != rhs.__isset.ownerType)
+      return false;
+    else if (__isset.ownerType && !(ownerType == rhs.ownerType))
+      return false;
+    if (__isset.writeId != rhs.__isset.writeId)
+      return false;
+    else if (__isset.writeId && !(writeId == rhs.writeId))
+      return false;
+    if (__isset.isStatsCompliant != rhs.__isset.isStatsCompliant)
+      return false;
+    else if (__isset.isStatsCompliant && !(isStatsCompliant == rhs.isStatsCompliant))
+      return false;
+    if (__isset.colStats != rhs.__isset.colStats)
+      return false;
+    else if (__isset.colStats && !(colStats == rhs.colStats))
+      return false;
+    return true;
+  }
+  bool operator != (const Table &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Table & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(Table &a, Table &b);
+
+inline std::ostream& operator<<(std::ostream& out, const Table& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _Partition__isset {
+  _Partition__isset() : values(false), dbName(false), tableName(false), createTime(false), lastAccessTime(false), sd(false), parameters(false), privileges(false), catName(false), writeId(true), isStatsCompliant(false), colStats(false) {}
+  bool values :1;
+  bool dbName :1;
+  bool tableName :1;
+  bool createTime :1;
+  bool lastAccessTime :1;
+  bool sd :1;
+  bool parameters :1;
+  bool privileges :1;
+  bool catName :1;
+  bool writeId :1;
+  bool isStatsCompliant :1;
+  bool colStats :1;
+} _Partition__isset;
+
+class Partition {
+ public:
+
+  Partition(const Partition&);
+  Partition& operator=(const Partition&);
+  Partition() : dbName(), tableName(), createTime(0), lastAccessTime(0), catName(), writeId(-1LL), isStatsCompliant(0) {
+  }
+
+  virtual ~Partition() throw();
+  std::vector<std::string>  values;
+  std::string dbName;
+  std::string tableName;
+  int32_t createTime;
+  int32_t lastAccessTime;
+  StorageDescriptor sd;
+  std::map<std::string, std::string>  parameters;
+  PrincipalPrivilegeSet privileges;
+  std::string catName;
+  int64_t writeId;
+  bool isStatsCompliant;
+  ColumnStatistics colStats;
+
+  _Partition__isset __isset;
+
+  void __set_values(const std::vector<std::string> & val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tableName(const std::string& val);
+
+  void __set_createTime(const int32_t val);
+
+  void __set_lastAccessTime(const int32_t val);
+
+  void __set_sd(const StorageDescriptor& val);
+
+  void __set_parameters(const std::map<std::string, std::string> & val);
+
+  void __set_privileges(const PrincipalPrivilegeSet& val);
+
+  void __set_catName(const std::string& val);
+
+  void __set_writeId(const int64_t val);
+
+  void __set_isStatsCompliant(const bool val);
+
+  void __set_colStats(const ColumnStatistics& val);
+
+  bool operator == (const Partition & rhs) const
+  {
+    if (!(values == rhs.values))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tableName == rhs.tableName))
+      return false;
+    if (!(createTime == rhs.createTime))
+      return false;
+    if (!(lastAccessTime == rhs.lastAccessTime))
+      return false;
+    if (!(sd == rhs.sd))
+      return false;
+    if (!(parameters == rhs.parameters))
+      return false;
+    if (__isset.privileges != rhs.__isset.privileges)
+      return false;
+    else if (__isset.privileges && !(privileges == rhs.privileges))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
+      return false;
+    if (__isset.writeId != rhs.__isset.writeId)
+      return false;
+    else if (__isset.writeId && !(writeId == rhs.writeId))
+      return false;
+    if (__isset.isStatsCompliant != rhs.__isset.isStatsCompliant)
+      return false;
+    else if (__isset.isStatsCompliant && !(isStatsCompliant == rhs.isStatsCompliant))
+      return false;
+    if (__isset.colStats != rhs.__isset.colStats)
+      return false;
+    else if (__isset.colStats && !(colStats == rhs.colStats))
+      return false;
+    return true;
+  }
+  bool operator != (const Partition &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Partition & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(Partition &a, Partition &b);
+
+inline std::ostream& operator<<(std::ostream& out, const Partition& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _PartitionWithoutSD__isset {
+  _PartitionWithoutSD__isset() : values(false), createTime(false), lastAccessTime(false), relativePath(false), parameters(false), privileges(false) {}
+  bool values :1;
+  bool createTime :1;
+  bool lastAccessTime :1;
+  bool relativePath :1;
+  bool parameters :1;
+  bool privileges :1;
+} _PartitionWithoutSD__isset;
+
+class PartitionWithoutSD {
+ public:
+
+  PartitionWithoutSD(const PartitionWithoutSD&);
+  PartitionWithoutSD& operator=(const PartitionWithoutSD&);
+  PartitionWithoutSD() : createTime(0), lastAccessTime(0), relativePath() {
+  }
+
+  virtual ~PartitionWithoutSD() throw();
+  std::vector<std::string>  values;
+  int32_t createTime;
+  int32_t lastAccessTime;
+  std::string relativePath;
+  std::map<std::string, std::string>  parameters;
+  PrincipalPrivilegeSet privileges;
+
+  _PartitionWithoutSD__isset __isset;
+
+  void __set_values(const std::vector<std::string> & val);
+
+  void __set_createTime(const int32_t val);
+
+  void __set_lastAccessTime(const int32_t val);
+
+  void __set_relativePath(const std::string& val);
+
+  void __set_parameters(const std::map<std::string, std::string> & val);
+
+  void __set_privileges(const PrincipalPrivilegeSet& val);
+
+  bool operator == (const PartitionWithoutSD & rhs) const
+  {
+    if (!(values == rhs.values))
+      return false;
+    if (!(createTime == rhs.createTime))
+      return false;
+    if (!(lastAccessTime == rhs.lastAccessTime))
+      return false;
+    if (!(relativePath == rhs.relativePath))
+      return false;
+    if (!(parameters == rhs.parameters))
+      return false;
+    if (__isset.privileges != rhs.__isset.privileges)
+      return false;
+    else if (__isset.privileges && !(privileges == rhs.privileges))
+      return false;
+    return true;
+  }
+  bool operator != (const PartitionWithoutSD &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PartitionWithoutSD & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(PartitionWithoutSD &a, PartitionWithoutSD &b);
+
+inline std::ostream& operator<<(std::ostream& out, const PartitionWithoutSD& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _PartitionSpecWithSharedSD__isset {
+  _PartitionSpecWithSharedSD__isset() : partitions(false), sd(false) {}
+  bool partitions :1;
+  bool sd :1;
+} _PartitionSpecWithSharedSD__isset;
+
+class PartitionSpecWithSharedSD {
+ public:
+
+  PartitionSpecWithSharedSD(const PartitionSpecWithSharedSD&);
+  PartitionSpecWithSharedSD& operator=(const PartitionSpecWithSharedSD&);
+  PartitionSpecWithSharedSD() {
+  }
+
+  virtual ~PartitionSpecWithSharedSD() throw();
+  std::vector<PartitionWithoutSD>  partitions;
+  StorageDescriptor sd;
+
+  _PartitionSpecWithSharedSD__isset __isset;
+
+  void __set_partitions(const std::vector<PartitionWithoutSD> & val);
+
+  void __set_sd(const StorageDescriptor& val);
+
+  bool operator == (const PartitionSpecWithSharedSD & rhs) const
+  {
+    if (!(partitions == rhs.partitions))
+      return false;
+    if (!(sd == rhs.sd))
+      return false;
+    return true;
+  }
+  bool operator != (const PartitionSpecWithSharedSD &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PartitionSpecWithSharedSD & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(PartitionSpecWithSharedSD &a, PartitionSpecWithSharedSD &b);
+
+inline std::ostream& operator<<(std::ostream& out, const PartitionSpecWithSharedSD& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _PartitionListComposingSpec__isset {
+  _PartitionListComposingSpec__isset() : partitions(false) {}
+  bool partitions :1;
+} _PartitionListComposingSpec__isset;
+
+class PartitionListComposingSpec {
+ public:
+
+  PartitionListComposingSpec(const PartitionListComposingSpec&);
+  PartitionListComposingSpec& operator=(const PartitionListComposingSpec&);
+  PartitionListComposingSpec() {
+  }
+
+  virtual ~PartitionListComposingSpec() throw();
+  std::vector<Partition>  partitions;
+
+  _PartitionListComposingSpec__isset __isset;
+
+  void __set_partitions(const std::vector<Partition> & val);
+
+  bool operator == (const PartitionListComposingSpec & rhs) const
+  {
+    if (!(partitions == rhs.partitions))
+      return false;
+    return true;
+  }
+  bool operator != (const PartitionListComposingSpec &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PartitionListComposingSpec & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(PartitionListComposingSpec &a, PartitionListComposingSpec &b);
+
+inline std::ostream& operator<<(std::ostream& out, const PartitionListComposingSpec& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _PartitionSpec__isset {
+  _PartitionSpec__isset() : dbName(false), tableName(false), rootPath(false), sharedSDPartitionSpec(false), partitionList(false), catName(false), writeId(true), isStatsCompliant(false) {}
+  bool dbName :1;
+  bool tableName :1;
+  bool rootPath :1;
+  bool sharedSDPartitionSpec :1;
+  bool partitionList :1;
+  bool catName :1;
+  bool writeId :1;
+  bool isStatsCompliant :1;
+} _PartitionSpec__isset;
+
+class PartitionSpec {
+ public:
+
+  PartitionSpec(const PartitionSpec&);
+  PartitionSpec& operator=(const PartitionSpec&);
+  PartitionSpec() : dbName(), tableName(), rootPath(), catName(), writeId(-1LL), isStatsCompliant(0) {
+  }
+
+  virtual ~PartitionSpec() throw();
+  std::string dbName;
+  std::string tableName;
+  std::string rootPath;
+  PartitionSpecWithSharedSD sharedSDPartitionSpec;
+  PartitionListComposingSpec partitionList;
+  std::string catName;
+  int64_t writeId;
+  bool isStatsCompliant;
+
+  _PartitionSpec__isset __isset;
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tableName(const std::string& val);
+
+  void __set_rootPath(const std::string& val);
+
+  void __set_sharedSDPartitionSpec(const PartitionSpecWithSharedSD& val);
+
+  void __set_partitionList(const PartitionListComposingSpec& val);
+
+  void __set_catName(const std::string& val);
+
+  void __set_writeId(const int64_t val);
+
+  void __set_isStatsCompliant(const bool val);
+
+  bool operator == (const PartitionSpec & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tableName == rhs.tableName))
+      return false;
+    if (!(rootPath == rhs.rootPath))
+      return false;
+    if (__isset.sharedSDPartitionSpec != rhs.__isset.sharedSDPartitionSpec)
+      return false;
+    else if (__isset.sharedSDPartitionSpec && !(sharedSDPartitionSpec == rhs.sharedSDPartitionSpec))
+      return false;
+    if (__isset.partitionList != rhs.__isset.partitionList)
+      return false;
+    else if (__isset.partitionList && !(partitionList == rhs.partitionList))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
+      return false;
+    if (__isset.writeId != rhs.__isset.writeId)
+      return false;
+    else if (__isset.writeId && !(writeId == rhs.writeId))
+      return false;
+    if (__isset.isStatsCompliant != rhs.__isset.isStatsCompliant)
+      return false;
+    else if (__isset.isStatsCompliant && !(isStatsCompliant == rhs.isStatsCompliant))
+      return false;
+    return true;
+  }
+  bool operator != (const PartitionSpec &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PartitionSpec & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(PartitionSpec &a, PartitionSpec &b);
+
+inline std::ostream& operator<<(std::ostream& out, const PartitionSpec& obj)
 {
   obj.printTo(out);
   return out;
