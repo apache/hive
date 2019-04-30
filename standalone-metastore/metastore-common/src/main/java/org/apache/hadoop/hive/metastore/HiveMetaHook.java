@@ -46,7 +46,7 @@ public interface HiveMetaHook {
 
   // These should remain in sync with AlterTableDesc::AlterTableType enum
   public List<String> allowedAlterTypes = ImmutableList.of("ADDPROPS", "DROPPROPS");
-  public String ALTERLOCATION = "ALTERLOCATION";
+  String ALTERLOCATION = "ALTERLOCATION";
 
   /**
    * Called before a new table definition is added to the metastore

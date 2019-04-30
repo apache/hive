@@ -830,8 +830,7 @@ public class HiveAlterHandler implements AlterHandler {
     // Do not allow changing location of a managed table as as alter event doesn't capture the
     // new files list. So, it may cause data inconsistency.
     boolean isChangingLocation = false;
-    if (ec.isSetProperties())
-    {
+    if (ec.isSetProperties()) {
       String alterType = ec.getProperties().get(ALTER_TABLE_OPERATION_TYPE);
       if (alterType != null && alterType.equalsIgnoreCase(ALTERLOCATION)) {
         isChangingLocation = true;
@@ -886,12 +885,11 @@ public class HiveAlterHandler implements AlterHandler {
     // Do not allow changing location of a managed table as as alter event doesn't capture the
     // new files list. So, it may cause data inconsistency.
     boolean isChangingLocation = false;
-    if (ec.isSetProperties())
-    {
-        String alterType = ec.getProperties().get(ALTER_TABLE_OPERATION_TYPE);
-        if (alterType != null && alterType.equalsIgnoreCase(ALTERLOCATION)) {
-          isChangingLocation = true;
-        }
+    if (ec.isSetProperties()) {
+      String alterType = ec.getProperties().get(ALTER_TABLE_OPERATION_TYPE);
+      if (alterType != null && alterType.equalsIgnoreCase(ALTERLOCATION)) {
+        isChangingLocation = true;
+      }
     }
     if (isChangingLocation &&
         oldTbl.getTableType().equalsIgnoreCase(TableType.MANAGED_TABLE.name())) {
