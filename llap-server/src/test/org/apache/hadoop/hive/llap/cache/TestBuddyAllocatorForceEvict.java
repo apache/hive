@@ -417,7 +417,7 @@ public class TestBuddyAllocatorForceEvict {
   public static BuddyAllocator create(int max, int arenas, int total, boolean isShortcut,
       boolean isBruteForceOnly) {
      BuddyAllocator result = new BuddyAllocator(false, false, 8, max, arenas, total, 0,
-         null, MM, METRICS, isBruteForceOnly ? "brute" : null, true);
+         null, MM, METRICS, isBruteForceOnly ? "brute" : null, true, 1024 * 1024 * 128);
      if (!isShortcut) {
        result.disableDefragShortcutForTest();
      }

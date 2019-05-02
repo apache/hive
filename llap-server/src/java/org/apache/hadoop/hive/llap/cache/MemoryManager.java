@@ -57,4 +57,13 @@ public interface MemoryManager {
    *                        allocate the space.
    */
   void reserveMemory(long memoryToReserve, AtomicBoolean isStopped);
+
+  /**
+   * Ask the memory manager to evict more memory
+   *
+   * @param memoryToReserve amount of bytes to evict
+   * @return actual amount of evicted bytes.
+   */
+  long evictMemory(long memoryToReserve);
+
 }

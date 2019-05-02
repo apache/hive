@@ -66,6 +66,21 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
     throw new ReserveFailedException(isStopped);
   }
 
+  /**
+   * Ask the memory manager to evict more memory
+   *
+   * @param memoryToReserve amount of bytes to evict
+   * @return actual amount of evicted bytes.
+   */
+  @Override public long evictMemory(long memoryToReserve) {
+    if (evictor == null) {
+      return 0;
+    }
+    long evicted = evictor.evictSomeBlocks(memoryToReserve);
+    releaseMemory(evicted);
+    return evicted;
+  }
+
   @VisibleForTesting
   public boolean reserveMemory(final long memoryToReserve,
       boolean waitForEviction, AtomicBoolean isStopped) {
@@ -153,5 +168,10 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
     } while (!usedMemory.compareAndSet(usedMem, usedMem - evicted));
     metrics.incrCacheCapacityUsed(-evicted);
     return evicted;
+  }
+
+  @VisibleForTesting
+  public long getCurrentUsedSize() {
+    return usedMemory.get();
   }
 }

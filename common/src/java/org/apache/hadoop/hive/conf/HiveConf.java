@@ -4053,6 +4053,9 @@ public class HiveConf extends Configuration {
     LLAP_ALLOCATOR_DEFRAG_HEADROOM("hive.llap.io.allocator.defrag.headroom", "1Mb",
         "How much of a headroom to leave to allow allocator more flexibility to defragment.\n" +
         "The allocator would further cap it to a fraction of total memory."),
+    LLAP_ALLOCATOR_MAX_FORCE_EVICTED("hive.llap.io.allocator.max.force.eviction", "16Mb",
+        "How much bytes we can force evict before using free List discards and/or burt force\n" +
+            "Higher values will allow allocator more flexibility to full fill allocation."),
     LLAP_TRACK_CACHE_USAGE("hive.llap.io.track.cache.usage", true,
          "Whether to tag LLAP cache contents, mapping them to Hive entities (paths for\n" +
          "partitions and tables) for reporting."),

@@ -48,6 +48,24 @@ import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.ql.io.orc.encoded.StoppableAllocator;
 
+/**
+ *
+ * High level description, functionality and the memory layout.
+ * Allocation can be of general size but it will be rounded to the next power of 2.
+ * Allocation smaller than size {@link ConfVars#LLAP_ALLOCATOR_MIN_ALLOC} will be rounded to min allocation size.
+ * Allocation bigger than size {@link ConfVars#LLAP_ALLOCATOR_MAX_ALLOC} will throw exceptions.
+ * Allocator slices memory slab called {@code arenas} to carve out byte buffers using slice and position.
+ *
+ * Each {@code arena} has array of {@code freeList} used for concurrency management and to index free buffers by size.
+ * |
+ * Each {@code arena} has a max Size {@link BuddyAllocator#MAX_ARENA_SIZE} 1GB.
+ * \_
+ *   Each arena is divided into chunks of max allocation size {@link ConfVars#LLAP_ALLOCATOR_MAX_ALLOC} default 16MB
+ *   \_
+ *     Each chunk of {@code maxAllocationSize} is sliced using the classical Buddy Allocator algorithm.
+ *     \_
+ *       Each Buddy Allocator tree can be split up to chunk of size {@link ConfVars#LLAP_ALLOCATOR_MIN_ALLOC} 4KB
+ */
 public final class BuddyAllocator
   implements EvictionAwareAllocator, StoppableAllocator, BuddyAllocatorMXBean, LlapIoDebugDump {
   private final Arena[] arenas;
@@ -65,6 +83,7 @@ public final class BuddyAllocator
   private final long maxSize;
   private final boolean isDirect;
   private final boolean isMapped;
+  private final int maxForcedEvictionSize;
   private final Path cacheDir;
 
   // These are only used for tests.
@@ -72,12 +91,18 @@ public final class BuddyAllocator
 
   // We don't know the acceptable size for Java array, so we'll use 1Gb boundary.
   // That is guaranteed to fit any maximum allocation.
-  private static final int MAX_ARENA_SIZE = 1024*1024*1024;
+  private static final int MAX_ARENA_SIZE = 1024 * 1024 * 1024;
   // Don't try to operate with less than MIN_SIZE allocator space, it will just give you grief.
-  private static final int MIN_TOTAL_MEMORY_SIZE = 64*1024*1024;
+  private static final int MIN_TOTAL_MEMORY_SIZE = 64 * 1024 * 1024;
   // Maximum reasonable defragmentation headroom. Mostly kicks in on very small caches.
   private static final float MAX_DEFRAG_HEADROOM_FRACTION = 0.01f;
-
+  /**
+   * Max number of attempts to try allocations before giving up and move to forced evictions or/and freelist/brut
+   * force discards,
+   * Note to reader: why 5, i don't know, i run with 2 and 5 seems providing same results, thus the 5, better try more
+   * than start evictions, Also I am sure any value less than one will hurt.
+   */
+  private static final int MAX_FAST_ATTEMPT = 5;
   private static final FileAttribute<Set<PosixFilePermission>> RWX = PosixFilePermissions
       .asFileAttribute(PosixFilePermissions.fromString("rwx------"));
   private final AtomicLong[] defragCounters;
@@ -86,24 +111,22 @@ public final class BuddyAllocator
   // Discard context that is cached for reuse per thread to avoid allocating lots of arrays,
   // and then resizing them down the line if we need a bigger size.
   // Only the IO threads need this, so there'd be at most few dozen objects.
-  private final static ThreadLocal<DiscardContext> threadCtx = new ThreadLocal<DiscardContext>() {
-    protected DiscardContext initialValue() {
-      return new DiscardContext();
-    };
-  };
+  private final static ThreadLocal<DiscardContext> threadCtx = ThreadLocal.withInitial(DiscardContext::new);
 
   public BuddyAllocator(Configuration conf, MemoryManager mm, LlapDaemonCacheMetrics metrics) {
     this(HiveConf.getBoolVar(conf, ConfVars.LLAP_ALLOCATOR_DIRECT),
         HiveConf.getBoolVar(conf, ConfVars.LLAP_ALLOCATOR_MAPPED),
-        (int)HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC),
-        (int)HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MAX_ALLOC),
+        (int) HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC),
+        (int) HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MAX_ALLOC),
         HiveConf.getIntVar(conf, ConfVars.LLAP_ALLOCATOR_ARENA_COUNT),
         getMaxTotalMemorySize(conf),
         HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_DEFRAG_HEADROOM),
         HiveConf.getVar(conf, ConfVars.LLAP_ALLOCATOR_MAPPED_PATH),
-        mm, metrics, HiveConf.getVar(conf, ConfVars.LLAP_ALLOCATOR_DISCARD_METHOD),
-        HiveConf.getBoolVar(conf, ConfVars.LLAP_ALLOCATOR_PREALLOCATE)
-        );
+        mm,
+        metrics,
+        HiveConf.getVar(conf, ConfVars.LLAP_ALLOCATOR_DISCARD_METHOD),
+        HiveConf.getBoolVar(conf, ConfVars.LLAP_ALLOCATOR_PREALLOCATE),
+        (int) HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MAX_FORCE_EVICTED));
   }
 
   private static boolean areAssertsEnabled() {
@@ -127,7 +150,7 @@ public final class BuddyAllocator
   public BuddyAllocator(boolean isDirectVal, boolean isMappedVal, int minAllocVal, int maxAllocVal,
       int arenaCount, long maxSizeVal, long defragHeadroom, String mapPath,
       MemoryManager memoryManager, LlapDaemonCacheMetrics metrics, String discardMethod,
-      boolean doPreallocate) {
+      boolean doPreallocate, int maxForcedEvictionSize) {
     isDirect = isDirectVal;
     isMapped = isMappedVal;
     minAllocation = minAllocVal;
@@ -174,6 +197,7 @@ public final class BuddyAllocator
     boolean isBoth = null == discardMethod || "both".equalsIgnoreCase(discardMethod);
     doUseFreeListDiscard = isBoth || "freelist".equalsIgnoreCase(discardMethod);
     doUseBruteDiscard = isBoth || "brute".equalsIgnoreCase(discardMethod);
+    this.maxForcedEvictionSize = maxForcedEvictionSize;
   }
 
   public long determineMaxMmSize(long defragHeadroom, long maxMmSize) {
@@ -277,7 +301,74 @@ public final class BuddyAllocator
     long threadId = arenaCount > 1 ? Thread.currentThread().getId() : 0;
     int destAllocIx = allocateFast(dest, null, 0, dest.length,
         freeListIx, allocationSize, (int)(threadId % arenaCount), arenaCount);
-    if (destAllocIx == dest.length) return;
+    if (destAllocIx == dest.length) {
+      return;
+    }
+    // Try to allocate memory if we haven't allocated all the way to maxSize yet; very rare.
+    destAllocIx = allocateWithExpand(dest, destAllocIx, freeListIx, allocationSize, arenaCount);
+    if (destAllocIx == dest.length) {
+      return;
+    }
+
+    int forceEvictAttempt = 0;
+    long totalForceEvictedBytes = 0;
+    long currentEvicted;
+    int startArenaIx;
+    int emptyAttempt = 0;
+
+    // We called reserveMemory so we know that there's memory waiting for us somewhere.
+    // But that can mean that the reserved memory is fragmented thus unusable
+    // or we have a common class of rare race conditions related to the order of locking/checking of
+    // different allocation areas this is due to the fact that Allocations arrive in a burst fashion.
+    // To mitigate that:
+    //  - First we try again (fast path):
+    //  - Second try to push on the memoryManger/evictor to evict more.
+    //  - Third by pass the memory manager and use discards method to brute force evict if needed.
+    while (totalForceEvictedBytes < maxForcedEvictionSize && emptyAttempt < MAX_DISCARD_ATTEMPTS) {
+      // make sure we hit a different start on each new attempt
+      startArenaIx = (int) ((threadId + forceEvictAttempt) % arenaCount);
+      destAllocIx =
+          allocateFast(dest, null, destAllocIx, dest.length, freeListIx, allocationSize, startArenaIx, arenaCount);
+      if (destAllocIx == dest.length) {
+        return;
+      }
+      destAllocIx =
+          allocateWithSplit(dest,
+              null,
+              destAllocIx,
+              dest.length,
+              freeListIx,
+              allocationSize,
+              startArenaIx,
+              arenaCount,
+              -1);
+      if (destAllocIx == dest.length) {
+        return;
+      }
+
+      if (forceEvictAttempt >= MAX_FAST_ATTEMPT) {
+        // Try to evict more starting from how much memory we are missing allocLog2 << dest.length - destAllocIx
+        // Exponentially increase the eviction request based on forceEvictAttempt counter.
+        // Why Exponentially increase, usually query fragments triggers a burst of allocation at the same time
+        // Thus IMO to avoid lock contentions it is worth to over evict thus next allocation will get free lunch.
+        currentEvicted =
+            memoryManager.evictMemory(allocLog2 << dest.length - destAllocIx + forceEvictAttempt - MAX_FAST_ATTEMPT);
+        // Note that memoryManager.evictMemory is blocking but eventually will return 0 if all the memory is locked
+        // thus mark empty attempts and bail out after MAX_DISCARD_ATTEMPTS
+        totalForceEvictedBytes += currentEvicted;
+        emptyAttempt += currentEvicted == 0 ? 1 : 0;
+      }
+      forceEvictAttempt++;
+    }
+
+    LlapIoImpl.LOG.warn(
+        "Failed to allocate [{}]X[{}] bytes after [{}] attempt, evicted [{}] bytes and partially allocated [{}] bytes",
+        dest.length,
+        allocationSize,
+        forceEvictAttempt,
+        totalForceEvictedBytes,
+        destAllocIx << allocLog2);
+
 
     // We called reserveMemory so we know that there's memory waiting for us somewhere.
     // However, we have a class of rare race conditions related to the order of locking/checking of
@@ -294,24 +385,17 @@ public final class BuddyAllocator
     // allocator thread (or threads per arena).
     // The 2nd one is probably much simpler and will allow us to get rid of a lot of sync code.
     // But for now we will just retry. We will evict more each time.
-    int attempt = 0;
+    int discardsAttempt = 0;
     boolean isFailed = false;
     int memoryForceReleased = 0;
     try {
       int discardFailed = 0;
       while (true) {
         // Try to split bigger blocks.
-        int startArenaIx = (int)((threadId + attempt) % arenaCount);
+        startArenaIx = (int)((threadId + discardsAttempt) % arenaCount);
         destAllocIx = allocateWithSplit(dest, null, destAllocIx, dest.length,
             freeListIx, allocationSize, startArenaIx, arenaCount, -1);
         if (destAllocIx == dest.length) return;
-
-        if (attempt == 0) {
-          // Try to allocate memory if we haven't allocated all the way to maxSize yet; very rare.
-          destAllocIx = allocateWithExpand(
-              dest, destAllocIx, freeListIx, allocationSize, arenaCount);
-          if (destAllocIx == dest.length) return;
-        }
 
         // Try to force-evict the fragments of the requisite size.
         boolean hasDiscardedAny = false;
@@ -327,7 +411,9 @@ public final class BuddyAllocator
           hasDiscardedAny = ctx.resultCount > 0;
           destAllocIx = allocateFromDiscardResult(
               dest, destAllocIx, freeListIx, allocationSize, ctx);
-          if (destAllocIx == dest.length) return;
+          if (destAllocIx == dest.length) {
+            return;
+          }
         }
         // Then, try the brute force search for something to throw away.
         if (doUseBruteDiscard) {
@@ -337,7 +423,9 @@ public final class BuddyAllocator
           hasDiscardedAny = hasDiscardedAny || (ctx.resultCount > 0);
           destAllocIx = allocateFromDiscardResult(
               dest, destAllocIx, freeListIx, allocationSize, ctx);
-          if (destAllocIx == dest.length) return;
+          if (destAllocIx == dest.length) {
+            return;
+          }
         }
 
         if (hasDiscardedAny) {
@@ -352,18 +440,21 @@ public final class BuddyAllocator
               LlapIoImpl.LOG.info("Failed to deallocate after a partially successful allocate: " + dest[i]);
             }
           }
+          //Need to release the un-allocated but reserved memory.
+          memoryManager.releaseMemory(dest.length - destAllocIx << allocLog2);
           String msg = "Failed to allocate " + size + "; at " + destAllocIx + " out of "
               + dest.length + " (entire cache is fragmented and locked, or an internal issue)";
           logOomErrorMessage(msg);
           throw new AllocatorOutOfMemoryException(msg);
         }
-        ++attempt;
+        ++discardsAttempt;
       }
     } finally {
+      //@TODO CHECK i think it is a bug, we do not have to release this memory if we already did deallocate(dest[i])
       memoryManager.releaseMemory(memoryForceReleased);
-      if (!isFailed && attempt >= LOG_DISCARD_ATTEMPTS) {
+      if (!isFailed && discardsAttempt >= LOG_DISCARD_ATTEMPTS) {
         LlapIoImpl.LOG.info("Allocation of " + dest.length + " buffers of size " + size + " took "
-            + attempt + " attempts to free enough memory; force-released " + memoryForceReleased);
+            + discardsAttempt + " attempts to free enough memory; force-released " + memoryForceReleased);
       }
     }
   }
@@ -738,8 +829,7 @@ public final class BuddyAllocator
         rwf.setLength(arenaSize); // truncate (TODO: posix_fallocate?)
         // Use RW, not PRIVATE because the copy-on-write is irrelevant for a deleted file
         // see discussion in YARN-5551 for the memory accounting discussion
-        ByteBuffer rwbuf = rwf.getChannel().map(MapMode.READ_WRITE, 0, arenaSize);
-        return rwbuf;
+        return rwf.getChannel().map(MapMode.READ_WRITE, 0, arenaSize);
       } catch (IOException ioe) {
         LlapIoImpl.LOG.warn("Failed trying to allocate memory mapped arena", ioe);
         // fail similarly when memory allocations fail
@@ -1278,7 +1368,6 @@ public final class BuddyAllocator
             }
             lastSplitBlocksRemaining >>>= 1;
             ++newListIndex;
-            continue;
           }
         }
         ++splitListIx;
@@ -1774,10 +1863,10 @@ public final class BuddyAllocator
       if (doSleep) {
         try {
           Thread.sleep(100);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignored) {
         }
       }
-      int logSize = (int)offset.get();
+      int logSize = offset.get();
       int ix = 0;
       while (ix < logSize) {
         ix = dumpOneLine(ix);

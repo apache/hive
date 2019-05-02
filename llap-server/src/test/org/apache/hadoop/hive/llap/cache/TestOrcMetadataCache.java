@@ -27,8 +27,6 @@ import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache.LlapBufferOrBuffers;
@@ -86,6 +84,10 @@ public class TestOrcMetadataCache {
       ++allocs;
     }
 
+    @Override public long evictMemory(long memoryToReserve) {
+      return 0;
+    }
+
     @Override
     public void releaseMemory(long memUsage) {
     }
@@ -102,7 +104,7 @@ public class TestOrcMetadataCache {
     final int MAX_ALLOC = 64;
     LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
     BuddyAllocator alloc = new BuddyAllocator(
-        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null, true);
+        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null, true, 1024 * 1024 * 128);
     MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
     Object fileKey1 = new Object();
     Random rdm = new Random();
@@ -163,7 +165,7 @@ public class TestOrcMetadataCache {
     final int MAX_ALLOC = 64;
     LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
     BuddyAllocator alloc = new BuddyAllocator(
-        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null, true);
+        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null, true, 1024 * 1024 * 128);
     MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
     DataCache.BooleanRef gotAllData = new DataCache.BooleanRef();
     Object fileKey1 = new Object();
