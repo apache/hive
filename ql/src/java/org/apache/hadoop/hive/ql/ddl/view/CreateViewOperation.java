@@ -61,6 +61,10 @@ public class CreateViewOperation extends DDLOperation {
       }
 
       if (!desc.isReplace()) {
+        if (desc.getIfNotExists()) {
+          return 0;
+        }
+
         // View already exists, thus we should be replacing
         throw new HiveException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(desc.getViewName()));
       }
