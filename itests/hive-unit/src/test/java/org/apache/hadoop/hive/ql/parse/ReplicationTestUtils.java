@@ -136,10 +136,10 @@ public class ReplicationTestUtils {
     String tableNameCTAS = tableName + "_CTAS";
     String tableNameCTASMM = tableName + "_CTASMM";
 
-    /*insertRecords(primary, primaryDbName, primaryDbNameExtra,
+    insertRecords(primary, primaryDbName, primaryDbNameExtra,
             tableName, tableNameCTAS, false, OperationType.REPL_TEST_ACID_CTAS);
     selectStmtList.add("select key from " + tableNameCTAS + " order by key");
-    expectedValues.add(new String[]{"1", "2", "3", "4", "5"});*/
+    expectedValues.add(new String[]{"1", "2", "3", "4", "5"});
 
     insertRecords(primary, primaryDbName, primaryDbNameExtra,
             tableNameMM, tableNameCTASMM, true, OperationType.REPL_TEST_ACID_CTAS);
