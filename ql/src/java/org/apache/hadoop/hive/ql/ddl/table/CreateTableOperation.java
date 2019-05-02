@@ -146,11 +146,12 @@ public class CreateTableOperation extends DDLOperation {
       DataContainer dc = new DataContainer(createdTable.getTTable());
       context.getQueryState().getLineageState().setLineage(createdTable.getPath(), dc, createdTable.getCols());
 
-      // We did not create the table when moving the data files for a non-partitioned table and
-      // thus could not add a write notification required for a transactional table. Do that
-      // here, after we have created the table. Since this is a newly created table, listing all
-      // the files in the directory and listing only the ones corresponding to the given id
-      // doesn't have much difference.
+      // We did not create the table before moving the data files for a non-partitioned table i.e
+      // we used load file instead of load table (see SemanticAnalyzer#getFileSinkPlan() for
+      // more details). Thus could not add a write notification required for a transactional
+      // table. Do that here, after we have created the table. Since this is a newly created
+      // table, listing all the files in the directory and listing only the ones corresponding to
+      // the given id doesn't have much difference.
       if (!createdTable.isPartitioned() && AcidUtils.isTransactionalTable(createdTable)) {
         org.apache.hadoop.hive.metastore.api.Table tTable = createdTable.getTTable();
         Path tabLocation = new Path(tTable.getSd().getLocation());
