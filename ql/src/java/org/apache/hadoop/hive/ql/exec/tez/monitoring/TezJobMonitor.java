@@ -307,6 +307,13 @@ public class TezJobMonitor {
       }
     }
 
+    try {
+      dagClient.waitForCompletion();
+    } catch (IOException | InterruptedException | TezException e) {
+      rc = 1;
+      console.printInfo("Exception while waiting for DAG completion: " + e.getMessage());
+    }
+
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_DAG);
     printSummary(success, vertexProgressMap);
     return rc;

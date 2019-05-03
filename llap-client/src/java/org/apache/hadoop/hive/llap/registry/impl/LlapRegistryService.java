@@ -13,6 +13,7 @@
  */
 package org.apache.hadoop.hive.llap.registry.impl;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 
 import com.google.common.base.Preconditions;
@@ -29,6 +30,7 @@ import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
 import org.apache.hadoop.registry.client.binding.RegistryUtils;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
+import org.apache.tez.client.registry.zookeeper.ZkConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,7 +90,16 @@ public class LlapRegistryService extends AbstractService {
   public void serviceInit(Configuration conf) {
     String hosts = HiveConf.getTrimmedVar(conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
     if (hosts.startsWith("@")) {
-      registry = new LlapZookeeperRegistryImpl(hosts.substring(1), conf);
+      String instanceName = hosts.substring(1);
+      boolean computeGroupEnabled = HiveConf.getBoolVar(conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS_ENABLE_COMPUTE_GROUPS);
+      if (computeGroupEnabled) {
+        String computeName = System.getenv(ZkConfig.COMPUTE_GROUP_NAME_ENV);
+        if (computeName == null || computeName.isEmpty()) {
+          computeName = ZkConfig.DEFAULT_COMPUTE_GROUP_NAME;
+        }
+        instanceName = instanceName + Path.SEPARATOR + computeName;
+      }
+      registry = new LlapZookeeperRegistryImpl(instanceName, conf);
       this.isDynamic=true;
     } else {
       registry = new LlapFixedRegistryImpl(hosts, conf);

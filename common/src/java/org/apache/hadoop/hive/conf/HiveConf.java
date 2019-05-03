@@ -3277,6 +3277,11 @@ public class HiveConf extends Configuration {
       "ZK namespace to use for tez external sessions"),
     HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_WAIT_MAX_ATTEMPTS("hive.server2.tez.external.sessions.wait.max.attempts",
       60, "Number of attempts before giving up waiting for external sessions (each attempt is 1 sec long)"),
+    HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_ASSIGNMENT_STRATEGY("hive.server2.tez.external.sessions.assignment.strategy",
+      "BIN_PACK",
+      new StringSet("BIN_PACK", "ROUND_ROBIN", "RANDOM"),
+      "When there are external sessions from multiple compute clusters, session selection will be based\n" +
+      "on this strategy."),
 
     // Operation log configuration
     HIVE_SERVER2_LOGGING_OPERATION_ENABLED("hive.server2.logging.operation.enabled", true,
@@ -4230,6 +4235,10 @@ public class HiveConf extends Configuration {
     LLAP_DAEMON_SERVICE_HOSTS("hive.llap.daemon.service.hosts", null,
       "Explicitly specified hosts to use for LLAP scheduling. Useful for testing. By default,\n" +
       "YARN registry is used.", "llap.daemon.service.hosts"),
+    LLAP_DAEMON_SERVICE_HOSTS_ENABLE_COMPUTE_GROUPS("hive.llap.daemon.service.hosts.enable.compute.groups", false,
+      "When set to true llap daemons will registered under @compute/computeGroup zookeeper path. Compute\n" +
+        "group will be obtained from COMPUTE_GROUP_NAME environment variable. If set for AM, AM will only see\n" +
+        "LLAP under a specific compute group. If disabled in HS2, HS2 will see all LLAP under @compute"),
     LLAP_DAEMON_SERVICE_REFRESH_INTERVAL("hive.llap.daemon.service.refresh.interval.sec", "60s",
        new TimeValidator(TimeUnit.SECONDS),
       "LLAP YARN registry service list refresh delay, in seconds.",

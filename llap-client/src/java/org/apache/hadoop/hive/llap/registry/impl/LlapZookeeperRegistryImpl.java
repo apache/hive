@@ -49,12 +49,16 @@ import org.apache.hadoop.registry.client.types.ServiceRecord;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.Resource;
+import org.apache.tez.client.registry.zookeeper.ZkConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LlapZookeeperRegistryImpl
     extends ZkRegistryBase<LlapServiceInstance> implements ServiceRegistry<LlapServiceInstance> {
   private static final Logger LOG = LoggerFactory.getLogger(LlapZookeeperRegistryImpl.class);
+
+  public final static String COMPUTE_GROUP_NAME_ENV = "COMPUTE_GROUP_NAME";
+  public final static String DEFAULT_COMPUTE_GROUP_NAME = "default-compute";
 
   /**
    * IPC endpoint names.
@@ -138,6 +142,16 @@ public class LlapZookeeperRegistryImpl
         // TODO: read this somewhere useful, like the task scheduler
         srv.set(kv.getKey(), kv.getValue());
       }
+    }
+
+    boolean computeGroupEnabled = HiveConf.getBoolVar(conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS_ENABLE_COMPUTE_GROUPS);
+    if (computeGroupEnabled) {
+      String computeName = System.getenv(ZkConfig.COMPUTE_GROUP_NAME_ENV);
+      if (computeName == null || computeName.isEmpty()) {
+        computeName = DEFAULT_COMPUTE_GROUP_NAME;
+      }
+      srv.set("computeName", computeName);
+      LOG.info("Compute grouping enabled. Using computeName: {}", computeName);
     }
 
     String uniqueId = registerServiceRecord(srv);

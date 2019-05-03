@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.KillQuery;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.yarn.api.records.LocalResource;
@@ -40,8 +41,11 @@ import org.apache.tez.dag.api.TezException;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
 import org.apache.tez.serviceplugins.api.ServicePluginsDescriptor;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TezExternalSessionState extends TezSessionState {
+  private static final Logger LOG = LoggerFactory.getLogger(TezExternalSessionState.class.getName());
   private String externalAppId;
   private boolean isDestroying = false;
   private final TezExternalSessionsRegistryClient registry;
@@ -94,7 +98,7 @@ public class TezExternalSessionState extends TezSessionState {
       LOG.info("Ignoring the async argument for an external session {}", getSessionId());
     }
     try {
-      externalAppId = registry.getSession(isPoolInit);
+      externalAppId = registry.getSession();
     } catch (TezException | LoginException | IOException e) {
       throw e;
     } catch (Exception e) {
@@ -111,6 +115,12 @@ public class TezExternalSessionState extends TezSessionState {
   public void close(boolean keepDagFilesDir) throws Exception {
     // We never close external sessions that don't have errors.
     if (externalAppId != null) {
+      LOG.info("Returning external session with appID: {}", externalAppId);
+      // Make sure that if the session is returned to the pool, it doesn't live in the global.
+      SessionState sessionState = SessionState.get();
+      if (sessionState != null) {
+        sessionState.setTezSession(null);
+      }
       registry.returnSession(externalAppId);
     }
     externalAppId = null;
@@ -121,12 +131,14 @@ public class TezExternalSessionState extends TezSessionState {
 
   public TezSession reopen() throws Exception {
     isDestroying = true;
+    LOG.info("Reopening external session with appId: {}", externalAppId);
     // Reopen will actually close this session, and get a new external app.
     // It could instead somehow communicate to the external manager that the session is bad.
     return super.reopen();
   }
 
   public void destroy() throws Exception {
+    LOG.info("Destroying external session with appId: {}", externalAppId);
     isDestroying = true;
     // This will actually close the session. We assume the external manager will restart it.
     // It could instead somehow communicate to the external manager that the session is bad.
@@ -141,5 +153,10 @@ public class TezExternalSessionState extends TezSessionState {
     LOG.info("Killing the query {}: {}", queryId, reason);
     killQuery.killQuery(queryId, reason, conf, false);
     return true;
+  }
+
+  @Override
+  public String toString() {
+    return super.toString() + ", externalAppId=" + externalAppId;
   }
 }
