@@ -631,6 +631,12 @@ public class HiveConf extends Configuration {
         true),
     HIVE_MAPJOIN_TESTING_NO_HASH_TABLE_LOAD("hive.mapjoin.testing.no.hash.table.load", false, "internal use only, true when in testing map join",
         true),
+    HIVE_ADDITIONAL_PARTIAL_MASKS_PATTERN("hive.qtest.additional.partial.mask.pattern", "",
+        "internal use only, used in only qtests. Provide additional partial masks pattern" +
+         "for qtests as a ',' separated list"),
+    HIVE_ADDITIONAL_PARTIAL_MASKS_REPLACEMENT_TEXT("hive.qtest.additional.partial.mask.replacement.text", "",
+        "internal use only, used in only qtests. Provide additional partial masks replacement" +
+        "text for qtests as a ',' separated list"),
 
     HIVE_IN_REPL_TEST_FILES_SORTED("hive.in.repl.test.files.sorted", false,
       "internal usage only, set to true if the file listing is required in sorted order during bootstrap load", true),
@@ -1976,6 +1982,12 @@ public class HiveConf extends Configuration {
     HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION("hive.parquet.timestamp.skip.conversion", false,
       "Current Hive implementation of parquet stores timestamps to UTC, this flag allows skipping of the conversion" +
       "on reading parquet files from other tools"),
+    HIVE_AVRO_TIMESTAMP_SKIP_CONVERSION("hive.avro.timestamp.skip.conversion", false,
+        "Some older Hive implementations (pre-3.1) wrote Avro timestamps in a UTC-normalized" +
+        "manner, while from version 3.1 until now Hive wrote time zone agnostic timestamps. " +
+        "Setting this flag to true will treat legacy timestamps as time zone agnostic. Setting " +
+        "it to false will treat legacy timestamps as UTC-normalized. This flag will not affect " +
+        "timestamps written after this change."),
     HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS("hive.int.timestamp.conversion.in.seconds", false,
         "Boolean/tinyint/smallint/int/bigint value is interpreted as milliseconds during the timestamp conversion.\n" +
         "Set this flag to true to interpret the value as seconds to be consistent with float/double." ),

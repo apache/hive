@@ -26,6 +26,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
+import java.util.regex.Pattern;
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.tree.Tree;
@@ -49,7 +50,6 @@ import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelOptRule;
-import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptSchema;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelTraitSet;
@@ -342,6 +342,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
   private static final CommonToken SUBQUERY_TOKEN =
       new ImmutableCommonToken(HiveParser.TOK_SUBQUERY, "TOK_SUBQUERY");
 
+  private static final Pattern PATTERN_VARCHAR =
+      Pattern.compile("VARCHAR\\(2147483647\\)");
+  private static final Pattern PATTERN_TIMESTAMP =
+      Pattern.compile("TIMESTAMP\\(9\\)");
+
+
   public CalcitePlanner(QueryState queryState) throws SemanticException {
     super(queryState);
     if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_ENABLED)) {
@@ -554,7 +560,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   // Do not include join cost
                   this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan));
                 }
-              } else if (explainConfig.isExtended() || explainConfig.isFormatted()) {
+              } else if (explainConfig.isFormatted()) {
+                this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
+                this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
+              } else if (explainConfig.isExtended()) {
                 this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
               }
             }
@@ -1513,7 +1522,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
               .getTypeFactory());
       final JdbcImplementor.Result result = jdbcImplementor.visitChild(0, optimizedOptiqPlan);
       String sql = result.asStatement().toSqlString(dialect).getSql();
-      return sql.replaceAll("VARCHAR\\(2147483647\\)", "STRING");
+      sql = PATTERN_VARCHAR.matcher(sql).replaceAll("STRING"); // VARCHAR(INTEGER.MAX) -> STRING
+      sql = PATTERN_TIMESTAMP.matcher(sql).replaceAll("TIMESTAMP"); // TIMESTAMP(9) -> TIMESTAMP
+      return sql;
     } catch (Exception ex) {
       LOG.warn("Rel2SQL Rewrite threw error", ex);
     }

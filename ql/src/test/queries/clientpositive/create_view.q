@@ -238,7 +238,12 @@ create view view18 as select v+1 from (select 1 as v) t;
 select * from view18;
 
 -- create view if not exists
-create view if not exists view18 as select v+1 from (select 1 as v) t;
+create view if not exists view18 as select "should be ignored";
+show create table view18;
+
+-- 'create or replace'
+create or replace view view18 as select "should replace";
+show create table view18;
 
 DROP VIEW view1;
 DROP VIEW view2;

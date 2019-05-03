@@ -66,18 +66,31 @@ public final class ReplExternalTables {
     String baseDir = hiveConf.get(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname);
     Path basePath = new Path(baseDir);
     Path currentPath = new Path(location);
-    String targetPathWithoutSchemeAndAuth = basePath.toUri().getPath() + currentPath.toUri().getPath();
-    Path dataLocation;
+    Path dataLocation = externalTableDataPath(hiveConf, basePath, currentPath);
+
+    LOG.info("Incoming external table location: {} , new location: {}", location, dataLocation.toString());
+    return dataLocation.toString();
+  }
+
+  public static Path externalTableDataPath(HiveConf hiveConf, Path basePath, Path sourcePath)
+          throws SemanticException {
+    String baseUriPath = basePath.toUri().getPath();
+    String sourceUriPath = sourcePath.toUri().getPath();
+
+    // "/" is input for base directory, then we should use exact same path as source or else append
+    // source path under the base directory.
+    String targetPathWithoutSchemeAndAuth
+            = "/".equalsIgnoreCase(baseUriPath) ? sourceUriPath : (baseUriPath + sourceUriPath);
+    Path dataPath;
     try {
-      dataLocation = PathBuilder.fullyQualifiedHDFSUri(
+      dataPath = PathBuilder.fullyQualifiedHDFSUri(
               new Path(targetPathWithoutSchemeAndAuth),
               basePath.getFileSystem(hiveConf)
       );
     } catch (IOException e) {
       throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(), e);
     }
-    LOG.info("Incoming external table location: {} , new location: {}", location, dataLocation.toString());
-    return dataLocation.toString();
+    return dataPath;
   }
 
   public static class Writer implements Closeable {

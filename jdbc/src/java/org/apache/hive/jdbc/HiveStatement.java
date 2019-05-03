@@ -1023,9 +1023,6 @@ public class HiveStatement implements java.sql.Statement {
       return client.GetQueryId(new TGetQueryIdReq(stmtHandle)).getQueryId();
     } catch (TException e) {
       throw new SQLException(e);
-    } catch (Exception e) {
-      // If concurrently the query is closed before we fetch queryID.
-      return null;
     }
   }
 }

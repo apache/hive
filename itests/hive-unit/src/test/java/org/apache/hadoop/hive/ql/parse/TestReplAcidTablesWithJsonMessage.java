@@ -22,7 +22,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.rules.TestRule;
 
@@ -30,7 +29,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-@Ignore("See HIVE-21647, HIVE-21648")
 public class TestReplAcidTablesWithJsonMessage extends TestReplicationScenariosAcidTables {
 
   @Rule

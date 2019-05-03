@@ -33,9 +33,14 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Operation process of creating a table.
@@ -140,6 +145,27 @@ public class CreateTableOperation extends DDLOperation {
       Table createdTable = context.getDb().getTable(tbl.getDbName(), tbl.getTableName());
       DataContainer dc = new DataContainer(createdTable.getTTable());
       context.getQueryState().getLineageState().setLineage(createdTable.getPath(), dc, createdTable.getCols());
+
+      // We did not create the table before moving the data files for a non-partitioned table i.e
+      // we used load file instead of load table (see SemanticAnalyzer#getFileSinkPlan() for
+      // more details). Thus could not add a write notification required for a transactional
+      // table. Do that here, after we have created the table. Since this is a newly created
+      // table, listing all the files in the directory and listing only the ones corresponding to
+      // the given id doesn't have much difference.
+      if (!createdTable.isPartitioned() && AcidUtils.isTransactionalTable(createdTable)) {
+        org.apache.hadoop.hive.metastore.api.Table tTable = createdTable.getTTable();
+        Path tabLocation = new Path(tTable.getSd().getLocation());
+        List<Path> newFilesList = new ArrayList<>();
+        try {
+          context.getDb().listFilesInsideAcidDirectory(tabLocation,
+                  tabLocation.getFileSystem(context.getConf()), newFilesList);
+        } catch (IOException e) {
+          LOG.error("Error listing files", e);
+          throw new HiveException(e);
+        }
+        context.getDb().addWriteNotificationLog(createdTable, null, newFilesList,
+                tTable.getWriteId());
+      }
     }
   }
 
