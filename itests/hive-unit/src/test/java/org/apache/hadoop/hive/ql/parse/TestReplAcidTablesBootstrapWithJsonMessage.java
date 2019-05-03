@@ -29,7 +29,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TestReplAcidTablesWithJsonMessage extends TestReplicationScenariosAcidTables {
+/**
+ * TestReplAcidTablesBootstrapWithJsonMessage - same as
+ * TestReplicationScenariosAcidTablesBootstrap but uses JSON messages.
+ */
+public class TestReplAcidTablesBootstrapWithJsonMessage
+        extends TestReplicationScenariosAcidTablesBootstrap {
 
   @Rule
   public TestRule replV1BackwardCompat;
@@ -39,7 +44,7 @@ public class TestReplAcidTablesWithJsonMessage extends TestReplicationScenariosA
     Map<String, String> overrides = new HashMap<>();
     overrides.put(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
             JSONMessageEncoder.class.getCanonicalName());
-    internalBeforeClassSetup(overrides, TestReplAcidTablesWithJsonMessage.class);
+    internalBeforeClassSetup(overrides, TestReplAcidTablesBootstrapWithJsonMessage.class);
   }
 
   @Before
