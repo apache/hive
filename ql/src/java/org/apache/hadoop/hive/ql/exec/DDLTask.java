@@ -1511,11 +1511,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (allPartitions != null) {
       // Alter all partitions
       for (Partition part : allPartitions) {
-        addChildTasks(alterTableOrSinglePartition(db, alterTbl, tbl, part));
+        addChildTasks(alterTableOrSinglePartition(alterTbl, tbl, part));
       }
     } else {
       // Just alter the table
-      addChildTasks(alterTableOrSinglePartition(db, alterTbl, tbl, null));
+      addChildTasks(alterTableOrSinglePartition(alterTbl, tbl, null));
     }
 
     if (allPartitions == null) {
@@ -1641,8 +1641,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
   }
 
-  private List<Task<?>> alterTableOrSinglePartition(
-          Hive db, AlterTableDesc alterTbl, Table tbl, Partition part) throws HiveException {
+  private List<Task<?>> alterTableOrSinglePartition(AlterTableDesc alterTbl, Table tbl,
+                                                    Partition part) throws HiveException {
     EnvironmentContext environmentContext = alterTbl.getEnvironmentContext();
     if (environmentContext == null) {
       environmentContext = new EnvironmentContext();

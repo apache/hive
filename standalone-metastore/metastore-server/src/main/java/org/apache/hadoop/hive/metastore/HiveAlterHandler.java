@@ -853,8 +853,21 @@ public class HiveAlterHandler implements AlterHandler {
       return;
     }
 
-    // For now validate only the changes when strict managed tables is false. That's when there's
-    // scope for migration during replication, at least for now.
+    // Do not allow changing location of a managed table as as alter event doesn't capture the
+    // new files list. So, it may cause data inconsistency. We do this whether or not strict
+    // managed is true on the source cluster.
+    if (ec.isSetProperties()) {
+        String alterType = ec.getProperties().get(ALTER_TABLE_OPERATION_TYPE);
+        if (alterType != null && alterType.equalsIgnoreCase(ALTERLOCATION) &&
+            oldTbl.getTableType().equalsIgnoreCase(TableType.MANAGED_TABLE.name())) {
+          throw new InvalidOperationException("Cannot change location of a managed table " +
+                  TableName.getQualified(oldTbl.getCatName(),
+                          oldTbl.getDbName(), oldTbl.getTableName()) + " as it is enabled for replication.");
+        }
+    }
+
+    // Rest of the changes are need validation only when strict managed tables is false. That's
+    // when there's scope for migration during replication, at least for now.
     if (conf.getBoolean(MetastoreConf.ConfVars.STRICT_MANAGED_TABLES.getHiveName(), false)) {
       return;
     }
@@ -874,27 +887,11 @@ public class HiveAlterHandler implements AlterHandler {
 
     // Also we do not allow changing a non-Acid managed table to acid table on source with strict
     // managed false. After replicating a non-acid managed table to a target with strict managed
-    // true the table will be converted nto acid or external table. So changing the transactional
+    // true the table will be converted to acid or external table. So changing the transactional
     // property of table on source can conflict with resultant change in the target.
     if (!TxnUtils.isTransactionalTable(oldTbl) && TxnUtils.isTransactionalTable(newTbl)) {
       throw new InvalidOperationException("A non-Acid table cannot be converted to an Acid " +
               "table for the table " + TableName.getQualified(oldTbl.getCatName(),
-              oldTbl.getDbName(), oldTbl.getTableName()) + " as it is enabled for replication.");
-    }
-
-    // Do not allow changing location of a managed table as as alter event doesn't capture the
-    // new files list. So, it may cause data inconsistency.
-    boolean isChangingLocation = false;
-    if (ec.isSetProperties()) {
-      String alterType = ec.getProperties().get(ALTER_TABLE_OPERATION_TYPE);
-      if (alterType != null && alterType.equalsIgnoreCase(ALTERLOCATION)) {
-        isChangingLocation = true;
-      }
-    }
-    if (isChangingLocation &&
-        oldTbl.getTableType().equalsIgnoreCase(TableType.MANAGED_TABLE.name())) {
-      throw new InvalidOperationException("Cannot change location of a managed table " +
-              TableName.getQualified(oldTbl.getCatName(),
               oldTbl.getDbName(), oldTbl.getTableName()) + " as it is enabled for replication.");
     }
   }
