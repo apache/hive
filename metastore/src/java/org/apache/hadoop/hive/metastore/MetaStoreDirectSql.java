@@ -173,7 +173,7 @@ class MetaStoreDirectSql {
       tx.begin();
       doCommit = true;
     }
-    Query dbQuery = null, tblColumnQuery = null, partColumnQuery = null;
+    Query dbQuery = null, tblColumnQuery = null, partColumnQuery = null, constraintQuery = null;
 
     try {
       // Force the underlying db to initialize.
@@ -185,6 +185,9 @@ class MetaStoreDirectSql {
 
       partColumnQuery = pm.newQuery(MPartitionColumnStatistics.class, "dbName == ''");
       partColumnQuery.execute();
+
+      constraintQuery = pm.newQuery(MConstraint.class, "childIntegerIndex < 0");
+      constraintQuery.execute();
 
       return true;
     } catch (Exception ex) {
@@ -204,6 +207,9 @@ class MetaStoreDirectSql {
       }
       if (partColumnQuery != null) {
         partColumnQuery.closeAll();
+      }
+      if (constraintQuery != null) {
+        constraintQuery.cancelAll();
       }
     }
   }
