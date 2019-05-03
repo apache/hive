@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.CompletableFuture;
 import javax.security.auth.Subject;
 
 import org.apache.commons.lang.StringUtils;
@@ -50,6 +51,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FutureDataInputStreamBuilder;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
@@ -862,6 +864,22 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       } catch (Exception err) {
         throw new RuntimeException(err.getMessage(), err);
       }
+    }
+
+    @Override
+    public FutureDataInputStreamBuilder openFile(Path path)
+        throws IOException, UnsupportedOperationException {
+      return super.openFile(swizzleParamPath(path));
+    }
+
+    @Override
+    protected CompletableFuture<FSDataInputStream> openFileWithOptions(
+        final Path path,
+        final Set<String> mandatoryKeys,
+        final Configuration options,
+        final int bufferSize) throws IOException {
+      return super.openFileWithOptions(swizzleParamPath(path),
+          mandatoryKeys, options, bufferSize);
     }
   }
 
