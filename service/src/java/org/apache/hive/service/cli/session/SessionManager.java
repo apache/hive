@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.SessionHandle;
@@ -115,6 +116,7 @@ public class SessionManager extends CompositeService {
     if(metrics != null){
       registerOpenSesssionMetrics(metrics);
       registerActiveSesssionMetrics(metrics);
+      registerTezSessionMetrics(metrics);
     }
 
     userLimit = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_USER);
@@ -177,6 +179,26 @@ public class SessionManager extends CompositeService {
     };
     metrics.addGauge(MetricsConstant.HS2_ACTIVE_SESSIONS, activeSessionCnt);
     metrics.addRatio(MetricsConstant.HS2_AVG_ACTIVE_SESSION_TIME, activeSessionTime, activeSessionCnt);
+  }
+
+  private void registerTezSessionMetrics(Metrics metrics) {
+    MetricsVariable<Integer> waitingTezSessionCnt = new MetricsVariable<Integer>() {
+      @Override
+      public Integer getValue() {
+        Iterable<HiveSession> filtered = Iterables.filter(getSessions(), new Predicate<HiveSession>() {
+          @Override
+          public boolean apply(HiveSession hiveSession) {
+            SessionState ss = hiveSession.getSessionState();
+            if (ss != null) {
+              return ss.getWaitingTezSession() != 0;
+            }
+            return false;
+          }
+        });
+        return Iterables.size(filtered);
+      }
+    };
+    metrics.addGauge(MetricsConstant.WAITING_TEZ_SESSION, waitingTezSessionCnt);
   }
 
   private void initSessionImplClassName() {

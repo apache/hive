@@ -185,29 +185,24 @@ public class TezTask extends Task<TezWork> {
       CallerContext callerContext = CallerContext.create(
           "HIVE", queryPlan.getQueryId(), "HIVE_QUERY_ID", queryPlan.getQueryStr());
 
-      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_GET_SESSION);
-      Metrics metrics = MetricsFactory.getInstance();
-      if (metrics != null) {
-        metrics.incrementCounter(MetricsConstant.WAITING_TEZ_SESSION, 1);
-      }
       try {
-        session = sessionRef.value = WorkloadManagerFederation.getSession(
-                sessionRef.value, conf, mi, getWork().getLlapMode(), wmContext);
-      } finally {
-        if (metrics != null) {
-          metrics.decrementCounter(MetricsConstant.WAITING_TEZ_SESSION, 1);
+        perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_GET_SESSION);
+        ss.setWaitingTezSession();
+        try {
+          session = sessionRef.value = WorkloadManagerFederation.getSession(
+                  sessionRef.value, conf, mi, getWork().getLlapMode(), wmContext);
+
+          ss.setTezSession(session);
+          LOG.info("Subscribed to counters: {} for queryId: {}", wmContext.getSubscribedCounters(),
+            wmContext.getQueryId());
+
+          // Ensure the session is open and has the necessary local resources.
+          // This would refresh any conf resources and also local resources.
+          ensureSessionHasResources(session, allNonConfFiles);
+        } finally {
+          ss.resetWaitingTezSession();
+          perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_GET_SESSION);
         }
-        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_GET_SESSION);
-      }
-
-      try {
-        ss.setTezSession(session);
-        LOG.info("Subscribed to counters: {} for queryId: {}", wmContext.getSubscribedCounters(),
-          wmContext.getQueryId());
-
-        // Ensure the session is open and has the necessary local resources.
-        // This would refresh any conf resources and also local resources.
-        ensureSessionHasResources(session, allNonConfFiles);
 
         // This is a combination of the jar stuff from conf, and not from conf.
         List<LocalResource> allNonAppResources = session.getLocalizedResources();
