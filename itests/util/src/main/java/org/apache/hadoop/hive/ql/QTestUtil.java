@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -1011,7 +1012,7 @@ public class QTestUtil {
       String cleanupCommands = readEntireFileIntoString(cleanupFile);
       LOG.info("Cleanup (" + cleanupScript + "):\n" + cleanupCommands);
 
-      int result = getCliDriver().processLine(cleanupCommands);
+      int result = getCliDriver().processLine(cleanupCommands).getResponseCode();
       if (result != 0) {
         LOG.error("Failed during cleanup processLine with code={}. Ignoring", result);
         // TODO Convert this to an Assert.fail once HIVE-14682 is fixed
@@ -1050,7 +1051,7 @@ public class QTestUtil {
     String initCommands = readEntireFileIntoString(scriptFile);
     LOG.info("Initial setup (" + initScript + "):\n" + initCommands);
 
-    int result = cliDriver.processLine(initCommands);
+    int result = cliDriver.processLine(initCommands).getResponseCode();
     LOG.info("Result from cliDrriver.processLine in createSources=" + result);
     if (result != 0) {
       Assert.fail("Failed during createSources processLine with code=" + result);
@@ -1087,7 +1088,7 @@ public class QTestUtil {
       throw new RuntimeException(String.format("dataset file not found %s", tableFile), e);
     }
 
-    int result = getCliDriver().processLine(commands);
+    int result = getCliDriver().processLine(commands).getResponseCode();
     LOG.info("Result from cliDrriver.processLine in initFromDatasets=" + result);
     if (result != 0) {
       Assert.fail("Failed during initFromDatasets processLine with code=" + result);
@@ -1239,60 +1240,60 @@ public class QTestUtil {
     String q1 = q.split(";")[0] + ";";
 
     LOG.debug("Executing " + q1);
-    return cliDriver.processLine(q1);
+    return cliDriver.processLine(q1).getResponseCode();
   }
 
   public int execute(String tname) {
     return drv.run(qMap.get(tname)).getResponseCode();
   }
 
-  public int executeClient(String tname1, String tname2) {
+  public CommandProcessorResponse executeClient(String tname1, String tname2) {
     String commands = getCommand(tname1) + CRLF + getCommand(tname2);
     return executeClientInternal(commands);
   }
 
-  public int executeClient(String fileName) {
+  public CommandProcessorResponse executeClient(String fileName) {
     return executeClientInternal(getCommand(fileName));
   }
 
-  private int executeClientInternal(String commands) {
+  private CommandProcessorResponse executeClientInternal(String commands) {
     List<String> cmds = CliDriver.splitSemiColon(commands);
-    int rc = 0;
+    CommandProcessorResponse response = new CommandProcessorResponse(0);
 
-    String command = "";
+    StringBuilder command = new StringBuilder();
     QTestSyntaxUtil qtsu = new QTestSyntaxUtil(this, conf, pd);
     qtsu.checkQFileSyntax(cmds);
 
     for (String oneCmd : cmds) {
       if (StringUtils.endsWith(oneCmd, "\\")) {
-        command += StringUtils.chop(oneCmd) + "\\;";
+        command.append(StringUtils.chop(oneCmd) + "\\;");
         continue;
       } else {
         if (isHiveCommand(oneCmd)) {
-          command = oneCmd;
-        } else {
-          command += oneCmd;
+          command.setLength(0);
         }
+        command.append(oneCmd);
       }
-      if (StringUtils.isBlank(command)) {
+      if (StringUtils.isBlank(command.toString())) {
         continue;
       }
 
-      if (isCommandUsedForTesting(command)) {
-        rc = executeTestCommand(command);
+      String strCommand = command.toString();
+      if (isCommandUsedForTesting(strCommand)) {
+        response = executeTestCommand(strCommand);
       } else {
-        rc = cliDriver.processLine(command);
+        response = cliDriver.processLine(strCommand);
       }
 
-      if (rc != 0 && !ignoreErrors()) {
+      if (response.getResponseCode() != 0 && !ignoreErrors()) {
         break;
       }
-      command = "";
+      command.setLength(0);
     }
-    if (rc == 0 && SessionState.get() != null) {
+    if (response.getResponseCode() == 0 && SessionState.get() != null) {
       SessionState.get().setLastCommand(null);  // reset
     }
-    return rc;
+    return response;
   }
 
 /**
@@ -1314,7 +1315,7 @@ public class QTestUtil {
     }
   }
 
-  private int executeTestCommand(final String command) {
+  private CommandProcessorResponse executeTestCommand(final String command) {
     String commandName = command.trim().split("\\s+")[0];
     String commandArgs = command.trim().substring(commandName.length());
 
@@ -1347,7 +1348,7 @@ public class QTestUtil {
                   response.getException() != null ? Throwables.getStackTraceAsString(response.getException()) : "");
         }
 
-        return rc;
+        return response;
       } else {
         throw new RuntimeException("Could not get CommandProcessor for command: " + commandName);
       }
@@ -1958,21 +1959,6 @@ public class QTestUtil {
     return result;
   }
 
-  public void failed(int ecode, String fname, String debugHint) {
-    String command = SessionState.get() != null ? SessionState.get().getLastCommand() : null;
-    String
-        message =
-        "Client execution failed with error code = "
-            + ecode
-            + (command != null ? " running \"" + command : "")
-            + "\" fname="
-            + fname
-            + " "
-            + (debugHint != null ? debugHint : "");
-    LOG.error(message);
-    Assert.fail(message);
-  }
-
   // for negative tests, which is succeeded.. no need to print the query string
   public void failed(String fname, String debugHint) {
     Assert.fail("Client Execution was expected to fail, but succeeded with error code 0 for fname=" + fname + (debugHint
@@ -1992,7 +1978,18 @@ public class QTestUtil {
     Assert.fail(message);
   }
 
-  public void failed(Exception e, String fname, String debugHint) {
+  public void failedQuery(Throwable e, int ecode, String fname, String debugHint) {
+    String command = SessionState.get() != null ? SessionState.get().getLastCommand() : null;
+
+    String message = String.format(
+        "Client execution failed with error code = %d %nrunning %s %nfname=%s%n%s%n %s", ecode,
+        command != null ? command : "", fname, debugHint != null ? debugHint : "",
+        e == null ? "" : org.apache.hadoop.util.StringUtils.stringifyException(e));
+    LOG.error(message);
+    Assert.fail(message);
+  }
+
+  public void failedWithException(Exception e, String fname, String debugHint) {
     String command = SessionState.get() != null ? SessionState.get().getLastCommand() : null;
     System.err.println("Failed query: " + fname);
     System.err.flush();
