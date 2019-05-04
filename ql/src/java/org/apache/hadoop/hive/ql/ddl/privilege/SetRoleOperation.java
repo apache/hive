@@ -37,7 +37,7 @@ public class SetRoleOperation extends DDLOperation {
 
   @Override
   public int execute() throws HiveException {
-    HiveAuthorizer authorizer = RoleUtils.getSessionAuthorizer(context.getConf());
+    HiveAuthorizer authorizer = PrivilegeUtils.getSessionAuthorizer(context.getConf());
     authorizer.setCurrentRole(desc.getName());
     return 0;
   }

@@ -44,7 +44,7 @@ public class ShowPrincipalsOperation extends DDLOperation {
 
   @Override
   public int execute() throws HiveException, IOException {
-    HiveAuthorizer authorizer = RoleUtils.getSessionAuthorizer(context.getConf());
+    HiveAuthorizer authorizer = PrivilegeUtils.getSessionAuthorizer(context.getConf());
     boolean testMode = context.getConf().getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
     List<HiveRoleGrant> roleGrants = authorizer.getPrincipalGrantInfoForRole(desc.getName());
     DDLUtils.writeToFile(writeHiveRoleGrantInfo(roleGrants, testMode), desc.getResFile(), context);

@@ -16,33 +16,30 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 
-import java.io.Serializable;
+import java.io.IOException;
 
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
-import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.ddl.DDLOperation;
+import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
-@Explain(displayName="Alter WM Trigger",
-    explainLevels={ Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterWMTriggerDesc extends DDLDesc implements Serializable {
-  private static final long serialVersionUID = -2105736261687539210L;
+/**
+ * Operation process of creating a workload management trigger.
+ */
+public class CreateWMTriggerOperation extends DDLOperation {
+  private final CreateWMTriggerDesc desc;
 
-  private WMTrigger trigger;
-
-  public AlterWMTriggerDesc() {}
-
-  public AlterWMTriggerDesc(WMTrigger trigger) {
-    this.trigger = trigger;
+  public CreateWMTriggerOperation(DDLOperationContext context, CreateWMTriggerDesc desc) {
+    super(context);
+    this.desc = desc;
   }
 
-  @Explain(displayName="trigger",
-      explainLevels={ Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public WMTrigger getTrigger() {
-    return trigger;
-  }
+  @Override
+  public int execute() throws HiveException, IOException {
+    WMUtils.validateTrigger(desc.getTrigger());
+    context.getDb().createWMTrigger(desc.getTrigger());
 
-  public void setTrigger(WMTrigger trigger) {
-    this.trigger = trigger;
+    return 0;
   }
 }

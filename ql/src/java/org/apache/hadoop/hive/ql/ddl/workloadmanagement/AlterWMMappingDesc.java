@@ -15,44 +15,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.metastore.api.WMMapping;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-@Explain(displayName = "Create/Alter Mapping",
-    explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class CreateOrAlterWMMappingDesc extends DDLDesc implements Serializable {
+/**
+ * DDL task description for ALTER ... MAPPING commands.
+ */
+@Explain(displayName = "Alter Mapping", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class AlterWMMappingDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = -442968568922083053L;
 
-  private WMMapping mapping;
-  private boolean update;
+  static {
+    DDLTask2.registerOperation(AlterWMMappingDesc.class, AlterWMMappingOperation.class);
+  }
 
-  public CreateOrAlterWMMappingDesc() {}
+  private final WMMapping mapping;
 
-  public CreateOrAlterWMMappingDesc(WMMapping mapping, boolean update) {
+  public AlterWMMappingDesc(WMMapping mapping) {
     this.mapping = mapping;
-    this.update = update;
   }
 
   @Explain(displayName = "mapping", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public WMMapping getMapping() {
     return mapping;
-  }
-
-  public void setMapping(WMMapping mapping) {
-    this.mapping = mapping;
-  }
-
-  @Explain(displayName = "update",
-      explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public boolean isUpdate() {
-    return update;
-  }
-
-  public void setUpdate(boolean update) {
-    this.update = update;
   }
 }

@@ -33,11 +33,11 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveV1Authorizer;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
- * Common utilities for Role related ddl operations.
+ * Common utilities for Privilege related ddl operations.
  */
-final class RoleUtils {
-  private RoleUtils() {
-    throw new UnsupportedOperationException("RoleUtils should not be instantiated");
+final class PrivilegeUtils {
+  private PrivilegeUtils() {
+    throw new UnsupportedOperationException("PrivilegeUtils should not be instantiated");
   }
 
   static HiveAuthorizer getSessionAuthorizer(HiveConf conf) {

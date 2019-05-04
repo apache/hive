@@ -1838,14 +1838,14 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@PART_COL_STATS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE OR REPLACE VIEW `VERSION` AS SELECT 1 AS `VER_ID`, '3.1.0' AS `SCHEMA_VERSION`,
-  'Hive release version 3.1.0' AS `VERSION_COMMENT`
+PREHOOK: query: CREATE OR REPLACE VIEW `VERSION` AS SELECT 1 AS `VER_ID`, '4.0.0' AS `SCHEMA_VERSION`,
+  'Hive release version 4.0.0' AS `VERSION_COMMENT`
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: SYS@VERSION
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE OR REPLACE VIEW `VERSION` AS SELECT 1 AS `VER_ID`, '3.1.0' AS `SCHEMA_VERSION`,
-  'Hive release version 3.1.0' AS `VERSION_COMMENT`
+POSTHOOK: query: CREATE OR REPLACE VIEW `VERSION` AS SELECT 1 AS `VER_ID`, '4.0.0' AS `SCHEMA_VERSION`,
+  'Hive release version 4.0.0' AS `VERSION_COMMENT`
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: SYS@VERSION
@@ -2107,6 +2107,7 @@ POSTHOOK: Lineage: PARTITION_STATS_VIEW.total_size EXPRESSION [(partition_params
 POSTHOOK: Lineage: PARTITION_STATS_VIEW.transient_last_ddl_time EXPRESSION [(partition_params)partition_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (partition_params)partition_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
 PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_RESOURCEPLANS` (
   `NAME` string,
+  `NS` string,
   `STATUS` string,
   `QUERY_PARALLELISM` int,
   `DEFAULT_POOL_PATH` string
@@ -2117,6 +2118,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
   \"WM_RESOURCEPLAN\".\"NAME\",
+  case when \"WM_RESOURCEPLAN\".\"NS\" is null then 'default' else \"WM_RESOURCEPLAN\".\"NS\" end AS NS,
   \"STATUS\",
   \"WM_RESOURCEPLAN\".\"QUERY_PARALLELISM\",
   \"WM_POOL\".\"PATH\"
@@ -2128,6 +2130,7 @@ PREHOOK: Output: SYS@WM_RESOURCEPLANS
 PREHOOK: Output: database:sys
 POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_RESOURCEPLANS` (
   `NAME` string,
+  `NS` string,
   `STATUS` string,
   `QUERY_PARALLELISM` int,
   `DEFAULT_POOL_PATH` string
@@ -2138,6 +2141,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
   \"WM_RESOURCEPLAN\".\"NAME\",
+  case when \"WM_RESOURCEPLAN\".\"NS\" is null then 'default' else \"WM_RESOURCEPLAN\".\"NS\" end AS NS,
   \"STATUS\",
   \"WM_RESOURCEPLAN\".\"QUERY_PARALLELISM\",
   \"WM_POOL\".\"PATH\"
@@ -2149,6 +2153,7 @@ POSTHOOK: Output: SYS@WM_RESOURCEPLANS
 POSTHOOK: Output: database:sys
 PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_TRIGGERS` (
   `RP_NAME` string,
+  `NS` string,
   `NAME` string,
   `TRIGGER_EXPRESSION` string,
   `ACTION_EXPRESSION` string
@@ -2159,6 +2164,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
   r.\"NAME\" AS RP_NAME,
+  case when r.\"NS\" is null then 'default' else r.\"NS\" end,
   t.\"NAME\" AS NAME,
   \"TRIGGER_EXPRESSION\",
   \"ACTION_EXPRESSION\"
@@ -2174,6 +2180,7 @@ PREHOOK: Output: SYS@WM_TRIGGERS
 PREHOOK: Output: database:sys
 POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_TRIGGERS` (
   `RP_NAME` string,
+  `NS` string,
   `NAME` string,
   `TRIGGER_EXPRESSION` string,
   `ACTION_EXPRESSION` string
@@ -2184,6 +2191,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
   r.\"NAME\" AS RP_NAME,
+  case when r.\"NS\" is null then 'default' else r.\"NS\" end,
   t.\"NAME\" AS NAME,
   \"TRIGGER_EXPRESSION\",
   \"ACTION_EXPRESSION\"
@@ -2199,6 +2207,7 @@ POSTHOOK: Output: SYS@WM_TRIGGERS
 POSTHOOK: Output: database:sys
 PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_POOLS` (
   `RP_NAME` string,
+  `NS` string,
   `PATH` string,
   `ALLOC_FRACTION` double,
   `QUERY_PARALLELISM` int,
@@ -2210,6 +2219,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
   \"WM_RESOURCEPLAN\".\"NAME\",
+  case when \"WM_RESOURCEPLAN\".\"NS\" is null then 'default' else \"WM_RESOURCEPLAN\".\"NS\" end AS NS,
   \"WM_POOL\".\"PATH\",
   \"WM_POOL\".\"ALLOC_FRACTION\",
   \"WM_POOL\".\"QUERY_PARALLELISM\",
@@ -2226,6 +2236,7 @@ PREHOOK: Output: SYS@WM_POOLS
 PREHOOK: Output: database:sys
 POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_POOLS` (
   `RP_NAME` string,
+  `NS` string,
   `PATH` string,
   `ALLOC_FRACTION` double,
   `QUERY_PARALLELISM` int,
@@ -2237,6 +2248,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
   \"WM_RESOURCEPLAN\".\"NAME\",
+  case when \"WM_RESOURCEPLAN\".\"NS\" is null then 'default' else \"WM_RESOURCEPLAN\".\"NS\" end AS NS,
   \"WM_POOL\".\"PATH\",
   \"WM_POOL\".\"ALLOC_FRACTION\",
   \"WM_POOL\".\"QUERY_PARALLELISM\",
@@ -2253,6 +2265,7 @@ POSTHOOK: Output: SYS@WM_POOLS
 POSTHOOK: Output: database:sys
 PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_POOLS_TO_TRIGGERS` (
   `RP_NAME` string,
+  `NS` string,
   `POOL_PATH` string,
   `TRIGGER_NAME` string
 )
@@ -2262,6 +2275,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
   \"WM_RESOURCEPLAN\".\"NAME\" AS RP_NAME,
+  case when \"WM_RESOURCEPLAN\".\"NS\" is null then 'default' else \"WM_RESOURCEPLAN\".\"NS\" end AS NS,
   \"WM_POOL\".\"PATH\" AS POOL_PATH,
   \"WM_TRIGGER\".\"NAME\" AS TRIGGER_NAME
 FROM \"WM_POOL_TO_TRIGGER\"
@@ -2271,6 +2285,7 @@ FROM \"WM_POOL_TO_TRIGGER\"
 UNION
 SELECT
   \"WM_RESOURCEPLAN\".\"NAME\" AS RP_NAME,
+  case when \"WM_RESOURCEPLAN\".\"NS\" is null then 'default' else \"WM_RESOURCEPLAN\".\"NS\" end AS NS,
   '<unmanaged queries>' AS POOL_PATH,
   \"WM_TRIGGER\".\"NAME\" AS TRIGGER_NAME
 FROM \"WM_TRIGGER\"
@@ -2283,6 +2298,7 @@ PREHOOK: Output: SYS@WM_POOLS_TO_TRIGGERS
 PREHOOK: Output: database:sys
 POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_POOLS_TO_TRIGGERS` (
   `RP_NAME` string,
+  `NS` string,
   `POOL_PATH` string,
   `TRIGGER_NAME` string
 )
@@ -2292,6 +2308,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
   \"WM_RESOURCEPLAN\".\"NAME\" AS RP_NAME,
+  case when \"WM_RESOURCEPLAN\".\"NS\" is null then 'default' else \"WM_RESOURCEPLAN\".\"NS\" end AS NS,
   \"WM_POOL\".\"PATH\" AS POOL_PATH,
   \"WM_TRIGGER\".\"NAME\" AS TRIGGER_NAME
 FROM \"WM_POOL_TO_TRIGGER\"
@@ -2301,6 +2318,7 @@ FROM \"WM_POOL_TO_TRIGGER\"
 UNION
 SELECT
   \"WM_RESOURCEPLAN\".\"NAME\" AS RP_NAME,
+  case when \"WM_RESOURCEPLAN\".\"NS\" is null then 'default' else \"WM_RESOURCEPLAN\".\"NS\" end AS NS,
   '<unmanaged queries>' AS POOL_PATH,
   \"WM_TRIGGER\".\"NAME\" AS TRIGGER_NAME
 FROM \"WM_TRIGGER\"
@@ -2313,6 +2331,7 @@ POSTHOOK: Output: SYS@WM_POOLS_TO_TRIGGERS
 POSTHOOK: Output: database:sys
 PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_MAPPINGS` (
   `RP_NAME` string,
+  `NS` string,
   `ENTITY_TYPE` string,
   `ENTITY_NAME` string,
   `POOL_PATH` string,
@@ -2324,6 +2343,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
   \"WM_RESOURCEPLAN\".\"NAME\",
+  case when \"WM_RESOURCEPLAN\".\"NS\" is null then 'default' else \"WM_RESOURCEPLAN\".\"NS\" end AS NS,
   \"ENTITY_TYPE\",
   \"ENTITY_NAME\",
   case when \"WM_POOL\".\"PATH\" is null then '<unmanaged>' else \"WM_POOL\".\"PATH\" end,
@@ -2338,6 +2358,7 @@ PREHOOK: Output: SYS@WM_MAPPINGS
 PREHOOK: Output: database:sys
 POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_MAPPINGS` (
   `RP_NAME` string,
+  `NS` string,
   `ENTITY_TYPE` string,
   `ENTITY_NAME` string,
   `POOL_PATH` string,
@@ -2349,6 +2370,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
   \"WM_RESOURCEPLAN\".\"NAME\",
+  case when \"WM_RESOURCEPLAN\".\"NS\" is null then 'default' else \"WM_RESOURCEPLAN\".\"NS\" end AS NS,
   \"ENTITY_TYPE\",
   \"ENTITY_NAME\",
   case when \"WM_POOL\".\"PATH\" is null then '<unmanaged>' else \"WM_POOL\".\"PATH\" end,
@@ -2361,6 +2383,282 @@ LEFT OUTER JOIN \"WM_POOL\" ON \"WM_POOL\".\"POOL_ID\" = \"WM_MAPPING\".\"POOL_I
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@WM_MAPPINGS
 POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `COMPACTION_QUEUE` (
+  `CQ_ID` bigint,
+  `CQ_DATABASE` string,
+  `CQ_TABLE` string,
+  `CQ_PARTITION` string,
+  `CQ_STATE` string,
+  `CQ_TYPE` string,
+  `CQ_TBLPROPERTIES` string,
+  `CQ_WORKER_ID` string,
+  `CQ_START` bigint,
+  `CQ_RUN_AS` string,
+  `CQ_HIGHEST_WRITE_ID` bigint,
+  `CQ_HADOOP_JOB_ID` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"COMPACTION_QUEUE\".\"CQ_ID\",
+  \"COMPACTION_QUEUE\".\"CQ_DATABASE\",
+  \"COMPACTION_QUEUE\".\"CQ_TABLE\",
+  \"COMPACTION_QUEUE\".\"CQ_PARTITION\",
+  \"COMPACTION_QUEUE\".\"CQ_STATE\",
+  \"COMPACTION_QUEUE\".\"CQ_TYPE\",
+  \"COMPACTION_QUEUE\".\"CQ_TBLPROPERTIES\",
+  \"COMPACTION_QUEUE\".\"CQ_WORKER_ID\",
+  \"COMPACTION_QUEUE\".\"CQ_START\",
+  \"COMPACTION_QUEUE\".\"CQ_RUN_AS\",
+  \"COMPACTION_QUEUE\".\"CQ_HIGHEST_WRITE_ID\",
+  \"COMPACTION_QUEUE\".\"CQ_HADOOP_JOB_ID\"
+FROM \"COMPACTION_QUEUE\"
+"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@COMPACTION_QUEUE
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `COMPACTION_QUEUE` (
+  `CQ_ID` bigint,
+  `CQ_DATABASE` string,
+  `CQ_TABLE` string,
+  `CQ_PARTITION` string,
+  `CQ_STATE` string,
+  `CQ_TYPE` string,
+  `CQ_TBLPROPERTIES` string,
+  `CQ_WORKER_ID` string,
+  `CQ_START` bigint,
+  `CQ_RUN_AS` string,
+  `CQ_HIGHEST_WRITE_ID` bigint,
+  `CQ_HADOOP_JOB_ID` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"COMPACTION_QUEUE\".\"CQ_ID\",
+  \"COMPACTION_QUEUE\".\"CQ_DATABASE\",
+  \"COMPACTION_QUEUE\".\"CQ_TABLE\",
+  \"COMPACTION_QUEUE\".\"CQ_PARTITION\",
+  \"COMPACTION_QUEUE\".\"CQ_STATE\",
+  \"COMPACTION_QUEUE\".\"CQ_TYPE\",
+  \"COMPACTION_QUEUE\".\"CQ_TBLPROPERTIES\",
+  \"COMPACTION_QUEUE\".\"CQ_WORKER_ID\",
+  \"COMPACTION_QUEUE\".\"CQ_START\",
+  \"COMPACTION_QUEUE\".\"CQ_RUN_AS\",
+  \"COMPACTION_QUEUE\".\"CQ_HIGHEST_WRITE_ID\",
+  \"COMPACTION_QUEUE\".\"CQ_HADOOP_JOB_ID\"
+FROM \"COMPACTION_QUEUE\"
+"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@COMPACTION_QUEUE
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `COMPLETED_COMPACTIONS` (
+  `CC_ID` bigint,
+  `CC_DATABASE` string,
+  `CC_TABLE` string,
+  `CC_PARTITION` string,
+  `CC_STATE` string,
+  `CC_TYPE` string,
+  `CC_TBLPROPERTIES` string,
+  `CC_WORKER_ID` string,
+  `CC_START` bigint,
+  `CC_END` bigint,
+  `CC_RUN_AS` string,
+  `CC_HIGHEST_WRITE_ID` bigint,
+  `CC_HADOOP_JOB_ID` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"COMPLETED_COMPACTIONS\".\"CC_ID\",
+  \"COMPLETED_COMPACTIONS\".\"CC_DATABASE\",
+  \"COMPLETED_COMPACTIONS\".\"CC_TABLE\",
+  \"COMPLETED_COMPACTIONS\".\"CC_PARTITION\",
+  \"COMPLETED_COMPACTIONS\".\"CC_STATE\",
+  \"COMPLETED_COMPACTIONS\".\"CC_TYPE\",
+  \"COMPLETED_COMPACTIONS\".\"CC_TBLPROPERTIES\",
+  \"COMPLETED_COMPACTIONS\".\"CC_WORKER_ID\",
+  \"COMPLETED_COMPACTIONS\".\"CC_START\",
+  \"COMPLETED_COMPACTIONS\".\"CC_END\",
+  \"COMPLETED_COMPACTIONS\".\"CC_RUN_AS\",
+  \"COMPLETED_COMPACTIONS\".\"CC_HIGHEST_WRITE_ID\",
+  \"COMPLETED_COMPACTIONS\".\"CC_HADOOP_JOB_ID\"
+FROM \"COMPLETED_COMPACTIONS\"
+"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@COMPLETED_COMPACTIONS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `COMPLETED_COMPACTIONS` (
+  `CC_ID` bigint,
+  `CC_DATABASE` string,
+  `CC_TABLE` string,
+  `CC_PARTITION` string,
+  `CC_STATE` string,
+  `CC_TYPE` string,
+  `CC_TBLPROPERTIES` string,
+  `CC_WORKER_ID` string,
+  `CC_START` bigint,
+  `CC_END` bigint,
+  `CC_RUN_AS` string,
+  `CC_HIGHEST_WRITE_ID` bigint,
+  `CC_HADOOP_JOB_ID` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"COMPLETED_COMPACTIONS\".\"CC_ID\",
+  \"COMPLETED_COMPACTIONS\".\"CC_DATABASE\",
+  \"COMPLETED_COMPACTIONS\".\"CC_TABLE\",
+  \"COMPLETED_COMPACTIONS\".\"CC_PARTITION\",
+  \"COMPLETED_COMPACTIONS\".\"CC_STATE\",
+  \"COMPLETED_COMPACTIONS\".\"CC_TYPE\",
+  \"COMPLETED_COMPACTIONS\".\"CC_TBLPROPERTIES\",
+  \"COMPLETED_COMPACTIONS\".\"CC_WORKER_ID\",
+  \"COMPLETED_COMPACTIONS\".\"CC_START\",
+  \"COMPLETED_COMPACTIONS\".\"CC_END\",
+  \"COMPLETED_COMPACTIONS\".\"CC_RUN_AS\",
+  \"COMPLETED_COMPACTIONS\".\"CC_HIGHEST_WRITE_ID\",
+  \"COMPLETED_COMPACTIONS\".\"CC_HADOOP_JOB_ID\"
+FROM \"COMPLETED_COMPACTIONS\"
+"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@COMPLETED_COMPACTIONS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE OR REPLACE VIEW `COMPACTIONS`
+(
+  `C_ID`,
+  `C_CATALOG`,
+  `C_DATABASE`,
+  `C_TABLE`,
+  `C_PARTITION`,
+  `C_TYPE`,
+  `C_STATE`,
+  `C_HOSTNAME`,
+  `C_WORKER_ID`,
+  `C_START`,
+  `C_DURATION`,
+  `C_HADOOP_JOB_ID`,
+  `C_RUN_AS`,
+  `C_HIGHEST_WRITE_ID`
+) AS
+SELECT
+  CC_ID,
+  'default',
+  CC_DATABASE,
+  CC_TABLE,
+  CC_PARTITION,
+  CASE WHEN CC_TYPE = 'i' THEN 'minor' WHEN CC_TYPE = 'a' THEN 'major' ELSE 'UNKNOWN' END,
+  CASE WHEN CC_STATE = 'f' THEN 'failed' WHEN CC_STATE = 's' THEN 'succeeded' WHEN CC_STATE = 'a' THEN 'attempted' ELSE 'UNKNOWN' END,
+  CASE WHEN CC_WORKER_ID IS NULL THEN cast (null as string) ELSE split(CC_WORKER_ID,"-")[0] END,
+  CASE WHEN CC_WORKER_ID IS NULL THEN cast (null as string) ELSE split(CC_WORKER_ID,"-")[1] END,
+  CC_START,
+  CASE WHEN CC_END IS NULL THEN cast (null as string) ELSE CC_END-CC_START END,
+  CC_HADOOP_JOB_ID,
+  CC_RUN_AS,
+  CC_HIGHEST_WRITE_ID
+FROM COMPLETED_COMPACTIONS
+UNION ALL
+SELECT
+  CQ_ID,
+  'default',
+  CQ_DATABASE,
+  CQ_TABLE,
+  CQ_PARTITION,
+  CASE WHEN CQ_TYPE = 'i' THEN 'minor' WHEN CQ_TYPE = 'a' THEN 'major' ELSE 'UNKNOWN' END,
+  CASE WHEN CQ_STATE = 'i' THEN 'initiated' WHEN CQ_STATE = 'w' THEN 'working' WHEN CQ_STATE = 'r' THEN 'ready for cleaning' ELSE 'UNKNOWN' END,
+  CASE WHEN CQ_WORKER_ID IS NULL THEN NULL ELSE split(CQ_WORKER_ID,"-")[0] END,
+  CASE WHEN CQ_WORKER_ID IS NULL THEN NULL ELSE split(CQ_WORKER_ID,"-")[1] END,
+  CQ_START,
+  cast (null as string),
+  CQ_HADOOP_JOB_ID,
+  CQ_RUN_AS,
+  CQ_HIGHEST_WRITE_ID
+FROM COMPACTION_QUEUE
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: sys@compaction_queue
+PREHOOK: Input: sys@completed_compactions
+PREHOOK: Output: SYS@COMPACTIONS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE OR REPLACE VIEW `COMPACTIONS`
+(
+  `C_ID`,
+  `C_CATALOG`,
+  `C_DATABASE`,
+  `C_TABLE`,
+  `C_PARTITION`,
+  `C_TYPE`,
+  `C_STATE`,
+  `C_HOSTNAME`,
+  `C_WORKER_ID`,
+  `C_START`,
+  `C_DURATION`,
+  `C_HADOOP_JOB_ID`,
+  `C_RUN_AS`,
+  `C_HIGHEST_WRITE_ID`
+) AS
+SELECT
+  CC_ID,
+  'default',
+  CC_DATABASE,
+  CC_TABLE,
+  CC_PARTITION,
+  CASE WHEN CC_TYPE = 'i' THEN 'minor' WHEN CC_TYPE = 'a' THEN 'major' ELSE 'UNKNOWN' END,
+  CASE WHEN CC_STATE = 'f' THEN 'failed' WHEN CC_STATE = 's' THEN 'succeeded' WHEN CC_STATE = 'a' THEN 'attempted' ELSE 'UNKNOWN' END,
+  CASE WHEN CC_WORKER_ID IS NULL THEN cast (null as string) ELSE split(CC_WORKER_ID,"-")[0] END,
+  CASE WHEN CC_WORKER_ID IS NULL THEN cast (null as string) ELSE split(CC_WORKER_ID,"-")[1] END,
+  CC_START,
+  CASE WHEN CC_END IS NULL THEN cast (null as string) ELSE CC_END-CC_START END,
+  CC_HADOOP_JOB_ID,
+  CC_RUN_AS,
+  CC_HIGHEST_WRITE_ID
+FROM COMPLETED_COMPACTIONS
+UNION ALL
+SELECT
+  CQ_ID,
+  'default',
+  CQ_DATABASE,
+  CQ_TABLE,
+  CQ_PARTITION,
+  CASE WHEN CQ_TYPE = 'i' THEN 'minor' WHEN CQ_TYPE = 'a' THEN 'major' ELSE 'UNKNOWN' END,
+  CASE WHEN CQ_STATE = 'i' THEN 'initiated' WHEN CQ_STATE = 'w' THEN 'working' WHEN CQ_STATE = 'r' THEN 'ready for cleaning' ELSE 'UNKNOWN' END,
+  CASE WHEN CQ_WORKER_ID IS NULL THEN NULL ELSE split(CQ_WORKER_ID,"-")[0] END,
+  CASE WHEN CQ_WORKER_ID IS NULL THEN NULL ELSE split(CQ_WORKER_ID,"-")[1] END,
+  CQ_START,
+  cast (null as string),
+  CQ_HADOOP_JOB_ID,
+  CQ_RUN_AS,
+  CQ_HIGHEST_WRITE_ID
+FROM COMPACTION_QUEUE
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: sys@compaction_queue
+POSTHOOK: Input: sys@completed_compactions
+POSTHOOK: Output: SYS@COMPACTIONS
+POSTHOOK: Output: database:sys
+POSTHOOK: Lineage: COMPACTIONS.c_catalog EXPRESSION []
+POSTHOOK: Lineage: COMPACTIONS.c_database EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_database, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_database, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_duration EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_end, type:bigint, comment:from deserializer), (completed_compactions)completed_compactions.FieldSchema(name:cc_start, type:bigint, comment:from deserializer), ]
+#### A masked pattern was here ####
+POSTHOOK: Lineage: COMPACTIONS.c_highest_write_id EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_highest_write_id, type:bigint, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_highest_write_id, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_hostname EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_worker_id, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_worker_id, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_id EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_id, type:bigint, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_id, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_partition EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_partition, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_partition, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_run_as EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_run_as, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_run_as, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_start EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_start, type:bigint, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_start, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_state EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_state, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_state, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_table EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_table, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_table, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_type EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_type, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_type, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_worker_id EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_worker_id, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_worker_id, type:string, comment:from deserializer), ]
 PREHOOK: query: CREATE DATABASE IF NOT EXISTS INFORMATION_SCHEMA
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:INFORMATION_SCHEMA
@@ -2392,11 +2690,10 @@ SELECT DISTINCT
   cast(null as string),
   `DB_LOCATION_URI`
 FROM
-  `sys`.`DBS` D, `sys`.`TBLS` T, `sys`.`TBL_PRIVS` P
+  `sys`.`DBS` D LEFT JOIN `sys`.`TBLS` T ON (D.`DB_ID` = T.`DB_ID`)
+                LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  NOT restrict_information_schema() OR
-  D.`DB_ID` = T.`DB_ID`
-  AND T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
   AND current_authorizer() = P.`AUTHORIZER`
@@ -2425,11 +2722,10 @@ SELECT DISTINCT
   cast(null as string),
   `DB_LOCATION_URI`
 FROM
-  `sys`.`DBS` D, `sys`.`TBLS` T, `sys`.`TBL_PRIVS` P
+  `sys`.`DBS` D LEFT JOIN `sys`.`TBLS` T ON (D.`DB_ID` = T.`DB_ID`)
+                LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  NOT restrict_information_schema() OR
-  D.`DB_ID` = T.`DB_ID`
-  AND T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
   AND current_authorizer() = P.`AUTHORIZER`
@@ -2475,12 +2771,12 @@ SELECT DISTINCT
   'NO',
   cast(null as string)
 FROM
-  `sys`.`TBLS` T, `sys`.`DBS` D, `sys`.`TBL_PRIVS` P
+  `sys`.`TBLS` T JOIN `sys`.`DBS` D ON (D.`DB_ID` = T.`DB_ID`)
+                 LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  D.`DB_ID` = T.`DB_ID`
-  AND (NOT restrict_information_schema() OR T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
-    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP')))
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
   AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer()
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@dbs
@@ -2517,12 +2813,12 @@ SELECT DISTINCT
   'NO',
   cast(null as string)
 FROM
-  `sys`.`TBLS` T, `sys`.`DBS` D, `sys`.`TBL_PRIVS` P
+  `sys`.`TBLS` T JOIN `sys`.`DBS` D ON (D.`DB_ID` = T.`DB_ID`)
+                 LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  D.`DB_ID` = T.`DB_ID`
-  AND (NOT restrict_information_schema() OR T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
-    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP')))
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
   AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer()
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@dbs
@@ -2563,18 +2859,15 @@ SELECT DISTINCT
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES'),
   'NO'
 FROM
-  `sys`.`TBL_PRIVS` P,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`TBL_PRIVS` P2
+  `sys`.`TBL_PRIVS` P JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
+                      JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                      LEFT JOIN `sys`.`TBL_PRIVS` P2 ON (P.`TBL_ID` = P2.`TBL_ID`)
 WHERE
-  P.`TBL_ID` = T.`TBL_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND (NOT restrict_information_schema() OR
-  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  NOT restrict_information_schema() OR
+  (P2.`TBL_ID` IS NOT NULL AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
   AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
-    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP')))
-  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER` = current_authorizer() AND P2.`AUTHORIZER` = current_authorizer()
+    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
+  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER` = current_authorizer() AND P2.`AUTHORIZER` = current_authorizer())
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@dbs
 PREHOOK: Input: sys@tbl_privs
@@ -2602,18 +2895,15 @@ SELECT DISTINCT
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES'),
   'NO'
 FROM
-  `sys`.`TBL_PRIVS` P,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`TBL_PRIVS` P2
+  `sys`.`TBL_PRIVS` P JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
+                      JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                      LEFT JOIN `sys`.`TBL_PRIVS` P2 ON (P.`TBL_ID` = P2.`TBL_ID`)
 WHERE
-  P.`TBL_ID` = T.`TBL_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND (NOT restrict_information_schema() OR
-  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  NOT restrict_information_schema() OR
+  (P2.`TBL_ID` IS NOT NULL AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
   AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
-    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP')))
-  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER` = current_authorizer() AND P2.`AUTHORIZER` = current_authorizer()
+    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
+  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER` = current_authorizer() AND P2.`AUTHORIZER` = current_authorizer())
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@tbl_privs
@@ -2767,21 +3057,16 @@ SELECT DISTINCT
        WHEN lower(C.TYPE_NAME) like 'numeric%' THEN 10
        ELSE null END
 FROM
-  `sys`.`COLUMNS_V2` C,
-  `sys`.`SDS` S,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`TBL_COL_PRIVS` P
+  `sys`.`COLUMNS_V2` C JOIN `sys`.`SDS` S ON (C.`CD_ID` = S.`CD_ID`)
+                       JOIN `sys`.`TBLS` T ON (S.`SD_ID` = T.`SD_ID`)
+                       JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                       LEFT JOIN `sys`.`TBL_COL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  S.`SD_ID` = T.`SD_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND C.`CD_ID` = S.`CD_ID`
-  AND (NOT restrict_information_schema() OR
-  T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND C.`COLUMN_NAME` = P.`COLUMN_NAME`
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
-  AND P.`TBL_COL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer())
+  AND P.`TBL_COL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer()
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@columns_v2
 PREHOOK: Input: sys@dbs
@@ -2929,21 +3214,16 @@ SELECT DISTINCT
        WHEN lower(C.TYPE_NAME) like 'numeric%' THEN 10
        ELSE null END
 FROM
-  `sys`.`COLUMNS_V2` C,
-  `sys`.`SDS` S,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`TBL_COL_PRIVS` P
+  `sys`.`COLUMNS_V2` C JOIN `sys`.`SDS` S ON (C.`CD_ID` = S.`CD_ID`)
+                       JOIN `sys`.`TBLS` T ON (S.`SD_ID` = T.`SD_ID`)
+                       JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                       LEFT JOIN `sys`.`TBL_COL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  S.`SD_ID` = T.`SD_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND C.`CD_ID` = S.`CD_ID`
-  AND (NOT restrict_information_schema() OR
-  T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND C.`COLUMN_NAME` = P.`COLUMN_NAME`
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
-  AND P.`TBL_COL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer())
+  AND P.`TBL_COL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer()
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@columns_v2
 POSTHOOK: Input: sys@dbs
@@ -3020,20 +3300,16 @@ SELECT DISTINCT
   P.`TBL_COL_PRIV`,
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES')
 FROM
-  `sys`.`TBL_COL_PRIVS` P,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`SDS` S,
-  `sys`.`TBL_PRIVS` P2
+  `sys`.`TBL_COL_PRIVS` P JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
+                          JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                          JOIN `sys`.`SDS` S ON (S.`SD_ID` = T.`SD_ID`)
+                          LEFT JOIN `sys`.`TBL_PRIVS` P2 ON (P.`TBL_ID` = P2.`TBL_ID`)
 WHERE
-  S.`SD_ID` = T.`SD_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND P.`TBL_ID` = T.`TBL_ID`
-  AND (NOT restrict_information_schema() OR
-  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  NOT restrict_information_schema() OR P2.`TBL_ID` IS NOT NULL
+  AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
   AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
-  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer() AND P2.`AUTHORIZER`=current_authorizer())
+  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer() AND P2.`AUTHORIZER`=current_authorizer()
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@dbs
 PREHOOK: Input: sys@sds
@@ -3063,20 +3339,16 @@ SELECT DISTINCT
   P.`TBL_COL_PRIV`,
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES')
 FROM
-  `sys`.`TBL_COL_PRIVS` P,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`SDS` S,
-  `sys`.`TBL_PRIVS` P2
+  `sys`.`TBL_COL_PRIVS` P JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
+                          JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                          JOIN `sys`.`SDS` S ON (S.`SD_ID` = T.`SD_ID`)
+                          LEFT JOIN `sys`.`TBL_PRIVS` P2 ON (P.`TBL_ID` = P2.`TBL_ID`)
 WHERE
-  S.`SD_ID` = T.`SD_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND P.`TBL_ID` = T.`TBL_ID`
-  AND (NOT restrict_information_schema() OR
-  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  NOT restrict_information_schema() OR P2.`TBL_ID` IS NOT NULL
+  AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
   AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
-  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer() AND P2.`AUTHORIZER`=current_authorizer())
+  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer() AND P2.`AUTHORIZER`=current_authorizer()
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@sds
@@ -3118,14 +3390,11 @@ SELECT DISTINCT
   false,
   false
 FROM
-  `sys`.`DBS` D,
-  `sys`.`TBLS` T,
-  `sys`.`TBL_PRIVS` P
+  `sys`.`DBS` D JOIN `sys`.`TBLS` T ON (D.`DB_ID` = T.`DB_ID`)
+                LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  D.`DB_ID` = T.`DB_ID`
-  AND length(T.VIEW_ORIGINAL_TEXT) > 0
-  AND (NOT restrict_information_schema() OR
-  T.`TBL_ID` = P.`TBL_ID`
+  length(T.VIEW_ORIGINAL_TEXT) > 0
+  AND (NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
   AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer())
@@ -3160,14 +3429,11 @@ SELECT DISTINCT
   false,
   false
 FROM
-  `sys`.`DBS` D,
-  `sys`.`TBLS` T,
-  `sys`.`TBL_PRIVS` P
+  `sys`.`DBS` D JOIN `sys`.`TBLS` T ON (D.`DB_ID` = T.`DB_ID`)
+                LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  D.`DB_ID` = T.`DB_ID`
-  AND length(T.VIEW_ORIGINAL_TEXT) > 0
-  AND (NOT restrict_information_schema() OR
-  T.`TBL_ID` = P.`TBL_ID`
+  length(T.VIEW_ORIGINAL_TEXT) > 0
+  AND (NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
   AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer())
@@ -3187,6 +3453,120 @@ POSTHOOK: Lineage: VIEWS.table_catalog SIMPLE []
 POSTHOOK: Lineage: VIEWS.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: VIEWS.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: VIEWS.view_definition SIMPLE [(tbls)t.FieldSchema(name:view_original_text, type:string, comment:from deserializer), ]
+PREHOOK: query: CREATE OR REPLACE VIEW `COMPACTIONS`
+(
+  `C_ID`,
+  `C_CATALOG`,
+  `C_DATABASE`,
+  `C_TABLE`,
+  `C_PARTITION`,
+  `C_TYPE`,
+  `C_STATE`,
+  `C_HOSTNAME`,
+  `C_WORKER_ID`,
+  `C_START`,
+  `C_DURATION`,
+  `C_HADOOP_JOB_ID`,
+  `C_RUN_AS`,
+  `C_HIGHEST_WRITE_ID`
+) AS
+SELECT DISTINCT
+  C_ID,
+  C_CATALOG,
+  C_DATABASE,
+  C_TABLE,
+  C_PARTITION,
+  C_TYPE,
+  C_STATE,
+  C_HOSTNAME,
+  C_WORKER_ID,
+  C_START,
+  C_DURATION,
+  C_HADOOP_JOB_ID,
+  C_RUN_AS,
+  C_HIGHEST_WRITE_ID
+FROM
+  `sys`.`COMPACTIONS` C JOIN `sys`.`TBLS` T ON (C.`C_TABLE` = T.`TBL_NAME`)
+                        JOIN `sys`.`DBS` D ON (C.`C_DATABASE` = D.`NAME`)
+                        LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
+WHERE
+  (NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer())
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: sys@compaction_queue
+PREHOOK: Input: sys@compactions
+PREHOOK: Input: sys@completed_compactions
+PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@tbl_privs
+PREHOOK: Input: sys@tbls
+PREHOOK: Output: INFORMATION_SCHEMA@COMPACTIONS
+PREHOOK: Output: database:information_schema
+POSTHOOK: query: CREATE OR REPLACE VIEW `COMPACTIONS`
+(
+  `C_ID`,
+  `C_CATALOG`,
+  `C_DATABASE`,
+  `C_TABLE`,
+  `C_PARTITION`,
+  `C_TYPE`,
+  `C_STATE`,
+  `C_HOSTNAME`,
+  `C_WORKER_ID`,
+  `C_START`,
+  `C_DURATION`,
+  `C_HADOOP_JOB_ID`,
+  `C_RUN_AS`,
+  `C_HIGHEST_WRITE_ID`
+) AS
+SELECT DISTINCT
+  C_ID,
+  C_CATALOG,
+  C_DATABASE,
+  C_TABLE,
+  C_PARTITION,
+  C_TYPE,
+  C_STATE,
+  C_HOSTNAME,
+  C_WORKER_ID,
+  C_START,
+  C_DURATION,
+  C_HADOOP_JOB_ID,
+  C_RUN_AS,
+  C_HIGHEST_WRITE_ID
+FROM
+  `sys`.`COMPACTIONS` C JOIN `sys`.`TBLS` T ON (C.`C_TABLE` = T.`TBL_NAME`)
+                        JOIN `sys`.`DBS` D ON (C.`C_DATABASE` = D.`NAME`)
+                        LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
+WHERE
+  (NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer())
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: sys@compaction_queue
+POSTHOOK: Input: sys@compactions
+POSTHOOK: Input: sys@completed_compactions
+POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@tbl_privs
+POSTHOOK: Input: sys@tbls
+POSTHOOK: Output: INFORMATION_SCHEMA@COMPACTIONS
+POSTHOOK: Output: database:information_schema
+POSTHOOK: Lineage: COMPACTIONS.c_catalog EXPRESSION []
+POSTHOOK: Lineage: COMPACTIONS.c_database EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_database, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_database, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_duration EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_end, type:bigint, comment:from deserializer), (completed_compactions)completed_compactions.FieldSchema(name:cc_start, type:bigint, comment:from deserializer), ]
+#### A masked pattern was here ####
+POSTHOOK: Lineage: COMPACTIONS.c_highest_write_id EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_highest_write_id, type:bigint, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_highest_write_id, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_hostname EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_worker_id, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_worker_id, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_id EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_id, type:bigint, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_id, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_partition EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_partition, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_partition, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_run_as EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_run_as, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_run_as, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_start EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_start, type:bigint, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_start, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_state EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_state, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_state, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_table EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_table, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_table, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_type EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_type, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_type, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_worker_id EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_worker_id, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_worker_id, type:string, comment:from deserializer), ]
 PREHOOK: query: SHOW RESOURCE PLANS
 PREHOOK: type: SHOW RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3266,7 +3646,7 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_1	DISABLED	NULL	default
+plan_1	default	DISABLED	NULL	default
 PREHOOK: query: EXPLAIN CREATE RESOURCE PLAN plan_2 WITH QUERY_PARALLELISM=5
 PREHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3329,8 +3709,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_1	DISABLED	NULL	default
-plan_2	DISABLED	10	default
+plan_1	default	DISABLED	NULL	default
+plan_2	default	DISABLED	10	default
 PREHOOK: query: CREATE RESOURCE PLAN plan_2
 PREHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3353,8 +3733,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_1	DISABLED	NULL	default
-plan_2	DISABLED	10	default
+plan_1	default	DISABLED	NULL	default
+plan_2	default	DISABLED	10	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_1 RENAME TO plan_3
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3368,8 +3748,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_2	DISABLED	10	default
-plan_3	DISABLED	NULL	default
+plan_2	default	DISABLED	10	default
+plan_3	default	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 4
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3383,8 +3763,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_2	DISABLED	10	default
-plan_3	DISABLED	4	default
+plan_2	default	DISABLED	10	default
+plan_3	default	DISABLED	4	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 UNSET QUERY_PARALLELISM
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3398,8 +3778,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_2	DISABLED	10	default
-plan_3	DISABLED	NULL	default
+plan_2	default	DISABLED	10	default
+plan_3	default	DISABLED	NULL	default
 PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 30, DEFAULT POOL = default1
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3427,8 +3807,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_2	DISABLED	10	default
-plan_3	DISABLED	NULL	default
+plan_2	default	DISABLED	10	default
+plan_3	default	DISABLED	NULL	default
 PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3485,8 +3865,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_2	DISABLED	10	default
-plan_3	DISABLED	NULL	default
+plan_2	default	DISABLED	10	default
+plan_3	default	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3499,8 +3879,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_2	DISABLED	10	default
-plan_3	DISABLED	NULL	default
+plan_2	default	DISABLED	10	default
+plan_3	default	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3514,8 +3894,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_2	DISABLED	10	default
-plan_3	DISABLED	NULL	default
+plan_2	default	DISABLED	10	default
+plan_3	default	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3529,8 +3909,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_2	DISABLED	10	default
-plan_3	ENABLED	NULL	default
+plan_2	default	DISABLED	10	default
+plan_3	default	ENABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3544,8 +3924,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_2	DISABLED	10	default
-plan_3	ACTIVE	NULL	default
+plan_2	default	DISABLED	10	default
+plan_3	default	ACTIVE	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3559,8 +3939,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_2	DISABLED	10	default
-plan_3	ACTIVE	NULL	default
+plan_2	default	DISABLED	10	default
+plan_3	default	ACTIVE	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3573,8 +3953,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_2	DISABLED	10	default
-plan_3	ACTIVE	NULL	default
+plan_2	default	DISABLED	10	default
+plan_3	default	ACTIVE	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3587,8 +3967,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_2	DISABLED	10	default
-plan_3	ACTIVE	NULL	default
+plan_2	default	DISABLED	10	default
+plan_3	default	ACTIVE	NULL	default
 PREHOOK: query: DISABLE WORKLOAD MANAGEMENT
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3602,8 +3982,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_2	DISABLED	10	default
-plan_3	ENABLED	NULL	default
+plan_2	default	DISABLED	10	default
+plan_3	default	ENABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3622,8 +4002,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_2	DISABLED	10	default
-plan_3	ACTIVE	NULL	default
+plan_2	default	DISABLED	10	default
+plan_3	default	ACTIVE	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3637,8 +4017,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_2	ENABLED	10	default
-plan_3	ACTIVE	NULL	default
+plan_2	default	ENABLED	10	default
+plan_3	default	ACTIVE	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3652,8 +4032,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_2	ACTIVE	10	default
-plan_3	ENABLED	NULL	default
+plan_2	default	ACTIVE	10	default
+plan_3	default	ENABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3667,8 +4047,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_2	ACTIVE	10	default
-plan_3	ENABLED	NULL	default
+plan_2	default	ACTIVE	10	default
+plan_3	default	ENABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3682,8 +4062,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_2	ACTIVE	10	default
-plan_3	DISABLED	NULL	default
+plan_2	default	ACTIVE	10	default
+plan_3	default	DISABLED	NULL	default
 PREHOOK: query: EXPLAIN DROP RESOURCE PLAN plan_2
 PREHOOK: type: DROP RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3714,7 +4094,7 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_2	ACTIVE	10	default
+plan_2	default	ACTIVE	10	default
 PREHOOK: query: DROP RESOURCE PLAN plan_99999
 PREHOOK: type: DROP RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3742,8 +4122,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_2	ACTIVE	10	default
-table	DISABLED	1	default
+plan_2	default	ACTIVE	10	default
+table	default	DISABLED	1	default
 PREHOOK: query: create table wm_test(key string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: INFORMATION_SCHEMA@wm_test
@@ -3807,7 +4187,7 @@ POSTHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
-plan_1	trigger_1	BYTES_READ > '10kb'	KILL
+plan_1	default	trigger_1	BYTES_READ > '10kb'	KILL
 PREHOOK: query: CREATE TRIGGER plan_1.trigger_1 WHEN ELAPSED_TIME > 300 DO KILL
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
@@ -3818,6 +4198,18 @@ FAILED: ParseException line 2:50 mismatched input '>=' expecting > near 'ELAPSED
 FAILED: ParseException line 2:50 mismatched input '<' expecting > near 'ELAPSED_TIME' in comparisionOperator
 FAILED: ParseException line 2:50 mismatched input '<=' expecting > near 'ELAPSED_TIME' in comparisionOperator
 FAILED: ParseException line 2:50 mismatched input '=' expecting > near 'ELAPSED_TIME' in comparisionOperator
+PREHOOK: query: CREATE TRIGGER plan_1.trigger_2 WHEN BYTES_READ > '10k' DO KILL
+PREHOOK: type: CREATE TRIGGER
+PREHOOK: Output: dummyHostnameForTest
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. java.lang.IllegalArgumentException: Invalid size unit k
+PREHOOK: query: CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME > '10 millis' DO KILL
+PREHOOK: type: CREATE TRIGGER
+PREHOOK: Output: dummyHostnameForTest
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. java.lang.IllegalArgumentException: Invalid time unit millis
+PREHOOK: query: CREATE TRIGGER plan_1.trigger_2 WHEN BYTES_READ > '-1000' DO KILL
+PREHOOK: type: CREATE TRIGGER
+PREHOOK: Output: dummyHostnameForTest
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. java.lang.IllegalArgumentException: Illegal value for counter limit. Expected a positive long value.
 PREHOOK: query: CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME > '30hour' DO MOVE TO slow_pool
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
@@ -3831,8 +4223,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
-plan_1	trigger_1	BYTES_READ > '10kb'	KILL
-plan_1	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
+plan_1	default	trigger_1	BYTES_READ > '10kb'	KILL
+plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
 PREHOOK: query: EXPLAIN ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '1GB' DO KILL
 PREHOOK: type: ALTER TRIGGER
 PREHOOK: Output: dummyHostnameForTest
@@ -3859,8 +4251,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
-plan_1	trigger_1	BYTES_READ > '1GB'	KILL
-plan_1	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
+plan_1	default	trigger_1	BYTES_READ > '1GB'	KILL
+plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
 PREHOOK: query: EXPLAIN DROP TRIGGER plan_1.trigger_1
 PREHOOK: type: DROP TRIGGER
 PREHOOK: Output: dummyHostnameForTest
@@ -3888,15 +4280,16 @@ POSTHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
-plan_1	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
+plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
 PREHOOK: query: CREATE TRIGGER plan_2.trigger_1 WHEN BYTES_READ > '100mb' DO MOVE TO null_pool
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. InvalidOperationException(message:Resource plan must be disabled to edit it.)
-PREHOOK: query: CREATE TRIGGER `table`.`table` WHEN BYTES_WRITTEN > '100KB' DO MOVE TO `table`
+PREHOOK: query: CREATE TRIGGER `table`.`table` WHEN BYTES_WRITTEN > '100KB' DO MOVE TO `default`
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. java.lang.IllegalArgumentException: Invalid action expression: MOVE TO table
+POSTHOOK: query: CREATE TRIGGER `table`.`table` WHEN BYTES_WRITTEN > '100KB' DO MOVE TO `default`
+POSTHOOK: type: CREATE TRIGGER
 PREHOOK: query: CREATE TRIGGER `table`.`trigger` WHEN BYTES_WRITTEN > '100MB' DO MOVE TO `default`
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
@@ -3925,11 +4318,12 @@ POSTHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
-plan_1	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
-table	database	BYTES_WRITTEN > "1GB"	MOVE TO default
-table	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
-table	trigger1	ELAPSED_TIME > 10	KILL
-table	trigger2	ELAPSED_TIME > '1hour'	KILL
+plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
+table	default	database	BYTES_WRITTEN > "1GB"	MOVE TO default
+table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO default
+table	default	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
+table	default	trigger1	ELAPSED_TIME > 10	KILL
+table	default	trigger2	ELAPSED_TIME > '1hour'	KILL
 PREHOOK: query: DROP TRIGGER `table`.`database`
 PREHOOK: type: DROP TRIGGER
 PREHOOK: Output: dummyHostnameForTest
@@ -3943,10 +4337,11 @@ POSTHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
-plan_1	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
-table	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
-table	trigger1	ELAPSED_TIME > 10	KILL
-table	trigger2	ELAPSED_TIME > '1hour'	KILL
+plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
+table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO default
+table	default	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
+table	default	trigger1	ELAPSED_TIME > 10	KILL
+table	default	trigger2	ELAPSED_TIME > '1hour'	KILL
 PREHOOK: query: ALTER RESOURCE PLAN plan_1 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3960,9 +4355,9 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_1	ENABLED	NULL	default
-plan_2	ACTIVE	10	default
-table	DISABLED	1	default
+plan_1	default	ENABLED	NULL	default
+plan_2	default	ACTIVE	10	default
+table	default	DISABLED	1	default
 PREHOOK: query: DROP TRIGGER plan_1.trigger_2
 PREHOOK: type: DROP TRIGGER
 PREHOOK: Output: dummyHostnameForTest
@@ -3984,9 +4379,9 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_1	ACTIVE	NULL	default
-plan_2	ENABLED	10	default
-table	DISABLED	1	default
+plan_1	default	ACTIVE	NULL	default
+plan_2	default	ENABLED	10	default
+table	default	DISABLED	1	default
 PREHOOK: query: DROP TRIGGER plan_1.trigger_2
 PREHOOK: type: DROP TRIGGER
 PREHOOK: Output: dummyHostnameForTest
@@ -4013,11 +4408,12 @@ POSTHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
-plan_1	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
-plan_2	trigger_1	BYTES_READ > 0	MOVE TO null_pool
-table	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
-table	trigger1	ELAPSED_TIME > 10	KILL
-table	trigger2	ELAPSED_TIME > '1hour'	KILL
+plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
+plan_2	default	trigger_1	BYTES_READ > 0	MOVE TO null_pool
+table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO default
+table	default	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
+table	default	trigger1	ELAPSED_TIME > 10	KILL
+table	default	trigger2	ELAPSED_TIME > '1hour'	KILL
 PREHOOK: query: EXPLAIN CREATE POOL plan_1.default WITH
    ALLOC_FRACTION=1.0, QUERY_PARALLELISM=5, SCHEDULING_POLICY='default'
 PREHOOK: type: CREATE POOL
@@ -4052,9 +4448,9 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
-plan_1	default	1.0	4	NULL
-plan_2	default	1.0	5	NULL
-table	default	1.0	4	NULL
+plan_1	default	default	1.0	4	NULL
+plan_2	default	default	1.0	5	NULL
+table	default	default	1.0	4	NULL
 FAILED: SemanticException Invalid scheduling policy invalid
 PREHOOK: query: CREATE POOL plan_2.default.c1 WITH
     ALLOC_FRACTION=0.3, QUERY_PARALLELISM=3, SCHEDULING_POLICY='fair'
@@ -4064,22 +4460,22 @@ POSTHOOK: query: CREATE POOL plan_2.default.c1 WITH
     ALLOC_FRACTION=0.3, QUERY_PARALLELISM=3, SCHEDULING_POLICY='fair'
 POSTHOOK: type: CREATE POOL
 PREHOOK: query: CREATE POOL plan_2.default.c2 WITH
-    QUERY_PARALLELISM=2, SCHEDULING_POLICY='fair', ALLOC_FRACTION=0.7
+    QUERY_PARALLELISM=2, SCHEDULING_POLICY='fair', ALLOC_FRACTION=0.75
 PREHOOK: type: CREATE POOL
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE POOL plan_2.default.c2 WITH
-    QUERY_PARALLELISM=2, SCHEDULING_POLICY='fair', ALLOC_FRACTION=0.7
+    QUERY_PARALLELISM=2, SCHEDULING_POLICY='fair', ALLOC_FRACTION=0.75
 POSTHOOK: type: CREATE POOL
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 VALIDATE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_2 VALIDATE
 POSTHOOK: type: ALTER RESOURCEPLAN
-Sum of children pools' alloc fraction should be less than 1 got: 1.0 for pool: default
+Sum of children pools' alloc fraction should be less than 1 got: 1.05 for pool: default
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 ENABLE ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. InvalidOperationException(message:ResourcePlan: plan_2 is invalid: [Sum of children pools' alloc fraction should be less than 1 got: 1.0 for pool: default])
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. InvalidOperationException(message:ResourcePlan: plan_2 is invalid: [Sum of children pools' alloc fraction should be less than 1 got: 1.05 for pool: default])
 PREHOOK: query: EXPLAIN ALTER POOL plan_2.default.c2 SET ALLOC_FRACTION = 0.7, QUERY_PARALLELISM = 1
 PREHOOK: type: ALTER POOL
 PREHOOK: Output: dummyHostnameForTest
@@ -4112,11 +4508,11 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
-plan_1	default	1.0	4	NULL
-plan_2	default	1.0	5	NULL
-plan_2	default.c1	0.3	3	fair
-plan_2	default.c2	0.7	1	fair
-table	default	1.0	4	NULL
+plan_1	default	default	1.0	4	NULL
+plan_2	default	default	1.0	5	NULL
+plan_2	default	default.c1	0.3	3	fair
+plan_2	default	default.c2	0.7	1	fair
+table	default	default	1.0	4	NULL
 PREHOOK: query: ALTER POOL plan_2.default.c2 UNSET SCHEDULING_POLICY
 PREHOOK: type: ALTER POOL
 PREHOOK: Output: dummyHostnameForTest
@@ -4130,22 +4526,22 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
-plan_1	default	1.0	4	NULL
-plan_2	default	1.0	5	NULL
-plan_2	default.c1	0.3	3	fair
-plan_2	default.c2	0.7	1	NULL
-table	default	1.0	4	NULL
+plan_1	default	default	1.0	4	NULL
+plan_2	default	default	1.0	5	NULL
+plan_2	default	default.c1	0.3	3	fair
+plan_2	default	default.c2	0.7	1	NULL
+table	default	default	1.0	4	NULL
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 VALIDATE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_2 VALIDATE
 POSTHOOK: type: ALTER RESOURCEPLAN
-Sum of children pools' alloc fraction should be less than 1 got: 1.0 for pool: default
 warn: Sum of all pools' query parallelism: 9 is less than resource plan query parallelism: 10
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 ENABLE ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. InvalidOperationException(message:ResourcePlan: plan_2 is invalid: [Sum of children pools' alloc fraction should be less than 1 got: 1.0 for pool: default])
+POSTHOOK: query: ALTER RESOURCE PLAN plan_2 ENABLE ACTIVATE
+POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: ALTER RESOURCE PLAN plan_1 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -4169,11 +4565,11 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
-plan_1	default	1.0	4	NULL
-plan_2	def	1.0	5	NULL
-plan_2	def.c1	0.3	3	fair
-plan_2	def.c2	0.7	1	NULL
-table	default	1.0	4	NULL
+plan_1	default	default	1.0	4	NULL
+plan_2	default	def	1.0	5	NULL
+plan_2	default	def.c1	0.3	3	fair
+plan_2	default	def.c2	0.7	1	NULL
+table	default	default	1.0	4	NULL
 PREHOOK: query: EXPLAIN DROP POOL plan_2.default
 PREHOOK: type: DROP POOL
 PREHOOK: Output: dummyHostnameForTest
@@ -4199,11 +4595,11 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
-plan_1	default	1.0	4	NULL
-plan_2	def	1.0	5	NULL
-plan_2	def.c1	0.3	3	fair
-plan_2	def.c2	0.7	1	NULL
-table	default	1.0	4	NULL
+plan_1	default	default	1.0	4	NULL
+plan_2	default	def	1.0	5	NULL
+plan_2	default	def.c1	0.3	3	fair
+plan_2	default	def.c2	0.7	1	NULL
+table	default	default	1.0	4	NULL
 PREHOOK: query: CREATE POOL plan_2.child1.child2 WITH
     QUERY_PARALLELISM=2, SCHEDULING_POLICY='fifo', ALLOC_FRACTION=0.8
 PREHOOK: type: CREATE POOL
@@ -4250,15 +4646,15 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
-plan_1	default	1.0	4	NULL
-plan_2	def	1.0	5	NULL
-plan_2	def.c1	0.3	3	fair
-plan_2	def.c2	0.7	1	NULL
-table	default	1.0	4	NULL
-table	table	0.0	1	fifo
-table	table.pool1	0.9	3	fair
-table	table.pool1.child1	0.3	1	fair
-table	table.pool1.child2	0.7	3	fair
+plan_1	default	default	1.0	4	NULL
+plan_2	default	def	1.0	5	NULL
+plan_2	default	def.c1	0.3	3	fair
+plan_2	default	def.c2	0.7	1	NULL
+table	default	default	1.0	4	NULL
+table	default	table	0.0	1	fifo
+table	default	table.pool1	0.9	3	fair
+table	default	table.pool1.child1	0.3	1	fair
+table	default	table.pool1.child2	0.7	3	fair
 PREHOOK: query: ALTER POOL `table`.`table`.pool1 SET PATH = `table`.pool
 PREHOOK: type: ALTER POOL
 PREHOOK: Output: dummyHostnameForTest
@@ -4272,19 +4668,19 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
-plan_1	default	1.0	4	NULL
-plan_2	def	1.0	5	NULL
-plan_2	def.c1	0.3	3	fair
-plan_2	def.c2	0.7	1	NULL
-table	default	1.0	4	NULL
-table	table	0.0	1	fifo
-table	table.pool	0.9	3	fair
-table	table.pool.child1	0.3	1	fair
-table	table.pool.child2	0.7	3	fair
+plan_1	default	default	1.0	4	NULL
+plan_2	default	def	1.0	5	NULL
+plan_2	default	def.c1	0.3	3	fair
+plan_2	default	def.c2	0.7	1	NULL
+table	default	default	1.0	4	NULL
+table	default	table	0.0	1	fifo
+table	default	table.pool	0.9	3	fair
+table	default	table.pool.child1	0.3	1	fair
+table	default	table.pool.child2	0.7	3	fair
 PREHOOK: query: DROP POOL `table`.`table`
 PREHOOK: type: DROP POOL
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. InvalidOperationException(message:Pool has children cannot drop.)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. InvalidOperationException(message:Cannot drop a pool that has child pools)
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_pools
@@ -4293,15 +4689,15 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
-plan_1	default	1.0	4	NULL
-plan_2	def	1.0	5	NULL
-plan_2	def.c1	0.3	3	fair
-plan_2	def.c2	0.7	1	NULL
-table	default	1.0	4	NULL
-table	table	0.0	1	fifo
-table	table.pool	0.9	3	fair
-table	table.pool.child1	0.3	1	fair
-table	table.pool.child2	0.7	3	fair
+plan_1	default	default	1.0	4	NULL
+plan_2	default	def	1.0	5	NULL
+plan_2	default	def.c1	0.3	3	fair
+plan_2	default	def.c2	0.7	1	NULL
+table	default	default	1.0	4	NULL
+table	default	table	0.0	1	fifo
+table	default	table.pool	0.9	3	fair
+table	default	table.pool.child1	0.3	1	fair
+table	default	table.pool.child2	0.7	3	fair
 PREHOOK: query: DROP POOL `table`.default
 PREHOOK: type: DROP POOL
 PREHOOK: Output: dummyHostnameForTest
@@ -4314,15 +4710,15 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
-plan_1	default	1.0	4	NULL
-plan_2	def	1.0	5	NULL
-plan_2	def.c1	0.3	3	fair
-plan_2	def.c2	0.7	1	NULL
-table	default	1.0	4	NULL
-table	table	0.0	1	fifo
-table	table.pool	0.9	3	fair
-table	table.pool.child1	0.3	1	fair
-table	table.pool.child2	0.7	3	fair
+plan_1	default	default	1.0	4	NULL
+plan_2	default	def	1.0	5	NULL
+plan_2	default	def.c1	0.3	3	fair
+plan_2	default	def.c2	0.7	1	NULL
+table	default	default	1.0	4	NULL
+table	default	table	0.0	1	fifo
+table	default	table.pool	0.9	3	fair
+table	default	table.pool.child1	0.3	1	fair
+table	default	table.pool.child2	0.7	3	fair
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_resourceplans
@@ -4331,9 +4727,9 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_1	ACTIVE	NULL	default
-plan_2	DISABLED	10	def
-table	DISABLED	1	default
+plan_1	default	ACTIVE	NULL	default
+plan_2	default	DISABLED	10	def
+table	default	DISABLED	1	default
 PREHOOK: query: ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -4352,14 +4748,14 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
-plan_1	default	1.0	4	NULL
-plan_2	def	1.0	5	NULL
-plan_2	def.c1	0.3	3	fair
-plan_2	def.c2	0.7	1	NULL
-table	table	0.0	1	fifo
-table	table.pool	0.9	3	fair
-table	table.pool.child1	0.3	1	fair
-table	table.pool.child2	0.7	3	fair
+plan_1	default	default	1.0	4	NULL
+plan_2	default	def	1.0	5	NULL
+plan_2	default	def.c1	0.3	3	fair
+plan_2	default	def.c2	0.7	1	NULL
+table	default	table	0.0	1	fifo
+table	default	table.pool	0.9	3	fair
+table	default	table.pool.child1	0.3	1	fair
+table	default	table.pool.child2	0.7	3	fair
 PREHOOK: query: ALTER RESOURCE PLAN `table` UNSET DEFAULT POOL
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -4373,9 +4769,9 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_1	ACTIVE	NULL	default
-plan_2	DISABLED	10	def
-table	DISABLED	1	NULL
+plan_1	default	ACTIVE	NULL	default
+plan_2	default	DISABLED	10	def
+table	default	DISABLED	1	NULL
 PREHOOK: query: EXPLAIN ALTER POOL plan_2.def.c1 ADD TRIGGER trigger_1
 PREHOOK: type: ALTER POOL
 PREHOOK: Output: dummyHostnameForTest
@@ -4404,11 +4800,13 @@ POSTHOOK: type: ALTER POOL
 PREHOOK: query: ALTER POOL `table`.`table` ADD TRIGGER `table`
 PREHOOK: type: ALTER POOL
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. NoSuchObjectException(message:Cannot find trigger with name: table)
+POSTHOOK: query: ALTER POOL `table`.`table` ADD TRIGGER `table`
+POSTHOOK: type: ALTER POOL
 PREHOOK: query: ALTER POOL `table`.`table`.pool.child1 ADD TRIGGER `table`
 PREHOOK: type: ALTER POOL
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. NoSuchObjectException(message:Cannot find trigger with name: table)
+POSTHOOK: query: ALTER POOL `table`.`table`.pool.child1 ADD TRIGGER `table`
+POSTHOOK: type: ALTER POOL
 PREHOOK: query: ALTER POOL `table`.`table`.pool.child1 ADD TRIGGER `trigger1`
 PREHOOK: type: ALTER POOL
 PREHOOK: Output: dummyHostnameForTest
@@ -4437,12 +4835,14 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools_to_triggers
 #### A masked pattern was here ####
-plan_2	def.c1	trigger_1
-plan_2	def.c2	trigger_1
-table	<unmanaged queries>	trigger1
-table	table.pool.child1	trigger1
-table	table.pool.child2	trigger1
-table	table.pool.child2	trigger2
+plan_2	default	def.c1	trigger_1
+plan_2	default	def.c2	trigger_1
+table	default	<unmanaged queries>	trigger1
+table	default	table	table
+table	default	table.pool.child1	table
+table	default	table.pool.child1	trigger1
+table	default	table.pool.child2	trigger1
+table	default	table.pool.child2	trigger2
 PREHOOK: query: SHOW RESOURCE PLAN `table`
 PREHOOK: type: SHOW RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -4450,11 +4850,13 @@ POSTHOOK: query: SHOW RESOURCE PLAN `table`
 POSTHOOK: type: SHOW RESOURCEPLAN
 table[status=DISABLED,parallelism=1,defaultPool=null]
  +  table[allocFraction=0.0,schedulingPolicy=fifo,parallelism=1]
+     |  trigger table: if (BYTES_WRITTEN > '100KB') { MOVE TO default }
      +  pool[allocFraction=0.9,schedulingPolicy=fair,parallelism=3]
          +  child2[allocFraction=0.7,schedulingPolicy=fair,parallelism=3]
              |  trigger trigger1: if (ELAPSED_TIME > 10) { KILL }
              |  trigger trigger2: if (ELAPSED_TIME > '1hour') { KILL }
          +  child1[allocFraction=0.3,schedulingPolicy=fair,parallelism=1]
+             |  trigger table: if (BYTES_WRITTEN > '100KB') { MOVE TO default }
              |  trigger trigger1: if (ELAPSED_TIME > 10) { KILL }
  +  <unmanaged queries>
      |  trigger trigger1: if (ELAPSED_TIME > 10) { KILL }
@@ -4478,10 +4880,12 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools_to_triggers
 #### A masked pattern was here ####
-plan_2	def.c1	trigger_1
-plan_2	def.c2	trigger_1
-table	table.pool.child1	trigger1
-table	table.pool.child2	trigger2
+plan_2	default	def.c1	trigger_1
+plan_2	default	def.c2	trigger_1
+table	default	table	table
+table	default	table.pool.child1	table
+table	default	table.pool.child1	trigger1
+table	default	table.pool.child2	trigger2
 PREHOOK: query: ALTER POOL plan_2.default ADD TRIGGER trigger_1
 PREHOOK: type: ALTER POOL
 PREHOOK: Output: dummyHostnameForTest
@@ -4498,10 +4902,12 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools_to_triggers
 #### A masked pattern was here ####
-plan_2	def.c1	trigger_1
-plan_2	def.c2	trigger_1
-table	table.pool.child1	trigger1
-table	table.pool.child2	trigger2
+plan_2	default	def.c1	trigger_1
+plan_2	default	def.c2	trigger_1
+table	default	table	table
+table	default	table.pool.child1	table
+table	default	table.pool.child1	trigger1
+table	default	table.pool.child2	trigger2
 PREHOOK: query: EXPLAIN ALTER POOL plan_2.def.c1 DROP TRIGGER trigger_1
 PREHOOK: type: ALTER POOL
 PREHOOK: Output: dummyHostnameForTest
@@ -4544,7 +4950,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools_to_triggers
 #### A masked pattern was here ####
-plan_2	def.c2	trigger_1
+plan_2	default	def.c2	trigger_1
+table	default	table	table
 PREHOOK: query: EXPLAIN CREATE USER MAPPING "user1" IN plan_2 TO def
 PREHOOK: type: CREATE MAPPING
 PREHOOK: Output: dummyHostnameForTest
@@ -4645,12 +5052,12 @@ POSTHOOK: query: SELECT * FROM SYS.WM_MAPPINGS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_mappings
 #### A masked pattern was here ####
-plan_2	APPLICATION	app1	def.c1	0
-plan_2	GROUP	group1	def.c1	0
-plan_2	GROUP	group2	def.c2	1
-plan_2	GROUP	group3	<unmanaged>	1
-plan_2	USER	user1	<unmanaged>	0
-plan_2	USER	user2	def	1
+plan_2	default	APPLICATION	app1	def.c1	0
+plan_2	default	GROUP	group1	def.c1	0
+plan_2	default	GROUP	group2	def.c2	1
+plan_2	default	GROUP	group3	<unmanaged>	1
+plan_2	default	USER	user1	<unmanaged>	0
+plan_2	default	USER	user2	def	1
 PREHOOK: query: DROP POOL plan_2.def.c1
 PREHOOK: type: DROP POOL
 PREHOOK: Output: dummyHostnameForTest
@@ -4709,8 +5116,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_MAPPINGS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_mappings
 #### A masked pattern was here ####
-plan_2	GROUP	group1	def.c1	0
-plan_2	USER	user1	<unmanaged>	0
+plan_2	default	GROUP	group1	def.c1	0
+plan_2	default	USER	user1	<unmanaged>	0
 PREHOOK: query: CREATE RESOURCE PLAN plan_4
 PREHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -4753,10 +5160,10 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_1	ENABLED	NULL	default
-plan_2	DISABLED	NULL	default
-plan_4	ACTIVE	NULL	default
-table	DISABLED	1	NULL
+plan_1	default	ENABLED	NULL	default
+plan_2	default	DISABLED	NULL	default
+plan_4	default	ACTIVE	NULL	default
+table	default	DISABLED	1	NULL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_pools
@@ -4765,11 +5172,11 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
-plan_1	default	1.0	4	NULL
-plan_2	default	1.0	4	NULL
-plan_4	default	1.0	4	NULL
-table	table	0.0	1	fifo
-table	table.pool	0.9	3	fair
+plan_1	default	default	1.0	4	NULL
+plan_2	default	default	1.0	4	NULL
+plan_4	default	default	1.0	4	NULL
+table	default	table	0.0	1	fifo
+table	default	table.pool	0.9	3	fair
 PREHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_triggers
@@ -4778,10 +5185,11 @@ POSTHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
-plan_1	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
-table	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
-table	trigger1	ELAPSED_TIME > 10	KILL
-table	trigger2	ELAPSED_TIME > '1hour'	KILL
+plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
+table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO default
+table	default	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
+table	default	trigger1	ELAPSED_TIME > 10	KILL
+table	default	trigger2	ELAPSED_TIME > '1hour'	KILL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_pools_to_triggers
@@ -4790,6 +5198,7 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools_to_triggers
 #### A masked pattern was here ####
+table	default	table	table
 PREHOOK: query: SELECT * FROM SYS.WM_MAPPINGS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_mappings
@@ -4846,12 +5255,12 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_1	ENABLED	NULL	default
-plan_2	DISABLED	NULL	default
-plan_4	ACTIVE	NULL	default
-plan_4a	DISABLED	NULL	default
-plan_4b	DISABLED	NULL	default
-table	DISABLED	1	NULL
+plan_1	default	ENABLED	NULL	default
+plan_2	default	DISABLED	NULL	default
+plan_4	default	ACTIVE	NULL	default
+plan_4a	default	DISABLED	NULL	default
+plan_4b	default	DISABLED	NULL	default
+table	default	DISABLED	1	NULL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_pools
@@ -4860,16 +5269,16 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
-plan_1	default	1.0	4	NULL
-plan_2	default	1.0	4	NULL
-plan_4	default	1.0	4	NULL
-plan_4a	default	1.0	4	NULL
-plan_4a	pool1	0.0	2	fair
-plan_4b	default	1.0	4	NULL
-plan_4b	pool1	0.0	2	fair
-plan_4b	pool2	0.0	3	fair
-table	table	0.0	1	fifo
-table	table.pool	0.9	3	fair
+plan_1	default	default	1.0	4	NULL
+plan_2	default	default	1.0	4	NULL
+plan_4	default	default	1.0	4	NULL
+plan_4a	default	default	1.0	4	NULL
+plan_4a	default	pool1	0.0	2	fair
+plan_4b	default	default	1.0	4	NULL
+plan_4b	default	pool1	0.0	2	fair
+plan_4b	default	pool2	0.0	3	fair
+table	default	table	0.0	1	fifo
+table	default	table.pool	0.9	3	fair
 PREHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_triggers
@@ -4878,14 +5287,15 @@ POSTHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
-plan_1	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
-plan_4a	trigger_1	BYTES_READ > '10GB'	KILL
-plan_4a	trigger_2	BYTES_READ > '11GB'	KILL
-plan_4b	trigger_1	BYTES_READ > '10GB'	KILL
-plan_4b	trigger_2	BYTES_READ > '11GB'	KILL
-table	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
-table	trigger1	ELAPSED_TIME > 10	KILL
-table	trigger2	ELAPSED_TIME > '1hour'	KILL
+plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
+plan_4a	default	trigger_1	BYTES_READ > '10GB'	KILL
+plan_4a	default	trigger_2	BYTES_READ > '11GB'	KILL
+plan_4b	default	trigger_1	BYTES_READ > '10GB'	KILL
+plan_4b	default	trigger_2	BYTES_READ > '11GB'	KILL
+table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO default
+table	default	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
+table	default	trigger1	ELAPSED_TIME > 10	KILL
+table	default	trigger2	ELAPSED_TIME > '1hour'	KILL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_pools_to_triggers
@@ -4894,8 +5304,9 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools_to_triggers
 #### A masked pattern was here ####
-plan_4a	pool1	trigger_2
-plan_4b	pool1	trigger_2
+plan_4a	default	pool1	trigger_2
+plan_4b	default	pool1	trigger_2
+table	default	table	table
 PREHOOK: query: SELECT * FROM SYS.WM_MAPPINGS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_mappings
@@ -4904,8 +5315,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_MAPPINGS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_mappings
 #### A masked pattern was here ####
-plan_4a	USER	user1	pool1	0
-plan_4b	USER	user1	pool1	0
+plan_4a	default	USER	user1	pool1	0
+plan_4b	default	USER	user1	pool1	0
 PREHOOK: query: REPLACE RESOURCE PLAN plan_4a WITH plan_4b
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -4919,12 +5330,12 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_1	ENABLED	NULL	default
-plan_2	DISABLED	NULL	default
-plan_4	ACTIVE	NULL	default
-plan_4a	DISABLED	NULL	default
-plan_4a_old_0	DISABLED	NULL	default
-table	DISABLED	1	NULL
+plan_1	default	ENABLED	NULL	default
+plan_2	default	DISABLED	NULL	default
+plan_4	default	ACTIVE	NULL	default
+plan_4a	default	DISABLED	NULL	default
+plan_4a_old_0	default	DISABLED	NULL	default
+table	default	DISABLED	1	NULL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_pools
@@ -4933,16 +5344,16 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
-plan_1	default	1.0	4	NULL
-plan_2	default	1.0	4	NULL
-plan_4	default	1.0	4	NULL
-plan_4a	default	1.0	4	NULL
-plan_4a	pool1	0.0	2	fair
-plan_4a	pool2	0.0	3	fair
-plan_4a_old_0	default	1.0	4	NULL
-plan_4a_old_0	pool1	0.0	2	fair
-table	table	0.0	1	fifo
-table	table.pool	0.9	3	fair
+plan_1	default	default	1.0	4	NULL
+plan_2	default	default	1.0	4	NULL
+plan_4	default	default	1.0	4	NULL
+plan_4a	default	default	1.0	4	NULL
+plan_4a	default	pool1	0.0	2	fair
+plan_4a	default	pool2	0.0	3	fair
+plan_4a_old_0	default	default	1.0	4	NULL
+plan_4a_old_0	default	pool1	0.0	2	fair
+table	default	table	0.0	1	fifo
+table	default	table.pool	0.9	3	fair
 PREHOOK: query: SHOW RESOURCE PLAN plan_4a_old_0
 PREHOOK: type: SHOW RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -4969,12 +5380,12 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_1	ENABLED	NULL	default
-plan_2	DISABLED	NULL	default
-plan_4	ACTIVE	NULL	default
-plan_4_old_0	DISABLED	NULL	default
-plan_4a_old_0	DISABLED	NULL	default
-table	DISABLED	1	NULL
+plan_1	default	ENABLED	NULL	default
+plan_2	default	DISABLED	NULL	default
+plan_4	default	ACTIVE	NULL	default
+plan_4_old_0	default	DISABLED	NULL	default
+plan_4a_old_0	default	DISABLED	NULL	default
+table	default	DISABLED	1	NULL
 PREHOOK: query: CREATE RESOURCE PLAN plan_4a LIKE plan_4
 PREHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -4998,13 +5409,13 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_1	ENABLED	NULL	default
-plan_2	DISABLED	NULL	default
-plan_4	ACTIVE	NULL	default
-plan_4_old_0	DISABLED	NULL	default
-plan_4_old_1	DISABLED	NULL	default
-plan_4a_old_0	DISABLED	NULL	default
-table	DISABLED	1	NULL
+plan_1	default	ENABLED	NULL	default
+plan_2	default	DISABLED	NULL	default
+plan_4	default	ACTIVE	NULL	default
+plan_4_old_0	default	DISABLED	NULL	default
+plan_4_old_1	default	DISABLED	NULL	default
+plan_4a_old_0	default	DISABLED	NULL	default
+table	default	DISABLED	1	NULL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_pools
@@ -5013,17 +5424,17 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
-plan_1	default	1.0	4	NULL
-plan_2	default	1.0	4	NULL
-plan_4	default	1.0	4	NULL
-plan_4	pool1	0.0	2	fair
-plan_4	pool2	0.0	3	fair
-plan_4	pool3	0.0	3	fair
-plan_4_old_0	default	1.0	4	NULL
-plan_4_old_1	default	1.0	4	NULL
-plan_4_old_1	pool1	0.0	2	fair
-plan_4_old_1	pool2	0.0	3	fair
-plan_4a_old_0	default	1.0	4	NULL
-plan_4a_old_0	pool1	0.0	2	fair
-table	table	0.0	1	fifo
-table	table.pool	0.9	3	fair
+plan_1	default	default	1.0	4	NULL
+plan_2	default	default	1.0	4	NULL
+plan_4	default	default	1.0	4	NULL
+plan_4	default	pool1	0.0	2	fair
+plan_4	default	pool2	0.0	3	fair
+plan_4	default	pool3	0.0	3	fair
+plan_4_old_0	default	default	1.0	4	NULL
+plan_4_old_1	default	default	1.0	4	NULL
+plan_4_old_1	default	pool1	0.0	2	fair
+plan_4_old_1	default	pool2	0.0	3	fair
+plan_4a_old_0	default	default	1.0	4	NULL
+plan_4a_old_0	default	pool1	0.0	2	fair
+table	default	table	0.0	1	fifo
+table	default	table.pool	0.9	3	fair
