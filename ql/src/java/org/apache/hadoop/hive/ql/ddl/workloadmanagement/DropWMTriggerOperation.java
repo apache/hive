@@ -15,32 +15,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
+package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 
-import org.apache.hadoop.hive.metastore.api.WMMapping;
-import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import java.io.IOException;
 
-@Explain(displayName = "Drop resource plan",
-    explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class DropWMMappingDesc extends DDLDesc implements Serializable {
-  private static final long serialVersionUID = -1567558687529244218L;
+import org.apache.hadoop.hive.ql.ddl.DDLOperation;
+import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
-  private WMMapping mapping;
+/**
+ * Operation process of dropping a workload management trigger.
+ */
+public class DropWMTriggerOperation extends DDLOperation {
+  private final DropWMTriggerDesc desc;
 
-  public DropWMMappingDesc() {}
-
-  public DropWMMappingDesc(WMMapping mapping) {
-    this.mapping = mapping;
+  public DropWMTriggerOperation(DDLOperationContext context, DropWMTriggerDesc desc) {
+    super(context);
+    this.desc = desc;
   }
 
-  @Explain(displayName = "mapping", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public WMMapping getMapping() {
-    return mapping;
-  }
+  @Override
+  public int execute() throws HiveException, IOException {
+    context.getDb().dropWMTrigger(desc.getPlanName(), desc.getTriggerName());
 
-  public void setMapping(WMMapping mapping) {
-    this.mapping = mapping;
+    return 0;
   }
 }

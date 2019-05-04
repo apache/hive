@@ -16,44 +16,41 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-@Explain(displayName="Drop WM Trigger",
-    explainLevels={ Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class DropWMTriggerDesc extends DDLDesc implements Serializable {
+/**
+ * DDL task description for DROP TRIGGER commands.
+ */
+@Explain(displayName="Drop WM Trigger", explainLevels={ Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class DropWMTriggerDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 963803766313787632L;
 
-  private String rpName;
-  private String triggerName;
+  static {
+    DDLTask2.registerOperation(DropWMTriggerDesc.class, DropWMTriggerOperation.class);
+  }
 
-  public DropWMTriggerDesc() {}
+  private final String planName;
+  private final String triggerName;
 
-  public DropWMTriggerDesc(String rpName, String triggerName) {
-    this.rpName = rpName;
+  public DropWMTriggerDesc(String planName, String triggerName) {
+    this.planName = planName;
     this.triggerName = triggerName;
   }
 
-  @Explain(displayName="resourcePlanName",
-      explainLevels={ Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getRpName() {
-    return rpName;
+  @Explain(displayName="resourcePlanName", explainLevels={ Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getPlanName() {
+    return planName;
   }
 
-  public void setRpName(String rpName) {
-    this.rpName = rpName;
-  }
-
-  @Explain(displayName="triggerName",
-      explainLevels={ Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName="triggerName", explainLevels={ Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTriggerName() {
     return triggerName;
-  }
-
-  public void setTriggerName(String triggerName) {
-    this.triggerName = triggerName;
   }
 }

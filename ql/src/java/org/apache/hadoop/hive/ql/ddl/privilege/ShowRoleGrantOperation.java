@@ -45,7 +45,7 @@ public class ShowRoleGrantOperation extends DDLOperation {
 
   @Override
   public int execute() throws HiveException, IOException {
-    HiveAuthorizer authorizer = RoleUtils.getSessionAuthorizer(context.getConf());
+    HiveAuthorizer authorizer = PrivilegeUtils.getSessionAuthorizer(context.getConf());
     boolean testMode = context.getConf().getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
     List<HiveRoleGrant> roles = authorizer.getRoleGrantInfoForPrincipal(
         AuthorizationUtils.getHivePrincipal(desc.getName(), desc.getPrincipalType()));

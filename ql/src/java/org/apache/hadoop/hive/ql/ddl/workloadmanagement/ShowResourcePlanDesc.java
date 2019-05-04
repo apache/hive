@@ -16,31 +16,40 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 
 import java.io.Serializable;
 
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-@Explain(displayName = "Show Resource plans",
-    explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class ShowResourcePlanDesc extends DDLDesc implements Serializable {
+/**
+ * DDL task description for SHOW RESOURCE PLAN(S) commands.
+ */
+@Explain(displayName = "Show Resource plans", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class ShowResourcePlanDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 6076076933035978545L;
 
-  private static final String TABLE = "show_resourceplan";
+  static {
+    DDLTask2.registerOperation(ShowResourcePlanDesc.class, ShowResourcePlanOperation.class);
+  }
+
   private static final String ALL_SCHEMA = "rp_name,status,query_parallelism#string,string,int";
   private static final String SINGLE_SCHEMA = "line#string";
 
-  String resFile;
-  String resourcePlanName;
+  private final String planName;
+  private final String resFile;
 
-  // For serialization only.
-  public ShowResourcePlanDesc() {}
+  public ShowResourcePlanDesc(String planName, String resFile) {
+    this.planName = planName;
+    this.resFile = resFile;
+  }
 
-  public ShowResourcePlanDesc(String rpName, Path resFile) {
-    this.resourcePlanName = rpName;
-    this.resFile = resFile.toString();
+  @Explain(displayName="resourcePlanName", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getResourcePlanName() {
+    return planName;
   }
 
   @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
@@ -48,21 +57,7 @@ public class ShowResourcePlanDesc extends DDLDesc implements Serializable {
     return resFile;
   }
 
-  public void setResFile(String resFile) {
-    this.resFile = resFile;
-  }
-
-  @Explain(displayName="resourcePlanName",
-      explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getResourcePlanName() {
-    return resourcePlanName;
-  }
-
-  public String getTable() {
-    return TABLE;
-  }
-
-  public String getSchema(String rpName) {
-    return (rpName == null) ? ALL_SCHEMA : SINGLE_SCHEMA;
+  public String getSchema() {
+    return (planName == null) ? ALL_SCHEMA : SINGLE_SCHEMA;
   }
 }

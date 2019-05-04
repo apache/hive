@@ -16,33 +16,25 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
-
-import java.io.Serializable;
+package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
-import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.wm.ExecutionTrigger;
 
-@Explain(displayName="Create WM Trigger",
-    explainLevels={ Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class CreateWMTriggerDesc extends DDLDesc implements Serializable {
-  private static final long serialVersionUID = 1705317739121300923L;
-
-  private WMTrigger trigger;
-
-  public CreateWMTriggerDesc() {}
-
-  public CreateWMTriggerDesc(WMTrigger trigger) {
-    this.trigger = trigger;
+/**
+ * Common utilities for Workload Management related ddl operations.
+ */
+final class WMUtils {
+  private WMUtils() {
+    throw new UnsupportedOperationException("WMUtils should not be instantiated");
   }
 
-  @Explain(displayName="trigger",
-      explainLevels={ Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public WMTrigger getTrigger() {
-    return trigger;
-  }
-
-  public void setTrigger(WMTrigger trigger) {
-    this.trigger = trigger;
+  static void validateTrigger(WMTrigger trigger) throws HiveException {
+    try {
+      ExecutionTrigger.fromWMTrigger(trigger);
+    } catch (IllegalArgumentException e) {
+      throw new HiveException(e);
+    }
   }
 }
