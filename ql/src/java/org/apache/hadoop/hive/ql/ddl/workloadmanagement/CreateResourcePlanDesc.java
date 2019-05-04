@@ -16,37 +16,46 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 
 import java.io.Serializable;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
+/**
+ * DDL task description for CREATE RESOURCE PLAN commands.
+ */
 @Explain(displayName = "Create ResourcePlan", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class CreateResourcePlanDesc extends DDLDesc implements Serializable {
+public class CreateResourcePlanDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = -3492803425541479414L;
 
-  private WMResourcePlan resourcePlan;
+  static {
+    DDLTask2.registerOperation(CreateResourcePlanDesc.class, CreateResourcePlanOperation.class);
+  }
+
+  private final String planName;
+  private final Integer queryParallelism;
   private String copyFromName;
   private boolean ifNotExists;
 
-  // For serialization only.
-  public CreateResourcePlanDesc() {
-  }
-
-  public CreateResourcePlanDesc(String planName, Integer queryParallelism, String copyFromName,
-      boolean ifNotExists) {
-    resourcePlan = new WMResourcePlan(planName);
-    if (queryParallelism != null) {
-      resourcePlan.setQueryParallelism(queryParallelism);
-    }
+  public CreateResourcePlanDesc(String planName, Integer queryParallelism, String copyFromName, boolean ifNotExists) {
+    this.planName = planName;
+    this.queryParallelism = queryParallelism;
     this.copyFromName = copyFromName;
     this.ifNotExists = ifNotExists;
   }
 
-  @Explain(displayName="resourcePlan", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public WMResourcePlan getResourcePlan() {
-    return resourcePlan;
+  @Explain(displayName="planName", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getPlanName() {
+    return planName;
+  }
+
+  @Explain(displayName="queryParallelism", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public Integer getQueryParallelism() {
+    return queryParallelism;
   }
 
   @Explain(displayName="Copy from", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })

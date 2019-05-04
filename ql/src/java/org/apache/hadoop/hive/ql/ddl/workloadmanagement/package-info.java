@@ -16,29 +16,5 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.privilege;
-
-import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-
-import org.apache.hadoop.hive.ql.ddl.DDLOperation;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
-
-/**
- * Operation process of creating a role.
- */
-public class CreateRoleOperation extends DDLOperation {
-  private final CreateRoleDesc desc;
-
-  public CreateRoleOperation(DDLOperationContext context, CreateRoleDesc desc) {
-    super(context);
-    this.desc = desc;
-  }
-
-  @Override
-  public int execute() throws HiveException {
-    HiveAuthorizer authorizer = PrivilegeUtils.getSessionAuthorizer(context.getConf());
-    authorizer.createRole(desc.getName(), null);
-    return 0;
-  }
-}
+/** Workload Management related DDL operation descriptions and operations. */
+package org.apache.hadoop.hive.ql.ddl.workloadmanagement;

@@ -16,29 +16,37 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
+/**
+ * DDL task description for DROP RESOURCE PLAN commands.
+ */
 @Explain(displayName = "Drop Resource plans", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class DropResourcePlanDesc extends DDLDesc implements Serializable {
+public class DropResourcePlanDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1258596919510047766L;
 
-  private String rpName;
-  private boolean ifExists;
+  static {
+    DDLTask2.registerOperation(DropResourcePlanDesc.class, DropResourcePlanOperation.class);
+  }
 
-  public DropResourcePlanDesc() {}
+  private final String planName;
+  private final boolean ifExists;
 
-  public DropResourcePlanDesc(String rpName, boolean ifExists) {
-    this.setRpName(rpName);
-    this.setIfExists(ifExists);
+  public DropResourcePlanDesc(String planName, boolean ifExists) {
+    this.planName = planName;
+    this.ifExists = ifExists;
   }
 
   @Explain(displayName="resourcePlanName", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getRpName() {
-    return rpName;
+  public String getPlanName() {
+    return planName;
   }
 
   @Explain(displayName="ifExists", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED },
@@ -46,13 +54,4 @@ public class DropResourcePlanDesc extends DDLDesc implements Serializable {
   public boolean getIfExists() {
     return ifExists;
   }
-
-  public void setRpName(String rpName) {
-    this.rpName = rpName;
-  }
-
-  public void setIfExists(boolean ifExists) {
-    this.ifExists = ifExists;
-  }
-
 }

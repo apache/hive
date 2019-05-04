@@ -15,36 +15,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 
 import java.io.Serializable;
 
-public class DropWMPoolDesc extends DDLDesc implements Serializable {
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
+/**
+ * DDL task description for DROP POOL commands.
+ */
+@Explain(displayName="Drop WM Pool", explainLevels={ Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class DropWMPoolDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = -2608462103392563252L;
 
-  private String resourcePlanName;
-  private String poolPath;
+  static {
+    DDLTask2.registerOperation(DropWMPoolDesc.class, DropWMPoolOperation.class);
+  }
 
-  public DropWMPoolDesc() {}
+  private final String planName;
+  private final String poolPath;
 
-  public DropWMPoolDesc(String resourcePlanName, String poolPath) {
-    this.resourcePlanName = resourcePlanName;
+  public DropWMPoolDesc(String planName, String poolPath) {
+    this.planName = planName;
     this.poolPath = poolPath;
   }
 
-  public String getResourcePlanName() {
-    return resourcePlanName;
-  }
-
-  public void setResourcePlanName(String resourcePlanName) {
-    this.resourcePlanName = resourcePlanName;
+  @Explain(displayName="poolName", explainLevels={ Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getPlanName() {
+    return planName;
   }
 
   public String getPoolPath() {
     return poolPath;
-  }
-
-  public void setPoolPath(String poolPath) {
-    this.poolPath = poolPath;
   }
 }

@@ -16,33 +16,29 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.privilege;
-
-import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
+import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 
 /**
- * Operation process of showing the roles.
+ * Operation process of dropping a workload management mapping.
  */
-public class ShowRolesOperation extends DDLOperation {
-  private final ShowRolesDesc desc;
+public class DropWMMappingOperation extends DDLOperation {
+  private final DropWMMappingDesc desc;
 
-  public ShowRolesOperation(DDLOperationContext context, ShowRolesDesc desc) {
+  public DropWMMappingOperation(DDLOperationContext context, DropWMMappingDesc desc) {
     super(context);
     this.desc = desc;
   }
 
   @Override
   public int execute() throws HiveException, IOException {
-    HiveAuthorizer authorizer = PrivilegeUtils.getSessionAuthorizer(context.getConf());
-    List<String> allRoles = authorizer.getAllRoles();
-    PrivilegeUtils.writeListToFileAfterSort(allRoles, desc.getResFile(), context);
+    context.getDb().dropWMMapping(desc.getMapping());
+
     return 0;
   }
 }

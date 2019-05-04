@@ -16,33 +16,40 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.privilege;
+package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 
 import java.io.IOException;
-import java.util.List;
 
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 
 /**
- * Operation process of showing the roles.
+ * Operation process of dropping a trigger to pool mapping.
  */
-public class ShowRolesOperation extends DDLOperation {
-  private final ShowRolesDesc desc;
+public class AlterPoolDropTriggerOperation extends DDLOperation {
+  private final AlterPoolDropTriggerDesc desc;
 
-  public ShowRolesOperation(DDLOperationContext context, ShowRolesDesc desc) {
+  public AlterPoolDropTriggerOperation(DDLOperationContext context, AlterPoolDropTriggerDesc desc) {
     super(context);
     this.desc = desc;
   }
 
   @Override
   public int execute() throws HiveException, IOException {
-    HiveAuthorizer authorizer = PrivilegeUtils.getSessionAuthorizer(context.getConf());
-    List<String> allRoles = authorizer.getAllRoles();
-    PrivilegeUtils.writeListToFileAfterSort(allRoles, desc.getResFile(), context);
+    if (!desc.isUnmanagedPool()) {
+      context.getDb().createOrDropTriggerToPoolMapping(desc.getPlanName(), desc.getTriggerName(), desc.getPoolPath(),
+          true);
+    } else {
+      assert desc.getPoolPath() == null;
+      WMTrigger trigger = new WMTrigger(desc.getPlanName(), desc.getTriggerName());
+      // If we are dropping from unmanaged, unset the flag; and vice versa
+      trigger.setIsInUnmanaged(false);
+      context.getDb().alterWMTrigger(trigger);
+    }
+
     return 0;
   }
 }

@@ -16,33 +16,35 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.privilege;
-
-import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 
 import java.io.IOException;
-import java.util.List;
 
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
+import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 
 /**
- * Operation process of showing the roles.
+ * Operation process of creating a resource plan.
  */
-public class ShowRolesOperation extends DDLOperation {
-  private final ShowRolesDesc desc;
+public class CreateResourcePlanOperation extends DDLOperation {
+  private final CreateResourcePlanDesc desc;
 
-  public ShowRolesOperation(DDLOperationContext context, ShowRolesDesc desc) {
+  public CreateResourcePlanOperation(DDLOperationContext context, CreateResourcePlanDesc desc) {
     super(context);
     this.desc = desc;
   }
 
   @Override
   public int execute() throws HiveException, IOException {
-    HiveAuthorizer authorizer = PrivilegeUtils.getSessionAuthorizer(context.getConf());
-    List<String> allRoles = authorizer.getAllRoles();
-    PrivilegeUtils.writeListToFileAfterSort(allRoles, desc.getResFile(), context);
+    WMResourcePlan plan = new WMResourcePlan(desc.getPlanName());
+    if (desc.getQueryParallelism() != null) {
+      plan.setQueryParallelism(desc.getQueryParallelism());
+    }
+
+    context.getDb().createResourcePlan(plan, desc.getCopyFromName(), desc.getIfNotExists());
+
     return 0;
   }
 }

@@ -43,15 +43,15 @@ public class RevokeOperation extends DDLOperation {
 
   @Override
   public int execute() throws HiveException {
-    HiveAuthorizer authorizer = RoleUtils.getSessionAuthorizer(context.getConf());
+    HiveAuthorizer authorizer = PrivilegeUtils.getSessionAuthorizer(context.getConf());
 
     //Convert to object types used by the authorization plugin interface
     List<HivePrincipal> hivePrincipals = AuthorizationUtils.getHivePrincipals(desc.getPrincipals(),
-        RoleUtils.getAuthorizationTranslator(authorizer));
+        PrivilegeUtils.getAuthorizationTranslator(authorizer));
     List<HivePrivilege> hivePrivileges = AuthorizationUtils.getHivePrivileges(desc.getPrivileges(),
-        RoleUtils.getAuthorizationTranslator(authorizer));
+        PrivilegeUtils.getAuthorizationTranslator(authorizer));
     HivePrivilegeObject hivePrivilegeObject =
-        RoleUtils.getAuthorizationTranslator(authorizer).getHivePrivilegeObject(desc.getPrivilegeSubject());
+        PrivilegeUtils.getAuthorizationTranslator(authorizer).getHivePrivilegeObject(desc.getPrivilegeSubject());
     HivePrincipal grantorPrincipal = new HivePrincipal(null, null);
 
     authorizer.revokePrivileges(hivePrincipals, hivePrivileges, hivePrivilegeObject, grantorPrincipal,
