@@ -36,6 +36,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -108,13 +109,18 @@ public class CachedStore implements RawStore, Configurable {
   private static long DEFAULT_CACHE_REFRESH_PERIOD = 100;
   // Time after which metastore cache is updated from metastore DB by the background update thread
   private static long cacheRefreshPeriodMS = DEFAULT_CACHE_REFRESH_PERIOD;
+  private static int MAX_RETRIES = 10;
+  // This is set to true only after prewarm is complete
   private static AtomicBoolean isCachePrewarmed = new AtomicBoolean(false);
+  // This is set to true only if we were able to cache all the metadata.
+  // We may not be able to cache all metadata if we hit CACHED_RAW_STORE_MAX_CACHE_MEMORY limit.
+  private static AtomicBoolean isCachedAllMetadata = new AtomicBoolean(false);
   private static TablesPendingPrewarm tblsPendingPrewarm = new TablesPendingPrewarm();
   private RawStore rawStore = null;
   private Configuration conf;
   private static boolean areTxnStatsSupported;
   private PartitionExpressionProxy expressionProxy = null;
-  private static final SharedCache sharedCache = new SharedCache();
+  private static SharedCache sharedCache = new SharedCache();
   private static  boolean canUseEvents = false;
   private static long lastEventId;
 
@@ -196,8 +202,8 @@ public class CachedStore implements RawStore, Configurable {
         MetastoreConf.getSizeVar(conf, ConfVars.CACHED_RAW_STORE_MAX_CACHE_MEMORY);
     sharedCache.initialize(maxSharedCacheSizeInBytes);
     if (maxSharedCacheSizeInBytes > 0) {
-      LOG.info("Maximum memory that the cache will use: {} GB",
-          maxSharedCacheSizeInBytes / (1024 * 1024 * 1024));
+      LOG.info("Maximum memory that the cache will use: {} KB",
+          maxSharedCacheSizeInBytes / (1024));
     }
   }
 
@@ -412,8 +418,7 @@ public class CachedStore implements RawStore, Configurable {
       Collection<String> catalogsToCache;
       try {
         catalogsToCache = catalogsToCache(rawStore);
-        LOG.info("Going to cache catalogs: "
-            + org.apache.commons.lang.StringUtils.join(catalogsToCache, ", "));
+        LOG.info("Going to cache catalogs: " + org.apache.commons.lang.StringUtils.join(catalogsToCache, ", "));
         List<Catalog> catalogs = new ArrayList<>(catalogsToCache.size());
         for (String catName : catalogsToCache) {
           catalogs.add(rawStore.getCatalog(catName));
@@ -441,8 +446,7 @@ public class CachedStore implements RawStore, Configurable {
               databases.add(rawStore.getDatabase(catName, dbName));
             } catch (NoSuchObjectException e) {
               // Continue with next database
-              LOG.warn("Failed to cache database "
-                  + DatabaseName.getQualified(catName, dbName) + ", moving on", e);
+              LOG.warn("Failed to cache database " + DatabaseName.getQualified(catName, dbName) + ", moving on", e);
             }
           }
         } catch (MetaException e) {
@@ -450,8 +454,7 @@ public class CachedStore implements RawStore, Configurable {
         }
       }
       sharedCache.populateDatabasesInCache(databases);
-      LOG.info(
-          "Databases cache is now prewarmed. Now adding tables, partitions and statistics to the cache");
+      LOG.info("Databases cache is now prewarmed. Now adding tables, partitions and statistics to the cache");
       int numberOfDatabasesCachedSoFar = 0;
       for (Database db : databases) {
         String catName = StringUtils.normalizeIdentifier(db.getCatalogName());
@@ -460,8 +463,7 @@ public class CachedStore implements RawStore, Configurable {
         try {
           tblNames = rawStore.getAllTables(catName, dbName);
         } catch (MetaException e) {
-          LOG.warn("Failed to cache tables for database "
-              + DatabaseName.getQualified(catName, dbName) + ", moving on");
+          LOG.warn("Failed to cache tables for database " + DatabaseName.getQualified(catName, dbName) + ", moving on");
           // Continue with next database
           continue;
         }
@@ -470,8 +472,7 @@ public class CachedStore implements RawStore, Configurable {
         int numberOfTablesCachedSoFar = 0;
         while (tblsPendingPrewarm.hasMoreTablesToPrewarm()) {
           try {
-            String tblName =
-                StringUtils.normalizeIdentifier(tblsPendingPrewarm.getNextTableNameToPrewarm());
+            String tblName = StringUtils.normalizeIdentifier(tblsPendingPrewarm.getNextTableNameToPrewarm());
             if (!shouldCacheTable(catName, dbName, tblName)) {
               continue;
             }
@@ -479,6 +480,7 @@ public class CachedStore implements RawStore, Configurable {
             try {
               table = rawStore.getTable(catName, dbName, tblName);
             } catch (MetaException e) {
+              LOG.debug(ExceptionUtils.getStackTrace(e));
               // It is possible the table is deleted during fetching tables of the database,
               // in that case, continue with the next table
               continue;
@@ -501,14 +503,13 @@ public class CachedStore implements RawStore, Configurable {
                 if (!partNames.isEmpty()) {
                   // Get partition column stats for this table
                   Deadline.startTimer("getPartitionColumnStatistics");
-                  partitionColStats = rawStore.getPartitionColumnStatistics(catName, dbName,
-                      tblName, partNames, colNames);
+                  partitionColStats =
+                      rawStore.getPartitionColumnStatistics(catName, dbName, tblName, partNames, colNames);
                   Deadline.stopTimer();
                   // Get aggregate stats for all partitions of a table and for all but default
                   // partition
                   Deadline.startTimer("getAggrPartitionColumnStatistics");
-                  aggrStatsAllPartitions =
-                      rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames);
+                  aggrStatsAllPartitions = rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames);
                   Deadline.stopTimer();
                   // Remove default partition from partition names and get aggregate
                   // stats again
@@ -530,44 +531,48 @@ public class CachedStore implements RawStore, Configurable {
                 }
               } else {
                 Deadline.startTimer("getTableColumnStatistics");
-                tableColStats =
-                    rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames);
+                tableColStats = rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames);
                 Deadline.stopTimer();
               }
               // If the table could not cached due to memory limit, stop prewarm
-              boolean isSuccess = sharedCache.populateTableInCache(table, tableColStats, partitions,
-                  partitionColStats, aggrStatsAllPartitions, aggrStatsAllButDefaultPartition);
+              boolean isSuccess = sharedCache.populateTableInCache(table, tableColStats, partitions, partitionColStats,
+                  aggrStatsAllPartitions, aggrStatsAllButDefaultPartition);
               if (isSuccess) {
                 LOG.trace("Cached Database: {}'s Table: {}.", dbName, tblName);
               } else {
-                LOG.info(
-                    "Unable to cache Database: {}'s Table: {}, since the cache memory is full. "
-                        + "Will stop attempting to cache any more tables.",
-                    dbName, tblName);
-                completePrewarm(startTime);
+                LOG.info("Unable to cache Database: {}'s Table: {}, since the cache memory is full. "
+                    + "Will stop attempting to cache any more tables.", dbName, tblName);
+                completePrewarm(startTime, false);
                 return;
               }
             } catch (MetaException | NoSuchObjectException e) {
+              LOG.debug(ExceptionUtils.getStackTrace(e));
               // Continue with next table
               continue;
             }
-            LOG.debug("Processed database: {}'s table: {}. Cached {} / {}  tables so far.", dbName,
-                tblName, ++numberOfTablesCachedSoFar, totalTablesToCache);
+            LOG.debug("Processed database: {}'s table: {}. Cached {} / {}  tables so far.", dbName, tblName,
+                ++numberOfTablesCachedSoFar, totalTablesToCache);
           } catch (EmptyStackException e) {
             // We've prewarmed this database, continue with the next one
             continue;
           }
         }
-        LOG.debug("Processed database: {}. Cached {} / {} databases so far.", dbName,
-            ++numberOfDatabasesCachedSoFar, databases.size());
+        LOG.debug("Processed database: {}. Cached {} / {} databases so far.", dbName, ++numberOfDatabasesCachedSoFar,
+            databases.size());
       }
       sharedCache.clearDirtyFlags();
-      completePrewarm(startTime);
+      completePrewarm(startTime, true);
     }
   }
 
-  private static void completePrewarm(long startTime) {
+  @VisibleForTesting
+  static void clearSharedCache() {
+    sharedCache = new SharedCache();
+  }
+
+  static void completePrewarm(long startTime, boolean cachedAllMetadata) {
     isCachePrewarmed.set(true);
+    isCachedAllMetadata.set(cachedAllMetadata);
     LOG.info("CachedStore initialized");
     long endTime = System.nanoTime();
     LOG.info("Time taken in prewarming = " + (endTime - startTime) / 1000000 + "ms");
@@ -606,12 +611,10 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   private static void initBlackListWhiteList(Configuration conf) {
-    if (whitelistPatterns == null || blacklistPatterns == null) {
-      whitelistPatterns = createPatterns(MetastoreConf.getAsString(conf,
-          MetastoreConf.ConfVars.CACHED_RAW_STORE_CACHED_OBJECTS_WHITELIST));
-      blacklistPatterns = createPatterns(MetastoreConf.getAsString(conf,
-          MetastoreConf.ConfVars.CACHED_RAW_STORE_CACHED_OBJECTS_BLACKLIST));
-    }
+    whitelistPatterns = createPatterns(MetastoreConf.getAsString(conf,
+        MetastoreConf.ConfVars.CACHED_RAW_STORE_CACHED_OBJECTS_WHITELIST));
+    blacklistPatterns = createPatterns(MetastoreConf.getAsString(conf,
+        MetastoreConf.ConfVars.CACHED_RAW_STORE_CACHED_OBJECTS_BLACKLIST));
   }
 
   private static Collection<String> catalogsToCache(RawStore rs) throws MetaException {
@@ -642,7 +645,7 @@ public class CachedStore implements RawStore, Configurable {
         cacheRefreshPeriodMS = MetastoreConf.getTimeVar(conf,
             ConfVars.CACHED_RAW_STORE_CACHE_UPDATE_FREQUENCY, TimeUnit.MILLISECONDS);
       }
-      LOG.info("CachedStore: starting cache update service (run every {} ms", cacheRefreshPeriodMS);
+      LOG.info("CachedStore: starting cache update service (run every {} ms)", cacheRefreshPeriodMS);
       cacheUpdateMaster = Executors.newScheduledThreadPool(1, new ThreadFactory() {
         @Override
         public Thread newThread(Runnable r) {
@@ -656,7 +659,7 @@ public class CachedStore implements RawStore, Configurable {
         cacheUpdateMaster.scheduleAtFixedRate(new CacheUpdateMasterWork(conf, shouldRunPrewarm), 0,
             cacheRefreshPeriodMS, TimeUnit.MILLISECONDS);
       }
-    }
+    } 
     if (runOnlyOnce) {
       // Some tests control the execution of the background update thread
       cacheUpdateMaster.schedule(new CacheUpdateMasterWork(conf, shouldRunPrewarm), 0, TimeUnit.MILLISECONDS);
@@ -735,7 +738,8 @@ public class CachedStore implements RawStore, Configurable {
 
     void update() {
       Deadline.registerIfNot(1000000);
-      LOG.debug("CachedStore: updating cached objects");
+      LOG.debug("CachedStore: updating cached objects. Shared cache has been update {} times so far.",
+          sharedCache.getUpdateCount());
       try {
         for (String catName : catalogsToCache(rawStore)) {
           List<String> dbNames = rawStore.getAllDatabases(catName);
@@ -748,6 +752,7 @@ public class CachedStore implements RawStore, Configurable {
             try {
               tblNames = rawStore.getAllTables(catName, dbName);
             } catch (MetaException e) {
+              LOG.debug(ExceptionUtils.getStackTrace(e));
               // Continue with next database
               continue;
             }
@@ -765,51 +770,64 @@ public class CachedStore implements RawStore, Configurable {
               updateTableAggregatePartitionColStats(rawStore, catName, dbName, tblName);
             }
           }
-      }
-      sharedCache.incrementUpdateCount();
+        }
+        sharedCache.incrementUpdateCount();
+        LOG.debug("CachedStore: updated cached objects. Shared cache update count is: {}",
+            sharedCache.getUpdateCount());
       } catch (MetaException e) {
         LOG.error("Updating CachedStore: error happen when refresh; skipping this iteration", e);
       }
     }
 
-
     private void updateDatabases(RawStore rawStore, String catName, List<String> dbNames) {
-      // Prepare the list of databases
-      List<Database> databases = new ArrayList<>();
-      for (String dbName : dbNames) {
-        Database db;
-        try {
-          db = rawStore.getDatabase(catName, dbName);
-          databases.add(db);
-        } catch (NoSuchObjectException e) {
-          LOG.info("Updating CachedStore: database - " + catName + "." + dbName
-              + " does not exist.", e);
+      LOG.debug("CachedStore: updating cached database objects for catalog: {}", catName);
+      boolean success = false;
+      // Try MAX_RETRIES times, then move to next method
+      int maxTries = MAX_RETRIES;
+      while (!success && (maxTries-- > 0)) {
+        // Prepare the list of databases
+        List<Database> databases = new ArrayList<>();
+        for (String dbName : dbNames) {
+          Database db;
+          try {
+            db = rawStore.getDatabase(catName, dbName);
+            databases.add(db);
+          } catch (NoSuchObjectException e) {
+            LOG.info("Updating CachedStore: database: " + catName + "." + dbName + " does not exist.", e);
+          }
         }
+        success = sharedCache.refreshDatabasesInCache(databases);
+        LOG.debug("CachedStore: updated cached database objects for catalog: {}", catName);
       }
-      sharedCache.refreshDatabasesInCache(databases);
     }
 
     private void updateTables(RawStore rawStore, String catName, String dbName) {
-      List<Table> tables = new ArrayList<>();
-      try {
-        List<String> tblNames = rawStore.getAllTables(catName, dbName);
-        for (String tblName : tblNames) {
-          if (!shouldCacheTable(catName, dbName, tblName)) {
-            continue;
+      LOG.debug("CachedStore: updating cached table objects for catalog: {}, database: {}", catName, dbName);
+      boolean success = false;
+      // Try MAX_RETRIES times, then move to next method
+      int maxTries = MAX_RETRIES;
+      while (!success && (maxTries-- > 0)) {
+        List<Table> tables = new ArrayList<>();
+        try {
+          List<String> tblNames = rawStore.getAllTables(catName, dbName);
+          for (String tblName : tblNames) {
+            if (!shouldCacheTable(catName, dbName, tblName)) {
+              continue;
+            }
+            Table table = rawStore.getTable(StringUtils.normalizeIdentifier(catName),
+                StringUtils.normalizeIdentifier(dbName), StringUtils.normalizeIdentifier(tblName));
+            tables.add(table);
           }
-          Table table = rawStore.getTable(StringUtils.normalizeIdentifier(catName),
-              StringUtils.normalizeIdentifier(dbName),
-              StringUtils.normalizeIdentifier(tblName));
-          tables.add(table);
+          success = sharedCache.refreshTablesInCache(catName, dbName, tables);
+          LOG.debug("CachedStore: updated cached table objects for catalog: {}, database: {}", catName, dbName);
+        } catch (MetaException e) {
+          LOG.debug("Unable to refresh cached tables for database: " + dbName, e);
         }
-        sharedCache.refreshTablesInCache(catName, dbName, tables);
-      } catch (MetaException e) {
-        LOG.debug("Unable to refresh cached tables for database: " + dbName, e);
       }
     }
 
-
     private void updateTableColStats(RawStore rawStore, String catName, String dbName, String tblName) {
+      LOG.debug("CachedStore: updating cached table col stats objects for catalog: {}, database: {}", catName, dbName);
       boolean committed = false;
       rawStore.openTransaction();
       try {
@@ -817,18 +835,18 @@ public class CachedStore implements RawStore, Configurable {
         if (table != null && !table.isSetPartitionKeys()) {
           List<String> colNames = MetaStoreUtils.getColumnNamesForTable(table);
           Deadline.startTimer("getTableColumnStatistics");
-          ColumnStatistics tableColStats =
-              rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames);
+          ColumnStatistics tableColStats = rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames);
           Deadline.stopTimer();
           if (tableColStats != null) {
             sharedCache.refreshTableColStatsInCache(StringUtils.normalizeIdentifier(catName),
-                StringUtils.normalizeIdentifier(dbName),
-                StringUtils.normalizeIdentifier(tblName), tableColStats.getStatsObj());
+                StringUtils.normalizeIdentifier(dbName), StringUtils.normalizeIdentifier(tblName),
+                tableColStats.getStatsObj());
             // Update the table to get consistent stats state.
             sharedCache.alterTableInCache(catName, dbName, tblName, table);
           }
         }
         committed = rawStore.commitTransaction();
+        LOG.debug("CachedStore: updated cached table col stats objects for catalog: {}, database: {}", catName, dbName);
       } catch (MetaException | NoSuchObjectException e) {
         LOG.info("Unable to refresh table column stats for table: " + tblName, e);
       } finally {
@@ -840,19 +858,24 @@ public class CachedStore implements RawStore, Configurable {
     }
 
     private void updateTablePartitions(RawStore rawStore, String catName, String dbName, String tblName) {
+      LOG.debug("CachedStore: updating cached partition objects for catalog: {}, database: {}, table: {}", catName,
+          dbName, tblName);
       try {
         Deadline.startTimer("getPartitions");
         List<Partition> partitions = rawStore.getPartitions(catName, dbName, tblName, Integer.MAX_VALUE);
         Deadline.stopTimer();
         sharedCache.refreshPartitionsInCache(StringUtils.normalizeIdentifier(catName),
-            StringUtils.normalizeIdentifier(dbName),
-            StringUtils.normalizeIdentifier(tblName), partitions);
+            StringUtils.normalizeIdentifier(dbName), StringUtils.normalizeIdentifier(tblName), partitions);
+        LOG.debug("CachedStore: updated cached partition objects for catalog: {}, database: {}, table: {}", catName,
+            dbName, tblName);
       } catch (MetaException | NoSuchObjectException e) {
         LOG.info("Updating CachedStore: unable to read partitions of table: " + tblName, e);
       }
     }
 
     private void updateTablePartitionColStats(RawStore rawStore, String catName, String dbName, String tblName) {
+      LOG.debug("CachedStore: updating cached partition col stats objects for catalog: {}, database: {}, table: {}",
+          catName, dbName, tblName);
       boolean committed = false;
       rawStore.openTransaction();
       try {
@@ -875,6 +898,8 @@ public class CachedStore implements RawStore, Configurable {
           }
         }
         committed = rawStore.commitTransaction();
+        LOG.debug("CachedStore: updated cached partition col stats objects for catalog: {}, database: {}, table: {}",
+            catName, dbName, tblName);
       } catch (MetaException | NoSuchObjectException e) {
         LOG.info("Updating CachedStore: unable to read partitions of table: " + tblName, e);
       } finally {
@@ -888,7 +913,9 @@ public class CachedStore implements RawStore, Configurable {
     // Update cached aggregate stats for all partitions of a table and for all
     // but default partition
     private static void updateTableAggregatePartitionColStats(RawStore rawStore, String catName, String dbName,
-                                                       String tblName) {
+        String tblName) {
+      LOG.debug("CachedStore: updating cached aggregate partition col stats objects for catalog: {}, database: {}, table: {}",
+          catName, dbName, tblName);
       try {
         Table table = rawStore.getTable(catName, dbName, tblName);
         if (table == null) {
@@ -898,13 +925,11 @@ public class CachedStore implements RawStore, Configurable {
         List<String> colNames = MetaStoreUtils.getColumnNamesForTable(table);
         if ((partNames != null) && (partNames.size() > 0)) {
           Deadline.startTimer("getAggregareStatsForAllPartitions");
-          AggrStats aggrStatsAllPartitions =
-              rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames);
+          AggrStats aggrStatsAllPartitions = rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames);
           Deadline.stopTimer();
           // Remove default partition from partition names and get aggregate stats again
           List<FieldSchema> partKeys = table.getPartitionKeys();
-          String defaultPartitionValue =
-              MetastoreConf.getVar(rawStore.getConf(), ConfVars.DEFAULTPARTITIONNAME);
+          String defaultPartitionValue = MetastoreConf.getVar(rawStore.getConf(), ConfVars.DEFAULTPARTITIONNAME);
           List<String> partCols = new ArrayList<String>();
           List<String> partVals = new ArrayList<String>();
           for (FieldSchema fs : partKeys) {
@@ -918,13 +943,13 @@ public class CachedStore implements RawStore, Configurable {
               rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames);
           Deadline.stopTimer();
           sharedCache.refreshAggregateStatsInCache(StringUtils.normalizeIdentifier(catName),
-              StringUtils.normalizeIdentifier(dbName),
-              StringUtils.normalizeIdentifier(tblName), aggrStatsAllPartitions,
+                  StringUtils.normalizeIdentifier(dbName), StringUtils.normalizeIdentifier(tblName), aggrStatsAllPartitions,
               aggrStatsAllButDefaultPartition, null);
+          LOG.debug("CachedStore: updated cached aggregate partition col stats objects for catalog: {}, database: {}, table: {}",
+              catName, dbName, tblName);
         }
       } catch (MetaException | NoSuchObjectException e) {
-        LOG.info("Updating CachedStore: unable to read aggregate column stats of table: " + tblName,
-            e);
+        LOG.info("Updating CachedStore: unable to read aggregate column stats of table: " + tblName, e);
       }
     }
   }
@@ -1425,7 +1450,7 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override
   public List<String> getTables(String catName, String dbName, String pattern) throws MetaException {
-    if (!isBlacklistWhitelistEmpty(conf) || !isCachePrewarmed.get() ||
+    if (!isBlacklistWhitelistEmpty(conf) || !isCachePrewarmed.get() || !isCachedAllMetadata.get() ||
             (canUseEvents && rawStore.isActiveTransaction())) {
       return rawStore.getTables(catName, dbName, pattern);
     }
@@ -1436,7 +1461,7 @@ public class CachedStore implements RawStore, Configurable {
   @Override
   public List<String> getTables(String catName, String dbName, String pattern, TableType tableType)
       throws MetaException {
-    if (!isBlacklistWhitelistEmpty(conf) || !isCachePrewarmed.get()
+    if (!isBlacklistWhitelistEmpty(conf) || !isCachePrewarmed.get()|| !isCachedAllMetadata.get()
             || (canUseEvents && rawStore.isActiveTransaction())) {
       return rawStore.getTables(catName, dbName, pattern, tableType);
     }
@@ -1457,10 +1482,10 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<TableMeta> getTableMeta(String catName, String dbNames, String tableNames,
-                                      List<String> tableTypes) throws MetaException {
+  public List<TableMeta> getTableMeta(String catName, String dbNames, String tableNames, List<String> tableTypes)
+      throws MetaException {
     // TODO Check if all required tables are allowed, if so, get it from cache
-    if (!isBlacklistWhitelistEmpty(conf) || !isCachePrewarmed.get() ||
+    if (!isBlacklistWhitelistEmpty(conf) || !isCachePrewarmed.get() || !isCachedAllMetadata.get() ||
             (canUseEvents && rawStore.isActiveTransaction())) {
       return rawStore.getTableMeta(catName, dbNames, tableNames, tableTypes);
     }
@@ -1509,7 +1534,7 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override
   public List<String> getAllTables(String catName, String dbName) throws MetaException {
-    if (!isBlacklistWhitelistEmpty(conf) || !isCachePrewarmed.get() ||
+    if (!isBlacklistWhitelistEmpty(conf) || !isCachePrewarmed.get() || !isCachedAllMetadata.get() ||
             (canUseEvents && rawStore.isActiveTransaction())) {
       return rawStore.getAllTables(catName, dbName);
     }
