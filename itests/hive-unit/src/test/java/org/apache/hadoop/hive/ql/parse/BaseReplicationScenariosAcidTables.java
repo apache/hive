@@ -140,10 +140,8 @@ public class BaseReplicationScenariosAcidTables {
                     "\"transactional_properties\"=\"insert_only\")")
             .run("insert into t3 values(11)")
             .run("insert into t3 values(22)")
-            .run("create table t5 (id int) stored as orc ")
-            .run("insert into t5 values(1111), (2222)")
-            .run("alter table t5 set tblproperties (\"transactional\"=\"true\")")
-            .run("insert into t5 values(3333)");
+            .run("create table t5 (id int) stored as orc tblproperties (\"transactional\"=\"true\")")
+            .run("insert into t5 values(1111), (2222), (3333)");
     acidTableNames.add("t1");
     acidTableNames.add("t2");
     acidTableNames.add("t3");
