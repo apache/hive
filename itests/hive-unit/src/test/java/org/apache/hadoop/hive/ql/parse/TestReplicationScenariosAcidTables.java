@@ -662,4 +662,40 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     replica.run("drop database " + dbName1 + " cascade");
     replica.run("drop database " + dbName2 + " cascade");
   }
+
+  @Test
+  public void testCtasMmTable() throws Throwable {
+    String tableName = testName.getMethodName();
+    String[] resultArray = new String[]{ "1", "3" };
+    String tableProperties = "\"transactional\"=\"true\", \"transactional_properties\"=\"insert_only\"";
+
+    // Create a non-acid table and replicate it.
+    WarehouseInstance.Tuple bootStrapDump = primary.run("use " + primaryDbName)
+            .run("create table t1_nonacid (a int, b int)")
+            .run("insert into t1_nonacid values (1, 2), (3, 4)")
+            .dump(primaryDbName, null);
+
+    replica.loadWithoutExplain(replicatedDbName, bootStrapDump.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("select a from t1_nonacid order by a")
+            .verifyResults(resultArray);
+
+    // Ctas MM tables with both partitioned and non-partitioned from non-acid table and replicate it.
+    WarehouseInstance.Tuple incrementalDump = primary.run("use " + primaryDbName)
+            .run("create table t2_mm_nonptn tblproperties (" + tableProperties + ") as select * from t1_nonacid")
+            .run("select a from t2_mm_nonptn order by a")
+            .verifyResults(resultArray)
+            .run("create table t3_mm_ptn partitioned by (a) tblproperties ("
+                                    + tableProperties + ") as select * from t1_nonacid")
+            .run("select a from t3_mm_ptn order by a")
+            .verifyResults(resultArray)
+            .dump(primaryDbName, bootStrapDump.lastReplicationId);
+
+    replica.loadWithoutExplain(replicatedDbName, incrementalDump.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("select a from t2_mm_nonptn order by a")
+            .verifyResults(resultArray)
+            .run("select a from t3_mm_ptn order by a")
+            .verifyResults(resultArray);
+  }
 }
