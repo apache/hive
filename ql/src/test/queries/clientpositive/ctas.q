@@ -71,3 +71,6 @@ create table acid_ctas_part partitioned by (k)
   stored as orc TBLPROPERTIES ('transactional'='true')
   as select key k, value from src order by k limit 5;
 select k, value from acid_ctas_part;
+
+explain formatted
+select k, value from acid_ctas_part;
