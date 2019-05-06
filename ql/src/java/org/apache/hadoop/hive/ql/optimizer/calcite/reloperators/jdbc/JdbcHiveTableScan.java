@@ -27,6 +27,7 @@ import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
 
+import org.apache.calcite.rel.RelWriter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 /**
  * Relational expression representing a scan of a HiveDB collection.
@@ -55,4 +56,7 @@ public class JdbcHiveTableScan extends JdbcTableScan {
     return hiveTableScan;
   }
 
+  @Override public RelWriter explainTerms(RelWriter pw) {
+    return hiveTableScan.explainTerms(pw);
+  }
 }

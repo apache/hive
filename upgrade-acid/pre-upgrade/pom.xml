@@ -62,6 +62,16 @@
             <artifactId>hive-metastore</artifactId>
             <version>${hdp.hive.version}</version>
             <scope>provided</scope>
+            <exclusions>
+              <exclusion>
+                <groupId>tomcat</groupId>
+                <artifactId>jasper-compiler</artifactId>
+              </exclusion>
+              <exclusion>
+                <groupId>tomcat</groupId>
+                <artifactId>jasper-runtime</artifactId>
+              </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.hive</groupId>

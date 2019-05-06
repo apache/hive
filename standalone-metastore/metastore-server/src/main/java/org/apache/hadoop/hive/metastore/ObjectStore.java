@@ -1452,6 +1452,33 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
+  public List<Table> getAllMaterializedViewObjectsForRewriting(String catName) throws MetaException {
+    List<Table> allMaterializedViews = new ArrayList<>();
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      catName = normalizeIdentifier(catName);
+      query = pm.newQuery(MTable.class);
+      query.setFilter("database.catalogName == catName && tableType == tt && rewriteEnabled == re");
+      query.declareParameters("java.lang.String catName, java.lang.String tt, boolean re");
+      Collection<MTable> mTbls = (Collection<MTable>) query.executeWithArray(
+          catName, TableType.MATERIALIZED_VIEW.toString(), true);
+      for (MTable mTbl : mTbls) {
+        Table tbl = convertToTable(mTbl);
+        tbl.setCreationMetadata(
+            convertToCreationMetadata(
+                getCreationMetadata(tbl.getCatName(), tbl.getDbName(), tbl.getTableName())));
+        allMaterializedViews.add(tbl);
+      }
+      commited = commitTransaction();
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+    return allMaterializedViews;
+  }
+
+  @Override
   public List<String> getMaterializedViewsForRewriting(String catName, String dbName)
       throws MetaException, NoSuchObjectException {
     final String db_name = normalizeIdentifier(dbName);
@@ -4180,8 +4207,8 @@ public class ObjectStore implements RawStore, Configurable {
       boolean isToTxn = isTxn && !TxnUtils.isTransactionalTable(oldt.getParameters());
       if (!isToTxn && isTxn && areTxnStatsSupported) {
         // Transactional table is altered without a txn. Make sure there are no changes to the flag.
-        String errorMsg = verifyStatsChangeCtx(oldt.getParameters(), newTable.getParameters(),
-            newTable.getWriteId(), queryValidWriteIds, false);
+        String errorMsg = verifyStatsChangeCtx(TableName.getDbTable(name, dbname), oldt.getParameters(),
+                newTable.getParameters(), newTable.getWriteId(), queryValidWriteIds, false);
         if (errorMsg != null) {
           throw new MetaException(errorMsg);
         }
@@ -4238,8 +4265,8 @@ public class ObjectStore implements RawStore, Configurable {
    * Verifies that the stats JSON string is unchanged for alter table (txn stats).
    * @return Error message with the details of the change, or null if the value has not changed.
    */
-  public static String verifyStatsChangeCtx(Map<String, String> oldP, Map<String, String> newP,
-      long writeId, String validWriteIds, boolean isColStatsChange) {
+  public static String verifyStatsChangeCtx(String fullTableName, Map<String, String> oldP, Map<String, String> newP,
+                                            long writeId, String validWriteIds, boolean isColStatsChange) {
     if (validWriteIds != null && writeId > 0) return null; // We have txn context.
     String oldVal = oldP == null ? null : oldP.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
     String newVal = newP == null ? null : newP.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
@@ -4255,9 +4282,10 @@ public class ObjectStore implements RawStore, Configurable {
     // Some change to the stats state is being made; it can only be made with a write ID.
     // Note - we could do this:  if (writeId > 0 && (validWriteIds != null || !StatsSetupConst.areBasicStatsUptoDate(newP))) { return null;
     //       However the only way ID list can be absent is if WriteEntity wasn't generated for the alter, which is a separate bug.
-    return "Cannot change stats state for a transactional table without providing the transactional"
-        + " write state for verification (new write ID " + writeId + ", valid write IDs "
-        + validWriteIds + "; current state " + oldVal + "; new state " + newVal;
+    return "Cannot change stats state for a transactional table " + fullTableName + " without " +
+            "providing the transactional write state for verification (new write ID " +
+            writeId + ", valid write IDs " + validWriteIds + "; current state " + oldVal + "; new" +
+            " state " + newVal;
   }
 
   @Override
@@ -4319,8 +4347,9 @@ public class ObjectStore implements RawStore, Configurable {
     boolean isTxn = TxnUtils.isTransactionalTable(table.getParameters());
     if (isTxn && areTxnStatsSupported) {
       // Transactional table is altered without a txn. Make sure there are no changes to the flag.
-      String errorMsg = verifyStatsChangeCtx(oldp.getParameters(), newPart.getParameters(),
-          newPart.getWriteId(), validWriteIds, false);
+      String errorMsg = verifyStatsChangeCtx(TableName.getDbTable(dbname, name),
+              oldp.getParameters(),
+              newPart.getParameters(), newPart.getWriteId(), validWriteIds, false);
       if (errorMsg != null) {
         throw new MetaException(errorMsg);
       }
@@ -8525,7 +8554,7 @@ public class ObjectStore implements RawStore, Configurable {
         if (!areTxnStatsSupported) {
           StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
         } else {
-          String errorMsg = verifyStatsChangeCtx(
+          String errorMsg = verifyStatsChangeCtx(TableName.getDbTable(dbname, name),
               oldt.getParameters(), newParams, writeId, validWriteIds, true);
           if (errorMsg != null) {
             throw new MetaException(errorMsg);
@@ -8620,8 +8649,9 @@ public class ObjectStore implements RawStore, Configurable {
         if (!areTxnStatsSupported) {
           StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
         } else {
-          String errorMsg = verifyStatsChangeCtx(
-              mPartition.getParameters(), newParams, writeId, validWriteIds, true);
+          String errorMsg = verifyStatsChangeCtx(TableName.getDbTable(statsDesc.getDbName(),
+                                                                      statsDesc.getTableName()),
+                  mPartition.getParameters(), newParams, writeId, validWriteIds, true);
           if (errorMsg != null) {
             throw new MetaException(errorMsg);
           }

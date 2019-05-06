@@ -67,7 +67,7 @@ import java.util.Map;
  * Information about the hive end point (i.e. table or partition) to write to.
  * A light weight object that does NOT internally hold on to resources such as
  * network connections. It can be stored in Hashed containers such as sets and hash tables.
- * @deprecated as of Hive 3.0.0, replaced by {@link org.apache.hive.streaming.HiveStreamingConnection}
+ * @deprecated as of Hive 3.0.0, replaced by org.apache.hive.streaming.HiveStreamingConnection
  */
 @Deprecated
 public class HiveEndPoint {

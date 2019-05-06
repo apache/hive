@@ -344,7 +344,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   /**
    * Attempt to kill a running task. If the task has not started running, it will not start.
    * If it's already running, a kill request will be sent to it.
-   * <p/>
+   * <br>
    * The AM will be informed about the task kill.
    */
   public void killTask() {

@@ -43,7 +43,7 @@
     <druid.derby.version>10.11.1.1</druid.derby.version>
     <druid.guava.version>16.0.1</druid.guava.version>
     <druid.guice.version>4.1.0</druid.guice.version>
-    <kafka.version>2.0.0</kafka.version>
+    <kafka.test.version>2.0.0</kafka.test.version>
   </properties>
       <dependencies>
         <dependency>
@@ -206,18 +206,17 @@
           <artifactId>guice</artifactId>
           <version>${druid.guice.version}</version>
         </dependency>
-        <!-- inter-project -->
-        <dependency>
-          <groupId>junit</groupId>
-          <artifactId>junit</artifactId>
-          <version>${junit.version}</version>
-          <scope>test</scope>
-        </dependency>
         <dependency>
           <groupId>org.apache.kafka</groupId>
           <artifactId>kafka_2.11</artifactId>
-          <version>${kafka.version}</version>
+          <version>${kafka.test.version}</version>
         </dependency>
+        <dependency>
+          <groupId>org.apache.kafka</groupId>
+          <artifactId>kafka-clients</artifactId>
+          <version>${kafka.test.version}</version>
+        </dependency>
+        <!-- inter-project -->
         <dependency>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-api</artifactId>
@@ -239,8 +238,6 @@
             <goals>
               <goal>shade</goal>
             </goals>
-
-
             <configuration>
               <shadeTestJar>false</shadeTestJar>
               <createDependencyReducedPom>false</createDependencyReducedPom>
@@ -261,6 +258,12 @@
                   <exclude>*:jsp-api*</exclude>
                 </excludes>
               </artifactSet>
+              <relocations>
+                <relocation>
+                  <pattern>org.apache.kafka</pattern>
+                  <shadedPattern>org.apache.kafkatests</shadedPattern>
+                </relocation>
+              </relocations>
               <filters>
                 <filter>
                   <artifact>*:*</artifact>

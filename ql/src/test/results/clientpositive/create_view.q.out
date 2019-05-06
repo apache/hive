@@ -172,12 +172,11 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-1
-      Create View Operator:
-        Create View
-          columns: valoo string
-          expanded text: SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `default`.`src` WHERE `src`.`key`=86) `view0`
-          name: default.view0
-          original text: SELECT upper(value) FROM src WHERE key=86
+    Create View
+      columns: valoo string
+      expanded text: SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `default`.`src` WHERE `src`.`key`=86) `view0`
+      name: default.view0
+      original text: SELECT upper(value) FROM src WHERE key=86
 
 PREHOOK: query: EXPLAIN
 SELECT * from view2 where key=18
@@ -1619,16 +1618,40 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@view18
 #### A masked pattern was here ####
 2
-PREHOOK: query: create view if not exists view18 as select v+1 from (select 1 as v) t
+PREHOOK: query: create view if not exists view18 as select "should be ignored"
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: database:default
 PREHOOK: Output: default@view18
-POSTHOOK: query: create view if not exists view18 as select v+1 from (select 1 as v) t
+POSTHOOK: query: create view if not exists view18 as select "should be ignored"
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view18
+PREHOOK: query: show create table view18
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@view18
+POSTHOOK: query: show create table view18
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@view18
+CREATE VIEW `view18` AS select `t`.`v`+1 from (select 1 as `v`) `t`
+PREHOOK: query: create or replace view view18 as select "should replace"
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view18
+POSTHOOK: query: create or replace view view18 as select "should replace"
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@view18
+PREHOOK: query: show create table view18
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@view18
+POSTHOOK: query: show create table view18
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@view18
+CREATE VIEW `view18` AS select "should replace"
 PREHOOK: query: DROP VIEW view1
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@view1

@@ -180,7 +180,7 @@ public abstract class ReplicationTask {
    * throws an IllegalArgumentException as well, a ReplicationTask will use the same key sent in.
    * That way, the default will then be that the destination db name is the same as the src db name
    *
-   * If you want to use a Map<String,String> mapping instead of a Function<String,String>,
+   * If you want to use a Map&lt;String,String&gt; mapping instead of a Function&lt;String,String&gt;,
    * simply call this function as .withTableNameMapping(ReplicationUtils.mapBasedFunction(tableMap))
    * @param tableNameMapping
    * @return this replication task
@@ -197,7 +197,7 @@ public abstract class ReplicationTask {
    * throws an IllegalArgumentException as well, a ReplicationTask will use the same key sent in.
    * That way, the default will then be that the destination db name is the same as the src db name
    *
-   * If you want to use a Map<String,String> mapping instead of a Function<String,String>,
+   * If you want to use a Map&lt;String,String&gt; mapping instead of a Function&lt;String,String&gt;,
    * simply call this function as .withDbNameMapping(ReplicationUtils.mapBasedFunction(dbMap))
    * @param dbNameMapping
    * @return this replication task
@@ -214,9 +214,9 @@ public abstract class ReplicationTask {
   }
 
   /**
-   * Returns a Iterable<Command> to send to a hive driver on the source warehouse
+   * Returns a Iterable&lt;Command&gt; to send to a hive driver on the source warehouse
    *
-   * If you *need* a List<Command> instead, you can use guava's
+   * If you *need* a List&lt;Command&gt; instead, you can use guava's
    * ImmutableList.copyOf(iterable) or Lists.newArrayList(iterable) to
    * get the underlying list, but this defeats the purpose of making this
    * interface an Iterable rather than a List, since it is very likely
@@ -226,9 +226,9 @@ public abstract class ReplicationTask {
   abstract public Iterable<? extends Command> getSrcWhCommands();
 
   /**
-   * Returns a Iterable<Command> to send to a hive driver on the source warehouse
+   * Returns a Iterable&lt;Command&gt; to send to a hive driver on the source warehouse
    *
-   * If you *need* a List<Command> instead, you can use guava's
+   * If you *need* a List&lt;Command&gt; instead, you can use guava's
    * ImmutableList.copyOf(iterable) or Lists.newArrayList(iterable) to
    * get the underlying list, but this defeats the purpose of making this
    * interface an Iterable rather than a List, since it is very likely

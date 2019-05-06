@@ -782,10 +782,10 @@ STAGE PLANS:
                 Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: part
-            filterExpr: UDFToDouble(p_type) is not null (type: boolean)
+            filterExpr: (UDFToDouble(p_type) is not null and p_type is not null) (type: boolean)
             Statistics: Num rows: 26 Data size: 2704 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: UDFToDouble(p_type) is not null (type: boolean)
+              predicate: (UDFToDouble(p_type) is not null and p_type is not null) (type: boolean)
               Statistics: Num rows: 26 Data size: 2704 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: p_type (type: string)

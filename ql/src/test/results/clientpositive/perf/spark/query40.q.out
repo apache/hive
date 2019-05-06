@@ -154,10 +154,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: catalog_returns
-                  filterExpr: cr_item_sk is not null (type: boolean)
+                  filterExpr: (cr_order_number is not null and cr_item_sk is not null) (type: boolean)
                   Statistics: Num rows: 28798881 Data size: 3057234680 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: cr_item_sk is not null (type: boolean)
+                    predicate: (cr_item_sk is not null and cr_order_number is not null) (type: boolean)
                     Statistics: Num rows: 28798881 Data size: 3057234680 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cr_item_sk (type: int), cr_order_number (type: int), cr_refunded_cash (type: decimal(7,2))

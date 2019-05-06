@@ -134,7 +134,7 @@ public class AccumuloPredicateHandler {
    *
    * @param udfType
    *          GenericUDF classname to lookup matching CompareOpt
-   * @return Class<? extends CompareOpt/>
+   * @return Class&lt;? extends CompareOpt/&gt;
    */
   public Class<? extends CompareOp> getCompareOpClass(String udfType)
       throws NoSuchCompareOpException {
@@ -166,7 +166,7 @@ public class AccumuloPredicateHandler {
    *
    * @param type
    *          String hive column lookup matching PrimitiveCompare
-   * @return Class<? extends ></?>
+   * @return Class&lt;? extends &gt;&lt;/?&gt;
    */
   public Class<? extends PrimitiveComparison> getPrimitiveComparisonClass(String type)
       throws NoSuchPrimitiveComparisonException {

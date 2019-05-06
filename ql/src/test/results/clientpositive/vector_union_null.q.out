@@ -1,0 +1,173 @@
+PREHOOK: query: create temporary table null_tab(x int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@null_tab
+POSTHOOK: query: create temporary table null_tab(x int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@null_tab
+PREHOOK: query: create temporary table dummy_tab(x int) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dummy_tab
+POSTHOOK: query: create temporary table dummy_tab(x int) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dummy_tab
+PREHOOK: query: insert into null_tab values(1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@null_tab
+POSTHOOK: query: insert into null_tab values(1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@null_tab
+POSTHOOK: Lineage: null_tab.x SCRIPT []
+PREHOOK: query: insert into dummy_tab values(1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@dummy_tab
+POSTHOOK: query: insert into dummy_tab values(1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@dummy_tab
+POSTHOOK: Lineage: dummy_tab.x SCRIPT []
+PREHOOK: query: explain vectorization detail
+SELECT MIN(table_name) as table_name, c1,c2,c3 from( 
+select 'a' as table_name, null as c1, null as c2, null as c3 from null_tab 
+union all 
+select 'b' as table_name, null as c1, null as c2, null as c3 from dummy_tab 
+) t_union 
+group by c1,c2,c3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dummy_tab
+PREHOOK: Input: default@null_tab
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail
+SELECT MIN(table_name) as table_name, c1,c2,c3 from( 
+select 'a' as table_name, null as c1, null as c2, null as c3 from null_tab 
+union all 
+select 'b' as table_name, null as c1, null as c2, null as c3 from dummy_tab 
+) t_union 
+group by c1,c2,c3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dummy_tab
+POSTHOOK: Input: default@null_tab
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: null_tab
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: 'a' (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
+              Union
+                Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string)
+                  outputColumnNames: _col1
+                  Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: min(_col1)
+                    keys: true (type: boolean)
+                    minReductionHashAggr: 0.99
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: boolean)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: boolean)
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: string)
+          TableScan
+            alias: dummy_tab
+            Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: 'b' (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
+              Union
+                Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string)
+                  outputColumnNames: _col1
+                  Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: min(_col1)
+                    keys: true (type: boolean)
+                    minReductionHashAggr: 0.99
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: boolean)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: boolean)
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: string)
+      Map Vectorization:
+          enabled: false
+          enabledConditionsNotMet: Vectorized map work only works with 1 TableScanOperator IS false
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: min(VALUE._col0)
+          keys: KEY._col0 (type: boolean)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: _col1 (type: string), null (type: void), null (type: void), null (type: void)
+            outputColumnNames: _col0, _col1, _col2, _col3
+            Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: COMPLETE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT MIN(table_name) as table_name, c1,c2,c3 from( 
+select 'a' as table_name, null as c1, null as c2, null as c3 from null_tab 
+union all 
+select 'b' as table_name, null as c1, null as c2, null as c3 from dummy_tab 
+) t_union 
+group by c1,c2,c3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dummy_tab
+PREHOOK: Input: default@null_tab
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT MIN(table_name) as table_name, c1,c2,c3 from( 
+select 'a' as table_name, null as c1, null as c2, null as c3 from null_tab 
+union all 
+select 'b' as table_name, null as c1, null as c2, null as c3 from dummy_tab 
+) t_union 
+group by c1,c2,c3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dummy_tab
+POSTHOOK: Input: default@null_tab
+#### A masked pattern was here ####
+a	NULL	NULL	NULL

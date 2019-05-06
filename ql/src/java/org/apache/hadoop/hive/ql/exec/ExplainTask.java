@@ -237,12 +237,12 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       throws Exception {
     return getJSONPlan(out, work.getRootTasks(), work.getFetchTask(),
         work.isFormatted(), work.getExtended(), work.isAppendTaskType(), work.getCboInfo(),
-        work.getOptimizedSQL());
+        work.getCboPlan(), work.getOptimizedSQL());
   }
 
   public JSONObject getJSONPlan(PrintStream out, List<Task<?>> tasks, Task<?> fetchTask,
       boolean jsonOutput, boolean isExtended, boolean appendTaskType, String cboInfo,
-      String optimizedSQL) throws Exception {
+      String cboPlan, String optimizedSQL) throws Exception {
 
     // If the user asked for a formatted output, dump the json output
     // in the output stream
@@ -250,6 +250,15 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
     if (jsonOutput) {
       out = null;
+    }
+
+    if (cboPlan != null) {
+      if (jsonOutput) {
+        outJSONObject.put("CBOPlan", cboPlan);
+      } else {
+        out.print("CBO PLAN:");
+        out.println(cboPlan);
+      }
     }
 
     if (optimizedSQL != null) {

@@ -134,6 +134,42 @@ SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db1_ext_auth2;
 
 SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db1_ext_auth2;
 
+EXPLAIN
+SELECT P.ikey
+FROM
+  db1_ext_auth1 P
+WHERE
+  NOT TRUE OR P.`ikey` IS NOT NULL
+  AND (P.`bkey` = 10 AND P.`dkey` = 15.15
+    OR P.`bkey` = 20 AND P.`dkey` = 25.25);
+
+SELECT P.ikey
+FROM
+  db1_ext_auth1 P
+WHERE
+  NOT TRUE OR P.`ikey` IS NOT NULL
+  AND (P.`bkey` = 10 AND P.`dkey` = 15.15
+    OR P.`bkey` = 20 AND P.`dkey` = 25.25);
+    
+EXPLAIN
+SELECT P.ikey
+FROM
+  db1_ext_auth1 P
+WHERE
+  NOT TRUE OR P.`ikey` IS NOT NULL
+  AND (P.`bkey` = 10 AND P.`dkey` = 15.15
+    OR P.`bkey` = 20 AND P.`dkey` = 25.25)
+  AND fkey = null;
+
+SELECT P.ikey
+FROM
+  db1_ext_auth1 P
+WHERE
+  NOT TRUE OR P.`ikey` IS NOT NULL
+  AND (P.`bkey` = 10 AND P.`dkey` = 15.15
+    OR P.`bkey` = 20 AND P.`dkey` = 25.25)
+  AND fkey = null;
+
 set hive.jdbc.pushdown.enable=false;
 
 EXPLAIN

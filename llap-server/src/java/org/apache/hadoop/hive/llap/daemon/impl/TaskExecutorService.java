@@ -76,15 +76,15 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * are available or when a higher priority task arrives and will schedule it for execution.
  * When pre-emption is enabled, the tasks from wait queue can replace(pre-empt) a running task.
  * The pre-empted task is reported back to the Application Master(AM) for it to be rescheduled.
- * <p/>
+ * <br>
  * Because of the concurrent nature of task submission, the position of the task in wait queue is
  * held as long the scheduling of the task from wait queue (with or without pre-emption) is complete.
  * The order of pre-emption is based on the ordering in the pre-emption queue. All tasks that cannot
  * run to completion immediately (canFinish = false) are added to pre-emption queue.
- * <p/>
+ * <br>
  * When all the executor threads are occupied and wait queue is full, the task scheduler will
  * return SubmissionState.REJECTED response
- * <p/>
+ * <br>
  * Task executor service can be shut down which will terminated all running tasks and reject all
  * new tasks. Shutting down of the task executor service can be done gracefully or immediately.
  */

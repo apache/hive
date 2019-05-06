@@ -21,6 +21,7 @@ package org.apache.hive.hcatalog.listener;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 import java.util.concurrent.TimeUnit;
@@ -405,8 +406,11 @@ public class TestDbNotificationListener {
     String dbName2 = "dropdb2";
     String dbLocationUri = testTempDir;
     String dbDescription = "no description";
-    Database db = new Database(dbName, dbDescription, dbLocationUri, emptyParameters);
-    msClient.createDatabase(db);
+    msClient.createDatabase(new Database(dbName, dbDescription, dbLocationUri, emptyParameters));
+
+    // Get the DB for comparison below since it may include additional parameters
+    Database db = msClient.getDatabase(dbName);
+    // Drop the database
     msClient.dropDatabase(dbName);
 
     // Read notification from metastore
@@ -427,6 +431,7 @@ public class TestDbNotificationListener {
     // Parse the message field
     DropDatabaseMessage dropDbMsg = md.getDropDatabaseMessage(event.getMessage());
     assertEquals(dbName, dropDbMsg.getDB());
+    assertEquals(db, dropDbMsg.getDatabaseObject());
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.DROP_DATABASE, firstEventId + 2);
@@ -434,8 +439,7 @@ public class TestDbNotificationListener {
 
     // When hive.metastore.transactional.event.listeners is set,
     // a failed event should not create a new notification
-    db = new Database(dbName2, dbDescription, dbLocationUri, emptyParameters);
-    msClient.createDatabase(db);
+    msClient.createDatabase(new Database(dbName2, dbDescription, dbLocationUri, emptyParameters));
     DummyRawStoreFailEvent.setEventSucceed(false);
     try {
       msClient.dropDatabase(dbName2);
@@ -1080,6 +1084,7 @@ public class TestDbNotificationListener {
     data.setInsertData(insertData);
     insertData.addToFilesAdded(fileAdded);
     insertData.addToFilesAddedChecksum(checksumAdded);
+    insertData.setReplace(false);
     FireEventRequest rqst = new FireEventRequest(true, data);
     rqst.setDbName(defaultDbName);
     rqst.setTableName(tblName);
@@ -1103,6 +1108,7 @@ public class TestDbNotificationListener {
     assertEquals(defaultDbName, insertMessage.getDB());
     assertEquals(tblName, insertMessage.getTable());
     assertEquals(TableType.MANAGED_TABLE.toString(), insertMessage.getTableType());
+    assertFalse(insertMessage.isReplace());
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.INSERT, firstEventId + 2);
@@ -1147,6 +1153,7 @@ public class TestDbNotificationListener {
     data.setInsertData(insertData);
     insertData.addToFilesAdded(fileAdded);
     insertData.addToFilesAddedChecksum(checksumAdded);
+    insertData.setReplace(false);
     FireEventRequest rqst = new FireEventRequest(true, data);
     rqst.setDbName(defaultDbName);
     rqst.setTableName(tblName);
@@ -1167,7 +1174,7 @@ public class TestDbNotificationListener {
     verifyInsert(event, defaultDbName, tblName);
     InsertMessage insertMessage = md.getInsertMessage(event.getMessage());
     List<String> ptnValues = insertMessage.getPtnObj().getValues();
-
+    assertFalse(insertMessage.isReplace());
     assertEquals(partKeyVals, ptnValues);
 
     // Verify the eventID was passed to the non-transactional listener
@@ -1261,6 +1268,8 @@ public class TestDbNotificationListener {
     assertEquals(EventType.INSERT.toString(), event.getEventType());
     // Parse the message field
     verifyInsert(event, defaultDbName, tblName);
+    InsertMessage insertMsg = md.getInsertMessage(event.getMessage());
+    assertFalse(insertMsg.isReplace());
 
     event = rsp.getEvents().get(5);
     assertEquals(firstEventId + 6, event.getEventId());
@@ -1387,7 +1396,9 @@ public class TestDbNotificationListener {
     assertEquals(EventType.INSERT.toString(), event.getEventType());
     // Parse the message field
     verifyInsert(event, null, tblName);
-
+    // Verify the replace flag.
+    InsertMessage insertMsg = md.getInsertMessage(event.getMessage());
+    assertFalse(insertMsg.isReplace());
     event = rsp.getEvents().get(8);
     assertEquals(firstEventId + 9, event.getEventId());
     assertEquals(EventType.INSERT.toString(), event.getEventType());
@@ -1433,6 +1444,9 @@ public class TestDbNotificationListener {
     event = rsp.getEvents().get(28);
     assertEquals(firstEventId + 29, event.getEventId());
     assertEquals(EventType.INSERT.toString(), event.getEventType());
+    // Verify the replace flag.
+    insertMsg = md.getInsertMessage(event.getMessage());
+    assertTrue(insertMsg.isReplace());
     // replace-overwrite introduces no new files
     assertTrue(event.getMessage().matches(".*\"files\":\\[\\].*"));
 

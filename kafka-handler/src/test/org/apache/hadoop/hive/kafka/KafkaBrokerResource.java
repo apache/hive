@@ -56,8 +56,8 @@ class KafkaBrokerResource extends ExternalResource {
   @Override protected void before() throws Throwable {
     // Start the ZK and the Broker
     LOG.info("init embedded Zookeeper");
-    zkServer = new EmbeddedZookeeper();
     tmpLogDir = Files.createTempDirectory("kafka-log-dir-").toAbsolutePath();
+    zkServer = new EmbeddedZookeeper();
     String zkConnect = "127.0.0.1:" + zkServer.port();
     LOG.info("init kafka broker");
     Properties brokerProps = new Properties();
@@ -91,7 +91,9 @@ class KafkaBrokerResource extends ExternalResource {
       kafkaServer.shutdown();
       kafkaServer.awaitShutdown();
     }
-    zkServer.shutdown();
+    if (zkServer != null) {
+      zkServer.shutdown();
+    }
   }
 
   void deleteTopic(@SuppressWarnings("SameParameterValue") String topic) {

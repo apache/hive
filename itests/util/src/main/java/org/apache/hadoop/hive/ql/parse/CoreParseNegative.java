@@ -126,7 +126,7 @@ public class CoreParseNegative extends CliAdapter{
     catch (ParseException pe) {
       QTestProcessExecResult result = qt.checkNegativeResults(fname, pe);
       if (result.getReturnCode() != 0) {
-        qt.failed(result.getReturnCode(), fname, result.getCapturedOutput() + "\r\n" + debugHint);
+        qt.failedQuery(null, result.getReturnCode(), fname, result.getCapturedOutput() + "\r\n" + debugHint);
       }
     }
     catch (SemanticException se) {
@@ -138,7 +138,7 @@ public class CoreParseNegative extends CliAdapter{
       }
     }
     catch (Exception e) {
-      qt.failed(e, fname, debugHint);
+      qt.failedWithException(e, fname, debugHint);
     }
 
     long elapsedTime = System.currentTimeMillis() - startTime;

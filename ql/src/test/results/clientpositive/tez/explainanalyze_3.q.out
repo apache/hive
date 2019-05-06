@@ -454,6 +454,7 @@ POSTHOOK: query: explain analyze grant select on table src_autho_test_n4 to user
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@src_autho_test_n4
 Stage-0
+  Grant{"Principals:":[{"Principal":{"name:":"hive_test_user"}}],"privilege subject":{"object:":"default.src_autho_test_n4"},"Privileges:":[{"Privilege":{"privilege:":{"type:":"Select"}}}],"grant option:":"false"}
 
 PREHOOK: query: grant select on table src_autho_test_n4 to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
@@ -473,6 +474,7 @@ Stage-1
   Fetch Operator
     limit:-1
     Stage-0
+      Show grant desc{"privilege subject":{"object:":"default.src_autho_test_n4"},"principal desc:":{"Principal":{"name:":"hive_test_user"}}}
 
 PREHOOK: query: show grant user hive_test_user on table src_autho_test_n4(key)
 PREHOOK: type: SHOW_GRANT
@@ -486,6 +488,7 @@ Stage-1
   Fetch Operator
     limit:-1
     Stage-0
+      Show grant desc{"privilege subject":{"object:":"default.src_autho_test_n4"},"principal desc:":{"Principal":{"name:":"hive_test_user"}}}
 
 PREHOOK: query: select key from src_autho_test_n4 order by key limit 20
 PREHOOK: type: QUERY
@@ -528,6 +531,7 @@ POSTHOOK: query: explain analyze revoke select on table src_autho_test_n4 from u
 POSTHOOK: type: REVOKE_PRIVILEGE
 POSTHOOK: Output: default@src_autho_test_n4
 Stage-0
+  Revoke{"Principals:":[{"Principal":{"name:":"hive_test_user"}}],"privilege subject":{"object:":"default.src_autho_test_n4"},"Privileges:":[{"Privilege":{"privilege:":{"type:":"Select"}}}]}
 
 PREHOOK: query: grant select(key) on table src_autho_test_n4 to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
@@ -542,6 +546,7 @@ POSTHOOK: query: explain analyze grant select(key) on table src_autho_test_n4 to
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@src_autho_test_n4
 Stage-0
+  Grant{"Principals:":[{"Principal":{"name:":"hive_test_user"}}],"privilege subject":{"object:":"default.src_autho_test_n4"},"Privileges:":[{"Privilege":{"columns:":["key"],"privilege:":{"type:":"Select"}}}],"grant option:":"false"}
 
 PREHOOK: query: revoke select(key) on table src_autho_test_n4 from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
@@ -556,6 +561,7 @@ POSTHOOK: query: explain analyze revoke select(key) on table src_autho_test_n4 f
 POSTHOOK: type: REVOKE_PRIVILEGE
 POSTHOOK: Output: default@src_autho_test_n4
 Stage-0
+  Revoke{"Principals:":[{"Principal":{"name:":"hive_test_user"}}],"privilege subject":{"object:":"default.src_autho_test_n4"},"Privileges:":[{"Privilege":{"columns:":["key"],"privilege:":{"type:":"Select"}}}]}
 
 PREHOOK: query: create role sRc_roLE
 PREHOOK: type: CREATEROLE
@@ -568,6 +574,7 @@ POSTHOOK: query: explain analyze
 create role sRc_roLE
 POSTHOOK: type: CREATEROLE
 Stage-0
+  Create Role{"name:":"sRc_roLE"}
 
 PREHOOK: query: create role sRc_roLE
 PREHOOK: type: CREATEROLE
@@ -584,6 +591,7 @@ POSTHOOK: query: explain analyze
 grant role sRc_roLE to user hive_test_user
 POSTHOOK: type: GRANT_ROLE
 Stage-0
+  Grant roles{"principals:":[{"Principal":{"name:":"hive_test_user"}}],"roles:":["sRc_roLE"]}
 
 PREHOOK: query: grant role sRc_roLE to user hive_test_user
 PREHOOK: type: GRANT_ROLE
@@ -601,6 +609,7 @@ Stage-1
   Fetch Operator
     limit:-1
     Stage-0
+      Show Role Grant{"name:":"hive_test_user"}
 
 PREHOOK: query: drop role sRc_roLE
 PREHOOK: type: DROPROLE
@@ -611,6 +620,7 @@ PREHOOK: type: DROPROLE
 POSTHOOK: query: explain analyze drop role sRc_roLE
 POSTHOOK: type: DROPROLE
 Stage-0
+  Drop Role{"name:":"sRc_roLE"}
 
 PREHOOK: query: drop role sRc_roLE
 PREHOOK: type: DROPROLE
@@ -662,9 +672,7 @@ POSTHOOK: Output: default@v_n5
 Plan optimized by CBO.
 
 Stage-1
-  Create View Operator:
-    name:default.v_n5,original text:with cte as (select * from src  order by key limit 5)
-select * from cte
+  Create View{"name:":"default.v_n5","original text:":"with cte as (select * from src  order by key limit 5)\nselect * from cte"}
 
 PREHOOK: query: with cte as (select * from src  order by key limit 5)
 select * from cte

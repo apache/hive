@@ -98,6 +98,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggreg
 import org.apache.hadoop.hive.ql.io.NullRowsInputFormat;
 import org.apache.hadoop.hive.ql.io.OneNullRowInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -347,6 +348,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     // For metadataonly or empty rows optimizations, null/onerow input format can be selected.
     supportedAcidInputFormats.add(NullRowsInputFormat.class.getName());
     supportedAcidInputFormats.add(OneNullRowInputFormat.class.getName());
+    supportedAcidInputFormats.add(ZeroRowsInputFormat.class.getName());
   }
 
   private boolean isTestVectorizationSuppressExplainExecutionMode;

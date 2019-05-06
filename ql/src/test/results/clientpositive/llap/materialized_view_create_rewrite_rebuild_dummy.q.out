@@ -205,19 +205,18 @@ STAGE PLANS:
     Dependency Collection
 
   Stage: Stage-4
-      Create View Operator:
-        Create View
-          columns: a int, c decimal(10,2)
-          expanded text: SELECT `cmv_basetable_n1`.`a`, `cmv_basetable_2_n0`.`c`
+    Create View
+      columns: a int, c decimal(10,2)
+      expanded text: SELECT `cmv_basetable_n1`.`a`, `cmv_basetable_2_n0`.`c`
   FROM `default`.`cmv_basetable_n1` JOIN `default`.`cmv_basetable_2_n0` ON (`cmv_basetable_n1`.`a` = `cmv_basetable_2_n0`.`a`)
   WHERE `cmv_basetable_2_n0`.`c` > 10.0
   GROUP BY `cmv_basetable_n1`.`a`, `cmv_basetable_2_n0`.`c`
-          name: default.cmv_mat_view_n1
-          original text: SELECT cmv_basetable_n1.a, cmv_basetable_2_n0.c
+      name: default.cmv_mat_view_n1
+      original text: SELECT cmv_basetable_n1.a, cmv_basetable_2_n0.c
   FROM cmv_basetable_n1 JOIN cmv_basetable_2_n0 ON (cmv_basetable_n1.a = cmv_basetable_2_n0.a)
   WHERE cmv_basetable_2_n0.c > 10.0
   GROUP BY cmv_basetable_n1.a, cmv_basetable_2_n0.c
-          rewrite enabled: true
+      rewrite enabled: true
 
   Stage: Stage-3
     Stats Work

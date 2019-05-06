@@ -624,7 +624,7 @@ public class Var {
 	}
 
   /**
-   * Convert value to SQL string - string literals are quoted and escaped, ab'c -> 'ab''c'
+   * Convert value to SQL string - string literals are quoted and escaped, ab'c -&gt; 'ab''c'
    */
   public String toSqlString() {
     if (value == null) {

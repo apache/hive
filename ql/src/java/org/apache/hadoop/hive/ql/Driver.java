@@ -1047,7 +1047,7 @@ public class Driver implements IDriver {
       if (conf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_SHOW_GRAPH)) {
         JSONObject jsonPlan = task.getJSONPlan(
             null, rootTasks, sem.getFetchTask(), true, true, true, sem.getCboInfo(),
-            plan.getOptimizedQueryString());
+            plan.getOptimizedCBOPlan(), plan.getOptimizedQueryString());
         if (jsonPlan.getJSONObject(ExplainTask.STAGE_DEPENDENCIES) != null &&
             jsonPlan.getJSONObject(ExplainTask.STAGE_DEPENDENCIES).length() <=
                 conf.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_MAX_GRAPH_SIZE)) {
@@ -1057,7 +1057,7 @@ public class Driver implements IDriver {
         }
       } else {
         task.getJSONPlan(ps, rootTasks, sem.getFetchTask(), false, true, true, sem.getCboInfo(),
-            plan.getOptimizedQueryString());
+            plan.getOptimizedCBOPlan(), plan.getOptimizedQueryString());
         ret = baos.toString();
       }
     } catch (Exception e) {
@@ -2835,7 +2835,14 @@ public class Driver implements IDriver {
   private void releaseContext() {
     try {
       if (ctx != null) {
-        ctx.clear();
+        boolean deleteResultDir = true;
+        // don't let context delete result dirs and scratch dirs if result was cached
+        if(this.cacheUsage != null
+            && this.cacheUsage.getStatus() == CacheUsage.CacheStatus.QUERY_USING_CACHE) {
+          deleteResultDir = false;
+
+        }
+        ctx.clear(deleteResultDir);
         if (ctx.getHiveLocks() != null) {
           hiveLocks.addAll(ctx.getHiveLocks());
           ctx.setHiveLocks(null);
@@ -2931,10 +2938,10 @@ public class Driver implements IDriver {
         lDrvState.abort();
       }
       releasePlan();
+      releaseContext();
       releaseCachedResult();
       releaseFetchTask();
       releaseResStream();
-      releaseContext();
       lDrvState.driverState = DriverState.CLOSED;
     } finally {
       lDrvState.stateLock.unlock();

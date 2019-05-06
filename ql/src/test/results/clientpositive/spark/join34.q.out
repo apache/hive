@@ -32,6 +32,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@dest_j1_n1
+OPTIMIZED SQL: SELECT `t5`.`key`, `t5`.`value`, `t3`.`value` AS `value1`
+FROM (SELECT `key`, `value`
+FROM `default`.`src`
+WHERE `key` < 20 AND CAST(`key` AS DOUBLE) BETWEEN 20 AND 100
+UNION ALL
+SELECT `key`, `value`
+FROM `default`.`src`
+WHERE `key` > 100 AND CAST(`key` AS DOUBLE) BETWEEN 20 AND 100) AS `t3`
+INNER JOIN (SELECT `key`, `value`
+FROM `default`.`src1`
+WHERE CAST(`key` AS DOUBLE) BETWEEN 20 AND 100 AND `key` IS NOT NULL) AS `t5` ON `t3`.`key` = `t5`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

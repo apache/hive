@@ -45,15 +45,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 _col0 (type: string)
-                        1 _col0 (type: string)
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col0 (type: string)
+                          1 _col0 (type: string)
             Local Work:
               Map Reduce Local Work
 
@@ -141,18 +145,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      filter predicates:
-                        0 
-                        1 {_col2}
-                      keys:
-                        0 _col0 (type: string)
-                        1 _col0 (type: string)
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        filter predicates:
+                          0 
+                          1 {_col2}
+                        keys:
+                          0 _col0 (type: string)
+                          1 _col0 (type: string)
             Local Work:
               Map Reduce Local Work
 
@@ -245,18 +253,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      filter predicates:
-                        0 
-                        1 {_col2}
-                      keys:
-                        0 _col0 (type: string)
-                        1 _col0 (type: string)
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        filter predicates:
+                          0 
+                          1 {_col2}
+                        keys:
+                          0 _col0 (type: string)
+                          1 _col0 (type: string)
             Local Work:
               Map Reduce Local Work
 
@@ -349,15 +361,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 _col0 (type: string)
-                        1 _col0 (type: string)
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col0 (type: string)
+                          1 _col0 (type: string)
             Local Work:
               Map Reduce Local Work
 
@@ -445,18 +461,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      filter predicates:
-                        0 
-                        1 {_col2}
-                      keys:
-                        0 _col0 (type: string)
-                        1 _col0 (type: string)
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        filter predicates:
+                          0 
+                          1 {_col2}
+                        keys:
+                          0 _col0 (type: string)
+                          1 _col0 (type: string)
             Local Work:
               Map Reduce Local Work
 
@@ -549,18 +569,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      filter predicates:
-                        0 
-                        1 {_col2}
-                      keys:
-                        0 _col0 (type: string)
-                        1 _col0 (type: string)
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        filter predicates:
+                          0 
+                          1 {_col2}
+                        keys:
+                          0 _col0 (type: string)
+                          1 _col0 (type: string)
             Local Work:
               Map Reduce Local Work
 

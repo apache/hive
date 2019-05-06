@@ -36,6 +36,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
+import java.security.AccessController;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -208,8 +209,7 @@ import org.slf4j.LoggerFactory;
 import com.esotericsoftware.kryo.Kryo;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 
@@ -442,8 +442,10 @@ public final class Utilities {
         // threads, should be unnecessary while SPARK-5377 is resolved.
         String addedJars = conf.get(HIVE_ADDED_JARS);
         if (StringUtils.isNotEmpty(addedJars)) {
-          ClassLoader loader = Thread.currentThread().getContextClassLoader();
-          ClassLoader newLoader = addToClassPath(loader, addedJars.split(";"));
+          AddToClassPathAction addAction = new AddToClassPathAction(
+              Thread.currentThread().getContextClassLoader(), Arrays.asList(addedJars.split(";"))
+          );
+          ClassLoader newLoader = AccessController.doPrivileged(addAction);
           Thread.currentThread().setContextClassLoader(newLoader);
           kryo.setClassLoader(newLoader);
         }
@@ -1486,8 +1488,7 @@ public final class Utilities {
     //  * query cache is disabled
     //  * if it is select query
     if (conf != null && conf.getIsQuery() && conf.getFilesToFetch() != null
-        && HiveConf.getVar(hConf, ConfVars.HIVE_EXECUTION_ENGINE).equalsIgnoreCase("tez")
-        && !HiveConf.getBoolVar(hConf, ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED)){
+        && HiveConf.getVar(hConf, ConfVars.HIVE_EXECUTION_ENGINE).equalsIgnoreCase("tez")){
       return true;
     }
     return false;
@@ -1582,9 +1583,8 @@ public final class Utilities {
    * Check the existence of buckets according to bucket specification. Create empty buckets if
    * needed.
    *
-   * @param hconf
+   * @param hconf The definition of the FileSink.
    * @param paths A list of empty buckets to create
-   * @param conf The definition of the FileSink.
    * @param reporter The mapreduce reporter object
    * @throws HiveException
    * @throws IOException
@@ -2076,7 +2076,7 @@ public final class Utilities {
    * @param onestr  path string
    * @return
    */
-  private static URL urlFromPathString(String onestr) {
+  static URL urlFromPathString(String onestr) {
     URL oneurl = null;
     try {
       if (StringUtils.indexOf(onestr, "file:/") == 0) {
@@ -2090,59 +2090,26 @@ public final class Utilities {
     return oneurl;
   }
 
-  private static boolean useExistingClassLoader(ClassLoader cl) {
-    if (!(cl instanceof UDFClassLoader)) {
-      // Cannot use the same classloader if it is not an instance of {@code UDFClassLoader}
-      return false;
-    }
-    final UDFClassLoader udfClassLoader = (UDFClassLoader) cl;
-    if (udfClassLoader.isClosed()) {
-      // The classloader may have been closed, Cannot add to the same instance
-      return false;
-    }
-    return true;
-  }
-
   /**
-   * Add new elements to the classpath.
-   *
-   * @param newPaths
-   *          Array of classpath elements
-   */
-  public static ClassLoader addToClassPath(ClassLoader cloader, String[] newPaths) {
-    final URLClassLoader loader = (URLClassLoader) cloader;
-    if (useExistingClassLoader(cloader)) {
-      final UDFClassLoader udfClassLoader = (UDFClassLoader) loader;
-      for (String path : newPaths) {
-        udfClassLoader.addURL(urlFromPathString(path));
-      }
-      return udfClassLoader;
-    } else {
-      return createUDFClassLoader(loader, newPaths);
-    }
-  }
-
-  public static ClassLoader createUDFClassLoader(URLClassLoader loader, String[] newPaths) {
-    final Set<URL> curPathsSet = Sets.newHashSet(loader.getURLs());
-    final List<URL> curPaths = Lists.newArrayList(curPathsSet);
-    for (String onestr : newPaths) {
-      final URL oneurl = urlFromPathString(onestr);
-      if (oneurl != null && !curPathsSet.contains(oneurl)) {
-        curPaths.add(oneurl);
-      }
-    }
-    return new UDFClassLoader(curPaths.toArray(new URL[0]), loader);
-  }
-
-  /**
-   * remove elements from the classpath.
+   * Remove elements from the classpath, if possible. This will only work if the current thread context class loader is
+   * an UDFClassLoader (i.e. if we have created it).
    *
    * @param pathsToRemove
    *          Array of classpath elements
    */
   public static void removeFromClassPath(String[] pathsToRemove) throws IOException {
     Thread curThread = Thread.currentThread();
-    URLClassLoader loader = (URLClassLoader) curThread.getContextClassLoader();
+    ClassLoader currentLoader = curThread.getContextClassLoader();
+    // If current class loader is NOT UDFClassLoader, then it is a system class loader, we should not mess with it.
+    if (!(currentLoader instanceof UDFClassLoader)) {
+      LOG.warn("Ignoring attempt to manipulate {}; probably means we have closed more UDF loaders than opened.",
+          currentLoader == null ? "null" : currentLoader.getClass().getSimpleName());
+      return;
+    }
+    // Otherwise -- for UDFClassLoaders -- we close the current one and create a new one, with more limited class path.
+
+    UDFClassLoader loader = (UDFClassLoader) currentLoader;
+
     Set<URL> newPath = new HashSet<URL>(Arrays.asList(loader.getURLs()));
 
     for (String onestr : pathsToRemove) {
@@ -2152,9 +2119,9 @@ public final class Utilities {
       }
     }
     JavaUtils.closeClassLoader(loader);
-   // This loader is closed, remove it from cached registry loaders to avoid removing it again.
+    // This loader is closed, remove it from cached registry loaders to avoid removing it again.
     Registry reg = SessionState.getRegistry();
-    if(reg != null) {
+    if (reg != null) {
       reg.removeFromUDFLoaders(loader);
     }
 
@@ -2486,7 +2453,8 @@ public final class Utilities {
                 new ThreadFactoryBuilder().setDaemon(true)
                         .setNameFormat("Get-Input-Summary-%d").build());
       } else {
-        executor = null;
+        LOG.info("Not using thread pool for getContentSummary");
+        executor = MoreExecutors.newDirectExecutorService();
       }
       getInputSummaryWithPool(ctx, Collections.unmodifiableSet(pathNeedProcess),
           work, summary, executor);
@@ -2513,6 +2481,7 @@ public final class Utilities {
       final ExecutorService executor) throws IOException {
     Preconditions.checkNotNull(ctx);
     Preconditions.checkNotNull(pathNeedProcess);
+    Preconditions.checkNotNull(executor);
 
     List<Future<?>> futures = new ArrayList<Future<?>>(pathNeedProcess.size());
     final AtomicLong totalLength = new AtomicLong(0L);
@@ -2529,9 +2498,7 @@ public final class Utilities {
             LOG.debug("Failed to close filesystem", ignore);
           }
         }
-        if (executor != null) {
-          executor.shutdownNow();
-        }
+        executor.shutdownNow();
       }
     });
     try {
@@ -2624,41 +2591,29 @@ public final class Utilities {
           }
         };
 
-        if (executor == null) {
-          r.run();
-        } else {
-          Future<?> future = executor.submit(r);
-          futures.add(future);
-        }
+        futures.add(executor.submit(r));
       }
 
-      if (executor != null) {
-        for (Future<?> future : futures) {
-          boolean executorDone = false;
-          do {
-            try {
-              future.get();
-              executorDone = true;
-            } catch (InterruptedException e) {
-              LOG.info("Interrupted when waiting threads", e);
-              Thread.currentThread().interrupt();
-              break;
-            } catch (ExecutionException e) {
-              throw new IOException(e);
-            }
-          } while (!executorDone);
+      for (Future<?> future : futures) {
+        try {
+          future.get();
+        } catch (InterruptedException e) {
+          LOG.info("Interrupted when waiting threads", e);
+          Thread.currentThread().interrupt();
+          break;
+        } catch (ExecutionException e) {
+          throw new IOException(e);
         }
-        executor.shutdown();
       }
+      executor.shutdown();
+
       HiveInterruptUtils.checkInterrupted();
 
       summary[0] += totalLength.get();
       summary[1] += totalFileCount.get();
       summary[2] += totalDirectoryCount.get();
     } finally {
-      if (executor != null) {
-        executor.shutdownNow();
-      }
+      executor.shutdownNow();
       HiveInterruptUtils.remove(interrup);
     }
   }
@@ -4611,5 +4566,27 @@ public final class Utilities {
   public static SupplierWithCheckedException<FileSystem, IOException> getFsSupplier(final Path path,
     final Configuration conf) {
     return () -> path.getFileSystem(conf);
+  }
+
+  /**
+   * Logs the class paths of the job class loader and the thread context class loader to the passed logger.
+   * Checks both loaders if getURLs method is available; if not, prints a message about this (instead of the class path)
+   *
+   * Note: all messages will always be logged with INFO log level.
+   */
+  public static void tryLoggingClassPaths(JobConf job, Logger logger) {
+    if (logger != null && logger.isInfoEnabled()) {
+      tryToLogClassPath("conf", job.getClassLoader(), logger);
+      tryToLogClassPath("thread", Thread.currentThread().getContextClassLoader(), logger);
+    }
+  }
+
+  private static void tryToLogClassPath(String prefix, ClassLoader loader, Logger logger) {
+    if(loader instanceof URLClassLoader) {
+      logger.info("{} class path = {}", prefix, Arrays.asList(((URLClassLoader) loader).getURLs()).toString());
+    } else {
+      logger.info("{} class path = unavailable for {}", prefix,
+          loader == null ? "null" : loader.getClass().getSimpleName());
+    }
   }
 }

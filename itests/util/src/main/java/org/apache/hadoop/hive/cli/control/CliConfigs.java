@@ -65,6 +65,7 @@ public class CliConfigs {
         excludeQuery("udaf_corr.q"); // disabled in HIVE-20741
         excludeQuery("udaf_histogram_numeric.q"); // disabled in HIVE-20715
         excludeQuery("stat_estimate_related_col.q"); // disabled in HIVE-20727
+        excludeQuery("vector_groupby_reduce.q"); // Disabled in HIVE-21396
 
         setResultsDir("ql/src/test/results/clientpositive");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
@@ -256,6 +257,8 @@ public class CliConfigs {
         excludeQuery("schema_evol_orc_vec_part_llap_io.q"); // Disabled in HIVE-19509
         excludeQuery("load_dyn_part3.q"); // Disabled in HIVE-20662. Enable in HIVE-20663.
         excludeQuery("cbo_limit.q"); //Disabled in HIVE-20860. Enable in HIVE-20972
+        excludeQuery("rfc5424_parser_file_pruning.q"); // Disabled in HIVE-21427
+        excludeQuery("cbo_rp_limit.q"); // Disabled in HIVE-21657
 
         setResultsDir("ql/src/test/results/clientpositive/llap");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");

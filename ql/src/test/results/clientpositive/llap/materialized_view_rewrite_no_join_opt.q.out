@@ -639,10 +639,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1_n20
-                  filterExpr: ((CAST( name1 AS STRING) = 'Bill') and deptno is not null) (type: boolean)
+                  filterExpr: ((name1 = 'Bill') and deptno is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((CAST( name1 AS STRING) = 'Bill') and deptno is not null) (type: boolean)
+                    predicate: ((name1 = 'Bill') and deptno is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: empid (type: int), deptno (type: int)

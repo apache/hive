@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
+import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
 /**
  * Context for DDL operations.
@@ -39,9 +40,10 @@ public class DDLOperationContext {
   private final DDLWork2 work;
   private final QueryState queryState;
   private final QueryPlan queryPlan;
+  private final LogHelper console;
 
   public DDLOperationContext(HiveConf conf, DriverContext driverContext, DDLTask2 task, DDLWork2 work,
-      QueryState queryState, QueryPlan queryPlan) throws HiveException {
+      QueryState queryState, QueryPlan queryPlan, LogHelper console) throws HiveException {
     this.db = Hive.get(conf);
     this.conf = conf;
     this.driverContext = driverContext;
@@ -50,6 +52,7 @@ public class DDLOperationContext {
     this.work = work;
     this.queryState = queryState;
     this.queryPlan = queryPlan;
+    this.console = console;
   }
 
   public Hive getDb() {
@@ -82,5 +85,9 @@ public class DDLOperationContext {
 
   public QueryPlan getQueryPlan() {
     return queryPlan;
+  }
+
+  public LogHelper getConsole() {
+    return console;
   }
 }
