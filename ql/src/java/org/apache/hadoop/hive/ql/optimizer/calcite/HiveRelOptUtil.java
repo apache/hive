@@ -495,21 +495,15 @@ public class HiveRelOptUtil extends RelOptUtil {
         mq.getNodeTypes(operator);
     for (Entry<Class<? extends RelNode>, Collection<RelNode>> e :
         nodesBelowNonFkInput.asMap().entrySet()) {
+      if (e.getKey() == Project.class) {
+        // It does not alter cardinality, continue
+        continue;
+      }
+
       if (e.getKey() == TableScan.class) {
         if (e.getValue().size() > 1) {
           // Bail out as we may not have more than one TS on non-FK side
           return true;
-        }
-      } else if (e.getKey() == Project.class) {
-        // We check there is no windowing expression
-        for (RelNode node : e.getValue()) {
-          Project p = (Project) node;
-          for (RexNode expr : p.getChildExps()) {
-            if (expr instanceof RexOver) {
-              // Bail out as it may change cardinality
-              return true;
-            }
-          }
         }
       } else if (e.getKey() == Aggregate.class) {
         // We check there is are not grouping sets

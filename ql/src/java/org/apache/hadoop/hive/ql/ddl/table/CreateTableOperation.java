@@ -38,6 +38,10 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Operation process of creating a table.
  */
@@ -93,27 +97,23 @@ public class CreateTableOperation extends DDLOperation {
 
   private void createTableReplaceMode(Table tbl, boolean replDataLocationChanged) throws HiveException {
     ReplicationSpec replicationSpec = desc.getReplicationSpec();
-    long writeId = 0;
+    Long writeId = 0L;
     EnvironmentContext environmentContext = null;
     if (replicationSpec != null && replicationSpec.isInReplicationScope()) {
       if (replicationSpec.isMigratingToTxnTable()) {
         // for migration we start the transaction and allocate write id in repl txn task for migration.
-        String writeIdPara = context.getConf().get(ReplUtils.REPL_CURRENT_TBL_WRITE_ID);
-        if (writeIdPara == null) {
+        writeId = ReplUtils.getMigrationCurrentTblWriteId(context.getConf());
+        if (writeId == null) {
           throw new HiveException("DDLTask : Write id is not set in the config by open txn task for migration");
         }
-        writeId = Long.parseLong(writeIdPara);
       } else {
         writeId = desc.getReplWriteId();
       }
 
       // In case of replication statistics is obtained from the source, so do not update those
-      // on replica. Since we are not replicating statisics for transactional tables, do not do
-      // so for transactional tables right now.
-      if (!AcidUtils.isTransactionalTable(desc)) {
-        environmentContext = new EnvironmentContext();
-        environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
-      }
+      // on replica.
+      environmentContext = new EnvironmentContext();
+      environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
     }
 
     // In replication flow, if table's data location is changed, then set the corresponding flag in
@@ -145,6 +145,27 @@ public class CreateTableOperation extends DDLOperation {
       Table createdTable = context.getDb().getTable(tbl.getDbName(), tbl.getTableName());
       DataContainer dc = new DataContainer(createdTable.getTTable());
       context.getQueryState().getLineageState().setLineage(createdTable.getPath(), dc, createdTable.getCols());
+
+      // We did not create the table before moving the data files for a non-partitioned table i.e
+      // we used load file instead of load table (see SemanticAnalyzer#getFileSinkPlan() for
+      // more details). Thus could not add a write notification required for a transactional
+      // table. Do that here, after we have created the table. Since this is a newly created
+      // table, listing all the files in the directory and listing only the ones corresponding to
+      // the given id doesn't have much difference.
+      if (!createdTable.isPartitioned() && AcidUtils.isTransactionalTable(createdTable)) {
+        org.apache.hadoop.hive.metastore.api.Table tTable = createdTable.getTTable();
+        Path tabLocation = new Path(tTable.getSd().getLocation());
+        List<Path> newFilesList = new ArrayList<>();
+        try {
+          context.getDb().listFilesInsideAcidDirectory(tabLocation,
+                  tabLocation.getFileSystem(context.getConf()), newFilesList);
+        } catch (IOException e) {
+          LOG.error("Error listing files", e);
+          throw new HiveException(e);
+        }
+        context.getDb().addWriteNotificationLog(createdTable, null, newFilesList,
+                tTable.getWriteId());
+      }
     }
   }
 

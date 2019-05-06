@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.junit.After;
 import org.junit.AfterClass;
 
@@ -139,9 +140,10 @@ public class CorePerfCliDriver extends CliAdapter{
       qt.addFile(fpath);
       qt.cliInit(new File(fpath));
 
-      int ecode = qt.executeClient(fname);
+      CommandProcessorResponse response = qt.executeClient(fname);
+      int ecode = response.getResponseCode();
       if (ecode != 0) {
-        qt.failed(ecode, fname, debugHint);
+        qt.failedQuery(response.getException(), response.getResponseCode(), fname, debugHint);
       }
 
       QTestProcessExecResult result = qt.checkCliDriverResults(fname);
@@ -151,7 +153,7 @@ public class CorePerfCliDriver extends CliAdapter{
         qt.failedDiff(result.getReturnCode(), fname, message);
       }
     } catch (Exception e) {
-      qt.failed(e, fname, debugHint);
+      qt.failedWithException(e, fname, debugHint);
     }
 
     long elapsedTime = System.currentTimeMillis() - startTime;

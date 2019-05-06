@@ -111,7 +111,7 @@ public class MetastoreSchemaTool {
     this.metaStoreSchemaInfo = MetaStoreSchemaInfoFactory.get(conf, metastoreHome, dbType);
     // If the dbType is "hive", this is setting up the information schema in Hive.
     // We will set the default jdbc url and driver.
-    // It is overriden by command line options if passed (-url and -driver
+    // It is overridden by command line options if passed (-url and -driver)
     if (dbType.equalsIgnoreCase(HiveSchemaHelper.DB_HIVE)) {
       this.url = HiveSchemaHelper.EMBEDDED_HS2_URL;
       this.driver = HiveSchemaHelper.HIVE_JDBC_DRIVER;
@@ -437,6 +437,10 @@ public class MetastoreSchemaTool {
         task = new SchemaToolTaskMoveTable();
       } else if (cmdLine.hasOption("createUser")) {
         task = new SchemaToolTaskCreateUser();
+      } else if (cmdLine.hasOption("dropAllDatabases")) {
+        task = new SchemaToolTaskDrop();
+      } else if (cmdLine.hasOption("createLogsTable")) {
+        task = new SchemaToolTaskCreateLogsTable();
       } else {
         throw new HiveMetaException("No task defined!");
       }
@@ -456,10 +460,12 @@ public class MetastoreSchemaTool {
           logAndPrintToError("SQL Error code: " + ((SQLException) t).getErrorCode());
         }
       }
-      if (cmdLine.hasOption("verbose")) {
-        e.printStackTrace();
-      } else {
-        logAndPrintToError("Use --verbose for detailed stacktrace.");
+      if (cmdLine != null) {
+        if (cmdLine.hasOption("verbose")) {
+          e.printStackTrace();
+        } else {
+          logAndPrintToError("Use --verbose for detailed stacktrace.");
+        }
       }
       logAndPrintToError("*** schemaTool failed ***");
       return 1;

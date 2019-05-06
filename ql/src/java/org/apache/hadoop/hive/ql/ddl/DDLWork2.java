@@ -36,9 +36,9 @@ public final class DDLWork2 implements Serializable {
   boolean needLock = false;
 
   /** ReadEntitites that are passed to the hooks. */
-  protected Set<ReadEntity> inputs;
+  private Set<ReadEntity> inputs;
   /** List of WriteEntities that are passed to the hooks. */
-  protected Set<WriteEntity> outputs;
+  private Set<WriteEntity> outputs;
 
   public DDLWork2() {
   }

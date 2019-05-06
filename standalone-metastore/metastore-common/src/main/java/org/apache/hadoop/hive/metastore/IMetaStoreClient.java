@@ -335,6 +335,16 @@ public interface IMetaStoreClient {
       throws MetaException, TException, UnknownDBException;
 
   /**
+   * Retrieve all materialized views that have rewriting enabled. This will use the default catalog.
+   * @return List of materialized views.
+   * @throws MetaException error fetching from the RDBMS
+   * @throws TException thrift transport error
+   * @throws UnknownDBException no such database
+   */
+  List<Table> getAllMaterializedViewObjectsForRewriting()
+      throws MetaException, TException, UnknownDBException;
+
+  /**
    * Get materialized views that have rewriting enabled.  This will use the default catalog.
    * @param dbName Name of the database to fetch materialized views from.
    * @return List of materialized view names.
@@ -2708,7 +2718,6 @@ public interface IMetaStoreClient {
       throws MetaException, TException;
 
   /**
-   * @param revokePrivileges
    * @param authorizer
    * @param objToRefresh
    * @return true on success
@@ -2894,7 +2903,7 @@ public interface IMetaStoreClient {
 
   /**
    * Get a structure that details valid write ids.
-   * @param fullTableName full table name of format <db_name>.<table_name>
+   * @param fullTableName full table name of format &lt;db_name&gt;.&lt;table_name&gt;
    * @return list of valid write ids for the given table
    * @throws TException
    */
@@ -2902,7 +2911,7 @@ public interface IMetaStoreClient {
 
   /**
    * Get a structure that details valid write ids.
-   * @param fullTableName full table name of format <db_name>.<table_name>
+   * @param fullTableName full table name of format &lt;db_name&gt;.&lt;table_name&gt;
    * @param writeId The write id to get the corresponding txn
    * @return list of valid write ids for the given table
    * @throws TException
@@ -2911,7 +2920,7 @@ public interface IMetaStoreClient {
 
   /**
    * Get a structure that details valid write ids list for all tables read by current txn.
-   * @param tablesList list of tables (format: <db_name>.<table_name>) read from the current transaction
+   * @param tablesList list of tables (format: &lt;db_name&gt;.&lt;table_name&gt;) read from the current transaction
    *                   for which needs to populate the valid write ids
    * @param validTxnList snapshot of valid txns for the current txn
    * @return list of valid write ids for the given list of tables.

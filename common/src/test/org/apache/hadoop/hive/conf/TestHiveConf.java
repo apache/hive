@@ -18,15 +18,17 @@
 package org.apache.hadoop.hive.conf;
 
 import com.google.common.collect.Lists;
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.util.HiveTestUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
@@ -188,5 +190,58 @@ public class TestHiveConf {
     conf.setQueryString(query);
     Assert.assertEquals(URLEncoder.encode(query, "UTF-8"), conf.get(ConfVars.HIVEQUERYSTRING.varname));
     Assert.assertEquals(query, conf.getQueryString());
+  }
+
+  @Test
+  public void testAdditionalConfigFiles() throws Exception{
+    URL url = ClassLoader.getSystemResource("hive-site.xml");
+    File fileHiveSite = new File(url.getPath());
+
+    String parFolder = fileHiveSite.getParent();
+    //back up hive-site.xml
+    String bakHiveSiteFileName = parFolder + "/hive-site-bak.xml";
+    File fileBakHiveSite = new File(bakHiveSiteFileName);
+    FileUtils.copyFile(fileHiveSite, fileBakHiveSite);
+
+    String content = FileUtils.readFileToString(fileHiveSite);
+    content = content.substring(0, content.lastIndexOf("</configuration>"));
+
+    String testHiveSiteString = content + "<property>\n" +
+            " <name>HIVE_SERVER2_PLAIN_LDAP_DOMAIN</name>\n" +
+            " <value>a.com</value>\n" +
+            "</property>\n" +
+            "\n" +
+            " <property>\n" +
+            "   <name>hive.additional.config.files</name>\n" +
+            "   <value>ldap-site.xml,other.xml</value>\n" +
+            "   <description>additional config dir for Hive to load</description>\n" +
+            " </property>\n" +
+            "\n" +
+            "</configuration>";
+
+    FileUtils.writeStringToFile(fileHiveSite, testHiveSiteString);
+
+    String testLdapString = "<?xml version=\"1.0\"?>\n" +
+            "<?xml-stylesheet type=\"text/xsl\" href=\"configuration.xsl\"?>\n" +
+            "<configuration>\n" +
+            "  <property>\n" +
+            "  <name>hive.server2.authentication.ldap.Domain</name>\n" +
+            "  <value>b.com</value>\n" +
+            "</property>\n" +
+            "\n" +
+            "</configuration>";
+
+
+    String newFileName = parFolder+"/ldap-site.xml";
+    File f2 = new File(newFileName);
+    FileUtils.writeStringToFile(f2, testLdapString);
+
+    HiveConf conf = new HiveConf();
+    String val = conf.getVar(ConfVars.HIVE_SERVER2_PLAIN_LDAP_DOMAIN);
+    Assert.assertEquals("b.com", val);
+    //restore and clean up
+    FileUtils.copyFile(fileBakHiveSite, fileHiveSite);
+    f2.delete();
+    fileBakHiveSite.delete();
   }
 }

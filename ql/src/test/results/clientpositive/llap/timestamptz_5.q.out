@@ -1,0 +1,57 @@
+PREHOOK: query: drop table if exists timestamplocaltz_n1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists timestamplocaltz_n1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists timestamplocaltz_n2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists timestamplocaltz_n2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table timestamplocaltz_n1 (key int, dd timestamp with local time zone)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamplocaltz_n1
+POSTHOOK: query: create table timestamplocaltz_n1 (key int, dd timestamp with local time zone)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestamplocaltz_n1
+PREHOOK: query: create table timestamplocaltz_n2 (key int, dd timestamp with local time zone)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamplocaltz_n2
+POSTHOOK: query: create table timestamplocaltz_n2 (key int, dd timestamp with local time zone)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestamplocaltz_n2
+Warning: Shuffle Join MERGEJOIN[8][tables = [d1, d2]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select d1.key, d2.dd
+  from (select key, dd as start_dd, current_timestamp as end_dd from timestamplocaltz_n1) d1
+  join timestamplocaltz_n2 as d2
+    on d1.key = d2.key or d2.dd between timestamplocaltz '2010-04-01 00:00:00 America/Los_Angeles' and timestamplocaltz '2010-04-02 00:00:00 America/Los_Angeles'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamplocaltz_n1
+PREHOOK: Input: default@timestamplocaltz_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select d1.key, d2.dd
+  from (select key, dd as start_dd, current_timestamp as end_dd from timestamplocaltz_n1) d1
+  join timestamplocaltz_n2 as d2
+    on d1.key = d2.key or d2.dd between timestamplocaltz '2010-04-01 00:00:00 America/Los_Angeles' and timestamplocaltz '2010-04-02 00:00:00 America/Los_Angeles'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamplocaltz_n1
+POSTHOOK: Input: default@timestamplocaltz_n2
+#### A masked pattern was here ####
+PREHOOK: query: drop table timestamplocaltz_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@timestamplocaltz_n1
+PREHOOK: Output: default@timestamplocaltz_n1
+POSTHOOK: query: drop table timestamplocaltz_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@timestamplocaltz_n1
+POSTHOOK: Output: default@timestamplocaltz_n1
+PREHOOK: query: drop table timestamplocaltz_n2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@timestamplocaltz_n2
+PREHOOK: Output: default@timestamplocaltz_n2
+POSTHOOK: query: drop table timestamplocaltz_n2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@timestamplocaltz_n2
+POSTHOOK: Output: default@timestamplocaltz_n2

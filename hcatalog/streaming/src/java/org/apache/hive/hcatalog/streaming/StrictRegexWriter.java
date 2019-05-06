@@ -41,7 +41,7 @@ import org.apache.hadoop.io.Text;
 /**
  * Streaming Writer handles text input data with regex. Uses
  * org.apache.hadoop.hive.serde2.RegexSerDe
- * @deprecated as of Hive 3.0.0, replaced by {@link org.apache.hive.streaming.StrictRegexWriter}
+ * @deprecated as of Hive 3.0.0, replaced by org.apache.hive.streaming.StrictRegexWriter
  */
 @Deprecated
 public class StrictRegexWriter extends AbstractRecordWriter {

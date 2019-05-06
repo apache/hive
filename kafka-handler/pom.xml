@@ -30,7 +30,7 @@
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
-    <kafka.version>2.0.0</kafka.version>
+    <kafka.version>2.2.0</kafka.version>
   </properties>
 
   <artifactId>kafka-handler</artifactId>
@@ -94,7 +94,6 @@
       <scope>test</scope>
       <classifier>test</classifier>
     </dependency>
-
     <dependency>
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka_2.11</artifactId>
@@ -106,6 +105,12 @@
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka_2.11</artifactId>
       <version>${kafka.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.zookeeper</groupId>
+      <artifactId>zookeeper</artifactId>
+      <version>3.4.7</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -142,9 +147,15 @@
                   <createDependencyReducedPom>false</createDependencyReducedPom>
                   <artifactSet>
                     <includes>
-                      <include>org.apache.kafka:*</include>
+                      <include>org.apache.kafka:kafka-clients</include>
                     </includes>
                   </artifactSet>
+                  <relocations>
+                    <relocation>
+                      <pattern>org.apache.kafka</pattern>
+                      <shadedPattern>org.apache.kafkaesque</shadedPattern>
+                    </relocation>
+                  </relocations>
                   <filters>
                     <filter>
                       <artifact>*:*</artifact>

@@ -266,25 +266,33 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cd
+                  filterExpr: cint is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 4531 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
-                  Select Operator
-                    expressions: cint (type: int)
-                    outputColumnNames: _col0
-                    Select Vectorization:
-                        className: VectorSelectOperator
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
                         native: true
-                        projectedOutputColumnNums: [2]
+                        predicateExpression: SelectColumnIsNotNull(col 2:int)
+                    predicate: cint is not null (type: boolean)
                     Statistics: Num rows: 20 Data size: 4531 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      Spark Hash Table Sink Vectorization:
-                          className: VectorSparkHashTableSinkOperator
+                    Select Operator
+                      expressions: cint (type: int)
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
-                      keys:
-                        0 _col0 (type: int)
-                        1 _col0 (type: int)
+                          projectedOutputColumnNums: [2]
+                      Statistics: Num rows: 20 Data size: 4531 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        Spark Hash Table Sink Vectorization:
+                            className: VectorSparkHashTableSinkOperator
+                            native: true
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -307,25 +315,33 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: hd
+                  filterExpr: cbigint is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 4531 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
-                  Select Operator
-                    expressions: cbigint (type: bigint)
-                    outputColumnNames: _col0
-                    Select Vectorization:
-                        className: VectorSelectOperator
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
                         native: true
-                        projectedOutputColumnNums: [3]
+                        predicateExpression: SelectColumnIsNotNull(col 3:bigint)
+                    predicate: cbigint is not null (type: boolean)
                     Statistics: Num rows: 20 Data size: 4531 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      Spark Hash Table Sink Vectorization:
-                          className: VectorSparkHashTableSinkOperator
+                    Select Operator
+                      expressions: cbigint (type: bigint)
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
-                      keys:
-                        0 _col1 (type: bigint)
-                        1 _col0 (type: bigint)
+                          projectedOutputColumnNums: [3]
+                      Statistics: Num rows: 20 Data size: 4531 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        Spark Hash Table Sink Vectorization:
+                            className: VectorSparkHashTableSinkOperator
+                            native: true
+                        keys:
+                          0 _col1 (type: bigint)
+                          1 _col0 (type: bigint)
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true

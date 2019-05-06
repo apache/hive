@@ -280,7 +280,6 @@ public interface RawStore extends Configurable {
    * @param dbName database name.
    * @param tableName table name.
    * @param part_vals partition values for this table.
-   * @param txnId transaction id of the calling transaction
    * @param writeIdList string format of valid writeId transaction list
    * @return the partition.
    * @throws MetaException error reading from RDBMS.
@@ -397,6 +396,15 @@ public interface RawStore extends Configurable {
    * @throws MetaException failure in querying the RDBMS
    */
   List<String> getTables(String catName, String dbName, String pattern, TableType tableType)
+      throws MetaException;
+
+  /**
+   * Retrieve all materialized views.
+   * @return all materialized views in a catalog
+   * @throws MetaException error querying the RDBMS
+   * @throws NoSuchObjectException no such database
+   */
+  List<Table> getAllMaterializedViewObjectsForRewriting(String catName)
       throws MetaException;
 
   /**
@@ -517,9 +525,8 @@ public interface RawStore extends Configurable {
    * @param new_parts list of new partitions.  The order must match the old partitions described in
    *                  part_vals_list.  Each of these should be a complete copy of the new
    *                  partition, not just the pieces to update.
-   * @param txnId transaction id of the transaction that called this method.
-   * @param writeIdList valid write id list of the transaction on the current table
-   * @param writeid write id of the transaction for the table
+   * @param writeId write id of the transaction for the table
+   * @param queryValidWriteIds valid write id list of the transaction on the current table
    * @return
    * @throws InvalidObjectException One of the indicated partitions does not exist.
    * @throws MetaException error accessing the RDBMS.
@@ -908,7 +915,6 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing the RDBMS.
    * @throws InvalidObjectException the stats object is invalid
    * @throws InvalidInputException unable to record the stats for the table
-   * @throws TException
    */
   Map<String, String> updatePartitionColumnStatistics(ColumnStatistics statsObj,
      List<String> partVals, String validWriteIds, long writeId)
@@ -936,7 +942,6 @@ public interface RawStore extends Configurable {
    * @param dbName name of the database, defaults to current database
    * @param tableName name of the table
    * @param colName names of the columns for which statistics is requested
-   * @param txnId transaction id of the calling transaction
    * @param writeIdList string format of valid writeId transaction list
    * @return Relevant column statistics for the column for the given table
    * @throws NoSuchObjectException No such table
@@ -970,7 +975,6 @@ public interface RawStore extends Configurable {
    * @param tblName table name.
    * @param partNames list of partition names.  These are names so must be key1=val1[/key2=val2...]
    * @param colNames list of columns to get stats for
-   * @param txnId transaction id of the calling transaction
    * @param writeIdList string format of valid writeId transaction list
    * @return list of statistics objects
    * @throws MetaException error accessing the RDBMS
@@ -1233,7 +1237,6 @@ public interface RawStore extends Configurable {
    * @param partNames list of partition names.  These are the names of the partitions, not
    *                  values.
    * @param colNames list of column names
-   * @param txnId transaction id of the calling transaction
    * @param writeIdList string format of valid writeId transaction list
    * @return aggregated stats
    * @throws MetaException error accessing RDBMS

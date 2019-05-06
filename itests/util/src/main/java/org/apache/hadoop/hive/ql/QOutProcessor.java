@@ -293,18 +293,22 @@ public class QOutProcessor {
 
     partialPlanMask = ppm.toArray(new PatternReplacementPair[ppm.size()]);
   }
-  /* This list may be modified by specific cli drivers to mask strings that change on every test */
+
   @SuppressWarnings("serial")
-  private final List<Pair<Pattern, String>> patternsWithMaskComments =
-      new ArrayList<Pair<Pattern, String>>() {
-        {
-          add(toPatternPair("(pblob|s3.?|swift|wasb.?).*hive-staging.*",
-              "### BLOBSTORE_STAGING_PATH ###"));
-          add(toPatternPair(PATH_HDFS_WITH_DATE_USER_GROUP_REGEX, String.format("%s %s$3$4 %s $6%s",
-              HDFS_USER_MASK, HDFS_GROUP_MASK, HDFS_DATE_MASK, HDFS_MASK)));
-          add(toPatternPair(PATH_HDFS_REGEX, String.format("$1%s", HDFS_MASK)));
-        }
-      };
+  private ArrayList<Pair<Pattern, String>> initPatternWithMaskComments() {
+    return new ArrayList<Pair<Pattern, String>>() {
+      {
+        add(toPatternPair("(pblob|s3.?|swift|wasb.?).*hive-staging.*",
+            "### BLOBSTORE_STAGING_PATH ###"));
+        add(toPatternPair(PATH_HDFS_WITH_DATE_USER_GROUP_REGEX, String.format("%s %s$3$4 %s $6%s",
+            HDFS_USER_MASK, HDFS_GROUP_MASK, HDFS_DATE_MASK, HDFS_MASK)));
+        add(toPatternPair(PATH_HDFS_REGEX, String.format("$1%s", HDFS_MASK)));
+      }
+    };
+  }
+
+  /* This list may be modified by specific cli drivers to mask strings that change on every test */
+  private List<Pair<Pattern, String>> patternsWithMaskComments = initPatternWithMaskComments();
 
   private Pair<Pattern, String> toPatternPair(String patternStr, String maskComment) {
     return ImmutablePair.of(Pattern.compile(patternStr), maskComment);
@@ -332,6 +336,10 @@ public class QOutProcessor {
       return true;
     }
     return false;
+  }
+
+  public void resetPatternwithMaskComments() {
+    patternsWithMaskComments = initPatternWithMaskComments();
   }
 
 }

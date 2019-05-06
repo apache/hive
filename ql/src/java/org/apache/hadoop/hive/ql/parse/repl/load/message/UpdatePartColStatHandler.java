@@ -21,12 +21,10 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.messaging.UpdatePartitionColumnStatMessage;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -51,7 +49,12 @@ public class UpdatePartColStatHandler extends AbstractMessageHandler {
       updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName, context.tableName,
                   null);
     }
-    return Collections.singletonList(TaskFactory.get(new ColumnStatsUpdateWork(colStats),
-            context.hiveConf));
+
+    try {
+      return ReplUtils.addTasksForLoadingColStats(colStats, context.hiveConf, updatedMetadata,
+                                                  upcsm.getTableObject(), upcsm.getWriteId());
+    } catch(Exception e) {
+      throw new SemanticException(e);
+    }
   }
 }

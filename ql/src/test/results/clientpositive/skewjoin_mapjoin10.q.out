@@ -242,9 +242,10 @@ STAGE PLANS:
         $hdt$_0:a 
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 6 Data size: 540 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((key = 2) or (key = 3)) (type: boolean)
+              predicate: (((key = 2) or (key = 3)) and key is not null) (type: boolean)
               Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), val (type: string)
@@ -259,7 +260,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 6 Data size: 540 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (not ((key = 2) or (key = 3))) (type: boolean)
+              predicate: ((not ((key = 2) or (key = 3))) and key is not null) (type: boolean)
               Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), val (type: string)
@@ -542,9 +543,10 @@ STAGE PLANS:
         $hdt$_0:a 
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((key = 2) or (key = 3)) (type: boolean)
+              predicate: (((key = 2) or (key = 3)) and key is not null) (type: boolean)
               Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int)
@@ -559,7 +561,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (not ((key = 2) or (key = 3))) (type: boolean)
+              predicate: ((not ((key = 2) or (key = 3))) and key is not null) (type: boolean)
               Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int)

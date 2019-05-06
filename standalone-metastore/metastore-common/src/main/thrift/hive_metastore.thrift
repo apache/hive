@@ -424,76 +424,15 @@ struct StorageDescriptor {
   12: optional bool   storedAsSubDirectories       // stored as subdirectories or not
 }
 
-// table information
-struct Table {
-  1: optional i64 id,                 // id of the table. It will be ignored if set. It's only for
-                                      // read purposed
-  2: string tableName,                // name of the table
-  3: string dbName,                   // database name ('default')
-  4: string owner,                    // owner of this table
-  5: i32    createTime,               // creation time of the table
-  6: i32    lastAccessTime,           // last access time (usually this will be filled from HDFS and shouldn't be relied on)
-  7: i32    retention,                // retention time
-  8: StorageDescriptor sd,            // storage descriptor of the table
-  9: list<FieldSchema> partitionKeys, // partition keys of the table. only primitive types are supported
-  10: map<string, string> parameters,   // to store comments or any other user level parameters
-  11: string viewOriginalText,         // original view text, null for non-view
-  12: string viewExpandedText,         // expanded view text, null for non-view
-  13: string tableType,                // table type enum, e.g. EXTERNAL_TABLE
-  14: optional PrincipalPrivilegeSet privileges,
-  15: optional bool temporary=false,
-  16: optional bool rewriteEnabled,     // rewrite enabled or not
-  17: optional CreationMetadata creationMetadata,   // only for MVs, it stores table names used and txn list at MV creation
-  18: optional string catName,          // Name of the catalog the table is in
-  19: optional PrincipalType ownerType = PrincipalType.USER, // owner type of this table (default to USER for backward compatibility)
-  20: optional i64 writeId=-1,
-  21: optional bool isStatsCompliant,
-  22: optional ColumnStatistics colStats // column statistics for table
+struct CreationMetadata {
+    1: required string catName
+    2: required string dbName,
+    3: required string tblName,
+    4: required set<string> tablesUsed,
+    5: optional string validTxnList,
+    6: optional i64 materializationTime
 }
 
-struct Partition {
-  1: list<string> values // string value is converted to appropriate partition key type
-  2: string       dbName,
-  3: string       tableName,
-  4: i32          createTime,
-  5: i32          lastAccessTime,
-  6: StorageDescriptor   sd,
-  7: map<string, string> parameters,
-  8: optional PrincipalPrivilegeSet privileges,
-  9: optional string catName,
-  10: optional i64 writeId=-1,
-  11: optional bool isStatsCompliant,
-  12: optional ColumnStatistics colStats // column statistics for partition
-}
-
-struct PartitionWithoutSD {
-  1: list<string> values // string value is converted to appropriate partition key type
-  2: i32          createTime,
-  3: i32          lastAccessTime,
-  4: string       relativePath,
-  5: map<string, string> parameters,
-  6: optional PrincipalPrivilegeSet privileges
-}
-
-struct PartitionSpecWithSharedSD {
-  1: list<PartitionWithoutSD> partitions,
-  2: StorageDescriptor sd,
-}
-
-struct PartitionListComposingSpec {
-  1: list<Partition> partitions
-}
-
-struct PartitionSpec {
-  1: string dbName,
-  2: string tableName,
-  3: string rootPath,
-  4: optional PartitionSpecWithSharedSD sharedSDPartitionSpec,
-  5: optional PartitionListComposingSpec partitionList,
-  6: optional string catName,
-  7: optional i64 writeId=-1,
-  8: optional bool isStatsCompliant
-}
 
 // column statistics
 struct BooleanColumnStatsData {
@@ -590,6 +529,77 @@ struct ColumnStatistics {
 2: required list<ColumnStatisticsObj> statsObj,
 3: optional bool isStatsCompliant // Are the stats isolation-level-compliant with the
                                                       // the calling query?
+}
+
+// table information
+struct Table {
+  1: optional i64 id,                 // id of the table. It will be ignored if set. It's only for
+                                      // read purposed
+  2: string tableName,                // name of the table
+  3: string dbName,                   // database name ('default')
+  4: string owner,                    // owner of this table
+  5: i32    createTime,               // creation time of the table
+  6: i32    lastAccessTime,           // last access time (usually this will be filled from HDFS and shouldn't be relied on)
+  7: i32    retention,                // retention time
+  8: StorageDescriptor sd,            // storage descriptor of the table
+  9: list<FieldSchema> partitionKeys, // partition keys of the table. only primitive types are supported
+  10: map<string, string> parameters,   // to store comments or any other user level parameters
+  11: string viewOriginalText,         // original view text, null for non-view
+  12: string viewExpandedText,         // expanded view text, null for non-view
+  13: string tableType,                // table type enum, e.g. EXTERNAL_TABLE
+  14: optional PrincipalPrivilegeSet privileges,
+  15: optional bool temporary=false,
+  16: optional bool rewriteEnabled,     // rewrite enabled or not
+  17: optional CreationMetadata creationMetadata,   // only for MVs, it stores table names used and txn list at MV creation
+  18: optional string catName,          // Name of the catalog the table is in
+  19: optional PrincipalType ownerType = PrincipalType.USER, // owner type of this table (default to USER for backward compatibility)
+  20: optional i64 writeId=-1,
+  21: optional bool isStatsCompliant,
+  22: optional ColumnStatistics colStats // column statistics for table
+}
+
+struct Partition {
+  1: list<string> values // string value is converted to appropriate partition key type
+  2: string       dbName,
+  3: string       tableName,
+  4: i32          createTime,
+  5: i32          lastAccessTime,
+  6: StorageDescriptor   sd,
+  7: map<string, string> parameters,
+  8: optional PrincipalPrivilegeSet privileges,
+  9: optional string catName,
+  10: optional i64 writeId=-1,
+  11: optional bool isStatsCompliant,
+  12: optional ColumnStatistics colStats // column statistics for partition
+}
+
+struct PartitionWithoutSD {
+  1: list<string> values // string value is converted to appropriate partition key type
+  2: i32          createTime,
+  3: i32          lastAccessTime,
+  4: string       relativePath,
+  5: map<string, string> parameters,
+  6: optional PrincipalPrivilegeSet privileges
+}
+
+struct PartitionSpecWithSharedSD {
+  1: list<PartitionWithoutSD> partitions,
+  2: StorageDescriptor sd,
+}
+
+struct PartitionListComposingSpec {
+  1: list<Partition> partitions
+}
+
+struct PartitionSpec {
+  1: string dbName,
+  2: string tableName,
+  3: string rootPath,
+  4: optional PartitionSpecWithSharedSD sharedSDPartitionSpec,
+  5: optional PartitionListComposingSpec partitionList,
+  6: optional string catName,
+  7: optional i64 writeId=-1,
+  8: optional bool isStatsCompliant
 }
 
 struct AggrStats {
@@ -927,17 +937,14 @@ struct CommitTxnKeyValue {
     3: required string value,
 }
 
-struct CommitTxnRequest {
-    1: required i64 txnid,
-    2: optional string replPolicy,
-    // Information related to write operations done in this transaction.
-    3: optional list<WriteEventInfo> writeEventInfos,
-
-    // An optional key/value to store atomically with the transaction
-    4: optional CommitTxnKeyValue keyValue,
-
-    // Information to update the last repl id of table/partition along with commit txn (replication from 2.6 to 3.0)
-    5: optional ReplLastIdInfo replLastIdInfo,
+struct WriteEventInfo {
+    1: required i64    writeId,
+    2: required string database,
+    3: required string table,
+    4: required string files,
+    5: optional string partition,
+    6: optional string tableObj, // repl txn task does not need table object for commit
+    7: optional string partitionObj,
 }
 
 struct ReplLastIdInfo {
@@ -949,14 +956,17 @@ struct ReplLastIdInfo {
     6: optional bool needUpdateDBReplId,
 }
 
-struct WriteEventInfo {
-    1: required i64    writeId,
-    2: required string database,
-    3: required string table,
-    4: required string files,
-    5: optional string partition,
-    6: optional string tableObj, // repl txn task does not need table object for commit
-    7: optional string partitionObj,
+struct CommitTxnRequest {
+    1: required i64 txnid,
+    2: optional string replPolicy,
+    // Information related to write operations done in this transaction.
+    3: optional list<WriteEventInfo> writeEventInfos,
+
+    // An optional key/value to store atomically with the transaction
+    4: optional CommitTxnKeyValue keyValue,
+
+    // Information to update the last repl id of table/partition along with commit txn (replication from 2.6 to 3.0)
+    5: optional ReplLastIdInfo replLastIdInfo,
 }
 
 struct ReplTblWriteIdStateRequest {
@@ -989,6 +999,12 @@ struct GetValidWriteIdsResponse {
     1: required list<TableValidWriteIds> tblValidWriteIds,
 }
 
+// Map for allocated write id against the txn for which it is allocated
+struct TxnToWriteId {
+    1: required i64 txnId,
+    2: required i64 writeId,
+}
+
 // Request msg to allocate table write ids for the given list of txns
 struct AllocateTableWriteIdsRequest {
     1: required string dbName,
@@ -999,12 +1015,6 @@ struct AllocateTableWriteIdsRequest {
     4: optional string replPolicy,
     // The list is assumed to be sorted by both txnids and write ids. The write id list is assumed to be contiguous.
     5: optional list<TxnToWriteId> srcTxnToWriteIdList,
-}
-
-// Map for allocated write id against the txn for which it is allocated
-struct TxnToWriteId {
-    1: required i64 txnId,
-    2: required i64 writeId,
 }
 
 struct AllocateTableWriteIdsResponse {
@@ -1099,10 +1109,6 @@ struct CompactionRequest {
     6: optional map<string, string> properties
 }
 
-struct OptionalCompactionInfoStruct {
-    1: optional CompactionInfoStruct ci,
-}
-
 struct CompactionInfoStruct {
     1: required i64 id,
     2: required string dbname,
@@ -1116,6 +1122,10 @@ struct CompactionInfoStruct {
     10: optional string workerId
     11: optional i64 start
     12: optional i64 highestWriteId
+}
+
+struct OptionalCompactionInfoStruct {
+    1: optional CompactionInfoStruct ci,
 }
 
 struct CompactionResponse {
@@ -1165,14 +1175,6 @@ struct BasicTxnInfo {
     6: optional string partitionname
 }
 
-struct CreationMetadata {
-    1: required string catName
-    2: required string dbName,
-    3: required string tblName,
-    4: required set<string> tablesUsed,
-    5: optional string validTxnList,
-    6: optional i64 materializationTime
-}
 
 struct NotificationEventRequest {
     1: required i64 lastEvent,
@@ -1937,6 +1939,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   TruncateTableResponse truncate_table_req(1:TruncateTableRequest req) throws(1:MetaException o1)
   list<string> get_tables(1: string db_name, 2: string pattern) throws (1: MetaException o1)
   list<string> get_tables_by_type(1: string db_name, 2: string pattern, 3: string tableType) throws (1: MetaException o1)
+  list<Table> get_all_materialized_view_objects_for_rewriting() throws (1:MetaException o1)
   list<string> get_materialized_views_for_rewriting(1: string db_name) throws (1: MetaException o1)
   list<TableMeta> get_table_meta(1: string db_patterns, 2: string tbl_patterns, 3: list<string> tbl_types)
                        throws (1: MetaException o1)

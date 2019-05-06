@@ -44,6 +44,8 @@ public class ColumnStatsUpdateWork implements Serializable, DDLDescWithWriteId {
   private final String colName;
   private final String colType;
   private final ColumnStatistics colStats;
+  private final boolean isMigratingToTxn; // Is the table for which we are updating stats going
+                                          // to be migrated during replication.
   private long writeId;
 
   public ColumnStatsUpdateWork(String partName,
@@ -59,10 +61,12 @@ public class ColumnStatsUpdateWork implements Serializable, DDLDescWithWriteId {
     this.colName = colName;
     this.colType = colType;
     this.colStats = null;
+    this.isMigratingToTxn = false;
   }
 
-  public ColumnStatsUpdateWork(ColumnStatistics colStats) {
+  public ColumnStatsUpdateWork(ColumnStatistics colStats, boolean isMigratingToTxn) {
     this.colStats = colStats;
+    this.isMigratingToTxn = isMigratingToTxn;
     this.partName = null;
     this.mapProp = null;
     this.dbName = null;
@@ -102,10 +106,14 @@ public class ColumnStatsUpdateWork implements Serializable, DDLDescWithWriteId {
 
   public ColumnStatistics getColStats() { return colStats; }
 
+  public boolean getIsMigratingToTxn() { return isMigratingToTxn; }
+
   @Override
   public void setWriteId(long writeId) {
     this.writeId = writeId;
   }
+
+  public long getWriteId() { return writeId; }
 
   @Override
   public String getFullTableName() {

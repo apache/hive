@@ -1075,9 +1075,9 @@ POSTHOOK: query: explain extended select distinct `__offset`, cast(`__timestamp`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@wiki_kafka_avro_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-OPTIMIZED SQL: SELECT `__offset` AS `$f0`, CAST(`__timestamp` AS TIMESTAMP(9)) AS `$f1`, `__key` AS `$f2`
+OPTIMIZED SQL: SELECT `__offset` AS `$f0`, CAST(`__timestamp` AS TIMESTAMP) AS `$f1`, `__key` AS `$f2`
 FROM `default`.`wiki_kafka_avro_table`
-GROUP BY `__offset`, CAST(`__timestamp` AS TIMESTAMP(9)), `__key`
+GROUP BY `__offset`, CAST(`__timestamp` AS TIMESTAMP), `__key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1398,9 +1398,9 @@ POSTHOOK: query: explain extended select distinct `__offset`, cast(`__timestamp`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@wiki_kafka_avro_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-OPTIMIZED SQL: SELECT `__offset` AS `$f0`, CAST(`__timestamp` AS TIMESTAMP(9)) AS `$f1`, `__key` AS `$f2`
+OPTIMIZED SQL: SELECT `__offset` AS `$f0`, CAST(`__timestamp` AS TIMESTAMP) AS `$f1`, `__key` AS `$f2`
 FROM `default`.`wiki_kafka_avro_table`
-GROUP BY `__offset`, CAST(`__timestamp` AS TIMESTAMP(9)), `__key`
+GROUP BY `__offset`, CAST(`__timestamp` AS TIMESTAMP), `__key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

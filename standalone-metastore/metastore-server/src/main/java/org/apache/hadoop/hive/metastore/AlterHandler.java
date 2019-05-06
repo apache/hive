@@ -35,7 +35,7 @@ public interface AlterHandler extends Configurable {
 
   /**
    * @deprecated As of release 2.2.0. Replaced by {@link #alterTable(RawStore, Warehouse, String,
-   * String, String, Table, EnvironmentContext, IHMSHandler)}
+   * String, String, Table, EnvironmentContext, IHMSHandler, String)}
    *
    * handles alter table, the changes could be cascaded to partitions if applicable
    *
@@ -92,8 +92,8 @@ public interface AlterHandler extends Configurable {
           throws InvalidOperationException, MetaException;
 
   /**
-   * @deprecated As of release 2.2.0.  Replaced by {@link #alterPartition(RawStore, Warehouse, String,
-   * String, List, Partition, EnvironmentContext, IHMSHandler)}
+   * @deprecated As of release 2.2.0.  Replaced by {@link #alterPartitions(RawStore, Warehouse, String,
+   * String, String, List, EnvironmentContext, String, long, IHMSHandler)}
    *
    * handles alter partition
    *
@@ -151,7 +151,7 @@ public interface AlterHandler extends Configurable {
 
   /**
    * @deprecated As of release 3.0.0. Replaced by {@link #alterPartitions(RawStore, Warehouse, String,
-   * String, String, List, EnvironmentContext, IHMSHandler)}
+   * String, String, List, EnvironmentContext, String, long, IHMSHandler)}
    *
    * handles alter partitions
    *

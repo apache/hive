@@ -83,7 +83,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_returns
-                  filterExpr: (sr_reason_sk is not null and sr_item_sk is not null and sr_ticket_number is not null) (type: boolean)
+                  filterExpr: (sr_item_sk is not null and sr_ticket_number is not null and sr_reason_sk is not null) (type: boolean)
                   Statistics: Num rows: 57591150 Data size: 4462194832 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (sr_item_sk is not null and sr_reason_sk is not null and sr_ticket_number is not null) (type: boolean)

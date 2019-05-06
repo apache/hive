@@ -119,7 +119,7 @@ public interface StreamingTransaction {
   Set<String> getPartitions();
 
   /**
-   * @return get the paris for transaction ids <--> write ids
+   * @return get the paris for transaction ids &lt;--&gt; write ids
    */
   List<TxnToWriteId> getTxnToWriteIds();
 }
