@@ -1,13 +1,7 @@
-
-Release Notes - Hive - Version 2.3.4
-
-
+Release Notes - Hive - Version 2.3.5
 
 ** Bug
-    * [HIVE-18767] - Some alterPartitions invocations throw 'NumberFormatException: null'
-    * [HIVE-18778] - Needs to capture input/output entities in explain
-
-
-** New Feature
-    * [HIVE-20420] - Provide a fallback authorizer when no other authorizer is in use
-
+    * [HIVE-21536] - Backport HIVE-17764 to branch-2.3
+    * [HIVE-21585] - Upgrade branch-2.3 to ORC 1.3.4
+    * [HIVE-21639] - Spark test failed since HIVE-10632
+    * [HIVE-21680] - Backport HIVE-17644 to branch-2 and branch-2.3
