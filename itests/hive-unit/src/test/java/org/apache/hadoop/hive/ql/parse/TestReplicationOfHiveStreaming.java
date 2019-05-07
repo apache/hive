@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -29,7 +28,6 @@ import org.apache.hive.streaming.StreamingConnection;
 
 import org.junit.rules.TestName;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -46,7 +44,7 @@ import java.util.Map;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 
 /**
- * TestReplicationOfHiveStreaming - test replication for streaming ingest on ACID tables
+ * TestReplicationOfHiveStreaming - test replication for streaming ingest on ACID tables.
  */
 public class TestReplicationOfHiveStreaming {
 
@@ -61,7 +59,7 @@ public class TestReplicationOfHiveStreaming {
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
-    HashMap<String, String> overrides = new HashMap<>();
+    Map<String, String> overrides = new HashMap<>();
     overrides.put(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
         GzipJSONMessageEncoder.class.getCanonicalName());
 
@@ -76,19 +74,20 @@ public class TestReplicationOfHiveStreaming {
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =
         new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
-    HashMap<String, String> acidEnableConf = new HashMap<String, String>() {{
-      put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
-      put("hive.support.concurrency", "true");
-      put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
-      put("hive.metastore.client.capability.check", "false");
-      put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
-      put("hive.exec.dynamic.partition.mode", "nonstrict");
-      put("hive.strict.checks.bucketing", "false");
-      put("hive.mapred.mode", "nonstrict");
-      put("mapred.input.dir.recursive", "true");
-      put("hive.metastore.disallow.incompatible.col.type.changes", "false");
-      put("hive.in.repl.test", "true");
-    }};
+    Map<String, String> acidEnableConf = new HashMap<String, String>() {{
+        put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
+        put("hive.support.concurrency", "true");
+        put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+        put("hive.metastore.client.capability.check", "false");
+        put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
+        put("hive.exec.dynamic.partition.mode", "nonstrict");
+        put("hive.strict.checks.bucketing", "false");
+        put("hive.mapred.mode", "nonstrict");
+        put("mapred.input.dir.recursive", "true");
+        put("hive.metastore.disallow.incompatible.col.type.changes", "false");
+        put("hive.strict.managed.tables", "true");
+        put("hive.in.repl.test", "true");
+      }};
 
     acidEnableConf.putAll(overrides);
 
@@ -156,7 +155,7 @@ public class TestReplicationOfHiveStreaming {
             .run("select msg from " + tblName + " order by msg")
             .verifyResults((new String[] {"val1", "val2"}));
 
-    // Begin another transaction, write more records and commit 2nd transaction
+    // Begin another transaction, write more records and commit 2nd transaction after REPL LOAD.
     connection.beginTransaction();
     connection.write("3,val3".getBytes());
     connection.write("4,val4".getBytes());
@@ -241,7 +240,7 @@ public class TestReplicationOfHiveStreaming {
             .run("select msg from " + tblName + " where continent='Asia' and country='India' order by msg")
             .verifyResults((new String[] {"val1", "val2"}));
 
-    // Begin another transaction, write more records and commit 2nd transaction
+    // Begin another transaction, write more records and commit 2nd transaction after REPL LOAD.
     connection.beginTransaction();
     connection.write("3,val3".getBytes());
     connection.write("4,val4".getBytes());
@@ -325,7 +324,7 @@ public class TestReplicationOfHiveStreaming {
             .run("select msg from " + tblName + " where continent='Asia' and country='India' order by msg")
             .verifyResults((new String[] {"val12"}));
 
-    // Begin another transaction, write more records and commit 2nd transaction
+    // Begin another transaction, write more records and commit 2nd transaction after REPL LOAD.
     connection.beginTransaction();
     connection.write("13,val13,Europe,Germany".getBytes());
     connection.write("14,val14,Asia,India".getBytes());

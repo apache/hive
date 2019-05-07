@@ -693,7 +693,7 @@ public class HiveStreamingConnection implements StreamingConnection {
     }
   }
 
-  private class WriteDirInfo {
+  private static class WriteDirInfo {
     List<String> partitionVals;
     Path writeDir;
 
@@ -715,7 +715,13 @@ public class HiveStreamingConnection implements StreamingConnection {
   public void addWriteDirectoryInfo(List<String> partitionValues, Path writeDir) {
     String key = (partitionValues == null) ? tableObject.getFullyQualifiedName()
             : partitionValues.toString();
-    if (!writePaths.containsKey(key)) {
+    if (writePaths.containsKey(key)) {
+      // This method is invoked once per bucket file within delta directory. So, same partition or
+      // table entry shall exist already. But the written delta directory should remain same for all
+      // bucket files.
+      WriteDirInfo dirInfo = writePaths.get(key);
+      assert(dirInfo.getWriteDir().equals(writeDir));
+    } else {
       writePaths.put(key, new WriteDirInfo(partitionValues, writeDir));
     }
   }
@@ -735,10 +741,10 @@ public class HiveStreamingConnection implements StreamingConnection {
       // event per table or partitions.
       // For non-partitioned table, there will be only one entry in writePath and corresponding
       // partitionVals is null.
-      Long txnId = getCurrentTxnId();
-      Long writeId = getCurrentWriteId();
+      Long currentTxnId = getCurrentTxnId();
+      Long currentWriteId = getCurrentWriteId();
       for (WriteDirInfo writeInfo : writePaths.values()) {
-        LOG.debug("TxnId: " + txnId + ", WriteId: " + writeId
+        LOG.debug("TxnId: " + currentTxnId + ", WriteId: " + currentWriteId
                 + " - Logging write event for the files in path " + writeInfo.getWriteDir());
 
         // List the new files added inside the write path (delta directory).
@@ -748,14 +754,14 @@ public class HiveStreamingConnection implements StreamingConnection {
 
         // If no files are added by this streaming writes, then no need to log write notification event.
         if (newFiles.isEmpty()) {
-          LOG.debug("TxnId: " + txnId + ", WriteId: " + writeId
+          LOG.debug("TxnId: " + currentTxnId + ", WriteId: " + currentWriteId
                   + " - Skipping empty path " + writeInfo.getWriteDir());
           continue;
         }
 
         // Add write notification events into HMS table.
         Hive.addWriteNotificationLog(conf, tableObject, writeInfo.getPartitionVals(),
-                txnId, writeId, newFiles);
+                currentTxnId, currentWriteId, newFiles);
       }
     } catch (IOException | TException | HiveException e) {
       throw new StreamingException("Failed to log write notification events.", e);
