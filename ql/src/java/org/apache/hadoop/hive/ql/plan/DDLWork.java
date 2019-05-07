@@ -37,10 +37,6 @@ public class DDLWork implements Serializable {
   private DropPartitionDesc dropPartitionDesc;
   private AlterTableDesc alterTblDesc;
   private ShowColumnsDesc showColumnsDesc;
-  private ShowLocksDesc showLocksDesc;
-  private ShowCompactionsDesc showCompactionsDesc;
-  private ShowTxnsDesc showTxnsDesc;
-  private AbortTxnsDesc abortTxnsDesc;
   private ShowPartitionsDesc showPartsDesc;
   private AddPartitionDesc addPartitionDesc;
   private RenamePartitionDesc renamePartitionDesc;
@@ -48,7 +44,6 @@ public class DDLWork implements Serializable {
   private MsckDesc msckDesc;
   private AlterTableAlterPartDesc alterTableAlterPartDesc;
   private AlterTableExchangePartition alterTableExchangePartition;
-  private KillQueryDesc killQueryDesc;
 
   private ShowConfDesc showConfDesc;
 
@@ -108,34 +103,6 @@ public class DDLWork implements Serializable {
     this(inputs, outputs);
 
     this.showColumnsDesc = showColumnsDesc;
-  }
-
-  /**
-   * @param showLocksDesc
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      ShowLocksDesc showLocksDesc) {
-    this(inputs, outputs);
-
-    this.showLocksDesc = showLocksDesc;
-  }
-
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-                 ShowCompactionsDesc showCompactionsDesc) {
-    this(inputs, outputs);
-    this.showCompactionsDesc = showCompactionsDesc;
-  }
-
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-                 ShowTxnsDesc showTxnsDesc) {
-    this(inputs, outputs);
-    this.showTxnsDesc = showTxnsDesc;
-  }
-
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-                 AbortTxnsDesc abortTxnsDesc) {
-    this(inputs, outputs);
-    this.abortTxnsDesc = abortTxnsDesc;
   }
 
   /**
@@ -220,12 +187,6 @@ public class DDLWork implements Serializable {
     this.insertCommitHookDesc = insertCommitHookDesc;
   }
 
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-                 KillQueryDesc killQueryDesc) {
-    this(inputs, outputs);
-    this.killQueryDesc = killQueryDesc;
-  }
-
   /**
    * @return the dropTblDesc
    */
@@ -248,34 +209,6 @@ public class DDLWork implements Serializable {
   @Explain(displayName = "Show Columns Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public ShowColumnsDesc getShowColumnsDesc() {
     return showColumnsDesc;
-  }
-
-  /**
-   * @return the showLocksDesc
-   */
-  @Explain(displayName = "Show Lock Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public ShowLocksDesc getShowLocksDesc() {
-    return showLocksDesc;
-  }
-
-  @Explain(displayName = "Show Compactions Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public ShowCompactionsDesc getShowCompactionsDesc() {
-    return showCompactionsDesc;
-  }
-
-  @Explain(displayName = "Show Transactions Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public ShowTxnsDesc getShowTxnsDesc() {
-    return showTxnsDesc;
-  }
-
-  @Explain(displayName = "Abort Transactions Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public AbortTxnsDesc getAbortTxnsDesc() {
-    return abortTxnsDesc;
-  }
-
-  @Explain(displayName = "Kill Query Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public KillQueryDesc getKillQueryDesc() {
-    return killQueryDesc;
   }
 
   /**

@@ -76,21 +76,28 @@ public class TestQBCompact {
     h.dropTable("foo");
   }
 
-  private AlterTableSimpleDesc parseAndAnalyze(String query) throws Exception {
+  private void parseAndAnalyze(String query) throws Exception {
     ParseDriver hd = new ParseDriver();
     ASTNode head = (ASTNode)hd.parse(query).getChild(0);
     BaseSemanticAnalyzer a = SemanticAnalyzerFactory.get(queryState, head);
     a.analyze(head, new Context(conf));
     List<Task<? extends Serializable>> roots = a.getRootTasks();
     Assert.assertEquals(1, roots.size());
+  }
+
+  private AlterTableSimpleDesc parseAndAnalyzeAlterTable(String query) throws Exception {
+    ParseDriver hd = new ParseDriver();
+    ASTNode head = (ASTNode)hd.parse(query).getChild(0);
+    BaseSemanticAnalyzer a = SemanticAnalyzerFactory.get(queryState, head);
+    a.analyze(head, new Context(conf));
+    List<Task<?>> roots = a.getRootTasks();
+    Assert.assertEquals(1, roots.size());
     return ((DDLWork)roots.get(0).getWork()).getAlterTblSimpleDesc();
   }
 
-
   @Test
   public void testNonPartitionedTable() throws Exception {
-    boolean sawException = false;
-    AlterTableSimpleDesc desc = parseAndAnalyze("alter table foo compact 'major'");
+    AlterTableSimpleDesc desc = parseAndAnalyzeAlterTable("alter table foo compact 'major'");
     Assert.assertEquals("major", desc.getCompactionType());
     Assert.assertEquals("default.foo", desc.getTableName());
   }
@@ -110,7 +117,7 @@ public class TestQBCompact {
   @Test
   public void testMajor() throws Exception {
     AlterTableSimpleDesc desc =
-        parseAndAnalyze("alter table foo partition(ds = 'today') compact 'major'");
+        parseAndAnalyzeAlterTable("alter table foo partition(ds = 'today') compact 'major'");
     Assert.assertEquals("major", desc.getCompactionType());
     Assert.assertEquals("default.foo", desc.getTableName());
     HashMap<String, String> parts = desc.getPartSpec();
@@ -121,7 +128,7 @@ public class TestQBCompact {
   @Test
   public void testMinor() throws Exception {
     AlterTableSimpleDesc desc =
-        parseAndAnalyze("alter table foo partition(ds = 'today') compact 'minor'");
+        parseAndAnalyzeAlterTable("alter table foo partition(ds = 'today') compact 'minor'");
     Assert.assertEquals("minor", desc.getCompactionType());
     Assert.assertEquals("default.foo", desc.getTableName());
     HashMap<String, String> parts = desc.getPartSpec();

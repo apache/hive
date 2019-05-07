@@ -72,7 +72,6 @@ import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork2;
-import org.apache.hadoop.hive.ql.ddl.alter.AlterMaterializedViewRewriteDesc;
 import org.apache.hadoop.hive.ql.ddl.database.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.DescDatabaseDesc;
@@ -89,15 +88,21 @@ import org.apache.hadoop.hive.ql.ddl.privilege.ShowGrantDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.ShowPrincipalsDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.ShowRoleGrantDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.ShowRolesDesc;
-import org.apache.hadoop.hive.ql.ddl.table.DescTableDesc;
-import org.apache.hadoop.hive.ql.ddl.table.DropTableDesc;
-import org.apache.hadoop.hive.ql.ddl.table.LockTableDesc;
-import org.apache.hadoop.hive.ql.ddl.table.ShowCreateTableDesc;
-import org.apache.hadoop.hive.ql.ddl.table.ShowTableStatusDesc;
-import org.apache.hadoop.hive.ql.ddl.table.ShowTablesDesc;
-import org.apache.hadoop.hive.ql.ddl.table.ShowTablePropertiesDesc;
-import org.apache.hadoop.hive.ql.ddl.table.TruncateTableDesc;
-import org.apache.hadoop.hive.ql.ddl.table.UnlockTableDesc;
+import org.apache.hadoop.hive.ql.ddl.process.AbortTransactionsDesc;
+import org.apache.hadoop.hive.ql.ddl.process.KillQueriesDesc;
+import org.apache.hadoop.hive.ql.ddl.process.ShowCompactionsDesc;
+import org.apache.hadoop.hive.ql.ddl.process.ShowTransactionsDesc;
+import org.apache.hadoop.hive.ql.ddl.table.creation.DropTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.creation.ShowCreateTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.info.DescTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.info.ShowTablePropertiesDesc;
+import org.apache.hadoop.hive.ql.ddl.table.info.ShowTableStatusDesc;
+import org.apache.hadoop.hive.ql.ddl.table.info.ShowTablesDesc;
+import org.apache.hadoop.hive.ql.ddl.table.lock.LockTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.lock.ShowLocksDesc;
+import org.apache.hadoop.hive.ql.ddl.table.lock.UnlockTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.misc.TruncateTableDesc;
+import org.apache.hadoop.hive.ql.ddl.view.AlterMaterializedViewRewriteDesc;
 import org.apache.hadoop.hive.ql.ddl.workloadmanagement.AlterPoolAddTriggerDesc;
 import org.apache.hadoop.hive.ql.ddl.workloadmanagement.AlterPoolDropTriggerDesc;
 import org.apache.hadoop.hive.ql.ddl.workloadmanagement.AlterResourcePlanDesc;
@@ -141,7 +146,6 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.authorization.AuthorizationParseUtils;
 import org.apache.hadoop.hive.ql.parse.authorization.HiveAuthorizationTaskFactory;
 import org.apache.hadoop.hive.ql.parse.authorization.HiveAuthorizationTaskFactoryImpl;
-import org.apache.hadoop.hive.ql.plan.AbortTxnsDesc;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc.OnePartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableAlterPartDesc;
@@ -161,7 +165,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
-import org.apache.hadoop.hive.ql.plan.KillQueryDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
@@ -169,11 +172,8 @@ import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
-import org.apache.hadoop.hive.ql.plan.ShowCompactionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowConfDesc;
-import org.apache.hadoop.hive.ql.plan.ShowLocksDesc;
 import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
-import org.apache.hadoop.hive.ql.plan.ShowTxnsDesc;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -2859,8 +2859,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     ShowLocksDesc showLocksDesc = new ShowLocksDesc(ctx.getResFile(), tableName,
         partSpec, isExtended, txnManager.useNewShowLocksFormat());
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showLocksDesc)));
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), showLocksDesc)));
     setFetchTask(createFetchTask(showLocksDesc.getSchema()));
 
     // Need to initialize the lock manager
@@ -2889,8 +2888,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     ShowLocksDesc showLocksDesc = new ShowLocksDesc(ctx.getResFile(), dbName,
                                                     isExtended, txnManager.useNewShowLocksFormat());
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showLocksDesc)));
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), showLocksDesc)));
     setFetchTask(createFetchTask(showLocksDesc.getSchema()));
 
     // Need to initialize the lock manager
@@ -3016,8 +3014,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private void analyzeShowCompactions(ASTNode ast) throws SemanticException {
     ShowCompactionsDesc desc = new ShowCompactionsDesc(ctx.getResFile());
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
-    setFetchTask(createFetchTask(desc.getSchema()));
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), desc)));
+    setFetchTask(createFetchTask(ShowCompactionsDesc.SCHEMA));
   }
 
   /**
@@ -3026,9 +3024,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    * @throws SemanticException Parsing failed.
    */
   private void analyzeShowTxns(ASTNode ast) throws SemanticException {
-    ShowTxnsDesc desc = new ShowTxnsDesc(ctx.getResFile());
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
-    setFetchTask(createFetchTask(desc.getSchema()));
+    ShowTransactionsDesc desc = new ShowTransactionsDesc(ctx.getResFile());
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), desc)));
+    setFetchTask(createFetchTask(ShowTransactionsDesc.SCHEMA));
   }
 
   /**
@@ -3042,8 +3040,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     for (int i = 0; i < numChildren; i++) {
       txnids.add(Long.parseLong(ast.getChild(i).getText()));
     }
-    AbortTxnsDesc desc = new AbortTxnsDesc(txnids);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
+    AbortTransactionsDesc desc = new AbortTransactionsDesc(txnids);
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), desc)));
   }
 
    /**
@@ -3058,8 +3056,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       queryIds.add(stripQuotes(ast.getChild(i).getText()));
     }
     addServiceOutput();
-    KillQueryDesc desc = new KillQueryDesc(queryIds);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
+    KillQueriesDesc desc = new KillQueriesDesc(queryIds);
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), desc)));
   }
 
   private void addServiceOutput() throws SemanticException {
