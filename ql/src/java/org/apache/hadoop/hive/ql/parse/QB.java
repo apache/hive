@@ -30,8 +30,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.ddl.table.CreateTableDesc;
-import org.apache.hadoop.hive.ql.ddl.table.CreateViewDesc;
+import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableDesc;
+import org.apache.hadoop.hive.ql.ddl.view.CreateViewDesc;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
 /**
