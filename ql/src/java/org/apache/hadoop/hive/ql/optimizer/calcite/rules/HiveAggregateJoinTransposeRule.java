@@ -52,7 +52,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -223,11 +222,7 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
 
     // Update condition
     final Mapping mapping = (Mapping) Mappings.target(
-        new Function<Integer, Integer>() {
-          public Integer apply(Integer a0) {
-            return map.get(a0);
-          }
-        },
+        map::get,
         join.getRowType().getFieldCount(),
         belowOffset);
     final RexNode newCondition =
