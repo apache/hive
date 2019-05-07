@@ -7488,7 +7488,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
               // CreateTableDesc stores table name as db.table. So, need to decode it before allocating
               // write id.
-              if ((dbName == null) || tableName.contains(".")) {
+              if (tableName.contains(".")) {
                 String[] names = Utilities.getDbTableName(tableName);
                 dbName = names[0];
                 tableName = names[1];

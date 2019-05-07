@@ -133,13 +133,13 @@ public class ReplicationTestUtils {
   public static void appendCreateAsSelect(WarehouseInstance primary, String primaryDbName, String primaryDbNameExtra,
                                     String tableName, String tableNameMM,
                                     List<String> selectStmtList, List<String[]> expectedValues) throws Throwable {
-     String tableNameCTAS = tableName + "_CTAS";
+    String tableNameCTAS = tableName + "_CTAS";
     String tableNameCTASMM = tableName + "_CTASMM";
 
-    insertRecords(primary, primaryDbName, primaryDbNameExtra,
+    /*insertRecords(primary, primaryDbName, primaryDbNameExtra,
             tableName, tableNameCTAS, false, OperationType.REPL_TEST_ACID_CTAS);
     selectStmtList.add("select key from " + tableNameCTAS + " order by key");
-    expectedValues.add(new String[]{"1", "2", "3", "4", "5"});
+    expectedValues.add(new String[]{"1", "2", "3", "4", "5"});*/
 
     insertRecords(primary, primaryDbName, primaryDbNameExtra,
             tableNameMM, tableNameCTASMM, true, OperationType.REPL_TEST_ACID_CTAS);
@@ -388,8 +388,10 @@ public class ReplicationTestUtils {
         .run("import table " + tableNameOp + "_nopart from " + exportPathNoPart);
         break;
       case REPL_TEST_ACID_CTAS:
-        primary.run("create table " + tableNameOp + " as select * from " + tableName)
-                .run("create table " + tableNameOp + "_nopart as select * from " + tableName + "_nopart");
+        primary.run("create table " + tableNameOp + " partitioned by (load_date) " + tableStorage
+                            + " tblproperties (" + tableProperty + ") as select * from " + tableName)
+                .run("create table " + tableNameOp + "_nopart " + tableStorage
+                            + " tblproperties (" + tableProperty + ") as select * from " + tableName + "_nopart");
         break;
       case REPL_TEST_ACID_INSERT_LOADLOCAL:
         // For simplicity setting key and value as same value
