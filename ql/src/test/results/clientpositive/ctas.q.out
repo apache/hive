@@ -1075,3 +1075,43 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_ctas7
 POSTHOOK: Lineage: nzhang_ctas7.key SIMPLE [(nzhang_ctas6)nzhang_ctas6.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: nzhang_ctas7.to SIMPLE [(nzhang_ctas6)nzhang_ctas6.FieldSchema(name:to, type:string, comment:null), ]
+PREHOOK: query: create table acid_ctas_part partitioned by (k)
+  stored as orc TBLPROPERTIES ('transactional'='true')
+  as select key k, value from src order by k limit 5
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid_ctas_part
+PREHOOK: Output: default@acid_ctas_part
+POSTHOOK: query: create table acid_ctas_part partitioned by (k)
+  stored as orc TBLPROPERTIES ('transactional'='true')
+  as select key k, value from src order by k limit 5
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid_ctas_part
+POSTHOOK: Output: default@acid_ctas_part@k=0
+POSTHOOK: Output: default@acid_ctas_part@k=10
+POSTHOOK: Output: default@acid_ctas_part@k=100
+POSTHOOK: Lineage: acid_ctas_part PARTITION(k=0).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: acid_ctas_part PARTITION(k=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: acid_ctas_part PARTITION(k=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select k, value from acid_ctas_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_ctas_part
+PREHOOK: Input: default@acid_ctas_part@k=0
+PREHOOK: Input: default@acid_ctas_part@k=10
+PREHOOK: Input: default@acid_ctas_part@k=100
+#### A masked pattern was here ####
+POSTHOOK: query: select k, value from acid_ctas_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_ctas_part
+POSTHOOK: Input: default@acid_ctas_part@k=0
+POSTHOOK: Input: default@acid_ctas_part@k=10
+POSTHOOK: Input: default@acid_ctas_part@k=100
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+100	val_100

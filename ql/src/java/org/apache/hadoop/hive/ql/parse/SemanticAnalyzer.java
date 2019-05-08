@@ -7489,8 +7489,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         fileSinkColInfos = new ArrayList<>();
         destTableIsTemporary = tblDesc.isTemporary();
         destTableIsMaterialization = tblDesc.isMaterialization();
-        if (AcidUtils.isInsertOnlyTable(tblDesc.getTblProps(), true)) {
-          isMmTable = isMmCtas = true;
+        if (AcidUtils.isTablePropertyTransactional(tblDesc.getTblProps())) {
           try {
             if (ctx.getExplainConfig() != null) {
               writeId = 0L; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
@@ -7510,7 +7509,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           } catch (LockException ex) {
             throw new SemanticException("Failed to allocate write Id", ex);
           }
-          tblDesc.setInitialMmWriteId(writeId);
+          if (AcidUtils.isInsertOnlyTable(tblDesc.getTblProps(), true)) {
+            isMmTable = isMmCtas = true;
+            tblDesc.setInitialMmWriteId(writeId);
+          }
         }
       } else if (viewDesc != null) {
         fieldSchemas = new ArrayList<>();
