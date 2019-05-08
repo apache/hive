@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -12,20 +11,18 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
     <version>18</version>
-    <relativePath></relativePath>
+    <relativePath />
   </parent>
 
   <groupId>org.apache.hive</groupId>
   <artifactId>hive-standalone-metastore</artifactId>
-  <version>3.1.0-SNAPSHOT</version>
+  <version>3.1.0.6.0.99.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Hive Standalone Metastore</name>
 
@@ -72,7 +69,7 @@
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2</dropwizard-metrics-hadoop-metrics2-reporter.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <guava.version>19.0</guava.version>
-    <hadoop.version>3.1.0</hadoop.version>
+    <hadoop.version>3.1.1.6.0.99.0-SNAPSHOT</hadoop.version>
     <hikaricp.version>2.6.1</hikaricp.version>
     <jackson.version>2.9.5</jackson.version>
     <javolution.version>5.5.1</javolution.version>
@@ -81,10 +78,10 @@
     <libthrift.version>0.9.3</libthrift.version>
     <log4j2.version>2.8.2</log4j2.version>
     <mockito-all.version>1.10.19</mockito-all.version>
-    <orc.version>1.5.1</orc.version>
+    <orc.version>1.5.1.6.0.99.0-SNAPSHOT</orc.version>
     <protobuf.version>2.5.0</protobuf.version>
     <sqlline.version>1.3.0</sqlline.version>
-    <storage-api.version>2.6.1-SNAPSHOT</storage-api.version>
+    <storage-api.version>2.3.0.6.0.99.0-SNAPSHOT</storage-api.version>
     <curator.version>2.12.0</curator.version>
 
     <!-- Thrift properties -->
@@ -364,19 +361,18 @@
                 <phase>generate-sources</phase>
                 <configuration>
                   <target>
-                    <taskdef name="for" classname="net.sf.antcontrib.logic.ForTask"
-                             classpathref="maven.plugin.classpath" />
-                    <property name="thrift.args" value="${thrift.args}"/>
-                    <property name="thrift.gen.dir" value="${thrift.gen.dir}"/>
-                    <delete dir="${thrift.gen.dir}"/>
-                    <mkdir dir="${thrift.gen.dir}"/>
+                    <taskdef classname="net.sf.antcontrib.logic.ForTask" classpathref="maven.plugin.classpath" name="for" />
+                    <property name="thrift.args" value="${thrift.args}" />
+                    <property name="thrift.gen.dir" value="${thrift.gen.dir}" />
+                    <delete dir="${thrift.gen.dir}" />
+                    <mkdir dir="${thrift.gen.dir}" />
                     <for param="thrift.file">
                       <path>
                         <fileset dir="." includes="src/main/thrift/*.thrift" />
                       </path>
                       <sequential>
-                        <echo message="Generating Thrift code for @{thrift.file}"/>
-                        <exec executable="${thrift.home}/bin/thrift"  failonerror="true" dir=".">
+                        <echo message="Generating Thrift code for @{thrift.file}" />
+                        <exec dir="." executable="${thrift.home}/bin/thrift" failonerror="true">
                           <arg line="${thrift.args} -I ${basedir}/include -I ${basedir}/.. -o ${thrift.gen.dir} @{thrift.file} " />
                         </exec>
                       </sequential>
@@ -561,10 +557,10 @@
             <configuration>
               <target>
                 <exec executable="bash" failonerror="true">
-                  <arg value="${basedir}/src/main/resources/saveVersion.sh"/>
-                  <arg value="${project.version}"/>
-                  <arg value="${hive.version.shortname}"/>
-                  <arg value="${basedir}/src"/>
+                  <arg value="${basedir}/src/main/resources/saveVersion.sh" />
+                  <arg value="${project.version}" />
+                  <arg value="${hive.version.shortname}" />
+                  <arg value="${basedir}/src" />
                 </exec>
               </target>
             </configuration>
@@ -582,7 +578,7 @@
               <target>
                 <mkdir dir="${test.tmp.dir}/scripts/metastore/upgrade" />
                 <copy todir="${test.tmp.dir}/scripts/metastore/upgrade">
-                  <fileset dir="${basedir}/src/main/sql/"/>
+                  <fileset dir="${basedir}/src/main/sql/" />
                 </copy>
               </target>
             </configuration>
@@ -773,7 +769,7 @@
           <executable>java</executable>
           <arguments>
             <argument>-classpath</argument>
-            <classpath/>
+            <classpath />
             <argument>org.apache.hadoop.hive.metastore.conf.ConfTemplatePrinter</argument>
             <argument>${project.build.directory}/generated-sources/conf/metastore-site.xml.template</argument>
           </arguments>

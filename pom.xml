@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -12,7 +11,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache</groupId>
@@ -21,7 +20,7 @@
   </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive</artifactId>
-  <version>3.1.0-SNAPSHOT</version>
+  <version>3.1.0.6.0.99.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Hive</name>
@@ -80,7 +79,7 @@
     <checkstyle.conf.dir>${basedir}/${hive.path.to.root}/checkstyle</checkstyle.conf.dir>
 
     <!-- Test Properties -->
-    <test.extra.path></test.extra.path>
+    <test.extra.path />
     <!--suppress UnresolvedMavenProperty -->
     <test.hive.hadoop.classpath>${maven.test.classpath}</test.hive.hadoop.classpath>
     <test.log4j.scheme>file://</test.log4j.scheme>
@@ -93,8 +92,8 @@
     <test.warehouse.scheme>pfile://</test.warehouse.scheme>
 
     <!-- To add additional exclude patterns set this property -->
-    <test.excludes.additional></test.excludes.additional>
-    <skip.spark.files></skip.spark.files>
+    <test.excludes.additional />
+    <skip.spark.files />
 
     <!-- Plugin and Plugin Dependency Versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
@@ -116,18 +115,18 @@
     <maven.build-helper.plugin.version>1.8</maven.build-helper.plugin.version>
 
     <!-- Library Dependency Versions -->
-    <accumulo.version>1.7.0.3.1.0.0-SNAPSHOT</accumulo.version>
+    <accumulo.version>1.7.0.6.0.99.0-SNAPSHOT</accumulo.version>
     <activemq.version>5.5.0</activemq.version>
     <ant.version>1.9.1</ant.version>
     <antlr.version>3.5.2</antlr.version>
     <apache-directory-server.version>1.5.6</apache-directory-server.version>
     <apache-directory-clientapi.version>0.1</apache-directory-clientapi.version>
     <!-- Include arrow for LlapOutputFormatService -->
-    <arrow.version>0.8.0</arrow.version>
-    <avatica.version>1.10.0.3.1.0.0-SNAPSHOT</avatica.version>
+    <arrow.version>0.8.0.6.0.99.0-SNAPSHOT</arrow.version>
+    <avatica.version>1.10.0.6.0.99.0-SNAPSHOT</avatica.version>
     <avro.version>1.7.7</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
-    <calcite.version>1.16.0.3.1.0.0-SNAPSHOT</calcite.version>
+    <calcite.version>1.16.0.6.0.99.0-SNAPSHOT</calcite.version>
     <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
     <datanucleus-core.version>4.1.17</datanucleus-core.version>
     <datanucleus-rdbms.version>4.1.19</datanucleus-rdbms.version>
@@ -146,15 +145,15 @@
     <derby.version>10.14.1.0</derby.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2</dropwizard-metrics-hadoop-metrics2-reporter.version>
-    <druid.version>0.12.1.3.1.0.0-SNAPSHOT</druid.version>
+    <druid.version>0.12.1.6.0.99.0-SNAPSHOT</druid.version>
     <flatbuffers.version>1.2.0-3f79e055</flatbuffers.version>
     <guava.version>19.0</guava.version>
     <groovy.version>2.4.11</groovy.version>
     <h2database.version>1.3.166</h2database.version>
-    <hadoop.version>3.1.1.3.1.0.0-SNAPSHOT</hadoop.version>
+    <hadoop.version>3.1.1.6.0.99.0-SNAPSHOT</hadoop.version>
     <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
     <hamcrest.version>1.3</hamcrest.version>
-    <hbase.version>2.0.2.3.1.0.0-SNAPSHOT</hbase.version>
+    <hbase.version>2.2.0.6.0.99.0-SNAPSHOT</hbase.version>
     <hppc.version>0.7.2</hppc.version>
     <!-- required for logging test to avoid including hbase which pulls disruptor transitively -->
     <disruptor.version>3.3.7</disruptor.version>
@@ -187,21 +186,21 @@
     <libthrift.version>0.9.3</libthrift.version>
     <log4j2.version>2.10.0</log4j2.version>
     <opencsv.version>2.3</opencsv.version>
-    <orc.version>1.5.1.3.1.0.0-SNAPSHOT</orc.version>
+    <orc.version>1.5.1.6.0.99.0-SNAPSHOT</orc.version>
     <mockito-all.version>1.10.19</mockito-all.version>
     <powermock.version>1.7.4</powermock.version>
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.1.17.Final</netty.version>
     <netty3.version>3.10.5.Final</netty3.version>
-    <parquet.version>1.10.0</parquet.version>
+    <parquet.version>1.10.0.6.0.99.0-SNAPSHOT</parquet.version>
     <pig.version>0.16.0.3.1.0.0-SNAPSHOT</pig.version>
     <plexus.version>1.5.6</plexus.version>
     <protobuf.version>2.5.0</protobuf.version>
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.10</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
-    <storage-api.version>2.6.1-SNAPSHOT</storage-api.version>
-    <tez.version>0.9.1.3.1.0.0-SNAPSHOT</tez.version>
+    <storage-api.version>2.3.0.6.0.99.0-SNAPSHOT</storage-api.version>
+    <tez.version>0.9.1.6.0.99.0-SNAPSHOT</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
     <spark.version>2.3.0</spark.version>
     <scala.binary.version>2.11</scala.binary.version>
@@ -211,7 +210,7 @@
     <wadl-resourcedoc-doclet.version>1.4</wadl-resourcedoc-doclet.version>
     <velocity.version>1.5</velocity.version>
     <xerces.version>2.9.1</xerces.version>
-    <zookeeper.version>3.4.6.3.1.0.0-SNAPSHOT</zookeeper.version>
+    <zookeeper.version>3.4.6.6.0.99.0-SNAPSHOT</zookeeper.version>
     <jpam.version>1.1</jpam.version>
     <felix.version>2.4.0</felix.version>
     <curator.version>2.12.0</curator.version>
@@ -1149,7 +1148,7 @@
             <configuration>
               <exportAntProperties>true</exportAntProperties>
               <target>
-                <property name="maven.test.classpath" refid="maven.test.classpath"/>
+                <property name="maven.test.classpath" refid="maven.test.classpath" />
               </target>
             </configuration>
           </execution>
@@ -1169,7 +1168,7 @@
                 <mkdir dir="${test.conf.dir}" />
                 <!-- copies hive-site.xml so it can be modified -->
                 <copy todir="${test.conf.dir}">
-                  <fileset dir="${basedir}/${hive.path.to.root}/data/conf/"/>
+                  <fileset dir="${basedir}/${hive.path.to.root}/data/conf/" />
                 </copy>
               </target>
             </configuration>
@@ -1392,19 +1391,18 @@
                 <phase>generate-sources</phase>
                 <configuration>
                   <target>
-                    <taskdef name="for" classname="net.sf.antcontrib.logic.ForTask"
-                      classpathref="maven.plugin.classpath" />
-                    <property name="thrift.args" value="-I ${thrift.home} --gen java:beans,hashcode,generated_annotations=undated --gen cpp --gen php --gen py --gen rb"/>
-                    <property name="thrift.gen.dir" value="${basedir}/src/gen/thrift"/>
-                    <delete dir="${thrift.gen.dir}"/>
-                    <mkdir dir="${thrift.gen.dir}"/>
+                    <taskdef classname="net.sf.antcontrib.logic.ForTask" classpathref="maven.plugin.classpath" name="for" />
+                    <property name="thrift.args" value="-I ${thrift.home} --gen java:beans,hashcode,generated_annotations=undated --gen cpp --gen php --gen py --gen rb" />
+                    <property name="thrift.gen.dir" value="${basedir}/src/gen/thrift" />
+                    <delete dir="${thrift.gen.dir}" />
+                    <mkdir dir="${thrift.gen.dir}" />
                     <for param="thrift.file">
                       <path>
                         <fileset dir="." includes="if/*.thrift,if/test/*.thrift,src/main/thrift/*.thrift" />
                       </path>
                       <sequential>
-                        <echo message="Generating Thrift code for @{thrift.file}"/>
-                        <exec executable="${thrift.home}/bin/thrift"  failonerror="true" dir=".">
+                        <echo message="Generating Thrift code for @{thrift.file}" />
+                        <exec dir="." executable="${thrift.home}/bin/thrift" failonerror="true">
                           <arg line="${thrift.args} -I ${basedir}/include -I ${basedir}/.. -o ${thrift.gen.dir} @{thrift.file} " />
                         </exec>
                       </sequential>
