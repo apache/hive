@@ -897,8 +897,8 @@ public class CreateTableDesc implements DDLDesc, Serializable {
     if (colStats != null) {
       ColumnStatisticsDesc colStatsDesc = new ColumnStatisticsDesc(colStats.getStatsDesc());
       colStatsDesc.setCatName(tbl.getCatName());
-      colStatsDesc.setDbName(getTableName());
-      colStatsDesc.setDbName(getDatabaseName());
+      colStatsDesc.setDbName(tbl.getDbName());
+      colStatsDesc.setTableName(tbl.getTableName());
       tbl.getTTable().setColStats(new ColumnStatistics(colStatsDesc, colStats.getStatsObj()));
       // Statistics will have an associated write Id for a transactional table. We need it to
       // update column statistics.
