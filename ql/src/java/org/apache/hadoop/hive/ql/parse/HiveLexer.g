@@ -45,6 +45,7 @@ import org.apache.commons.lang3.StringUtils;
 KW_TRUE : 'TRUE';
 KW_FALSE : 'FALSE';
 KW_ALL : 'ALL';
+KW_SOME : 'SOME';
 KW_NONE: 'NONE';
 KW_AND : 'AND';
 KW_OR : 'OR';
