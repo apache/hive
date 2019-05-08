@@ -821,26 +821,16 @@ public class HiveAlterHandler implements AlterHandler {
       return;
     }
 
-    // For now validate only the changes when strict managed tables is false. That's when there's
-    // scope for migration during replication, at least for now.
-    if (conf.getBoolean(MetastoreConf.ConfVars.STRICT_MANAGED_TABLES.getHiveName(), false)) {
-      return;
-    }
-
-    // Do not allow changing location of a managed table as as alter event doesn't capture the
+    // Do not allow changing location of a managed table as alter event doesn't capture the
     // new files list. So, it may cause data inconsistency.
-    boolean isChangingLocation = false;
     if (ec.isSetProperties()) {
       String alterType = ec.getProperties().get(ALTER_TABLE_OPERATION_TYPE);
-      if (alterType != null && alterType.equalsIgnoreCase(ALTERLOCATION)) {
-        isChangingLocation = true;
+      if (alterType != null && alterType.equalsIgnoreCase(ALTERLOCATION) &&
+              tbl.getTableType().equalsIgnoreCase(TableType.MANAGED_TABLE.name())) {
+        throw new InvalidOperationException("Cannot change location of a managed table " +
+                TableName.getQualified(tbl.getCatName(),
+                        tbl.getDbName(), tbl.getTableName()) + " as it is enabled for replication.");
       }
-    }
-    if (isChangingLocation &&
-            tbl.getTableType().equalsIgnoreCase(TableType.MANAGED_TABLE.name())) {
-      throw new InvalidOperationException("Cannot change location of a managed table " +
-              TableName.getQualified(tbl.getCatName(),
-                      tbl.getDbName(), tbl.getTableName()) + " as it is enabled for replication.");
     }
   }
 
@@ -853,7 +843,7 @@ public class HiveAlterHandler implements AlterHandler {
       return;
     }
 
-    // Do not allow changing location of a managed table as as alter event doesn't capture the
+    // Do not allow changing location of a managed table as alter event doesn't capture the
     // new files list. So, it may cause data inconsistency. We do this whether or not strict
     // managed is true on the source cluster.
     if (ec.isSetProperties()) {
@@ -866,7 +856,7 @@ public class HiveAlterHandler implements AlterHandler {
         }
     }
 
-    // Rest of the changes are need validation only when strict managed tables is false. That's
+    // Rest of the changes need validation only when strict managed tables is false. That's
     // when there's scope for migration during replication, at least for now.
     if (conf.getBoolean(MetastoreConf.ConfVars.STRICT_MANAGED_TABLES.getHiveName(), false)) {
       return;
