@@ -34,18 +34,17 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.FieldDesc;
 import org.apache.hadoop.hive.llap.LlapBaseInputFormat;
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
-import org.apache.hadoop.hive.ql.wm.Action;
-import org.apache.hadoop.hive.ql.wm.ExecutionTrigger;
-import org.apache.hadoop.hive.ql.wm.Expression;
-import org.apache.hadoop.hive.ql.wm.ExpressionFactory;
-import org.apache.hadoop.hive.ql.wm.Trigger;
+import org.apache.hadoop.hive.llap.LlapInputSplit;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
 import org.junit.After;
@@ -137,6 +136,44 @@ public class TestJdbcGenericUDTFGetSplits {
       "'select `value` from (select value from " + tableName + " where value is not null order by value) as t', 5)";
     runQuery(query, setCmds, 10);
   }
+
+  @Test
+  public void testDecimalPrecisionAndScale() throws Exception {
+    try (Statement stmt = hs2Conn.createStatement()) {
+      stmt.execute("CREATE TABLE decimal_test_table(decimal_col DECIMAL(6,2))");
+      stmt.execute("INSERT INTO decimal_test_table VALUES(2507.92)");
+
+      ResultSet rs = stmt.executeQuery("SELECT * FROM decimal_test_table");
+      assertTrue(rs.next());
+      rs.close();
+
+      String url = miniHS2.getJdbcURL();
+      String user = System.getProperty("user.name");
+      String pwd = user;
+      String handleId = UUID.randomUUID().toString();
+      String sql = "SELECT avg(decimal_col)/3 FROM decimal_test_table";
+
+      // make request through llap-ext-client
+      JobConf job = new JobConf(conf);
+      job.set(LlapBaseInputFormat.URL_KEY, url);
+      job.set(LlapBaseInputFormat.USER_KEY, user);
+      job.set(LlapBaseInputFormat.PWD_KEY, pwd);
+      job.set(LlapBaseInputFormat.QUERY_KEY, sql);
+      job.set(LlapBaseInputFormat.HANDLE_ID, handleId);
+
+      LlapBaseInputFormat llapBaseInputFormat = new LlapBaseInputFormat();
+      //schema split
+      LlapInputSplit schemaSplit = (LlapInputSplit) llapBaseInputFormat.getSplits(job, 0)[0];
+      assertNotNull(schemaSplit);
+      FieldDesc fieldDesc = schemaSplit.getSchema().getColumns().get(0);
+      DecimalTypeInfo type = (DecimalTypeInfo) fieldDesc.getTypeInfo();
+      assertEquals(38, type.getPrecision());
+      assertEquals(24, type.scale());
+
+      LlapBaseInputFormat.close(handleId);
+    }
+  }
+
 
   private void runQuery(final String query, final List<String> setCmds,
     final int numRows) throws Exception {

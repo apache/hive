@@ -48,11 +48,11 @@ public class ShowGrantOperation extends DDLOperation {
 
   @Override
   public int execute() throws HiveException {
-    HiveAuthorizer authorizer = RoleUtils.getSessionAuthorizer(context.getConf());
+    HiveAuthorizer authorizer = PrivilegeUtils.getSessionAuthorizer(context.getConf());
     try {
       List<HivePrivilegeInfo> privInfos = authorizer.showPrivileges(
-          RoleUtils.getAuthorizationTranslator(authorizer).getHivePrincipal(desc.getPrincipalDesc()),
-          RoleUtils.getAuthorizationTranslator(authorizer).getHivePrivilegeObject(desc.getHiveObj()));
+          PrivilegeUtils.getAuthorizationTranslator(authorizer).getHivePrincipal(desc.getPrincipalDesc()),
+          PrivilegeUtils.getAuthorizationTranslator(authorizer).getHivePrivilegeObject(desc.getHiveObj()));
       boolean testMode = context.getConf().getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
       DDLUtils.writeToFile(writeGrantInfo(privInfos, testMode), desc.getResFile(), context);
     } catch (IOException e) {

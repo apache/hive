@@ -42,10 +42,10 @@ public class GrantRoleOperation extends DDLOperation {
 
   @Override
   public int execute() throws HiveException {
-    HiveAuthorizer authorizer = RoleUtils.getSessionAuthorizer(context.getConf());
+    HiveAuthorizer authorizer = PrivilegeUtils.getSessionAuthorizer(context.getConf());
 
-    List<HivePrincipal> principals =
-        AuthorizationUtils.getHivePrincipals(desc.getPrincipals(), RoleUtils.getAuthorizationTranslator(authorizer));
+    List<HivePrincipal> principals = AuthorizationUtils.getHivePrincipals(desc.getPrincipals(),
+        PrivilegeUtils.getAuthorizationTranslator(authorizer));
     HivePrincipal grantorPrincipal = null;
     if (desc.getGrantor() != null) {
       grantorPrincipal =

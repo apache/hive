@@ -37,7 +37,7 @@ public class DropRoleOperation extends DDLOperation {
 
   @Override
   public int execute() throws HiveException {
-    HiveAuthorizer authorizer = RoleUtils.getSessionAuthorizer(context.getConf());
+    HiveAuthorizer authorizer = PrivilegeUtils.getSessionAuthorizer(context.getConf());
     authorizer.dropRole(desc.getName());
     return 0;
   }

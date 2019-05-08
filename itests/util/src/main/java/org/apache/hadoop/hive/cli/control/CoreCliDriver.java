@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.util.ElapsedTimeLoggingWrapper;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -183,10 +184,11 @@ public class CoreCliDriver extends CliAdapter {
       qt.addFile(fpath);
       qt.cliInit(new File(fpath));
 
-      int ecode = qt.executeClient(fname);
+      CommandProcessorResponse response = qt.executeClient(fname);
+      int ecode = response.getResponseCode();
       if (ecode != 0) {
         failed = true;
-        qt.failed(ecode, fname, debugHint);
+        qt.failedQuery(response.getException(), response.getResponseCode(), fname, debugHint);
       }
 
       setupAdditionalPartialMasks();
@@ -201,7 +203,7 @@ public class CoreCliDriver extends CliAdapter {
     }
     catch (Exception e) {
       failed = true;
-      qt.failed(e, fname, debugHint);
+      qt.failedWithException(e, fname, debugHint);
     } finally {
       String message = "Done query " + fname + ". succeeded=" + !failed + ", skipped=" + skipped +
           ". ElapsedTime(ms)=" + sw.stop().elapsed(TimeUnit.MILLISECONDS);

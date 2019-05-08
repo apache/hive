@@ -40,9 +40,9 @@ public class ShowRolesOperation extends DDLOperation {
 
   @Override
   public int execute() throws HiveException, IOException {
-    HiveAuthorizer authorizer = RoleUtils.getSessionAuthorizer(context.getConf());
+    HiveAuthorizer authorizer = PrivilegeUtils.getSessionAuthorizer(context.getConf());
     List<String> allRoles = authorizer.getAllRoles();
-    RoleUtils.writeListToFileAfterSort(allRoles, desc.getResFile(), context);
+    PrivilegeUtils.writeListToFileAfterSort(allRoles, desc.getResFile(), context);
     return 0;
   }
 }
