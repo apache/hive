@@ -2692,7 +2692,7 @@ public class Driver implements IDriver {
       console.printInfo("Launching Job " + cxt.getCurJobNo() + " out of " + jobs);
     }
     tsk.initialize(queryState, plan, cxt, ctx.getOpContext());
-    TaskRunner tskRun = new TaskRunner(tsk);
+    TaskRunner tskRun = new TaskRunner(tsk, cxt);
 
     cxt.launching(tskRun);
     // Launch Task
