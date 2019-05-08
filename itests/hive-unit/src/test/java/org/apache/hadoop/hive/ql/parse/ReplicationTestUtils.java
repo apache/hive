@@ -133,7 +133,7 @@ public class ReplicationTestUtils {
   public static void appendCreateAsSelect(WarehouseInstance primary, String primaryDbName, String primaryDbNameExtra,
                                     String tableName, String tableNameMM,
                                     List<String> selectStmtList, List<String[]> expectedValues) throws Throwable {
-     String tableNameCTAS = tableName + "_CTAS";
+    String tableNameCTAS = tableName + "_CTAS";
     String tableNameCTASMM = tableName + "_CTASMM";
 
     insertRecords(primary, primaryDbName, primaryDbNameExtra,
@@ -388,8 +388,10 @@ public class ReplicationTestUtils {
         .run("import table " + tableNameOp + "_nopart from " + exportPathNoPart);
         break;
       case REPL_TEST_ACID_CTAS:
-        primary.run("create table " + tableNameOp + " as select * from " + tableName)
-                .run("create table " + tableNameOp + "_nopart as select * from " + tableName + "_nopart");
+        primary.run("create table " + tableNameOp + " partitioned by (load_date) " + tableStorage
+                            + " tblproperties (" + tableProperty + ") as select * from " + tableName)
+                .run("create table " + tableNameOp + "_nopart " + tableStorage
+                            + " tblproperties (" + tableProperty + ") as select * from " + tableName + "_nopart");
         break;
       case REPL_TEST_ACID_INSERT_LOADLOCAL:
         // For simplicity setting key and value as same value

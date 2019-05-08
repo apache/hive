@@ -19,13 +19,11 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.DataOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -59,7 +57,6 @@ import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -67,16 +64,11 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
-import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
-import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
-import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -92,13 +84,6 @@ import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
-import org.apache.hadoop.hive.ql.lockmgr.DbLockManager;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
-import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
@@ -114,7 +99,6 @@ import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
-import org.apache.hadoop.hive.ql.plan.AbortTxnsDesc;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableAlterPartDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
@@ -126,7 +110,6 @@ import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DropPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.FileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.InsertCommitHookDesc;
-import org.apache.hadoop.hive.ql.plan.KillQueryDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
@@ -137,11 +120,8 @@ import org.apache.hadoop.hive.ql.plan.RCFileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ReplRemoveFirstIncLoadPendFlagDesc;
 import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
-import org.apache.hadoop.hive.ql.plan.ShowCompactionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowConfDesc;
-import org.apache.hadoop.hive.ql.plan.ShowLocksDesc;
 import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
-import org.apache.hadoop.hive.ql.plan.ShowTxnsDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
@@ -279,26 +259,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         return showColumns(db, showCols);
       }
 
-      ShowLocksDesc showLocks = work.getShowLocksDesc();
-      if (showLocks != null) {
-        return showLocks(db, showLocks);
-      }
-
-      ShowCompactionsDesc compactionsDesc = work.getShowCompactionsDesc();
-      if (compactionsDesc != null) {
-        return showCompactions(db, compactionsDesc);
-      }
-
-      ShowTxnsDesc txnsDesc = work.getShowTxnsDesc();
-      if (txnsDesc != null) {
-        return showTxns(db, txnsDesc);
-      }
-
-      AbortTxnsDesc abortTxnsDesc = work.getAbortTxnsDesc();
-      if (abortTxnsDesc != null) {
-        return abortTxns(db, abortTxnsDesc);
-      }
-
       ShowPartitionsDesc showParts = work.getShowPartsDesc();
       if (showParts != null) {
         return showPartitions(db, showParts);
@@ -332,11 +292,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       InsertCommitHookDesc insertCommitHookDesc = work.getInsertCommitHookDesc();
       if (insertCommitHookDesc != null) {
         return insertCommitWork(db, insertCommitHookDesc);
-      }
-
-      KillQueryDesc killQueryDesc = work.getKillQueryDesc();
-      if (killQueryDesc != null) {
-        return killQuery(db, killQueryDesc);
       }
 
       if (work.getReplSetFirstIncLoadFlagDesc() != null) {
@@ -1503,352 +1458,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     return new ArrayList<FieldSchema>(sortedCol);
-  }
-
-  /**
-   * Write a list of the current locks to a file.
-   * @param db
-   *
-   * @param showLocks
-   *          the locks we're interested in.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
-   */
-  private int showLocks(Hive db, ShowLocksDesc showLocks) throws HiveException {
-    Context ctx = driverContext.getCtx();
-    HiveTxnManager txnManager = ctx.getHiveTxnManager();
-    HiveLockManager lockMgr = txnManager.getLockManager();
-
-    if (txnManager.useNewShowLocksFormat()) {
-      return showLocksNewFormat(showLocks, lockMgr);
-    }
-
-    boolean isExt = showLocks.isExt();
-    if (lockMgr == null) {
-      throw new HiveException("show Locks LockManager not specified");
-    }
-
-    // write the results in the file
-    DataOutputStream outStream = getOutputStream(showLocks.getResFile());
-    try {
-      List<HiveLock> locks = null;
-
-      if (showLocks.getTableName() == null) {
-        // TODO should be doing security check here.  Users should not be
-        // able to see each other's locks.
-        locks = lockMgr.getLocks(false, isExt);
-      }
-      else {
-        locks = lockMgr.getLocks(HiveLockObject.createFrom(db,
-            showLocks.getTableName(), showLocks.getPartSpec()),
-            true, isExt);
-      }
-
-      Collections.sort(locks, new Comparator<HiveLock>() {
-
-        @Override
-        public int compare(HiveLock o1, HiveLock o2) {
-          int cmp = o1.getHiveLockObject().getName().compareTo(o2.getHiveLockObject().getName());
-          if (cmp == 0) {
-            if (o1.getHiveLockMode() == o2.getHiveLockMode()) {
-              return cmp;
-            }
-            // EXCLUSIVE locks occur before SHARED locks
-            if (o1.getHiveLockMode() == HiveLockMode.EXCLUSIVE) {
-              return -1;
-            }
-            return +1;
-          }
-          return cmp;
-        }
-
-      });
-
-      Iterator<HiveLock> locksIter = locks.iterator();
-
-      while (locksIter.hasNext()) {
-        HiveLock lock = locksIter.next();
-        outStream.writeBytes(lock.getHiveLockObject().getDisplayName());
-        outStream.write(separator);
-        outStream.writeBytes(lock.getHiveLockMode().toString());
-        if (isExt) {
-          HiveLockObjectData lockData = lock.getHiveLockObject().getData();
-          if (lockData != null) {
-            outStream.write(terminator);
-            outStream.writeBytes("LOCK_QUERYID:" + lockData.getQueryId());
-            outStream.write(terminator);
-            outStream.writeBytes("LOCK_TIME:" + lockData.getLockTime());
-            outStream.write(terminator);
-            outStream.writeBytes("LOCK_MODE:" + lockData.getLockMode());
-            outStream.write(terminator);
-            outStream.writeBytes("LOCK_QUERYSTRING:" + lockData.getQueryStr());
-          }
-        }
-        outStream.write(terminator);
-      }
-    } catch (FileNotFoundException e) {
-      LOG.warn("show function: ", e);
-      return 1;
-    } catch (IOException e) {
-      LOG.warn("show function: ", e);
-      return 1;
-    } catch (Exception e) {
-      throw new HiveException(e.toString(), e);
-    } finally {
-      IOUtils.closeStream(outStream);
-    }
-    return 0;
-  }
-  public static void dumpLockInfo(DataOutputStream os, ShowLocksResponse rsp) throws IOException {
-    // Write a header
-    os.writeBytes("Lock ID");
-    os.write(separator);
-    os.writeBytes("Database");
-    os.write(separator);
-    os.writeBytes("Table");
-    os.write(separator);
-    os.writeBytes("Partition");
-    os.write(separator);
-    os.writeBytes("State");
-    os.write(separator);
-    os.writeBytes("Blocked By");
-    os.write(separator);
-    os.writeBytes("Type");
-    os.write(separator);
-    os.writeBytes("Transaction ID");
-    os.write(separator);
-    os.writeBytes("Last Heartbeat");
-    os.write(separator);
-    os.writeBytes("Acquired At");
-    os.write(separator);
-    os.writeBytes("User");
-    os.write(separator);
-    os.writeBytes("Hostname");
-    os.write(separator);
-    os.writeBytes("Agent Info");
-    os.write(terminator);
-
-    List<ShowLocksResponseElement> locks = rsp.getLocks();
-    if (locks != null) {
-      for (ShowLocksResponseElement lock : locks) {
-        if(lock.isSetLockIdInternal()) {
-          os.writeBytes(Long.toString(lock.getLockid()) + "." + Long.toString(lock.getLockIdInternal()));
-        }
-        else {
-          os.writeBytes(Long.toString(lock.getLockid()));
-        }
-        os.write(separator);
-        os.writeBytes(lock.getDbname());
-        os.write(separator);
-        os.writeBytes((lock.getTablename() == null) ? "NULL" : lock.getTablename());
-        os.write(separator);
-        os.writeBytes((lock.getPartname() == null) ? "NULL" : lock.getPartname());
-        os.write(separator);
-        os.writeBytes(lock.getState().toString());
-        os.write(separator);
-        if(lock.isSetBlockedByExtId()) {//both "blockedby" are either there or not
-          os.writeBytes(Long.toString(lock.getBlockedByExtId()) + "." + Long.toString(lock.getBlockedByIntId()));
-        }
-        else {
-          os.writeBytes("            ");//12 chars - try to keep cols aligned
-        }
-        os.write(separator);
-        os.writeBytes(lock.getType().toString());
-        os.write(separator);
-        os.writeBytes((lock.getTxnid() == 0) ? "NULL" : Long.toString(lock.getTxnid()));
-        os.write(separator);
-        os.writeBytes(Long.toString(lock.getLastheartbeat()));
-        os.write(separator);
-        os.writeBytes((lock.getAcquiredat() == 0) ? "NULL" : Long.toString(lock.getAcquiredat()));
-        os.write(separator);
-        os.writeBytes(lock.getUser());
-        os.write(separator);
-        os.writeBytes(lock.getHostname());
-        os.write(separator);
-        os.writeBytes(lock.getAgentInfo() == null ? "NULL" : lock.getAgentInfo());
-        os.write(separator);
-        os.write(terminator);
-      }
-    }
-  }
-  private int showLocksNewFormat(ShowLocksDesc showLocks, HiveLockManager lm)
-      throws  HiveException {
-
-    DbLockManager lockMgr;
-    if (!(lm instanceof DbLockManager)) {
-      throw new RuntimeException("New lock format only supported with db lock manager.");
-    }
-    lockMgr = (DbLockManager)lm;
-
-    String dbName = showLocks.getDbName();
-    String tblName = showLocks.getTableName();
-    Map<String, String> partSpec = showLocks.getPartSpec();
-    if (dbName == null && tblName != null) {
-      dbName = SessionState.get().getCurrentDatabase();
-    }
-
-    ShowLocksRequest rqst = new ShowLocksRequest();
-    rqst.setDbname(dbName);
-    rqst.setTablename(tblName);
-    if (partSpec != null) {
-      List<String> keyList = new ArrayList<String>();
-      List<String> valList = new ArrayList<String>();
-      for (String partKey : partSpec.keySet()) {
-        String partVal = partSpec.remove(partKey);
-        keyList.add(partKey);
-        valList.add(partVal);
-      }
-      String partName = FileUtils.makePartName(keyList, valList);
-      rqst.setPartname(partName);
-    }
-
-    ShowLocksResponse rsp = lockMgr.getLocks(rqst);
-
-    // write the results in the file
-    DataOutputStream os = getOutputStream(showLocks.getResFile());
-    try {
-      dumpLockInfo(os, rsp);
-    } catch (FileNotFoundException e) {
-      LOG.warn("show function: ", e);
-      return 1;
-    } catch (IOException e) {
-      LOG.warn("show function: ", e);
-      return 1;
-    } catch (Exception e) {
-      throw new HiveException(e.toString());
-    } finally {
-      IOUtils.closeStream(os);
-    }
-    return 0;
-  }
-
-  private int showCompactions(Hive db, ShowCompactionsDesc desc) throws HiveException {
-    // Call the metastore to get the status of all known compactions (completed get purged eventually)
-    ShowCompactResponse rsp = db.showCompactions();
-
-    // Write the results into the file
-    final String noVal = " --- ";
-
-    DataOutputStream os = getOutputStream(desc.getResFile());
-    try {
-      // Write a header
-      os.writeBytes("CompactionId");
-      os.write(separator);
-      os.writeBytes("Database");
-      os.write(separator);
-      os.writeBytes("Table");
-      os.write(separator);
-      os.writeBytes("Partition");
-      os.write(separator);
-      os.writeBytes("Type");
-      os.write(separator);
-      os.writeBytes("State");
-      os.write(separator);
-      os.writeBytes("Hostname");
-      os.write(separator);
-      os.writeBytes("Worker");
-      os.write(separator);
-      os.writeBytes("Start Time");
-      os.write(separator);
-      os.writeBytes("Duration(ms)");
-      os.write(separator);
-      os.writeBytes("HadoopJobId");
-      os.write(terminator);
-
-      if (rsp.getCompacts() != null) {
-        for (ShowCompactResponseElement e : rsp.getCompacts()) {
-          os.writeBytes(Long.toString(e.getId()));
-          os.write(separator);
-          os.writeBytes(e.getDbname());
-          os.write(separator);
-          os.writeBytes(e.getTablename());
-          os.write(separator);
-          String part = e.getPartitionname();
-          os.writeBytes(part == null ? noVal : part);
-          os.write(separator);
-          os.writeBytes(e.getType().toString());
-          os.write(separator);
-          os.writeBytes(e.getState());
-          os.write(separator);
-          String wid = e.getWorkerid();
-          os.writeBytes(wid == null ? noVal : wid.split("-")[0]);
-          os.write(separator);
-          os.writeBytes(wid == null ? noVal : wid.split("-")[1]);
-          os.write(separator);
-          os.writeBytes(e.isSetStart() ? Long.toString(e.getStart()) : noVal);
-          os.write(separator);
-          os.writeBytes(e.isSetEndTime() ? Long.toString(e.getEndTime() - e.getStart()) : noVal);
-          os.write(separator);
-          os.writeBytes(e.isSetHadoopJobId() ?  e.getHadoopJobId() : noVal);
-          os.write(terminator);
-        }
-      }
-    } catch (IOException e) {
-      LOG.warn("show compactions: ", e);
-      return 1;
-    } finally {
-      IOUtils.closeStream(os);
-    }
-    return 0;
-  }
-
-  private int showTxns(Hive db, ShowTxnsDesc desc) throws HiveException {
-    // Call the metastore to get the currently queued and running compactions.
-    GetOpenTxnsInfoResponse rsp = db.showTransactions();
-
-    // Write the results into the file
-    DataOutputStream os = getOutputStream(desc.getResFile());
-    try {
-      // Write a header
-      os.writeBytes("Transaction ID");
-      os.write(separator);
-      os.writeBytes("Transaction State");
-      os.write(separator);
-      os.writeBytes("Started Time");
-      os.write(separator);
-      os.writeBytes("Last Heartbeat Time");
-      os.write(separator);
-      os.writeBytes("User");
-      os.write(separator);
-      os.writeBytes("Hostname");
-      os.write(terminator);
-
-      for (TxnInfo txn : rsp.getOpen_txns()) {
-        os.writeBytes(Long.toString(txn.getId()));
-        os.write(separator);
-        os.writeBytes(txn.getState().toString());
-        os.write(separator);
-        os.writeBytes(Long.toString(txn.getStartedTime()));
-        os.write(separator);
-        os.writeBytes(Long.toString(txn.getLastHeartbeatTime()));
-        os.write(separator);
-        os.writeBytes(txn.getUser());
-        os.write(separator);
-        os.writeBytes(txn.getHostname());
-        os.write(terminator);
-      }
-    } catch (IOException e) {
-      LOG.warn("show transactions: ", e);
-      return 1;
-    } finally {
-      IOUtils.closeStream(os);
-    }
-    return 0;
-  }
-
-  private int abortTxns(Hive db, AbortTxnsDesc desc) throws HiveException {
-    db.abortTransactions(desc.getTxnids());
-    return 0;
-  }
-
-  private int killQuery(Hive db, KillQueryDesc desc) throws HiveException {
-    SessionState sessionState = SessionState.get();
-    for (String queryId : desc.getQueryIds()) {
-      sessionState.getKillQuery().killQuery(queryId, "User invoked KILL QUERY", db.getConf());
-    }
-    LOG.info("kill query called ({})", desc.getQueryIds());
-    return 0;
   }
 
   /**

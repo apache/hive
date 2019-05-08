@@ -2362,7 +2362,8 @@ public class Hive {
             ((null != oldPart) || AcidUtils.isTransactionalTable(tbl));
   }
 
-  public void listFilesInsideAcidDirectory(Path acidDir, FileSystem srcFs, List<Path> newFiles) throws IOException {
+  public static void listFilesInsideAcidDirectory(Path acidDir, FileSystem srcFs, List<Path> newFiles)
+          throws IOException {
     // list out all the files/directory in the path
     FileStatus[] acidFiles;
     acidFiles = srcFs.listStatus(acidDir);
@@ -2370,6 +2371,7 @@ public class Hive {
       LOG.debug("No files added by this query in: " + acidDir);
       return;
     }
+    LOG.debug("Listing files under " + acidDir);
     for (FileStatus acidFile : acidFiles) {
       // need to list out only files, ignore folders.
       if (!acidFile.isDirectory()) {
@@ -3282,25 +3284,34 @@ private void constructOneLBLocationMap(FileStatus fSta,
                         "partition " + partitionSpec + " list of files " + newFiles);
 
     try {
-      FileSystem fileSystem = tbl.getDataLocation().getFileSystem(conf);
       Long txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
-
-      InsertEventRequestData insertData = new InsertEventRequestData();
-      insertData.setReplace(true);
-
-      WriteNotificationLogRequest rqst = new WriteNotificationLogRequest(txnId, writeId,
-              tbl.getDbName(), tbl.getTableName(), insertData);
-      addInsertFileInformation(newFiles, fileSystem, insertData);
-
+      List<String> partitionVals = null;
       if (partitionSpec != null && !partitionSpec.isEmpty()) {
+        partitionVals = new ArrayList<>();
         for (FieldSchema fs : tbl.getPartitionKeys()) {
-          rqst.addToPartitionVals(partitionSpec.get(fs.getName()));
+          partitionVals.add(partitionSpec.get(fs.getName()));
         }
       }
-      getSynchronizedMSC().addWriteNotificationLog(rqst);
+
+      addWriteNotificationLog(conf, tbl, partitionVals, txnId, writeId, newFiles);
     } catch (IOException | TException e) {
       throw new HiveException(e);
     }
+  }
+
+  public static void addWriteNotificationLog(HiveConf conf, Table tbl, List<String> partitionVals,
+                                             Long txnId, Long writeId, List<Path> newFiles)
+          throws IOException, HiveException, TException {
+    FileSystem fileSystem = tbl.getDataLocation().getFileSystem(conf);
+    InsertEventRequestData insertData = new InsertEventRequestData();
+    insertData.setReplace(true);
+
+    WriteNotificationLogRequest rqst = new WriteNotificationLogRequest(txnId, writeId,
+            tbl.getDbName(), tbl.getTableName(), insertData);
+    addInsertFileInformation(newFiles, fileSystem, insertData);
+    rqst.setPartitionVals(partitionVals);
+
+    get(conf).getSynchronizedMSC().addWriteNotificationLog(rqst);
   }
 
   private void fireInsertEvent(Table tbl, Map<String, String> partitionSpec, boolean replace, List<Path> newFiles)

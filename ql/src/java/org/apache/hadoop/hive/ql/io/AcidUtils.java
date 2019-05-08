@@ -53,7 +53,7 @@ import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.ddl.table.CreateTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableDesc;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -267,6 +267,35 @@ public class AcidUtils {
   }
 
   /**
+   * Return a base or delta directory path according to the given "options".
+   */
+  public static Path baseOrDeltaSubdirPath(Path directory, AcidOutputFormat.Options options) {
+    String subdir;
+    if (options.isWritingBase()) {
+      subdir = BASE_PREFIX + String.format(DELTA_DIGITS,
+              options.getMaximumWriteId());
+    } else if(options.getStatementId() == -1) {
+      //when minor compaction runs, we collapse per statement delta files inside a single
+      //transaction so we no longer need a statementId in the file name
+      subdir = options.isWritingDeleteDelta() ?
+              deleteDeltaSubdir(options.getMinimumWriteId(),
+                      options.getMaximumWriteId())
+              : deltaSubdir(options.getMinimumWriteId(),
+              options.getMaximumWriteId());
+    } else {
+      subdir = options.isWritingDeleteDelta() ?
+              deleteDeltaSubdir(options.getMinimumWriteId(),
+                      options.getMaximumWriteId(),
+                      options.getStatementId())
+              : deltaSubdir(options.getMinimumWriteId(),
+              options.getMaximumWriteId(),
+              options.getStatementId());
+    }
+    subdir = addVisibilitySuffix(subdir, options.getVisibilityTxnId());
+    return new Path(directory, subdir);
+  }
+
+  /**
    * Create a filename for a bucket file.
    * @param directory the partition directory
    * @param options the options for writing the bucket
@@ -274,32 +303,12 @@ public class AcidUtils {
    */
   public static Path createFilename(Path directory,
                                     AcidOutputFormat.Options options) {
-    String subdir;
     if (options.getOldStyle()) {
       return new Path(directory, String.format(LEGACY_FILE_BUCKET_DIGITS,
           options.getBucketId()) + "_0");
-    } else if (options.isWritingBase()) {
-      subdir = BASE_PREFIX + String.format(DELTA_DIGITS,
-          options.getMaximumWriteId());
-    } else if(options.getStatementId() == -1) {
-      //when minor compaction runs, we collapse per statement delta files inside a single
-      //transaction so we no longer need a statementId in the file name
-      subdir = options.isWritingDeleteDelta() ?
-          deleteDeltaSubdir(options.getMinimumWriteId(),
-                            options.getMaximumWriteId())
-          : deltaSubdir(options.getMinimumWriteId(),
-                        options.getMaximumWriteId());
     } else {
-      subdir = options.isWritingDeleteDelta() ?
-          deleteDeltaSubdir(options.getMinimumWriteId(),
-                            options.getMaximumWriteId(),
-                            options.getStatementId())
-          : deltaSubdir(options.getMinimumWriteId(),
-                        options.getMaximumWriteId(),
-                        options.getStatementId());
+      return createBucketFile(baseOrDeltaSubdirPath(directory, options), options.getBucketId());
     }
-    subdir = addVisibilitySuffix(subdir, options.getVisibilityTxnId());
-    return createBucketFile(new Path(directory, subdir), options.getBucketId());
   }
 
   /**

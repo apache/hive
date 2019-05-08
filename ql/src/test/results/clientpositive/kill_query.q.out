@@ -8,9 +8,8 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Kill Query Operator:
-        Kill Query
-          Query IDs: query_1244656
+    Kill Query
+      Query IDs: query_1244656
 
 PREHOOK: query: explain kill query 'query_123456677' 'query_1238503495'
 PREHOOK: type: KILL QUERY
@@ -22,9 +21,8 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Kill Query Operator:
-        Kill Query
-          Query IDs: query_123456677, query_1238503495
+    Kill Query
+      Query IDs: query_123456677, query_1238503495
 
 PREHOOK: query: kill query 'query_1244656'
 PREHOOK: type: KILL QUERY
