@@ -1641,8 +1641,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
   }
 
-  private List<Task<?>> alterTableOrSinglePartition(
-      AlterTableDesc alterTbl, Table tbl, Partition part) throws HiveException {
+  private List<Task<?>> alterTableOrSinglePartition(AlterTableDesc alterTbl, Table tbl,
+                                                    Partition part) throws HiveException {
     EnvironmentContext environmentContext = alterTbl.getEnvironmentContext();
     if (environmentContext == null) {
       environmentContext = new EnvironmentContext();
