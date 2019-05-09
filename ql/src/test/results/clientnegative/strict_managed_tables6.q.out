@@ -1,0 +1,30 @@
+PREHOOK: query: drop database if exists smt6
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists smt6
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: create database smt6 with dbproperties ('repl.source.for'='1,2,3')
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:smt6
+POSTHOOK: query: create database smt6 with dbproperties ('repl.source.for'='1,2,3')
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:smt6
+PREHOOK: query: use smt6
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:smt6
+POSTHOOK: query: use smt6
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:smt6
+PREHOOK: query: create table strict_managed_tables1_tab1 (c1 string, c2 string) stored as orc tblproperties ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:smt6
+PREHOOK: Output: smt6@strict_managed_tables1_tab1
+POSTHOOK: query: create table strict_managed_tables1_tab1 (c1 string, c2 string) stored as orc tblproperties ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:smt6
+POSTHOOK: Output: smt6@strict_managed_tables1_tab1
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_LOCATION
+PREHOOK: Input: smt6@strict_managed_tables1_tab1
+#### A masked pattern was here ####
+PREHOOK: Output: smt6@strict_managed_tables1_tab1
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to alter table. Cannot change location of a managed table hive.smt6.strict_managed_tables1_tab1 as it is enabled for replication.

@@ -364,6 +364,23 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .run("use " + replicatedDbName)
         .run("select place from t2 where country='france'")
         .verifyResults(new String[] {});
+
+    // Changing location of one of the partitions shouldn't result in changing location of other
+    // partitions as well as that of the table.
+    assertTablePartitionLocation(primaryDbName + ".t2", replicatedDbName + ".t2");
+
+    // Changing location of the external table, should result in changes to the location of
+    // partition residing within the table location and not the partitions located outside.
+    String tmpLocation2 = "/tmp/" + System.nanoTime() + "_2";
+    primary.miniDFSCluster.getFileSystem().mkdirs(new Path(tmpLocation2), new FsPermission("777"));
+
+    tuple = primary.run("use " + primaryDbName)
+            .run("insert into table t2 partition(country='france') values ('lyon')")
+            .run("alter table t2 set location '" + tmpLocation2 + "'")
+            .dump(primaryDbName, tuple.lastReplicationId);
+
+    replica.load(replicatedDbName, tuple.dumpLocation, loadWithClause);
+    assertTablePartitionLocation(primaryDbName + ".t2", replicatedDbName + ".t2");
   }
 
   @Test
