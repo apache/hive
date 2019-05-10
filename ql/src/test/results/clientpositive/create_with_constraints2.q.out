@@ -77,7 +77,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table1_n11  	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Names:       	a                   	 
+Column Name:        	a                   	 
 PREHOOK: query: DESCRIBE FORMATTED table2_n7
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table2_n7
@@ -119,4 +119,4 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table2_n7   	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Names:       	a                   	 
+Column Name:        	a                   	 

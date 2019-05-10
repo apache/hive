@@ -480,7 +480,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table1_n13  	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Names:       	a                   	 
+Column Name:        	a                   	 
 PREHOOK: query: DESCRIBE FORMATTED table2_n8
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table2_n8
@@ -522,7 +522,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table2_n8   	 
 Constraint Name:    	pk1                 	 
-Column Names:       	a                   	 
+Column Name:        	a                   	 
 PREHOOK: query: DESCRIBE FORMATTED table3_n1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table3_n1
@@ -563,7 +563,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table3_n1   	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Names:       	x                   	 
+Column Name:        	x                   	 
 	 	 
 # Foreign Keys	 	 
 Table:              	default.table3_n1   	 
@@ -677,7 +677,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table5_n4   	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Names:       	x                   	 
+Column Name:        	x                   	 
 	 	 
 # Foreign Keys	 	 
 Table:              	default.table5_n4   	 
@@ -725,7 +725,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table6_n3   	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Names:       	x                   	 
+Column Name:        	x                   	 
 	 	 
 # Foreign Keys	 	 
 Table:              	default.table6_n3   	 
@@ -776,7 +776,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table7_n3   	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Names:       	a                   	 
+Column Name:        	a                   	 
 PREHOOK: query: DESCRIBE FORMATTED table8
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table8
@@ -818,7 +818,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table8      	 
 Constraint Name:    	pk8                 	 
-Column Names:       	a                   	 
+Column Name:        	a                   	 
 PREHOOK: query: DESCRIBE FORMATTED table9
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table9
@@ -860,7 +860,8 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table9      	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Names:       	a                   	b                   
+Column Name:        	a                   	 
+Column Name:        	b                   	 
 PREHOOK: query: DESCRIBE FORMATTED table10
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table10
@@ -902,7 +903,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table10     	 
 Constraint Name:    	pk10                	 
-Column Names:       	a                   	 
+Column Name:        	a                   	 
 	 	 
 # Foreign Keys	 	 
 Table:              	default.table10     	 
@@ -952,7 +953,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table11     	 
 Constraint Name:    	pk11                	 
-Column Names:       	a                   	 
+Column Name:        	a                   	 
 	 	 
 # Foreign Keys	 	 
 Table:              	default.table11     	 
@@ -1294,7 +1295,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table19     	 
 Constraint Name:    	pk19_1              	 
-Column Names:       	b                   	 
+Column Name:        	b                   	 
 	 	 
 # Foreign Keys	 	 
 Table:              	default.table19     	 
@@ -1608,7 +1609,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table3_n1   	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Names:       	x                   	 
+Column Name:        	x                   	 
 	 	 
 # Not Null Constraints	 	 
 Table:              	default.table3_n1   	 
@@ -1705,7 +1706,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table6_n3   	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Names:       	x                   	 
+Column Name:        	x                   	 
 PREHOOK: query: DESCRIBE FORMATTED table8
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table8
@@ -1884,7 +1885,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table2_n8   	 
 Constraint Name:    	pkt2                	 
-Column Names:       	a                   	 
+Column Name:        	a                   	 
 PREHOOK: query: DESCRIBE FORMATTED table3_n1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table3_n1
@@ -1925,7 +1926,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table3_n1   	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Names:       	x                   	 
+Column Name:        	x                   	 
 	 	 
 # Foreign Keys	 	 
 Table:              	default.table3_n1   	 
@@ -1979,7 +1980,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table6_n3   	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Names:       	x                   	 
+Column Name:        	x                   	 
 	 	 
 # Foreign Keys	 	 
 Table:              	default.table6_n3   	 
@@ -2030,7 +2031,8 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table8      	 
 Constraint Name:    	pk8_2               	 
-Column Names:       	a                   	b                   
+Column Name:        	a                   	 
+Column Name:        	b                   	 
 PREHOOK: query: DESCRIBE FORMATTED table16
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table16
@@ -2356,7 +2358,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	dbconstraint.table2 	 
 Constraint Name:    	pk1                 	 
-Column Names:       	a                   	 
+Column Name:        	a                   	 
 	 	 
 # Not Null Constraints	 	 
 Table:              	dbconstraint.table2 	 
@@ -2466,7 +2468,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	dbconstraint.table2 	 
 Constraint Name:    	pk1                 	 
-Column Names:       	a                   	 
+Column Name:        	a                   	 
 	 	 
 # Not Null Constraints	 	 
 Table:              	dbconstraint.table2 	 
@@ -2518,7 +2520,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	dbconstraint.table2 	 
 Constraint Name:    	pk1                 	 
-Column Names:       	a                   	 
+Column Name:        	a                   	 
 	 	 
 # Foreign Keys	 	 
 Table:              	dbconstraint.table2 	 
@@ -2592,7 +2594,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table23     	 
 Constraint Name:    	pk23_1              	 
-Column Names:       	b                   	 
+Column Name:        	b                   	 
 PREHOOK: query: CREATE TABLE numericDataType_n0(a TINYINT, b SMALLINT NOT NULL ENABLE, c INT,
  d BIGINT , e DOUBLE , f DECIMAL(9,2))
 PREHOOK: type: CREATETABLE
