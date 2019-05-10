@@ -172,10 +172,10 @@ public final class MetaDataFormatUtils {
     formatOutput("Table:", pkInfo.getDatabaseName()+"."+pkInfo.getTableName(), constraintsInfo);
     formatOutput("Constraint Name:", pkInfo.getConstraintName(), constraintsInfo);
     Map<Integer, String> colNames = pkInfo.getColNames();
-    final String columnNames = "Column Names:";
-    constraintsInfo.append(String.format("%-" + ALIGNMENT + "s", columnNames)).append(FIELD_DELIM);
-    if (colNames != null && colNames.size() > 0) {
-      formatOutput(colNames.values().toArray(new String[colNames.size()]), constraintsInfo);
+    final String title = "Column Name:".intern();
+    for (String colName : colNames.values()) {
+      constraintsInfo.append(String.format("%-" + ALIGNMENT + "s", title)).append(FIELD_DELIM);
+      formatOutput(new String[]{colName}, constraintsInfo);
     }
   }
 
