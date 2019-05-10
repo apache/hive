@@ -20,6 +20,7 @@ package org.apache.hive.hcatalog.templeton.tool;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.Random;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -112,7 +113,8 @@ public class HDFSCleanup extends Thread {
           }
         }
 
-        long sleepMillis = (long) (Math.random() * interval);
+	Random rand = new Random();
+        long sleepMillis = (long) (rand.nextDouble() * interval);
         LOG.info("Next execution: " + new Date(new Date().getTime()
                              + sleepMillis));
         Thread.sleep(sleepMillis);

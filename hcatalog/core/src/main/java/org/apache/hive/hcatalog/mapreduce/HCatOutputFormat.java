@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -113,7 +114,8 @@ public class HCatOutputFormat extends HCatBaseOutputFormat {
       // later on, it is guaranteed to be unique.
       String idHash;
       if ((idHash = conf.get(HCatConstants.HCAT_OUTPUT_ID_HASH)) == null) {
-        idHash = String.valueOf(Math.random());
+	Random rand = new Random();
+        idHash = String.valueOf(rand.nextDouble());
       }
       conf.set(HCatConstants.HCAT_OUTPUT_ID_HASH,idHash);
 

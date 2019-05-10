@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Date;
+import java.util.Random;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.hadoop.conf.Configuration;
@@ -113,7 +114,8 @@ public class ZooKeeperCleanup extends Thread {
           if (zk != null) zk.close();
         }
 
-        long sleepMillis = (long) (Math.random() * interval);
+        Random rand = new Random();
+        long sleepMillis = (long) (rand.nextDouble()  * interval);
         LOG.info("Next execution: " + new Date(new Date().getTime()
           + sleepMillis));
         Thread.sleep(sleepMillis);
