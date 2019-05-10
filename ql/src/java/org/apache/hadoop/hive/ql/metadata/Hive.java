@@ -902,8 +902,7 @@ public class Hive {
   public void alterPartitions(String catName, String dbName, String tblName, List<Partition> newParts,
                               EnvironmentContext environmentContext, boolean transactional)
           throws InvalidOperationException, HiveException {
-    List<org.apache.hadoop.hive.metastore.api.Partition> newTParts =
-            new ArrayList<>();
+    List<org.apache.hadoop.hive.metastore.api.Partition> newTParts = new ArrayList<>();
     try {
       AcidUtils.TableSnapshot tableSnapshot = null;
       if (transactional) {
@@ -922,8 +921,8 @@ public class Hive {
         newTParts.add(tmpPart.getTPartition());
       }
       getSynchronizedMSC().alter_partitions(catName, dbName, tblName, newTParts, environmentContext,
-              tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null,
-              tableSnapshot != null ? tableSnapshot.getWriteId() : -1);
+          tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null,
+          tableSnapshot != null ? tableSnapshot.getWriteId() : -1);
     } catch (MetaException e) {
       throw new HiveException("Unable to alter partition. " + e.getMessage(), e);
     } catch (TException e) {
