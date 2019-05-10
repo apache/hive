@@ -759,11 +759,11 @@ public class Hive {
       EnvironmentContext environmentContext, boolean transactional)
       throws InvalidOperationException, HiveException {
     String[] names = Utilities.getDbTableName(tblName);
-    alterPartition(null, names[0], names[1], newPart, environmentContext, transactional);
+    alterPartition(getDefaultCatalog(conf), names[0], names[1], newPart, environmentContext, transactional);
   }
 
   /**
-   * Updates the existing partition metadata with the new metadata.
+   * Updates the existing partition metadata with the new metadata using default catalog name and environment context.
    *
    * @param dbName
    *          name of the exiting table's database
@@ -771,8 +771,30 @@ public class Hive {
    *          name of the existing table
    * @param newPart
    *          new partition
+   * @param transactional
+   *          indicates this call is for transaction stats
+   * @throws InvalidOperationException
+   *           if the changes in metadata is not acceptable
+   * @throws HiveException
+   */
+  public void alterPartition(String dbName, String tblName, Partition newPart, boolean transactional)
+          throws InvalidOperationException, HiveException {
+    alterPartition(getDefaultCatalog(conf), dbName, tblName, newPart, new EnvironmentContext(), transactional);
+  }
+
+  /**
+   * Updates the existing partition metadata with the new metadata.
+   *
+   * @param catName
+   *          catalog name
+   * @param dbName
+   *          name of the exiting table's database
+   * @param tblName
+   *          name of the existing table
+   * @param newPart
+   *          new partition
    * @param environmentContext
-   *          environment context for the method
+   *          key value pairs to pass to alter function.
    * @param transactional
    *          indicates this call is for transaction stats
    * @throws InvalidOperationException
@@ -783,17 +805,11 @@ public class Hive {
                              EnvironmentContext environmentContext, boolean transactional)
       throws InvalidOperationException, HiveException {
     try {
-      if (catName == null) {
-        catName = getDefaultCatalog(conf);
-      }
       validatePartition(newPart);
       String location = newPart.getLocation();
       if (location != null) {
         location = Utilities.getQualifiedPath(conf, new Path(location));
         newPart.setLocation(location);
-      }
-      if (environmentContext == null) {
-        environmentContext = new EnvironmentContext();
       }
       AcidUtils.TableSnapshot tableSnapshot = null;
       if (transactional) {
@@ -824,10 +840,10 @@ public class Hive {
   }
 
   /**
-   * Updates the existing table metadata with the new metadata.
+   * Updates the existing table metadata with the new metadata using default catalog name.
    *
-   * @param tblName
-   *          name of the existing table
+   * @param dbtable
+   *          name of the existing database table in "db.table" format
    * @param newParts
    *          new partitions
    * @param transactional
@@ -836,12 +852,58 @@ public class Hive {
    *           if the changes in metadata is not acceptable
    * @throws HiveException
    */
-  public void alterPartitions(String tblName, List<Partition> newParts,
+  @Deprecated
+  public void alterPartitions(String dbtable, List<Partition> newParts,
                               EnvironmentContext environmentContext, boolean transactional)
       throws InvalidOperationException, HiveException {
-    String[] names = Utilities.getDbTableName(tblName);
+    String[] names = Utilities.getDbTableName(dbtable);
+    alterPartitions(getDefaultCatalog(conf), names[0], names[1], newParts, environmentContext, transactional);
+  }
+
+    /**
+     * Updates the existing table metadata with the new metadata using default catalog name and environment context.
+     *
+     * @param dbName
+     *          name of the exiting table's database
+     * @param tblName
+     *          name of the existing table
+     * @param newParts
+     *          new partitions
+     * @param transactional
+     *          Need to generate and save a table snapshot into the metastore?
+     * @throws InvalidOperationException
+     *           if the changes in metadata is not acceptable
+     * @throws HiveException
+     */
+    public void alterPartitions(String dbName, String tblName, List<Partition> newParts, boolean transactional)
+            throws InvalidOperationException, HiveException {
+        alterPartitions(getDefaultCatalog(conf), dbName, tblName, newParts, new EnvironmentContext(), transactional);
+    }
+
+  /**
+   * Updates the existing table metadata with the new metadata.
+   *
+   * @param catName
+   *          catalog name
+   * @param dbName
+   *          name of the exiting table's database
+   * @param tblName
+   *          name of the existing table
+   * @param newParts
+   *          new partitions
+   * @param environmentContext
+   *          key value pairs to pass to alter function.
+   * @param transactional
+   *          Need to generate and save a table snapshot into the metastore?
+   * @throws InvalidOperationException
+   *           if the changes in metadata is not acceptable
+   * @throws HiveException
+   */
+  public void alterPartitions(String catName, String dbName, String tblName, List<Partition> newParts,
+                              EnvironmentContext environmentContext, boolean transactional)
+          throws InvalidOperationException, HiveException {
     List<org.apache.hadoop.hive.metastore.api.Partition> newTParts =
-      new ArrayList<org.apache.hadoop.hive.metastore.api.Partition>();
+            new ArrayList<>();
     try {
       AcidUtils.TableSnapshot tableSnapshot = null;
       if (transactional) {
@@ -859,15 +921,16 @@ public class Hive {
         }
         newTParts.add(tmpPart.getTPartition());
       }
-      getMSC().alter_partitions(names[0], names[1], newTParts, environmentContext,
-          tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null,
-          tableSnapshot != null ? tableSnapshot.getWriteId() : -1);
+      getSynchronizedMSC().alter_partitions(catName, dbName, tblName, newTParts, environmentContext,
+              tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null,
+              tableSnapshot != null ? tableSnapshot.getWriteId() : -1);
     } catch (MetaException e) {
       throw new HiveException("Unable to alter partition. " + e.getMessage(), e);
     } catch (TException e) {
       throw new HiveException("Unable to alter partition. " + e.getMessage(), e);
     }
   }
+
   /**
    * Rename a old partition to new partition
    *
