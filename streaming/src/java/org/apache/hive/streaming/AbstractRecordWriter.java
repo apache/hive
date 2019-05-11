@@ -494,24 +494,28 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     return addedPartitions;
   }
 
-  protected RecordUpdater createRecordUpdater(final Path partitionPath, int bucketId, Long minWriteId,
-    Long maxWriteID)
-    throws IOException {
+  protected RecordUpdater createRecordUpdater(List<String> partitionValues, final Path partitionPath,
+                                              int bucketId, Long minWriteId, Long maxWriteID)
+          throws IOException {
     // Initialize table properties from the table parameters. This is required because the table
     // may define certain table parameters that may be required while writing. The table parameter
     // 'transactional_properties' is one such example.
     Properties tblProperties = new Properties();
     tblProperties.putAll(table.getParameters());
-    return acidOutputFormat.getRecordUpdater(partitionPath,
-      new AcidOutputFormat.Options(conf)
-        .filesystem(fs)
-        .inspector(outputRowObjectInspector)
-        .bucket(bucketId)
-        .tableProperties(tblProperties)
-        .minimumWriteId(minWriteId)
-        .maximumWriteId(maxWriteID)
-        .statementId(statementId)
-        .finalDestination(partitionPath));
+
+    AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
+            .filesystem(fs)
+            .inspector(outputRowObjectInspector)
+            .bucket(bucketId)
+            .tableProperties(tblProperties)
+            .minimumWriteId(minWriteId)
+            .maximumWriteId(maxWriteID)
+            .statementId(statementId)
+            .finalDestination(partitionPath);
+
+    // Add write directory information in the connection object.
+    conn.addWriteDirectoryInfo(partitionValues, AcidUtils.baseOrDeltaSubdirPath(partitionPath, options));
+    return acidOutputFormat.getRecordUpdater(partitionPath, options);
   }
 
   /**
@@ -594,7 +598,8 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     }
     if (recordUpdater == null) {
       try {
-        recordUpdater = createRecordUpdater(destLocation, bucketId, curBatchMinWriteId, curBatchMaxWriteId);
+        recordUpdater = createRecordUpdater(partitionValues, destLocation,
+                bucketId, curBatchMinWriteId, curBatchMaxWriteId);
       } catch (IOException e) {
         String errMsg = "Failed creating RecordUpdater for " + getWatermark(destLocation.toString());
         LOG.error(errMsg, e);

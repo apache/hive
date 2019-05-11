@@ -589,6 +589,23 @@ precedenceSimilarExpressionAtom[CommonTree t]
     |
     KW_LIKE KW_ALL (expr=expressionsInParenthesis[false, false])
     -> ^(TOK_FUNCTION Identifier["likeall"] {$t} {$expr.tree})
+    |
+    precedenceSimilarExpressionQuantifierPredicate[$t]
+    ;
+
+precedenceSimilarExpressionQuantifierPredicate[CommonTree t]
+    :
+    dropPartitionOperator quantifierType subQueryExpression
+    -> ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP quantifierType dropPartitionOperator ) subQueryExpression {$t})
+    ;
+
+quantifierType
+    :
+    KW_ANY -> KW_SOME
+    |
+    KW_SOME -> KW_SOME
+    |
+    KW_ALL -> KW_ALL
     ;
 
 precedenceSimilarExpressionIn[CommonTree t]

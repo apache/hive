@@ -3192,48 +3192,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return filterRel;
     }
 
-    private void subqueryRestrictionCheck(QB qb, ASTNode searchCond, RelNode srcRel,
-                                         boolean forHavingClause, Set<ASTNode> corrScalarQueries)
-        throws SemanticException {
-      List<ASTNode> subQueriesInOriginalTree = SubQueryUtils.findSubQueries(searchCond);
-
-      ASTNode clonedSearchCond = (ASTNode) SubQueryUtils.adaptor.dupTree(searchCond);
-      List<ASTNode> subQueries = SubQueryUtils.findSubQueries(clonedSearchCond);
-      for(int i=0; i<subQueriesInOriginalTree.size(); i++){
-        //we do not care about the transformation or rewriting of AST
-        // which following statement does
-        // we only care about the restriction checks they perform.
-        // We plan to get rid of these restrictions later
-        int sqIdx = qb.incrNumSubQueryPredicates();
-        ASTNode originalSubQueryAST = subQueriesInOriginalTree.get(i);
-
-        ASTNode subQueryAST = subQueries.get(i);
-        //SubQueryUtils.rewriteParentQueryWhere(clonedSearchCond, subQueryAST);
-        ASTNode outerQueryExpr = (ASTNode) subQueryAST.getChild(2);
-
-        if (outerQueryExpr != null && outerQueryExpr.getType() == HiveParser.TOK_SUBQUERY_EXPR) {
-
-          throw new CalciteSubquerySemanticException(
-              ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
-              outerQueryExpr, "IN/NOT IN subqueries are not allowed in LHS"));
-        }
-
-
-        QBSubQuery subQuery = SubQueryUtils.buildSubQuery(qb.getId(), sqIdx, subQueryAST,
-            originalSubQueryAST, ctx);
-
-        RowResolver inputRR = relToHiveRR.get(srcRel);
-
-        String havingInputAlias = null;
-
-        boolean [] subqueryConfig = {false, false};
-        subQuery.subqueryRestrictionsCheck(inputRR, forHavingClause,
-            havingInputAlias, subqueryConfig);
-        if(subqueryConfig[0]) {
-          corrScalarQueries.add(originalSubQueryAST);
-        }
-      }
-    }
 
     private RelNode genLateralViewPlans(ASTNode lateralView, Map<String, RelNode> aliasToRel)
             throws SemanticException {
@@ -3392,8 +3350,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       Set<ASTNode> corrScalarQueriesWithAgg = new HashSet<ASTNode>();
       boolean isSubQuery = false;
       try {
-        //disallow subqueries which HIVE doesn't currently support
-        subqueryRestrictionCheck(qb, node, srcRel, forHavingClause, corrScalarQueriesWithAgg);
         Deque<ASTNode> stack = new ArrayDeque<ASTNode>();
         stack.push(node);
 
@@ -3402,13 +3358,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
           switch (next.getType()) {
           case HiveParser.TOK_SUBQUERY_EXPR:
-              /*
-               * Restriction 2.h Subquery isnot allowed in LHS
-               */
-            if (next.getChildren().size() == 3 && next.getChild(2).getType() == HiveParser.TOK_SUBQUERY_EXPR) {
-              throw new CalciteSubquerySemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION
-                  .getMsg(next.getChild(2), "SubQuery in LHS expressions are not supported."));
-            }
+
+            //disallow subqueries which HIVE doesn't currently support
+            SubQueryUtils.subqueryRestrictionCheck(qb, next, srcRel, forHavingClause,
+                corrScalarQueriesWithAgg, ctx, this.relToHiveRR);
+
             String sbQueryAlias = "sq_" + qb.incrNumSubQueryPredicates();
             QB qbSQ = new QB(qb.getId(), sbQueryAlias, true);
             qbSQ.setInsideView(qb.isInsideView());
