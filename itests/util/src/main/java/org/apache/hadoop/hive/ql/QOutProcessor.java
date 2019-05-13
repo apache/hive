@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.hadoop.hive.ql.QTestUtil.FsType;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.FsType;
 
 /**
  * QOutProcessor: produces the final q.out from original q.out by postprocessing (e.g. masks)
@@ -72,7 +72,7 @@ public class QOutProcessor {
   private static final Pattern PATTERN_MASK_DATA_SIZE = Pattern.compile("-- MASK_DATA_SIZE");
   private static final Pattern PATTERN_MASK_LINEAGE = Pattern.compile("-- MASK_LINEAGE");
 
-  private FsType fsType = FsType.local;
+  private FsType fsType = FsType.LOCAL;
 
   public static class LineProcessingResult {
     private String line;
@@ -140,7 +140,7 @@ public class QOutProcessor {
   }
 
   public QOutProcessor() {
-    this.fsType = FsType.hdfs;
+    this.fsType = FsType.HDFS;
   }
   
   private Pattern[] toPattern(String[] patternStrs) {
@@ -194,7 +194,7 @@ public class QOutProcessor {
     
     Matcher matcher = null;
 
-    if (fsType == FsType.encrypted_hdfs) {
+    if (fsType == FsType.ENCRYPTED_HDFS) {
       for (Pattern pattern : partialReservedPlanMask) {
         matcher = pattern.matcher(result.line);
         if (matcher.find()) {

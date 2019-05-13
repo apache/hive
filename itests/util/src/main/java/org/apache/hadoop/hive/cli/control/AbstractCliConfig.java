@@ -33,9 +33,9 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.hive.ql.QTestUtil;
-import org.apache.hadoop.hive.ql.QTestUtil.FsType;
-import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.hadoop.hive.ql.QTestSystemProperties;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.FsType;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 
 import com.google.common.base.Splitter;
@@ -76,7 +76,7 @@ public abstract class AbstractCliConfig {
 
   public AbstractCliConfig(Class<? extends CliAdapter> adapter) {
     cliAdapter = adapter;
-    clusterType = MiniClusterType.none;
+    clusterType = MiniClusterType.NONE;
     queryFile = getSysPropValue("qfile");
     queryFileRegex = getSysPropValue("qfile_regex");
     runDisabled = getSysPropValue("run_disabled");
@@ -244,7 +244,8 @@ public abstract class AbstractCliConfig {
     for (String qFileName : excludedQueryFileNames) {
       // in case of running as ptest, exclusions should be respected,
       // because test drivers receive every qfiles regardless of exclusions
-      if ("hiveptest".equals(System.getProperty("user.name")) || !isQFileSpecified()) {
+      if ("hiveptest".equals(System.getProperty("user.name")) || !isQFileSpecified()
+          || QTestSystemProperties.shouldForceExclusions()) {
         testFiles.remove(new File(queryDir, qFileName));
       }
     }
