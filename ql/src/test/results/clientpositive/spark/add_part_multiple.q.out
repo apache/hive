@@ -29,9 +29,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Add Partition Operator:
+    Add Partition
 #### A masked pattern was here ####
-          Spec: {ds=2010-01-01}, {ds=2010-02-01}, {ds=2010-03-01}, {ds=2010-04-01}
+      Spec: {ds=2010-01-01}, {ds=2010-02-01}, {ds=2010-03-01}, {ds=2010-04-01}
 
 PREHOOK: query: ALTER TABLE add_part_test_n1 ADD IF NOT EXISTS
 PARTITION (ds='2010-01-01') location 'A'

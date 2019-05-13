@@ -15,35 +15,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.plan;
+
+package org.apache.hadoop.hive.ql.ddl.table.partition;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * Contains the information needed to add one or more partitions.
+ * DDL task description for ALTER TABLE ... DROP PARTITION ... commands.
  */
-public class AddPartitionDesc extends DDLDesc implements Serializable {
+@Explain(displayName = "Add Partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class AlterTableAddPartitionDesc implements DDLDesc, Serializable {
+  private static final long serialVersionUID = 1L;
 
+  static {
+    DDLTask2.registerOperation(AlterTableAddPartitionDesc.class, AlterTableAddPartitionOperation.class);
+  }
 
-  public static class OnePartitionDesc {
-    public OnePartitionDesc() {}
-
-    OnePartitionDesc(
+  public static class PartitionDesc {
+    PartitionDesc(
         Map<String, String> partSpec, String location, Map<String, String> params) {
       this(partSpec, location);
       this.partParams = params;
     }
 
-    OnePartitionDesc(Map<String, String> partSpec, String location) {
+    PartitionDesc(Map<String, String> partSpec, String location) {
       this.partSpec = partSpec;
       this.location = location;
     }
@@ -158,12 +165,10 @@ public class AddPartitionDesc extends DDLDesc implements Serializable {
     public void setWriteId(long writeId) { this.writeId = writeId; }
   }
 
-  private static final long serialVersionUID = 1L;
-
   String tableName;
   String dbName;
   boolean ifNotExists;
-  List<OnePartitionDesc> partitions = null;
+  List<PartitionDesc> partitions = null;
   boolean replaceMode = false;
   private ReplicationSpec replicationSpec = null;
 
@@ -171,10 +176,10 @@ public class AddPartitionDesc extends DDLDesc implements Serializable {
   /**
    * For serialization only.
    */
-  public AddPartitionDesc() {
+  public AlterTableAddPartitionDesc() {
   }
 
-  public AddPartitionDesc(
+  public AlterTableAddPartitionDesc(
       String dbName, String tableName, boolean ifNotExists) {
     super();
     this.dbName = dbName;
@@ -196,7 +201,7 @@ public class AddPartitionDesc extends DDLDesc implements Serializable {
    *          partition parameters.
    */
   @Deprecated
-  public AddPartitionDesc(String dbName, String tableName,
+  public AlterTableAddPartitionDesc(String dbName, String tableName,
       Map<String, String> partSpec, String location, Map<String, String> params) {
     super();
     this.dbName = dbName;
@@ -212,9 +217,9 @@ public class AddPartitionDesc extends DDLDesc implements Serializable {
   private void addPartition(
       Map<String, String> partSpec, String location, Map<String, String> params) {
     if (this.partitions == null) {
-      this.partitions = new ArrayList<OnePartitionDesc>();
+      this.partitions = new ArrayList<PartitionDesc>();
     }
-    this.partitions.add(new OnePartitionDesc(partSpec, location, params));
+    this.partitions.add(new PartitionDesc(partSpec, location, params));
   }
 
   /**
@@ -255,7 +260,7 @@ public class AddPartitionDesc extends DDLDesc implements Serializable {
     if (this.partitions == null || this.partitions.isEmpty()) return "<no partition>";
     boolean isFirst = true;
     StringBuilder sb = new StringBuilder();
-    for (OnePartitionDesc desc : this.partitions) {
+    for (PartitionDesc desc : this.partitions) {
       if (!isFirst) {
         sb.append(", ");
       }
@@ -270,7 +275,7 @@ public class AddPartitionDesc extends DDLDesc implements Serializable {
     if (this.partitions == null || this.partitions.isEmpty()) return "<no partition>";
     boolean isFirst = true;
     StringBuilder sb = new StringBuilder();
-    for (OnePartitionDesc desc : this.partitions) {
+    for (PartitionDesc desc : this.partitions) {
       if (!isFirst) {
         sb.append(", ");
       }
@@ -299,7 +304,7 @@ public class AddPartitionDesc extends DDLDesc implements Serializable {
     return this.partitions.size();
   }
 
-  public OnePartitionDesc getPartition(int i) {
+  public PartitionDesc getPartition(int i) {
     return this.partitions.get(i);
   }
 

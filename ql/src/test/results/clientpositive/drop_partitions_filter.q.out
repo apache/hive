@@ -21,6 +21,21 @@ d                   	string
 # col_name            	data_type           	comment             
 c                   	string              	                    
 d                   	string              	                    
+PREHOOK: query: explain alter table ptestfilter_n1 add partition (c='US', d=1)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@ptestfilter_n1
+POSTHOOK: query: explain alter table ptestfilter_n1 add partition (c='US', d=1)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@ptestfilter_n1
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Add Partition
+#### A masked pattern was here ####
+      Spec: {c=US, d=1}
+
 PREHOOK: query: alter table ptestfilter_n1 add partition (c='US', d=1)
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Output: default@ptestfilter_n1
@@ -99,6 +114,22 @@ c=Russia/d=3
 c=US/d=1
 c=US/d=2
 c=Uganda/d=2
+PREHOOK: query: explain alter table ptestfilter_n1 drop partition (c='US', d<'2')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ptestfilter_n1
+PREHOOK: Output: default@ptestfilter_n1@c=US/d=1
+POSTHOOK: query: explain alter table ptestfilter_n1 drop partition (c='US', d<'2')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ptestfilter_n1
+POSTHOOK: Output: default@ptestfilter_n1@c=US/d=1
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Drop Partition
+      table: default.ptestfilter_n1
+
 PREHOOK: query: alter table ptestfilter_n1 drop partition (c='US', d<'2')
 PREHOOK: type: ALTERTABLE_DROPPARTS
 PREHOOK: Input: default@ptestfilter_n1
@@ -107,6 +138,27 @@ POSTHOOK: query: alter table ptestfilter_n1 drop partition (c='US', d<'2')
 POSTHOOK: type: ALTERTABLE_DROPPARTS
 POSTHOOK: Input: default@ptestfilter_n1
 POSTHOOK: Output: default@ptestfilter_n1@c=US/d=1
+PREHOOK: query: explain show partitions ptestfilter_n1
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter_n1
+POSTHOOK: query: explain show partitions ptestfilter_n1
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter_n1
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Partitions
+      table: ptestfilter_n1
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: show partitions ptestfilter_n1
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@ptestfilter_n1
@@ -162,6 +214,26 @@ c=France/d=4
 c=Germany/d=2
 c=Greece/d=2
 c=India/d=3
+PREHOOK: query: explain alter table ptestfilter_n1 drop partition (c >='India'),
+                             partition (c='Greece', d='2')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ptestfilter_n1
+PREHOOK: Output: default@ptestfilter_n1@c=Greece/d=2
+PREHOOK: Output: default@ptestfilter_n1@c=India/d=3
+POSTHOOK: query: explain alter table ptestfilter_n1 drop partition (c >='India'),
+                             partition (c='Greece', d='2')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ptestfilter_n1
+POSTHOOK: Output: default@ptestfilter_n1@c=Greece/d=2
+POSTHOOK: Output: default@ptestfilter_n1@c=India/d=3
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Drop Partition
+      table: default.ptestfilter_n1
+
 PREHOOK: query: alter table ptestfilter_n1 drop partition (c >='India'),
                              partition (c='Greece', d='2')
 PREHOOK: type: ALTERTABLE_DROPPARTS

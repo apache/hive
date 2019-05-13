@@ -16,52 +16,46 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.table.partition;
 
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-public class AlterTableExchangePartition extends DDLDesc {
+/**
+ * DDL task description for ALTER TABLE ... EXCHANGE PARTITION ... WITH TABLE ... commands.
+ */
+@Explain(displayName = "Exchange Partitions", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class AlterTableExchangePartitionsDesc implements DDLDesc {
+  static {
+    DDLTask2.registerOperation(AlterTableExchangePartitionsDesc.class, AlterTableExchangePartitionsOperation.class);
+  }
 
-  // The source table
-  private Table sourceTable;
+  private final Table sourceTable;
+  private final Table destinationTable;
+  private final Map<String, String> partitionSpecs;
 
-  // The destination table
-  private Table destinationTable;
-
-  // The partition that has to be exchanged
-  private Map<String, String> partitionSpecs;
-
-  public AlterTableExchangePartition(Table sourceTable, Table destinationTable,
+  public AlterTableExchangePartitionsDesc(Table sourceTable, Table destinationTable,
       Map<String, String> partitionSpecs) {
-    super();
     this.sourceTable = sourceTable;
     this.destinationTable = destinationTable;
     this.partitionSpecs = partitionSpecs;
-  }
-
-  public void setSourceTable(Table sourceTable) {
-    this.sourceTable = sourceTable;
   }
 
   public Table getSourceTable() {
-    return this.sourceTable;
-  }
-
-  public void setDestinationTable(Table destinationTable) {
-    this.destinationTable = destinationTable;
+    return sourceTable;
   }
 
   public Table getDestinationTable() {
-    return this.destinationTable;
+    return destinationTable;
   }
 
-  public void setPartitionSpecs(Map<String, String> partitionSpecs) {
-    this.partitionSpecs = partitionSpecs;
-  }
-
+  @Explain(displayName = "partitions", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Map<String, String> getPartitionSpecs() {
-    return this.partitionSpecs;
+    return partitionSpecs;
   }
 }
