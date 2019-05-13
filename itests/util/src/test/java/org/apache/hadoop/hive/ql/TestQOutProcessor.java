@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql;
 
-import org.apache.hadoop.hive.ql.QTestUtil.FsType;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.FsType;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -25,7 +25,7 @@ import org.junit.Test;
  * This class contains unit tests for QTestUtil
  */
 public class TestQOutProcessor {
-  QOutProcessor qOutProcessor = new QOutProcessor(FsType.local);
+  QOutProcessor qOutProcessor = new QOutProcessor(FsType.LOCAL);
 
   @Test
   public void testSelectiveHdfsPatternMaskOnlyHdfsPath() {

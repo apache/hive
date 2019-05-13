@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
-import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.util.ElapsedTimeLoggingWrapper;
 import org.junit.After;
@@ -167,11 +167,6 @@ public class CoreCliDriver extends CliAdapter {
     }
   }
 
-  private static String debugHint =
-      "\nSee ./ql/target/tmp/log/hive.log or ./itests/qtest/target/tmp/log/hive.log, "
-          + "or check ./ql/target/surefire-reports "
-          + "or ./itests/qtest/target/surefire-reports/ for specific test cases logs.";
-
   @Override
   public void runTest(String testName, String fname, String fpath) {
     Stopwatch sw = Stopwatch.createStarted();
@@ -188,7 +183,7 @@ public class CoreCliDriver extends CliAdapter {
       int ecode = response.getResponseCode();
       if (ecode != 0) {
         failed = true;
-        qt.failedQuery(response.getException(), response.getResponseCode(), fname, debugHint);
+        qt.failedQuery(response.getException(), response.getResponseCode(), fname, QTestUtil.DEBUG_HINT);
       }
 
       setupAdditionalPartialMasks();
@@ -196,14 +191,14 @@ public class CoreCliDriver extends CliAdapter {
       resetAdditionalPartialMasks();
       if (result.getReturnCode() != 0) {
         failed = true;
-        String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ? debugHint
+        String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ? QTestUtil.DEBUG_HINT
             : "\r\n" + result.getCapturedOutput();
         qt.failedDiff(result.getReturnCode(), fname, message);
       }
     }
     catch (Exception e) {
       failed = true;
-      qt.failedWithException(e, fname, debugHint);
+      qt.failedWithException(e, fname, QTestUtil.DEBUG_HINT);
     } finally {
       String message = "Done query " + fname + ". succeeded=" + !failed + ", skipped=" + skipped +
           ". ElapsedTime(ms)=" + sw.stop().elapsed(TimeUnit.MILLISECONDS);

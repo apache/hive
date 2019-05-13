@@ -25,7 +25,7 @@ import java.io.File;
 import org.apache.hadoop.hive.hbase.HBaseQTestUtil;
 import org.apache.hadoop.hive.hbase.HBaseTestSetup;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
-import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.junit.After;
 import org.junit.AfterClass;

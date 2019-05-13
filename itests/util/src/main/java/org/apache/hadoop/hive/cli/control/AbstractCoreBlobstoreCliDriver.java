@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
-import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.After;
