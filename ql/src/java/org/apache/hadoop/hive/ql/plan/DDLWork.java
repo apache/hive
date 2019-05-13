@@ -34,16 +34,10 @@ public class DDLWork implements Serializable {
 
   // TODO: this can probably be replaced with much less code via dynamic dispatch and/or templates.
   private InsertCommitHookDesc insertCommitHookDesc;
-  private DropPartitionDesc dropPartitionDesc;
   private AlterTableDesc alterTblDesc;
   private ShowColumnsDesc showColumnsDesc;
-  private ShowPartitionsDesc showPartsDesc;
-  private AddPartitionDesc addPartitionDesc;
-  private RenamePartitionDesc renamePartitionDesc;
   private AlterTableSimpleDesc alterTblSimpleDesc;
   private MsckDesc msckDesc;
-  private AlterTableAlterPartDesc alterTableAlterPartDesc;
-  private AlterTableExchangePartition alterTableExchangePartition;
 
   private ShowConfDesc showConfDesc;
 
@@ -85,17 +79,6 @@ public class DDLWork implements Serializable {
   }
 
   /**
-   * @param dropTblDesc
-   *          drop table descriptor
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      DropPartitionDesc dropPartitionDesc) {
-    this(inputs, outputs);
-
-    this.dropPartitionDesc = dropPartitionDesc;
-  }
-
-  /**
    * @param showColumnsDesc
    */
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
@@ -103,38 +86,6 @@ public class DDLWork implements Serializable {
     this(inputs, outputs);
 
     this.showColumnsDesc = showColumnsDesc;
-  }
-
-  /**
-   * @param showPartsDesc
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      ShowPartitionsDesc showPartsDesc) {
-    this(inputs, outputs);
-
-    this.showPartsDesc = showPartsDesc;
-  }
-
-  /**
-   * @param addPartitionDesc
-   *          information about the partitions we want to add.
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      AddPartitionDesc addPartitionDesc) {
-    this(inputs, outputs);
-
-    this.addPartitionDesc = addPartitionDesc;
-  }
-
-  /**
-   * @param renamePartitionDesc
-   *          information about the partitions we want to add.
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      RenamePartitionDesc renamePartitionDesc) {
-    this(inputs, outputs);
-
-    this.renamePartitionDesc = renamePartitionDesc;
   }
 
   /**
@@ -163,18 +114,6 @@ public class DDLWork implements Serializable {
   }
 
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      AlterTableAlterPartDesc alterPartDesc) {
-    this(inputs, outputs);
-    this.alterTableAlterPartDesc = alterPartDesc;
-  }
-
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      AlterTableExchangePartition alterTableExchangePartition) {
-    this(inputs, outputs);
-    this.alterTableExchangePartition = alterTableExchangePartition;
-  }
-
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       CacheMetadataDesc cacheMetadataDesc) {
     this(inputs, outputs);
     this.cacheMetadataDesc = cacheMetadataDesc;
@@ -185,14 +124,6 @@ public class DDLWork implements Serializable {
   ) {
     this(inputs, outputs);
     this.insertCommitHookDesc = insertCommitHookDesc;
-  }
-
-  /**
-   * @return the dropTblDesc
-   */
-  @Explain(displayName = "Drop Partition Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public DropPartitionDesc getDropPartitionDesc() {
-    return dropPartitionDesc;
   }
 
   /**
@@ -209,29 +140,6 @@ public class DDLWork implements Serializable {
   @Explain(displayName = "Show Columns Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public ShowColumnsDesc getShowColumnsDesc() {
     return showColumnsDesc;
-  }
-
-  /**
-   * @return the showPartsDesc
-   */
-  @Explain(displayName = "Show Partitions Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public ShowPartitionsDesc getShowPartsDesc() {
-    return showPartsDesc;
-  }
-
-  /**
-   * @return information about the partitions we want to add.
-   */
-  @Explain(displayName = "Add Partition Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public AddPartitionDesc getAddPartitionDesc() {
-    return addPartitionDesc;
-  }
-
-  /**
-   * @return information about the partitions we want to rename.
-   */
-  public RenamePartitionDesc getRenamePartitionDesc() {
-    return renamePartitionDesc;
   }
 
   /**
@@ -269,20 +177,6 @@ public class DDLWork implements Serializable {
 
   public void setNeedLock(boolean needLock) {
     this.needLock = needLock;
-  }
-
-  /**
-   * @return information about the partitions we want to change.
-   */
-  public AlterTableAlterPartDesc getAlterTableAlterPartDesc() {
-    return alterTableAlterPartDesc;
-  }
-
-  /**
-   * @return information about the table partition to be exchanged
-   */
-  public AlterTableExchangePartition getAlterTableExchangePartition() {
-    return this.alterTableExchangePartition;
   }
 
   /**

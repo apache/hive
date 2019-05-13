@@ -16,104 +16,52 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.table.partition;
 
 import java.io.Serializable;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-
 /**
- * ShowPartitionsDesc.
- *
+ * DDL task description for SHOW PARTITIONS commands.
  */
 @Explain(displayName = "Show Partitions", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class ShowPartitionsDesc extends DDLDesc implements Serializable {
+public class ShowPartitionsDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
-  String tabName;
-  String resFile;
-  // Filter the partitions to show based on on supplied spec
-  Map<String, String> partSpec;
 
-  /**
-   * table name for the result of show tables.
-   */
-  private static final String table = "showpartitions";
-  /**
-   * thrift ddl for the result of show tables.
-   */
-  private static final String schema = "partition#string";
-
-  public String getTable() {
-    return table;
+  static {
+    DDLTask2.registerOperation(ShowPartitionsDesc.class, ShowPartitionsOperation.class);
   }
 
-  public String getSchema() {
-    return schema;
-  }
+  public static final String SCHEMA = "partition#string";
 
-  public ShowPartitionsDesc() {
-  }
+  private final String tabName;
+  private final String resFile;
+  private final Map<String, String> partSpec;
 
-  /**
-   * @param tabName
-   *          Name of the table whose partitions need to be listed.
-   * @param resFile
-   *          File to store the results in
-   */
-  public ShowPartitionsDesc(String tabName, Path resFile,
-      Map<String, String> partSpec) {
+  public ShowPartitionsDesc(String tabName, Path resFile, Map<String, String> partSpec) {
     this.tabName = tabName;
     this.resFile = resFile.toString();
     this.partSpec = partSpec;
   }
 
-  /**
-   * @return the name of the table.
-   */
   @Explain(displayName = "table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTabName() {
     return tabName;
   }
 
-  /**
-   * @param tabName
-   *          the table whose partitions have to be listed
-   */
-  public void setTabName(String tabName) {
-    this.tabName = tabName;
-  }
-
-  /**
-   * @return the name of the table.
-   */
   @Explain(displayName = "partSpec", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Map<String, String> getPartSpec() {
     return partSpec;
   }
 
-  /**
-   * @param partSpec the partSpec to set.
-   */
-  public void setPartSpec(Map<String, String> partSpec) {
-    this.partSpec = partSpec;
-  }
-
-  /**
-   * @return the results file
-   */
   @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
   public String getResFile() {
     return resFile;
-  }
-
-  /**
-   * @param resFile
-   *          the results file to be used to return the results
-   */
-  public void setResFile(String resFile) {
-    this.resFile = resFile;
   }
 }

@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
+import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.cli.CliSessionState;
@@ -467,7 +467,7 @@ public class HiveEndPoint {
         Map<String, String> partSpec =
             Warehouse.makeSpecFromValues(tableObject.getPartitionKeys(), ep.partitionVals);
 
-        AddPartitionDesc addPartitionDesc = new AddPartitionDesc(ep.database, ep.table, true);
+        AlterTableAddPartitionDesc addPartitionDesc = new AlterTableAddPartitionDesc(ep.database, ep.table, true);
         String partLocation = new Path(tableObject.getDataLocation(),
             Warehouse.makePartPath(partSpec)).toString();
         addPartitionDesc.addPartition(partSpec, partLocation);

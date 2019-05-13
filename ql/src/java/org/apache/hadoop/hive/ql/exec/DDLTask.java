@@ -35,14 +35,12 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -51,7 +49,6 @@ import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Msck;
 import org.apache.hadoop.hive.metastore.MsckInfo;
-import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
@@ -87,12 +84,10 @@ import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
-import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
 import org.apache.hadoop.hive.ql.metadata.formatting.TextMetaDataTable;
 import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
 import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
@@ -100,15 +95,11 @@ import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
-import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
-import org.apache.hadoop.hive.ql.plan.AlterTableAlterPartDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
-import org.apache.hadoop.hive.ql.plan.AlterTableExchangePartition;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.CacheMetadataDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
-import org.apache.hadoop.hive.ql.plan.DropPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.FileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.InsertCommitHookDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
@@ -118,10 +109,8 @@ import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.OrcFileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.RCFileMergeDesc;
-import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowConfDesc;
-import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -131,13 +120,6 @@ import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hadoop.tools.HadoopArchives;
@@ -163,8 +145,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private static String INTERMEDIATE_ORIGINAL_DIR_SUFFIX;
   private static String INTERMEDIATE_EXTRACTED_DIR_SUFFIX;
 
-  private MetaDataFormatter formatter;
-
   @Override
   public boolean requireLock() {
     return this.work != null && this.work.getNeedLock();
@@ -181,7 +161,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     // Pick the formatter to use to display the results.  Either the
     // normal human readable output or a json object.
-    formatter = MetaDataFormatUtils.getFormatter(conf);
     INTERMEDIATE_ARCHIVED_DIR_SUFFIX =
         HiveConf.getVar(conf, ConfVars.METASTORE_INT_ARCHIVED);
     INTERMEDIATE_ORIGINAL_DIR_SUFFIX =
@@ -201,12 +180,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     try {
       db = Hive.get(conf);
 
-      DropPartitionDesc dropPartition = work.getDropPartitionDesc();
-      if (dropPartition != null) {
-        dropPartitions(db, dropPartition);
-        return 0;
-      }
-
       AlterTableDesc alterTbl = work.getAlterTblDesc();
       if (alterTbl != null) {
         if (!allowOperationInReplicationScope(db, alterTbl.getOldName(), null, alterTbl.getReplicationSpec())) {
@@ -222,16 +195,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         } else {
           return alterTable(db, alterTbl);
         }
-      }
-
-      AddPartitionDesc addPartitionDesc = work.getAddPartitionDesc();
-      if (addPartitionDesc != null) {
-        return addPartitions(db, addPartitionDesc);
-      }
-
-      RenamePartitionDesc renamePartitionDesc = work.getRenamePartitionDesc();
-      if (renamePartitionDesc != null) {
-        return renamePartition(db, renamePartitionDesc);
       }
 
       AlterTableSimpleDesc simpleDesc = work.getAlterTblSimpleDesc();
@@ -257,11 +220,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         return showColumns(db, showCols);
       }
 
-      ShowPartitionsDesc showParts = work.getShowPartsDesc();
-      if (showParts != null) {
-        return showPartitions(db, showParts);
-      }
-
       ShowConfDesc showConf = work.getShowConfDesc();
       if (showConf != null) {
         return showConf(db, showConf);
@@ -270,17 +228,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       AlterTablePartMergeFilesDesc mergeFilesDesc = work.getMergeFilesDesc();
       if (mergeFilesDesc != null) {
         return mergeFiles(db, mergeFilesDesc, driverContext);
-      }
-
-      AlterTableAlterPartDesc alterPartDesc = work.getAlterTableAlterPartDesc();
-      if(alterPartDesc != null) {
-        return alterTableAlterPart(db, alterPartDesc);
-      }
-
-      AlterTableExchangePartition alterTableExchangePartition =
-          work.getAlterTableExchangePartition();
-      if (alterTableExchangePartition != null) {
-        return exchangeTablePartition(db, alterTableExchangePartition);
       }
 
       CacheMetadataDesc cacheMetadataDesc = work.getCacheMetadataDesc();
@@ -453,161 +400,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       setException(subtask.getException());
     }
     return ret;
-  }
-
-  /**
-   * Add a partitions to a table.
-   *
-   * @param db
-   *          Database to add the partition to.
-   * @param addPartitionDesc
-   *          Add these partitions.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   */
-  private int addPartitions(Hive db, AddPartitionDesc addPartitionDesc) throws HiveException {
-    List<Partition> parts = db.createPartitions(addPartitionDesc);
-    for (Partition part : parts) {
-      addIfAbsentByName(new WriteEntity(part, WriteEntity.WriteType.INSERT));
-    }
-    return 0;
-  }
-
-  /**
-   * Rename a partition in a table
-   *
-   * @param db
-   *          Database to rename the partition.
-   * @param renamePartitionDesc
-   *          rename old Partition to new one.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   */
-  private int renamePartition(Hive db, RenamePartitionDesc renamePartitionDesc) throws HiveException {
-    String tableName = renamePartitionDesc.getTableName();
-    LinkedHashMap<String, String> oldPartSpec = renamePartitionDesc.getOldPartSpec();
-
-    if (!allowOperationInReplicationScope(db, tableName, oldPartSpec, renamePartitionDesc.getReplicationSpec())) {
-      // no rename, the table is missing either due to drop/rename which follows the current rename.
-      // or the existing table is newer than our update.
-      if (LOG.isDebugEnabled()) {
-      LOG.debug("DDLTask: Rename Partition is skipped as table {} / partition {} is newer than update",
-              tableName,
-              FileUtils.makePartName(new ArrayList<>(oldPartSpec.keySet()), new ArrayList<>(oldPartSpec.values())));
-      }
-      return 0;
-    }
-
-    String names[] = Utilities.getDbTableName(tableName);
-    if (Utils.isBootstrapDumpInProgress(db, names[0])) {
-      LOG.error("DDLTask: Rename Partition not allowed as bootstrap dump in progress");
-      throw new HiveException("Rename Partition: Not allowed as bootstrap dump in progress");
-    }
-
-    Table tbl = db.getTable(tableName);
-    Partition oldPart = db.getPartition(tbl, oldPartSpec, false);
-    if (oldPart == null) {
-      String partName = FileUtils.makePartName(new ArrayList<String>(oldPartSpec.keySet()),
-          new ArrayList<String>(oldPartSpec.values()));
-      throw new HiveException("Rename partition: source partition [" + partName
-          + "] does not exist.");
-    }
-    Partition part = db.getPartition(tbl, oldPartSpec, false);
-    part.setValues(renamePartitionDesc.getNewPartSpec());
-    db.renamePartition(tbl, oldPartSpec, part);
-    Partition newPart = db.getPartition(tbl, renamePartitionDesc.getNewPartSpec(), false);
-    work.getInputs().add(new ReadEntity(oldPart));
-    // We've already obtained a lock on the table, don't lock the partition too
-    addIfAbsentByName(new WriteEntity(newPart, WriteEntity.WriteType.DDL_NO_LOCK));
-    return 0;
-  }
-
-  /**
-   * Alter partition column type in a table
-   *
-   * @param db
-   *          Database to rename the partition.
-   * @param alterPartitionDesc
-   *          change partition column type.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   */
-  private int alterTableAlterPart(Hive db, AlterTableAlterPartDesc alterPartitionDesc)
-      throws HiveException {
-
-    Table tbl = db.getTable(alterPartitionDesc.getTableName(), true);
-
-    // This is checked by DDLSemanticAnalyzer
-    assert(tbl.isPartitioned());
-
-    List<FieldSchema> newPartitionKeys = new ArrayList<FieldSchema>();
-
-    //Check if the existing partition values can be type casted to the new column type
-    // with a non null value before trying to alter the partition column type.
-    try {
-      Set<Partition> partitions = db.getAllPartitionsOf(tbl);
-      int colIndex = -1;
-      for(FieldSchema col : tbl.getTTable().getPartitionKeys()) {
-        colIndex++;
-        if (col.getName().compareTo(alterPartitionDesc.getPartKeySpec().getName()) == 0) {
-          break;
-        }
-      }
-
-      if (colIndex == -1 || colIndex == tbl.getTTable().getPartitionKeys().size()) {
-        throw new HiveException("Cannot find partition column " +
-            alterPartitionDesc.getPartKeySpec().getName());
-      }
-
-      TypeInfo expectedType =
-          TypeInfoUtils.getTypeInfoFromTypeString(alterPartitionDesc.getPartKeySpec().getType());
-      ObjectInspector outputOI =
-          TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(expectedType);
-      Converter converter = ObjectInspectorConverters.getConverter(
-          PrimitiveObjectInspectorFactory.javaStringObjectInspector, outputOI);
-
-      // For all the existing partitions, check if the value can be type casted to a non-null object
-      for(Partition part : partitions) {
-        if (part.getName().equals(conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME))) {
-          continue;
-        }
-        try {
-          String value = part.getValues().get(colIndex);
-          Object convertedValue =
-              converter.convert(value);
-          if (convertedValue == null) {
-            throw new HiveException(" Converting from " + TypeInfoFactory.stringTypeInfo + " to " +
-              expectedType + " for value : " + value + " resulted in NULL object");
-          }
-        } catch (Exception e) {
-          throw new HiveException("Exception while converting " +
-              TypeInfoFactory.stringTypeInfo + " to " +
-              expectedType + " for value : " + part.getValues().get(colIndex));
-        }
-      }
-    } catch(Exception e) {
-      throw new HiveException(
-          "Exception while checking type conversion of existing partition values to " +
-          alterPartitionDesc.getPartKeySpec() + " : " + e.getMessage());
-    }
-
-    for(FieldSchema col : tbl.getTTable().getPartitionKeys()) {
-      if (col.getName().compareTo(alterPartitionDesc.getPartKeySpec().getName()) == 0) {
-        newPartitionKeys.add(alterPartitionDesc.getPartKeySpec());
-      } else {
-        newPartitionKeys.add(col);
-      }
-    }
-
-    tbl.getTTable().setPartitionKeys(newPartitionKeys);
-
-    db.alterTable(tbl, false, null, true);
-
-    work.getInputs().add(new ReadEntity(tbl));
-    // We've already locked the table as the input, don't relock it as the output.
-    addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
-
-    return 0;
   }
 
   /**
@@ -1329,48 +1121,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       LOG.error("Msck failed.", e);
       return 1;
     }
-  }
-
-  /**
-   * Write a list of partitions to a file.
-   *
-   * @param db
-   *          The database in question.
-   * @param showParts
-   *          These are the partitions we're interested in.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
-   */
-  private int showPartitions(Hive db, ShowPartitionsDesc showParts) throws HiveException {
-    // get the partitions for the table and populate the output
-    String tabName = showParts.getTabName();
-    Table tbl = null;
-    List<String> parts = null;
-
-    tbl = db.getTable(tabName);
-
-    if (!tbl.isPartitioned()) {
-      throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, tabName);
-    }
-    if (showParts.getPartSpec() != null) {
-      parts = db.getPartitionNames(tbl.getDbName(),
-          tbl.getTableName(), showParts.getPartSpec(), (short) -1);
-    } else {
-      parts = db.getPartitionNames(tbl.getDbName(), tbl.getTableName(), (short) -1);
-    }
-
-    // write the results in the file
-    DataOutputStream outStream = getOutputStream(showParts.getResFile());
-    try {
-      formatter.showTablePartitions(outStream, parts);
-    } catch (Exception e) {
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "show partitions for table " + tabName);
-    } finally {
-      IOUtils.closeStream(outStream);
-    }
-
-    return 0;
   }
 
   /**
@@ -2154,80 +1904,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
-   /**
-   * Drop a given partitions.
-   *
-   * @param db
-   *          The database in question.
-   * @param dropPartition
-   *          This is the partition we're dropping.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
-   */
-  private void dropPartitions(Hive db, DropPartitionDesc dropPartition) throws HiveException {
-    // We need to fetch the table before it is dropped so that it can be passed to
-    // post-execution hook
-    Table tbl = null;
-    try {
-      tbl = db.getTable(dropPartition.getTableName());
-    } catch (InvalidTableException e) {
-      // drop table is idempotent
-    }
-
-    ReplicationSpec replicationSpec = dropPartition.getReplicationSpec();
-    if (replicationSpec.isInReplicationScope()){
-      /**
-       * ALTER TABLE DROP PARTITION ... FOR REPLICATION(x) behaves as a DROP PARTITION IF OLDER THAN x
-       *
-       * So, we check each partition that matches our DropTableDesc.getPartSpecs(), and drop it only
-       * if it's older than the event that spawned this replicated request to drop partition
-       */
-      // TODO: Current implementation of replication will result in DROP_PARTITION under replication
-      // scope being called per-partition instead of multiple partitions. However, to be robust, we
-      // must still handle the case of multiple partitions in case this assumption changes in the
-      // future. However, if this assumption changes, we will not be very performant if we fetch
-      // each partition one-by-one, and then decide on inspection whether or not this is a candidate
-      // for dropping. Thus, we need a way to push this filter (replicationSpec.allowEventReplacementInto)
-      // to the  metastore to allow it to do drop a partition or not, depending on a Predicate on the
-      // parameter key values.
-
-      if (tbl == null) {
-        // If table is missing, then partitions are also would've been dropped. Just no-op.
-        return;
-      }
-
-      for (DropPartitionDesc.PartSpec partSpec : dropPartition.getPartSpecs()){
-        List<Partition> partitions = new ArrayList<>();
-        try {
-          db.getPartitionsByExpr(tbl, partSpec.getPartSpec(), conf, partitions);
-          for (Partition p : Iterables.filter(partitions,
-              replicationSpec.allowEventReplacementInto())){
-            db.dropPartition(tbl.getDbName(),tbl.getTableName(),p.getValues(),true);
-          }
-        } catch (NoSuchObjectException e){
-          // ignore NSOE because that means there's nothing to drop.
-        } catch (Exception e) {
-          throw new HiveException(e.getMessage(), e);
-        }
-      }
-      return;
-    }
-
-    // ifExists is currently verified in DDLSemanticAnalyzer
-    List<Partition> droppedParts
-        = db.dropPartitions(dropPartition.getTableName(),
-                            dropPartition.getPartSpecs(),
-                            PartitionDropOptions.instance()
-                                                .deleteData(true)
-                                                .ifExists(true)
-                                                .purgeData(dropPartition.getIfPurge()));
-    for (Partition partition : droppedParts) {
-      console.printInfo("Dropped the partition " + partition.getName());
-      // We have already locked the table, don't lock the partitions.
-      addIfAbsentByName(new WriteEntity(partition, WriteEntity.WriteType.DDL_NO_LOCK));
-    }
-  }
-
   /**
    * Update last_modified_by and last_modified_time parameters in parameter map.
    *
@@ -2258,30 +1934,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (Exception e) {
       throw new HiveException("Cannot validate serde: " + serdeName, e);
     }
-  }
-
-  private int exchangeTablePartition(Hive db,
-      AlterTableExchangePartition exchangePartition) throws HiveException {
-    Map<String, String> partitionSpecs = exchangePartition.getPartitionSpecs();
-    Table destTable = exchangePartition.getDestinationTable();
-    Table sourceTable = exchangePartition.getSourceTable();
-    List<Partition> partitions =
-        db.exchangeTablePartitions(partitionSpecs, sourceTable.getDbName(),
-        sourceTable.getTableName(),destTable.getDbName(),
-        destTable.getTableName());
-
-    for(Partition partition : partitions) {
-      // Reuse the partition specs from dest partition since they should be the same
-      work.getInputs().add(new ReadEntity(new Partition(sourceTable, partition.getSpec(), null)));
-
-      addIfAbsentByName(new WriteEntity(new Partition(sourceTable, partition.getSpec(), null),
-          WriteEntity.WriteType.DELETE));
-
-      addIfAbsentByName(new WriteEntity(new Partition(destTable, partition.getSpec(), null),
-          WriteEntity.WriteType.INSERT));
-    }
-
-    return 0;
   }
 
   @Override

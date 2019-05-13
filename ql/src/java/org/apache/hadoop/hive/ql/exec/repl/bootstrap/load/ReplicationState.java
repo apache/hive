@@ -17,17 +17,17 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load;
 
-import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
-
 import java.io.Serializable;
+
+import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc;
 
 public class ReplicationState implements Serializable {
 
   public static class PartitionState {
     final String tableName;
-    public final AddPartitionDesc lastReplicatedPartition;
+    public final AlterTableAddPartitionDesc lastReplicatedPartition;
 
-    public PartitionState(String tableName, AddPartitionDesc lastReplicatedPartition) {
+    public PartitionState(String tableName, AlterTableAddPartitionDesc lastReplicatedPartition) {
       this.tableName = tableName;
       this.lastReplicatedPartition = lastReplicatedPartition;
     }

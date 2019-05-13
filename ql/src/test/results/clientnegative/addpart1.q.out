@@ -23,4 +23,4 @@ b=f/c=s
 PREHOOK: query: alter table addpart1 add partition (b='f', c='')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Output: default@addpart1
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. partition spec is invalid; field c does not exist or is empty
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. partition spec is invalid; field c does not exist or is empty

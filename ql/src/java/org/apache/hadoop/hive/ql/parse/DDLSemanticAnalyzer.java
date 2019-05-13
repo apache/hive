@@ -102,6 +102,13 @@ import org.apache.hadoop.hive.ql.ddl.table.lock.LockTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.lock.ShowLocksDesc;
 import org.apache.hadoop.hive.ql.ddl.table.lock.UnlockTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.TruncateTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc;
+import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAlterPartitionDesc;
+import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableDropPartitionDesc;
+import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableExchangePartitionsDesc;
+import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableRenamePartitionDesc;
+import org.apache.hadoop.hive.ql.ddl.table.partition.ShowPartitionsDesc;
+import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc.PartitionDesc;
 import org.apache.hadoop.hive.ql.ddl.view.AlterMaterializedViewRewriteDesc;
 import org.apache.hadoop.hive.ql.ddl.workloadmanagement.AlterPoolAddTriggerDesc;
 import org.apache.hadoop.hive.ql.ddl.workloadmanagement.AlterPoolDropTriggerDesc;
@@ -146,20 +153,15 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.authorization.AuthorizationParseUtils;
 import org.apache.hadoop.hive.ql.parse.authorization.HiveAuthorizationTaskFactory;
 import org.apache.hadoop.hive.ql.parse.authorization.HiveAuthorizationTaskFactoryImpl;
-import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
-import org.apache.hadoop.hive.ql.plan.AddPartitionDesc.OnePartitionDesc;
-import org.apache.hadoop.hive.ql.plan.AlterTableAlterPartDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
-import org.apache.hadoop.hive.ql.plan.AlterTableExchangePartition;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.CacheMetadataDesc;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.DDLDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
-import org.apache.hadoop.hive.ql.plan.DropPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -170,10 +172,8 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowConfDesc;
-import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -875,10 +875,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       // If any destination partition is present then throw a Semantic Exception.
       throw new SemanticException(ErrorMsg.PARTITION_EXISTS.getMsg(destPartitions.toString()));
     }
-    AlterTableExchangePartition alterTableExchangePartition =
-      new AlterTableExchangePartition(sourceTable, destTable, partSpecs);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        alterTableExchangePartition)));
+    AlterTableExchangePartitionsDesc alterTableExchangePartition =
+        new AlterTableExchangePartitionsDesc(sourceTable, destTable, partSpecs);
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), alterTableExchangePartition)));
 
     inputs.add(new ReadEntity(sourceTable));
     outputs.add(new WriteEntity(destTable, WriteType.DDL_SHARED));
@@ -2624,9 +2623,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     showPartsDesc = new ShowPartitionsDesc(tableName, ctx.getResFile(), partSpec);
     inputs.add(new ReadEntity(getTable(tableName)));
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showPartsDesc)));
-    setFetchTask(createFetchTask(showPartsDesc.getSchema()));
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), showPartsDesc)));
+    setFetchTask(createFetchTask(ShowPartitionsDesc.SCHEMA));
   }
 
   private void analyzeShowCreateDatabase(ASTNode ast) throws SemanticException {
@@ -3329,13 +3327,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     partSpecs.add(oldPartSpec);
     partSpecs.add(newPartSpec);
     addTablePartsOutputs(tab, partSpecs, WriteEntity.WriteType.DDL_EXCLUSIVE);
-    RenamePartitionDesc renamePartitionDesc = new RenamePartitionDesc(
-        tblName, oldPartSpec, newPartSpec, null, tab);
+    AlterTableRenamePartitionDesc renamePartitionDesc = new AlterTableRenamePartitionDesc(tblName, oldPartSpec,
+        newPartSpec, null, tab);
     if (AcidUtils.isTransactionalTable(tab)) {
       setAcidDdlDesc(renamePartitionDesc);
     }
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        renamePartitionDesc)));
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), renamePartitionDesc)));
   }
 
   private void analyzeAlterTableBucketNum(ASTNode ast, String tblName,
@@ -3427,9 +3424,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     addTableDropPartsOutputs(tab, partSpecs.values(), !ifExists);
 
-    DropPartitionDesc dropTblDesc =
-        new DropPartitionDesc(getDotName(qualified), partSpecs, mustPurge, replicationSpec);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), dropTblDesc)));
+    AlterTableDropPartitionDesc dropTblDesc =
+        new AlterTableDropPartitionDesc(getDotName(qualified), partSpecs, mustPurge, replicationSpec);
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), dropTblDesc)));
   }
 
   private void analyzeAlterTablePartColType(String[] qualified, ASTNode ast)
@@ -3474,14 +3471,13 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(newCol.getName()));
     }
 
-    AlterTableAlterPartDesc alterTblAlterPartDesc =
-            new AlterTableAlterPartDesc(getDotName(qualified), newCol);
+    AlterTableAlterPartitionDesc alterTblAlterPartDesc =
+            new AlterTableAlterPartitionDesc(getDotName(qualified), newCol);
     if (AcidUtils.isTransactionalTable(tab)) {
       setAcidDdlDesc(alterTblAlterPartDesc);
     }
 
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        alterTblAlterPartDesc)));
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), alterTblAlterPartDesc)));
   }
 
     /**
@@ -3520,8 +3516,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String currentLocation = null;
     Map<String, String> currentPart = null;
     // Parser has done some verification, so the order of tokens doesn't need to be verified here.
-    AddPartitionDesc addPartitionDesc =
-        new AddPartitionDesc(tab.getDbName(), tab.getTableName(), ifNotExists);
+    AlterTableAddPartitionDesc addPartitionDesc =
+        new AlterTableAddPartitionDesc(tab.getDbName(), tab.getTableName(), ifNotExists);
     for (int num = start; num < numCh; num++) {
       ASTNode child = (ASTNode) ast.getChild(num);
       switch (child.getToken().getType()) {
@@ -3553,7 +3549,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (this.conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
       for (int index = 0; index < addPartitionDesc.getPartitionCount(); index++) {
-        OnePartitionDesc desc = addPartitionDesc.getPartition(index);
+        PartitionDesc desc = addPartitionDesc.getPartition(index);
         if (desc.getLocation() == null) {
           if (desc.getPartParams() == null) {
             desc.setPartParams(new HashMap<String, String>());
@@ -3569,8 +3565,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       return;
     }
 
-    Task<DDLWork> ddlTask =
-        TaskFactory.get(new DDLWork(getInputs(), getOutputs(), addPartitionDesc));
+    Task<DDLWork2> ddlTask =
+        TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), addPartitionDesc));
     rootTasks.add(ddlTask);
     handleTransactionalTable(tab, addPartitionDesc, ddlTask);
 
@@ -3582,7 +3578,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       cmd.append(" WHERE ");
       boolean firstOr = true;
       for (int i = 0; i < addPartitionDesc.getPartitionCount(); ++i) {
-        AddPartitionDesc.OnePartitionDesc partitionDesc = addPartitionDesc.getPartition(i);
+        AlterTableAddPartitionDesc.PartitionDesc partitionDesc = addPartitionDesc.getPartition(i);
         if (firstOr) {
           firstOr = false;
         } else {
@@ -3619,7 +3615,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    * Add partition for Transactional tables needs to add (copy/rename) the data so that it lands
    * in a delta_x_x/ folder in the partition dir.
    */
-  private void handleTransactionalTable(Table tab, AddPartitionDesc addPartitionDesc,
+  private void handleTransactionalTable(Table tab, AlterTableAddPartitionDesc addPartitionDesc,
       Task ddlTask) throws SemanticException {
     if(!AcidUtils.isTransactionalTable(tab)) {
       return;
@@ -3628,7 +3624,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     int stmtId = 0;
 
     for (int index = 0; index < addPartitionDesc.getPartitionCount(); index++) {
-      OnePartitionDesc desc = addPartitionDesc.getPartition(index);
+      PartitionDesc desc = addPartitionDesc.getPartition(index);
       if (desc.getLocation() != null) {
         AcidUtils.validateAcidPartitionLocation(desc.getLocation(), conf);
         if(addPartitionDesc.isIfNotExists()) {

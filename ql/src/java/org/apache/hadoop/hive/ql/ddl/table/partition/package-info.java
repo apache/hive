@@ -15,12 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.exec.repl.bootstrap.events;
 
-import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc;
-
-public interface PartitionEvent extends TableEvent {
-  AlterTableAddPartitionDesc lastPartitionReplicated();
-
-  TableEvent asTableEvent();
-}
+/** Partition related DDL operation descriptions and operations. */
+package org.apache.hadoop.hive.ql.ddl.table.partition;
