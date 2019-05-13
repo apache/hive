@@ -12,9 +12,8 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Show Partitions Operator:
-        Show Partitions
-          table: srcpart
+    Show Partitions
+      table: srcpart
 
   Stage: Stage-1
     Fetch Operator
