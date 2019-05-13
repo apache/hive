@@ -140,6 +140,7 @@ public final class ReplExternalTables {
         } catch (HiveException e) {
           if (e.getCause() instanceof NoSuchObjectException) {
             // If table is dropped when dump in progress, just skip partitions data location dump
+            LOG.debug(e.getMessage());
             return;
           }
           throw e;

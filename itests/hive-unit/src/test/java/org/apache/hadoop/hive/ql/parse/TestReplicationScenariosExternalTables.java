@@ -732,7 +732,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
     // Inject a behavior so that getTable returns null for table "t1". This ensures the table is
     // skipped for data files listing.
-    BehaviourInjection<Table, Table> ptnedTableNuller = new BehaviourInjection<Table, Table>() {
+    BehaviourInjection<Table, Table> tableNuller = new BehaviourInjection<Table, Table>() {
       @Nullable
       @Override
       public Table apply(@Nullable Table table) {
@@ -746,12 +746,12 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         }
       }
     };
-    InjectableBehaviourObjectStore.setGetTableBehaviour(ptnedTableNuller);
+    InjectableBehaviourObjectStore.setGetTableBehaviour(tableNuller);
     WarehouseInstance.Tuple tupleInc;
     try {
       // The t1 table will be skipped from data location listing.
       tupleInc = primary.dump(primaryDbName, tupleBootstrap.lastReplicationId, dumpWithClause);
-      ptnedTableNuller.assertInjectionsPerformed(true, true);
+      tableNuller.assertInjectionsPerformed(true, true);
     } finally {
       InjectableBehaviourObjectStore.resetGetTableBehaviour(); // reset the behaviour
     }
