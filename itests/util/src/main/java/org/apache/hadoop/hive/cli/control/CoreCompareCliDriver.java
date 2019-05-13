@@ -23,10 +23,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.QFileVersionHandler;
 import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
-import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -37,6 +38,7 @@ import com.google.common.base.Strings;
 public class CoreCompareCliDriver extends CliAdapter{
 
   private static QTestUtil qt;
+  private QFileVersionHandler qvh = new QFileVersionHandler();
 
   public CoreCompareCliDriver(AbstractCliConfig testCliConfig) {
     super(testCliConfig);
@@ -116,9 +118,6 @@ public class CoreCompareCliDriver extends CliAdapter{
     }
   }
 
-  private static String debugHint = "\nSee ./ql/target/tmp/log/hive.log or ./itests/qtest/target/tmp/log/hive.log, "
-     + "or check ./ql/target/surefire-reports or ./itests/qtest/target/surefire-reports/ for specific test cases logs.";
-
   @Override
   public void runTest(String tname, String fname, String fpath) {
     final String queryDirectory = cliConfig.getQueryDirectory();
@@ -127,7 +126,7 @@ public class CoreCompareCliDriver extends CliAdapter{
     try {
       System.err.println("Begin query: " + fname);
       // TODO: versions could also be picked at build time.
-      List<String> versionFiles = QTestUtil.getVersionFiles(queryDirectory, tname);
+      List<String> versionFiles = qvh.getVersionFiles(queryDirectory, tname);
       if (versionFiles.size() < 2) {
         fail("Cannot run " + tname + " with only " + versionFiles.size() + " versions");
       }
@@ -147,19 +146,18 @@ public class CoreCompareCliDriver extends CliAdapter{
         // TODO: will this work?
         CommandProcessorResponse response = qt.executeClient(versionFile, fname);
         if (response.getResponseCode() != 0) {
-          qt.failedQuery(response.getException(), response.getResponseCode(), fname, debugHint);
+          qt.failedQuery(response.getException(), response.getResponseCode(), fname, QTestUtil.DEBUG_HINT);
         }
       }
 
       QTestProcessExecResult result = qt.checkCompareCliDriverResults(fname, outputs);
       if (result.getReturnCode() != 0) {
-        String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ?
-            debugHint : "\r\n" + result.getCapturedOutput();
+        String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ? QTestUtil.DEBUG_HINT
+          : "\r\n" + result.getCapturedOutput();
         qt.failedDiff(result.getReturnCode(), fname, message);
       }
-    }
-    catch (Exception e) {
-      qt.failedWithException(e, fname, debugHint);
+    } catch (Exception e) {
+      qt.failedWithException(e, fname, QTestUtil.DEBUG_HINT);
     }
 
     long elapsedTime = System.currentTimeMillis() - startTime;

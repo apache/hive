@@ -18,13 +18,13 @@
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
 import org.apache.hadoop.hive.metastore.messaging.DropPartitionMessage;
+import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableDropPartitionDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
-import org.apache.hadoop.hive.ql.plan.DropPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 
 import java.io.Serializable;
@@ -43,10 +43,10 @@ public class DropPartitionHandler extends AbstractMessageHandler {
       Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs =
           ReplUtils.genPartSpecs(new Table(msg.getTableObj()), msg.getPartitions());
       if (partSpecs.size() > 0) {
-        DropPartitionDesc dropPtnDesc = new DropPartitionDesc(actualDbName + "." + actualTblName, partSpecs, true,
-            context.eventOnlyReplicationSpec());
-        Task<DDLWork> dropPtnTask = TaskFactory.get(
-            new DDLWork(readEntitySet, writeEntitySet, dropPtnDesc), context.hiveConf
+        AlterTableDropPartitionDesc dropPtnDesc = new AlterTableDropPartitionDesc(actualDbName + "." + actualTblName,
+            partSpecs, true, context.eventOnlyReplicationSpec());
+        Task<DDLWork2> dropPtnTask = TaskFactory.get(
+            new DDLWork2(readEntitySet, writeEntitySet, dropPtnDesc), context.hiveConf
         );
         context.log.debug("Added drop ptn task : {}:{},{}", dropPtnTask.getId(),
             dropPtnDesc.getTableName(), msg.getPartitions());

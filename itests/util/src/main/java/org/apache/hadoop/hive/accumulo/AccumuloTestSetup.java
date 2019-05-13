@@ -20,9 +20,6 @@ import java.io.File;
 import java.sql.Date;
 import java.sql.Timestamp;
 
-import junit.extensions.TestSetup;
-import junit.framework.Test;
-
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.BatchWriter;
@@ -37,12 +34,12 @@ import org.apache.accumulo.minicluster.MiniAccumuloConfig;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.QTestUtil;
+import org.apache.hadoop.hive.ql.QTestMiniClusters;
 
 /**
  * Start and stop an AccumuloMiniCluster for testing purposes
  */
-public class AccumuloTestSetup extends QTestUtil.QTestSetup {
+public class AccumuloTestSetup extends QTestMiniClusters.QTestSetup {
 
   public static final String PASSWORD = "password";
   public static final String TABLE_NAME = "accumuloHiveTable";
