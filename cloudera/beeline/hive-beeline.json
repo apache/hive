@@ -1,0 +1,20 @@
+{
+  "HIVE": {
+    "HIVESERVER2": {
+      "hive_hs2_config_safety_valve": "<property><name>hive.exec.pre.hooks</name><value>org.apache.hadoop.hive.ql.hooks.PreExecutePrinter</value></property><property><name>hive.exec.post.hooks</name><value>org.apache.hadoop.hive.ql.hooks.PostExecutePrinter</value></property><property><name>hive.in.test</name><value>true</value></property><property><name>hive.async.log.enabled</name><value>false</value></property><property><name>hive.ignore.mapjoin.hint</name><value>false</value></property><property><name>hive.fetch.task.conversion</name><value>minimal</value></property><property><name>hive.materializedview.rewriting</name><value>true</value></property><property><name>hive.mapred.local.mem</name><value>256</value></property>",
+      "hiveserver2_enable_cbo": "true",
+      "hiveserver2_stats_fetch_column_stats": "false",
+      "hiveserver2_limit_pushdown_memory_usage": "0",
+      "hiveserver2_optimize_index_filter": "false",
+      "hiveserver2_enable_mapjoin": "false",
+      "hiveserver2_java_heapsize":"1063741824",
+      "hive_hs2_env_safety_valve":"HIVE_LOCAL_TASK_CHILD_OPTS=\"-Djava.net.preferIPv4Stack=true -Djava.net.preferIPv4Stack=true -XX:MaxPermSize=512M -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=70 -XX:+CMSParallelRemarkEnabled -XX:OnOutOfMemoryError=/usr/lib64/cmf/service/common/killparent.sh\""
+    },
+    "HIVEMETASTORE": {
+      "metastore_canary_health_enabled": "false"
+    },
+    "SERVICE": {
+      "hive_aux_jars_path_dir": "/home/systest"
+    }
+  }
+}
