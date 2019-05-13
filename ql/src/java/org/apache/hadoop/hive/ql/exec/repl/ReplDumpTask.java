@@ -256,19 +256,25 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
       try (Writer writer = new Writer(dumpRoot, conf)) {
         for (String tableName : Utils.matchesTbl(hiveDb, dbName, work.tableNameOrPattern)) {
-          Table table = hiveDb.getTable(dbName, tableName);
+          try {
+            Table table = hiveDb.getTable(dbName, tableName);
 
-          // Dump external table locations if required.
-          if (shouldDumpExternalTableLocation() &&
-                  TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
-            writer.dataLocationDump(table);
-          }
+            // Dump external table locations if required.
+            if (shouldDumpExternalTableLocation() &&
+                    TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
+              writer.dataLocationDump(table);
+            }
 
-          // Dump the table to be bootstrapped if required.
-          if (shouldBootstrapDumpTable(table)) {
-            HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(table);
-            dumpTable(dbName, tableName, validTxnList, dbRoot, bootDumpBeginReplId, hiveDb,
-                    tableTuple);
+            // Dump the table to be bootstrapped if required.
+            if (shouldBootstrapDumpTable(table)) {
+              HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(table);
+              dumpTable(dbName, tableName, validTxnList, dbRoot, bootDumpBeginReplId, hiveDb,
+                      tableTuple);
+            }
+          } catch (InvalidTableException te) {
+            // Repl dump shouldn't fail if the table is dropped/renamed while dumping it.
+            // Just log a debug message and skip it.
+            LOG.debug(te.getMessage());
           }
         }
       }
