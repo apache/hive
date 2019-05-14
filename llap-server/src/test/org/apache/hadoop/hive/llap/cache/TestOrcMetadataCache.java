@@ -84,7 +84,7 @@ public class TestOrcMetadataCache {
       ++allocs;
     }
 
-    @Override public long evictMemory(long memoryToReserve) {
+    @Override public long evictMemory(long memoryToEvict) {
       return 0;
     }
 

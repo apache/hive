@@ -62,7 +62,7 @@ public class TestBuddyAllocator {
     public void reserveMemory(long memoryToReserve, AtomicBoolean isStopped) {
     }
 
-    @Override public long evictMemory(long memoryToReserve) {
+    @Override public long evictMemory(long memoryToEvict) {
       return 0;
     }
 

@@ -61,9 +61,9 @@ public interface MemoryManager {
   /**
    * Ask the memory manager to evict more memory
    *
-   * @param memoryToReserve amount of bytes to evict
+   * @param memoryToEvict amount of bytes to evict
    * @return actual amount of evicted bytes.
    */
-  long evictMemory(long memoryToReserve);
+  long evictMemory(long memoryToEvict);
 
 }
