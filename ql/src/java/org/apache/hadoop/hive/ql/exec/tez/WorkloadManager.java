@@ -702,7 +702,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     // 11. Finally, for all the pools that have changes, promote queued queries and rebalance.
     for (String poolName : poolsToRedistribute) {
       if (LOG.isDebugEnabled()) {
-        LOG.info("Processing changes for pool " + poolName + ": " + pools.get(poolName));
+        LOG.debug("Processing changes for pool " + poolName + ": " + pools.get(poolName));
       }
       processPoolChangesOnMasterThread(poolName, hasRequeues, syncWork);
     }
