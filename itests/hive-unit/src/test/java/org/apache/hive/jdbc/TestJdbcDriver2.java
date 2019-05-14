@@ -79,6 +79,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.junit.rules.TestName;
 
 import static org.apache.hadoop.hive.conf.SystemVariables.SET_COLUMN_NAME;
 import static org.apache.hadoop.hive.ql.exec.ExplainTask.EXPL_COLUMN_NAME;
@@ -123,6 +124,7 @@ public class TestJdbcDriver2 {
   private static final float floatCompareDelta = 0.0001f;
 
   @Rule public ExpectedException thrown = ExpectedException.none();
+  @Rule public final TestName testName = new TestName();
 
   private static Connection getConnection(String postfix) throws SQLException {
     Connection con1;
@@ -2769,10 +2771,10 @@ public class TestJdbcDriver2 {
             incrementalLogs.addAll(statement.getQueryLog());
             Thread.sleep(500);
           } catch (SQLException e) {
-            LOG.error("Failed getQueryLog. Error message: " + e.getMessage());
+            LOG.info("Failed getQueryLog. Error message: " + e.getMessage());
             fail("error in getting log thread");
           } catch (InterruptedException e) {
-            LOG.error("Getting log thread is interrupted. Error message: " + e.getMessage());
+            LOG.info("Getting log thread is interrupted. Error message: " + e.getMessage());
             fail("error in getting log thread");
           }
         }
@@ -2808,109 +2810,111 @@ public class TestJdbcDriver2 {
   @Test
   public void testGetQueryLogForReplCommands() throws Exception {
     // Prepare
-    String primaryDb = "primaryDb";
-    String replicaDb = "replicaDb";
-    String primaryTblName = "primaryDb.t1";
-    String sql = "select count(*) from " + tableName;
+    String primaryDb = testName.getMethodName() + "_" + System.currentTimeMillis();
+    String replicaDb = primaryDb + "_replica";
+    String primaryTblName = primaryDb + ".t1";
     Path replDir = new Path(conf.get("test.data.files"));
-    replDir = new Path(replDir, "repl");
+    HiveStatement stmt = (HiveStatement) con.createStatement();
+    assertNotNull("Statement is null", stmt);
+    
+    replDir = new Path(replDir, primaryDb + "_repl");
     FileSystem fs = FileSystem.get(replDir.toUri(), conf);
     fs.mkdirs(replDir);
 
-    // Prepare
-    HiveStatement stmt = (HiveStatement)con.createStatement();
-    assertNotNull("Statement is null", stmt);
-    stmt.execute("set hive.exec.parallel = true");
-    stmt.execute("set hive.server2.logging.operation.level = execution");
-    stmt.execute("set hive.metastore.transactional.event.listeners = org.apache.hive.hcatalog.listener.DbNotificationListener");
-    stmt.execute("set hive.metastore.dml.events = true");
-    stmt.execute("create database " + primaryDb + " with dbproperties('repl.source.for'='1,2,3')");
-    stmt.execute("create table " + primaryTblName + " (id int)");
-    stmt.execute("insert into " + primaryTblName + " values (1), (2)");
-    stmt.close();
+    try {
+      // Prepare
+      stmt.execute("set hive.exec.parallel = true");
+      stmt.execute("set hive.server2.logging.operation.level = execution");
+      stmt.execute("set hive.metastore.transactional.event.listeners =" +
+              " org.apache.hive.hcatalog.listener.DbNotificationListener");
+      stmt.execute("set hive.metastore.dml.events = true");
+      stmt.execute("create database " + primaryDb + " with dbproperties('repl.source.for'='1,2,3')");
+      stmt.execute("create table " + primaryTblName + " (id int)");
+      stmt.execute("insert into " + primaryTblName + " values (1), (2)");
+      stmt.close();
 
-    // Test query logs for bootstrap dump and load
-    String[] expectedBootstrapDumpLogs = {
-            "REPL::START",
-            "REPL::TABLE_DUMP",
-            "REPL::END"
-    };
+      // Test query logs for bootstrap dump and load
+      String[] expectedBootstrapDumpLogs = {
+        "REPL::START",
+        "REPL::TABLE_DUMP",
+        "REPL::END"
+      };
 
-    // Bootstrap dump
-    stmt = (HiveStatement)con.createStatement();
-    advanceDumpDir();
-    ResultSet replDumpRslt = stmt.executeQuery("repl dump " + primaryDb +
-            " with ('hive.repl.rootdir' = '" + replDir + "')");
-    assertTrue(replDumpRslt.next());
-    String dumpLocation = replDumpRslt.getString(1);
-    String lastReplId = replDumpRslt.getString(2);
-    List<String> logs = stmt.getQueryLog(false, 10000);
-    stmt.close();
-    LOG.error("Query_Log for Bootstrap Dump");
-    verifyFetchedLog(logs, expectedBootstrapDumpLogs);
+      // Bootstrap dump
+      stmt = (HiveStatement) con.createStatement();
+      advanceDumpDir();
+      ResultSet replDumpRslt = stmt.executeQuery("repl dump " + primaryDb +
+              " with ('hive.repl.rootdir' = '" + replDir + "')");
+      assertTrue(replDumpRslt.next());
+      String dumpLocation = replDumpRslt.getString(1);
+      String lastReplId = replDumpRslt.getString(2);
+      List<String> logs = stmt.getQueryLog(false, 10000);
+      stmt.close();
+      LOG.info("Query_Log for Bootstrap Dump");
+      verifyFetchedLog(logs, expectedBootstrapDumpLogs);
 
-    String[] expectedBootstrapLoadLogs = {
-            "REPL::START",
-            "REPL::TABLE_LOAD",
-            "REPL::END"
-    };
+      String[] expectedBootstrapLoadLogs = {
+        "REPL::START",
+        "REPL::TABLE_LOAD",
+        "REPL::END"
+      };
 
-    // Bootstrap load
-    stmt = (HiveStatement)con.createStatement();
-    stmt.execute("repl load " + replicaDb + " from '" + dumpLocation + "'");
-    logs = stmt.getQueryLog(false, 10000);
-    stmt.close();
-    LOG.error("Query_Log for Bootstrap Load");
-    verifyFetchedLog(logs, expectedBootstrapLoadLogs);
+      // Bootstrap load
+      stmt = (HiveStatement) con.createStatement();
+      stmt.execute("repl load " + replicaDb + " from '" + dumpLocation + "'");
+      logs = stmt.getQueryLog(false, 10000);
+      stmt.close();
+      LOG.info("Query_Log for Bootstrap Load");
+      verifyFetchedLog(logs, expectedBootstrapLoadLogs);
 
-    // Perform operation for incremental replication
-    stmt = (HiveStatement)con.createStatement();
-    stmt.execute("insert into " + primaryTblName + " values (3), (4)");
-    stmt.close();
+      // Perform operation for incremental replication
+      stmt = (HiveStatement) con.createStatement();
+      stmt.execute("insert into " + primaryTblName + " values (3), (4)");
+      stmt.close();
 
-    // Test query logs for incremental dump and load
-    String[] expectedIncrementalDumpLogs = {
-            "REPL::START",
-            "REPL::EVENT_DUMP",
-            "REPL::END"
-    };
+      // Test query logs for incremental dump and load
+      String[] expectedIncrementalDumpLogs = {
+        "REPL::START",
+        "REPL::EVENT_DUMP",
+        "REPL::END"
+      };
 
-    // Incremental dump
-    stmt = (HiveStatement)con.createStatement();
-    advanceDumpDir();
-    replDumpRslt = stmt.executeQuery("repl dump " + primaryDb + " from " + lastReplId +
-            " with ('hive.repl.rootdir' = '" +  replDir + "')");
-    assertTrue(replDumpRslt.next());
-    dumpLocation = replDumpRslt.getString(1);
-    lastReplId = replDumpRslt.getString(2);
-    logs = stmt.getQueryLog(false, 10000);
-    stmt.close();
-    LOG.error("Query_Log for Incremental Dump");
-    verifyFetchedLog(logs, expectedIncrementalDumpLogs);
+      // Incremental dump
+      stmt = (HiveStatement) con.createStatement();
+      advanceDumpDir();
+      replDumpRslt = stmt.executeQuery("repl dump " + primaryDb + " from " + lastReplId +
+              " with ('hive.repl.rootdir' = '" + replDir + "')");
+      assertTrue(replDumpRslt.next());
+      dumpLocation = replDumpRslt.getString(1);
+      lastReplId = replDumpRslt.getString(2);
+      logs = stmt.getQueryLog(false, 10000);
+      stmt.close();
+      LOG.info("Query_Log for Incremental Dump");
+      verifyFetchedLog(logs, expectedIncrementalDumpLogs);
 
-    String[] expectedIncrementalLoadLogs = {
-            "REPL::START",
-            "REPL::EVENT_LOAD",
-            "REPL::END"
-    };
+      String[] expectedIncrementalLoadLogs = {
+        "REPL::START",
+        "REPL::EVENT_LOAD",
+        "REPL::END"
+      };
 
-    // Incremental load
-    stmt = (HiveStatement)con.createStatement();
-    stmt.execute("repl load " + replicaDb + " from '" + dumpLocation + "'");
-    logs = stmt.getQueryLog(false, 10000);
-    stmt.close();
-    LOG.error("Query_Log for Incremental Load");
-    verifyFetchedLog(logs, expectedIncrementalLoadLogs);
-
-    // DB cleanup
-    stmt = (HiveStatement)con.createStatement();
-    stmt.execute("drop database " + primaryDb + " cascade");
-    stmt.execute("drop database " + replicaDb + " cascade");
-    stmt.execute("set hive.exec.parallel = false");
-    stmt.execute("set hive.server2.logging.operation.level = verbose");
-    stmt.execute("set hive.metastore.dml.events = false");
-    stmt.close();
-    fs.delete(replDir, true);
+      // Incremental load
+      stmt = (HiveStatement) con.createStatement();
+      stmt.execute("repl load " + replicaDb + " from '" + dumpLocation + "'");
+      logs = stmt.getQueryLog(false, 10000);
+      LOG.info("Query_Log for Incremental Load");
+      verifyFetchedLog(logs, expectedIncrementalLoadLogs);
+    } finally {
+      fs.delete(replDir, true);
+      // DB cleanup
+      stmt.execute("drop database if exists " + primaryDb + " cascade");
+      stmt.execute("drop database if exists " + replicaDb + " cascade");
+      stmt.execute("set hive.exec.parallel = false");
+      stmt.execute("set hive.server2.logging.operation.level = verbose");
+      stmt.execute("set hive.metastore.dml.events = false");
+      stmt.execute("set hive.metastore.transactional.event.listeners = ");
+      stmt.close();
+    }
   }
 
   /**
@@ -2940,7 +2944,7 @@ public class TestJdbcDriver2 {
     }
     String accumulatedLogs = stringBuilder.toString();
     for (String expectedLog : expectedLogs) {
-      LOG.error("Checking match for " + expectedLog);
+      LOG.info("Checking match for " + expectedLog);
       assertTrue(accumulatedLogs.contains(expectedLog));
     }
   }

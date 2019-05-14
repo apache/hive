@@ -75,7 +75,7 @@ public class TaskRunner extends Thread {
 
   @Override
   public void run() {
-    LogUtils.registerLoggingContext(ss.getConf());
+    LogUtils.registerLoggingContext(tsk.getConf());
     runner = Thread.currentThread();
     try {
       SessionState.start(ss);
