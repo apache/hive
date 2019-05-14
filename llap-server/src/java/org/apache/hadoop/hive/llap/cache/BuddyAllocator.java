@@ -51,7 +51,7 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.StoppableAllocator;
 /**
  *
  * High level description, functionality and the memory layout.
- * Allocation can be of general size but it will be rounded to the next power of 2.
+ * Allocation can be of general size but it will be rounded up to the next power of 2.
  * Allocation smaller than size {@link ConfVars#LLAP_ALLOCATOR_MIN_ALLOC} will be rounded up to min allocation size.
  * Allocation bigger than size {@link ConfVars#LLAP_ALLOCATOR_MAX_ALLOC} will throw exception.
  * Allocator slices memory slab called {@code Arena} to carve out byte buffers using slice and position.
