@@ -66,12 +66,6 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
     throw new ReserveFailedException(isStopped);
   }
 
-  /**
-   * Ask the memory manager to evict more memory
-   *
-   * @param memoryToEvict amount of bytes to evict
-   * @return actual amount of evicted bytes.
-   */
   @Override public long evictMemory(long memoryToEvict) {
     if (evictor == null) {
       return 0;

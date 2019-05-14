@@ -41,7 +41,7 @@ import java.util.List;
 public class TestCacheAllocationsEvictionsCycles {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestCacheAllocationsEvictionsCycles.class);
-  private static final LlapDaemonCacheMetrics cacheMetrics = LlapDaemonCacheMetrics.create("testCache", "testSession");
+  private static final LlapDaemonCacheMetrics CACHE_METRICS = LlapDaemonCacheMetrics.create("testCache", "testSession");
 
   private final long maxSize = 1024;
   private final LowLevelCache dataCache = Mockito.mock(LowLevelCache.class);
@@ -59,7 +59,7 @@ public class TestCacheAllocationsEvictionsCycles {
     conf.setDouble(HiveConf.ConfVars.LLAP_LRFU_LAMBDA.varname, 1.0f);
     int minBufferSize = 1;
     cachePolicy = new LowLevelLrfuCachePolicy(minBufferSize, maxSize, conf);
-    memoryManager = new LowLevelCacheMemoryManager(maxSize, cachePolicy, cacheMetrics);
+    memoryManager = new LowLevelCacheMemoryManager(maxSize, cachePolicy, CACHE_METRICS);
     int maxAllocationSize = 1024;
     int minAllocationSize = 8;
     allocator =
@@ -71,8 +71,7 @@ public class TestCacheAllocationsEvictionsCycles {
             maxSize,
             0,
             null,
-            memoryManager,
-            cacheMetrics,
+            memoryManager, CACHE_METRICS,
             "no-force-eviction",
             true);
     EvictionDispatcher evictionDispatcher = new EvictionDispatcher(dataCache, serdCache, metaDataCache, allocator);
@@ -149,21 +148,21 @@ public class TestCacheAllocationsEvictionsCycles {
 
   @Test(timeout = 6_000L) public void testRandomFragmentation() {
 
-    MemoryBuffer[] dest = new MemoryBuffer[64];
-    MemoryBuffer[] dest_2 = new MemoryBuffer[16];
-    MemoryBuffer[] dest_3 = new MemoryBuffer[8];
-    for (MemoryBuffer memoryBuffer : dest) {
+    MemoryBuffer[] memBuffers8B = new MemoryBuffer[64];
+    MemoryBuffer[] memBuffers16B = new MemoryBuffer[16];
+    MemoryBuffer[] memBuffers32B = new MemoryBuffer[8];
+    for (MemoryBuffer memoryBuffer : memBuffers8B) {
       Assert.assertNull(memoryBuffer);
     }
 
-    allocator.allocateMultiple(dest, 8, null);
-    allocator.allocateMultiple(dest_2, 16, null);
-    allocator.allocateMultiple(dest_3, 32, null);
+    allocator.allocateMultiple(memBuffers8B, 8, null);
+    allocator.allocateMultiple(memBuffers16B, 16, null);
+    allocator.allocateMultiple(memBuffers32B, 32, null);
     //all the cache is allocated with 8 X 128
     Assert.assertEquals(maxSize, ((LowLevelCacheMemoryManager) memoryManager).getCurrentUsedSize());
 
-    for (int i = 0; i < dest.length; i++) {
-      LlapDataBuffer buffer = (LlapDataBuffer) dest[i];
+    for (int i = 0; i < memBuffers8B.length; i++) {
+      LlapDataBuffer buffer = (LlapDataBuffer) memBuffers8B[i];
       // this is needed to make sure that the policy adds the buffers to the linked list as buffers ready to be evicted
       cachePolicy.notifyUnlock(buffer);
       // lock some buffers
@@ -173,8 +172,8 @@ public class TestCacheAllocationsEvictionsCycles {
       }
     }
 
-    for (int i = 0; i < dest_2.length; i++) {
-      LlapDataBuffer buffer = (LlapDataBuffer) dest_2[i];
+    for (int i = 0; i < memBuffers16B.length; i++) {
+      LlapDataBuffer buffer = (LlapDataBuffer) memBuffers16B[i];
       // this is needed to make sure that the policy adds the buffers to the linked list as buffers ready to be evicted
       cachePolicy.notifyUnlock(buffer);
       // lock some buffers
@@ -184,8 +183,8 @@ public class TestCacheAllocationsEvictionsCycles {
       }
     }
 
-    for (int i = 0; i < dest_3.length; i++) {
-      LlapDataBuffer buffer = (LlapDataBuffer) dest_3[i];
+    for (int i = 0; i < memBuffers32B.length; i++) {
+      LlapDataBuffer buffer = (LlapDataBuffer) memBuffers32B[i];
       // this is needed to make sure that the policy adds the buffers to the linked list as buffers ready to be evicted
       cachePolicy.notifyUnlock(buffer);
       // lock some buffers
@@ -196,7 +195,7 @@ public class TestCacheAllocationsEvictionsCycles {
     }
     Assert.assertEquals(512, ((LowLevelCacheMemoryManager) memoryManager).purge());
 
-    for (MemoryBuffer memoryBuffer : dest_3) {
+    for (MemoryBuffer memoryBuffer : memBuffers32B) {
       LlapDataBuffer buffer = (LlapDataBuffer) memoryBuffer;
       // this is needed to make sure that the policy adds the buffers to the linked list as buffers ready to be evicted
       if (buffer.isLocked()) {
@@ -205,7 +204,7 @@ public class TestCacheAllocationsEvictionsCycles {
       cachePolicy.notifyUnlock(buffer);
     }
 
-    for (MemoryBuffer memoryBuffer : dest_2) {
+    for (MemoryBuffer memoryBuffer : memBuffers16B) {
       LlapDataBuffer buffer = (LlapDataBuffer) memoryBuffer;
       // this is needed to make sure that the policy adds the buffers to the linked list as buffers ready to be evicted
       if (buffer.isLocked()) {
@@ -214,7 +213,7 @@ public class TestCacheAllocationsEvictionsCycles {
       cachePolicy.notifyUnlock(buffer);
     }
 
-    for (MemoryBuffer memoryBuffer : dest) {
+    for (MemoryBuffer memoryBuffer : memBuffers8B) {
       LlapDataBuffer buffer = (LlapDataBuffer) memoryBuffer;
       // this is needed to make sure that the policy adds the buffers to the linked list as buffers ready to be evicted
       if (buffer.isLocked()) {
@@ -224,25 +223,25 @@ public class TestCacheAllocationsEvictionsCycles {
     }
     Assert.assertEquals(maxSize / 2, ((LowLevelCacheMemoryManager) memoryManager).getCurrentUsedSize());
 
-    dest = new MemoryBuffer[64];
-    dest_2 = new MemoryBuffer[16];
-    dest_3 = new MemoryBuffer[8];
+    memBuffers8B = new MemoryBuffer[64];
+    memBuffers16B = new MemoryBuffer[16];
+    memBuffers32B = new MemoryBuffer[8];
     evictionTracker.getEvicted().clear();
-    allocator.allocateMultiple(dest_2, 16, null);
-      allocator.allocateMultiple(dest, 8, null);
-    allocator.allocateMultiple(dest_3, 32, null);
+    allocator.allocateMultiple(memBuffers16B, 16, null);
+    allocator.allocateMultiple(memBuffers8B, 8, null);
+    allocator.allocateMultiple(memBuffers32B, 32, null);
     Assert.assertEquals(maxSize, ((LowLevelCacheMemoryManager) memoryManager).getCurrentUsedSize());
-    Assert.assertEquals(dest_3.length / 2 + dest_2.length / 2 + dest.length / 2, evictionTracker.getEvicted().size());
-    for (MemoryBuffer memoryBuffer : dest) {
+    Assert.assertEquals(memBuffers32B.length / 2 + memBuffers16B.length / 2 + memBuffers8B.length / 2, evictionTracker.getEvicted().size());
+    for (MemoryBuffer memoryBuffer : memBuffers8B) {
       LlapDataBuffer buffer = (LlapDataBuffer) memoryBuffer;
       allocator.deallocate(buffer);
     }
-    for (MemoryBuffer memoryBuffer : dest_2) {
+    for (MemoryBuffer memoryBuffer : memBuffers16B) {
       LlapDataBuffer buffer = (LlapDataBuffer) memoryBuffer;
       allocator.deallocate(buffer);
     }
 
-    for (MemoryBuffer memoryBuffer : dest_3) {
+    for (MemoryBuffer memoryBuffer : memBuffers32B) {
       LlapDataBuffer buffer = (LlapDataBuffer) memoryBuffer;
       allocator.deallocate(buffer);
     }
@@ -299,7 +298,7 @@ public class TestCacheAllocationsEvictionsCycles {
     Assert.assertTrue(evictionTracker.getEvicted().size() >= 1);
   }
 
-  private class EvictionTracker implements EvictionListener {
+  private final class EvictionTracker implements EvictionListener {
     private final EvictionListener evictionListener;
 
     private List<LlapCacheableBuffer> evicted = new ArrayList<>();

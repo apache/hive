@@ -67,7 +67,9 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.StoppableAllocator;
  *       Each Buddy Allocator tree can be split up to chunks of size {@link ConfVars#LLAP_ALLOCATOR_MIN_ALLOC} 4KB
  */
 public final class BuddyAllocator
-  implements EvictionAwareAllocator, StoppableAllocator, BuddyAllocatorMXBean, LlapIoDebugDump {
+    implements EvictionAwareAllocator, StoppableAllocator, BuddyAllocatorMXBean, LlapIoDebugDump {
+  private static final String FAILED_TO_ALLOCATE_MSG =
+      "Failed to allocate [{}]X[{}] bytes after [{}] attempt, evicted [{}] bytes and partially allocated [{}] bytes";
   private final Arena[] arenas;
   private final AtomicInteger allocatedArenas = new AtomicInteger(0);
 
@@ -103,7 +105,11 @@ public final class BuddyAllocator
    * than start evictions, Also I am sure any value less than one will hurt.
    */
   private static final int MAX_FAST_ATTEMPT = 5;
-  private static final int MAX_FORCED_EVICTION_SIZE = 1024 * 1024 * 16 ;//16MB
+  /**
+   * Default max amount of bytes to force evict on failed allocation attempts 16MB. used for testing, for production
+   * please adjust {@link ConfVars.LLAP_ALLOCATOR_MAX_FORCE_EVICTED}
+   */
+  private static final int MAX_FORCED_EVICTION_SIZE = 1024 * 1024 * 16;
   private static final FileAttribute<Set<PosixFilePermission>> RWX = PosixFilePermissions
       .asFileAttribute(PosixFilePermissions.fromString("rwx------"));
   private final AtomicLong[] defragCounters;
@@ -302,27 +308,15 @@ public final class BuddyAllocator
   @Override
   public void allocateMultiple(MemoryBuffer[] dest, int size, BufferObjectFactory factory, AtomicBoolean isStopped)
       throws AllocatorOutOfMemoryException {
-    assert size > 0 : "size is " + size;
-    if (size > maxAllocation) {
-      throw new RuntimeException("Trying to allocate " + size + "; max is " + maxAllocation);
-    }
+    checkAllocationSize(size);
     int freeListIx = determineFreeListForAllocation(size);
     int allocLog2 = freeListIx + minAllocLog2;
     int allocationSize = 1 << allocLog2;
 
     // If using async, we could also reserve one by one.
     memoryManager.reserveMemory(dest.length << allocLog2, isStopped);
-    for (int i = 0; i < dest.length; ++i) {
-      if (dest[i] != null) continue;
-      // Note: this is backward compat only. Should be removed with createUnallocated.
-      dest[i] = factory != null ? factory.create() : createUnallocated();
-    }
-
-    // First try to quickly lock some of the correct-sized free lists and allocate from them.
-    int arenaCount = allocatedArenas.get();
-    if (arenaCount < 0) {
-      arenaCount = -arenaCount - 1; // Next arena is being allocated.
-    }
+    initMemoryBuffers(dest, factory);
+    int arenaCount = getArenaCount();
 
     // Note: we might want to be smarter if threadId-s are low and there more arenas than threads.
     long threadId = arenaCount > 1 ? Thread.currentThread().getId() : 0;
@@ -337,32 +331,36 @@ public final class BuddyAllocator
       return;
     }
 
+    // We called reserveMemory so we know that there's memory waiting for us somewhere.
+    // But that can mean that the reserved memory is fragmented thus unusable
+    // or we have a common class of rare race conditions related to the order of locking/checking of
+    // different allocation areas this is due to the fact that Allocations arrive in a burst fashion.
+    // Simple case - say we have 2 arenas, 256Kb available in arena 2.
+    // We look at arena 1; someone deallocs 256Kb from arena 1 and allocs the same from arena 2;
+    // we look at arena 2 and find no memory. Or, for single arena, 2 threads reserve 256k each,
+    // and a single 1Mb block is available. When the 1st thread locks the 1Mb freelist, the 2nd one
+    // might have already examined the 256k and 512k lists, finding nothing. Blocks placed by (1)
+    // into smaller lists after its split is done will not be found by (2); given that freelist
+    // locks don't overlap, (2) may even run completely between the time (1) takes out the 1Mb
+    // block and the time it returns the remaining 768Kb.
+    // To mitigate that as of now:
+    //  - First we try again (fast path):
+    //  - Second try to push on the memoryManger/evictor to evict more.
+    //  - Third bypass the memory manager and use discards method to brute force evict if needed.
     int allocationAttempt = 0;
     long totalForceEvictedBytes = 0;
     long currentEvicted;
     int startArenaIx;
     int emptyAttempt = 0;
-
-    // We called reserveMemory so we know that there's memory waiting for us somewhere.
-    // But that can mean that the reserved memory is fragmented thus unusable
-    // or we have a common class of rare race conditions related to the order of locking/checking of
-    // different allocation areas this is due to the fact that Allocations arrive in a burst fashion.
-    // To mitigate that:
-    //  - First we try again (fast path):
-    //  - Second try to push on the memoryManger/evictor to evict more.
-    //  - Third bypass the memory manager and use discards method to brute force evict if needed.
     while (totalForceEvictedBytes < maxForcedEvictionSize && emptyAttempt < MAX_DISCARD_ATTEMPTS) {
-      // make sure we hit a different start on each new attempt
       startArenaIx = (int) ((threadId + allocationAttempt) % arenaCount);
       if (allocationAttempt >= MAX_FAST_ATTEMPT) {
-        // Try to evict more starting from how much memory we are missing  dest.length - destAllocIx << allocLog2
-        // Exponentially increase the eviction request based on forceEvictAttempt counter.
-        // Why Exponentially increase, usually query fragments triggers a burst of allocation at the same time
-        // Thus IMO to avoid lock contentions it is worth to over evict thus next allocation will get free lunch.
+        // Try to evict more starting from dest.length - destAllocIx << allocLog2, exponentially increase the eviction
+        // request based on forceEvictAttempt counter. Why Exponentially increase, usually query fragments triggers a
+        // burst of allocation at the same time, IMO it is worth to over evict thus next allocation will get free lunch.
         currentEvicted =
             memoryManager.evictMemory(dest.length - destAllocIx + allocationAttempt - MAX_FAST_ATTEMPT << allocLog2);
-        // Note that memoryManager.evictMemory is blocking but eventually will return 0 if all the memory is locked
-        // thus mark empty attempts and bail out after MAX_DISCARD_ATTEMPTS
+        // Note that memoryManager.evictMemory might evict 0 thus bail out after MAX_DISCARD_ATTEMPTS
         totalForceEvictedBytes += currentEvicted;
         emptyAttempt += currentEvicted == 0 ? 1 : 0;
       }
@@ -388,30 +386,12 @@ public final class BuddyAllocator
       allocationAttempt++;
     }
 
-    LlapIoImpl.LOG.warn(
-        "Failed to allocate [{}]X[{}] bytes after [{}] attempt, evicted [{}] bytes and partially allocated [{}] bytes",
+    LlapIoImpl.LOG.warn(FAILED_TO_ALLOCATE_MSG,
         dest.length,
         allocationSize,
         allocationAttempt,
         totalForceEvictedBytes,
         destAllocIx << allocLog2);
-
-
-    // We called reserveMemory so we know that there's memory waiting for us somewhere.
-    // However, we have a class of rare race conditions related to the order of locking/checking of
-    // different allocation areas. Simple case - say we have 2 arenas, 256Kb available in arena 2.
-    // We look at arena 1; someone deallocs 256Kb from arena 1 and allocs the same from arena 2;
-    // we look at arena 2 and find no memory. Or, for single arena, 2 threads reserve 256k each,
-    // and a single 1Mb block is available. When the 1st thread locks the 1Mb freelist, the 2nd one
-    // might have already examined the 256k and 512k lists, finding nothing. Blocks placed by (1)
-    // into smaller lists after its split is done will not be found by (2); given that freelist
-    // locks don't overlap, (2) may even run completely between the time (1) takes out the 1Mb
-    // block and the time it returns the remaining 768Kb.
-    // Two solutions to this are some form of cross-thread helping (threads putting "demand"
-    // into some sort of queues that deallocate and split will examine), or having and "actor"
-    // allocator thread (or threads per arena).
-    // The 2nd one is probably much simpler and will allow us to get rid of a lot of sync code.
-    // But for now we will just retry. We will evict more each time.
     int discardsAttempt = 0;
     boolean isFailed = false;
     int memoryForceReleased = 0;
@@ -423,7 +403,6 @@ public final class BuddyAllocator
         destAllocIx = allocateWithSplit(dest, null, destAllocIx, dest.length,
             freeListIx, allocationSize, startArenaIx, arenaCount, -1);
         if (destAllocIx == dest.length) return;
-
         // Try to force-evict the fragments of the requisite size.
         boolean hasDiscardedAny = false;
         DiscardContext ctx = threadCtx.get();
@@ -482,6 +461,29 @@ public final class BuddyAllocator
         LlapIoImpl.LOG.info("Allocation of " + dest.length + " buffers of size " + size + " took "
             + discardsAttempt + " attempts to free enough memory; force-released " + memoryForceReleased);
       }
+    }
+  }
+
+  private int getArenaCount() {
+    int arenaCount = allocatedArenas.get();
+    if (arenaCount < 0) {
+      arenaCount = -arenaCount - 1; // Next arena is being allocated.
+    }
+    return arenaCount;
+  }
+
+  private void initMemoryBuffers(MemoryBuffer[] dest, BufferObjectFactory factory) {
+    for (int i = 0; i < dest.length; ++i) {
+      if (dest[i] != null) continue;
+      // Note: this is backward compat only. Should be removed with createUnallocated.
+      dest[i] = factory != null ? factory.create() : createUnallocated();
+    }
+  }
+
+  private void checkAllocationSize(int size) {
+    assert size > 0 : "size is " + size;
+    if (size > maxAllocation) {
+      throw new RuntimeException("Trying to allocate " + size + "; max is " + maxAllocation);
     }
   }
 
