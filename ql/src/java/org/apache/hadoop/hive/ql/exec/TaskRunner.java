@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -74,6 +75,7 @@ public class TaskRunner extends Thread {
 
   @Override
   public void run() {
+    LogUtils.registerLoggingContext(tsk.getConf());
     runner = Thread.currentThread();
     try {
       SessionState.start(ss);
