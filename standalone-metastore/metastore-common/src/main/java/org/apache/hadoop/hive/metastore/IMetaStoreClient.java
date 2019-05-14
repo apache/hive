@@ -335,6 +335,16 @@ public interface IMetaStoreClient {
       throws MetaException, TException, UnknownDBException;
 
   /**
+   * Retrieve all materialized views that have rewriting enabled. This will use the default catalog.
+   * @return List of materialized views.
+   * @throws MetaException error fetching from the RDBMS
+   * @throws TException thrift transport error
+   * @throws UnknownDBException no such database
+   */
+  List<Table> getAllMaterializedViewObjectsForRewriting()
+      throws MetaException, TException, UnknownDBException;
+
+  /**
    * Get materialized views that have rewriting enabled.  This will use the default catalog.
    * @param dbName Name of the database to fetch materialized views from.
    * @return List of materialized view names.

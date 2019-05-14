@@ -101,10 +101,10 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.ddl.DDLWork2;
-import org.apache.hadoop.hive.ql.ddl.table.CreateTableDesc;
-import org.apache.hadoop.hive.ql.ddl.table.CreateTableLikeDesc;
-import org.apache.hadoop.hive.ql.ddl.table.CreateViewDesc;
-import org.apache.hadoop.hive.ql.ddl.table.PreInsertTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableLikeDesc;
+import org.apache.hadoop.hive.ql.ddl.table.misc.PreInsertTableDesc;
+import org.apache.hadoop.hive.ql.ddl.view.CreateViewDesc;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -7477,18 +7477,30 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         fileSinkColInfos = new ArrayList<>();
         destTableIsTemporary = tblDesc.isTemporary();
         destTableIsMaterialization = tblDesc.isMaterialization();
-        if (AcidUtils.isInsertOnlyTable(tblDesc.getTblProps(), true)) {
-          isMmTable = isMmCtas = true;
+        if (AcidUtils.isTablePropertyTransactional(tblDesc.getTblProps())) {
           try {
             if (ctx.getExplainConfig() != null) {
               writeId = 0L; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
             } else {
-              writeId = txnMgr.getTableWriteId(tblDesc.getDatabaseName(), tblDesc.getTableName());
+              String dbName = tblDesc.getDatabaseName();
+              String tableName = tblDesc.getTableName();
+
+              // CreateTableDesc stores table name as db.table. So, need to decode it before allocating
+              // write id.
+              if (tableName.contains(".")) {
+                String[] names = Utilities.getDbTableName(tableName);
+                dbName = names[0];
+                tableName = names[1];
+              }
+              writeId = txnMgr.getTableWriteId(dbName, tableName);
             }
           } catch (LockException ex) {
             throw new SemanticException("Failed to allocate write Id", ex);
           }
-          tblDesc.setInitialMmWriteId(writeId);
+          if (AcidUtils.isInsertOnlyTable(tblDesc.getTblProps(), true)) {
+            isMmTable = isMmCtas = true;
+            tblDesc.setInitialMmWriteId(writeId);
+          }
         }
       } else if (viewDesc != null) {
         fieldSchemas = new ArrayList<>();

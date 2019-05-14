@@ -161,10 +161,8 @@ public final class HiveMaterializedViewsRegistry {
         SessionState.start(ss);
         final boolean cache = !db.getConf()
             .get(HiveConf.ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_IMPL.varname).equals("DUMMY");
-        for (String dbName : db.getAllDatabases()) {
-          for (Table mv : db.getAllMaterializedViewObjects(dbName)) {
-            addMaterializedView(db.getConf(), mv, OpType.LOAD, cache);
-          }
+        for (Table mv : db.getAllMaterializedViewObjectsForRewriting()) {
+          addMaterializedView(db.getConf(), mv, OpType.LOAD, cache);
         }
         initialized.set(true);
         LOG.info("Materialized views registry has been initialized");

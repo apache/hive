@@ -312,6 +312,16 @@
       <version>${pig.version}</version>
       <classifier>h2</classifier>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>tomcat</groupId>
+          <artifactId>jasper-compiler</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>tomcat</groupId>
+          <artifactId>jasper-runtime</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <!--this should be automatically brought in by Pig, it's not in Pig 0.12 due to a bug

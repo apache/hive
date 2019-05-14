@@ -1754,6 +1754,8 @@ public class TypeCheckProcFactory {
               || subqueryOp.getChild(0).getType() == HiveParser.TOK_SUBQUERY_OP_NOTIN);
       boolean isEXISTS = (subqueryOp.getChildCount() > 0) && (subqueryOp.getChild(0).getType() == HiveParser.KW_EXISTS
               || subqueryOp.getChild(0).getType() == HiveParser.TOK_SUBQUERY_OP_NOTEXISTS);
+      boolean isSOME = (subqueryOp.getChildCount() > 0) && (subqueryOp.getChild(0).getType() == HiveParser.KW_SOME);
+      boolean isALL = (subqueryOp.getChildCount() > 0) && (subqueryOp.getChild(0).getType() == HiveParser.KW_ALL);
       boolean isScalar = subqueryOp.getChildCount() == 0 ;
 
       // subqueryToRelNode might be null if subquery expression anywhere other than
@@ -1791,6 +1793,16 @@ public class TypeCheckProcFactory {
         TypeInfo subExprType = TypeConverter.convert(subqueryRel.getRowType().getFieldList().get(0).getType());
         return new ExprNodeSubQueryDesc(subExprType, subqueryRel,
                 ExprNodeSubQueryDesc.SubqueryType.SCALAR);
+      } else if(isSOME) {
+        assert(nodeOutputs[2] != null);
+        ExprNodeDesc lhs = (ExprNodeDesc)nodeOutputs[2];
+        return new ExprNodeSubQueryDesc(TypeInfoFactory.booleanTypeInfo, subqueryRel,
+            ExprNodeSubQueryDesc.SubqueryType.SOME, lhs, (ASTNode)subqueryOp.getChild(1) );
+      } else if(isALL) {
+        assert(nodeOutputs[2] != null);
+        ExprNodeDesc lhs = (ExprNodeDesc)nodeOutputs[2];
+        return new ExprNodeSubQueryDesc(TypeInfoFactory.booleanTypeInfo, subqueryRel,
+            ExprNodeSubQueryDesc.SubqueryType.ALL, lhs, (ASTNode)subqueryOp.getChild(1));
       }
 
       /*

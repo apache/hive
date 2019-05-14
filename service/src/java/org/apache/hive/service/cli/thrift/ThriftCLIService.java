@@ -854,6 +854,9 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       return new TGetQueryIdResp(cliService.getQueryId(req.getOperationHandle()));
     } catch (HiveSQLException e) {
       throw new TException(e);
+    } catch (Exception e) {
+      // If concurrently the query is closed before we fetch queryID.
+      return new TGetQueryIdResp((String)null);
     }
   }
 

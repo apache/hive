@@ -26,6 +26,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
+import java.util.regex.Pattern;
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.tree.Tree;
@@ -49,7 +50,6 @@ import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelOptRule;
-import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptSchema;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelTraitSet;
@@ -178,6 +178,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateProjectMer
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregatePullUpConstantsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateReduceFunctionsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateReduceRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSplitRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveDruidRules;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveExceptRewriteRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveExpandDistinctAggregatesRule;
@@ -340,6 +341,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
       new ImmutableCommonToken(HiveParser.TOK_QUERY, "TOK_QUERY");
   private static final CommonToken SUBQUERY_TOKEN =
       new ImmutableCommonToken(HiveParser.TOK_SUBQUERY, "TOK_SUBQUERY");
+
+  private static final Pattern PATTERN_VARCHAR =
+      Pattern.compile("VARCHAR\\(2147483647\\)");
+  private static final Pattern PATTERN_TIMESTAMP =
+      Pattern.compile("TIMESTAMP\\(9\\)");
+
 
   public CalcitePlanner(QueryState queryState) throws SemanticException {
     super(queryState);
@@ -553,7 +560,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   // Do not include join cost
                   this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan));
                 }
-              } else if (explainConfig.isExtended() || explainConfig.isFormatted()) {
+              } else if (explainConfig.isFormatted()) {
+                this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
+                this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
+              } else if (explainConfig.isExtended()) {
                 this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
               }
             }
@@ -1512,7 +1522,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
               .getTypeFactory());
       final JdbcImplementor.Result result = jdbcImplementor.visitChild(0, optimizedOptiqPlan);
       String sql = result.asStatement().toSqlString(dialect).getSql();
-      return sql.replaceAll("VARCHAR\\(2147483647\\)", "STRING");
+      sql = PATTERN_VARCHAR.matcher(sql).replaceAll("STRING"); // VARCHAR(INTEGER.MAX) -> STRING
+      sql = PATTERN_TIMESTAMP.matcher(sql).replaceAll("TIMESTAMP"); // TIMESTAMP(9) -> TIMESTAMP
+      return sql;
     } catch (Exception ex) {
       LOG.warn("Rel2SQL Rewrite threw error", ex);
     }
@@ -2303,6 +2315,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
           for (RelOptMaterialization materialization : materializations) {
             planner.addMaterialization(materialization);
           }
+          // Add rule to split aggregate with grouping sets (if any)
+          planner.addRule(HiveAggregateSplitRule.INSTANCE);
           // Add view-based rewriting rules to planner
           for (RelOptRule rule : HiveMaterializedViewRule.MATERIALIZED_VIEW_REWRITING_RULES) {
             planner.addRule(rule);
@@ -3178,48 +3192,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return filterRel;
     }
 
-    private void subqueryRestrictionCheck(QB qb, ASTNode searchCond, RelNode srcRel,
-                                         boolean forHavingClause, Set<ASTNode> corrScalarQueries)
-        throws SemanticException {
-      List<ASTNode> subQueriesInOriginalTree = SubQueryUtils.findSubQueries(searchCond);
-
-      ASTNode clonedSearchCond = (ASTNode) SubQueryUtils.adaptor.dupTree(searchCond);
-      List<ASTNode> subQueries = SubQueryUtils.findSubQueries(clonedSearchCond);
-      for(int i=0; i<subQueriesInOriginalTree.size(); i++){
-        //we do not care about the transformation or rewriting of AST
-        // which following statement does
-        // we only care about the restriction checks they perform.
-        // We plan to get rid of these restrictions later
-        int sqIdx = qb.incrNumSubQueryPredicates();
-        ASTNode originalSubQueryAST = subQueriesInOriginalTree.get(i);
-
-        ASTNode subQueryAST = subQueries.get(i);
-        //SubQueryUtils.rewriteParentQueryWhere(clonedSearchCond, subQueryAST);
-        ASTNode outerQueryExpr = (ASTNode) subQueryAST.getChild(2);
-
-        if (outerQueryExpr != null && outerQueryExpr.getType() == HiveParser.TOK_SUBQUERY_EXPR) {
-
-          throw new CalciteSubquerySemanticException(
-              ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
-              outerQueryExpr, "IN/NOT IN subqueries are not allowed in LHS"));
-        }
-
-
-        QBSubQuery subQuery = SubQueryUtils.buildSubQuery(qb.getId(), sqIdx, subQueryAST,
-            originalSubQueryAST, ctx);
-
-        RowResolver inputRR = relToHiveRR.get(srcRel);
-
-        String havingInputAlias = null;
-
-        boolean [] subqueryConfig = {false, false};
-        subQuery.subqueryRestrictionsCheck(inputRR, forHavingClause,
-            havingInputAlias, subqueryConfig);
-        if(subqueryConfig[0]) {
-          corrScalarQueries.add(originalSubQueryAST);
-        }
-      }
-    }
 
     private RelNode genLateralViewPlans(ASTNode lateralView, Map<String, RelNode> aliasToRel)
             throws SemanticException {
@@ -3378,8 +3350,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       Set<ASTNode> corrScalarQueriesWithAgg = new HashSet<ASTNode>();
       boolean isSubQuery = false;
       try {
-        //disallow subqueries which HIVE doesn't currently support
-        subqueryRestrictionCheck(qb, node, srcRel, forHavingClause, corrScalarQueriesWithAgg);
         Deque<ASTNode> stack = new ArrayDeque<ASTNode>();
         stack.push(node);
 
@@ -3388,13 +3358,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
           switch (next.getType()) {
           case HiveParser.TOK_SUBQUERY_EXPR:
-              /*
-               * Restriction 2.h Subquery isnot allowed in LHS
-               */
-            if (next.getChildren().size() == 3 && next.getChild(2).getType() == HiveParser.TOK_SUBQUERY_EXPR) {
-              throw new CalciteSubquerySemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION
-                  .getMsg(next.getChild(2), "SubQuery in LHS expressions are not supported."));
-            }
+
+            //disallow subqueries which HIVE doesn't currently support
+            SubQueryUtils.subqueryRestrictionCheck(qb, next, srcRel, forHavingClause,
+                corrScalarQueriesWithAgg, ctx, this.relToHiveRR);
+
             String sbQueryAlias = "sq_" + qb.incrNumSubQueryPredicates();
             QB qbSQ = new QB(qb.getId(), sbQueryAlias, true);
             qbSQ.setInsideView(qb.isInsideView());

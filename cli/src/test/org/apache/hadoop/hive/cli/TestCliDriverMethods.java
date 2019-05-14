@@ -124,12 +124,12 @@ public class TestCliDriverMethods extends TestCase {
     // Save output as yo cannot print it while System.out and System.err are weird
     String message;
     String errors;
-    int ret;
+    CommandProcessorResponse response;
     try {
       CliSessionState.start(ss);
       CliDriver cliDriver = new CliDriver();
       // issue a command with bad options
-      ret = cliDriver.processCmd("!ls --abcdefghijklmnopqrstuvwxyz123456789");
+      response = cliDriver.processCmd("!ls --abcdefghijklmnopqrstuvwxyz123456789");
     } finally {
       // restore System.out and System.err
       System.setOut(oldOut);
@@ -138,7 +138,7 @@ public class TestCliDriverMethods extends TestCase {
     message = dataOut.toString("UTF-8");
     errors = dataErr.toString("UTF-8");
     assertTrue("Comments with '--; should not have been stripped,"
-        + " so command should fail", ret != 0);
+        + " so command should fail", response.getResponseCode() != 0);
     assertTrue("Comments with '--; should not have been stripped,"
         + " so we should have got an error in the output: '" + errors + "'.",
         errors.contains("option"));

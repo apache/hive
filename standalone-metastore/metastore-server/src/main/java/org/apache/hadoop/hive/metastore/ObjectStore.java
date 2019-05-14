@@ -1452,6 +1452,33 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
+  public List<Table> getAllMaterializedViewObjectsForRewriting(String catName) throws MetaException {
+    List<Table> allMaterializedViews = new ArrayList<>();
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      catName = normalizeIdentifier(catName);
+      query = pm.newQuery(MTable.class);
+      query.setFilter("database.catalogName == catName && tableType == tt && rewriteEnabled == re");
+      query.declareParameters("java.lang.String catName, java.lang.String tt, boolean re");
+      Collection<MTable> mTbls = (Collection<MTable>) query.executeWithArray(
+          catName, TableType.MATERIALIZED_VIEW.toString(), true);
+      for (MTable mTbl : mTbls) {
+        Table tbl = convertToTable(mTbl);
+        tbl.setCreationMetadata(
+            convertToCreationMetadata(
+                getCreationMetadata(tbl.getCatName(), tbl.getDbName(), tbl.getTableName())));
+        allMaterializedViews.add(tbl);
+      }
+      commited = commitTransaction();
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+    return allMaterializedViews;
+  }
+
+  @Override
   public List<String> getMaterializedViewsForRewriting(String catName, String dbName)
       throws MetaException, NoSuchObjectException {
     final String db_name = normalizeIdentifier(dbName);

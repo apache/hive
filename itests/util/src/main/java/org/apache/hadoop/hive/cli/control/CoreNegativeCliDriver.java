@@ -25,7 +25,7 @@ import java.io.File;
 import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
-import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -113,9 +113,6 @@ public class CoreNegativeCliDriver extends CliAdapter{
     }
   }
 
-  private static String debugHint = "\nSee ./ql/target/tmp/log/hive.log or ./itests/qtest/target/tmp/log/hive.log, "
-     + "or check ./ql/target/surefire-reports or ./itests/qtest/target/surefire-reports/ for specific test cases logs.";
-
   @Override
   public void runTest(String tname, String fname, String fpath) throws Exception {
     long startTime = System.currentTimeMillis();
@@ -125,27 +122,26 @@ public class CoreNegativeCliDriver extends CliAdapter{
       qt.addFile(fpath);
       qt.cliInit(new File(fpath));
 
-      int ecode = qt.executeClient(fname);
+      int ecode = qt.executeClient(fname).getResponseCode();
       if (ecode == 0) {
-        qt.failed(fname, debugHint);
+        qt.failed(fname, QTestUtil.DEBUG_HINT);
       }
 
       QTestProcessExecResult result = qt.checkCliDriverResults(fname);
       if (result.getReturnCode() != 0) {
-        String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ?
-            debugHint : "\r\n" + result.getCapturedOutput();
+        String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ? QTestUtil.DEBUG_HINT
+          : "\r\n" + result.getCapturedOutput();
         qt.failedDiff(result.getReturnCode(), fname, message);
       }
     } catch (Error error) {
       QTestProcessExecResult qTestProcessExecResult = qt.checkNegativeResults(fname, error);
       if (qTestProcessExecResult.getReturnCode() != 0) {
-        String message = Strings.isNullOrEmpty(qTestProcessExecResult.getCapturedOutput()) ? debugHint :
-            "\r\n" + qTestProcessExecResult.getCapturedOutput();
+        String message = Strings.isNullOrEmpty(qTestProcessExecResult.getCapturedOutput())
+          ? QTestUtil.DEBUG_HINT : "\r\n" + qTestProcessExecResult.getCapturedOutput();
         qt.failedDiff(qTestProcessExecResult.getReturnCode(), fname, message);
       }
-    }
-    catch (Exception e) {
-      qt.failed(e, fname, debugHint);
+    } catch (Exception e) {
+      qt.failedWithException(e, fname, QTestUtil.DEBUG_HINT);
     }
 
     long elapsedTime = System.currentTimeMillis() - startTime;

@@ -343,6 +343,12 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
+  public List<Table> getAllMaterializedViewObjectsForRewriting(String catName)
+      throws MetaException {
+    return objectStore.getAllMaterializedViewObjectsForRewriting(catName);
+  }
+
+  @Override
   public List<String> getMaterializedViewsForRewriting(String catName, String dbName)
       throws MetaException, NoSuchObjectException {
     return objectStore.getMaterializedViewsForRewriting(catName, dbName);

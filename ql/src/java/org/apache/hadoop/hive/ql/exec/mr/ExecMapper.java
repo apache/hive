@@ -19,15 +19,9 @@
 package org.apache.hadoop.hive.ql.exec.mr;
 
 import java.io.IOException;
-import java.net.URLClassLoader;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.plan.PartitionDesc;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -41,6 +35,8 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorMapOperator;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.MapReduceBase;
@@ -48,6 +44,8 @@ import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * ExecMapper is the generic Map class for Hive. Together with ExecReducer it is
@@ -76,17 +74,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
   @Override
   public void configure(JobConf job) {
     execContext = new ExecMapperContext(job);
-    // Allocate the bean at the beginning -
-      try {
-      l4j.info("conf classpath = "
-          + Arrays.asList(((URLClassLoader) job.getClassLoader()).getURLs()));
-      l4j.info("thread classpath = "
-          + Arrays.asList(((URLClassLoader) Thread.currentThread()
-          .getContextClassLoader()).getURLs()));
-    } catch (Exception e) {
-      l4j.info("cannot get classpath: " + e.getMessage());
-    }
-
+    Utilities.tryLoggingClassPaths(job, l4j);
     setDone(false);
 
     try {

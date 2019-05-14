@@ -1,0 +1,586 @@
+PREHOOK: query: create table tempty(i int, j int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tempty
+POSTHOOK: query: create table tempty(i int, j int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tempty
+PREHOOK: query: CREATE TABLE part_null_n0 as select * from part
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@part
+PREHOOK: Output: database:default
+PREHOOK: Output: default@part_null_n0
+POSTHOOK: query: CREATE TABLE part_null_n0 as select * from part
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@part
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part_null_n0
+POSTHOOK: Lineage: part_null_n0.p_brand SIMPLE [(part)part.FieldSchema(name:p_brand, type:string, comment:null), ]
+POSTHOOK: Lineage: part_null_n0.p_comment SIMPLE [(part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_null_n0.p_container SIMPLE [(part)part.FieldSchema(name:p_container, type:string, comment:null), ]
+POSTHOOK: Lineage: part_null_n0.p_mfgr SIMPLE [(part)part.FieldSchema(name:p_mfgr, type:string, comment:null), ]
+POSTHOOK: Lineage: part_null_n0.p_name SIMPLE [(part)part.FieldSchema(name:p_name, type:string, comment:null), ]
+POSTHOOK: Lineage: part_null_n0.p_partkey SIMPLE [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), ]
+POSTHOOK: Lineage: part_null_n0.p_retailprice SIMPLE [(part)part.FieldSchema(name:p_retailprice, type:double, comment:null), ]
+POSTHOOK: Lineage: part_null_n0.p_size SIMPLE [(part)part.FieldSchema(name:p_size, type:int, comment:null), ]
+POSTHOOK: Lineage: part_null_n0.p_type SIMPLE [(part)part.FieldSchema(name:p_type, type:string, comment:null), ]
+PREHOOK: query: insert into part_null_n0 values(NULL,NULL,NULL,NULL,NULL, NULL, NULL,NULL,NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@part_null_n0
+POSTHOOK: query: insert into part_null_n0 values(NULL,NULL,NULL,NULL,NULL, NULL, NULL,NULL,NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@part_null_n0
+POSTHOOK: Lineage: part_null_n0.p_brand EXPRESSION []
+POSTHOOK: Lineage: part_null_n0.p_comment EXPRESSION []
+POSTHOOK: Lineage: part_null_n0.p_container EXPRESSION []
+POSTHOOK: Lineage: part_null_n0.p_mfgr EXPRESSION []
+POSTHOOK: Lineage: part_null_n0.p_name EXPRESSION []
+POSTHOOK: Lineage: part_null_n0.p_partkey EXPRESSION []
+POSTHOOK: Lineage: part_null_n0.p_retailprice EXPRESSION []
+POSTHOOK: Lineage: part_null_n0.p_size EXPRESSION []
+POSTHOOK: Lineage: part_null_n0.p_type EXPRESSION []
+PREHOOK: query: explain cbo select count(*) from part where p_partkey = ANY (select p_partkey from part)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select count(*) from part where p_partkey = ANY (select p_partkey from part)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[count()])
+  HiveSemiJoin(condition=[=($0, $1)], joinType=[inner])
+    HiveProject(p_partkey=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, part]], table:alias=[part])
+    HiveProject(p_partkey=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, part]], table:alias=[part])
+
+PREHOOK: query: select count(*) from part where p_partkey = ANY (select p_partkey from part)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from part where p_partkey = ANY (select p_partkey from part)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+26
+Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain cbo select count(*) from part where p_partkey > ANY (select p_partkey from part)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select count(*) from part where p_partkey > ANY (select p_partkey from part)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[count()])
+  HiveJoin(condition=[OR(AND(>($0, $1), $2), AND(>($0, $1), $2, IS NOT TRUE(>($0, $1)), $3))], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(p_partkey=[$0])
+      HiveTableScan(table=[[default, part]], table:alias=[part])
+    HiveProject(m=[$0], <>=[<>($1, 0)], <==[<=($1, $2)])
+      HiveAggregate(group=[{}], m=[MIN($0)], c=[COUNT()], d=[COUNT($0)])
+        HiveTableScan(table=[[default, part]], table:alias=[part])
+
+Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select count(*) from part where p_partkey > ANY (select p_partkey from part)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from part where p_partkey > ANY (select p_partkey from part)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+25
+Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain cbo select count(*) from part where p_partkey < ANY (select p_partkey from part)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select count(*) from part where p_partkey < ANY (select p_partkey from part)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[count()])
+  HiveJoin(condition=[OR(AND(<($0, $1), $2), AND(<($0, $1), $2, IS NOT TRUE(<($0, $1)), $3))], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(p_partkey=[$0])
+      HiveTableScan(table=[[default, part]], table:alias=[part])
+    HiveProject(m=[$0], <>=[<>($1, 0)], <==[<=($1, $2)])
+      HiveAggregate(group=[{}], m=[MAX($0)], c=[COUNT()], d=[COUNT($0)])
+        HiveTableScan(table=[[default, part]], table:alias=[part])
+
+Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select count(*) from part where p_partkey < ANY (select p_partkey from part)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from part where p_partkey < ANY (select p_partkey from part)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+25
+Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain cbo select count(*) from part where p_partkey >= ANY (select p_partkey from part)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select count(*) from part where p_partkey >= ANY (select p_partkey from part)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[count()])
+  HiveJoin(condition=[OR(AND(>=($0, $1), $2), AND(>=($0, $1), $2, IS NOT TRUE(>=($0, $1)), $3))], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(p_partkey=[$0])
+      HiveTableScan(table=[[default, part]], table:alias=[part])
+    HiveProject(m=[$0], <>=[<>($1, 0)], <==[<=($1, $2)])
+      HiveAggregate(group=[{}], m=[MIN($0)], c=[COUNT()], d=[COUNT($0)])
+        HiveTableScan(table=[[default, part]], table:alias=[part])
+
+Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select count(*) from part where p_partkey >= ANY (select p_partkey from part)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from part where p_partkey >= ANY (select p_partkey from part)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+26
+Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain cbo select count(*) from part where p_partkey <= ANY (select p_partkey from part)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select count(*) from part where p_partkey <= ANY (select p_partkey from part)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[count()])
+  HiveJoin(condition=[OR(AND(<=($0, $1), $2), AND(<=($0, $1), $2, IS NOT TRUE(<=($0, $1)), $3))], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(p_partkey=[$0])
+      HiveTableScan(table=[[default, part]], table:alias=[part])
+    HiveProject(m=[$0], <>=[<>($1, 0)], <==[<=($1, $2)])
+      HiveAggregate(group=[{}], m=[MAX($0)], c=[COUNT()], d=[COUNT($0)])
+        HiveTableScan(table=[[default, part]], table:alias=[part])
+
+Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select count(*) from part where p_partkey <= ANY (select p_partkey from part)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from part where p_partkey <= ANY (select p_partkey from part)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+26
+PREHOOK: query: explain cbo select count(*) from part where p_partkey = SOME(select min(p_partkey) from part)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select count(*) from part where p_partkey = SOME(select min(p_partkey) from part)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[count()])
+  HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(p_partkey=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, part]], table:alias=[part])
+    HiveProject($f0=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveProject($f0=[$0])
+          HiveAggregate(group=[{}], agg#0=[min($0)])
+            HiveTableScan(table=[[default, part]], table:alias=[part])
+
+PREHOOK: query: select count(*) from part where p_partkey = SOME(select min(p_partkey) from part)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from part where p_partkey = SOME(select min(p_partkey) from part)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+1
+Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain cbo select count(*) from part where p_size < ANY (select max(p_size) from part group by p_partkey)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select count(*) from part where p_size < ANY (select max(p_size) from part group by p_partkey)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[count()])
+  HiveJoin(condition=[OR(AND(<($0, $1), $2), AND(<($0, $1), $2, IS NOT TRUE(<($0, $1)), $3))], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(p_size=[$5])
+      HiveTableScan(table=[[default, part]], table:alias=[part])
+    HiveProject(m=[$0], <>=[<>($1, 0)], <==[<=($1, $2)])
+      HiveAggregate(group=[{}], m=[MAX($1)], c=[COUNT()], d=[COUNT($1)])
+        HiveProject(p_partkey=[$0], $f1=[$1])
+          HiveAggregate(group=[{0}], agg#0=[max($5)])
+            HiveTableScan(table=[[default, part]], table:alias=[part])
+
+Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select count(*) from part where p_size < ANY (select max(p_size) from part group by p_partkey)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from part where p_size < ANY (select max(p_size) from part group by p_partkey)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+25
+Warning: Shuffle Join MERGEJOIN[23][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select count(*) from part where p_size < ANY (select max(null) from part group by p_partkey)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from part where p_size < ANY (select max(null) from part group by p_partkey)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+0
+PREHOOK: query: select count(*) from part where p_partkey = ANY(select i from tempty)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Input: default@tempty
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from part where p_partkey = ANY(select i from tempty)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Input: default@tempty
+#### A masked pattern was here ####
+0
+PREHOOK: query: select count(*) from part where p_partkey = ANY (select p_partkey from part_null_n0)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Input: default@part_null_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from part where p_partkey = ANY (select p_partkey from part_null_n0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_null_n0
+#### A masked pattern was here ####
+26
+Warning: Shuffle Join MERGEJOIN[37][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: select count(*) from part where (p_size= ANY (select p_partkey from part_null_n0)) is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Input: default@part_null_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from part where (p_size= ANY (select p_partkey from part_null_n0)) is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_null_n0
+#### A masked pattern was here ####
+26
+Warning: Shuffle Join MERGEJOIN[28][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 4' is a cross product
+PREHOOK: query: select count(*) from part where (p_partkey = ANY (select p_partkey from part_null_n0 where p_partkey is null)) is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Input: default@part_null_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from part where (p_partkey = ANY (select p_partkey from part_null_n0 where p_partkey is null)) is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_null_n0
+#### A masked pattern was here ####
+26
+Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select count(*) from part where p_partkey > ANY (select max(p_partkey) from part_null_n0)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Input: default@part_null_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from part where p_partkey > ANY (select max(p_partkey) from part_null_n0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_null_n0
+#### A masked pattern was here ####
+0
+Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 4' is a cross product
+PREHOOK: query: explain cbo select count(*) from part having count(*) > ANY (select count(*) from part group by p_partkey)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select count(*) from part having count(*) > ANY (select count(*) from part group by p_partkey)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject($f0=[$3])
+  HiveJoin(condition=[OR(AND(>($3, $0), $1), AND(>($3, $0), $1, IS NOT TRUE(>($3, $0)), $2))], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(m=[$0], <>=[<>($1, 0)], <==[<=($1, $2)])
+      HiveAggregate(group=[{}], m=[MIN($1)], c=[COUNT()], d=[COUNT($1)])
+        HiveProject(p_partkey=[$0], $f1=[$1])
+          HiveAggregate(group=[{0}], agg#0=[count()])
+            HiveTableScan(table=[[default, part]], table:alias=[part])
+    HiveProject($f0=[$0])
+      HiveAggregate(group=[{}], agg#0=[count()])
+        HiveTableScan(table=[[default, part]], table:alias=[part])
+
+Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 4' is a cross product
+PREHOOK: query: select count(*) from part having count(*) > ANY (select count(*) from part group by p_partkey)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from part having count(*) > ANY (select count(*) from part group by p_partkey)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+26
+Warning: Shuffle Join MERGEJOIN[43][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: explain cbo select count(*) from part where p_partkey >= ANY (select p_partkey from part) 
+	AND p_size = ANY (select p_size from part group by p_size)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select count(*) from part where p_partkey >= ANY (select p_partkey from part) 
+	AND p_size = ANY (select p_size from part group by p_size)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[count()])
+  HiveJoin(condition=[AND(=($1, $2), OR(AND(>=($0, $3), <>($4, 0)), AND(>=($0, $3), <>($4, 0), IS NOT TRUE(>=($0, $3)), <=($4, $5))))], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(p_partkey=[$0], p_size=[$5])
+      HiveFilter(condition=[IS NOT NULL($5)])
+        HiveTableScan(table=[[default, part]], table:alias=[part])
+    HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(p_size=[$0])
+        HiveAggregate(group=[{5}])
+          HiveFilter(condition=[IS NOT NULL($5)])
+            HiveTableScan(table=[[default, part]], table:alias=[part])
+      HiveProject(m=[$0], c=[$1], d=[$2])
+        HiveAggregate(group=[{}], m=[MIN($0)], c=[COUNT()], d=[COUNT($0)])
+          HiveTableScan(table=[[default, part]], table:alias=[part])
+
+Warning: Shuffle Join MERGEJOIN[43][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: select count(*) from part where p_partkey >= ANY (select p_partkey from part) 
+	AND p_size = ANY (select p_size from part group by p_size)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from part where p_partkey >= ANY (select p_partkey from part) 
+	AND p_size = ANY (select p_size from part group by p_size)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+26
+Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 5' is a cross product
+Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain cbo select count(*) from part where p_partkey 
+	>= ANY (select p_partkey from part where p_size >= ANY(select p_size from part_null_n0 group by p_size))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Input: default@part_null_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select count(*) from part where p_partkey 
+	>= ANY (select p_partkey from part where p_size >= ANY(select p_size from part_null_n0 group by p_size))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_null_n0
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[count()])
+  HiveJoin(condition=[OR(AND(>=($0, $1), $2), AND(>=($0, $1), $2, IS NOT TRUE(>=($0, $1)), $3))], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(p_partkey=[$0])
+      HiveTableScan(table=[[default, part]], table:alias=[part])
+    HiveProject(m=[$0], <>=[<>($1, 0)], <==[<=($1, $2)])
+      HiveAggregate(group=[{}], m=[MIN($0)], c=[COUNT()], d=[COUNT($0)])
+        HiveJoin(condition=[OR(AND(>=($1, $2), $3), AND(>=($1, $2), $3, IS NOT TRUE(>=($1, $2)), $4))], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveProject(p_partkey=[$0], p_size=[$5])
+            HiveTableScan(table=[[default, part]], table:alias=[part])
+          HiveProject(m=[$0], <>=[<>($1, 0)], <==[<=($1, $2)])
+            HiveAggregate(group=[{}], m=[MIN($0)], c=[COUNT()], d=[COUNT($0)])
+              HiveProject(p_size=[$0])
+                HiveAggregate(group=[{5}])
+                  HiveTableScan(table=[[default, part_null_n0]], table:alias=[part_null_n0])
+
+Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 5' is a cross product
+Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select count(*) from part where p_partkey 
+	>= ANY (select p_partkey from part where p_size >= ANY(select p_size from part_null_n0 group by p_size))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Input: default@part_null_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from part where p_partkey 
+	>= ANY (select p_partkey from part where p_size >= ANY(select p_size from part_null_n0 group by p_size))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_null_n0
+#### A masked pattern was here ####
+26
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select p_partkey, (p_partkey > ANY (select p_partkey from part)) from part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select p_partkey, (p_partkey > ANY (select p_partkey from part)) from part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+105685	true
+110592	true
+112398	true
+121152	true
+121152	true
+132666	true
+144293	true
+146985	true
+15103	false
+155733	true
+17273	true
+17927	true
+191709	true
+192697	true
+195606	true
+33357	true
+40982	true
+42669	true
+45261	true
+48427	true
+49671	true
+65667	true
+78486	true
+85768	true
+86428	true
+90681	true
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select p_partkey, (p_partkey > ANY (select p_partkey from part_null_n0)) from part_null_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_null_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select p_partkey, (p_partkey > ANY (select p_partkey from part_null_n0)) from part_null_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_null_n0
+#### A masked pattern was here ####
+105685	true
+110592	true
+112398	true
+121152	true
+121152	true
+132666	true
+144293	true
+146985	true
+15103	NULL
+155733	true
+17273	true
+17927	true
+191709	true
+192697	true
+195606	true
+33357	true
+40982	true
+42669	true
+45261	true
+48427	true
+49671	true
+65667	true
+78486	true
+85768	true
+86428	true
+90681	true
+NULL	NULL
+Warning: Shuffle Join MERGEJOIN[14][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select p_partkey, (p_partkey > ANY (select null from part_null_n0)) from part_null_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_null_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select p_partkey, (p_partkey > ANY (select null from part_null_n0)) from part_null_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_null_n0
+#### A masked pattern was here ####
+105685	NULL
+110592	NULL
+112398	NULL
+121152	NULL
+121152	NULL
+132666	NULL
+144293	NULL
+146985	NULL
+15103	NULL
+155733	NULL
+17273	NULL
+17927	NULL
+191709	NULL
+192697	NULL
+195606	NULL
+33357	NULL
+40982	NULL
+42669	NULL
+45261	NULL
+48427	NULL
+49671	NULL
+65667	NULL
+78486	NULL
+85768	NULL
+86428	NULL
+90681	NULL
+NULL	NULL
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select p_partkey, (p_partkey > ANY (select i from tempty)) from part_null_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_null_n0
+PREHOOK: Input: default@tempty
+#### A masked pattern was here ####
+POSTHOOK: query: select p_partkey, (p_partkey > ANY (select i from tempty)) from part_null_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_null_n0
+POSTHOOK: Input: default@tempty
+#### A masked pattern was here ####
+105685	false
+110592	false
+112398	false
+121152	false
+121152	false
+132666	false
+144293	false
+146985	false
+15103	false
+155733	false
+17273	false
+17927	false
+191709	false
+192697	false
+195606	false
+33357	false
+40982	false
+42669	false
+45261	false
+48427	false
+49671	false
+65667	false
+78486	false
+85768	false
+86428	false
+90681	false
+NULL	false
+PREHOOK: query: DROP TABLE part_null_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@part_null_n0
+PREHOOK: Output: default@part_null_n0
+POSTHOOK: query: DROP TABLE part_null_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@part_null_n0
+POSTHOOK: Output: default@part_null_n0
+PREHOOK: query: DROP TABLE tempty
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tempty
+PREHOOK: Output: default@tempty
+POSTHOOK: query: DROP TABLE tempty
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tempty
+POSTHOOK: Output: default@tempty

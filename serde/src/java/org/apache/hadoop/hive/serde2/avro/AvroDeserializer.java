@@ -22,11 +22,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.rmi.server.UID;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
@@ -40,8 +43,11 @@ import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.UnresolvedUnionException;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
@@ -76,6 +82,20 @@ class AvroDeserializer {
    * record encoding.
    */
   private boolean warnedOnce = false;
+
+  /**
+   * Time zone in which file was written, which may be stored in metadata.
+   */
+  private ZoneId writerTimezone = null;
+
+  private Configuration configuration = null;
+
+  AvroDeserializer() {}
+
+  AvroDeserializer(Configuration configuration) {
+    this.configuration = configuration;
+  }
+
   /**
    * When encountering a record with an older schema than the one we're trying
    * to read, it is necessary to re-encode with a reader against the newer schema.
@@ -148,6 +168,7 @@ class AvroDeserializer {
     AvroGenericRecordWritable recordWritable = (AvroGenericRecordWritable) writable;
     GenericRecord r = recordWritable.getRecord();
     Schema fileSchema = recordWritable.getFileSchema();
+    writerTimezone = recordWritable.getWriterTimezone();
 
    UID recordReaderId = recordWritable.getRecordReaderID();
    //If the record reader (from which the record is originated) is already seen and valid,
@@ -301,7 +322,29 @@ class AvroDeserializer {
         throw new AvroSerdeException(
           "Unexpected Avro schema for Date TypeInfo: " + recordSchema.getType());
       }
-      return Timestamp.ofEpochMilli((Long)datum);
+      // If a time zone is found in file metadata (property name: writer.time.zone), convert the
+      // timestamp to that (writer) time zone in order to emulate time zone agnostic behavior.
+      // If not, then the file was written by an older version of hive, so we convert the timestamp
+      // to the server's (reader) time zone for backwards compatibility reasons - unless the
+      // session level configuration hive.avro.timestamp.skip.conversion is set to true, in which
+      // case we assume it was written by a time zone agnostic writer, so we don't convert it.
+      boolean skipConversion;
+      if (configuration != null) {
+        skipConversion = HiveConf.getBoolVar(
+            configuration, HiveConf.ConfVars.HIVE_AVRO_TIMESTAMP_SKIP_CONVERSION);
+      } else {
+        skipConversion = HiveConf.ConfVars.HIVE_AVRO_TIMESTAMP_SKIP_CONVERSION.defaultBoolVal;
+      }
+      ZoneId convertToTimeZone;
+      if (writerTimezone != null) {
+        convertToTimeZone = writerTimezone;
+      } else if (skipConversion) {
+        convertToTimeZone = ZoneOffset.UTC;
+      } else {
+        convertToTimeZone = TimeZone.getDefault().toZoneId();
+      }
+      Timestamp timestamp = Timestamp.ofEpochMilli((Long)datum);
+      return TimestampTZUtil.convertTimestampToZone(timestamp, ZoneOffset.UTC, convertToTimeZone);
     default:
       return datum;
     }

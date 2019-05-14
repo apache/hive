@@ -18,9 +18,9 @@
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.events;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 
 import java.util.List;
@@ -28,7 +28,7 @@ import java.util.List;
 public interface TableEvent extends BootstrapEvent {
   ImportTableDesc tableDesc(String dbName) throws SemanticException;
 
-  List<AddPartitionDesc> partitionDescriptions(ImportTableDesc tblDesc)
+  List<AlterTableAddPartitionDesc> partitionDescriptions(ImportTableDesc tblDesc)
       throws SemanticException;
 
   List<String> partitions(ImportTableDesc tblDesc)

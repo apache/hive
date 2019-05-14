@@ -380,7 +380,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       dbProps = dbInMetadata.getParameters();
     }
     ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, dbProps);
-    Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork);
+    Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, conf);
     if (scope.rootTasks.isEmpty()) {
       scope.rootTasks.add(replLogTask);
     } else {

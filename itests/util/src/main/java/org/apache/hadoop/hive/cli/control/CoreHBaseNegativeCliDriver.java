@@ -26,7 +26,7 @@ import java.io.File;
 import org.apache.hadoop.hive.hbase.HBaseQTestUtil;
 import org.apache.hadoop.hive.hbase.HBaseTestSetup;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
-import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -104,7 +104,7 @@ public class CoreHBaseNegativeCliDriver extends CliAdapter {
       System.err.println("Begin query: " + fname);
       qt.addFile(fpath);
       qt.cliInit(new File(fpath));
-      int ecode = qt.executeClient(fname);
+      int ecode = qt.executeClient(fname).getResponseCode();
       if (ecode == 0) {
         qt.failed(fname, null);
       }
@@ -115,7 +115,7 @@ public class CoreHBaseNegativeCliDriver extends CliAdapter {
       }
 
     } catch (Exception e) {
-      qt.failed(e, fname, null);
+      qt.failedWithException(e, fname, null);
     }
 
     long elapsedTime = System.currentTimeMillis() - startTime;

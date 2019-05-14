@@ -25,9 +25,11 @@ import org.apache.hadoop.hive.ql.ddl.database.DescDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.DropDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.ShowDatabasesDesc;
 import org.apache.hadoop.hive.ql.ddl.database.SwitchDatabaseDesc;
-import org.apache.hadoop.hive.ql.ddl.table.DescTableDesc;
-import org.apache.hadoop.hive.ql.ddl.table.ShowTableStatusDesc;
-import org.apache.hadoop.hive.ql.ddl.table.ShowTablesDesc;
+import org.apache.hadoop.hive.ql.ddl.table.info.DescTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.info.ShowTableStatusDesc;
+import org.apache.hadoop.hive.ql.ddl.table.info.ShowTablesDesc;
+import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableDropPartitionDesc;
+import org.apache.hadoop.hive.ql.ddl.table.partition.ShowPartitionsDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -41,9 +43,7 @@ import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
-import org.apache.hadoop.hive.ql.plan.DropPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
-import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.common.ErrorType;
@@ -314,20 +314,10 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
       String dbName = showTableStatus.getDbName() == null ? SessionState.get().getCurrentDatabase()
           : showTableStatus.getDbName();
       authorize(cntxt.getHive().getDatabase(dbName), Privilege.SELECT);
-    }
-  }
-
-  @Override
-  protected void authorizeDDLWork(HiveSemanticAnalyzerHookContext cntxt, Hive hive, DDLWork work)
-    throws HiveException {
-    // TODO: add alter database support in HCat
-
-    // Table operations.
-
-    DropPartitionDesc dropPartition = work.getDropPartitionDesc();
-    if (dropPartition != null) {
+    } else if (ddlDesc instanceof AlterTableDropPartitionDesc) {
+      AlterTableDropPartitionDesc dropPartition = (AlterTableDropPartitionDesc)ddlDesc;
       //this is actually a ALTER TABLE DROP PARITITION statement
-      for (DropPartitionDesc.PartSpec partSpec : dropPartition.getPartSpecs()) {
+      for (AlterTableDropPartitionDesc.PartitionDesc partSpec : dropPartition.getPartSpecs()) {
         // partitions are not added as write entries in drop partitions in Hive
         Table table = hive.getTable(SessionState.get().getCurrentDatabase(), dropPartition.getTableName());
         List<Partition> partitions = null;
@@ -340,8 +330,19 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
           authorize(part, Privilege.DROP);
         }
       }
+    } else if (ddlDesc instanceof ShowPartitionsDesc) {
+      ShowPartitionsDesc showParts = (ShowPartitionsDesc)ddlDesc;
+      String tableName = extractTableName(showParts.getTabName());
+      authorizeTable(cntxt.getHive(), tableName, Privilege.SELECT);
     }
+  }
 
+  @Override
+  protected void authorizeDDLWork(HiveSemanticAnalyzerHookContext cntxt, Hive hive, DDLWork work)
+    throws HiveException {
+    // TODO: add alter database support in HCat
+
+    // Table operations.
     AlterTableDesc alterTable = work.getAlterTblDesc();
     if (alterTable != null) {
       Table table = hive.getTable(SessionState.get().getCurrentDatabase(),
@@ -371,12 +372,6 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
         }
       }
       //other alter operations are already supported by Hive
-    }
-
-    ShowPartitionsDesc showParts = work.getShowPartsDesc();
-    if (showParts != null) {
-      String tableName = extractTableName(showParts.getTabName());
-      authorizeTable(cntxt.getHive(), tableName, Privilege.SELECT);
     }
   }
 }

@@ -631,6 +631,12 @@ public class HiveConf extends Configuration {
         true),
     HIVE_MAPJOIN_TESTING_NO_HASH_TABLE_LOAD("hive.mapjoin.testing.no.hash.table.load", false, "internal use only, true when in testing map join",
         true),
+    HIVE_ADDITIONAL_PARTIAL_MASKS_PATTERN("hive.qtest.additional.partial.mask.pattern", "",
+        "internal use only, used in only qtests. Provide additional partial masks pattern" +
+         "for qtests as a ',' separated list"),
+    HIVE_ADDITIONAL_PARTIAL_MASKS_REPLACEMENT_TEXT("hive.qtest.additional.partial.mask.replacement.text", "",
+        "internal use only, used in only qtests. Provide additional partial masks replacement" +
+        "text for qtests as a ',' separated list"),
 
     HIVE_IN_REPL_TEST_FILES_SORTED("hive.in.repl.test.files.sorted", false,
       "internal usage only, set to true if the file listing is required in sorted order during bootstrap load", true),
@@ -1976,6 +1982,12 @@ public class HiveConf extends Configuration {
     HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION("hive.parquet.timestamp.skip.conversion", false,
       "Current Hive implementation of parquet stores timestamps to UTC, this flag allows skipping of the conversion" +
       "on reading parquet files from other tools"),
+    HIVE_AVRO_TIMESTAMP_SKIP_CONVERSION("hive.avro.timestamp.skip.conversion", false,
+        "Some older Hive implementations (pre-3.1) wrote Avro timestamps in a UTC-normalized" +
+        "manner, while from version 3.1 until now Hive wrote time zone agnostic timestamps. " +
+        "Setting this flag to true will treat legacy timestamps as time zone agnostic. Setting " +
+        "it to false will treat legacy timestamps as UTC-normalized. This flag will not affect " +
+        "timestamps written after this change."),
     HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS("hive.int.timestamp.conversion.in.seconds", false,
         "Boolean/tinyint/smallint/int/bigint value is interpreted as milliseconds during the timestamp conversion.\n" +
         "Set this flag to true to interpret the value as seconds to be consistent with float/double." ),
@@ -4691,7 +4703,11 @@ public class HiveConf extends Configuration {
             "This parameter enables a number of optimizations when running on blobstores:\n" +
             "(1) If hive.blobstore.use.blobstore.as.scratchdir is false, force the last Hive job to write to the blobstore.\n" +
             "This is a performance optimization that forces the final FileSinkOperator to write to the blobstore.\n" +
-            "See HIVE-15121 for details.");
+            "See HIVE-15121 for details."),
+
+    HIVE_ADDITIONAL_CONFIG_FILES("hive.additional.config.files", "",
+            "The names of additional config files, such as ldap-site.xml," +
+                    "spark-site.xml, etc in comma separated list.");
 
     public final String varname;
     public final String altName;
@@ -5462,6 +5478,18 @@ public class HiveConf extends Configuration {
       addResource(hiveServer2SiteUrl);
     }
 
+    String val = this.getVar(HiveConf.ConfVars.HIVE_ADDITIONAL_CONFIG_FILES);
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+    if (val != null && !val.isEmpty()) {
+      String[] configFiles = val.split(",");
+      for (String config : configFiles) {
+        URL configURL = findConfigFile(classLoader, config, true);
+        if (configURL != null) {
+          addResource(configURL);
+        }
+      }
+    }
     // Overlay the values of any system properties and manual overrides
     applySystemProperties();
 

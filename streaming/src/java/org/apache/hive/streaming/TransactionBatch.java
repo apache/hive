@@ -285,6 +285,20 @@ public class TransactionBatch extends AbstractStreamingTransaction {
               DataOperationType.INSERT);
         }
       }
+
+      // If it is the last transaction in the batch, then close the files and add write events.
+      // We need to close the writer as file checksum can't be obtained on the opened file.
+      if ((currentTxnIndex + 1) >= txnToWriteIds.size()) {
+        // Replication doesn't work if txn batch size > 1 and the last txn is aborted as write events
+        // are ignored by abort txn event causing data loss. However, if the last txn in the batch is
+        // committed, then data gets replicated making eventually consistent, but doesn't guarantee
+        // point-in-time consistency.
+        recordWriter.close();
+
+        // Add write notification events if it is enabled.
+        conn.addWriteNotificationEvents();
+      }
+
       transactionLock.lock();
       try {
         if (key != null) {

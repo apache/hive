@@ -2032,6 +2032,17 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public List<Table> getAllMaterializedViewObjectsForRewriting() throws TException {
+    try {
+      List<Table> views = client.get_all_materialized_view_objects_for_rewriting();
+      return FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, views);
+    } catch (Exception e) {
+      MetaStoreUtils.logAndThrowMetaException(e);
+    }
+    return null;
+  }
+
+  @Override
   public List<String> getMaterializedViewsForRewriting(String dbName) throws TException {
     return getMaterializedViewsForRewriting(getDefaultCatalog(conf), dbName);
   }

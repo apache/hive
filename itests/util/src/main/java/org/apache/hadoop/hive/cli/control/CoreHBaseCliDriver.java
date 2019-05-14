@@ -25,7 +25,8 @@ import java.io.File;
 import org.apache.hadoop.hive.hbase.HBaseQTestUtil;
 import org.apache.hadoop.hive.hbase.HBaseTestSetup;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
-import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -111,9 +112,9 @@ public class CoreHBaseCliDriver extends CliAdapter {
 
       qt.cliInit(new File(fpath));
 
-      int ecode = qt.executeClient(fname);
-      if (ecode != 0) {
-        qt.failed(ecode, fname, null);
+      CommandProcessorResponse response = qt.executeClient(fname);
+      if (response.getResponseCode() != 0) {
+        qt.failedQuery(response.getException(), response.getResponseCode(), fname, null);
       }
 
       QTestProcessExecResult result = qt.checkCliDriverResults(fname);
@@ -122,7 +123,7 @@ public class CoreHBaseCliDriver extends CliAdapter {
       }
 
     } catch (Exception e) {
-      qt.failed(e, fname, null);
+      qt.failedWithException(e, fname, null);
     }
 
     long elapsedTime = System.currentTimeMillis() - startTime;

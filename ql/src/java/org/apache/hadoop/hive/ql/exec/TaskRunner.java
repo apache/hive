@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.hadoop.hive.common.LogUtils;
+import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
@@ -46,10 +48,13 @@ public class TaskRunner extends Thread {
 
   private static transient final Logger LOG = LoggerFactory.getLogger(TaskRunner.class);
 
-  public TaskRunner(Task<? extends Serializable> tsk) {
+  private final DriverContext driverCtx;
+
+  public TaskRunner(Task<? extends Serializable> tsk, DriverContext ctx) {
     this.tsk = tsk;
     this.result = new TaskResult();
     ss = SessionState.get();
+    driverCtx = ctx;
   }
 
   public Task<? extends Serializable> getTask() {
@@ -70,6 +75,7 @@ public class TaskRunner extends Thread {
 
   @Override
   public void run() {
+    LogUtils.registerLoggingContext(tsk.getConf());
     runner = Thread.currentThread();
     try {
       SessionState.start(ss);
@@ -102,6 +108,7 @@ public class TaskRunner extends Thread {
       LOG.error("Error in executeTask", t);
     }
     result.setExitVal(exitVal);
+    driverCtx.releaseRunnable();
     if (tsk.getException() != null) {
       result.setTaskError(tsk.getException());
     }

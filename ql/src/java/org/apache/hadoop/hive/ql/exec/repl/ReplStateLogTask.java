@@ -48,4 +48,11 @@ public class ReplStateLogTask extends Task<ReplStateLogWork> implements Serializ
   public String getName() {
     return "REPL_STATE_LOG";
   }
+
+  @Override
+  public boolean canExecuteInParallel() {
+    // ReplStateLogTask is executed only when all its parents are done with execution. So running it in parallel has no
+    // benefits.
+    return false;
+  }
 }

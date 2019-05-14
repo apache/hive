@@ -19,12 +19,12 @@ package org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.PartitionEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.ReplicationState;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 
 import java.util.List;
@@ -46,7 +46,7 @@ public class FSPartitionEvent implements PartitionEvent {
   }
 
   @Override
-  public AddPartitionDesc lastPartitionReplicated() {
+  public AlterTableAddPartitionDesc lastPartitionReplicated() {
     assert replicationState != null && replicationState.partitionState != null;
     return replicationState.partitionState.lastReplicatedPartition;
   }
@@ -62,7 +62,7 @@ public class FSPartitionEvent implements PartitionEvent {
   }
 
   @Override
-  public List<AddPartitionDesc> partitionDescriptions(ImportTableDesc tblDesc)
+  public List<AlterTableAddPartitionDesc> partitionDescriptions(ImportTableDesc tblDesc)
       throws SemanticException {
     return tableEvent.partitionDescriptions(tblDesc);
   }

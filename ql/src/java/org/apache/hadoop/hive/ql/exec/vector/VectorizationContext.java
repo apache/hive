@@ -1538,6 +1538,9 @@ import com.google.common.annotations.VisibleForTesting;
       outCol = ocm.allocateOutputColumn(typeInfo);
     }
     if (constantValue == null) {
+      if (typeInfo.getCategory() != Category.PRIMITIVE) {
+        throw new HiveException("Complex type constants (" + typeInfo.getCategory() + ") not supported for type name " + typeName);
+      }
       return new ConstantVectorExpression(outCol, typeInfo, true);
     }
 

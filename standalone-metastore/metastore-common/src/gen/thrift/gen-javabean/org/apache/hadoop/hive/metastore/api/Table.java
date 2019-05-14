@@ -275,7 +275,7 @@ import org.slf4j.LoggerFactory;
     tmpMap.put(_Fields.IS_STATS_COMPLIANT, new org.apache.thrift.meta_data.FieldMetaData("isStatsCompliant", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.COL_STATS, new org.apache.thrift.meta_data.FieldMetaData("colStats", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT        , "ColumnStatistics")));
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ColumnStatistics.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Table.class, metaDataMap);
   }
@@ -379,7 +379,7 @@ import org.slf4j.LoggerFactory;
     this.writeId = other.writeId;
     this.isStatsCompliant = other.isStatsCompliant;
     if (other.isSetColStats()) {
-      this.colStats = other.colStats;
+      this.colStats = new ColumnStatistics(other.colStats);
     }
   }
 
@@ -2020,6 +2020,9 @@ import org.slf4j.LoggerFactory;
     if (creationMetadata != null) {
       creationMetadata.validate();
     }
+    if (colStats != null) {
+      colStats.validate();
+    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -2126,14 +2129,14 @@ import org.slf4j.LoggerFactory;
           case 9: // PARTITION_KEYS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list214 = iprot.readListBegin();
-                struct.partitionKeys = new ArrayList<FieldSchema>(_list214.size);
-                FieldSchema _elem215;
-                for (int _i216 = 0; _i216 < _list214.size; ++_i216)
+                org.apache.thrift.protocol.TList _list222 = iprot.readListBegin();
+                struct.partitionKeys = new ArrayList<FieldSchema>(_list222.size);
+                FieldSchema _elem223;
+                for (int _i224 = 0; _i224 < _list222.size; ++_i224)
                 {
-                  _elem215 = new FieldSchema();
-                  _elem215.read(iprot);
-                  struct.partitionKeys.add(_elem215);
+                  _elem223 = new FieldSchema();
+                  _elem223.read(iprot);
+                  struct.partitionKeys.add(_elem223);
                 }
                 iprot.readListEnd();
               }
@@ -2145,15 +2148,15 @@ import org.slf4j.LoggerFactory;
           case 10: // PARAMETERS
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map217 = iprot.readMapBegin();
-                struct.parameters = new HashMap<String,String>(2*_map217.size);
-                String _key218;
-                String _val219;
-                for (int _i220 = 0; _i220 < _map217.size; ++_i220)
+                org.apache.thrift.protocol.TMap _map225 = iprot.readMapBegin();
+                struct.parameters = new HashMap<String,String>(2*_map225.size);
+                String _key226;
+                String _val227;
+                for (int _i228 = 0; _i228 < _map225.size; ++_i228)
                 {
-                  _key218 = iprot.readString();
-                  _val219 = iprot.readString();
-                  struct.parameters.put(_key218, _val219);
+                  _key226 = iprot.readString();
+                  _val227 = iprot.readString();
+                  struct.parameters.put(_key226, _val227);
                 }
                 iprot.readMapEnd();
               }
@@ -2312,9 +2315,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(PARTITION_KEYS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.partitionKeys.size()));
-          for (FieldSchema _iter221 : struct.partitionKeys)
+          for (FieldSchema _iter229 : struct.partitionKeys)
           {
-            _iter221.write(oprot);
+            _iter229.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -2324,10 +2327,10 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.parameters.size()));
-          for (Map.Entry<String, String> _iter222 : struct.parameters.entrySet())
+          for (Map.Entry<String, String> _iter230 : struct.parameters.entrySet())
           {
-            oprot.writeString(_iter222.getKey());
-            oprot.writeString(_iter222.getValue());
+            oprot.writeString(_iter230.getKey());
+            oprot.writeString(_iter230.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -2515,19 +2518,19 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetPartitionKeys()) {
         {
           oprot.writeI32(struct.partitionKeys.size());
-          for (FieldSchema _iter223 : struct.partitionKeys)
+          for (FieldSchema _iter231 : struct.partitionKeys)
           {
-            _iter223.write(oprot);
+            _iter231.write(oprot);
           }
         }
       }
       if (struct.isSetParameters()) {
         {
           oprot.writeI32(struct.parameters.size());
-          for (Map.Entry<String, String> _iter224 : struct.parameters.entrySet())
+          for (Map.Entry<String, String> _iter232 : struct.parameters.entrySet())
           {
-            oprot.writeString(_iter224.getKey());
-            oprot.writeString(_iter224.getValue());
+            oprot.writeString(_iter232.getKey());
+            oprot.writeString(_iter232.getValue());
           }
         }
       }
@@ -2608,29 +2611,29 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(8)) {
         {
-          org.apache.thrift.protocol.TList _list225 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.partitionKeys = new ArrayList<FieldSchema>(_list225.size);
-          FieldSchema _elem226;
-          for (int _i227 = 0; _i227 < _list225.size; ++_i227)
+          org.apache.thrift.protocol.TList _list233 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.partitionKeys = new ArrayList<FieldSchema>(_list233.size);
+          FieldSchema _elem234;
+          for (int _i235 = 0; _i235 < _list233.size; ++_i235)
           {
-            _elem226 = new FieldSchema();
-            _elem226.read(iprot);
-            struct.partitionKeys.add(_elem226);
+            _elem234 = new FieldSchema();
+            _elem234.read(iprot);
+            struct.partitionKeys.add(_elem234);
           }
         }
         struct.setPartitionKeysIsSet(true);
       }
       if (incoming.get(9)) {
         {
-          org.apache.thrift.protocol.TMap _map228 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.parameters = new HashMap<String,String>(2*_map228.size);
-          String _key229;
-          String _val230;
-          for (int _i231 = 0; _i231 < _map228.size; ++_i231)
+          org.apache.thrift.protocol.TMap _map236 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.parameters = new HashMap<String,String>(2*_map236.size);
+          String _key237;
+          String _val238;
+          for (int _i239 = 0; _i239 < _map236.size; ++_i239)
           {
-            _key229 = iprot.readString();
-            _val230 = iprot.readString();
-            struct.parameters.put(_key229, _val230);
+            _key237 = iprot.readString();
+            _val238 = iprot.readString();
+            struct.parameters.put(_key237, _val238);
           }
         }
         struct.setParametersIsSet(true);

@@ -719,6 +719,12 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
                   stringToExpr.put(expr, inCall.getOperands().get(j));
                 }
                 inLHSExprToRHSExprs.get(ref).retainAll(expressions);
+                if (!inLHSExprToRHSExprs.containsKey(ref)) {
+                  // Note that Multimap does not keep a key if all its values are removed.
+                  // Hence, since there are no common expressions and it is within an AND,
+                  // we should return false
+                  return rexBuilder.makeLiteral(false);
+                }
               } else {
                 for (int j = 1; j < inCall.getOperands().size(); j++) {
                   String expr = inCall.getOperands().get(j).toString();

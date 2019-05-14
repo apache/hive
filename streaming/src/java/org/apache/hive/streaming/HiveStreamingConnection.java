@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +48,7 @@ import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
+import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.thrift.TException;
@@ -146,7 +147,7 @@ public class HiveStreamingConnection implements StreamingConnection {
   private boolean manageTransactions;
   private int countTransactions = 0;
   private Set<String> partitions;
-  private Long tableId;
+  private Map<String, WriteDirInfo> writePaths;
   private Runnable onShutdownRunner;
 
   private HiveStreamingConnection(Builder builder) throws StreamingException {
@@ -161,6 +162,7 @@ public class HiveStreamingConnection implements StreamingConnection {
     this.tableObject = builder.tableObject;
     this.setPartitionedTable(builder.isPartitioned);
     this.manageTransactions = builder.manageTransactions;
+    this.writePaths = new HashMap<>();
 
     UserGroupInformation loggedInUser = null;
     try {
@@ -435,7 +437,7 @@ public class HiveStreamingConnection implements StreamingConnection {
 
     try {
       Map<String, String> partSpec = Warehouse.makeSpecFromValues(tableObject.getPartitionKeys(), partitionValues);
-      AddPartitionDesc addPartitionDesc = new AddPartitionDesc(database, table, true);
+      AlterTableAddPartitionDesc addPartitionDesc = new AlterTableAddPartitionDesc(database, table, true);
       partName = Warehouse.makePartName(tableObject.getPartitionKeys(), partitionValues);
       partLocation = new Path(tableObject.getDataLocation(), Warehouse.makePartPath(partSpec)).toString();
       addPartitionDesc.addPartition(partSpec, partLocation);
@@ -531,7 +533,7 @@ public class HiveStreamingConnection implements StreamingConnection {
     if (currentTransactionBatch.remainingTransactions() == 0) {
       LOG.info("Transaction batch {} is done. Rolling over to next transaction batch.",
         currentTransactionBatch);
-      currentTransactionBatch.close();
+      closeCurrentTransactionBatch();
       currentTransactionBatch = createNewTransactionBatch();
       LOG.info("Rolled over to new transaction batch {}", currentTransactionBatch);
     }
@@ -566,6 +568,11 @@ public class HiveStreamingConnection implements StreamingConnection {
     if (currentTransactionBatch.getCurrentTransactionState() != TxnState.OPEN) {
       throw new StreamingException("Transaction state is not OPEN. Missing beginTransaction?");
     }
+  }
+
+  private void closeCurrentTransactionBatch() throws StreamingException {
+    currentTransactionBatch.close();
+    writePaths.clear();
   }
 
   @Override
@@ -644,7 +651,7 @@ public class HiveStreamingConnection implements StreamingConnection {
     isConnectionClosed.set(true);
     try {
       if (currentTransactionBatch != null) {
-        currentTransactionBatch.close();
+        closeCurrentTransactionBatch();
       }
     } catch (StreamingException e) {
       LOG.warn("Unable to close current transaction batch: " + currentTransactionBatch, e);
@@ -683,6 +690,81 @@ public class HiveStreamingConnection implements StreamingConnection {
     } catch (MetaException | IOException e) {
       throw new ConnectionError("Error connecting to Hive Metastore URI: "
         + metastoreUri + ". " + e.getMessage(), e);
+    }
+  }
+
+  private static class WriteDirInfo {
+    List<String> partitionVals;
+    Path writeDir;
+
+    WriteDirInfo(List<String> partitionVals, Path writeDir) {
+      this.partitionVals = partitionVals;
+      this.writeDir = writeDir;
+    }
+
+    List<String> getPartitionVals() {
+      return this.partitionVals;
+    }
+
+    Path getWriteDir() {
+      return this.writeDir;
+    }
+  }
+
+  @Override
+  public void addWriteDirectoryInfo(List<String> partitionValues, Path writeDir) {
+    String key = (partitionValues == null) ? tableObject.getFullyQualifiedName()
+            : partitionValues.toString();
+    if (writePaths.containsKey(key)) {
+      // This method is invoked once per bucket file within delta directory. So, same partition or
+      // table entry shall exist already. But the written delta directory should remain same for all
+      // bucket files.
+      WriteDirInfo dirInfo = writePaths.get(key);
+      assert(dirInfo.getWriteDir().equals(writeDir));
+    } else {
+      writePaths.put(key, new WriteDirInfo(partitionValues, writeDir));
+    }
+  }
+
+  /**
+   * Add Write notification events if it is enabled.
+   * @throws StreamingException File operation errors or HMS errors.
+   */
+  @Override
+  public void addWriteNotificationEvents() throws StreamingException {
+    if (!conf.getBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML)) {
+      LOG.debug("Write notification log is ignored as dml event logging is disabled.");
+      return;
+    }
+    try {
+      // Traverse the write paths for the current streaming connection and add one write notification
+      // event per table or partitions.
+      // For non-partitioned table, there will be only one entry in writePath and corresponding
+      // partitionVals is null.
+      Long currentTxnId = getCurrentTxnId();
+      Long currentWriteId = getCurrentWriteId();
+      for (WriteDirInfo writeInfo : writePaths.values()) {
+        LOG.debug("TxnId: " + currentTxnId + ", WriteId: " + currentWriteId
+                + " - Logging write event for the files in path " + writeInfo.getWriteDir());
+
+        // List the new files added inside the write path (delta directory).
+        FileSystem fs = tableObject.getDataLocation().getFileSystem(conf);
+        List<Path> newFiles = new ArrayList<>();
+        Hive.listFilesInsideAcidDirectory(writeInfo.getWriteDir(), fs, newFiles);
+
+        // If no files are added by this streaming writes, then no need to log write notification event.
+        if (newFiles.isEmpty()) {
+          LOG.debug("TxnId: " + currentTxnId + ", WriteId: " + currentWriteId
+                  + " - Skipping empty path " + writeInfo.getWriteDir());
+          continue;
+        }
+
+        // Add write notification events into HMS table.
+        Hive.addWriteNotificationLog(conf, tableObject, writeInfo.getPartitionVals(),
+                currentTxnId, currentWriteId, newFiles);
+      }
+    } catch (IOException | TException | HiveException e) {
+      throw new StreamingException("Failed to log write notification events.", e);
     }
   }
 
