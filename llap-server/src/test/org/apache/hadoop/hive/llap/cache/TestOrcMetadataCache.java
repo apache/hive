@@ -104,7 +104,7 @@ public class TestOrcMetadataCache {
     final int MAX_ALLOC = 64;
     LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
     BuddyAllocator alloc = new BuddyAllocator(
-        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null, true, 1024 * 1024 * 128);
+        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null, true);
     MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
     Object fileKey1 = new Object();
     Random rdm = new Random();
@@ -165,7 +165,7 @@ public class TestOrcMetadataCache {
     final int MAX_ALLOC = 64;
     LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
     BuddyAllocator alloc = new BuddyAllocator(
-        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null, true, 1024 * 1024 * 128);
+        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null, true);
     MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
     DataCache.BooleanRef gotAllData = new DataCache.BooleanRef();
     Object fileKey1 = new Object();

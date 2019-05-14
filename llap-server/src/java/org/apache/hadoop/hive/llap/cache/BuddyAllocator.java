@@ -52,19 +52,19 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.StoppableAllocator;
  *
  * High level description, functionality and the memory layout.
  * Allocation can be of general size but it will be rounded to the next power of 2.
- * Allocation smaller than size {@link ConfVars#LLAP_ALLOCATOR_MIN_ALLOC} will be rounded to min allocation size.
- * Allocation bigger than size {@link ConfVars#LLAP_ALLOCATOR_MAX_ALLOC} will throw exceptions.
- * Allocator slices memory slab called {@code arenas} to carve out byte buffers using slice and position.
+ * Allocation smaller than size {@link ConfVars#LLAP_ALLOCATOR_MIN_ALLOC} will be rounded up to min allocation size.
+ * Allocation bigger than size {@link ConfVars#LLAP_ALLOCATOR_MAX_ALLOC} will throw exception.
+ * Allocator slices memory slab called {@code Arena} to carve out byte buffers using slice and position.
  *
- * Each {@code arena} has array of {@code freeList} used for concurrency management and to index free buffers by size.
+ * Each {@code Arena} has array of {@code freeList} used for concurrency management and to index free buffers by size.
  * |
- * Each {@code arena} has a max Size {@link BuddyAllocator#MAX_ARENA_SIZE} 1GB.
+ * Each {@code Arena} has a max Size {@link BuddyAllocator#MAX_ARENA_SIZE} 1GB.
  * \_
  *   Each arena is divided into chunks of max allocation size {@link ConfVars#LLAP_ALLOCATOR_MAX_ALLOC} default 16MB
  *   \_
  *     Each chunk of {@code maxAllocationSize} is sliced using the classical Buddy Allocator algorithm.
  *     \_
- *       Each Buddy Allocator tree can be split up to chunk of size {@link ConfVars#LLAP_ALLOCATOR_MIN_ALLOC} 4KB
+ *       Each Buddy Allocator tree can be split up to chunks of size {@link ConfVars#LLAP_ALLOCATOR_MIN_ALLOC} 4KB
  */
 public final class BuddyAllocator
   implements EvictionAwareAllocator, StoppableAllocator, BuddyAllocatorMXBean, LlapIoDebugDump {
@@ -97,12 +97,13 @@ public final class BuddyAllocator
   // Maximum reasonable defragmentation headroom. Mostly kicks in on very small caches.
   private static final float MAX_DEFRAG_HEADROOM_FRACTION = 0.01f;
   /**
-   * Max number of attempts to try allocations before giving up and move to forced evictions or/and freelist/brut
+   * Max number of attempts to try allocations before giving up and move to forced evictions or/and freelist/brute
    * force discards,
    * Note to reader: why 5, i don't know, i run with 2 and 5 seems providing same results, thus the 5, better try more
    * than start evictions, Also I am sure any value less than one will hurt.
    */
   private static final int MAX_FAST_ATTEMPT = 5;
+  private static final int MAX_FORCED_EVICTION_SIZE = 1024 * 1024 * 16 ;//16MB
   private static final FileAttribute<Set<PosixFilePermission>> RWX = PosixFilePermissions
       .asFileAttribute(PosixFilePermissions.fromString("rwx------"));
   private final AtomicLong[] defragCounters;
@@ -146,6 +147,32 @@ public final class BuddyAllocator
         + "disable LLAP IO entirely via " + ConfVars.LLAP_IO_ENABLED.varname);
   }
 
+  @VisibleForTesting public BuddyAllocator(boolean isDirectVal,
+      boolean isMappedVal,
+      int minAllocVal,
+      int maxAllocVal,
+      int arenaCount,
+      long maxSizeVal,
+      long defragHeadroom,
+      String mapPath,
+      MemoryManager memoryManager,
+      LlapDaemonCacheMetrics metrics,
+      String discardMethod,
+      boolean doPreallocate) {
+    this(isDirectVal,
+        isMappedVal,
+        minAllocVal,
+        maxAllocVal,
+        arenaCount,
+        maxSizeVal,
+        defragHeadroom,
+        mapPath,
+        memoryManager,
+        metrics,
+        discardMethod,
+        doPreallocate,
+        MAX_FORCED_EVICTION_SIZE);
+  }
   @VisibleForTesting
   public BuddyAllocator(boolean isDirectVal, boolean isMappedVal, int minAllocVal, int maxAllocVal,
       int arenaCount, long maxSizeVal, long defragHeadroom, String mapPath,
@@ -310,7 +337,7 @@ public final class BuddyAllocator
       return;
     }
 
-    int forceEvictAttempt = 0;
+    int allocationAttempt = 0;
     long totalForceEvictedBytes = 0;
     long currentEvicted;
     int startArenaIx;
@@ -323,10 +350,22 @@ public final class BuddyAllocator
     // To mitigate that:
     //  - First we try again (fast path):
     //  - Second try to push on the memoryManger/evictor to evict more.
-    //  - Third by pass the memory manager and use discards method to brute force evict if needed.
+    //  - Third bypass the memory manager and use discards method to brute force evict if needed.
     while (totalForceEvictedBytes < maxForcedEvictionSize && emptyAttempt < MAX_DISCARD_ATTEMPTS) {
       // make sure we hit a different start on each new attempt
-      startArenaIx = (int) ((threadId + forceEvictAttempt) % arenaCount);
+      startArenaIx = (int) ((threadId + allocationAttempt) % arenaCount);
+      if (allocationAttempt >= MAX_FAST_ATTEMPT) {
+        // Try to evict more starting from how much memory we are missing  dest.length - destAllocIx << allocLog2
+        // Exponentially increase the eviction request based on forceEvictAttempt counter.
+        // Why Exponentially increase, usually query fragments triggers a burst of allocation at the same time
+        // Thus IMO to avoid lock contentions it is worth to over evict thus next allocation will get free lunch.
+        currentEvicted =
+            memoryManager.evictMemory(dest.length - destAllocIx + allocationAttempt - MAX_FAST_ATTEMPT << allocLog2);
+        // Note that memoryManager.evictMemory is blocking but eventually will return 0 if all the memory is locked
+        // thus mark empty attempts and bail out after MAX_DISCARD_ATTEMPTS
+        totalForceEvictedBytes += currentEvicted;
+        emptyAttempt += currentEvicted == 0 ? 1 : 0;
+      }
       destAllocIx =
           allocateFast(dest, null, destAllocIx, dest.length, freeListIx, allocationSize, startArenaIx, arenaCount);
       if (destAllocIx == dest.length) {
@@ -346,26 +385,14 @@ public final class BuddyAllocator
         return;
       }
 
-      if (forceEvictAttempt >= MAX_FAST_ATTEMPT) {
-        // Try to evict more starting from how much memory we are missing allocLog2 << dest.length - destAllocIx
-        // Exponentially increase the eviction request based on forceEvictAttempt counter.
-        // Why Exponentially increase, usually query fragments triggers a burst of allocation at the same time
-        // Thus IMO to avoid lock contentions it is worth to over evict thus next allocation will get free lunch.
-        currentEvicted =
-            memoryManager.evictMemory(allocLog2 << dest.length - destAllocIx + forceEvictAttempt - MAX_FAST_ATTEMPT);
-        // Note that memoryManager.evictMemory is blocking but eventually will return 0 if all the memory is locked
-        // thus mark empty attempts and bail out after MAX_DISCARD_ATTEMPTS
-        totalForceEvictedBytes += currentEvicted;
-        emptyAttempt += currentEvicted == 0 ? 1 : 0;
-      }
-      forceEvictAttempt++;
+      allocationAttempt++;
     }
 
     LlapIoImpl.LOG.warn(
         "Failed to allocate [{}]X[{}] bytes after [{}] attempt, evicted [{}] bytes and partially allocated [{}] bytes",
         dest.length,
         allocationSize,
-        forceEvictAttempt,
+        allocationAttempt,
         totalForceEvictedBytes,
         destAllocIx << allocLog2);
 
@@ -392,7 +419,7 @@ public final class BuddyAllocator
       int discardFailed = 0;
       while (true) {
         // Try to split bigger blocks.
-        startArenaIx = (int)((threadId + discardsAttempt) % arenaCount);
+        startArenaIx = (int)((threadId + discardsAttempt + allocationAttempt) % arenaCount);
         destAllocIx = allocateWithSplit(dest, null, destAllocIx, dest.length,
             freeListIx, allocationSize, startArenaIx, arenaCount, -1);
         if (destAllocIx == dest.length) return;
@@ -450,7 +477,6 @@ public final class BuddyAllocator
         ++discardsAttempt;
       }
     } finally {
-      //@TODO CHECK i think it is a bug, we do not have to release this memory if we already did deallocate(dest[i])
       memoryManager.releaseMemory(memoryForceReleased);
       if (!isFailed && discardsAttempt >= LOG_DISCARD_ATTEMPTS) {
         LlapIoImpl.LOG.info("Allocation of " + dest.length + " buffers of size " + size + " took "

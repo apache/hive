@@ -74,7 +74,7 @@ public class TestCacheAllocationsEvictionsCycles {
             memoryManager,
             cacheMetrics,
             "no-force-eviction",
-            true, 1024 * 1024 * 128);
+            true);
     EvictionDispatcher evictionDispatcher = new EvictionDispatcher(dataCache, serdCache, metaDataCache, allocator);
     evictionTracker = new EvictionTracker(evictionDispatcher);
     cachePolicy.setEvictionListener(evictionTracker);
@@ -91,7 +91,7 @@ public class TestCacheAllocationsEvictionsCycles {
   /**
    * Test case to ensure that deallocate it does merge small blocks into bigger ones.
    */
-  @Test(timeout = 6_000L) public void TestMergeOfBlocksAfterDeallocate() {
+  @Test(timeout = 6_000L) public void testMergeOfBlocksAfterDeallocate() {
     // allocate blocks of cacheSize/16, Then deallocate then Allocate of size cacheSize/2
     MemoryBuffer[] dest = new MemoryBuffer[16];
     for (MemoryBuffer memoryBuffer : dest) {
@@ -126,7 +126,7 @@ public class TestCacheAllocationsEvictionsCycles {
     Assert.assertEquals(0, ((LowLevelCacheMemoryManager) memoryManager).getCurrentUsedSize());
   }
 
-  @Test(timeout = 6_000L) public void TestSimpleAllocateThenEvictThenAllocate() {
+  @Test(timeout = 6_000L) public void testSimpleAllocateThenEvictThenAllocate() {
     // Allocate all the cache 16 * 64
     MemoryBuffer[] dest = new MemoryBuffer[16];
     for (MemoryBuffer memoryBuffer : dest) {
@@ -147,7 +147,7 @@ public class TestCacheAllocationsEvictionsCycles {
     }
   }
 
-  @Test(timeout = 6_000L) public void TestRandomFragmentation() {
+  @Test(timeout = 6_000L) public void testRandomFragmentation() {
 
     MemoryBuffer[] dest = new MemoryBuffer[64];
     MemoryBuffer[] dest_2 = new MemoryBuffer[16];
@@ -248,7 +248,7 @@ public class TestCacheAllocationsEvictionsCycles {
     }
   }
 
-  @Test(timeout = 6_000L) public void TestFragmentation() {
+  @Test(timeout = 6_000L) public void testFragmentation() {
     MemoryBuffer[] dest = new MemoryBuffer[128];
     for (MemoryBuffer memoryBuffer : dest) {
       Assert.assertNull(memoryBuffer);

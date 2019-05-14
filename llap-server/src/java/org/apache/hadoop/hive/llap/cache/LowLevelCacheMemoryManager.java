@@ -69,14 +69,14 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
   /**
    * Ask the memory manager to evict more memory
    *
-   * @param memoryToReserve amount of bytes to evict
+   * @param memoryToEvict amount of bytes to evict
    * @return actual amount of evicted bytes.
    */
-  @Override public long evictMemory(long memoryToReserve) {
+  @Override public long evictMemory(long memoryToEvict) {
     if (evictor == null) {
       return 0;
     }
-    long evicted = evictor.evictSomeBlocks(memoryToReserve);
+    long evicted = evictor.evictSomeBlocks(memoryToEvict);
     releaseMemory(evicted);
     return evicted;
   }
