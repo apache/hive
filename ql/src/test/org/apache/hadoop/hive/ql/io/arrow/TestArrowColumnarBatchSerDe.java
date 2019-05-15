@@ -517,6 +517,45 @@ public class TestArrowColumnarBatchSerDe {
     initAndSerializeAndDeserialize(schema, rows);
   }
 
+
+  @Test
+  public void testTimestampNanosPrecisionUpTo6Digits() throws SerDeException {
+    String[][] schema = {
+        {"timestamp1", "timestamp"},
+    };
+    //Nanos precise upto 6 digits
+    Object[][] tsRows = new Object[][]{
+        {new TimestampWritableV2(Timestamp.valueOf("1800-04-01 09:01:10.123999"))},
+        {new TimestampWritableV2(Timestamp.valueOf("2050-04-01 09:01:10.999999"))},
+        null
+    };
+    initAndSerializeAndDeserialize(schema, tsRows);
+  }
+
+  @Test
+  public void testPositiveNegativeTSWithNanos() throws SerDeException {
+    String[][] schema = {
+        {"timestamp1", "timestamp"},
+    };
+
+    Object[][] tsRows = new Object[][]{
+        {new TimestampWritableV2(Timestamp.valueOf("1963-04-01 09:01:10.123"))},
+        {new TimestampWritableV2(Timestamp.valueOf("1800-04-01 09:01:10.123999"))},
+        {new TimestampWritableV2(Timestamp.valueOf("1750-04-01 09:01:10.123999"))},
+        {new TimestampWritableV2(Timestamp.valueOf("1700-04-01 09:01:10.999999"))},
+        {new TimestampWritableV2(Timestamp.valueOf("2050-04-01 09:01:10.999999"))},
+        {new TimestampWritableV2(Timestamp.valueOf("1991-06-05 09:01:10.999999"))},
+        {new TimestampWritableV2(Timestamp.valueOf("1992-11-04 09:01:10.999999"))},
+        {new TimestampWritableV2(Timestamp.valueOf("1970-01-01 00:00:00"))},
+        {new TimestampWritableV2(Timestamp.valueOf("1964-01-01 00:00:04.78"))},
+        {new TimestampWritableV2(Timestamp.valueOf("1950-01-01 09:23:03.21"))},
+        {new TimestampWritableV2(Timestamp.valueOf("1956-01-01 10:09:03.00"))},
+        {new TimestampWritableV2(Timestamp.valueOf("1947-08-27 10:25:36.26"))},
+        null
+    };
+    initAndSerializeAndDeserialize(schema, tsRows);
+  }
+
   @Test
   public void testPrimitiveDecimal() throws SerDeException {
     String[][] schema = {
