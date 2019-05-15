@@ -17,9 +17,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -82,7 +82,7 @@ public class ProjectionPusher {
       return;
     }
 
-    final Set<String> aliases = new HashSet<String>();
+    final Set<String> aliases = new LinkedHashSet<String>();
     final Iterator<Entry<Path, ArrayList<String>>> iterator =
         mapWork.getPathToAliases().entrySet().iterator();
 
@@ -98,10 +98,10 @@ public class ProjectionPusher {
     // expression for the table.
     boolean allColumnsNeeded = false;
     boolean noFilters = false;
-    Set<Integer> neededColumnIDs = new HashSet<Integer>();
+    Set<Integer> neededColumnIDs = new LinkedHashSet<Integer>();
     // To support nested column pruning, we need to track the path from the top to the nested
     // fields
-    Set<String> neededNestedColumnPaths = new HashSet<String>();
+    Set<String> neededNestedColumnPaths = new LinkedHashSet<String>();
     List<ExprNodeGenericFuncDesc> filterExprs = new ArrayList<ExprNodeGenericFuncDesc>();
     RowSchema rowSchema = null;
 

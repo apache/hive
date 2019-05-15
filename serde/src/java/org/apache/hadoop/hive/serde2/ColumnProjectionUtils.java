@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.serde2;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -198,7 +198,7 @@ public final class ColumnProjectionUtils {
   public static Set<String> getNestedColumnPaths(Configuration conf) {
     String skips =
       conf.get(READ_NESTED_COLUMN_PATH_CONF_STR, READ_NESTED_COLUMN_PATH_CONF_STR_DEFAULT);
-    return new HashSet<>(Arrays.asList(StringUtils.split(skips)));
+    return new LinkedHashSet<>(Arrays.asList(StringUtils.split(skips)));
   }
 
   public static String[] getReadColumnNames(Configuration conf) {
