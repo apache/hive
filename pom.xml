@@ -140,6 +140,7 @@
     <commons-lang.version>2.6</commons-lang.version>
     <commons-lang3.version>3.2</commons-lang3.version>
     <commons-pool.version>1.5.4</commons-pool.version>
+    <cdh.logredactor.version>2.0.7</cdh.logredactor.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
     <derby.version>10.14.1.0</derby.version>
     <dropwizard.version>3.1.0</dropwizard.version>
