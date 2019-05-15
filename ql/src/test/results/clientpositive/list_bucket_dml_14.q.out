@@ -298,7 +298,7 @@ select key, value from list_bucketing where key = "484"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@list_bucketing
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `key`, `value`
+OPTIMIZED SQL: SELECT CAST('484' AS VARCHAR(65536)) AS `key`, `value`
 FROM `default`.`list_bucketing`
 WHERE `key` = '484'
 STAGE DEPENDENCIES:

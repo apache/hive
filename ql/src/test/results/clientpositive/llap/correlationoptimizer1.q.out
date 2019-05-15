@@ -836,7 +836,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -990,7 +989,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1144,7 +1142,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1298,7 +1295,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1449,7 +1445,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y
-                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
@@ -1591,7 +1586,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y
-                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
@@ -1720,7 +1714,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1874,7 +1867,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -2028,7 +2020,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -2182,7 +2173,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -2528,6 +2518,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: count()
                   keys: _col0 (type: string)
+                  minReductionHashAggr: 0.0
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 17 Data size: 308 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2552,6 +2543,7 @@ STAGE PLANS:
                   Statistics: Num rows: 17 Data size: 308 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: sum(_col0), sum(_col1)
+                    minReductionHashAggr: 0.0
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3296,6 +3288,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: count()
                   keys: _col0 (type: string)
+                  minReductionHashAggr: 0.0
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 17 Data size: 308 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3320,6 +3313,7 @@ STAGE PLANS:
                   Statistics: Num rows: 17 Data size: 308 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: sum(_col0), sum(_col1)
+                    minReductionHashAggr: 0.0
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE

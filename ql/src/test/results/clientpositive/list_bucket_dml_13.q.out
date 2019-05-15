@@ -305,7 +305,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@list_bucketing_mul_col
 POSTHOOK: Input: default@list_bucketing_mul_col@ds=2008-04-08/hr=2013-01-23+18%3A00%3A99
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `col1`, CAST('466' AS STRING) AS `col2`, `col3`, CAST('val_466' AS STRING) AS `col4`, `col5`, CAST('2008-04-08' AS STRING) AS `ds`, CAST('2013-01-23+18:00:99' AS STRING) AS `hr`
+OPTIMIZED SQL: SELECT `col1`, CAST('466' AS VARCHAR(65536)) AS `col2`, `col3`, CAST('val_466' AS VARCHAR(65536)) AS `col4`, `col5`, CAST('2008-04-08' AS VARCHAR(65536)) AS `ds`, CAST('2013-01-23+18:00:99' AS VARCHAR(65536)) AS `hr`
 FROM `default`.`list_bucketing_mul_col`
 WHERE `ds` = '2008-04-08' AND `hr` = '2013-01-23+18:00:99' AND `col2` = '466' AND `col4` = 'val_466'
 STAGE DEPENDENCIES:

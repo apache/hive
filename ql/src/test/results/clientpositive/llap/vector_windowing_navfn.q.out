@@ -1639,7 +1639,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: wtest
-                  Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:a:int, 1:b:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -1653,7 +1653,7 @@ STAGE PLANS:
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumns: 0:int
-                    Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
@@ -1682,7 +1682,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: int)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 15 Data size: 4116 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1720,14 +1720,14 @@ STAGE PLANS:
                               name: first_value
                               window function: GenericUDAFFirstValueEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(1)
-                  Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 4116 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: int), first_value_window_0 (type: int), first_value_window_1 (type: int), first_value_window_2 (type: int), first_value_window_3 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 308 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 15 Data size: 308 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1814,7 +1814,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: wtest
-                  Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:a:int, 1:b:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -1828,7 +1828,7 @@ STAGE PLANS:
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumns: 0:int
-                    Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
@@ -1857,7 +1857,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: int)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 15 Data size: 4116 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1895,14 +1895,14 @@ STAGE PLANS:
                               name: first_value
                               window function: GenericUDAFFirstValueEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(1)
-                  Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 4116 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: int), first_value_window_0 (type: int), first_value_window_1 (type: int), first_value_window_2 (type: int), first_value_window_3 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 308 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 15 Data size: 308 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1989,7 +1989,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: wtest
-                  Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:a:int, 1:b:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -2003,7 +2003,7 @@ STAGE PLANS:
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumns: 0:int
-                    Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
@@ -2032,7 +2032,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: int)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 15 Data size: 4116 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2070,14 +2070,14 @@ STAGE PLANS:
                               name: last_value
                               window function: GenericUDAFLastValueEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(1)
-                  Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 4116 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: int), last_value_window_0 (type: int), last_value_window_1 (type: int), last_value_window_2 (type: int), last_value_window_3 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 308 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 15 Data size: 308 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2164,7 +2164,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: wtest
-                  Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:a:int, 1:b:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -2178,7 +2178,7 @@ STAGE PLANS:
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumns: 0:int
-                    Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
@@ -2207,7 +2207,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: int)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 15 Data size: 4116 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2245,14 +2245,14 @@ STAGE PLANS:
                               name: last_value
                               window function: GenericUDAFLastValueEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(1)
-                  Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 4116 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: int), last_value_window_0 (type: int), last_value_window_1 (type: int), last_value_window_2 (type: int), last_value_window_3 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 308 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 15 Data size: 308 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

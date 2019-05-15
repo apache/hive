@@ -249,7 +249,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1_n1
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, `value`, `ds1`, CAST('2001-04-08' AS STRING) AS `ds2`
+OPTIMIZED SQL: SELECT `key`, `value`, `ds1`, CAST('2001-04-08' AS VARCHAR(65536)) AS `ds2`
 FROM (SELECT `key`, `value`, `ds1`
 FROM `default`.`pcr_t1_n1`
 WHERE `ds2` = '2001-04-08' AND (`ds1` = '2000-04-08' AND `key` = 1 OR `ds1` = '2000-04-09' AND `key` = 2)
@@ -389,12 +389,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1_n1
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds1`, `t4`.`ds2`, `t4`.`key1`, `t4`.`value1`, `t4`.`ds11`, CAST('2001-04-08' AS STRING) AS `ds21`
+OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds1`, `t4`.`ds2`, `t4`.`key1`, `t4`.`value1`, `t4`.`ds11`, CAST('2001-04-08' AS VARCHAR(65536)) AS `ds21`
 FROM (SELECT `t0`.`key`, `t0`.`value`, `t0`.`ds2`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`, `t2`.`ds1` AS `ds11`
-FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds1`, `ds2`
+FROM (SELECT `key`, `value`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds1`, `ds2`
 FROM `default`.`pcr_t1_n1`
 WHERE `ds1` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
-INNER JOIN (SELECT `key`, `value`, `ds1`, CAST('2001-04-08' AS STRING) AS `ds2`
+INNER JOIN (SELECT `key`, `value`, `ds1`, CAST('2001-04-08' AS VARCHAR(65536)) AS `ds2`
 FROM `default`.`pcr_t1_n1`
 WHERE `ds2` = '2001-04-08' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
 ORDER BY `t2`.`key`, `t2`.`value`) AS `t4`
@@ -632,12 +632,12 @@ POSTHOOK: Input: default@pcr_t1_n1
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds1`, `t4`.`ds2`, `t4`.`key1`, `t4`.`value1`, CAST('2000-04-09' AS STRING) AS `ds11`, `t4`.`ds21`
+OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds1`, `t4`.`ds2`, `t4`.`key1`, `t4`.`value1`, CAST('2000-04-09' AS VARCHAR(65536)) AS `ds11`, `t4`.`ds21`
 FROM (SELECT `t0`.`key`, `t0`.`value`, `t0`.`ds2`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`, `t2`.`ds2` AS `ds21`
-FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds1`, `ds2`
+FROM (SELECT `key`, `value`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds1`, `ds2`
 FROM `default`.`pcr_t1_n1`
 WHERE `ds1` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
-INNER JOIN (SELECT `key`, `value`, CAST('2000-04-09' AS STRING) AS `ds1`, `ds2`
+INNER JOIN (SELECT `key`, `value`, CAST('2000-04-09' AS VARCHAR(65536)) AS `ds1`, `ds2`
 FROM `default`.`pcr_t1_n1`
 WHERE `ds1` = '2000-04-09' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
 ORDER BY `t2`.`key`, `t2`.`value`) AS `t4`
@@ -1677,7 +1677,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1_n1
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, `value`, `ds1`, CAST('2001-04-08' AS STRING) AS `ds2`
+OPTIMIZED SQL: SELECT `key`, `value`, `ds1`, CAST('2001-04-08' AS VARCHAR(65536)) AS `ds2`
 FROM (SELECT `key`, `value`, `ds1`
 FROM `default`.`pcr_t1_n1`
 WHERE ROW(`key`, `ds1`) IN (ROW(1, '2000-04-08'), ROW(2, '2000-04-09')) AND `ds2` = '2001-04-08'
@@ -1817,12 +1817,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1_n1
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds1`, `t4`.`ds2`, `t4`.`key1`, `t4`.`value1`, `t4`.`ds11`, CAST('2001-04-08' AS STRING) AS `ds21`
+OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds1`, `t4`.`ds2`, `t4`.`key1`, `t4`.`value1`, `t4`.`ds11`, CAST('2001-04-08' AS VARCHAR(65536)) AS `ds21`
 FROM (SELECT `t0`.`key`, `t0`.`value`, `t0`.`ds2`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`, `t2`.`ds1` AS `ds11`
-FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds1`, `ds2`
+FROM (SELECT `key`, `value`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds1`, `ds2`
 FROM `default`.`pcr_t1_n1`
 WHERE `ds1` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
-INNER JOIN (SELECT `key`, `value`, `ds1`, CAST('2001-04-08' AS STRING) AS `ds2`
+INNER JOIN (SELECT `key`, `value`, `ds1`, CAST('2001-04-08' AS VARCHAR(65536)) AS `ds2`
 FROM `default`.`pcr_t1_n1`
 WHERE `ds2` = '2001-04-08' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
 ORDER BY `t2`.`key`, `t2`.`value`) AS `t4`
@@ -2060,12 +2060,12 @@ POSTHOOK: Input: default@pcr_t1_n1
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds1`, `t4`.`ds2`, `t4`.`key1`, `t4`.`value1`, CAST('2000-04-09' AS STRING) AS `ds11`, `t4`.`ds21`
+OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds1`, `t4`.`ds2`, `t4`.`key1`, `t4`.`value1`, CAST('2000-04-09' AS VARCHAR(65536)) AS `ds11`, `t4`.`ds21`
 FROM (SELECT `t0`.`key`, `t0`.`value`, `t0`.`ds2`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`, `t2`.`ds2` AS `ds21`
-FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds1`, `ds2`
+FROM (SELECT `key`, `value`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds1`, `ds2`
 FROM `default`.`pcr_t1_n1`
 WHERE `ds1` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
-INNER JOIN (SELECT `key`, `value`, CAST('2000-04-09' AS STRING) AS `ds1`, `ds2`
+INNER JOIN (SELECT `key`, `value`, CAST('2000-04-09' AS VARCHAR(65536)) AS `ds1`, `ds2`
 FROM `default`.`pcr_t1_n1`
 WHERE `ds1` = '2000-04-09' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
 ORDER BY `t2`.`key`, `t2`.`value`) AS `t4`

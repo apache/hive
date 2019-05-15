@@ -63,6 +63,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 30200 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: compute_stats(col1, 'hll')
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
@@ -728,6 +729,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 30200 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: compute_stats(col1, 'hll')
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE

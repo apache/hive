@@ -615,6 +615,7 @@ STAGE PLANS:
                         Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=2)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
@@ -649,6 +650,7 @@ STAGE PLANS:
                         Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=2)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE

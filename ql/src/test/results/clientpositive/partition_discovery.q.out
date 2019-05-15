@@ -246,7 +246,8 @@ POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_n9 SYNC PARTITIONS
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n9
 Expired partitions (retention period: 10s) :	repairtable_n9:p1=a/p2=b	repairtable_n9:p1=c/p2=d
-#### A masked pattern was here ####
+Repair: Dropped partition from metastore hive.default.repairtable_n9:p1=a/p2=b
+Repair: Dropped partition from metastore hive.default.repairtable_n9:p1=c/p2=d
 PREHOOK: query: show partitions default.repairtable_n9
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@repairtable_n9

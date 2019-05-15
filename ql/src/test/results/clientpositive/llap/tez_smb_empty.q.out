@@ -245,7 +245,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s3
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: key is not null (type: boolean)

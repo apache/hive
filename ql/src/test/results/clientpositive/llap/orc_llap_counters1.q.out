@@ -253,8 +253,13 @@ Storage Desc Params:
 PREHOOK: query: select count(*) from orc_ppd where t > -100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 17730
+   HDFS_BYTES_WRITTEN: 104
+   HDFS_READ_OPS: 8
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
 Stage-1 HIVE COUNTERS:
    CREATED_FILES: 1
    DESERIALIZE_ERRORS: 0
@@ -288,8 +293,13 @@ Stage-1 INPUT COUNTERS:
 PREHOOK: query: select count(*) from orc_ppd where t > -100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 104
+   HDFS_READ_OPS: 3
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
 Stage-1 HIVE COUNTERS:
    CREATED_FILES: 1
    DESERIALIZE_ERRORS: 0

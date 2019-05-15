@@ -475,7 +475,7 @@ POSTHOOK: Input: default@list_bucketing_dynamic_part_n2
 POSTHOOK: Input: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=a1
 POSTHOOK: Input: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=b1
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `key`, CAST('val_484' AS STRING) AS `value`, `ds`, `hr`
+OPTIMIZED SQL: SELECT CAST('484' AS VARCHAR(65536)) AS `key`, CAST('val_484' AS VARCHAR(65536)) AS `value`, `ds`, `hr`
 FROM `default`.`list_bucketing_dynamic_part_n2`
 WHERE `key` = '484' AND `value` = 'val_484'
 STAGE DEPENDENCIES:

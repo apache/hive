@@ -551,7 +551,7 @@ STAGE PLANS:
                         1 _col0 (type: int)
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 18466 Data size: 147728 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 21560 Data size: 172480 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         minReductionHashAggr: 0.0
@@ -568,7 +568,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cd
-                  filterExpr: cint is not null (type: boolean)
                   Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cint is not null (type: boolean)
@@ -671,7 +670,7 @@ STAGE PLANS:
                         1 _col0 (type: int)
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 18466 Data size: 147728 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 21560 Data size: 172480 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         minReductionHashAggr: 0.0
@@ -688,7 +687,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cd
-                  filterExpr: cint is not null (type: boolean)
                   Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cint is not null (type: boolean)

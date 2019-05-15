@@ -30,7 +30,7 @@ OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key1`, `t2`.`valu
 FROM (SELECT `key`, `value`
 FROM `default`.`src`
 WHERE `key` < 20 AND `key` > 15) AS `t0`
-INNER JOIN (SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`
+INNER JOIN (SELECT `key`, `value`, CAST('2008-04-08' AS VARCHAR(65536)) AS `ds`
 FROM `default`.`srcpart`
 WHERE `key` > 15 AND `ds` = '2008-04-08' AND `key` < 20) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
@@ -345,7 +345,7 @@ OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key1`, `t2`.`valu
 FROM (SELECT `key`, `value`
 FROM `default`.`src`
 WHERE `key` < 20 AND `key` > 15) AS `t0`
-INNER JOIN (SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`
+INNER JOIN (SELECT `key`, `value`, CAST('2008-04-08' AS VARCHAR(65536)) AS `ds`
 FROM `default`.`srcpart`
 WHERE `key` > 15 AND `ds` = '2008-04-08' AND `key` < 20) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:

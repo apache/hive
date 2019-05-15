@@ -731,7 +731,6 @@ STAGE PLANS:
                 Statistics: Num rows: 20 Data size: 1615 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: cbo_t4:cbo_t1
-            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 20 Data size: 1691 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)

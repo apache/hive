@@ -80,14 +80,17 @@ STAGE PLANS:
           TableScan
             alias: test2
             Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: int), value (type: int), col_2 (type: string)
-              outputColumnNames: _col0, _col1, _col2
+            Filter Operator
+              predicate: value is not null (type: boolean)
               Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 _col1 (type: int)
-                  1 _col1 (type: int)
+              Select Operator
+                expressions: key (type: int), value (type: int), col_2 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col1 (type: int)
+                    1 _col1 (type: int)
 
   Stage: Stage-3
     Map Reduce
@@ -213,7 +216,7 @@ STAGE PLANS:
             alias: test2
             Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: key BETWEEN 100 AND 102 (type: boolean)
+              predicate: (key BETWEEN 100 AND 102 and value is not null) (type: boolean)
               Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: int), col_2 (type: string)
@@ -491,14 +494,17 @@ STAGE PLANS:
           TableScan
             alias: test1
             Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: int), value (type: int), col_1 (type: string)
-              outputColumnNames: _col0, _col1, _col2
+            Filter Operator
+              predicate: value is not null (type: boolean)
               Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 _col1 (type: int)
-                  1 _col1 (type: int)
+              Select Operator
+                expressions: key (type: int), value (type: int), col_1 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col1 (type: int)
+                    1 _col1 (type: int)
 
   Stage: Stage-3
     Map Reduce
@@ -1125,14 +1131,17 @@ STAGE PLANS:
           TableScan
             alias: test2
             Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: int), value (type: int), col_2 (type: string)
-              outputColumnNames: _col0, _col1, _col2
+            Filter Operator
+              predicate: value is not null (type: boolean)
               Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 _col1 (type: int)
-                  1 _col1 (type: int)
+              Select Operator
+                expressions: key (type: int), value (type: int), col_2 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col1 (type: int)
+                    1 _col1 (type: int)
 
   Stage: Stage-3
     Map Reduce
@@ -1607,14 +1616,17 @@ STAGE PLANS:
           TableScan
             alias: test1
             Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: int), value (type: int), col_1 (type: string)
-              outputColumnNames: _col0, _col1, _col2
+            Filter Operator
+              predicate: value is not null (type: boolean)
               Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 _col1 (type: int)
-                  1 _col1 (type: int)
+              Select Operator
+                expressions: key (type: int), value (type: int), col_1 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col1 (type: int)
+                    1 _col1 (type: int)
 
   Stage: Stage-3
     Map Reduce

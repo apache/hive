@@ -4,4 +4,4 @@ PREHOOK: Input: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
-Query returned non-zero code: 1, cause: hive configuration hive.exec.reduce.max does not exists.
+Query returned non-zero code: 1, cause: Cannot modify hive.exec.reduce.max at runtime. It is not in list of params that are allowed to be modified at runtime

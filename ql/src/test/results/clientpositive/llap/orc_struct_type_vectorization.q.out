@@ -66,20 +66,20 @@ POSTHOOK: Lineage: orc_struct_type.st2 SIMPLE [(orc_struct_type_staging)orc_stru
 PREHOOK: query: select count(*) from orc_struct_type
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from orc_struct_type
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1023
 PREHOOK: query: explain vectorization expression select st1, st1.f1, st1.f2, st2, st2.f1, st2.f3 from orc_struct_type limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain vectorization expression select st1, st1.f1, st1.f2, st2, st2.f1, st2.f3 from orc_struct_type limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -146,11 +146,11 @@ STAGE PLANS:
 PREHOOK: query: select st1, st1.f1, st1.f2, st2, st2.f1, st2.f3 from orc_struct_type limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select st1, st1.f1, st1.f2, st2, st2.f1, st2.f3 from orc_struct_type limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"f1":1,"f2":"str1"}	1	str1	{"f1":2001,"f3":"str2001"}	2001	str2001
 {"f1":2,"f2":"str2"}	2	str2	{"f1":2002,"f3":"str2002"}	2002	str2002
 {"f1":3,"f2":"str3"}	3	str3	{"f1":2003,"f3":"str2003"}	2003	str2003
@@ -164,11 +164,11 @@ POSTHOOK: Input: default@orc_struct_type
 PREHOOK: query: select st1.f1, st2.f1, st2.f3 from orc_struct_type limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select st1.f1, st2.f1, st2.f3 from orc_struct_type limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	2001	str2001
 2	2002	str2002
 3	2003	str2003
@@ -182,11 +182,11 @@ POSTHOOK: Input: default@orc_struct_type
 PREHOOK: query: select st1.f1, st2.f1 from orc_struct_type limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select st1.f1, st2.f1 from orc_struct_type limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	2001
 2	2002
 3	2003
@@ -200,11 +200,11 @@ POSTHOOK: Input: default@orc_struct_type
 PREHOOK: query: explain vectorization expression select sum(st1.f1), st1.f1 from orc_struct_type where st1.f1 > 500 group by st1.f1 limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain vectorization expression select sum(st1.f1), st1.f1 from orc_struct_type where st1.f1 > 500 group by st1.f1 limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -339,11 +339,11 @@ STAGE PLANS:
 PREHOOK: query: select sum(st1.f1), st1.f1 from orc_struct_type where st1.f1 > 500 group by st1.f1 order by st1.f1 limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select sum(st1.f1), st1.f1 from orc_struct_type where st1.f1 > 500 group by st1.f1 order by st1.f1 limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 501	501
 502	502
 503	503
@@ -370,20 +370,20 @@ POSTHOOK: Lineage: orc_struct_type.st2 SIMPLE [(orc_struct_type_staging)orc_stru
 PREHOOK: query: select count(*) from orc_struct_type
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from orc_struct_type
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1024
 PREHOOK: query: select st1, st1.f1, st1.f2, st2, st2.f1, st2.f3 from orc_struct_type limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select st1, st1.f1, st1.f2, st2, st2.f1, st2.f3 from orc_struct_type limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"f1":1,"f2":"str1"}	1	str1	{"f1":2001,"f3":"str2001"}	2001	str2001
 {"f1":2,"f2":"str2"}	2	str2	{"f1":2002,"f3":"str2002"}	2002	str2002
 {"f1":3,"f2":"str3"}	3	str3	{"f1":2003,"f3":"str2003"}	2003	str2003
@@ -397,11 +397,11 @@ POSTHOOK: Input: default@orc_struct_type
 PREHOOK: query: select st1.f1, st2.f1, st2.f3 from orc_struct_type limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select st1.f1, st2.f1, st2.f3 from orc_struct_type limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	2001	str2001
 2	2002	str2002
 3	2003	str2003
@@ -415,11 +415,11 @@ POSTHOOK: Input: default@orc_struct_type
 PREHOOK: query: select st1.f1, st2.f1 from orc_struct_type limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select st1.f1, st2.f1 from orc_struct_type limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	2001
 2	2002
 3	2003
@@ -433,11 +433,11 @@ POSTHOOK: Input: default@orc_struct_type
 PREHOOK: query: select sum(st1.f1), st1.f1 from orc_struct_type where st1.f1 > 500 group by st1.f1 order by st1.f1 limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select sum(st1.f1), st1.f1 from orc_struct_type where st1.f1 > 500 group by st1.f1 order by st1.f1 limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 501	501
 502	502
 503	503
@@ -464,20 +464,20 @@ POSTHOOK: Lineage: orc_struct_type.st2 SIMPLE [(orc_struct_type_staging)orc_stru
 PREHOOK: query: select count(*) from orc_struct_type
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from orc_struct_type
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1025
 PREHOOK: query: select st1, st1.f1, st1.f2, st2, st2.f1, st2.f3 from orc_struct_type limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select st1, st1.f1, st1.f2, st2, st2.f1, st2.f3 from orc_struct_type limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"f1":1,"f2":"str1"}	1	str1	{"f1":2001,"f3":"str2001"}	2001	str2001
 {"f1":2,"f2":"str2"}	2	str2	{"f1":2002,"f3":"str2002"}	2002	str2002
 {"f1":3,"f2":"str3"}	3	str3	{"f1":2003,"f3":"str2003"}	2003	str2003
@@ -491,11 +491,11 @@ POSTHOOK: Input: default@orc_struct_type
 PREHOOK: query: select st1.f1, st2.f1, st2.f3 from orc_struct_type limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select st1.f1, st2.f1, st2.f3 from orc_struct_type limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	2001	str2001
 2	2002	str2002
 3	2003	str2003
@@ -509,11 +509,11 @@ POSTHOOK: Input: default@orc_struct_type
 PREHOOK: query: select st1.f1, st2.f1 from orc_struct_type limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select st1.f1, st2.f1 from orc_struct_type limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	2001
 2	2002
 3	2003
@@ -527,11 +527,11 @@ POSTHOOK: Input: default@orc_struct_type
 PREHOOK: query: select sum(st1.f1), st1.f1 from orc_struct_type where st1.f1 > 500 group by st1.f1 order by st1.f1 limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select sum(st1.f1), st1.f1 from orc_struct_type where st1.f1 > 500 group by st1.f1 order by st1.f1 limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_struct_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 501	501
 502	502
 503	503
