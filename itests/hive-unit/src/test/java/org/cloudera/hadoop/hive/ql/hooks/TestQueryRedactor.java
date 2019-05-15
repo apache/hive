@@ -62,12 +62,12 @@ public class TestQueryRedactor {
     driver = createDriver(conf);
     ret = driver.compile("select '0000-1111-2222-3333' from t1");
     assertEquals("Checking command success", 0, ret);
-    assertEquals("select 'XXXX-XXXX-XXXX-3333' from t1", HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYSTRING));
+    assertEquals("select+%27XXXX-XXXX-XXXX-3333%27+from+t1", HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYSTRING));
     conf.set("hive.query.redaction.rules", "");
     driver = createDriver(conf);
     ret = driver.compile("select '0000-1111-2222-3333' from t1");
     assertEquals("Checking command success", 0, ret);
-    assertEquals("select '0000-1111-2222-3333' from t1", HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYSTRING));
+    assertEquals("select+%270000-1111-2222-3333%27+from+t1", HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYSTRING));
 
   }
 
