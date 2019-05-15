@@ -67,6 +67,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('   get_all_tables(string db_name)')
   print('  Table get_table(string dbname, string tbl_name)')
   print('   get_table_objects_by_name(string dbname,  tbl_names)')
+  print('   get_tables_ext(GetTablesExtRequest req)')
   print('  GetTableResult get_table_req(GetTableRequest req)')
   print('  GetTablesResult get_table_objects_by_name_req(GetTablesRequest req)')
   print('  Materialization get_materialization_invalidation_info(CreationMetadata creation_metadata, string validTxnList)')
@@ -574,6 +575,12 @@ elif cmd == 'get_table_objects_by_name':
     print('get_table_objects_by_name requires 2 args')
     sys.exit(1)
   pp.pprint(client.get_table_objects_by_name(args[0],eval(args[1]),))
+
+elif cmd == 'get_tables_ext':
+  if len(args) != 1:
+    print('get_tables_ext requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_tables_ext(eval(args[0]),))
 
 elif cmd == 'get_table_req':
   if len(args) != 1:
