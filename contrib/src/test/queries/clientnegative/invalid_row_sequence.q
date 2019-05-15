@@ -1,3 +1,4 @@
+--! qt:dataset:src
 -- Verify that a stateful UDF cannot be used outside of the SELECT list
 
 drop temporary function row_sequence;

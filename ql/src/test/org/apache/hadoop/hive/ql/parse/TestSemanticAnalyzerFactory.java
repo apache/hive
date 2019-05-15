@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.antlr.runtime.CommonToken;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -32,7 +32,7 @@ public class TestSemanticAnalyzerFactory {
   
   @Before
   public void setup() throws Exception {
-    queryState = new QueryState(null);
+    queryState = new QueryState.Builder().build();
     conf = queryState.getConf();
   }
   @Test

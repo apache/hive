@@ -1,4 +1,4 @@
-/**
+/*
  *  Licensed to the Apache Software Foundation (ASF) under one
  *  or more contributor license agreements.  See the NOTICE file
  *  distributed with this work for additional information
@@ -23,19 +23,24 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.HashPartitioner;
 import org.apache.spark.Partitioner;
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.rdd.ShuffledRDD;
+import org.apache.spark.serializer.KryoSerializer;
 import org.apache.spark.storage.StorageLevel;
+
 
 public class SortByShuffler implements SparkShuffler<BytesWritable> {
 
   private final boolean totalOrder;
   private final SparkPlan sparkPlan;
+  private final KryoSerializer shuffleSerializer;
 
   /**
    * @param totalOrder whether this shuffler provides total order shuffle.
    */
-  public SortByShuffler(boolean totalOrder, SparkPlan sparkPlan) {
+  public SortByShuffler(boolean totalOrder, SparkPlan sparkPlan, KryoSerializer shuffleSerializer) {
     this.totalOrder = totalOrder;
     this.sparkPlan = sparkPlan;
+    this.shuffleSerializer = shuffleSerializer;
   }
 
   @Override
@@ -55,6 +60,11 @@ public class SortByShuffler implements SparkShuffler<BytesWritable> {
     } else {
       Partitioner partitioner = new HashPartitioner(numPartitions);
       rdd = input.repartitionAndSortWithinPartitions(partitioner);
+    }
+    if (shuffleSerializer != null) {
+      if (rdd.rdd() instanceof ShuffledRDD) {
+        ((ShuffledRDD) rdd.rdd()).setSerializer(shuffleSerializer);
+      }
     }
     return rdd;
   }

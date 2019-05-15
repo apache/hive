@@ -1,3 +1,5 @@
+--! qt:dataset:src1
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.join.cache.size=1;
 
@@ -33,6 +35,7 @@ SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 A
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value;
 
 
+set hive.auto.convert.join=true;
 EXPLAIN 
 SELECT /*+ MAPJOIN(y) */ x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key);

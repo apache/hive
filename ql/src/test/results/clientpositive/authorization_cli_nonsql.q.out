@@ -4,22 +4,22 @@ PREHOOK: Input: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
-PREHOOK: query: create table a_table1(a int, b int)
+PREHOOK: query: create table a_table1_n0(a int, b int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@a_table1
-POSTHOOK: query: create table a_table1(a int, b int)
+PREHOOK: Output: default@a_table1_n0
+POSTHOOK: query: create table a_table1_n0(a int, b int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@a_table1
-PREHOOK: query: alter table a_table1 set serde 'org.apache.hadoop.hive.serde2.TestSerDe' with serdeproperties('s1'='9')
+POSTHOOK: Output: default@a_table1_n0
+PREHOOK: query: alter table a_table1_n0 set serde 'org.apache.hadoop.hive.serde2.TestSerDe' with serdeproperties('s1'='9')
 PREHOOK: type: ALTERTABLE_SERIALIZER
-PREHOOK: Input: default@a_table1
-PREHOOK: Output: default@a_table1
-POSTHOOK: query: alter table a_table1 set serde 'org.apache.hadoop.hive.serde2.TestSerDe' with serdeproperties('s1'='9')
+PREHOOK: Input: default@a_table1_n0
+PREHOOK: Output: default@a_table1_n0
+POSTHOOK: query: alter table a_table1_n0 set serde 'org.apache.hadoop.hive.serde2.TestSerDe' with serdeproperties('s1'='9')
 POSTHOOK: type: ALTERTABLE_SERIALIZER
-POSTHOOK: Input: default@a_table1
-POSTHOOK: Output: default@a_table1
+POSTHOOK: Input: default@a_table1_n0
+POSTHOOK: Output: default@a_table1_n0
 PREHOOK: query: drop table a_table
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table a_table

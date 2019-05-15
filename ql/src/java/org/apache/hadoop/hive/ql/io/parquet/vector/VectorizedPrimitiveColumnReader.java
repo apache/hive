@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,127 +13,53 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.vector;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
-import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
-import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.parquet.bytes.BytesInput;
-import org.apache.parquet.bytes.BytesUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.parquet.column.ColumnDescriptor;
-import org.apache.parquet.column.Dictionary;
-import org.apache.parquet.column.Encoding;
-import org.apache.parquet.column.page.DataPage;
-import org.apache.parquet.column.page.DataPageV1;
-import org.apache.parquet.column.page.DataPageV2;
-import org.apache.parquet.column.page.DictionaryPage;
 import org.apache.parquet.column.page.PageReader;
-import org.apache.parquet.column.values.ValuesReader;
-import org.apache.parquet.column.values.rle.RunLengthBitPackingHybridDecoder;
-import org.apache.parquet.io.ParquetDecodingException;
+import org.apache.parquet.schema.DecimalMetadata;
 import org.apache.parquet.schema.Type;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.sql.Timestamp;
-
-import static org.apache.parquet.column.ValuesType.DEFINITION_LEVEL;
-import static org.apache.parquet.column.ValuesType.REPETITION_LEVEL;
-import static org.apache.parquet.column.ValuesType.VALUES;
+import java.time.ZoneId;
 
 /**
  * It's column level Parquet reader which is used to read a batch of records for a column,
  * part of the code is referred from Apache Spark and Apache Parquet.
+ *
+ * The read calls correspond to the various hivetypes.  When the data was read, it would have been
+ * checked for validity with respect to the hivetype.  The isValid call will return the result
+ * of that check.  The readers will keep the value as returned by the reader when valid, and
+ * set the value to null when it is invalid.
  */
-public class VectorizedPrimitiveColumnReader implements VectorizedColumnReader {
-
-  private static final Logger LOG = LoggerFactory.getLogger(VectorizedPrimitiveColumnReader.class);
-
-  private boolean skipTimestampConversion = false;
-
-  /**
-   * Total number of values read.
-   */
-  private long valuesRead;
-
-  /**
-   * value that indicates the end of the current page. That is,
-   * if valuesRead == endOfPageValueCount, we are at the end of the page.
-   */
-  private long endOfPageValueCount;
-
-  /**
-   * The dictionary, if this column has dictionary encoding.
-   */
-  private final Dictionary dictionary;
-
-  /**
-   * If true, the current page is dictionary encoded.
-   */
-  private boolean isCurrentPageDictionaryEncoded;
-
-  /**
-   * Maximum definition level for this column.
-   */
-  private final int maxDefLevel;
-
-  private int definitionLevel;
-  private int repetitionLevel;
-
-  /**
-   * Repetition/Definition/Value readers.
-   */
-  private IntIterator repetitionLevelColumn;
-  private IntIterator definitionLevelColumn;
-  private ValuesReader dataColumn;
-
-  /**
-   * Total values in the current page.
-   */
-  private int pageValueCount;
-
-  private final PageReader pageReader;
-  private final ColumnDescriptor descriptor;
-  private final Type type;
+public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader {
 
   public VectorizedPrimitiveColumnReader(
-    ColumnDescriptor descriptor,
-    PageReader pageReader,
-    boolean skipTimestampConversion,
-    Type type) throws IOException {
-    this.descriptor = descriptor;
-    this.type = type;
-    this.pageReader = pageReader;
-    this.maxDefLevel = descriptor.getMaxDefinitionLevel();
-    this.skipTimestampConversion = skipTimestampConversion;
-
-    DictionaryPage dictionaryPage = pageReader.readDictionaryPage();
-    if (dictionaryPage != null) {
-      try {
-        this.dictionary = dictionaryPage.getEncoding().initDictionary(descriptor, dictionaryPage);
-        this.isCurrentPageDictionaryEncoded = true;
-      } catch (IOException e) {
-        throw new IOException("could not decode the dictionary for " + descriptor, e);
-      }
-    } else {
-      this.dictionary = null;
-      this.isCurrentPageDictionaryEncoded = false;
-    }
+      ColumnDescriptor descriptor,
+      PageReader pageReader,
+      boolean skipTimestampConversion,
+      ZoneId writerTimezone,
+      Type type,
+      TypeInfo hiveType)
+      throws IOException {
+    super(descriptor, pageReader, skipTimestampConversion, writerTimezone, type, hiveType);
   }
 
+  @Override
   public void readBatch(
-    int total,
-    ColumnVector column,
-    TypeInfo columnType) throws IOException {
+      int total,
+      ColumnVector column,
+      TypeInfo columnType) throws IOException {
     int rowId = 0;
     while (total > 0) {
       // Compute the number of values we want to read in this page.
@@ -148,7 +74,7 @@ public class VectorizedPrimitiveColumnReader implements VectorizedColumnReader {
         LongColumnVector dictionaryIds = new LongColumnVector();
         // Read and decode dictionary ids.
         readDictionaryIDs(num, dictionaryIds, rowId);
-        decodeDictionaryIds(rowId, num, column, dictionaryIds);
+        decodeDictionaryIds(rowId, num, column, columnType, dictionaryIds);
       } else {
         // assign values in vector
         readBatchHelper(num, column, columnType, rowId);
@@ -159,16 +85,21 @@ public class VectorizedPrimitiveColumnReader implements VectorizedColumnReader {
   }
 
   private void readBatchHelper(
-    int num,
-    ColumnVector column,
-    TypeInfo columnType,
-    int rowId) throws IOException {
+      int num,
+      ColumnVector column,
+      TypeInfo columnType,
+      int rowId) throws IOException {
     PrimitiveTypeInfo primitiveColumnType = (PrimitiveTypeInfo) columnType;
+
     switch (primitiveColumnType.getPrimitiveCategory()) {
     case INT:
-    case BYTE:
-    case SHORT:
       readIntegers(num, (LongColumnVector) column, rowId);
+      break;
+    case BYTE:
+      readTinyInts(num, (LongColumnVector) column, rowId);
+      break;
+    case SHORT:
+      readSmallInts(num, (LongColumnVector) column, rowId);
       break;
     case DATE:
     case INTERVAL_YEAR_MONTH:
@@ -182,10 +113,16 @@ public class VectorizedPrimitiveColumnReader implements VectorizedColumnReader {
       readDoubles(num, (DoubleColumnVector) column, rowId);
       break;
     case BINARY:
-    case STRING:
-    case CHAR:
-    case VARCHAR:
       readBinaries(num, (BytesColumnVector) column, rowId);
+      break;
+    case STRING:
+      readString(num, (BytesColumnVector) column, rowId);
+      break;
+    case VARCHAR:
+      readVarchar(num, (BytesColumnVector) column, rowId);
+      break;
+    case CHAR:
+      readChar(num, (BytesColumnVector) column, rowId);
       break;
     case FLOAT:
       readFloats(num, (DoubleColumnVector) column, rowId);
@@ -193,17 +130,25 @@ public class VectorizedPrimitiveColumnReader implements VectorizedColumnReader {
     case DECIMAL:
       readDecimal(num, (DecimalColumnVector) column, rowId);
       break;
-    case INTERVAL_DAY_TIME:
     case TIMESTAMP:
+      readTimestamp(num, (TimestampColumnVector) column, rowId);
+      break;
+    case INTERVAL_DAY_TIME:
     default:
       throw new IOException("Unsupported type: " + type);
     }
   }
 
+  private static void setNullValue(ColumnVector c, int rowId) {
+    c.isNull[rowId] = true;
+    c.isRepeating = false;
+    c.noNulls = false;
+  }
+
   private void readDictionaryIDs(
-    int total,
-    LongColumnVector c,
-    int rowId) throws IOException {
+      int total,
+      LongColumnVector c,
+      int rowId) throws IOException {
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
@@ -212,9 +157,7 @@ public class VectorizedPrimitiveColumnReader implements VectorizedColumnReader {
         c.isNull[rowId] = false;
         c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -222,20 +165,71 @@ public class VectorizedPrimitiveColumnReader implements VectorizedColumnReader {
   }
 
   private void readIntegers(
-    int total,
-    LongColumnVector c,
-    int rowId) throws IOException {
+      int total,
+      LongColumnVector c,
+      int rowId) throws IOException {
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
         c.vector[rowId] = dataColumn.readInteger();
-        c.isNull[rowId] = false;
-        c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        if (dataColumn.isValid()) {
+          c.isNull[rowId] = false;
+          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        } else {
+          c.vector[rowId] = 0;
+          setNullValue(c, rowId);
+        }
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
+      }
+      rowId++;
+      left--;
+    }
+  }
+
+  private void readSmallInts(
+      int total,
+      LongColumnVector c,
+      int rowId) throws IOException {
+    int left = total;
+    while (left > 0) {
+      readRepetitionAndDefinitionLevels();
+      if (definitionLevel >= maxDefLevel) {
+        c.vector[rowId] = dataColumn.readSmallInt();
+        if (dataColumn.isValid()) {
+          c.isNull[rowId] = false;
+          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        } else {
+          c.vector[rowId] = 0;
+          setNullValue(c, rowId);
+        }
+      } else {
+        setNullValue(c, rowId);
+      }
+      rowId++;
+      left--;
+    }
+  }
+
+  private void readTinyInts(
+      int total,
+      LongColumnVector c,
+      int rowId) throws IOException {
+    int left = total;
+    while (left > 0) {
+      readRepetitionAndDefinitionLevels();
+      if (definitionLevel >= maxDefLevel) {
+        c.vector[rowId] = dataColumn.readTinyInt();
+        if (dataColumn.isValid()) {
+          c.isNull[rowId] = false;
+          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        } else {
+          c.vector[rowId] = 0;
+          setNullValue(c, rowId);
+        }
+      } else {
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -243,20 +237,23 @@ public class VectorizedPrimitiveColumnReader implements VectorizedColumnReader {
   }
 
   private void readDoubles(
-    int total,
-    DoubleColumnVector c,
-    int rowId) throws IOException {
+      int total,
+      DoubleColumnVector c,
+      int rowId) throws IOException {
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
         c.vector[rowId] = dataColumn.readDouble();
-        c.isNull[rowId] = false;
-        c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        if (dataColumn.isValid()) {
+          c.isNull[rowId] = false;
+          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        } else {
+          c.vector[rowId] = 0;
+          setNullValue(c, rowId);
+        }
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -264,9 +261,9 @@ public class VectorizedPrimitiveColumnReader implements VectorizedColumnReader {
   }
 
   private void readBooleans(
-    int total,
-    LongColumnVector c,
-    int rowId) throws IOException {
+      int total,
+      LongColumnVector c,
+      int rowId) throws IOException {
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
@@ -275,9 +272,7 @@ public class VectorizedPrimitiveColumnReader implements VectorizedColumnReader {
         c.isNull[rowId] = false;
         c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -285,20 +280,23 @@ public class VectorizedPrimitiveColumnReader implements VectorizedColumnReader {
   }
 
   private void readLongs(
-    int total,
-    LongColumnVector c,
-    int rowId) throws IOException {
+      int total,
+      LongColumnVector c,
+      int rowId) throws IOException {
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
         c.vector[rowId] = dataColumn.readLong();
-        c.isNull[rowId] = false;
-        c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        if (dataColumn.isValid()) {
+          c.isNull[rowId] = false;
+          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        } else {
+          c.vector[rowId] = 0;
+          setNullValue(c, rowId);
+        }
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -306,20 +304,23 @@ public class VectorizedPrimitiveColumnReader implements VectorizedColumnReader {
   }
 
   private void readFloats(
-    int total,
-    DoubleColumnVector c,
-    int rowId) throws IOException {
+      int total,
+      DoubleColumnVector c,
+      int rowId) throws IOException {
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
         c.vector[rowId] = dataColumn.readFloat();
-        c.isNull[rowId] = false;
-        c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        if (dataColumn.isValid()) {
+          c.isNull[rowId] = false;
+          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        } else {
+          c.vector[rowId] = 0;
+          setNullValue(c, rowId);
+        }
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -327,22 +328,88 @@ public class VectorizedPrimitiveColumnReader implements VectorizedColumnReader {
   }
 
   private void readDecimal(
-    int total,
-    DecimalColumnVector c,
-    int rowId) throws IOException {
+      int total,
+      DecimalColumnVector c,
+      int rowId) throws IOException {
+
+    DecimalMetadata decimalMetadata = type.asPrimitiveType().getDecimalMetadata();
+    byte[] decimalData = null;
+    fillDecimalPrecisionScale(decimalMetadata, c);
+
     int left = total;
-    c.precision = (short) type.asPrimitiveType().getDecimalMetadata().getPrecision();
-    c.scale = (short) type.asPrimitiveType().getDecimalMetadata().getScale();
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        c.vector[rowId].set(dataColumn.readBytes().getBytesUnsafe(), c.scale);
-        c.isNull[rowId] = false;
-        c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        decimalData = dataColumn.readDecimal();
+        if (dataColumn.isValid()) {
+          c.vector[rowId].set(decimalData, c.scale);
+          c.isNull[rowId] = false;
+          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        } else {
+          setNullValue(c, rowId);
+        }
       } else {
-        c.isNull[rowId] = true;
+        setNullValue(c, rowId);
+      }
+      rowId++;
+      left--;
+    }
+  }
+
+  private void readString(
+      int total,
+      BytesColumnVector c,
+      int rowId) throws IOException {
+    int left = total;
+    while (left > 0) {
+      readRepetitionAndDefinitionLevels();
+      if (definitionLevel >= maxDefLevel) {
+        c.setVal(rowId, dataColumn.readString());
+        c.isNull[rowId] = false;
+        // TODO figure out a better way to set repeat for Binary type
         c.isRepeating = false;
-        c.noNulls = false;
+      } else {
+        setNullValue(c, rowId);
+      }
+      rowId++;
+      left--;
+    }
+  }
+
+  private void readChar(
+      int total,
+      BytesColumnVector c,
+      int rowId) throws IOException {
+    int left = total;
+    while (left > 0) {
+      readRepetitionAndDefinitionLevels();
+      if (definitionLevel >= maxDefLevel) {
+        c.setVal(rowId, dataColumn.readChar());
+        c.isNull[rowId] = false;
+        // TODO figure out a better way to set repeat for Binary type
+        c.isRepeating = false;
+      } else {
+        setNullValue(c, rowId);
+      }
+      rowId++;
+      left--;
+    }
+  }
+
+  private void readVarchar(
+      int total,
+      BytesColumnVector c,
+      int rowId) throws IOException {
+    int left = total;
+    while (left > 0) {
+      readRepetitionAndDefinitionLevels();
+      if (definitionLevel >= maxDefLevel) {
+        c.setVal(rowId, dataColumn.readVarchar());
+        c.isNull[rowId] = false;
+        // TODO figure out a better way to set repeat for Binary type
+        c.isRepeating = false;
+      } else {
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -350,21 +417,44 @@ public class VectorizedPrimitiveColumnReader implements VectorizedColumnReader {
   }
 
   private void readBinaries(
-    int total,
-    BytesColumnVector c,
-    int rowId) throws IOException {
+      int total,
+      BytesColumnVector c,
+      int rowId) throws IOException {
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        c.setVal(rowId, dataColumn.readBytes().getBytesUnsafe());
+        c.setVal(rowId, dataColumn.readBytes());
         c.isNull[rowId] = false;
         // TODO figure out a better way to set repeat for Binary type
         c.isRepeating = false;
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
+      }
+      rowId++;
+      left--;
+    }
+  }
+
+  private void readTimestamp(int total, TimestampColumnVector c, int rowId) throws IOException {
+    int left = total;
+    while (left > 0) {
+      readRepetitionAndDefinitionLevels();
+      if (definitionLevel >= maxDefLevel) {
+        switch (descriptor.getType()) {
+        //INT64 is not yet supported
+        case INT96:
+          c.set(rowId, dataColumn.readTimestamp().toSqlTimestamp());
+          break;
+        default:
+          throw new IOException(
+              "Unsupported parquet logical type: " + type.getOriginalType() + " for timestamp");
+        }
+        c.isNull[rowId] = false;
+        c.isRepeating =
+            c.isRepeating && ((c.time[0] == c.time[rowId]) && (c.nanos[0] == c.nanos[rowId]));
+      } else {
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -375,215 +465,163 @@ public class VectorizedPrimitiveColumnReader implements VectorizedColumnReader {
    * Reads `num` values into column, decoding the values from `dictionaryIds` and `dictionary`.
    */
   private void decodeDictionaryIds(
-    int rowId,
-    int num,
-    ColumnVector column,
-    LongColumnVector dictionaryIds) {
+      int rowId,
+      int num,
+      ColumnVector column,
+      TypeInfo columnType,
+      LongColumnVector dictionaryIds) {
     System.arraycopy(dictionaryIds.isNull, rowId, column.isNull, rowId, num);
     if (column.noNulls) {
       column.noNulls = dictionaryIds.noNulls;
     }
     column.isRepeating = column.isRepeating && dictionaryIds.isRepeating;
 
-    switch (descriptor.getType()) {
-    case INT32:
+
+    PrimitiveTypeInfo primitiveColumnType = (PrimitiveTypeInfo) columnType;
+
+    switch (primitiveColumnType.getPrimitiveCategory()) {
+    case INT:
       for (int i = rowId; i < rowId + num; ++i) {
         ((LongColumnVector) column).vector[i] =
-          dictionary.decodeToInt((int) dictionaryIds.vector[i]);
+            dictionary.readInteger((int) dictionaryIds.vector[i]);
+        if (!dictionary.isValid()) {
+          setNullValue(column, i);
+          ((LongColumnVector) column).vector[i] = 0;
+        }
       }
       break;
-    case INT64:
+    case BYTE:
       for (int i = rowId; i < rowId + num; ++i) {
         ((LongColumnVector) column).vector[i] =
-          dictionary.decodeToLong((int) dictionaryIds.vector[i]);
+            dictionary.readTinyInt((int) dictionaryIds.vector[i]);
+        if (!dictionary.isValid()) {
+          setNullValue(column, i);
+          ((LongColumnVector) column).vector[i] = 0;
+        }
       }
       break;
-    case FLOAT:
+    case SHORT:
       for (int i = rowId; i < rowId + num; ++i) {
-        ((DoubleColumnVector) column).vector[i] =
-          dictionary.decodeToFloat((int) dictionaryIds.vector[i]);
+        ((LongColumnVector) column).vector[i] =
+            dictionary.readSmallInt((int) dictionaryIds.vector[i]);
+        if (!dictionary.isValid()) {
+          setNullValue(column, i);
+          ((LongColumnVector) column).vector[i] = 0;
+        }
+      }
+      break;
+    case DATE:
+    case INTERVAL_YEAR_MONTH:
+    case LONG:
+      for (int i = rowId; i < rowId + num; ++i) {
+        ((LongColumnVector) column).vector[i] =
+            dictionary.readLong((int) dictionaryIds.vector[i]);
+        if (!dictionary.isValid()) {
+          setNullValue(column, i);
+          ((LongColumnVector) column).vector[i] = 0;
+        }
+      }
+      break;
+    case BOOLEAN:
+      for (int i = rowId; i < rowId + num; ++i) {
+        ((LongColumnVector) column).vector[i] =
+            dictionary.readBoolean((int) dictionaryIds.vector[i]) ? 1 : 0;
       }
       break;
     case DOUBLE:
       for (int i = rowId; i < rowId + num; ++i) {
         ((DoubleColumnVector) column).vector[i] =
-          dictionary.decodeToDouble((int) dictionaryIds.vector[i]);
-      }
-      break;
-    case INT96:
-      for (int i = rowId; i < rowId + num; ++i) {
-        ByteBuffer buf = dictionary.decodeToBinary((int) dictionaryIds.vector[i]).toByteBuffer();
-        buf.order(ByteOrder.LITTLE_ENDIAN);
-        long timeOfDayNanos = buf.getLong();
-        int julianDay = buf.getInt();
-        NanoTime nt = new NanoTime(julianDay, timeOfDayNanos);
-        Timestamp ts = NanoTimeUtils.getTimestamp(nt, skipTimestampConversion);
-        ((TimestampColumnVector) column).set(i, ts);
+            dictionary.readDouble((int) dictionaryIds.vector[i]);
+        if (!dictionary.isValid()) {
+          setNullValue(column, i);
+          ((DoubleColumnVector) column).vector[i] = 0;
+        }
       }
       break;
     case BINARY:
-    case FIXED_LEN_BYTE_ARRAY:
-      if (column instanceof BytesColumnVector) {
-        for (int i = rowId; i < rowId + num; ++i) {
-          ((BytesColumnVector) column)
-            .setVal(i, dictionary.decodeToBinary((int) dictionaryIds.vector[i]).getBytesUnsafe());
-        }
-      } else {
-        DecimalColumnVector decimalColumnVector = ((DecimalColumnVector) column);
-        decimalColumnVector.precision =
-          (short) type.asPrimitiveType().getDecimalMetadata().getPrecision();
-        decimalColumnVector.scale = (short) type.asPrimitiveType().getDecimalMetadata().getScale();
-        for (int i = rowId; i < rowId + num; ++i) {
-          decimalColumnVector.vector[i]
-            .set(dictionary.decodeToBinary((int) dictionaryIds.vector[i]).getBytesUnsafe(),
-              decimalColumnVector.scale);
+      for (int i = rowId; i < rowId + num; ++i) {
+        ((BytesColumnVector) column)
+            .setVal(i, dictionary.readBytes((int) dictionaryIds.vector[i]));
+      }
+      break;
+    case STRING:
+      for (int i = rowId; i < rowId + num; ++i) {
+        ((BytesColumnVector) column)
+            .setVal(i, dictionary.readString((int) dictionaryIds.vector[i]));
+      }
+      break;
+    case VARCHAR:
+      for (int i = rowId; i < rowId + num; ++i) {
+        ((BytesColumnVector) column)
+            .setVal(i, dictionary.readVarchar((int) dictionaryIds.vector[i]));
+      }
+      break;
+    case CHAR:
+      for (int i = rowId; i < rowId + num; ++i) {
+        ((BytesColumnVector) column)
+            .setVal(i, dictionary.readChar((int) dictionaryIds.vector[i]));
+      }
+      break;
+    case FLOAT:
+      for (int i = rowId; i < rowId + num; ++i) {
+        ((DoubleColumnVector) column).vector[i] =
+            dictionary.readFloat((int) dictionaryIds.vector[i]);
+        if (!dictionary.isValid()) {
+          setNullValue(column, i);
+          ((DoubleColumnVector) column).vector[i] = 0;
         }
       }
       break;
+    case DECIMAL:
+      DecimalMetadata decimalMetadata = type.asPrimitiveType().getDecimalMetadata();
+      DecimalColumnVector decimalColumnVector = ((DecimalColumnVector) column);
+      byte[] decimalData = null;
+
+      fillDecimalPrecisionScale(decimalMetadata, decimalColumnVector);
+
+      for (int i = rowId; i < rowId + num; ++i) {
+        decimalData = dictionary.readDecimal((int) dictionaryIds.vector[i]);
+        if (dictionary.isValid()) {
+          decimalColumnVector.vector[i].set(decimalData, decimalColumnVector.scale);
+        } else {
+          setNullValue(column, i);
+        }
+      }
+      break;
+    case TIMESTAMP:
+      for (int i = rowId; i < rowId + num; ++i) {
+        ((TimestampColumnVector) column)
+            .set(i, dictionary.readTimestamp((int) dictionaryIds.vector[i]).toSqlTimestamp());
+      }
+      break;
+    case INTERVAL_DAY_TIME:
     default:
-      throw new UnsupportedOperationException("Unsupported type: " + descriptor.getType());
-    }
-  }
-
-  private void readRepetitionAndDefinitionLevels() {
-    repetitionLevel = repetitionLevelColumn.nextInt();
-    definitionLevel = definitionLevelColumn.nextInt();
-    valuesRead++;
-  }
-
-  private void readPage() throws IOException {
-    DataPage page = pageReader.readPage();
-    // TODO: Why is this a visitor?
-    page.accept(new DataPage.Visitor<Void>() {
-      @Override
-      public Void visit(DataPageV1 dataPageV1) {
-        readPageV1(dataPageV1);
-        return null;
-      }
-
-      @Override
-      public Void visit(DataPageV2 dataPageV2) {
-        readPageV2(dataPageV2);
-        return null;
-      }
-    });
-  }
-
-  private void initDataReader(Encoding dataEncoding, byte[] bytes, int offset, int valueCount) throws IOException {
-    this.pageValueCount = valueCount;
-    this.endOfPageValueCount = valuesRead + pageValueCount;
-    if (dataEncoding.usesDictionary()) {
-      this.dataColumn = null;
-      if (dictionary == null) {
-        throw new IOException(
-          "could not read page in col " + descriptor +
-            " as the dictionary was missing for encoding " + dataEncoding);
-      }
-      dataColumn = dataEncoding.getDictionaryBasedValuesReader(descriptor, VALUES, dictionary);
-      this.isCurrentPageDictionaryEncoded = true;
-    } else {
-      if (dataEncoding != Encoding.PLAIN) {
-        throw new UnsupportedOperationException("Unsupported encoding: " + dataEncoding);
-      }
-      dataColumn = dataEncoding.getValuesReader(descriptor, VALUES);
-      this.isCurrentPageDictionaryEncoded = false;
-    }
-
-    try {
-      dataColumn.initFromPage(pageValueCount, bytes, offset);
-    } catch (IOException e) {
-      throw new IOException("could not read page in col " + descriptor, e);
-    }
-  }
-
-  private void readPageV1(DataPageV1 page) {
-    ValuesReader rlReader = page.getRlEncoding().getValuesReader(descriptor, REPETITION_LEVEL);
-    ValuesReader dlReader = page.getDlEncoding().getValuesReader(descriptor, DEFINITION_LEVEL);
-    this.repetitionLevelColumn = new ValuesReaderIntIterator(rlReader);
-    this.definitionLevelColumn = new ValuesReaderIntIterator(dlReader);
-    try {
-      byte[] bytes = page.getBytes().toByteArray();
-      LOG.debug("page size " + bytes.length + " bytes and " + pageValueCount + " records");
-      LOG.debug("reading repetition levels at 0");
-      rlReader.initFromPage(pageValueCount, bytes, 0);
-      int next = rlReader.getNextOffset();
-      LOG.debug("reading definition levels at " + next);
-      dlReader.initFromPage(pageValueCount, bytes, next);
-      next = dlReader.getNextOffset();
-      LOG.debug("reading data at " + next);
-      initDataReader(page.getValueEncoding(), bytes, next, page.getValueCount());
-    } catch (IOException e) {
-      throw new ParquetDecodingException("could not read page " + page + " in col " + descriptor, e);
-    }
-  }
-
-  private void readPageV2(DataPageV2 page) {
-    this.pageValueCount = page.getValueCount();
-    this.repetitionLevelColumn = newRLEIterator(descriptor.getMaxRepetitionLevel(),
-      page.getRepetitionLevels());
-    this.definitionLevelColumn = newRLEIterator(descriptor.getMaxDefinitionLevel(), page.getDefinitionLevels());
-    try {
-      LOG.debug("page data size " + page.getData().size() + " bytes and " + pageValueCount + " records");
-      initDataReader(page.getDataEncoding(), page.getData().toByteArray(), 0, page.getValueCount());
-    } catch (IOException e) {
-      throw new ParquetDecodingException("could not read page " + page + " in col " + descriptor, e);
-    }
-  }
-
-  private IntIterator newRLEIterator(int maxLevel, BytesInput bytes) {
-    try {
-      if (maxLevel == 0) {
-        return new NullIntIterator();
-      }
-      return new RLEIntIterator(
-        new RunLengthBitPackingHybridDecoder(
-          BytesUtils.getWidthFromMaxInt(maxLevel),
-          new ByteArrayInputStream(bytes.toByteArray())));
-    } catch (IOException e) {
-      throw new ParquetDecodingException("could not read levels in page for col " + descriptor, e);
+      throw new UnsupportedOperationException("Unsupported type: " + type);
     }
   }
 
   /**
-   * Utility classes to abstract over different way to read ints with different encodings.
-   * TODO: remove this layer of abstraction?
+   * The decimal precision and scale is filled into decimalColumnVector.  If the data in
+   * Parquet is in decimal, the precision and scale will come in from decimalMetadata.  If parquet
+   * is not in decimal, then this call is made because HMS shows the type as decimal.  So, the
+   * precision and scale are picked from hiveType.
+   *
+   * @param decimalMetadata
+   * @param decimalColumnVector
    */
-  abstract static class IntIterator {
-    abstract int nextInt();
-  }
-
-  protected static final class ValuesReaderIntIterator extends IntIterator {
-    ValuesReader delegate;
-
-    public ValuesReaderIntIterator(ValuesReader delegate) {
-      this.delegate = delegate;
+  private void fillDecimalPrecisionScale(DecimalMetadata decimalMetadata,
+      DecimalColumnVector decimalColumnVector) {
+    if (decimalMetadata != null) {
+      decimalColumnVector.precision =
+          (short) type.asPrimitiveType().getDecimalMetadata().getPrecision();
+      decimalColumnVector.scale = (short) type.asPrimitiveType().getDecimalMetadata().getScale();
+    } else if (TypeInfoUtils.getBaseName(hiveType.getTypeName())
+        .equalsIgnoreCase(serdeConstants.DECIMAL_TYPE_NAME)) {
+      decimalColumnVector.precision = (short) ((DecimalTypeInfo) hiveType).getPrecision();
+      decimalColumnVector.scale = (short) ((DecimalTypeInfo) hiveType).getScale();
+    } else {
+      throw new UnsupportedOperationException(
+          "The underlying Parquet type cannot be converted to Hive Decimal type: " + type);
     }
-
-    @Override
-    int nextInt() {
-      return delegate.readInteger();
-    }
-  }
-
-  protected static final class RLEIntIterator extends IntIterator {
-    RunLengthBitPackingHybridDecoder delegate;
-
-    public RLEIntIterator(RunLengthBitPackingHybridDecoder delegate) {
-      this.delegate = delegate;
-    }
-
-    @Override
-    int nextInt() {
-      try {
-        return delegate.readInt();
-      } catch (IOException e) {
-        throw new ParquetDecodingException(e);
-      }
-    }
-  }
-
-  protected static final class NullIntIterator extends IntIterator {
-    @Override
-    int nextInt() { return 0; }
   }
 }

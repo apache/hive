@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,16 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Date;
-import java.sql.Timestamp;
-
 import junit.framework.TestCase;
 
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.IntWritable;
@@ -54,11 +53,7 @@ public class TestGenericUDFQuarter extends TestCase {
     runAndVerifyStr("2016-10-29", 4, udf);
     runAndVerifyStr("2016-11-29", 4, udf);
     runAndVerifyStr("2016-12-29", 4, udf);
-    // wrong date str
-    runAndVerifyStr("2016-03-35", 2, udf);
-    runAndVerifyStr("2014-01-32", 1, udf);
-    runAndVerifyStr("01/14/2014", null, udf);
-    runAndVerifyStr(null, null, udf);
+
     // negative Unix time
     runAndVerifyStr("1966-01-01", 1, udf);
     runAndVerifyStr("1966-03-31", 1, udf);
@@ -78,16 +73,25 @@ public class TestGenericUDFQuarter extends TestCase {
     runAndVerifyStr("2016-10-29 15:23:00", 4, udf);
     runAndVerifyStr("2016-11-29 15:23:00", 4, udf);
     runAndVerifyStr("2016-12-31 23:59:59.999", 4, udf);
-    // wrong date str
-    runAndVerifyStr("2016-03-35 15:23:00", 2, udf);
-    runAndVerifyStr("2014-01-32 15:23:00", 1, udf);
-    runAndVerifyStr("01/14/2014 15:23:00", null, udf);
-    runAndVerifyStr(null, null, udf);
+
     // negative Unix time
     runAndVerifyStr("1966-01-01 00:00:00", 1, udf);
     runAndVerifyStr("1966-03-31 23:59:59.999", 1, udf);
     runAndVerifyStr("1966-04-01 00:00:00", 2, udf);
     runAndVerifyStr("1966-12-31 23:59:59.999", 4, udf);
+  }
+
+  public void testWrongDateStr() throws HiveException {
+    GenericUDFQuarter udf = new GenericUDFQuarter();
+    ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+    ObjectInspector[] arguments = {valueOI0};
+
+    udf.initialize(arguments);
+
+    runAndVerifyStr("2016-03-35", 2, udf);
+    runAndVerifyStr("2014-01-32", 1, udf);
+    runAndVerifyStr("01/14/2014", null, udf);
+    runAndVerifyStr(null, null, udf);
   }
 
   public void testQuarterDt() throws HiveException {
@@ -155,7 +159,7 @@ public class TestGenericUDFQuarter extends TestCase {
   }
 
   private void runAndVerifyDt(String str, Integer expResult, GenericUDF udf) throws HiveException {
-    DeferredObject valueObj0 = new DeferredJavaObject(str != null ? new DateWritable(
+    DeferredObject valueObj0 = new DeferredJavaObject(str != null ? new DateWritableV2(
         Date.valueOf(str)) : null);
     DeferredObject[] args = { valueObj0 };
     IntWritable output = (IntWritable) udf.evaluate(args);
@@ -168,7 +172,7 @@ public class TestGenericUDFQuarter extends TestCase {
   }
 
   private void runAndVerifyTs(String str, Integer expResult, GenericUDF udf) throws HiveException {
-    DeferredObject valueObj0 = new DeferredJavaObject(str != null ? new TimestampWritable(
+    DeferredObject valueObj0 = new DeferredJavaObject(str != null ? new TimestampWritableV2(
         Timestamp.valueOf(str)) : null);
     DeferredObject[] args = { valueObj0 };
     IntWritable output = (IntWritable) udf.evaluate(args);

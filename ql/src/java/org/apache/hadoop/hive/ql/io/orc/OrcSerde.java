@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,14 +21,10 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Properties;
 
-import org.apache.orc.OrcConf;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedSerde;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -46,15 +42,12 @@ import org.apache.hadoop.io.Writable;
  * It transparently passes the object to/from the ORC file reader/writer.
  */
 @SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES, OrcSerde.COMPRESSION})
-public class OrcSerde extends VectorizedSerde {
-
-  private static final Logger LOG = LoggerFactory.getLogger(OrcSerde.class);
+public class OrcSerde extends AbstractSerDe {
 
   private final OrcSerdeRow row = new OrcSerdeRow();
   private ObjectInspector inspector = null;
 
-  private VectorizedOrcSerde vos = null;
-  public static final String COMPRESSION = "orc.compress";
+  static final String COMPRESSION = "orc.compress";
 
   final class OrcSerdeRow implements Writable {
     Object realRow;
@@ -87,14 +80,11 @@ public class OrcSerde extends VectorizedSerde {
     String columnTypeProperty = table.getProperty(serdeConstants.LIST_COLUMN_TYPES);
     final String columnNameDelimiter = table.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? table
         .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
-    String compressType = OrcConf.COMPRESS.getString(table, conf);
 
     // Parse the configuration parameters
-    ArrayList<String> columnNames = new ArrayList<String>();
+    ArrayList<String> columnNames = new ArrayList<>();
     if (columnNameProperty != null && columnNameProperty.length() > 0) {
-      for (String name : columnNameProperty.split(columnNameDelimiter)) {
-        columnNames.add(name);
-      }
+      Collections.addAll(columnNames, columnNameProperty.split(columnNameDelimiter));
     }
     if (columnTypeProperty == null) {
       // Default type: all string
@@ -150,18 +140,4 @@ public class OrcSerde extends VectorizedSerde {
     return null;
   }
 
-  @Override
-  public Writable serializeVector(VectorizedRowBatch vrg, ObjectInspector objInspector)
-      throws SerDeException {
-    if (vos == null) {
-      vos = new VectorizedOrcSerde(getObjectInspector());
-    }
-    return vos.serialize(vrg, getObjectInspector());
-  }
-
-  @Override
-  public void deserializeVector(Object rowBlob, int rowsInBatch, VectorizedRowBatch reuseBatch)
-      throws SerDeException {
-    // nothing to do here
-  }
 }

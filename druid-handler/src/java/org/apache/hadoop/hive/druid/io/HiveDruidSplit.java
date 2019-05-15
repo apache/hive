@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -36,35 +36,45 @@ public class HiveDruidSplit extends FileSplit implements org.apache.hadoop.mapre
 
   // required for deserialization
   public HiveDruidSplit() {
-    super((Path) null, 0, 0, (String[]) null);
+    super(null, 0, 0, (String[]) null);
   }
 
-  public HiveDruidSplit(String druidQuery, Path dummyPath, String hosts[]) {
+  public HiveDruidSplit(String druidQuery, Path dummyPath, String[] hosts) {
     super(dummyPath, 0, 0, hosts);
     this.druidQuery = druidQuery;
     this.hosts = hosts;
   }
 
-  @Override
-  public void write(DataOutput out) throws IOException {
+  @Override public void write(DataOutput out) throws IOException {
     super.write(out);
     out.writeUTF(druidQuery);
+    out.writeInt(hosts.length);
+    for (String host : hosts) {
+      out.writeUTF(host);
+    }
   }
 
-  @Override
-  public void readFields(DataInput in) throws IOException {
+  @Override public void readFields(DataInput in) throws IOException {
     super.readFields(in);
     druidQuery = in.readUTF();
+    int length = in.readInt();
+    String[] listHosts = new String[length];
+    for (int i = 0; i < length; i++) {
+      listHosts[i] = in.readUTF();
+    }
+    hosts = listHosts;
   }
 
   public String getDruidQuery() {
     return druidQuery;
   }
 
-  @Override
-  public String toString() {
-    return "HiveDruidSplit{" + druidQuery + ", " 
-            + (hosts == null ? "empty hosts" : Arrays.toString(hosts))  + "}";
+  @Override public String[] getLocations() throws IOException {
+    return hosts;
+  }
+
+  @Override public String toString() {
+    return "HiveDruidSplit{" + druidQuery + ", " + (hosts == null ? "empty hosts" : Arrays.toString(hosts)) + "}";
   }
 
 }

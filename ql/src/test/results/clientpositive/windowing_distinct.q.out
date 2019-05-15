@@ -13,7 +13,7 @@ PREHOOK: query: create table windowing_distinct(
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal,
+           `dec` decimal,
            bin binary)
        row format delimited
        fields terminated by '|'
@@ -31,7 +31,7 @@ POSTHOOK: query: create table windowing_distinct(
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal,
+           `dec` decimal,
            bin binary)
        row format delimited
        fields terminated by '|'
@@ -52,7 +52,7 @@ PREHOOK: query: SELECT COUNT(DISTINCT t) OVER (PARTITION BY index),
        COUNT(DISTINCT s) OVER (PARTITION BY index),
        COUNT(DISTINCT concat('Mr.', s)) OVER (PARTITION BY index),
        COUNT(DISTINCT ts) OVER (PARTITION BY index),
-       COUNT(DISTINCT dec) OVER (PARTITION BY index),
+       COUNT(DISTINCT `dec`) OVER (PARTITION BY index),
        COUNT(DISTINCT bin) OVER (PARTITION BY index)
 FROM windowing_distinct
 PREHOOK: type: QUERY
@@ -64,7 +64,7 @@ POSTHOOK: query: SELECT COUNT(DISTINCT t) OVER (PARTITION BY index),
        COUNT(DISTINCT s) OVER (PARTITION BY index),
        COUNT(DISTINCT concat('Mr.', s)) OVER (PARTITION BY index),
        COUNT(DISTINCT ts) OVER (PARTITION BY index),
-       COUNT(DISTINCT dec) OVER (PARTITION BY index),
+       COUNT(DISTINCT `dec`) OVER (PARTITION BY index),
        COUNT(DISTINCT bin) OVER (PARTITION BY index)
 FROM windowing_distinct
 POSTHOOK: type: QUERY
@@ -81,7 +81,7 @@ PREHOOK: query: SELECT SUM(DISTINCT t) OVER (PARTITION BY index),
        SUM(DISTINCT s) OVER (PARTITION BY index),
        SUM(DISTINCT concat('Mr.', s)) OVER (PARTITION BY index),
        SUM(DISTINCT ts) OVER (PARTITION BY index),
-       SUM(DISTINCT dec) OVER (PARTITION BY index)
+       SUM(DISTINCT `dec`) OVER (PARTITION BY index)
 FROM windowing_distinct
 PREHOOK: type: QUERY
 PREHOOK: Input: default@windowing_distinct
@@ -91,23 +91,23 @@ POSTHOOK: query: SELECT SUM(DISTINCT t) OVER (PARTITION BY index),
        SUM(DISTINCT s) OVER (PARTITION BY index),
        SUM(DISTINCT concat('Mr.', s)) OVER (PARTITION BY index),
        SUM(DISTINCT ts) OVER (PARTITION BY index),
-       SUM(DISTINCT dec) OVER (PARTITION BY index)
+       SUM(DISTINCT `dec`) OVER (PARTITION BY index)
 FROM windowing_distinct
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@windowing_distinct
 #### A masked pattern was here ####
-54	56.63	0.0	0.0	2.724315837406296E9	57
-54	56.63	0.0	0.0	2.724315837406296E9	57
-54	56.63	0.0	0.0	2.724315837406296E9	57
-235	77.42	0.0	0.0	2.724315837406612E9	69
-235	77.42	0.0	0.0	2.724315837406612E9	69
-235	77.42	0.0	0.0	2.724315837406612E9	69
+54	56.63	0.0	0.0	2.724258237406296E9	57
+54	56.63	0.0	0.0	2.724258237406296E9	57
+54	56.63	0.0	0.0	2.724258237406296E9	57
+235	77.42	0.0	0.0	2.724258237406612E9	69
+235	77.42	0.0	0.0	2.724258237406612E9	69
+235	77.42	0.0	0.0	2.724258237406612E9	69
 PREHOOK: query: SELECT AVG(DISTINCT t) OVER (PARTITION BY index),
        AVG(DISTINCT d) OVER (PARTITION BY index),
        AVG(DISTINCT s) OVER (PARTITION BY index),
        AVG(DISTINCT concat('Mr.', s)) OVER (PARTITION BY index),
        AVG(DISTINCT ts) OVER (PARTITION BY index),
-       AVG(DISTINCT dec) OVER (PARTITION BY index)
+       AVG(DISTINCT `dec`) OVER (PARTITION BY index)
 FROM windowing_distinct
 PREHOOK: type: QUERY
 PREHOOK: Input: default@windowing_distinct
@@ -117,17 +117,17 @@ POSTHOOK: query: SELECT AVG(DISTINCT t) OVER (PARTITION BY index),
        AVG(DISTINCT s) OVER (PARTITION BY index),
        AVG(DISTINCT concat('Mr.', s)) OVER (PARTITION BY index),
        AVG(DISTINCT ts) OVER (PARTITION BY index),
-       AVG(DISTINCT dec) OVER (PARTITION BY index)
+       AVG(DISTINCT `dec`) OVER (PARTITION BY index)
 FROM windowing_distinct
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@windowing_distinct
 #### A masked pattern was here ####
-27.0	28.315	NULL	NULL	1.362157918703148E9	28.5000
-27.0	28.315	NULL	NULL	1.362157918703148E9	28.5000
-27.0	28.315	NULL	NULL	1.362157918703148E9	28.5000
-117.5	38.71	NULL	NULL	1.362157918703306E9	34.5000
-117.5	38.71	NULL	NULL	1.362157918703306E9	34.5000
-117.5	38.71	NULL	NULL	1.362157918703306E9	34.5000
+27.0	28.315	NULL	NULL	1.362129118703148E9	28.5000
+27.0	28.315	NULL	NULL	1.362129118703148E9	28.5000
+27.0	28.315	NULL	NULL	1.362129118703148E9	28.5000
+117.5	38.71	NULL	NULL	1.362129118703306E9	34.5000
+117.5	38.71	NULL	NULL	1.362129118703306E9	34.5000
+117.5	38.71	NULL	NULL	1.362129118703306E9	34.5000
 PREHOOK: query: select index, f, count(distinct f) over (partition by index order by f rows between 2 preceding and 1 preceding),
                  count(distinct f) over (partition by index order by f rows between unbounded preceding and 1 preceding),
                  count(distinct f) over (partition by index order by f rows between 1 following and 2 following),

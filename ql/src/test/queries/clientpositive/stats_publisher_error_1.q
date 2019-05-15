@@ -1,3 +1,4 @@
+--! qt:dataset:src
 -- In this test, there is a dummy stats publisher which throws an error when various
 -- methods are called (as indicated by the parameter hive.test.dummystats.publisher)
 -- Since stats need not be reliable (by setting hive.stats.reliable to false), the

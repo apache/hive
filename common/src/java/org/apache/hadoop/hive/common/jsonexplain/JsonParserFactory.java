@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.common.jsonexplain;
 
+import org.apache.hadoop.hive.common.jsonexplain.spark.SparkJsonParser;
 import org.apache.hadoop.hive.common.jsonexplain.tez.TezJsonParser;
 import org.apache.hadoop.hive.conf.HiveConf;
 
@@ -34,6 +35,9 @@ public class JsonParserFactory {
   public static JsonParser getParser(HiveConf conf) {
     if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
       return new TezJsonParser();
+    }
+    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
+      return new SparkJsonParser();
     }
     return null;
   }

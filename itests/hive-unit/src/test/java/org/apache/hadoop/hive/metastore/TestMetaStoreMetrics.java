@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,14 +18,13 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.cli.CliSessionState;
-import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
-import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
-import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
-import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.metastore.metrics.Metrics;
+import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.shims.ShimLoader;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -37,15 +36,11 @@ public class TestMetaStoreMetrics {
 
 
   private static HiveConf hiveConf;
-  private static Driver driver;
-  private static CodahaleMetrics metrics;
+  private static IDriver driver;
 
   @BeforeClass
   public static void before() throws Exception {
-    int port = MetaStoreUtils.findFreePort();
-
     hiveConf = new HiveConf(TestMetaStoreMetrics.class);
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hiveConf.setBoolVar(HiveConf.ConfVars.METASTORE_METRICS, true);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
@@ -53,39 +48,31 @@ public class TestMetaStoreMetrics {
         .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
             "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
 
-    MetricsFactory.close();
-    MetricsFactory.init(hiveConf);
-    metrics = (CodahaleMetrics) MetricsFactory.getInstance();
-
     //Increments one HMS connection
-    MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge(), hiveConf);
+    MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf);
 
     //Increments one HMS connection (Hive.get())
     SessionState.start(new CliSessionState(hiveConf));
-    driver = new Driver(hiveConf);
+    driver = DriverFactory.newDriver(hiveConf);
   }
 
 
   @Test
   public void testMethodCounts() throws Exception {
     driver.run("show databases");
-    String json = metrics.dumpJson();
 
     //one call by init, one called here.
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.TIMER, "api_get_all_databases", 2);
+    Assert.assertEquals(2, Metrics.getRegistry().getTimers().get("api_get_databases").getCount());
   }
 
   @Test
   public void testMetaDataCounts() throws Exception {
-    CodahaleMetrics metrics = (CodahaleMetrics) MetricsFactory.getInstance();
-    String json = metrics.dumpJson();
-
-    int initDbCount = (new Integer((MetricsTestUtils.getJsonNode(json, MetricsTestUtils.GAUGE,
-        MetricsConstant.INIT_TOTAL_DATABASES)).asText())).intValue();
-    int initTblCount = (new Integer((MetricsTestUtils.getJsonNode(json, MetricsTestUtils.GAUGE,
-        MetricsConstant.INIT_TOTAL_TABLES)).asText())).intValue();
-    int initPartCount = (new Integer((MetricsTestUtils.getJsonNode(json, MetricsTestUtils.GAUGE,
-        MetricsConstant.INIT_TOTAL_PARTITIONS)).asText())).intValue();
+    int initDbCount =
+        (Integer)Metrics.getRegistry().getGauges().get(MetricsConstants.TOTAL_DATABASES).getValue();
+    int initTblCount =
+        (Integer)Metrics.getRegistry().getGauges().get(MetricsConstants.TOTAL_TABLES).getValue();
+    int initPartCount =
+        (Integer)Metrics.getRegistry().getGauges().get(MetricsConstants.TOTAL_PARTITIONS).getValue();
 
     //1 databases created
     driver.run("create database testdb1");
@@ -123,51 +110,50 @@ public class TestMetaStoreMetrics {
     driver.run("use default");
     driver.run("drop database tempdb cascade");
 
-    json = metrics.dumpJson();
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.CREATE_TOTAL_DATABASES, 2);
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.CREATE_TOTAL_TABLES, 7);
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.CREATE_TOTAL_PARTITIONS, 9);
+    Assert.assertEquals(2, Metrics.getRegistry().getCounters().get(MetricsConstants.CREATE_TOTAL_DATABASES).getCount());
+    Assert.assertEquals(7, Metrics.getRegistry().getCounters().get(MetricsConstants.CREATE_TOTAL_TABLES).getCount());
+    Assert.assertEquals(9, Metrics.getRegistry().getCounters().get(MetricsConstants.CREATE_TOTAL_PARTITIONS).getCount());
 
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.DELETE_TOTAL_DATABASES, 1);
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.DELETE_TOTAL_TABLES, 3);
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.DELETE_TOTAL_PARTITIONS, 3);
+    Assert.assertEquals(1, Metrics.getRegistry().getCounters().get(MetricsConstants.DELETE_TOTAL_DATABASES).getCount());
+    Assert.assertEquals(3, Metrics.getRegistry().getCounters().get(MetricsConstants.DELETE_TOTAL_TABLES).getCount());
+    Assert.assertEquals(3, Metrics.getRegistry().getCounters().get(MetricsConstants.DELETE_TOTAL_PARTITIONS).getCount());
 
     //to test initial metadata count metrics.
-    hiveConf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL, ObjectStore.class.getName());
-    HiveMetaStore.HMSHandler baseHandler = new HiveMetaStore.HMSHandler("test", hiveConf, false);
-    baseHandler.init();
-    baseHandler.updateMetrics();
+    Assert.assertEquals(initDbCount + 1,
+        Metrics.getRegistry().getGauges().get(MetricsConstants.TOTAL_DATABASES).getValue());
+    Assert.assertEquals(initTblCount + 4,
+        Metrics.getRegistry().getGauges().get(MetricsConstants.TOTAL_TABLES).getValue());
+    Assert.assertEquals(initPartCount + 6,
+        Metrics.getRegistry().getGauges().get(MetricsConstants.TOTAL_PARTITIONS).getValue());
 
-    json = metrics.dumpJson();
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, MetricsConstant.INIT_TOTAL_DATABASES, initDbCount + 1);
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, MetricsConstant.INIT_TOTAL_TABLES, initTblCount + 4);
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, MetricsConstant.INIT_TOTAL_PARTITIONS, initPartCount + 6);
   }
 
 
   @Test
   public void testConnections() throws Exception {
 
+    Thread.sleep(2000);  // TODO Evil!  Need to figure out a way to remove this sleep.
     //initial state is one connection
-    String json = metrics.dumpJson();
-    int initialCount = (new Integer((MetricsTestUtils.getJsonNode(json, MetricsTestUtils.COUNTER,
-                                       MetricsConstant.OPEN_CONNECTIONS)).asText())).intValue();
+    int initialCount =
+        (Integer)Metrics.getRegistry().getGauges().get(MetricsConstants.OPEN_CONNECTIONS).getValue();
 
     //create two connections
     HiveMetaStoreClient msc = new HiveMetaStoreClient(hiveConf);
     HiveMetaStoreClient msc2 = new HiveMetaStoreClient(hiveConf);
 
-    json = metrics.dumpJson();
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.OPEN_CONNECTIONS, initialCount + 2);
+    Assert.assertEquals(initialCount + 2,
+        Metrics.getRegistry().getGauges().get(MetricsConstants.OPEN_CONNECTIONS).getValue());
 
     //close one connection, verify still two left
     msc.close();
-    json = metrics.dumpJson();
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.OPEN_CONNECTIONS, initialCount + 1);
+    Thread.sleep(2000);  // TODO Evil!  Need to figure out a way to remove this sleep.
+    Assert.assertEquals(initialCount + 1,
+        Metrics.getRegistry().getGauges().get(MetricsConstants.OPEN_CONNECTIONS).getValue());
 
     //close one connection, verify still one left
     msc2.close();
-    json = metrics.dumpJson();
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.OPEN_CONNECTIONS, initialCount);
+    Thread.sleep(2000);  // TODO Evil!  Need to figure out a way to remove this sleep.
+    Assert.assertEquals(initialCount,
+        Metrics.getRegistry().getGauges().get(MetricsConstants.OPEN_CONNECTIONS).getValue());
   }
 }

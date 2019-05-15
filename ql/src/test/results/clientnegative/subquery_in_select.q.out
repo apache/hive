@@ -1,1 +1,0 @@
-FAILED: SemanticException org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException: Unsupported SubQuery Expression  Currently SubQuery expressions are only allowed as Where and Having Clause predicates

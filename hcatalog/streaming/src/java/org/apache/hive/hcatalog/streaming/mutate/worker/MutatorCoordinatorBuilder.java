@@ -32,7 +32,10 @@ import org.apache.hive.hcatalog.streaming.mutate.HiveConfFactory;
 import org.apache.hive.hcatalog.streaming.mutate.UgiMetaStoreClientFactory;
 import org.apache.hive.hcatalog.streaming.mutate.client.AcidTable;
 
-/** Convenience class for building {@link MutatorCoordinator} instances. */
+/** Convenience class for building {@link MutatorCoordinator} instances.
+ * @deprecated as of Hive 3.0.0
+ */
+@Deprecated
 public class MutatorCoordinatorBuilder {
 
   private HiveConf configuration;

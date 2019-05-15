@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,12 +19,17 @@
 
 package org.apache.hive.hcatalog.messaging;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 import java.util.List;
 import java.util.Map;
 
 /**
  * HCat message sent when an insert is done to a table or partition.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class InsertMessage extends HCatEventMessage {
 
   protected InsertMessage() {
@@ -36,6 +41,7 @@ public abstract class InsertMessage extends HCatEventMessage {
    * @return Table-name (String).
    */
   public abstract String getTable();
+  public abstract String getTableType();
 
   /**
    * Get the map of partition keyvalues.  Will be null if this insert is to a table and not a

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -37,7 +37,7 @@ public class TestVectorMapJoinFastBytesHashSet extends CommonFastHashTable {
 
     VectorMapJoinFastMultiKeyHashSet map =
         new VectorMapJoinFastMultiKeyHashSet(
-            false,CAPACITY, LOAD_FACTOR, WB_SIZE, -1);
+            false, CAPACITY, LOAD_FACTOR, WB_SIZE, -1);
 
     VerifyFastBytesHashSet verifyTable = new VerifyFastBytesHashSet();
 
@@ -65,7 +65,7 @@ public class TestVectorMapJoinFastBytesHashSet extends CommonFastHashTable {
 
     VectorMapJoinFastMultiKeyHashSet map =
         new VectorMapJoinFastMultiKeyHashSet(
-            false,CAPACITY, LOAD_FACTOR, WB_SIZE, -1);
+            false, CAPACITY, LOAD_FACTOR, WB_SIZE, -1);
 
     VerifyFastBytesHashSet verifyTable = new VerifyFastBytesHashSet();
 
@@ -91,7 +91,7 @@ public class TestVectorMapJoinFastBytesHashSet extends CommonFastHashTable {
 
     VectorMapJoinFastMultiKeyHashSet map =
         new VectorMapJoinFastMultiKeyHashSet(
-            false,CAPACITY, LOAD_FACTOR, WB_SIZE, -1);
+            false, CAPACITY, LOAD_FACTOR, WB_SIZE, -1);
 
     VerifyFastBytesHashSet verifyTable = new VerifyFastBytesHashSet();
 
@@ -125,7 +125,8 @@ public class TestVectorMapJoinFastBytesHashSet extends CommonFastHashTable {
 
     // Make sure the map does not expand; should be able to find space.
     VectorMapJoinFastMultiKeyHashSet map =
-        new VectorMapJoinFastMultiKeyHashSet(false,CAPACITY, 1f, WB_SIZE, -1);
+        new VectorMapJoinFastMultiKeyHashSet(
+            false, CAPACITY, 1f, WB_SIZE, -1);
 
     VerifyFastBytesHashSet verifyTable = new VerifyFastBytesHashSet();
 
@@ -167,7 +168,8 @@ public class TestVectorMapJoinFastBytesHashSet extends CommonFastHashTable {
 
     // Start with capacity 1; make sure we expand on every put.
     VectorMapJoinFastMultiKeyHashSet map =
-        new VectorMapJoinFastMultiKeyHashSet(false,1, 0.0000001f, WB_SIZE, -1);
+        new VectorMapJoinFastMultiKeyHashSet(
+            false, 1, 0.0000001f, WB_SIZE, -1);
 
     VerifyFastBytesHashSet verifyTable = new VerifyFastBytesHashSet();
 
@@ -227,7 +229,7 @@ public class TestVectorMapJoinFastBytesHashSet extends CommonFastHashTable {
     // Use a large capacity that doesn't require expansion, yet.
     VectorMapJoinFastMultiKeyHashSet map =
         new VectorMapJoinFastMultiKeyHashSet(
-            false,LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
+            false, LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
 
     VerifyFastBytesHashSet verifyTable = new VerifyFastBytesHashSet();
 
@@ -242,7 +244,7 @@ public class TestVectorMapJoinFastBytesHashSet extends CommonFastHashTable {
     // Use a large capacity that doesn't require expansion, yet.
     VectorMapJoinFastMultiKeyHashSet map =
         new VectorMapJoinFastMultiKeyHashSet(
-            false,MODERATE_CAPACITY, LOAD_FACTOR, MODERATE_WB_SIZE, -1);
+            false, MODERATE_CAPACITY, LOAD_FACTOR, MODERATE_WB_SIZE, -1);
 
     VerifyFastBytesHashSet verifyTable = new VerifyFastBytesHashSet();
 

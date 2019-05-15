@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -50,7 +50,7 @@ public abstract class AbstractService implements Service {
   /**
    * The configuration. Will be null until the service is initialized.
    */
-  protected HiveConf hiveConf;
+  private HiveConf hiveConf;
 
   /**
    * List of state change listeners; it is final to ensure
@@ -69,6 +69,7 @@ public abstract class AbstractService implements Service {
     this.name = name;
   }
 
+  // This probably doesn't need to be sync, but nobody calls this, so it doesn't matter.
   @Override
   public synchronized STATE getServiceState() {
     return state;
@@ -84,9 +85,13 @@ public abstract class AbstractService implements Service {
   @Override
   public synchronized void init(HiveConf hiveConf) {
     ensureCurrentState(STATE.NOTINITED);
-    this.hiveConf = hiveConf;
+    setHiveConf(hiveConf);
     changeState(STATE.INITED);
     LOG.info("Service:" + getName() + " is inited.");
+  }
+
+  protected final void setHiveConf(HiveConf hiveConf) {
+    this.hiveConf = hiveConf;
   }
 
   /**
@@ -126,13 +131,17 @@ public abstract class AbstractService implements Service {
   }
 
   @Override
-  public synchronized void register(ServiceStateChangeListener l) {
-    listeners.add(l);
+  public void register(ServiceStateChangeListener l) {
+    synchronized (listeners) {
+      listeners.add(l);
+    }
   }
 
   @Override
-  public synchronized void unregister(ServiceStateChangeListener l) {
-    listeners.remove(l);
+  public void unregister(ServiceStateChangeListener l) {
+    synchronized (listeners) {
+      listeners.remove(l);
+    }
   }
 
   @Override
@@ -141,7 +150,7 @@ public abstract class AbstractService implements Service {
   }
 
   @Override
-  public synchronized HiveConf getHiveConf() {
+  public HiveConf getHiveConf() {
     return hiveConf;
   }
 

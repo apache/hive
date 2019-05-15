@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,17 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.parse.authorization;
 
-import junit.framework.Assert;
-
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.privilege.GrantDesc;
+import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
+import org.apache.hadoop.hive.ql.ddl.privilege.PrivilegeDesc;
 import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
-import org.apache.hadoop.hive.ql.plan.GrantDesc;
-import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
-import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
 import org.apache.hadoop.hive.ql.security.authorization.PrivilegeType;
+import org.junit.Assert;
 
 public class PrivilegesTestBase {
   protected static final String DB = "default";
@@ -37,8 +35,9 @@ public class PrivilegesTestBase {
 
   public static void grantUserTable(String privStr, PrivilegeType privType, QueryState queryState, Hive db)
       throws Exception {
-    DDLWork work = AuthorizationTestUtil.analyze("GRANT " + privStr + " ON TABLE " + TABLE + " TO USER " + USER, queryState, db);
-    GrantDesc grantDesc = work.getGrantDesc();
+    DDLWork2 work = AuthorizationTestUtil.analyze(
+        "GRANT " + privStr + " ON TABLE " + TABLE + " TO USER " + USER, queryState, db);
+    GrantDesc grantDesc = (GrantDesc)work.getDDLDesc();
     Assert.assertNotNull("Grant should not be null", grantDesc);
 
     //check privileges
@@ -51,8 +50,8 @@ public class PrivilegesTestBase {
       Assert.assertEquals(PrincipalType.USER, principal.getType());
       Assert.assertEquals(USER, principal.getName());
     }
-    Assert.assertTrue("Expected table", grantDesc.getPrivilegeSubjectDesc().getTable());
-    Assert.assertEquals(TABLE_QNAME, grantDesc.getPrivilegeSubjectDesc().getObject());
+    Assert.assertTrue("Expected table", grantDesc.getPrivilegeSubject().getTable());
+    Assert.assertEquals(TABLE_QNAME, grantDesc.getPrivilegeSubject().getObject());
   }
 
 }

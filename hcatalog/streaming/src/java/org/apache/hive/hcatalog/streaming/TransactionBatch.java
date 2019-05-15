@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,79 +30,97 @@ import java.util.Collection;
  * Note on thread safety: At most 2 threads can run through a given TransactionBatch at the same
  * time.  One thread may call {@link #heartbeat()} and the other all other methods.
  * Violating this may result in "out of sequence response".
- *
+ * @deprecated as of Hive 3.0.0, replaced by org.apache.hive.streaming.HiveStreamingConnection
  */
+@Deprecated
 public interface TransactionBatch  {
-  public enum TxnState {INACTIVE, OPEN, COMMITTED, ABORTED }
+  enum TxnState {
+    INACTIVE("I"), OPEN("O"), COMMITTED("C"), ABORTED("A");
+
+    private final String code;
+    TxnState(String code) {
+      this.code = code;
+    };
+    public String toString() {
+      return code;
+    }
+  }
 
   /**
-   * Activate the next available transaction in the current transaction batch
+   * Activate the next available transaction in the current transaction batch.
    * @throws StreamingException if not able to switch to next Txn
    * @throws InterruptedException if call in interrupted
    */
-  public void beginNextTransaction() throws StreamingException, InterruptedException;
+  void beginNextTransaction() throws StreamingException, InterruptedException;
 
   /**
-   * Get Id of currently open transaction
+   * Get Id of currently open transaction.
    * @return transaction id
    */
-  public Long getCurrentTxnId();
+  Long getCurrentTxnId();
+
 
   /**
-   * get state of current transaction
+   * Get write Id mapping to currently open transaction.
+   * @return write id
    */
-  public TxnState getCurrentTransactionState();
+  Long getCurrentWriteId();
 
   /**
-   * Commit the currently open transaction
+   * get state of current transaction.
+   */
+  TxnState getCurrentTransactionState();
+
+  /**
+   * Commit the currently open transaction.
    * @throws StreamingException if there are errors committing
    * @throws InterruptedException if call in interrupted
    */
-  public void commit() throws StreamingException, InterruptedException;
+  void commit() throws StreamingException, InterruptedException;
 
   /**
-   * Abort the currently open transaction
+   * Abort the currently open transaction.
    * @throws StreamingException if there are errors
    * @throws InterruptedException if call in interrupted
    */
-  public void abort() throws StreamingException, InterruptedException;
+  void abort() throws StreamingException, InterruptedException;
 
   /**
    * Remaining transactions are the ones that are not committed or aborted or open.
    * Current open transaction is not considered part of remaining txns.
    * @return number of transactions remaining this batch.
    */
-  public int remainingTransactions();
+  int remainingTransactions();
 
 
   /**
-   *  Write record using RecordWriter
+   *  Write record using RecordWriter.
    * @param record  the data to be written
    * @throws StreamingException if there are errors when writing
    * @throws InterruptedException if call in interrupted
    */
-  public void write(byte[] record) throws StreamingException, InterruptedException;
+  void write(byte[] record) throws StreamingException, InterruptedException;
 
   /**
-   *  Write records using RecordWriter
+   *  Write records using RecordWriter.
    * @throws StreamingException if there are errors when writing
    * @throws InterruptedException if call in interrupted
    */
-  public void write(Collection<byte[]> records) throws StreamingException, InterruptedException;
+  void write(Collection<byte[]> records) throws StreamingException, InterruptedException;
 
 
   /**
    * Issues a heartbeat to hive metastore on the current and remaining txn ids
-   * to keep them from expiring
+   * to keep them from expiring.
    * @throws StreamingException if there are errors
    */
-  public void heartbeat() throws StreamingException;
+  void heartbeat() throws StreamingException;
 
   /**
-   * Close the TransactionBatch
+   * Close the TransactionBatch.
    * @throws StreamingException if there are errors closing batch
    * @throws InterruptedException if call in interrupted
    */
-  public void close() throws StreamingException, InterruptedException;
-  public boolean isClosed();
+  void close() throws StreamingException, InterruptedException;
+  boolean isClosed();
 }

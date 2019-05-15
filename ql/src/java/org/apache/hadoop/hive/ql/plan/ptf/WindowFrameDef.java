@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,9 +18,13 @@
 
 package org.apache.hadoop.hive.ql.plan.ptf;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class WindowFrameDef {
   private WindowType windowType;
   private BoundaryDef start;
@@ -78,6 +82,6 @@ public class WindowFrameDef {
 
   @Override
   public String toString() {
-    return start + "~" + end;
+    return windowType + " " + start + "~" + end;
   }
 }

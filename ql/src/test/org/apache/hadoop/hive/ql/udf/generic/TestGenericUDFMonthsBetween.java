@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,14 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Date;
-import java.sql.Timestamp;
-
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -57,6 +56,17 @@ public class TestGenericUDFMonthsBetween extends TestCase {
     udfWithoutRoundOff.initialize(args);
 
     testMonthsBetweenForString(udf);
+  }
+
+  public void testWrongDateStr() throws HiveException {
+    GenericUDFMonthsBetween udf = new GenericUDFMonthsBetween();
+    ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+    ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+    ObjectInspector[] arguments = {valueOI1, valueOI2};
+    udf.initialize(arguments);
+
+    runTestStr("2002-03", "2002-02-24", null, udf);
+    runTestStr("2002-03-24", "2002-02", null, udf);
   }
 
   public void testMonthsBetweenForString(GenericUDFMonthsBetween udf) throws HiveException {
@@ -111,12 +121,10 @@ public class TestGenericUDFMonthsBetween extends TestCase {
     runTestStr("2002-02-28", null, null, udf);
     runTestStr(null, null, null, udf);
 
-    // string dates without day should be parsed to null
-    runTestStr("2002-03", "2002-02-24", null, udf);
-    runTestStr("2002-03-24", "2002-02", null, udf);
-
     runTestStr("2003-04-23", "2002-04-24", 11.96774194, udf);
   }
+
+
 
   public void testMonthsBetweenForTimestamp() throws HiveException {
     GenericUDFMonthsBetween udf = new GenericUDFMonthsBetween();
@@ -152,13 +160,9 @@ public class TestGenericUDFMonthsBetween extends TestCase {
     runTestTs("2002-02-28 00:00:00", "2002-03-01 00:00:00", -0.12903226, udf);
     // test February of non-leap year, 2/31 is viewd as 3/3 due to 3 days diff
     // from 2/31 to 2/28
-    runTestTs("2002-02-31 00:00:00", "2002-03-01 00:00:00", 0.06451613, udf);
 
     // test Feb of leap year, 2/29
     runTestTs("2012-02-29 00:00:00", "2012-03-01 00:00:00", -0.09677419, udf);
-    // test february of leap year, 2/31 is viewed as 3/2 due to 2 days diff from
-    // 2/31 to 2/29
-    runTestTs("2012-02-31 00:00:00", "2012-03-01 00:00:00", 0.03225806, udf);
 
     // time part
     // test that there is no lead second adjustment
@@ -176,12 +180,7 @@ public class TestGenericUDFMonthsBetween extends TestCase {
     runTestTs("2002-03-24 00:00:00", "2002-02-24 10:30:00", 1.0, udf);
     runTestTs("2002-03-24 10:30:00", "2002-02-24 00:00:00", 1.0, udf);
 
-    runTestTs("2003-04-23 23:59:59", "2003-03-24 00:0:0", 0.99999963, udf);
-
-    // Test with null args
-    runTestTs(null, "2002-03-01 00:00:00", null, udf);
-    runTestTs("2002-02-28 00:00:00", null, null, udf);
-    runTestTs(null, null, null, udf);
+    runTestTs("2003-04-23 23:59:59", "2003-03-24 00:00:00", 0.99999963, udf);
   }
 
   public void testMonthsBetweenForDate() throws HiveException {
@@ -247,8 +246,8 @@ public class TestGenericUDFMonthsBetween extends TestCase {
 
   protected void runTestTs(String ts1, String ts2, Double expDiff, GenericUDFMonthsBetween udf)
       throws HiveException {
-    TimestampWritable tsWr1 = ts1 == null ? null : new TimestampWritable(Timestamp.valueOf(ts1));
-    TimestampWritable tsWr2 = ts2 == null ? null : new TimestampWritable(Timestamp.valueOf(ts2));
+    TimestampWritableV2 tsWr1 = ts1 == null ? null : new TimestampWritableV2(Timestamp.valueOf(ts1));
+    TimestampWritableV2 tsWr2 = ts2 == null ? null : new TimestampWritableV2(Timestamp.valueOf(ts2));
     DeferredJavaObject valueObj1 = new DeferredJavaObject(tsWr1);
     DeferredJavaObject valueObj2 = new DeferredJavaObject(tsWr2);
     DeferredObject[] args = new DeferredObject[] { valueObj1, valueObj2 };
@@ -263,8 +262,8 @@ public class TestGenericUDFMonthsBetween extends TestCase {
 
   protected void runTestDt(String dt1, String dt2, Double expDiff, GenericUDFMonthsBetween udf)
       throws HiveException {
-    DateWritable dtWr1 = dt1 == null ? null : new DateWritable(Date.valueOf(dt1));
-    DateWritable dtWr2 = dt2 == null ? null : new DateWritable(Date.valueOf(dt2));
+    DateWritableV2 dtWr1 = dt1 == null ? null : new DateWritableV2(Date.valueOf(dt1));
+    DateWritableV2 dtWr2 = dt2 == null ? null : new DateWritableV2(Date.valueOf(dt2));
     DeferredJavaObject valueObj1 = new DeferredJavaObject(dtWr1);
     DeferredJavaObject valueObj2 = new DeferredJavaObject(dtWr2);
     DeferredObject[] args = new DeferredObject[] { valueObj1, valueObj2 };

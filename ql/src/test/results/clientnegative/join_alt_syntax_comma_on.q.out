@@ -1,1 +1,1 @@
-FAILED: ParseException line 3:25 Failed to recognize predicate '<EOF>'. Failed rule: 'joinSource' in join source
+FAILED: ParseException line 4:25 Failed to recognize predicate '<EOF>'. Failed rule: 'joinSource' in join source

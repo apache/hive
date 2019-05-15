@@ -20,4 +20,4 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@srcpart_archived@ds=2008-04-08/hr=12
 POSTHOOK: Lineage: srcpart_archived PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpart_archived PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-FAILED: ValidationFailureSemanticException Partition spec {ds=2008-04-08, nonexistingpart=12} contains non-partition columns
+FAILED: ValidationFailureSemanticException default.srcpart_archived: Partition spec {ds=2008-04-08, nonexistingpart=12} contains non-partition columns

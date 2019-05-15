@@ -1,0 +1,64 @@
+PREHOOK: query: create external table new_char_decimal (c1 char(20))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@new_char_decimal
+POSTHOOK: query: create external table new_char_decimal (c1 char(20))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@new_char_decimal
+PREHOOK: query: alter table new_char_decimal change c1 c1 decimal(31,0)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@new_char_decimal
+PREHOOK: Output: default@new_char_decimal
+POSTHOOK: query: alter table new_char_decimal change c1 c1 decimal(31,0)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@new_char_decimal
+POSTHOOK: Output: default@new_char_decimal
+PREHOOK: query: create external table new_varchar_decimal (c1 varchar(25))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@new_varchar_decimal
+POSTHOOK: query: create external table new_varchar_decimal (c1 varchar(25))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@new_varchar_decimal
+PREHOOK: query: alter table new_varchar_decimal change c1 c1 decimal(12,5)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@new_varchar_decimal
+PREHOOK: Output: default@new_varchar_decimal
+POSTHOOK: query: alter table new_varchar_decimal change c1 c1 decimal(12,5)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@new_varchar_decimal
+POSTHOOK: Output: default@new_varchar_decimal
+PREHOOK: query: create external table new_char_double (c1 char(20))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@new_char_double
+POSTHOOK: query: create external table new_char_double (c1 char(20))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@new_char_double
+PREHOOK: query: alter table new_char_double change c1 c1 double
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@new_char_double
+PREHOOK: Output: default@new_char_double
+POSTHOOK: query: alter table new_char_double change c1 c1 double
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@new_char_double
+POSTHOOK: Output: default@new_char_double
+PREHOOK: query: create external table new_varchar_double (c1 varchar(25))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@new_varchar_double
+POSTHOOK: query: create external table new_varchar_double (c1 varchar(25))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@new_varchar_double
+PREHOOK: query: alter table new_varchar_double change c1 c1 double
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@new_varchar_double
+PREHOOK: Output: default@new_varchar_double
+POSTHOOK: query: alter table new_varchar_double change c1 c1 double
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@new_varchar_double
+POSTHOOK: Output: default@new_varchar_double

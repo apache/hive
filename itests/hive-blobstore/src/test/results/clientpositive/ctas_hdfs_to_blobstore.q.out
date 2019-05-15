@@ -1,0 +1,124 @@
+PREHOOK: query: DROP TABLE IF EXISTS hdfs_source
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS hdfs_source
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE hdfs_source(a string, b string, c double)
+ROW FORMAT DELIMITED 
+FIELDS TERMINATED BY ' '
+COLLECTION ITEMS TERMINATED BY '\t'
+LINES TERMINATED BY '\n'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hdfs_source
+POSTHOOK: query: CREATE TABLE hdfs_source(a string, b string, c double)
+ROW FORMAT DELIMITED 
+FIELDS TERMINATED BY ' '
+COLLECTION ITEMS TERMINATED BY '\t'
+LINES TERMINATED BY '\n'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hdfs_source
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/3col_data.txt' 
+INTO TABLE hdfs_source
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@hdfs_source
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/3col_data.txt' 
+INTO TABLE hdfs_source
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@hdfs_source
+PREHOOK: query: DROP TABLE IF EXISTS blobstore_target
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS blobstore_target
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE blobstore_target 
+#### A masked pattern was here ####
+AS SELECT * FROM hdfs_source
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@hdfs_source
+PREHOOK: Input: ### test.blobstore.path ###/ctas_hdfs_to_blobstore/blobstore_target
+PREHOOK: Output: database:default
+PREHOOK: Output: default@blobstore_target
+POSTHOOK: query: CREATE TABLE blobstore_target 
+#### A masked pattern was here ####
+AS SELECT * FROM hdfs_source
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@hdfs_source
+POSTHOOK: Input: ### test.blobstore.path ###/ctas_hdfs_to_blobstore/blobstore_target
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@blobstore_target
+PREHOOK: query: DROP DATABASE IF EXISTS target_db
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: DROP DATABASE IF EXISTS target_db
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: CREATE DATABASE target_db 
+#### A masked pattern was here ####
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:target_db
+PREHOOK: Output: ### test.blobstore.path ###/ctas_hdfs_to_blobstore/target_db
+POSTHOOK: query: CREATE DATABASE target_db 
+#### A masked pattern was here ####
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:target_db
+POSTHOOK: Output: ### test.blobstore.path ###/ctas_hdfs_to_blobstore/target_db
+PREHOOK: query: CREATE TABLE target_db.blobstore_target
+AS SELECT * FROM hdfs_source
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@hdfs_source
+PREHOOK: Output: database:target_db
+PREHOOK: Output: target_db@blobstore_target
+POSTHOOK: query: CREATE TABLE target_db.blobstore_target
+AS SELECT * FROM hdfs_source
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@hdfs_source
+POSTHOOK: Output: database:target_db
+POSTHOOK: Output: target_db@blobstore_target
+POSTHOOK: Lineage: blobstore_target.a SIMPLE [(hdfs_source)hdfs_source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: blobstore_target.b SIMPLE [(hdfs_source)hdfs_source.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: blobstore_target.c SIMPLE [(hdfs_source)hdfs_source.FieldSchema(name:c, type:double, comment:null), ]
+PREHOOK: query: SELECT * FROM hdfs_source
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hdfs_source
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM hdfs_source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hdfs_source
+#### A masked pattern was here ####
+1	abc	10.5
+2	def	11.5
+3	ajss	90.23232
+4	djns	89.02002
+5	random	2.99
+6	data	3.002
+7	ne	71.9084
+PREHOOK: query: SELECT * FROM blobstore_target
+PREHOOK: type: QUERY
+PREHOOK: Input: default@blobstore_target
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM blobstore_target
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@blobstore_target
+#### A masked pattern was here ####
+1	abc	10.5
+2	def	11.5
+3	ajss	90.23232
+4	djns	89.02002
+5	random	2.99
+6	data	3.002
+7	ne	71.9084
+PREHOOK: query: SELECT * FROM target_db.blobstore_target
+PREHOOK: type: QUERY
+PREHOOK: Input: target_db@blobstore_target
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM target_db.blobstore_target
+POSTHOOK: type: QUERY
+POSTHOOK: Input: target_db@blobstore_target
+#### A masked pattern was here ####
+1	abc	10.5
+2	def	11.5
+3	ajss	90.23232
+4	djns	89.02002
+5	random	2.99
+6	data	3.002
+7	ne	71.9084

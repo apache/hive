@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -68,6 +68,8 @@ public interface Deserializer {
 
   /**
    * Returns statistics collected when serializing
+   *
+   * @return {@link SerDeStats} object; or in case not supported: null
    */
   SerDeStats getSerDeStats();
 }

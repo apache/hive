@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,10 +18,15 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.exec.DagUtils;
+import org.apache.hive.spark.client.SparkClientUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -36,6 +41,7 @@ import org.apache.hadoop.hive.ql.exec.spark.status.impl.JobMetricsListener;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.LocalSparkJobRef;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.LocalSparkJobStatus;
 import org.apache.hadoop.hive.ql.io.HiveKey;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -55,35 +61,51 @@ import com.google.common.base.Strings;
  * environment and execute spark work.
  */
 public class LocalHiveSparkClient implements HiveSparkClient {
+
   private static final long serialVersionUID = 1L;
 
-  private static final String MR_JAR_PROPERTY = "tmpjars";
-  protected static final transient Logger LOG = LoggerFactory
-      .getLogger(LocalHiveSparkClient.class);
+  private static final transient Logger LOG = LoggerFactory
+          .getLogger(LocalHiveSparkClient.class);
 
+  private static final String MR_JAR_PROPERTY = "tmpjars";
   private static final Splitter CSV_SPLITTER = Splitter.on(",").omitEmptyStrings();
 
   private static LocalHiveSparkClient client;
-
-  public static synchronized LocalHiveSparkClient getInstance(SparkConf sparkConf) {
-    if (client == null) {
-      client = new LocalHiveSparkClient(sparkConf);
-    }
-    return client;
-  }
+  private int activeSessions = 0;
 
   private final JavaSparkContext sc;
 
   private final List<String> localJars = new ArrayList<String>();
-
   private final List<String> localFiles = new ArrayList<String>();
 
   private final JobMetricsListener jobMetricsListener;
 
-  private LocalHiveSparkClient(SparkConf sparkConf) {
+  public static synchronized LocalHiveSparkClient getInstance(SparkConf sparkConf, HiveConf hiveConf)
+      throws FileNotFoundException, MalformedURLException {
+    if (client == null) {
+      client = new LocalHiveSparkClient(sparkConf, hiveConf);
+    }
+    ++client.activeSessions;
+    return client;
+  }
+
+  private LocalHiveSparkClient(SparkConf sparkConf, HiveConf hiveConf)
+      throws FileNotFoundException, MalformedURLException {
+    String regJar = null;
+    // the registrator jar should already be in CP when not in test mode
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_IN_TEST)) {
+      String kryoReg = sparkConf.get("spark.kryo.registrator", "");
+      if (SparkClientUtilities.HIVE_KRYO_REG_NAME.equals(kryoReg)) {
+        regJar = SparkClientUtilities.findKryoRegistratorJar(hiveConf);
+        SparkClientUtilities.addJarToContextLoader(new File(regJar));
+      }
+    }
     sc = new JavaSparkContext(sparkConf);
+    if (regJar != null) {
+      sc.addJar(regJar);
+    }
     jobMetricsListener = new JobMetricsListener();
-    sc.sc().listenerBus().addListener(jobMetricsListener);
+    sc.sc().addSparkListener(jobMetricsListener);
   }
 
   @Override
@@ -135,10 +157,21 @@ public class LocalHiveSparkClient implements HiveSparkClient {
       new SparkPlanGenerator(sc, ctx, jobConf, emptyScratchDir, sparkReporter);
     SparkPlan plan = gen.generate(sparkWork);
 
+    if (driverContext.isShutdown()) {
+      throw new HiveException("Operation is cancelled.");
+    }
+
     // Execute generated plan.
     JavaPairRDD<HiveKey, BytesWritable> finalRDD = plan.generateGraph();
+
+    // We get the query name for this SparkTask and set it to the description for the associated
+    // Spark job; query names are guaranteed to be unique for each Spark job because the task id
+    // is concatenated to the end of the query name
+    sc.setJobGroup("queryId = " + sparkWork.getQueryId(), DagUtils.getQueryName(jobConf));
+
     // We use Spark RDD async action to submit job as it's the only way to get jobId now.
     JavaFutureAction<Void> future = finalRDD.foreachAsync(HiveVoidFunction.getInstance());
+
     // As we always use foreach action to submit RDD graph, it would only trigger one job.
     int jobId = future.jobIds().get(0);
     LocalSparkJobStatus sparkJobStatus = new LocalSparkJobStatus(
@@ -173,7 +206,7 @@ public class LocalHiveSparkClient implements HiveSparkClient {
     for (BaseWork work : sparkWork.getAllWork()) {
       work.configureJobConf(jobConf);
     }
-    addJars(conf.get(MR_JAR_PROPERTY));
+    addJars(jobConf.get(MR_JAR_PROPERTY));
 
     // add added files
     String addedFiles = Utilities.getResourceFiles(conf, SessionState.ResourceType.FILE);
@@ -207,10 +240,13 @@ public class LocalHiveSparkClient implements HiveSparkClient {
   @Override
   public void close() {
     synchronized (LocalHiveSparkClient.class) {
-      client = null;
-    }
-    if (sc != null) {
-      sc.stop();
+      if (--activeSessions == 0) {
+        client = null;
+        if (sc != null) {
+          LOG.debug("Shutting down the SparkContext");
+          sc.stop();
+        }
+      }
     }
   }
 }

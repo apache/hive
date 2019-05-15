@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,25 +18,23 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.reducesink;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.keyseries.VectorKeySeriesLongSerialized;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 /*
- * Specialized class for native vectorized reduce sink that is reducing on a single long key column.
+ * Specialized class for native vectorized reduce sink that is reducing on a Uniform Hash
+ * single long key column.
  */
-public class VectorReduceSinkLongOperator extends VectorReduceSinkCommonOperator {
+public class VectorReduceSinkLongOperator extends VectorReduceSinkUniformHashOperator {
 
   private static final long serialVersionUID = 1L;
-  private static final String CLASS_NAME = VectorReduceSinkLongOperator.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
 
   // The column number and type information for this one column long reduce key.
   private transient int singleKeyColumn;
@@ -59,9 +57,9 @@ public class VectorReduceSinkLongOperator extends VectorReduceSinkCommonOperator
     super(ctx);
   }
 
-  public VectorReduceSinkLongOperator(CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
-    super(ctx, vContext, conf);
+  public VectorReduceSinkLongOperator(CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
+    super(ctx, conf, vContext, vectorDesc);
   }
 
   @Override

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,40 +18,40 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.common.io.NonSyncByteArrayInputStream;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedUDAFs;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.Statistics;
-import org.apache.hadoop.hive.ql.plan.Statistics.State;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.*;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.Text;
-import org.apache.hive.common.util.BloomFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.hive.common.util.BloomKFilter;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.List;
 
 /**
  * Generic UDF to generate Bloom Filter
  */
 public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
-
-  private static final Logger LOG = LoggerFactory.getLogger(GenericUDAFBloomFilter.class);
 
   @Override
   public GenericUDAFEvaluator getEvaluator(GenericUDAFParameterInfo info) throws SemanticException {
@@ -66,16 +66,22 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
   /**
    * GenericUDAFBloomFilterEvaluator - Evaluator class for BloomFilter
    */
+  @VectorizedUDAFs({
+    VectorUDAFBloomFilter.class,
+    VectorUDAFBloomFilterMerge.class})
   public static class GenericUDAFBloomFilterEvaluator extends GenericUDAFEvaluator {
     // Source operator to get the number of entries
-    private Operator<?> sourceOperator;
+    private SelectOperator sourceOperator;
+    private long hintEntries = -1;
     private long maxEntries = 0;
+    private long minEntries = 0;
+    private float factor = 1;
 
     // ObjectInspector for input data.
     private PrimitiveObjectInspector inputOI;
 
     // Bloom filter rest
-    private ByteArrayOutputStream result = new ByteArrayOutputStream();
+    private final ByteArrayOutputStream result = new ByteArrayOutputStream();
 
     private transient byte[] scratchBuffer = new byte[HiveDecimal.SCRATCH_BUFFER_LEN_TO_BYTES];
 
@@ -95,18 +101,28 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
       return PrimitiveObjectInspectorFactory.writableBinaryObjectInspector;
     }
 
+    @Override
+    public int estimate() {
+      long entries = Math.min(getExpectedEntries(), maxEntries);
+      long numBits = (long) (-entries * Math.log(BloomKFilter.DEFAULT_FPP) / (Math.log(2) * Math.log(2)));
+      int nLongs = (int) Math.ceil((double) numBits / (double) Long.SIZE);
+      // additional bits to pad long array to block size
+      int padLongs = 8 - nLongs % 8;
+      return (nLongs + padLongs) * Long.SIZE / 8;
+    }
+
     /**
      * Class for storing the BloomFilter
      */
     @AggregationType(estimable = true)
     static class BloomFilterBuf extends AbstractAggregationBuffer {
-      BloomFilter bloomFilter;
+      BloomKFilter bloomFilter;
 
       public BloomFilterBuf(long expectedEntries, long maxEntries) {
         if (expectedEntries > maxEntries) {
-          bloomFilter = new BloomFilter(1);
+          bloomFilter = new BloomKFilter(maxEntries);
         } else {
-          bloomFilter = new BloomFilter(expectedEntries);
+          bloomFilter = new BloomKFilter(expectedEntries);
         }
       }
 
@@ -141,7 +157,7 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
         return;
       }
 
-      BloomFilter bf = ((BloomFilterBuf)agg).bloomFilter;
+      BloomKFilter bf = ((BloomFilterBuf)agg).bloomFilter;
 
       // Add the expression into the BloomFilter
       switch (inputOI.getPrimitiveCategory()) {
@@ -180,14 +196,14 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
           bf.addBytes(scratchBuffer, startIdx, scratchBuffer.length - startIdx);
           break;
         case DATE:
-          DateWritable vDate = ((DateObjectInspector)inputOI).
+          DateWritableV2 vDate = ((DateObjectInspector)inputOI).
                   getPrimitiveWritableObject(parameters[0]);
           bf.addLong(vDate.getDays());
           break;
         case TIMESTAMP:
           Timestamp vTimeStamp = ((TimestampObjectInspector)inputOI).
                   getPrimitiveJavaObject(parameters[0]);
-          bf.addLong(vTimeStamp.getTime());
+          bf.addLong(vTimeStamp.toEpochMilli());
           break;
         case CHAR:
           Text vChar = ((HiveCharObjectInspector)inputOI).
@@ -222,13 +238,15 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
       }
 
       BytesWritable bytes = (BytesWritable) partial;
-      ByteArrayInputStream in = new ByteArrayInputStream(bytes.getBytes());
-      // Deserialze the bloomfilter
+      ByteArrayInputStream in = new NonSyncByteArrayInputStream(bytes.getBytes());
+      // Deserialize the bloom filter
       try {
-        BloomFilter bf = BloomFilter.deserialize(in);
+        BloomKFilter bf = BloomKFilter.deserialize(in);
         ((BloomFilterBuf)agg).bloomFilter.merge(bf);
       } catch (IOException e) {
         throw new HiveException(e);
+      } finally {
+        IOUtils.closeStream(in);
       }
     }
 
@@ -236,9 +254,11 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
     public Object terminate(AggregationBuffer agg) throws HiveException {
       result.reset();
       try {
-        BloomFilter.serialize(result, ((BloomFilterBuf)agg).bloomFilter);
+        BloomKFilter.serialize(result, ((BloomFilterBuf)agg).bloomFilter);
       } catch (IOException e) {
         throw new HiveException(e);
+      } finally {
+        IOUtils.closeStream(result);
       }
       return new BytesWritable(result.toByteArray());
     }
@@ -249,6 +269,10 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
     }
 
     public long getExpectedEntries() {
+      // If hint is provided use that size.
+      if (hintEntries > 0 )
+        return hintEntries;
+
       long expectedEntries = -1;
       if (sourceOperator != null && sourceOperator.getStatistics() != null) {
         Statistics stats = sourceOperator.getStatistics();
@@ -258,10 +282,13 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
         switch (stats.getColumnStatsState()) {
           case COMPLETE:
           case PARTIAL:
-            // There should only be column stats for one column, use if that is the case.
+            // There should only be column in sourceOperator
             List<ColStatistics> colStats = stats.getColumnStats();
-            if (colStats.size() == 1) {
-              long ndv = colStats.get(0).getCountDistint();
+            ExprNodeColumnDesc colExpr = ExprNodeDescUtils.getColumnExpr(
+                sourceOperator.getConf().getColList().get(0));
+            if (colExpr != null
+                && stats.getColumnStatisticsFromColName(colExpr.getColumn()) != null) {
+              long ndv = stats.getColumnStatisticsFromColName(colExpr.getColumn()).getCountDistint();
               if (ndv > 0) {
                 expectedEntries = ndv;
               }
@@ -272,6 +299,9 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
         }
       }
 
+      // Update expectedEntries based on factor and minEntries configurations
+      expectedEntries = (long) (expectedEntries * factor);
+      expectedEntries = expectedEntries > minEntries ? expectedEntries : minEntries;
       return expectedEntries;
     }
 
@@ -279,12 +309,36 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
       return sourceOperator;
     }
 
-    public void setSourceOperator(Operator<?> sourceOperator) {
+    public void setSourceOperator(SelectOperator sourceOperator) {
       this.sourceOperator = sourceOperator;
+    }
+
+    public void setHintEntries(long hintEntries) {
+      this.hintEntries = hintEntries;
+    }
+
+    public boolean hasHintEntries() {
+      return hintEntries != -1;
     }
 
     public void setMaxEntries(long maxEntries) {
       this.maxEntries = maxEntries;
+    }
+
+    public void setMinEntries(long minEntries) {
+      this.minEntries = minEntries;
+    }
+
+    public long getMinEntries() {
+      return minEntries;
+    }
+
+    public void setFactor(float factor) {
+      this.factor = factor;
+    }
+
+    public float getFactor() {
+      return factor;
     }
 
     @Override

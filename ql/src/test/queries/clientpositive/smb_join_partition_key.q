@@ -1,3 +1,5 @@
+--because p1 is decimal, in derby, when it retrieves partition with decimal, it will use partval = 100.0, rather than 100. As a result, the partition will not be found and it throws exception.
+set hive.stats.column.autogather=false;
 set hive.mapred.mode=nonstrict;
 SET hive.enforce.sortmergebucketmapjoin=false; 
 SET hive.auto.convert.sortmerge.join=true; 

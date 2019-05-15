@@ -39,7 +39,7 @@ public class TestAvroLazyObjectInspector {
 		fieldNames.add("myField");
 
 		List<ObjectInspector> ois = new ArrayList<ObjectInspector>();
-		ois.add(LazyPrimitiveObjectInspectorFactory.getLazyStringObjectInspector(false, new Byte((byte) 0)));
+    ois.add(LazyPrimitiveObjectInspectorFactory.getLazyStringObjectInspector(false, Byte.valueOf((byte) 0)));
 
 		AvroLazyObjectInspector aloi = new AvroLazyObjectInspector(fieldNames, ois, null, (byte)0, new Text(), false, false, (byte)0);
 		LazyStruct lazyStruct = new LazyStruct(LazyObjectInspectorFactory.getLazySimpleStructObjectInspector(fieldNames, ois, (byte)0, new Text(), false, false, (byte)0));
@@ -60,7 +60,7 @@ public class TestAvroLazyObjectInspector {
 
 		@Override
 		public ObjectInspector getFieldObjectInspector() {
-			return LazyPrimitiveObjectInspectorFactory.getLazyStringObjectInspector(false, new Byte((byte) 0));
+      return LazyPrimitiveObjectInspectorFactory.getLazyStringObjectInspector(false, Byte.valueOf((byte) 0));
 		}
 
 		@Override

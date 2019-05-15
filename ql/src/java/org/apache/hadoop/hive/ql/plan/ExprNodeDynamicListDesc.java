@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import java.util.Map;
+
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
@@ -29,14 +31,27 @@ public class ExprNodeDynamicListDesc extends ExprNodeDesc {
 
   Operator<? extends OperatorDesc> source;
   int keyIndex;
+  // Target name, if key is not set
+  ExprNodeDesc target;
 
   public ExprNodeDynamicListDesc() {
   }
 
-  public ExprNodeDynamicListDesc(TypeInfo typeInfo, Operator<? extends OperatorDesc> source, int keyIndex) {
+  // keyIndex is not used
+  public ExprNodeDynamicListDesc(TypeInfo typeInfo, Operator<? extends OperatorDesc> source,
+      int keyIndex, ExprNodeDesc target) {
     super(typeInfo);
     this.source = source;
     this.keyIndex = keyIndex;
+    this.target = target;
+  }
+
+  public ExprNodeDynamicListDesc(TypeInfo typeInfo, Operator<? extends OperatorDesc> source,
+                                 int keyIndex) {
+    super(typeInfo);
+    this.source = source;
+    this.keyIndex = keyIndex;
+    this.target = null;
   }
 
   public void setSource(Operator<? extends OperatorDesc> source) {
@@ -55,10 +70,13 @@ public class ExprNodeDynamicListDesc extends ExprNodeDesc {
     return this.keyIndex;
   }
 
+  public ExprNodeDesc getTarget() {
+    return target;
+  }
+
   @Override
   public ExprNodeDesc clone() {
-    ExprNodeDynamicListDesc clone = new ExprNodeDynamicListDesc(typeInfo, source, keyIndex);
-    return clone;
+    return new ExprNodeDynamicListDesc(typeInfo, source, keyIndex, target);
   }
 
   @Override
@@ -78,4 +96,5 @@ public class ExprNodeDynamicListDesc extends ExprNodeDesc {
   public String toString() {
     return source.toString();
   }
+
 }

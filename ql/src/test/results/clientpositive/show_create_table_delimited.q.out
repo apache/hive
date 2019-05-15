@@ -27,7 +27,7 @@ CREATE TABLE `tmp_showcrt1`(
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 WITH SERDEPROPERTIES ( 
-  'colelction.delim'='|', 
+  'collection.delim'='|', 
   'field.delim'=',', 
   'line.delim'='\n', 
   'mapkey.delim'='%', 
@@ -39,6 +39,7 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
+  'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE tmp_showcrt1
 PREHOOK: type: DROPTABLE

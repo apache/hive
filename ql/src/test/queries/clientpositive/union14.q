@@ -1,6 +1,10 @@
+--! qt:dataset:src1
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.map.aggr = true;
--- SORT_BEFORE_DIFF
+
+-- SORT_QUERY_RESULTS
+
 -- union case: 1 subquery is a map-reduce job, different inputs for sub-queries, followed by reducesink
 
 explain 

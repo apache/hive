@@ -8,17 +8,23 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_const_1
 PREHOOK: query: INSERT INTO varchar_const_1 values(42)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@varchar_const_1
 POSTHOOK: query: INSERT INTO varchar_const_1 values(42)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@varchar_const_1
-POSTHOOK: Lineage: varchar_const_1.c1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: varchar_const_1.c1 SCRIPT []
 PREHOOK: query: EXPLAIN
 SELECT CONCAT(CAST('F' AS CHAR(2)), CAST('F' AS VARCHAR(2))) FROM VARCHAR_CONST_1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_const_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT CONCAT(CAST('F' AS CHAR(2)), CAST('F' AS VARCHAR(2))) FROM VARCHAR_CONST_1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_const_1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -29,7 +35,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: varchar_const_1
-            Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: 'FF' (type: varchar(4))
               outputColumnNames: _col0

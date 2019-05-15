@@ -19,11 +19,17 @@ from studenttab10k s join votertab10k v
 on (s.name = v.name)
 group by s.name
 PREHOOK: type: QUERY
+PREHOOK: Input: default@studenttab10k
+PREHOOK: Input: default@votertab10k
+#### A masked pattern was here ####
 POSTHOOK: query: explain select s.name, count(distinct registration)
 from studenttab10k s join votertab10k v
 on (s.name = v.name)
 group by s.name
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studenttab10k
+POSTHOOK: Input: default@votertab10k
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-2 depends on stages: Stage-5
@@ -40,14 +46,15 @@ STAGE PLANS:
         $hdt$_0:s 
           TableScan
             alias: s
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: name is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: name is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: name (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: string)
@@ -58,14 +65,15 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: v
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: name is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: name is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: name (type: string), registration (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -73,18 +81,19 @@ STAGE PLANS:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
                   outputColumnNames: _col0, _col2
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count(DISTINCT _col2)
                     keys: _col0 (type: string), _col2 (type: string)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: string)
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -93,10 +102,10 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -145,11 +154,17 @@ from studenttab10k_smb s join votertab10k_smb v
 on (s.name = v.name)
 group by s.name
 PREHOOK: type: QUERY
+PREHOOK: Input: default@studenttab10k_smb
+PREHOOK: Input: default@votertab10k_smb
+#### A masked pattern was here ####
 POSTHOOK: query: explain select s.name, count(distinct registration)
 from studenttab10k_smb s join votertab10k_smb v
 on (s.name = v.name)
 group by s.name
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studenttab10k_smb
+POSTHOOK: Input: default@votertab10k_smb
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -160,14 +175,15 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: s
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: name is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: name is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: name (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                 Sorted Merge Bucket Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -178,6 +194,7 @@ STAGE PLANS:
                   Group By Operator
                     aggregations: count(DISTINCT _col2)
                     keys: _col0 (type: string), _col2 (type: string)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2
                     Reduce Output Operator
@@ -219,35 +236,35 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@studenttab10k_smb
 POSTHOOK: Input: default@votertab10k_smb
 #### A masked pattern was here ####
-PREHOOK: query: load data local inpath '../../data/files/empty1.txt' into table studenttab10k_smb
+PREHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table studenttab10k_smb
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@studenttab10k_smb
-POSTHOOK: query: load data local inpath '../../data/files/empty1.txt' into table studenttab10k_smb
+POSTHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table studenttab10k_smb
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@studenttab10k_smb
-PREHOOK: query: load data local inpath '../../data/files/empty2.txt' into table studenttab10k_smb
+PREHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table studenttab10k_smb
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@studenttab10k_smb
-POSTHOOK: query: load data local inpath '../../data/files/empty2.txt' into table studenttab10k_smb
+POSTHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table studenttab10k_smb
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@studenttab10k_smb
-PREHOOK: query: load data local inpath '../../data/files/empty1.txt' into table votertab10k_smb
+PREHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table votertab10k_smb
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@votertab10k_smb
-POSTHOOK: query: load data local inpath '../../data/files/empty1.txt' into table votertab10k_smb
+POSTHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table votertab10k_smb
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@votertab10k_smb
-PREHOOK: query: load data local inpath '../../data/files/empty2.txt' into table votertab10k_smb
+PREHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table votertab10k_smb
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@votertab10k_smb
-POSTHOOK: query: load data local inpath '../../data/files/empty2.txt' into table votertab10k_smb
+POSTHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table votertab10k_smb
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@votertab10k_smb
@@ -256,11 +273,17 @@ from studenttab10k_smb s join votertab10k_smb v
 on (s.name = v.name)
 group by s.name
 PREHOOK: type: QUERY
+PREHOOK: Input: default@studenttab10k_smb
+PREHOOK: Input: default@votertab10k_smb
+#### A masked pattern was here ####
 POSTHOOK: query: explain select s.name, count(distinct registration)
 from studenttab10k_smb s join votertab10k_smb v
 on (s.name = v.name)
 group by s.name
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studenttab10k_smb
+POSTHOOK: Input: default@votertab10k_smb
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -271,14 +294,15 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: s
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: name is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: name is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: name (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                 Sorted Merge Bucket Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -289,6 +313,7 @@ STAGE PLANS:
                   Group By Operator
                     aggregations: count(DISTINCT _col2)
                     keys: _col0 (type: string), _col2 (type: string)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2
                     Reduce Output Operator
@@ -346,37 +371,37 @@ POSTHOOK: query: create table votertab10k_part (name string, age int, registrati
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@votertab10k_part
-PREHOOK: query: load data local inpath '../../data/files/empty1.txt' into table studenttab10k_part partition (p='foo')
+PREHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table studenttab10k_part partition (p='foo')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@studenttab10k_part
-POSTHOOK: query: load data local inpath '../../data/files/empty1.txt' into table studenttab10k_part partition (p='foo')
+POSTHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table studenttab10k_part partition (p='foo')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@studenttab10k_part
 POSTHOOK: Output: default@studenttab10k_part@p=foo
-PREHOOK: query: load data local inpath '../../data/files/empty2.txt' into table studenttab10k_part partition (p='foo')
+PREHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table studenttab10k_part partition (p='foo')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@studenttab10k_part@p=foo
-POSTHOOK: query: load data local inpath '../../data/files/empty2.txt' into table studenttab10k_part partition (p='foo')
+POSTHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table studenttab10k_part partition (p='foo')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@studenttab10k_part@p=foo
-PREHOOK: query: load data local inpath '../../data/files/empty1.txt' into table votertab10k_part partition (p='foo')
+PREHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table votertab10k_part partition (p='foo')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@votertab10k_part
-POSTHOOK: query: load data local inpath '../../data/files/empty1.txt' into table votertab10k_part partition (p='foo')
+POSTHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table votertab10k_part partition (p='foo')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@votertab10k_part
 POSTHOOK: Output: default@votertab10k_part@p=foo
-PREHOOK: query: load data local inpath '../../data/files/empty2.txt' into table votertab10k_part partition (p='foo')
+PREHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table votertab10k_part partition (p='foo')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@votertab10k_part@p=foo
-POSTHOOK: query: load data local inpath '../../data/files/empty2.txt' into table votertab10k_part partition (p='foo')
+POSTHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table votertab10k_part partition (p='foo')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@votertab10k_part@p=foo
@@ -387,6 +412,9 @@ where s.p = 'bar'
 and v.p = 'bar'
 group by s.name
 PREHOOK: type: QUERY
+PREHOOK: Input: default@studenttab10k_part
+PREHOOK: Input: default@votertab10k_part
+#### A masked pattern was here ####
 POSTHOOK: query: explain select s.name, count(distinct registration)
 from studenttab10k_part s join votertab10k_part v
 on (s.name = v.name)
@@ -394,6 +422,9 @@ where s.p = 'bar'
 and v.p = 'bar'
 group by s.name
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studenttab10k_part
+POSTHOOK: Input: default@votertab10k_part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -404,24 +435,26 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: s
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: ((p = 'bar') and name is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: PARTIAL
             Filter Operator
               predicate: ((p = 'bar') and name is not null) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: PARTIAL
               Select Operator
                 expressions: name (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
                 Sorted Merge Bucket Map Join Operator
                   condition map:
                        Inner Join 0 to 1
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
-                  outputColumnNames: _col0, _col3
+                  outputColumnNames: _col0, _col2
                   Group By Operator
-                    aggregations: count(DISTINCT _col3)
-                    keys: _col0 (type: string), _col3 (type: string)
+                    aggregations: count(DISTINCT _col2)
+                    keys: _col0 (type: string), _col2 (type: string)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2
                     Reduce Output Operator

@@ -1,0 +1,40 @@
+PREHOOK: query: CREATE TABLE avro_orc_partitioned_uniontype (a uniontype<boolean, string>) PARTITIONED BY (b int) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@avro_orc_partitioned_uniontype
+POSTHOOK: query: CREATE TABLE avro_orc_partitioned_uniontype (a uniontype<boolean, string>) PARTITIONED BY (b int) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@avro_orc_partitioned_uniontype
+PREHOOK: query: INSERT INTO avro_orc_partitioned_uniontype PARTITION (b=1) SELECT create_union(1, true, value) FROM src LIMIT 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@avro_orc_partitioned_uniontype@b=1
+POSTHOOK: query: INSERT INTO avro_orc_partitioned_uniontype PARTITION (b=1) SELECT create_union(1, true, value) FROM src LIMIT 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@avro_orc_partitioned_uniontype@b=1
+POSTHOOK: Lineage: avro_orc_partitioned_uniontype PARTITION(b=1).a EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: ALTER TABLE avro_orc_partitioned_uniontype SET FILEFORMAT AVRO
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@avro_orc_partitioned_uniontype
+PREHOOK: Output: default@avro_orc_partitioned_uniontype
+POSTHOOK: query: ALTER TABLE avro_orc_partitioned_uniontype SET FILEFORMAT AVRO
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@avro_orc_partitioned_uniontype
+POSTHOOK: Output: default@avro_orc_partitioned_uniontype
+PREHOOK: query: SELECT * FROM avro_orc_partitioned_uniontype
+PREHOOK: type: QUERY
+PREHOOK: Input: default@avro_orc_partitioned_uniontype
+PREHOOK: Input: default@avro_orc_partitioned_uniontype@b=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM avro_orc_partitioned_uniontype
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@avro_orc_partitioned_uniontype
+POSTHOOK: Input: default@avro_orc_partitioned_uniontype@b=1
+#### A masked pattern was here ####
+{1:"val_165"}	1
+{1:"val_27"}	1
+{1:"val_311"}	1
+{1:"val_86"}	1
+{1:"val_238"}	1

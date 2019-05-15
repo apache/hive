@@ -1,3 +1,5 @@
+--! qt:dataset:srcpart
+--! qt:dataset:src
 DROP VIEW vp1;
 DROP VIEW vp2;
 DROP VIEW vp3;
@@ -81,3 +83,15 @@ ADD PARTITION (v='val_86');
 DROP VIEW vp1;
 DROP VIEW vp2;
 DROP VIEW vp3;
+
+
+-- HIVE-16828
+set hive.security.authorization.enabled=true;
+CREATE TABLE table1_n12 (id int) PARTITIONED BY (year int);
+-- create partitioned view
+CREATE VIEW view1_n0 partitioned on (year) as select id, year from table1_n12;
+
+select year from view1_n0;
+
+Drop view view1_n0;
+drop table table1_n12;

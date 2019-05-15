@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -38,7 +38,7 @@ public interface HBaseValueFactory {
   /**
    * Initialize factory with properties
    * 
-   * @param hbaseParam the {@link HBaseParameters hbase parameters}
+   * @param hbaseParam the HBaseParameters hbase parameters
    * @param conf the hadoop {@link Configuration configuration}
    * @param properties the custom {@link Properties}
    * @throws SerDeException if there was an issue initializing the factory
@@ -67,7 +67,7 @@ public interface HBaseValueFactory {
    * @param object the object to be serialized
    * @param field the {@link StructField}
    * @return the serialized value
-   * @throws {@link IOException} if there was an issue serializing the value
+   * @throws IOException if there was an issue serializing the value
    */
   byte[] serializeValue(Object object, StructField field) throws IOException;
 }

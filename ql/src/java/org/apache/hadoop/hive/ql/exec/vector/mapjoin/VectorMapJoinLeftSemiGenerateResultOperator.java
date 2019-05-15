@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHash
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashTableResult;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
 
 /**
  * This class has methods for generating vectorized join results for left semi joins.
@@ -80,29 +81,29 @@ public abstract class VectorMapJoinLeftSemiGenerateResultOperator
     super(ctx);
   }
 
-  public VectorMapJoinLeftSemiGenerateResultOperator(CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
-    super(ctx, vContext, conf);
+  public VectorMapJoinLeftSemiGenerateResultOperator(CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
+    super(ctx, conf, vContext, vectorDesc);
   }
 
   /*
    * Setup our left semi join specific members.
    */
-  protected void commonSetup(VectorizedRowBatch batch) throws HiveException {
-    super.commonSetup(batch);
+  protected void commonSetup() throws HiveException {
+    super.commonSetup();
 
     // Semi join specific.
     VectorMapJoinHashSet baseHashSet = (VectorMapJoinHashSet) vectorMapJoinHashTable;
 
-    hashSetResults = new VectorMapJoinHashSetResult[batch.DEFAULT_SIZE];
+    hashSetResults = new VectorMapJoinHashSetResult[VectorizedRowBatch.DEFAULT_SIZE];
     for (int i = 0; i < hashSetResults.length; i++) {
       hashSetResults[i] = baseHashSet.createHashSetResult();
     }
 
-    allMatchs = new int[batch.DEFAULT_SIZE];
+    allMatchs = new int[VectorizedRowBatch.DEFAULT_SIZE];
 
-    spills = new int[batch.DEFAULT_SIZE];
-    spillHashMapResultIndices = new int[batch.DEFAULT_SIZE];
+    spills = new int[VectorizedRowBatch.DEFAULT_SIZE];
+    spillHashMapResultIndices = new int[VectorizedRowBatch.DEFAULT_SIZE];
   }
 
   //-----------------------------------------------------------------------------------------------

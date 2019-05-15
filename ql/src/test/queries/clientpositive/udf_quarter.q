@@ -17,10 +17,6 @@ quarter('2016-09-29'),
 quarter('2016-10-29'),
 quarter('2016-11-29'),
 quarter('2016-12-29'),
--- wrong date str
-quarter('2016-03-35'),
-quarter('2014-01-32'),
-quarter('01/14/2014'),
 -- null string
 quarter(cast(null as string)),
 -- negative Unix time
@@ -43,10 +39,6 @@ quarter('2016-09-29 15:23:00'),
 quarter('2016-10-29 15:23:00'),
 quarter('2016-11-29 15:23:00'),
 quarter('2016-12-29 15:23:00'),
--- wrong date str
-quarter('2016-03-35 15:23:00'),
-quarter('2014-01-32 15:23:00'),
-quarter('01/14/2014 15:23:00'),
 -- null VOID type
 quarter(null),
 -- negative Unix time

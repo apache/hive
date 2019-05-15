@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,14 +19,13 @@
 package org.apache.hive.service.cli.thrift;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.security.PrivilegedExceptionAction;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -48,10 +47,12 @@ import org.apache.hadoop.security.token.delegation.web.DelegationTokenAuthentica
 import org.apache.hive.service.CookieSigner;
 import org.apache.hive.service.auth.AuthenticationProviderFactory;
 import org.apache.hive.service.auth.AuthenticationProviderFactory.AuthMethods;
+import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.HttpAuthUtils;
 import org.apache.hive.service.auth.HttpAuthenticationException;
 import org.apache.hive.service.auth.PasswdAuthenticationProvider;
+import org.apache.hive.service.auth.ldap.HttpEmptyAuthenticationException;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.session.SessionManager;
 import org.apache.thrift.TProcessor;
@@ -83,7 +84,7 @@ public class ThriftHttpServlet extends TServlet {
   // Class members for cookie based authentication.
   private CookieSigner signer;
   public static final String AUTH_COOKIE = "hive.server2.auth";
-  private static final Random RAN = new Random();
+  private static final SecureRandom RAN = new SecureRandom();
   private boolean isCookieAuthEnabled;
   private String cookieDomain;
   private String cookiePath;
@@ -192,7 +193,7 @@ public class ThriftHttpServlet extends TServlet {
 
       // Generate new cookie and add it to the response
       if (requireNewCookie &&
-          !authType.equalsIgnoreCase(HiveAuthFactory.AuthTypes.NOSASL.toString())) {
+          !authType.equalsIgnoreCase(HiveAuthConstants.AuthTypes.NOSASL.toString())) {
         String cookieToken = HttpAuthUtils.createCookieToken(clientUserName);
         Cookie hs2Cookie = createCookie(signer.signCookie(cookieToken));
 
@@ -206,7 +207,11 @@ public class ThriftHttpServlet extends TServlet {
       super.doPost(request, response);
     }
     catch (HttpAuthenticationException e) {
-      LOG.error("Error: ", e);
+      // Ignore HttpEmptyAuthenticationException, it is normal for knox
+      // to send a request with empty header
+      if (!(e instanceof HttpEmptyAuthenticationException)) {
+        LOG.error("Error: ", e);
+      }
       // Send a 401 to the client
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       if(isKerberosAuthMode(authType)) {
@@ -291,9 +296,8 @@ public class ThriftHttpServlet extends TServlet {
    * returns the client name associated with the session. Else, it returns null.
    * @param request The HTTP Servlet Request send by the client
    * @return Client Username if the request has valid HS2 cookie, else returns null
-   * @throws UnsupportedEncodingException
    */
-  private String validateCookie(HttpServletRequest request) throws UnsupportedEncodingException {
+  private String validateCookie(HttpServletRequest request) {
     // Find all the valid cookies associated with the request.
     Cookie[] cookies = request.getCookies();
 
@@ -313,9 +317,8 @@ public class ThriftHttpServlet extends TServlet {
    * Generate a server side cookie given the cookie value as the input.
    * @param str Input string token.
    * @return The generated cookie.
-   * @throws UnsupportedEncodingException
    */
-  private Cookie createCookie(String str) throws UnsupportedEncodingException {
+  private Cookie createCookie(String str) {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Cookie name = " + AUTH_COOKIE + " value = " + str);
     }
@@ -354,7 +357,7 @@ public class ThriftHttpServlet extends TServlet {
       throws HttpAuthenticationException {
     String userName = getUsername(request, authType);
     // No-op when authType is NOSASL
-    if (!authType.equalsIgnoreCase(HiveAuthFactory.AuthTypes.NOSASL.toString())) {
+    if (!authType.equalsIgnoreCase(HiveAuthConstants.AuthTypes.NOSASL.toString())) {
       try {
         AuthMethods authMethod = AuthMethods.getValidAuthMethod(authType);
         PasswdAuthenticationProvider provider =
@@ -403,6 +406,9 @@ public class ThriftHttpServlet extends TServlet {
     try {
       return serviceUGI.doAs(new HttpKerberosServerAction(request, serviceUGI));
     } catch (Exception e) {
+      if (e.getCause() instanceof HttpEmptyAuthenticationException) {
+        throw (HttpEmptyAuthenticationException)e.getCause();
+      }
       LOG.error("Failed to authenticate with hive/_HOST kerberos principal");
       throw new HttpAuthenticationException(e);
     }
@@ -545,7 +551,7 @@ public class ThriftHttpServlet extends TServlet {
     String authHeader = request.getHeader(HttpAuthUtils.AUTHORIZATION);
     // Each http request must have an Authorization header
     if (authHeader == null || authHeader.isEmpty()) {
-      throw new HttpAuthenticationException("Authorization header received " +
+      throw new HttpEmptyAuthenticationException("Authorization header received " +
           "from the client is empty.");
     }
 
@@ -567,7 +573,7 @@ public class ThriftHttpServlet extends TServlet {
   }
 
   private boolean isKerberosAuthMode(String authType) {
-    return authType.equalsIgnoreCase(HiveAuthFactory.AuthTypes.KERBEROS.toString());
+    return authType.equalsIgnoreCase(HiveAuthConstants.AuthTypes.KERBEROS.toString());
   }
 
   private static String getDoAsQueryParam(String queryString) {

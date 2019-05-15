@@ -11,6 +11,18 @@ true	true
 true	true
 true	true
 true	true
+PREHOOK: query: explain cbo select current_timestamp() from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select current_timestamp() from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject($f0=[CAST(2012-01-01 01:02:03:TIMESTAMP(9)):TIMESTAMP(9)])
+  HiveTableScan(table=[[default, alltypesorc]], table:alias=[alltypesorc])
+
 PREHOOK: query: select count(*) from (select current_timestamp() from alltypesorc union select current_timestamp() from src limit 5 ) subq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
@@ -41,8 +53,14 @@ POSTHOOK: Input: default@src
 1
 PREHOOK: query: explain extended select current_timestamp() from alltypesorc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select current_timestamp() from alltypesorc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(TIMESTAMP '2012-01-01 01:02:03.000000000' AS TIMESTAMP) AS `$f0`
+FROM `default`.`alltypesorc`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -55,7 +73,7 @@ STAGE PLANS:
           alias: alltypesorc
           GatherStats: false
           Select Operator
-            expressions: 2012-01-01 01:02:03.0 (type: timestamp)
+            expressions: TIMESTAMP'2012-01-01 01:02:03' (type: timestamp)
             outputColumnNames: _col0
             ListSink
 
@@ -228,11 +246,11 @@ POSTHOOK: query: select unix_timestamp(current_timestamp()),
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-1325408523	1	2	3
-1325408523	1	2	3
-1325408523	1	2	3
-1325408523	1	2	3
-1325408523	1	2	3
+1325379723	1	2	3
+1325379723	1	2	3
+1325379723	1	2	3
+1325379723	1	2	3
+1325379723	1	2	3
 PREHOOK: query: select to_date(current_timestamp()),
                            year(current_timestamp()),
                            month(current_timestamp()),
@@ -338,11 +356,11 @@ where ctimestamp1 is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
--15340 08:00:12.326000000	-0 00:00:21.201000000	0 00:00:00.000000000	15340 07:59:51.125000000
--15340 08:00:03.213000000	-0 00:00:04.759000000	0 00:00:00.000000000	15340 07:59:58.454000000
--15340 08:00:14.813000000	-0 00:00:21.774000000	0 00:00:00.000000000	15340 07:59:53.039000000
--15340 08:00:08.566000000	-0 00:00:21.918000000	0 00:00:00.000000000	15340 07:59:46.648000000
--15340 07:59:44.993000000	-0 00:00:00.141000000	0 00:00:00.000000000	15340 07:59:44.852000000
+-15340 08:00:12.326000000	-0 00:00:22.201000000	0 00:00:00.000000000	15340 07:59:50.125000000
+-15340 08:00:03.213000000	-0 00:00:05.759000000	0 00:00:00.000000000	15340 07:59:57.454000000
+-15340 08:00:14.813000000	-0 00:00:22.774000000	0 00:00:00.000000000	15340 07:59:52.039000000
+-15340 08:00:08.566000000	-0 00:00:22.918000000	0 00:00:00.000000000	15340 07:59:45.648000000
+-15340 07:59:43.993000000	-0 00:00:00.141000000	0 00:00:00.000000000	15340 07:59:43.852000000
 PREHOOK: query: select current_date, current_timestamp from src limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

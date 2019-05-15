@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -121,11 +121,6 @@ public class FlatFileInputFormat<T> extends
       return conf;
     }
 
-    /**
-     * @return the actual class being deserialized.
-     * @exception does
-     *              not currently throw IOException
-     */
     @Override
     public Class<S> getRealClass() throws IOException {
       return (Class<S>) conf.getClass(SerializationSubclassKey, null,
@@ -145,8 +140,6 @@ public class FlatFileInputFormat<T> extends
      * deserialized; in this context, that assumption isn't necessarily true.
      *
      * @return the serialization object for this context
-     * @exception does
-     *              not currently throw any IOException
      */
     @Override
     public Serialization<S> getSerialization() throws IOException {

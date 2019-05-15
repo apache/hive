@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,14 +19,15 @@
 package org.apache.hive.service.cli;
 
 import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.Timestamp;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.serde2.thrift.Type;
 import org.apache.hive.service.rpc.thrift.TBoolValue;
 import org.apache.hive.service.rpc.thrift.TByteValue;
@@ -139,6 +140,14 @@ public class ColumnValue {
     return TColumnValue.stringVal(tStringValue);
   }
 
+  private static TColumnValue timestampTZValue(TimestampTZ value) {
+    TStringValue tStringValue = new TStringValue();
+    if (value != null) {
+      tStringValue.setValue(value.toString());
+    }
+    return TColumnValue.stringVal(tStringValue);
+  }
+
   private static TColumnValue stringValue(HiveDecimal value, TypeDescriptor typeDescriptor) {
     TStringValue tStrValue = new TStringValue();
     if (value != null) {
@@ -192,6 +201,8 @@ public class ColumnValue {
       return dateValue((Date)value);
     case TIMESTAMP_TYPE:
       return timestampValue((Timestamp)value);
+    case TIMESTAMPLOCALTZ_TYPE:
+      return timestampTZValue((TimestampTZ) value);
     case INTERVAL_YEAR_MONTH_TYPE:
       return stringValue((HiveIntervalYearMonth) value);
     case INTERVAL_DAY_TIME_TYPE:

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -112,7 +112,7 @@ public class PartitionPrune {
         hiveUDF = SqlFunctionConverter.getHiveUDF(call.getOperator(),
             call.getType(), call.operands.size());
         if (hiveUDF != null &&
-            !FunctionRegistry.isDeterministic(hiveUDF)) {
+            !FunctionRegistry.isConsistentWithinQuery(hiveUDF)) {
           return null;
         }
       } finally {

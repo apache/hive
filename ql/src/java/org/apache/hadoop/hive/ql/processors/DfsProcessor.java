@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.processors;
 
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -30,6 +31,7 @@ import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -58,10 +60,6 @@ public class DfsProcessor implements CommandProcessor {
   }
 
   @Override
-  public void init() {
-  }
-
-  @Override
   public CommandProcessorResponse run(String command) {
 
 
@@ -74,7 +72,7 @@ public class DfsProcessor implements CommandProcessor {
         }
       }).substitute(ss.getConf(), command);
 
-      String[] tokens = command.split("\\s+");
+      String[] tokens = splitCmd(command);
       CommandProcessorResponse authErrResp =
           CommandUtil.authorizeCommand(ss, HiveOperationType.DFS, Arrays.asList(tokens));
       if(authErrResp != null){
@@ -104,4 +102,64 @@ public class DfsProcessor implements CommandProcessor {
     }
   }
 
+  private String[] splitCmd(String command) throws HiveException {
+
+    ArrayList<String> paras = new ArrayList<String>();
+    int cmdLng = command.length();
+    char y = 0;
+    int start = 0;
+
+    for (int i = 0; i < cmdLng; i++) {
+      char x = command.charAt(i);
+
+      switch(x) {
+        case ' ':
+          if (y == 0) {
+            String str = command.substring(start, i).trim();
+            if (!str.equals("")) {
+              paras.add(str);
+              start = i + 1;
+            }
+          }
+          break;
+        case '"':
+          if (y == 0) {
+            y = x;
+            start = i + 1;
+          } else if ('"' == y) {
+            paras.add(command.substring(start, i).trim());
+            y = 0;
+            start = i + 1;
+          }
+          break;
+        case '\'':
+          if (y == 0) {
+            y = x;
+            start = i + 1;
+          } else if ('\'' == y) {
+            paras.add(command.substring(start, i).trim());
+            y = 0;
+            start = i + 1;
+          }
+          break;
+        default:
+          if (i == cmdLng-1 && start < cmdLng) {
+            paras.add(command.substring(start, cmdLng).trim());
+          }
+          break;
+      }
+    }
+
+    if (y != 0) {
+      String message = "Syntax error on hadoop options: dfs " + command;
+      console.printError(message);
+      throw new HiveException(message);
+    }
+
+    return paras.toArray(new String[paras.size()]);
+  }
+
+  @Override
+  public void close() throws Exception {
+  }
 }

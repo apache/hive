@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf.ptf;
 
 import java.util.List;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -36,15 +37,15 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
  * old AbstractTableFunction class into a Resolver and Evaluator.
  * The Resolver is responsible for:
  * <ol>
- * <li> setting up the {@link tableFunctionEvaluator}
+ * <li> setting up the {@link TableFunctionEvaluator}
  * <li> Setting up the The raw and output ObjectInspectors of the Evaluator.
- * <li> The Evaluator also holds onto the {@link TableFunctionDef}. This provides information
+ * <li> The Evaluator also holds onto the {@link PartitionedTableFunctionDef}. This provides information
  * about the arguments to the function, the shape of the Input partition and the Partitioning details.
  * </ol>
  * The Resolver for a function is obtained from the {@link FunctionRegistry}. The Resolver is initialized
  * by the following 4 step process:
  * <ol>
- * <li> The initialize method is called; which is passed the {@link PTFDesc} and the {@link TableFunctionDef}.
+ * <li> The initialize method is called; which is passed the {@link PTFDesc} and the {@link PartitionedTableFunctionDef}.
  * <li> The resolver is then asked to setup the Raw ObjectInspector. This is only required if the Function reshapes
  * the raw input.
  * <li> Once the Resolver has had a chance to compute the shape of the Raw Input that is fed to the partitioning
@@ -71,17 +72,19 @@ public abstract class TableFunctionResolver {
     evaluator.setTransformsRawInput(transformsRawInput());
     evaluator.setTableDef(tDef);
     evaluator.setQueryDef(ptfDesc);
+    evaluator.setNullsLast(HiveConf.getBoolVar(cfg, HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST));
   }
 
   /*
    * called during deserialization of a QueryDef during runtime.
    */
-  public void initialize(PTFDesc ptfDesc, PartitionedTableFunctionDef tDef, TableFunctionEvaluator evaluator)
+  public void initialize(Configuration cfg, PTFDesc ptfDesc, PartitionedTableFunctionDef tDef, TableFunctionEvaluator evaluator)
       throws HiveException {
     this.evaluator = evaluator;
     this.ptfDesc = ptfDesc;
     evaluator.setTableDef(tDef);
     evaluator.setQueryDef(ptfDesc);
+    evaluator.setNullsLast(HiveConf.getBoolVar(cfg, HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST));
   }
 
   public TableFunctionEvaluator getEvaluator() {
@@ -110,8 +113,6 @@ public abstract class TableFunctionResolver {
    * exist for all the Def (ArgDef, ColumnDef, WindowDef..). It is the responsibility of
    * the TableFunction to construct the {@link ExprNodeEvaluator evaluators} and setup the OI.
    *
-   * @param tblFuncDef
-   * @param ptfDesc
    * @throws HiveException
    */
   public abstract void initializeOutputOI() throws HiveException;

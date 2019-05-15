@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * An expression representing a column, only children are evaluated.
@@ -27,19 +28,15 @@ public class IdentityExpression extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum = -1;
-  private String type = null;
-
   public IdentityExpression() {
   }
 
-  public IdentityExpression(int colNum, String type) {
-    this.colNum = colNum;
-    this.type = type;
+  public IdentityExpression(int colNum) {
+    super(colNum);
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
     if (childExpressions != null) {
       this.evaluateChildren(batch);
     }
@@ -55,34 +52,9 @@ public class IdentityExpression extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return colNum;
-  }
-
-  @Override
-  public String getOutputType() {
-    return type;
-  }
-
-  public int getColNum() {
-    return getOutputColumn();
-  }
-
-  public String getType() {
-    return getOutputType();
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public void setType(String type) {
-    this.type = type;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum;
+    return "col " + outputColumnNum + ":" +
+        getTypeName(outputTypeInfo, outputDataTypePhysicalVariation);
   }
 
   @Override

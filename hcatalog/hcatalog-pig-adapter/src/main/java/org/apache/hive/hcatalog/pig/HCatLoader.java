@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -54,6 +55,7 @@ import org.apache.pig.ResourceSchema;
 import org.apache.pig.ResourceStatistics;
 import org.apache.pig.impl.util.UDFContext;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +64,7 @@ import org.slf4j.LoggerFactory;
  * Pig {@link org.apache.pig.LoadFunc} to read data from HCat
  */
 @InterfaceAudience.Public
-@InterfaceStability.Evolving
+@InterfaceStability.Stable
 public class HCatLoader extends HCatBaseLoader {
   private static final Logger LOG = LoggerFactory.getLogger(HCatLoader.class);
 
@@ -131,8 +133,7 @@ public class HCatLoader extends HCatBaseLoader {
       Job clone = new Job(job.getConfiguration());
       HCatInputFormat.setInput(job, dbName, tableName, getPartitionFilterString());
 
-      InputJobInfo inputJobInfo = (InputJobInfo) HCatUtil.deserialize(
-          job.getConfiguration().get(HCatConstants.HCAT_KEY_JOB_INFO));
+      InputJobInfo inputJobInfo = HCatUtil.getLastInputJobInfosFromConf(job.getConfiguration());
 
       SpecialCases.addSpecialCasesParametersForHCatLoader(job.getConfiguration(),
           inputJobInfo.getTableInfo());
@@ -259,10 +260,28 @@ public class HCatLoader extends HCatBaseLoader {
   @Override
   public ResourceStatistics getStatistics(String location, Job job) throws IOException {
     try {
+      if (dbName == null || tableName == null) {
+        throw new IOException("DB or table name unset. setLocation() must be invoked on this " +
+                "loader to set them");
+      }
       ResourceStatistics stats = new ResourceStatistics();
-      InputJobInfo inputJobInfo = (InputJobInfo) HCatUtil.deserialize(
-        job.getConfiguration().get(HCatConstants.HCAT_KEY_JOB_INFO));
-      stats.setmBytes(getSizeInBytes(inputJobInfo) / 1024 / 1024);
+      long inputSize = -1;
+
+      LinkedList<InputJobInfo> inputJobInfos = HCatUtil.getInputJobInfosFromConf(
+              job.getConfiguration());
+
+      for (InputJobInfo inputJobInfo : inputJobInfos) {
+        if (dbName.equals(inputJobInfo.getDatabaseName()) && tableName.equals(inputJobInfo.getTableName())){
+          inputSize = getSizeInBytes(inputJobInfo);
+          break;
+        }
+      }
+
+      if (inputSize == -1) {
+        throw new IOException("Could not calculate input size for database: " + dbName + ", " +
+                "table: " + tableName + ". Requested location:" + location);
+      }
+      stats.setSizeInBytes(inputSize);
       return stats;
     } catch (Exception e) {
       throw new IOException(e);

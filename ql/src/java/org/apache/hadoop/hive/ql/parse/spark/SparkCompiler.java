@@ -1,4 +1,4 @@
-/**
+/*
  *  Licensed to the Apache Software Foundation (ASF) under one
  *  or more contributor license agreements.  See the NOTICE file
  *  distributed with this work for additional information
@@ -62,14 +62,16 @@ import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.lib.TypeRule;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagate;
+import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcCtx;
 import org.apache.hadoop.hive.ql.optimizer.DynamicPartitionPruningOptimization;
-import org.apache.hadoop.hive.ql.optimizer.SparkRemoveDynamicPruningBySize;
+import org.apache.hadoop.hive.ql.optimizer.SparkRemoveDynamicPruning;
 import org.apache.hadoop.hive.ql.optimizer.metainfo.annotation.AnnotateWithOpTraits;
 import org.apache.hadoop.hive.ql.optimizer.physical.AnnotateRunTimeStatsOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.MetadataOnlyOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.NullScanOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.optimizer.physical.SparkCrossProductCheck;
+import org.apache.hadoop.hive.ql.optimizer.physical.SparkDynamicPartitionPruningResolver;
 import org.apache.hadoop.hive.ql.optimizer.physical.SparkMapJoinResolver;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
@@ -118,22 +120,55 @@ public class SparkCompiler extends TaskCompiler {
     // Annotation OP tree with statistics
     runStatsAnnotation(procCtx);
 
+    // Run Dynamic Partitioning sort Optimization.
+    runDynPartitionSortOptimizations(procCtx);
+
     // Set reducer parallelism
     runSetReducerParallelism(procCtx);
 
     // Run Join releated optimizations
     runJoinOptimizations(procCtx);
 
-    // Remove cyclic dependencies for DPP
-    runCycleAnalysisForPartitionPruning(procCtx);
+    if(conf.isSparkDPPAny()){
+      // Remove DPP based on expected size of the output data
+      runRemoveDynamicPruning(procCtx);
+
+      // Remove cyclic dependencies for DPP
+      runCycleAnalysisForPartitionPruning(procCtx);
+
+      // Remove nested DPPs
+      SparkUtilities.removeNestedDPP(procCtx);
+    }
+
+    // Re-run constant propagation so we fold any new constants introduced by the operator optimizers
+    // Specifically necessary for DPP because we might have created lots of "and true and true" conditions
+    if (procCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
+      new ConstantPropagate(ConstantPropagateProcCtx.ConstantPropagateOption.SHORTCUT).transform(pCtx);
+    }
 
     PERF_LOGGER.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_OPERATOR_TREE);
   }
 
+  private void runRemoveDynamicPruning(OptimizeSparkProcContext procCtx) throws SemanticException {
+    ParseContext pCtx = procCtx.getParseContext();
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+
+    opRules.put(new RuleRegExp("Disabling Dynamic Partition Pruning",
+        SparkPartitionPruningSinkOperator.getOperatorName() + "%"),
+        new SparkRemoveDynamicPruning());
+
+    // The dispatcher fires the processor corresponding to the closest matching
+    // rule and passes the context along
+    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    GraphWalker ogw = new DefaultGraphWalker(disp);
+
+    // Create a list of topop nodes
+    ArrayList<Node> topNodes = new ArrayList<Node>();
+    topNodes.addAll(pCtx.getTopOps().values());
+    ogw.startWalking(topNodes, null);
+  }
+
   private void runCycleAnalysisForPartitionPruning(OptimizeSparkProcContext procCtx) {
-    if (!conf.getBoolVar(HiveConf.ConfVars.SPARK_DYNAMIC_PARTITION_PRUNING)) {
-      return;
-    }
 
     boolean cycleFree = false;
     while (!cycleFree) {
@@ -177,7 +212,7 @@ public class SparkCompiler extends TaskCompiler {
     OperatorUtils.removeBranch(toRemove);
     // at this point we've found the fork in the op pipeline that has the pruning as a child plan.
     LOG.info("Disabling dynamic pruning for: "
-        + toRemove.getConf().getTableScan().toString() + ". Needed to break cyclic dependency");
+        + toRemove.getConf().getTableScanNames() + ". Needed to break cyclic dependency");
   }
 
   // Tarjan's algo
@@ -209,9 +244,12 @@ public class SparkCompiler extends TaskCompiler {
     if (o instanceof SparkPartitionPruningSinkOperator) {
       children = new ArrayList<>();
       children.addAll(o.getChildOperators());
-      TableScanOperator ts = ((SparkPartitionPruningSinkDesc) o.getConf()).getTableScan();
-      LOG.debug("Adding special edge: " + o.getName() + " --> " + ts.toString());
-      children.add(ts);
+      SparkPartitionPruningSinkDesc dppDesc = ((SparkPartitionPruningSinkOperator) o).getConf();
+      for (SparkPartitionPruningSinkDesc.DPPTargetInfo targetInfo : dppDesc.getTargetInfos()) {
+        TableScanOperator ts = targetInfo.tableScan;
+        LOG.debug("Adding special edge: " + o.getName() + " --> " + ts.toString());
+        children.add(ts);
+      }
     } else {
       children = o.getChildOperators();
     }
@@ -243,7 +281,7 @@ public class SparkCompiler extends TaskCompiler {
 
   private void runDynamicPartitionPruning(OptimizeSparkProcContext procCtx)
       throws SemanticException {
-    if (!conf.getBoolVar(HiveConf.ConfVars.SPARK_DYNAMIC_PARTITION_PRUNING)) {
+    if (!conf.isSparkDPPAny()) {
       return;
     }
 
@@ -262,12 +300,6 @@ public class SparkCompiler extends TaskCompiler {
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(parseContext.getTopOps().values());
     ogw.startWalking(topNodes, null);
-
-    // need a new run of the constant folding because we might have created lots
-    // of "and true and true" conditions.
-    if(procCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
-      new ConstantPropagate().transform(parseContext);
-    }
   }
 
   private void runSetReducerParallelism(OptimizeSparkProcContext procCtx) throws SemanticException {
@@ -296,10 +328,6 @@ public class SparkCompiler extends TaskCompiler {
 
     opRules.put(new TypeRule(MapJoinOperator.class), new SparkJoinHintOptimizer(pCtx));
 
-    opRules.put(new RuleRegExp("Disabling Dynamic Partition Pruning By Size",
-        SparkPartitionPruningSinkOperator.getOperatorName() + "%"),
-        new SparkRemoveDynamicPruningBySize());
-
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
@@ -309,6 +337,13 @@ public class SparkCompiler extends TaskCompiler {
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pCtx.getTopOps().values());
     ogw.startWalking(topNodes, null);
+  }
+
+  private void runDynPartitionSortOptimizations(OptimizeSparkProcContext procCtx) throws SemanticException {
+    // run Sorted dynamic partition optimization
+    HiveConf hConf = procCtx.getConf();
+    ParseContext parseContext = procCtx.getParseContext();
+    runDynPartitionSortOptimizations(parseContext, hConf);
   }
 
   /**
@@ -544,6 +579,10 @@ public class SparkCompiler extends TaskCompiler {
 
     physicalCtx = new SparkMapJoinResolver().resolve(physicalCtx);
 
+    if (conf.isSparkDPPAny()) {
+      physicalCtx = new SparkDynamicPartitionPruningResolver().resolve(physicalCtx);
+    }
+
     if (conf.getBoolVar(HiveConf.ConfVars.HIVENULLSCANOPTIMIZE)) {
       physicalCtx = new NullScanOptimizer().resolve(physicalCtx);
     } else {
@@ -562,8 +601,7 @@ public class SparkCompiler extends TaskCompiler {
       LOG.debug("Skipping cross product analysis");
     }
 
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)
-        && ctx.getExplainAnalyze() == null) {
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)) {
       (new Vectorizer()).resolve(physicalCtx);
     } else {
       LOG.debug("Skipping vectorization");
@@ -575,7 +613,11 @@ public class SparkCompiler extends TaskCompiler {
       LOG.debug("Skipping stage id rearranger");
     }
 
-    new CombineEquivalentWorkResolver().resolve(physicalCtx);
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_COMBINE_EQUIVALENT_WORK_OPTIMIZATION)) {
+      new CombineEquivalentWorkResolver().resolve(physicalCtx);
+    } else {
+      LOG.debug("Skipping combine equivalent work optimization");
+    }
 
     if (physicalCtx.getContext().getExplainAnalyze() != null) {
       new AnnotateRunTimeStatsOptimizer().resolve(physicalCtx);

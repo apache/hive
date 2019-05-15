@@ -36,7 +36,7 @@ abstract class SaslHandler extends SimpleChannelInboundHandler<Rpc.SaslMessage>
 
   // LOG is not static to make debugging easier (being able to identify which sub-class
   // generated the log message).
-  private final Logger LOG;
+  protected final Logger LOG;
   private final boolean requiresEncryption;
   private KryoMessageCodec kryo;
   private boolean hasAuthResponse = false;

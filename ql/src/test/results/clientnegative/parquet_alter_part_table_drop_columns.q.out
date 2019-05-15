@@ -1,0 +1,53 @@
+PREHOOK: query: CREATE TABLE myparquettable_parted
+(
+  name string,
+  favnumber int,
+  favcolor string
+)
+PARTITIONED BY (day string)
+STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@myparquettable_parted
+POSTHOOK: query: CREATE TABLE myparquettable_parted
+(
+  name string,
+  favnumber int,
+  favcolor string
+)
+PARTITIONED BY (day string)
+STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@myparquettable_parted
+PREHOOK: query: INSERT OVERWRITE TABLE myparquettable_parted
+PARTITION(day='2017-04-04')
+SELECT
+   'mary' as name,
+   5 AS favnumber,
+   'blue' AS favcolor
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@myparquettable_parted@day=2017-04-04
+POSTHOOK: query: INSERT OVERWRITE TABLE myparquettable_parted
+PARTITION(day='2017-04-04')
+SELECT
+   'mary' as name,
+   5 AS favnumber,
+   'blue' AS favcolor
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@myparquettable_parted@day=2017-04-04
+POSTHOOK: Lineage: myparquettable_parted PARTITION(day=2017-04-04).favcolor SIMPLE []
+POSTHOOK: Lineage: myparquettable_parted PARTITION(day=2017-04-04).favnumber SIMPLE []
+POSTHOOK: Lineage: myparquettable_parted PARTITION(day=2017-04-04).name SIMPLE []
+PREHOOK: query: alter table myparquettable_parted
+REPLACE COLUMNS
+(
+name string,
+favnumber int
+)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@myparquettable_parted
+PREHOOK: Output: default@myparquettable_parted
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Replacing columns cannot drop columns for table default.myparquettable_parted. SerDe may be incompatible

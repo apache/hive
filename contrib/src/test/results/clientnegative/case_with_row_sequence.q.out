@@ -10,18 +10,4 @@ POSTHOOK: query: create temporary function row_sequence as
 'org.apache.hadoop.hive.contrib.udf.UDFRowSequence'
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: row_sequence
-PREHOOK: query: SELECT CASE WHEN 3 > 2 THEN 10 WHEN row_sequence() > 5 THEN 20 ELSE 30 END
-FROM src LIMIT 1
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-#### A masked pattern was here ####
-Execution failed with exit status: 2
-Obtaining error information
-
-Task failed!
-Task ID:
-  Stage-1
-
-Logs:
-
-FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask
+FAILED: SemanticException Stateful expressions cannot be used inside of CASE

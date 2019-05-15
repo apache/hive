@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,9 +20,9 @@ package org.apache.hadoop.hive.ql.exec;
 
 /**
  * <strong>Please see the deprecation notice</strong>
- * <p/>
+ * <br>
  * Base class for all User-defined Aggregation Function (UDAF) classes.
- * <p/>
+ * <br>
  * Requirements for a UDAF class:
  * <ol>
  *   <li>Implement the {@code init()} method, which resets the status of the aggregation function.</li>
@@ -57,7 +57,7 @@ package org.apache.hadoop.hive.ql.exec;
  *     aggregation result and returns a boolean. The method should always return
  *     {@code true} on valid inputs, or the framework will throw an Exception.</li>
  * </ol>
- * <p/>
+ * <br>
  * Following are some examples:
  * <ul>
  *   <li>public int evaluatePartial();</li>
@@ -65,7 +65,6 @@ package org.apache.hadoop.hive.ql.exec;
  *   <li>public String evaluatePartial();</li>
  *   <li>public boolean aggregatePartial(String partial);</li>
  * </ul>
- * <p/>
  *
  * @deprecated Either implement {@link org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver2} or extend
  * {@link org.apache.hadoop.hive.ql.udf.generic.AbstractGenericUDAFResolver} instead.

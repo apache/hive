@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.spark;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableUtils;
@@ -36,17 +37,21 @@ public class MapInput implements SparkTran<WritableComparable, Writable,
   private JavaPairRDD<WritableComparable, Writable> hadoopRDD;
   private boolean toCache;
   private final SparkPlan sparkPlan;
-  private String name = "MapInput";
+  private final String name;
+  private final BaseWork baseWork;
 
   public MapInput(SparkPlan sparkPlan, JavaPairRDD<WritableComparable, Writable> hadoopRDD) {
-    this(sparkPlan, hadoopRDD, false);
+    this(sparkPlan, hadoopRDD, false, "MapInput", null);
   }
 
   public MapInput(SparkPlan sparkPlan,
-      JavaPairRDD<WritableComparable, Writable> hadoopRDD, boolean toCache) {
+                  JavaPairRDD<WritableComparable, Writable> hadoopRDD, boolean toCache, String
+                          name, BaseWork baseWork) {
     this.hadoopRDD = hadoopRDD;
     this.toCache = toCache;
     this.sparkPlan = sparkPlan;
+    this.name = name;
+    this.baseWork = baseWork;
   }
 
   public void setToCache(boolean toCache) {
@@ -66,6 +71,7 @@ public class MapInput implements SparkTran<WritableComparable, Writable,
     } else {
       result = hadoopRDD;
     }
+    result.setName(this.name);
     return result;
   }
 
@@ -94,11 +100,11 @@ public class MapInput implements SparkTran<WritableComparable, Writable,
 
   @Override
   public Boolean isCacheEnable() {
-    return new Boolean(toCache);
+    return Boolean.valueOf(toCache);
   }
 
   @Override
-  public void setName(String name) {
-    this.name = name;
+  public BaseWork getBaseWork() {
+    return baseWork;
   }
 }

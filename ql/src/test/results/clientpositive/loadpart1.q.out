@@ -1,19 +1,19 @@
-PREHOOK: query: create table hive_test_src ( col1 string ) stored as textfile
+PREHOOK: query: create table hive_test_src_n2 ( col1 string ) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@hive_test_src
-POSTHOOK: query: create table hive_test_src ( col1 string ) stored as textfile
+PREHOOK: Output: default@hive_test_src_n2
+POSTHOOK: query: create table hive_test_src_n2 ( col1 string ) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@hive_test_src
-PREHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table hive_test_src
+POSTHOOK: Output: default@hive_test_src_n2
+PREHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table hive_test_src_n2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@hive_test_src
-POSTHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table hive_test_src
+PREHOOK: Output: default@hive_test_src_n2
+POSTHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table hive_test_src_n2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@hive_test_src
+POSTHOOK: Output: default@hive_test_src_n2
 PREHOOK: query: create table hive_test_dst ( col1 string ) partitioned by ( pcol1 string , pcol2 string) stored as sequencefile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -22,15 +22,15 @@ POSTHOOK: query: create table hive_test_dst ( col1 string ) partitioned by ( pco
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hive_test_dst
-PREHOOK: query: insert overwrite table hive_test_dst partition ( pcol1='test_part', pCol2='test_Part') select col1 from hive_test_src
+PREHOOK: query: insert overwrite table hive_test_dst partition ( pcol1='test_part', pCol2='test_Part') select col1 from hive_test_src_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@hive_test_src
+PREHOOK: Input: default@hive_test_src_n2
 PREHOOK: Output: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
-POSTHOOK: query: insert overwrite table hive_test_dst partition ( pcol1='test_part', pCol2='test_Part') select col1 from hive_test_src
+POSTHOOK: query: insert overwrite table hive_test_dst partition ( pcol1='test_part', pCol2='test_Part') select col1 from hive_test_src_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@hive_test_src
+POSTHOOK: Input: default@hive_test_src_n2
 POSTHOOK: Output: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
-POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
+POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src_n2)hive_test_src_n2.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_Part'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hive_test_dst
@@ -47,15 +47,15 @@ POSTHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
 4	test_part	test_Part
 5	test_part	test_Part
 6	test_part	test_Part
-PREHOOK: query: insert overwrite table hive_test_dst partition ( pCol1='test_part', pcol2='test_Part') select col1 from hive_test_src
+PREHOOK: query: insert overwrite table hive_test_dst partition ( pCol1='test_part', pcol2='test_Part') select col1 from hive_test_src_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@hive_test_src
+PREHOOK: Input: default@hive_test_src_n2
 PREHOOK: Output: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
-POSTHOOK: query: insert overwrite table hive_test_dst partition ( pCol1='test_part', pcol2='test_Part') select col1 from hive_test_src
+POSTHOOK: query: insert overwrite table hive_test_dst partition ( pCol1='test_part', pcol2='test_Part') select col1 from hive_test_src_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@hive_test_src
+POSTHOOK: Input: default@hive_test_src_n2
 POSTHOOK: Output: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
-POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
+POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src_n2)hive_test_src_n2.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_part'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hive_test_dst

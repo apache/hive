@@ -31,7 +31,7 @@ SERIALIZATION_ENCODING = %q"serialization.encoding"
 
 FIELD_DELIM = %q"field.delim"
 
-COLLECTION_DELIM = %q"colelction.delim"
+COLLECTION_DELIM = %q"collection.delim"
 
 LINE_DELIM = %q"line.delim"
 
@@ -81,6 +81,8 @@ INTERVAL_YEAR_MONTH_TYPE_NAME = %q"interval_year_month"
 
 INTERVAL_DAY_TIME_TYPE_NAME = %q"interval_day_time"
 
+TIMESTAMPLOCALTZ_TYPE_NAME = %q"timestamp with local time zone"
+
 LIST_TYPE_NAME = %q"array"
 
 MAP_TYPE_NAME = %q"map"
@@ -116,6 +118,7 @@ PrimitiveTypes = Set.new([
   %q"interval_day_time",
   %q"decimal",
   %q"binary",
+  %q"timestamp with local time zone",
 ])
 
 CollectionTypes = Set.new([

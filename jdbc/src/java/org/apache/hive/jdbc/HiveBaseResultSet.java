@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,10 +21,10 @@ package org.apache.hive.jdbc;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.Clob;
@@ -47,6 +47,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.serde2.thrift.Type;
 import org.apache.hive.service.cli.TableSchema;
 
@@ -161,14 +162,7 @@ public abstract class HiveBaseResultSet implements ResultSet {
       return is;
     } else if (obj instanceof String) {
       String str = (String)obj;
-      InputStream is = null;
-      try {
-        is = new ByteArrayInputStream(str.getBytes("UTF-8"));
-      } catch (UnsupportedEncodingException e) {
-        throw new SQLException("Illegal conversion to binary stream from column " +
-            columnIndex + " - Unsupported encoding exception");
-      }
-      return is;
+      return new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8));
     }
     throw new SQLException("Illegal conversion to binary stream from column " + columnIndex);
   }
@@ -442,6 +436,8 @@ public abstract class HiveBaseResultSet implements ResultSet {
         return value;
       case TIMESTAMP_TYPE:
         return Timestamp.valueOf((String) value);
+      case TIMESTAMPLOCALTZ_TYPE:
+        return TimestampTZUtil.parse((String) value);
       case DECIMAL_TYPE:
         return new BigDecimal((String)value);
       case DATE_TYPE:

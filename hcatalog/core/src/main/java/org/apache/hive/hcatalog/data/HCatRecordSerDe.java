@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -219,7 +219,7 @@ public class HCatRecordSerDe extends AbstractSerDe {
   private static Map<?, ?> serializeMap(Object f, MapObjectInspector moi) throws SerDeException {
     ObjectInspector koi = moi.getMapKeyObjectInspector();
     ObjectInspector voi = moi.getMapValueObjectInspector();
-    Map<Object, Object> m = new HashMap<Object, Object>();
+    Map<Object, Object> m = new LinkedHashMap<Object, Object>();
 
     Map<?, ?> readMap = moi.getMap(f);
     if (readMap == null) {
@@ -288,12 +288,12 @@ public class HCatRecordSerDe extends AbstractSerDe {
         conf.getBoolean(
           HCatConstants.HCAT_DATA_TINY_SMALL_INT_PROMOTION,
           HCatConstants.HCAT_DATA_TINY_SMALL_INT_PROMOTION_DEFAULT)) {
-        return new Integer((Short) f);
+        return Integer.valueOf((Short) f);
       } else if (f instanceof Byte &&
         conf.getBoolean(
           HCatConstants.HCAT_DATA_TINY_SMALL_INT_PROMOTION,
           HCatConstants.HCAT_DATA_TINY_SMALL_INT_PROMOTION_DEFAULT)) {
-        return new Integer((Byte) f);
+        return Integer.valueOf((Byte) f);
       }
     }
 

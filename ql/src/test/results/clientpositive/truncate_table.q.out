@@ -116,16 +116,17 @@ POSTHOOK: Output: default@srcpart_truncate@ds=2008-04-09/hr=11
 POSTHOOK: Output: default@srcpart_truncate@ds=2008-04-09/hr=12
 PREHOOK: query: explain TRUNCATE TABLE src_truncate
 PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@src_truncate
 POSTHOOK: query: explain TRUNCATE TABLE src_truncate
 POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@src_truncate
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-0
-      Truncate Table Operator:
-        Truncate Table or Partition
-          TableName: src_truncate
+    Truncate Table or Partition
+      TableName: src_truncate
 
 PREHOOK: query: TRUNCATE TABLE src_truncate
 PREHOOK: type: TRUNCATETABLE
@@ -152,19 +153,20 @@ POSTHOOK: Input: default@src_truncate
 0
 PREHOOK: query: explain TRUNCATE TABLE srcpart_truncate partition (ds='2008-04-08', hr='11')
 PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@srcpart_truncate@ds=2008-04-08/hr=11
 POSTHOOK: query: explain TRUNCATE TABLE srcpart_truncate partition (ds='2008-04-08', hr='11')
 POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@srcpart_truncate@ds=2008-04-08/hr=11
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-0
-      Truncate Table Operator:
-        Truncate Table or Partition
-          Partition Spec:
-            ds 2008-04-08
-            hr 11
-          TableName: srcpart_truncate
+    Truncate Table or Partition
+      Partition Spec:
+        ds 2008-04-08
+        hr 11
+      TableName: srcpart_truncate
 
 PREHOOK: query: TRUNCATE TABLE srcpart_truncate partition (ds='2008-04-08', hr='11')
 PREHOOK: type: TRUNCATETABLE
@@ -193,19 +195,22 @@ POSTHOOK: Input: default@srcpart_truncate
 0
 PREHOOK: query: explain TRUNCATE TABLE srcpart_truncate partition (ds, hr='12')
 PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@srcpart_truncate@ds=2008-04-08/hr=12
+PREHOOK: Output: default@srcpart_truncate@ds=2008-04-09/hr=12
 POSTHOOK: query: explain TRUNCATE TABLE srcpart_truncate partition (ds, hr='12')
 POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@srcpart_truncate@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart_truncate@ds=2008-04-09/hr=12
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-0
-      Truncate Table Operator:
-        Truncate Table or Partition
-          Partition Spec:
-            ds 
-            hr 12
-          TableName: srcpart_truncate
+    Truncate Table or Partition
+      Partition Spec:
+        ds 
+        hr 12
+      TableName: srcpart_truncate
 
 PREHOOK: query: TRUNCATE TABLE srcpart_truncate partition (ds, hr='12')
 PREHOOK: type: TRUNCATETABLE
@@ -238,16 +243,23 @@ POSTHOOK: Input: default@srcpart_truncate
 0
 PREHOOK: query: explain TRUNCATE TABLE srcpart_truncate
 PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@srcpart_truncate@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_truncate@ds=2008-04-08/hr=12
+PREHOOK: Output: default@srcpart_truncate@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_truncate@ds=2008-04-09/hr=12
 POSTHOOK: query: explain TRUNCATE TABLE srcpart_truncate
 POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@srcpart_truncate@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_truncate@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart_truncate@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_truncate@ds=2008-04-09/hr=12
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-0
-      Truncate Table Operator:
-        Truncate Table or Partition
-          TableName: srcpart_truncate
+    Truncate Table or Partition
+      TableName: srcpart_truncate
 
 PREHOOK: query: TRUNCATE TABLE srcpart_truncate
 PREHOOK: type: TRUNCATETABLE

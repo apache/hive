@@ -1,5 +1,7 @@
+--! qt:dataset:src1
+--! qt:dataset:src
 CREATE TABLE dest_j1(key STRING, value STRING, val2 INT) STORED AS TEXTFILE;
-
+set hive.cbo.enable=false;
 -- Mapjoin followed by union is not supported.
 -- The same query would work without the hint
 -- Note that there is a positive test with the same name in clientpositive

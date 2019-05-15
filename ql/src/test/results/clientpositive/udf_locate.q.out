@@ -8,6 +8,7 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED locate
 POSTHOOK: type: DESCFUNCTION
 locate(substr, str[, pos]) - Returns the position of the first occurance of substr in str after position pos
+Synonyms: position
 Example:
   > SELECT locate('bar', 'foobarbar', 5) FROM src LIMIT 1;
   7
@@ -33,6 +34,8 @@ SELECT locate('abc', 'abcd'),
        locate('abc', 'abcd', 'invalid number')
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT locate('abc', 'abcd'),
        locate('ccc', 'abcabc'),
@@ -53,6 +56,8 @@ SELECT locate('abc', 'abcd'),
        locate('abc', 'abcd', 'invalid number')
 FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

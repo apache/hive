@@ -26,8 +26,12 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@decimal_udf
 PREHOOK: query: EXPLAIN SELECT key + key FROM DECIMAL_UDF
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key + key FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -38,11 +42,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (key + key) (type: decimal(21,10))
             outputColumnNames: _col0
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT key + key FROM DECIMAL_UDF
@@ -93,8 +97,12 @@ NULL
 2469135780.2469135600
 PREHOOK: query: EXPLAIN SELECT key + value FROM DECIMAL_UDF
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key + value FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -105,11 +113,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (key + CAST( value AS decimal(10,0))) (type: decimal(21,10))
             outputColumnNames: _col0
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT key + value FROM DECIMAL_UDF
@@ -160,8 +168,12 @@ NULL
 2469135780.1234567800
 PREHOOK: query: EXPLAIN SELECT key + (value/2) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key + (value/2) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -172,11 +184,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (UDFToDouble(key) + (UDFToDouble(value) / 2.0)) (type: double)
+            expressions: (UDFToDouble(key) + (UDFToDouble(value) / 2.0D)) (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT key + (value/2) FROM DECIMAL_UDF
@@ -227,8 +239,12 @@ NULL
 1.8518518351234567E9
 PREHOOK: query: EXPLAIN SELECT key + '1.0' FROM DECIMAL_UDF
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key + '1.0' FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -239,11 +255,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (UDFToDouble(key) + 1.0) (type: double)
+            expressions: (UDFToDouble(key) + 1.0D) (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT key + '1.0' FROM DECIMAL_UDF
@@ -294,8 +310,12 @@ NULL
 1.2345678911234567E9
 PREHOOK: query: EXPLAIN SELECT key - key FROM DECIMAL_UDF
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key - key FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -306,11 +326,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (key - key) (type: decimal(21,10))
             outputColumnNames: _col0
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT key - key FROM DECIMAL_UDF
@@ -361,8 +381,12 @@ NULL
 0.0000000000
 PREHOOK: query: EXPLAIN SELECT key - value FROM DECIMAL_UDF
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key - value FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -373,11 +397,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (key - CAST( value AS decimal(10,0))) (type: decimal(21,10))
             outputColumnNames: _col0
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT key - value FROM DECIMAL_UDF
@@ -428,8 +452,12 @@ NULL
 0.1234567800
 PREHOOK: query: EXPLAIN SELECT key - (value/2) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key - (value/2) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -440,11 +468,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (UDFToDouble(key) - (UDFToDouble(value) / 2.0)) (type: double)
+            expressions: (UDFToDouble(key) - (UDFToDouble(value) / 2.0D)) (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT key - (value/2) FROM DECIMAL_UDF
@@ -495,8 +523,12 @@ NULL
 6.172839451234567E8
 PREHOOK: query: EXPLAIN SELECT key - '1.0' FROM DECIMAL_UDF
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key - '1.0' FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -507,11 +539,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (UDFToDouble(key) - 1.0) (type: double)
+            expressions: (UDFToDouble(key) - 1.0D) (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT key - '1.0' FROM DECIMAL_UDF
@@ -562,8 +594,12 @@ NULL
 1.2345678891234567E9
 PREHOOK: query: EXPLAIN SELECT key * key FROM DECIMAL_UDF
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key * key FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -574,11 +610,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (key * key) (type: decimal(38,17))
             outputColumnNames: _col0
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT key * key FROM DECIMAL_UDF
@@ -629,8 +665,12 @@ NULL
 1524157875323883652.79682997652796840
 PREHOOK: query: EXPLAIN SELECT key, value FROM DECIMAL_UDF where key * value > 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key, value FROM DECIMAL_UDF where key * value > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -641,14 +681,15 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          filterExpr: ((key * CAST( value AS decimal(10,0))) > 0) (type: boolean)
+          Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: ((key * CAST( value AS decimal(10,0))) > 0) (type: boolean)
-            Statistics: Num rows: 1 Data size: 119 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: decimal(20,10)), value (type: int)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 1 Data size: 119 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: SELECT key, value FROM DECIMAL_UDF where key * value > 0
@@ -684,8 +725,12 @@ POSTHOOK: Input: default@decimal_udf
 1234567890.1234567800	1234567890
 PREHOOK: query: EXPLAIN SELECT key * value FROM DECIMAL_UDF
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key * value FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -696,11 +741,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (key * CAST( value AS decimal(10,0))) (type: decimal(31,10))
             outputColumnNames: _col0
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT key * value FROM DECIMAL_UDF
@@ -751,8 +796,12 @@ NULL
 1524157875171467876.3907942000
 PREHOOK: query: EXPLAIN SELECT key * (value/2) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key * (value/2) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -763,11 +812,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (UDFToDouble(key) * (UDFToDouble(value) / 2.0)) (type: double)
+            expressions: (UDFToDouble(key) * (UDFToDouble(value) / 2.0D)) (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT key * (value/2) FROM DECIMAL_UDF
@@ -818,8 +867,12 @@ NULL
 7.6207893758573389E17
 PREHOOK: query: EXPLAIN SELECT key * '2.0' FROM DECIMAL_UDF
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key * '2.0' FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -830,11 +883,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (UDFToDouble(key) * 2.0) (type: double)
+            expressions: (UDFToDouble(key) * 2.0D) (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT key * '2.0' FROM DECIMAL_UDF
@@ -885,8 +938,12 @@ NULL
 2.4691357802469134E9
 PREHOOK: query: EXPLAIN SELECT key / 0 FROM DECIMAL_UDF limit 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key / 0 FROM DECIMAL_UDF limit 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -897,14 +954,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (key / 0) (type: decimal(22,12))
             outputColumnNames: _col0
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
             Limit
               Number of rows: 1
-              Statistics: Num rows: 1 Data size: 119 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: SELECT key / 0 FROM DECIMAL_UDF limit 1
@@ -918,8 +975,12 @@ POSTHOOK: Input: default@decimal_udf
 NULL
 PREHOOK: query: EXPLAIN SELECT key / NULL FROM DECIMAL_UDF limit 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key / NULL FROM DECIMAL_UDF limit 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -930,14 +991,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: (UDFToDouble(key) / null) (type: double)
+            expressions: null (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
               Number of rows: 1
-              Statistics: Num rows: 1 Data size: 119 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: SELECT key / NULL FROM DECIMAL_UDF limit 1
@@ -951,8 +1012,12 @@ POSTHOOK: Input: default@decimal_udf
 NULL
 PREHOOK: query: EXPLAIN SELECT key / key FROM DECIMAL_UDF WHERE key is not null and key <> 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key / key FROM DECIMAL_UDF WHERE key is not null and key <> 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -963,14 +1028,15 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          filterExpr: (key <> 0) (type: boolean)
+          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (key <> 0) (type: boolean)
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: (key / key) (type: decimal(38,18))
               outputColumnNames: _col0
-              Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: SELECT key / key FROM DECIMAL_UDF WHERE key is not null and key <> 0
@@ -1017,8 +1083,12 @@ POSTHOOK: Input: default@decimal_udf
 1.000000000000000000
 PREHOOK: query: EXPLAIN SELECT key / value FROM DECIMAL_UDF WHERE value is not null and value <> 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key / value FROM DECIMAL_UDF WHERE value is not null and value <> 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1029,14 +1099,15 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          filterExpr: (value <> 0) (type: boolean)
+          Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (value <> 0) (type: boolean)
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: (key / CAST( value AS decimal(10,0))) (type: decimal(31,21))
               outputColumnNames: _col0
-              Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: SELECT key / value FROM DECIMAL_UDF WHERE value is not null and value <> 0
@@ -1073,8 +1144,12 @@ POSTHOOK: Input: default@decimal_udf
 1.000000000099999992710
 PREHOOK: query: EXPLAIN SELECT key / (value/2) FROM DECIMAL_UDF  WHERE value is not null and value <> 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT key / (value/2) FROM DECIMAL_UDF  WHERE value is not null and value <> 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1085,14 +1160,15 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          filterExpr: (value <> 0) (type: boolean)
+          Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (value <> 0) (type: boolean)
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: (UDFToDouble(key) / (UDFToDouble(value) / 2.0)) (type: double)
+              expressions: (UDFToDouble(key) / (UDFToDouble(value) / 2.0D)) (type: double)
               outputColumnNames: _col0
-              Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: SELECT key / (value/2) FROM DECIMAL_UDF  WHERE value is not null and value <> 0
@@ -1129,8 +1205,12 @@ POSTHOOK: Input: default@decimal_udf
 2.0000000002
 PREHOOK: query: EXPLAIN SELECT 1 + (key / '2.0') FROM DECIMAL_UDF
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT 1 + (key / '2.0') FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1141,11 +1221,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (1.0 + (UDFToDouble(key) / 2.0)) (type: double)
+            expressions: (1.0D + (UDFToDouble(key) / 2.0D)) (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT 1 + (key / '2.0') FROM DECIMAL_UDF
@@ -1196,8 +1276,12 @@ NULL
 6.172839460617284E8
 PREHOOK: query: EXPLAIN SELECT abs(key) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT abs(key) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1208,11 +1292,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: abs(key) (type: decimal(20,10))
             outputColumnNames: _col0
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT abs(key) FROM DECIMAL_UDF
@@ -1263,8 +1347,12 @@ NULL
 1234567890.1234567800
 PREHOOK: query: EXPLAIN SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1276,34 +1364,36 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: decimal_udf
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: value (type: int), key (type: decimal(20,10))
-              outputColumnNames: value, key
-              Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+              expressions: key (type: decimal(20,10)), value (type: int)
+              outputColumnNames: key, value
+              Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: sum(key), count(key), avg(key)
+                aggregations: sum(key), count(key)
                 keys: value (type: int)
+                minReductionHashAggr: 0.99
                 mode: hash
-                outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: decimal(30,10)), _col2 (type: bigint), _col3 (type: struct<count:bigint,sum:decimal(30,10),input:decimal(20,10)>)
+                  Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: decimal(30,10)), _col2 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
-          aggregations: sum(VALUE._col0), count(VALUE._col1), avg(VALUE._col2)
+          aggregations: sum(VALUE._col0), count(VALUE._col1)
           keys: KEY._col0 (type: int)
           mode: mergepartial
-          outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 1 Data size: 119 Basic stats: COMPLETE Column stats: NONE
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: int), (_col1 / CAST( _col2 AS decimal(19,0))) (type: decimal(38,18)), _col3 (type: decimal(24,14)), _col1 (type: decimal(30,10))
+            expressions: _col0 (type: int), (_col1 / CAST( _col2 AS decimal(19,0))) (type: decimal(38,18)), (CAST( _col1 AS decimal(24,14)) / _col2) (type: decimal(38,28)), _col1 (type: decimal(30,10))
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 1 Data size: 119 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -1318,16 +1408,17 @@ STAGE PLANS:
             Reduce Output Operator
               key expressions: _col0 (type: int)
               sort order: +
-              Statistics: Num rows: 1 Data size: 119 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: decimal(38,18)), _col2 (type: decimal(24,14)), _col3 (type: decimal(30,10))
+              Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: decimal(38,18)), _col2 (type: decimal(38,28)), _col3 (type: decimal(30,10))
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: decimal(38,18)), VALUE._col1 (type: decimal(24,14)), VALUE._col2 (type: decimal(30,10))
+          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: decimal(38,18)), VALUE._col1 (type: decimal(38,28)), VALUE._col2 (type: decimal(30,10))
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 1 Data size: 119 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 119 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1347,27 +1438,31 @@ POSTHOOK: query: SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DE
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--1234567890	-1234567890.123456789000000000	-1234567890.12345678900000	-1234567890.1234567890
--1255	-1255.490000000000000000	-1255.49000000000000	-1255.4900000000
--11	-1.122000000000000000	-1.12200000000000	-1.1220000000
--1	-1.120000000000000000	-1.12000000000000	-2.2400000000
-0	0.025384615384615385	0.02538461538462	0.3300000000
-1	1.048400000000000000	1.04840000000000	5.2420000000
-2	2.000000000000000000	2.00000000000000	4.0000000000
-3	3.140000000000000000	3.14000000000000	9.4200000000
-4	3.140000000000000000	3.14000000000000	3.1400000000
-10	10.000000000000000000	10.00000000000000	10.0000000000
-20	20.000000000000000000	20.00000000000000	20.0000000000
-100	100.000000000000000000	100.00000000000000	100.0000000000
-124	124.000000000000000000	124.00000000000000	124.0000000000
-125	125.200000000000000000	125.20000000000000	125.2000000000
-200	200.000000000000000000	200.00000000000000	200.0000000000
-4400	-4400.000000000000000000	-4400.00000000000000	-4400.0000000000
-1234567890	1234567890.123456780000000000	1234567890.12345678000000	1234567890.1234567800
+-1234567890	-1234567890.123456789000000000	-1234567890.1234567890000000000000000000	-1234567890.1234567890
+-1255	-1255.490000000000000000	-1255.4900000000000000000000000000	-1255.4900000000
+-11	-1.122000000000000000	-1.1220000000000000000000000000	-1.1220000000
+-1	-1.120000000000000000	-1.1200000000000000000000000000	-2.2400000000
+0	0.025384615384615385	0.0253846153846153846153846154	0.3300000000
+1	1.048400000000000000	1.0484000000000000000000000000	5.2420000000
+2	2.000000000000000000	2.0000000000000000000000000000	4.0000000000
+3	3.140000000000000000	3.1400000000000000000000000000	9.4200000000
+4	3.140000000000000000	3.1400000000000000000000000000	3.1400000000
+10	10.000000000000000000	10.0000000000000000000000000000	10.0000000000
+20	20.000000000000000000	20.0000000000000000000000000000	20.0000000000
+100	100.000000000000000000	100.0000000000000000000000000000	100.0000000000
+124	124.000000000000000000	124.0000000000000000000000000000	124.0000000000
+125	125.200000000000000000	125.2000000000000000000000000000	125.2000000000
+200	200.000000000000000000	200.0000000000000000000000000000	200.0000000000
+4400	-4400.000000000000000000	-4400.0000000000000000000000000000	-4400.0000000000
+1234567890	1234567890.123456780000000000	1234567890.1234567800000000000000000000	1234567890.1234567800
 PREHOOK: query: EXPLAIN SELECT -key FROM DECIMAL_UDF
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT -key FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1378,11 +1473,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (- key) (type: decimal(20,10))
             outputColumnNames: _col0
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT -key FROM DECIMAL_UDF
@@ -1433,8 +1528,12 @@ NULL
 -1234567890.1234567800
 PREHOOK: query: EXPLAIN SELECT +key FROM DECIMAL_UDF
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT +key FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1445,11 +1544,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: decimal(20,10))
             outputColumnNames: _col0
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT +key FROM DECIMAL_UDF
@@ -1500,8 +1599,12 @@ NULL
 1234567890.1234567800
 PREHOOK: query: EXPlAIN SELECT CEIL(key) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPlAIN SELECT CEIL(key) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1512,11 +1615,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: ceil(key) (type: decimal(11,0))
             outputColumnNames: _col0
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT CEIL(key) FROM DECIMAL_UDF
@@ -1567,8 +1670,12 @@ NULL
 1234567891
 PREHOOK: query: EXPLAIN SELECT FLOOR(key) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT FLOOR(key) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1579,11 +1686,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: floor(key) (type: decimal(11,0))
             outputColumnNames: _col0
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT FLOOR(key) FROM DECIMAL_UDF
@@ -1634,8 +1741,12 @@ NULL
 1234567890
 PREHOOK: query: EXPLAIN SELECT ROUND(key, 2) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT ROUND(key, 2) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1646,11 +1757,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: round(key, 2) (type: decimal(13,2))
             outputColumnNames: _col0
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT ROUND(key, 2) FROM DECIMAL_UDF
@@ -1701,8 +1812,12 @@ NULL
 1234567890.12
 PREHOOK: query: EXPLAIN SELECT POWER(key, 2) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT POWER(key, 2) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1713,11 +1828,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: power(key, 2) (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT POWER(key, 2) FROM DECIMAL_UDF
@@ -1768,8 +1883,12 @@ NULL
 1.52415787532388352E18
 PREHOOK: query: EXPLAIN SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1780,11 +1899,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: ((key + 1) % (key / 2)) (type: decimal(22,12))
             outputColumnNames: _col0
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF
@@ -1835,8 +1954,12 @@ NULL
 1.000000000000
 PREHOOK: query: EXPLAIN SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF GROUP BY value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF GROUP BY value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1847,37 +1970,43 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: decimal_udf
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: value (type: int), key (type: decimal(20,10))
-              outputColumnNames: value, key
-              Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+              expressions: value (type: int), key (type: decimal(20,10)), UDFToDouble(key) (type: double), (UDFToDouble(key) * UDFToDouble(key)) (type: double)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: stddev(key), variance(key)
-                keys: value (type: int)
+                aggregations: sum(_col3), sum(_col2), count(_col1)
+                keys: _col0 (type: int)
+                minReductionHashAggr: 0.99
                 mode: hash
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: struct<count:bigint,sum:double,variance:double>), _col2 (type: struct<count:bigint,sum:double,variance:double>)
+                  Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
-          aggregations: stddev(VALUE._col0), variance(VALUE._col1)
+          aggregations: sum(VALUE._col0), sum(VALUE._col1), count(VALUE._col2)
           keys: KEY._col0 (type: int)
           mode: mergepartial
-          outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1 Data size: 119 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 1 Data size: 119 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), power(((_col1 - ((_col2 * _col2) / _col3)) / _col3), 0.5) (type: double), ((_col1 - ((_col2 * _col2) / _col3)) / _col3) (type: double)
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1897,8 +2026,8 @@ POSTHOOK: Input: default@decimal_udf
 -1255	0.0	0.0
 -11	0.0	0.0
 -1	0.0	0.0
-0	0.22561046704494161	0.050900082840236685
-1	0.05928102563215321	0.0035142400000000066
+0	0.22561046704494161	0.05090008284023669
+1	0.05928102563215448	0.003514240000000157
 2	0.0	0.0
 3	0.0	0.0
 4	0.0	0.0
@@ -1912,8 +2041,12 @@ POSTHOOK: Input: default@decimal_udf
 1234567890	0.0	0.0
 PREHOOK: query: EXPLAIN SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF GROUP BY value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF GROUP BY value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1924,37 +2057,43 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: decimal_udf
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: value (type: int), key (type: decimal(20,10))
-              outputColumnNames: value, key
-              Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+              expressions: value (type: int), key (type: decimal(20,10)), UDFToDouble(key) (type: double), (UDFToDouble(key) * UDFToDouble(key)) (type: double)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: stddev_samp(key), var_samp(key)
-                keys: value (type: int)
+                aggregations: sum(_col3), sum(_col2), count(_col1)
+                keys: _col0 (type: int)
+                minReductionHashAggr: 0.99
                 mode: hash
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: struct<count:bigint,sum:double,variance:double>), _col2 (type: struct<count:bigint,sum:double,variance:double>)
+                  Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
-          aggregations: stddev_samp(VALUE._col0), var_samp(VALUE._col1)
+          aggregations: sum(VALUE._col0), sum(VALUE._col1), count(VALUE._col2)
           keys: KEY._col0 (type: int)
           mode: mergepartial
-          outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1 Data size: 119 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 1 Data size: 119 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), power(((_col1 - ((_col2 * _col2) / _col3)) / CASE WHEN ((_col3 = 1L)) THEN (null) ELSE ((_col3 - 1)) END), 0.5) (type: double), ((_col1 - ((_col2 * _col2) / _col3)) / CASE WHEN ((_col3 = 1L)) THEN (null) ELSE ((_col3 - 1)) END) (type: double)
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1970,27 +2109,31 @@ POSTHOOK: query: SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--1234567890	0.0	0.0
--1255	0.0	0.0
--11	0.0	0.0
+-1234567890	NULL	NULL
+-1255	NULL	NULL
+-11	NULL	NULL
 -1	0.0	0.0
-0	0.2348228191855647	0.055141756410256405
-1	0.06627820154470102	0.004392800000000008
+0	0.23482281918556472	0.05514175641025642
+1	0.06627820154470243	0.0043928000000001965
 2	0.0	0.0
 3	0.0	0.0
-4	0.0	0.0
-10	0.0	0.0
-20	0.0	0.0
-100	0.0	0.0
-124	0.0	0.0
-125	0.0	0.0
-200	0.0	0.0
-4400	0.0	0.0
-1234567890	0.0	0.0
+4	NULL	NULL
+10	NULL	NULL
+20	NULL	NULL
+100	NULL	NULL
+124	NULL	NULL
+125	NULL	NULL
+200	NULL	NULL
+4400	NULL	NULL
+1234567890	NULL	NULL
 PREHOOK: query: EXPLAIN SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2001,29 +2144,30 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: decimal_udf
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: decimal(20,10))
               outputColumnNames: _col0
-              Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: histogram_numeric(_col0, 3)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 272 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 272 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: array<double>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: histogram_numeric(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 720 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 832 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 720 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 832 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2046,8 +2190,12 @@ POSTHOOK: Input: default@decimal_udf
 [{"x":-1.2345678901234567E9,"y":1.0},{"x":-144.50057142857142,"y":35.0},{"x":1.2345678901234567E9,"y":1.0}]
 PREHOOK: query: EXPLAIN SELECT MIN(key) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT MIN(key) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2058,29 +2206,31 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: decimal_udf
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: decimal(20,10))
               outputColumnNames: key
-              Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: min(key)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: decimal(20,10))
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: min(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2103,8 +2253,12 @@ POSTHOOK: Input: default@decimal_udf
 -1234567890.1234567890
 PREHOOK: query: EXPLAIN SELECT MAX(key) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT MAX(key) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2115,29 +2269,31 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: decimal_udf
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: decimal(20,10))
               outputColumnNames: key
-              Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: max(key)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: decimal(20,10))
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: max(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2160,8 +2316,12 @@ POSTHOOK: Input: default@decimal_udf
 1234567890.1234567800
 PREHOOK: query: EXPLAIN SELECT COUNT(key) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT COUNT(key) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2172,29 +2332,31 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: decimal_udf
-            Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: decimal(20,10))
               outputColumnNames: key
-              Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count(key)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

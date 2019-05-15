@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -87,7 +87,7 @@ public interface HiveAuthorizer {
   /**
    * Create role
    * @param roleName
-   * @param adminGrantor - The user in "[ WITH ADMIN <user> ]" clause of "create role"
+   * @param adminGrantor - The user in "[ WITH ADMIN &lt;user&gt; ]" clause of "create role"
    * @throws HiveAuthzPluginException
    * @throws HiveAccessControlException
    */
@@ -232,7 +232,7 @@ public interface HiveAuthorizer {
    * returned, the Object has to be of type HiveAuthorizationTranslator
    *
    * @return
-   * @throws HiveException
+   * @throws HiveAuthzPluginException
    */
   Object getHiveAuthorizationTranslator() throws HiveAuthzPluginException;
 
@@ -246,24 +246,24 @@ public interface HiveAuthorizer {
    * (part 1) It expects a valid filter condition to be returned. Null indicates no filtering is
    * required.
    *
-   * Example: table foo(c int) -> "c > 0 && c % 2 = 0"
+   * Example: table foo(c int) -&gt; "c &gt; 0 &amp;&amp; c % 2 = 0"
    *
    * (part 2) It expects a valid expression as used in a select clause. Null
    * is NOT a valid option. If no transformation is needed simply return the
    * column name.
    *
-   * Example: column a -> "a" (no transform)
+   * Example: column a -&gt; "a" (no transform)
    *
-   * Example: column a -> "reverse(a)" (call the reverse function on a)
+   * Example: column a -&gt; "reverse(a)" (call the reverse function on a)
    *
-   * Example: column a -> "5" (replace column a with the constant 5)
+   * Example: column a -&gt; "5" (replace column a with the constant 5)
    *
-   * @return List<HivePrivilegeObject>
+   * @return List&lt;HivePrivilegeObject&gt;
    * please return the list of HivePrivilegeObjects that need to be rewritten.
    *
    * @throws SemanticException
    */
-  public List<HivePrivilegeObject> applyRowFilterAndColumnMasking(HiveAuthzContext context,
+  List<HivePrivilegeObject> applyRowFilterAndColumnMasking(HiveAuthzContext context,
       List<HivePrivilegeObject> privObjs) throws SemanticException;
 
   /**
@@ -271,9 +271,12 @@ public interface HiveAuthorizer {
    * Returning false short-circuits the generation of row/column transforms.
    *
    * @return
-   * @throws SemanticException
    */
-  public boolean needTransform();
+  boolean needTransform();
 
+  /**
+   * @return HivePolicyProvider instance (expected to be a singleton)
+   * @throws HiveAuthzPluginException
+   */
+  HivePolicyProvider getHivePolicyProvider() throws HiveAuthzPluginException;
 }
-

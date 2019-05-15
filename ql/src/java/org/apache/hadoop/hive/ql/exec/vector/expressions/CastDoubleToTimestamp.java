@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,22 +18,23 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.util.TimestampUtils;
 
 public class CastDoubleToTimestamp extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
   private int colNum;
-  private int outputColumn;
 
-  public CastDoubleToTimestamp(int colNum, int outputColumn) {
-    this();
+  public CastDoubleToTimestamp(int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
-    this.outputColumn = outputColumn;
   }
 
   public CastDoubleToTimestamp() {
@@ -47,18 +48,17 @@ public class CastDoubleToTimestamp extends VectorExpression {
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       this.evaluateChildren(batch);
     }
 
     DoubleColumnVector inputColVector = (DoubleColumnVector) batch.cols[colNum];
-    TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumn];
+    TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
-    outputColVector.noNulls = inputColVector.noNulls;
     int n = batch.size;
     double[] vector = inputColVector.vector;
 
@@ -67,55 +67,88 @@ public class CastDoubleToTimestamp extends VectorExpression {
       return;
     }
 
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
+
     if (inputColVector.isRepeating) {
-      //All must be selected otherwise size would be zero
-      //Repeating property will not change.
-      setDouble(outputColVector, vector, 0);
-      // Even if there are no nulls, we always copy over entry 0. Simplifies code.
-      outputIsNull[0] = inputIsNull[0];
+      if (inputColVector.noNulls || !inputIsNull[0]) {
+        outputIsNull[0] = false;
+        setDouble(outputColVector, vector, 0);
+      } else {
+        outputIsNull[0] = true;
+        outputColVector.noNulls = false;
+      }
       outputColVector.isRepeating = true;
-    } else if (inputColVector.noNulls) {
+      return;
+    }
+
+    if (inputColVector.noNulls) {
+
       if (batch.selectedInUse) {
-        for(int j = 0; j != n; j++) {
-          int i = sel[j];
-          setDouble(outputColVector, vector, i);
+
+        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+        if (!outputColVector.noNulls) {
+          for(int j = 0; j != n; j++) {
+           final int i = sel[j];
+           // Set isNull before call in case it changes it mind.
+           outputIsNull[i] = false;
+           setDouble(outputColVector, vector, i);
+         }
+        } else {
+          for(int j = 0; j != n; j++) {
+            final int i = sel[j];
+            setDouble(outputColVector, vector, i);
+          }
         }
       } else {
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
         for(int i = 0; i != n; i++) {
           setDouble(outputColVector, vector, i);
         }
       }
-      outputColVector.isRepeating = false;
-    } else /* there are nulls */ {
+    } else /* there are NULLs in the inputColVector */ {
+
+      /*
+       * Do careful maintenance of the outputColVector.noNulls flag.
+       */
+
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          setDouble(outputColVector, vector, i);
-          outputIsNull[i] = inputIsNull[i];
+          if (!inputIsNull[i]) {
+            // Set isNull before call in case it changes it mind.
+            outputIsNull[i] = false;
+            setDouble(outputColVector, vector, i);
+          } else {
+            outputIsNull[i] = true;
+            outputColVector.noNulls = false;
+          }
         }
       } else {
         for(int i = 0; i != n; i++) {
-          setDouble(outputColVector, vector, i);
+          if (!inputIsNull[i]) {
+            // Set isNull before call in case it changes it mind.
+            outputIsNull[i] = false;
+            setDouble(outputColVector, vector, i);
+          } else {
+            outputIsNull[i] = true;
+            outputColVector.noNulls = false;
+          }
         }
-        System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
       }
-      outputColVector.isRepeating = false;
     }
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "timestamp";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum;
+    return getColumnParamString(0, colNum);
   }
 
   @Override

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,17 +30,36 @@ import org.apache.hadoop.io.BytesWritable;
  */
 public class VectorMapJoinFastStringHashMultiSet extends VectorMapJoinFastBytesHashMultiSet {
 
-  private VectorMapJoinFastStringCommon stringCommon;
+  private final VectorMapJoinFastStringCommon stringCommon;
+
+  private long fullOuterNullKeyValueCount;
 
   @Override
   public void putRow(BytesWritable currentKey, BytesWritable currentValue) throws HiveException, IOException {
-    stringCommon.adaptPutRow(this, currentKey, currentValue);
+    if (!stringCommon.adaptPutRow(this, currentKey, currentValue)) {
+
+      // Ignore NULL keys, except for FULL OUTER.
+      if (isFullOuter) {
+        fullOuterNullKeyValueCount++;
+      }
+    }
   }
 
   public VectorMapJoinFastStringHashMultiSet(
-      boolean isOuterJoin,
+      boolean isFullOuter,
       int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
-    super(initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
-    stringCommon = new VectorMapJoinFastStringCommon(isOuterJoin);
+    super(
+        isFullOuter,
+        initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
+    fullOuterNullKeyValueCount = 0;
+    stringCommon = new VectorMapJoinFastStringCommon();
+  }
+
+  @Override
+  public long getEstimatedMemorySize() {
+    // adding 16KB constant memory for stringCommon as the rabit hole is deep to implement
+    // MemoryEstimate interface, also it is constant overhead
+    long size = (16 * 1024L);
+    return super.getEstimatedMemorySize() + size;
   }
 }

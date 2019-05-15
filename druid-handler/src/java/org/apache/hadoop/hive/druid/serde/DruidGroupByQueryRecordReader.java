@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,198 +17,77 @@
  */
 package org.apache.hadoop.hive.druid.serde;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-
-import org.apache.calcite.adapter.druid.DruidTable;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.mapreduce.InputSplit;
-
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JavaType;
+import org.apache.druid.data.input.MapBasedRow;
+import org.apache.druid.data.input.Row;
+import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
+import org.apache.hadoop.hive.druid.conf.DruidConstants;
+import org.apache.hadoop.io.NullWritable;
 
-import io.druid.data.input.Row;
-import io.druid.query.aggregation.AggregatorFactory;
-import io.druid.query.aggregation.PostAggregator;
-import io.druid.query.dimension.DimensionSpec;
-import io.druid.query.groupby.GroupByQuery;
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * Record reader for results for Druid GroupByQuery.
  */
-public class DruidGroupByQueryRecordReader
-        extends DruidQueryRecordReader<GroupByQuery, Row> {
+public class DruidGroupByQueryRecordReader extends DruidQueryRecordReader<Row> {
+  private static final TypeReference<Row> TYPE_REFERENCE = new TypeReference<Row>() {
+  };
 
-  private Row current;
+  private MapBasedRow currentRow;
+  private Map<String, Object> currentEvent;
 
-  private int[] indexes = new int[0];
-
-  // Row objects returned by GroupByQuery have different access paths depending on
-  // whether the result for the metric is a Float or a Long, thus we keep track
-  // using these converters
-  private Extract[] extractors;
-
-  @Override
-  public void initialize(InputSplit split, Configuration conf) throws IOException {
-    super.initialize(split, conf);
-    initExtractors();
+  @Override protected JavaType getResultTypeDef() {
+    return DruidStorageHandlerUtils.JSON_MAPPER.getTypeFactory().constructType(TYPE_REFERENCE);
   }
 
-  @Override
-  protected GroupByQuery createQuery(String content) throws IOException {
-    return DruidStorageHandlerUtils.JSON_MAPPER.readValue(content, GroupByQuery.class);
-  }
-
-  @Override
-  protected List<Row> createResultsList(InputStream content) throws IOException {
-    return DruidStorageHandlerUtils.SMILE_MAPPER.readValue(content,
-            new TypeReference<List<Row>>() {
-            }
-    );
-  }
-
-  private void initExtractors() throws IOException {
-    extractors = new Extract[query.getAggregatorSpecs().size() + query.getPostAggregatorSpecs()
-            .size()];
-    int counter = 0;
-    for (int i = 0; i < query.getAggregatorSpecs().size(); i++, counter++) {
-      AggregatorFactory af = query.getAggregatorSpecs().get(i);
-      switch (af.getTypeName().toUpperCase()) {
-        case DruidSerDeUtils.FLOAT_TYPE:
-          extractors[counter] = Extract.FLOAT;
-          break;
-        case DruidSerDeUtils.LONG_TYPE:
-          extractors[counter] = Extract.LONG;
-          break;
-        default:
-          throw new IOException("Type not supported");
-      }
-    }
-    for (int i = 0; i < query.getPostAggregatorSpecs().size(); i++, counter++) {
-      extractors[counter] = Extract.FLOAT;
-    }
-  }
-
-  @Override
-  public boolean nextKeyValue() {
-    // Refresh indexes
-    for (int i = indexes.length - 1; i >= 0; i--) {
-      if (indexes[i] > 0) {
-        indexes[i]--;
-        for (int j = i + 1; j < indexes.length; j++) {
-          indexes[j] = current.getDimension(
-                  query.getDimensions().get(j).getDimension()).size() - 1;
-        }
-        return true;
-      }
-    }
+  @Override public boolean nextKeyValue() {
     // Results
-    if (results.hasNext()) {
-      current = results.next();
-      indexes = new int[query.getDimensions().size()];
-      for (int i = 0; i < query.getDimensions().size(); i++) {
-        DimensionSpec ds = query.getDimensions().get(i);
-        indexes[i] = current.getDimension(ds.getDimension()).size() - 1;
-      }
+
+    if (queryResultsIterator.hasNext()) {
+      final Row row = queryResultsIterator.next();
+      // currently druid supports only MapBasedRow as Jackson SerDe so it should safe to cast without check
+      currentRow = (MapBasedRow) row;
+      currentEvent = currentRow.getEvent();
       return true;
     }
     return false;
   }
 
-  @Override
-  public NullWritable getCurrentKey() throws IOException, InterruptedException {
+  @Override public NullWritable getCurrentKey() throws IOException, InterruptedException {
     return NullWritable.get();
   }
 
-  @Override
-  public DruidWritable getCurrentValue() throws IOException, InterruptedException {
+  @Override public DruidWritable getCurrentValue() throws IOException, InterruptedException {
     // Create new value
-    DruidWritable value = new DruidWritable();
+    DruidWritable value = new DruidWritable(false);
     // 1) The timestamp column
-    value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, current.getTimestamp().getMillis());
+    value.getValue().put(DruidConstants.EVENT_TIMESTAMP_COLUMN,
+        currentRow.getTimestamp() == null ? null : currentRow.getTimestamp().getMillis()
+    );
     // 2) The dimension columns
-    for (int i = 0; i < query.getDimensions().size(); i++) {
-      DimensionSpec ds = query.getDimensions().get(i);
-      List<String> dims = current.getDimension(ds.getDimension());
-      if (dims.size() == 0) {
-        // NULL value for dimension
-        value.getValue().put(ds.getOutputName(), null);
-      } else {
-        int pos = dims.size() - indexes[i] - 1;
-        value.getValue().put(ds.getOutputName(), dims.get(pos));
-      }
-    }
-    int counter = 0;
-    // 3) The aggregation columns
-    for (AggregatorFactory af : query.getAggregatorSpecs()) {
-      switch (extractors[counter++]) {
-        case FLOAT:
-          value.getValue().put(af.getName(), current.getFloatMetric(af.getName()));
-          break;
-        case LONG:
-          value.getValue().put(af.getName(), current.getLongMetric(af.getName()));
-          break;
-      }
-    }
-    // 4) The post-aggregation columns
-    for (PostAggregator pa : query.getPostAggregatorSpecs()) {
-      assert extractors[counter++] == Extract.FLOAT;
-      value.getValue().put(pa.getName(), current.getFloatMetric(pa.getName()));
-    }
+    value.getValue().putAll(currentEvent);
     return value;
   }
 
-  @Override
-  public boolean next(NullWritable key, DruidWritable value) {
+  @Override public boolean next(NullWritable key, DruidWritable value) {
     if (nextKeyValue()) {
       // Update value
       value.getValue().clear();
       // 1) The timestamp column
-      value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, current.getTimestamp().getMillis());
+      value.getValue().put(DruidConstants.EVENT_TIMESTAMP_COLUMN,
+          currentRow.getTimestamp() == null ? null : currentRow.getTimestamp().getMillis()
+      );
       // 2) The dimension columns
-      for (int i = 0; i < query.getDimensions().size(); i++) {
-        DimensionSpec ds = query.getDimensions().get(i);
-        List<String> dims = current.getDimension(ds.getDimension());
-        if (dims.size() == 0) {
-          // NULL value for dimension
-          value.getValue().put(ds.getOutputName(), null);
-        } else {
-          int pos = dims.size() - indexes[i] - 1;
-          value.getValue().put(ds.getOutputName(), dims.get(pos));
-        }
-      }
-      int counter = 0;
-      // 3) The aggregation columns
-      for (AggregatorFactory af : query.getAggregatorSpecs()) {
-        switch (extractors[counter++]) {
-          case FLOAT:
-            value.getValue().put(af.getName(), current.getFloatMetric(af.getName()));
-            break;
-          case LONG:
-            value.getValue().put(af.getName(), current.getLongMetric(af.getName()));
-            break;
-        }
-      }
-      // 4) The post-aggregation columns
-      for (PostAggregator pa : query.getPostAggregatorSpecs()) {
-        assert extractors[counter++] == Extract.FLOAT;
-        value.getValue().put(pa.getName(), current.getFloatMetric(pa.getName()));
-      }
+      value.getValue().putAll(currentEvent);
       return true;
     }
     return false;
   }
 
-  @Override
-  public float getProgress() throws IOException {
-    return results.hasNext() ? 0 : 1;
-  }
-
-  private enum Extract {
-    FLOAT,
-    LONG
+  @Override public float getProgress() throws IOException {
+    return queryResultsIterator.hasNext() ? 0 : 1;
   }
 
 }

@@ -1,6 +1,8 @@
+--! qt:dataset:alltypesorc
 set hive.explain.user=false;
 set hive.exec.submitviachild=false;
 set hive.exec.submit.local.task.via.child=false;
+set hive.llap.cache.allow.synthetic.fileid=true;
 
 create table if not exists alltypes_parquet (
   cint int, 
@@ -46,3 +48,6 @@ select ctinyint,
   stddev_pop(cdouble)
   from alltypes_parquet
   group by ctinyint;
+
+CREATE TABLE empty_parquet(x int) PARTITIONED BY (y int) stored as parquet;
+select * from empty_parquet t1 join empty_parquet t2 where t1.x=t2.x;

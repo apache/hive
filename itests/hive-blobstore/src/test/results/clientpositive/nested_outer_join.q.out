@@ -1,0 +1,76 @@
+PREHOOK: query: DROP TABLE src_a_data
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE src_a_data
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE src_a_data (
+    key int,
+    value string)
+STORED AS TEXTFILE
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/nested_outer_join/src_a_data
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_a_data
+POSTHOOK: query: CREATE TABLE src_a_data (
+    key int,
+    value string)
+STORED AS TEXTFILE
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/nested_outer_join/src_a_data
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_a_data
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/smbbucket_3.txt' INTO TABLE src_a_data
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@src_a_data
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/smbbucket_3.txt' INTO TABLE src_a_data
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@src_a_data
+PREHOOK: query: SELECT s.keya, s.keyb, c.key keyc
+FROM (
+    SELECT a.key keya, b.key keyb
+    FROM src_a_data a
+    LEFT OUTER JOIN src_a_data b ON (a.key=b.key)
+) s
+LEFT OUTER JOIN src_a_data c ON (s.keyb=c.key AND s.keyb<10)
+WHERE s.keya<20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_a_data
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT s.keya, s.keyb, c.key keyc
+FROM (
+    SELECT a.key keya, b.key keyb
+    FROM src_a_data a
+    LEFT OUTER JOIN src_a_data b ON (a.key=b.key)
+) s
+LEFT OUTER JOIN src_a_data c ON (s.keyb=c.key AND s.keyb<10)
+WHERE s.keya<20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_a_data
+#### A masked pattern was here ####
+4	4	4
+10	10	NULL
+17	17	NULL
+19	19	NULL
+PREHOOK: query: SELECT a.key keya, b.key keyb, c.key keyc
+FROM src_a_data a
+LEFT OUTER JOIN src_a_data b ON (a.key=b.key)
+LEFT OUTER JOIN src_a_data c ON (b.key=c.key AND b.key<10)
+WHERE a.key<20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_a_data
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a.key keya, b.key keyb, c.key keyc
+FROM src_a_data a
+LEFT OUTER JOIN src_a_data b ON (a.key=b.key)
+LEFT OUTER JOIN src_a_data c ON (b.key=c.key AND b.key<10)
+WHERE a.key<20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_a_data
+#### A masked pattern was here ####
+4	4	4
+10	10	NULL
+17	17	NULL
+19	19	NULL

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,6 +23,15 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputFormat;
 
 public interface LlapIo<T> {
-  InputFormat<NullWritable, T> getInputFormat(InputFormat sourceInputFormat, Deserializer serde);
+  InputFormat<NullWritable, T> getInputFormat(
+      InputFormat<?, ?> sourceInputFormat, Deserializer serde);
   void close();
+  String getMemoryInfo();
+
+  /**
+   * purge is best effort and will just release the buffers that are unlocked (refCount == 0). This is typically
+   * called when the system is idle.
+   */
+  long purge();
+  void initCacheOnlyInputFormat(InputFormat<?, ?> inputFormat);
 }

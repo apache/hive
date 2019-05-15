@@ -34,4 +34,4 @@ POSTHOOK: Input: default@not_an_acid_table
 -1070883071	0ruyd6Y50JpdGRf6HqD
 -1070551679	iUR3Q
 -1069736047	k17Am8uPHWk02cEf1jet
-FAILED: SemanticException [Error 10297]: Attempt to do update or delete on table default.not_an_acid_table that does not use an AcidOutputFormat or is not bucketed
+FAILED: SemanticException [Error 10297]: Attempt to do update or delete on table default.not_an_acid_table that is not transactional

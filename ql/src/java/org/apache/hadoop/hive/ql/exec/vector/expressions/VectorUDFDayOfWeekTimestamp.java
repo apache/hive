@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,8 +28,8 @@ public final class VectorUDFDayOfWeekTimestamp extends VectorUDFTimestampFieldTi
 
   private static final long serialVersionUID = 1L;
 
-  public VectorUDFDayOfWeekTimestamp(int colNum, int outputColumn) {
-    super(Calendar.DAY_OF_WEEK, colNum, outputColumn);
+  public VectorUDFDayOfWeekTimestamp(int colNum, int outputColumnNum) {
+    super(Calendar.DAY_OF_WEEK, colNum, outputColumnNum);
   }
 
   public VectorUDFDayOfWeekTimestamp() {

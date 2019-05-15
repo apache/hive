@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,10 +30,13 @@ import java.util.TreeMap;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
+import org.apache.hadoop.hive.ql.exec.persistence.MatchTracker;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMapResult;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMultiSetResult;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashSetResult;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinNonMatchedIterator;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.WriteBuffers;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.WritableComparator;
@@ -197,6 +200,20 @@ public class CheckFastHashTable {
       return array[index].getValues();
     }
 
+    private void verifyOne(VectorMapJoinFastLongHashMap map, int index, MatchTracker matchTracker) {
+      FastLongHashMapElement element = array[index];
+      long longKey = element.getKey();
+      List<byte[]> values = element.getValues();
+
+      VectorMapJoinHashMapResult hashMapResult = map.createHashMapResult();
+      JoinUtil.JoinResult joinResult = map.lookup(longKey, hashMapResult, matchTracker);
+      if (joinResult != JoinUtil.JoinResult.MATCH) {
+        assertTrue(false);
+      }
+
+      verifyHashMapValues(hashMapResult, values);
+    }
+
     public void verify(VectorMapJoinFastLongHashMap map) {
       int mapSize = map.size();
       if (mapSize != count) {
@@ -204,17 +221,76 @@ public class CheckFastHashTable {
       }
 
       for (int index = 0; index < count; index++) {
+        verifyOne(map, index, null);
+      }
+    }
+
+    private int findKeyInArray(long searchLong) {
+
+      // Brute force search.
+      for (int index = 0; index < count; index++) {
         FastLongHashMapElement element = array[index];
-        long key = element.getKey();
-        List<byte[]> values = element.getValues();
-
-        VectorMapJoinHashMapResult hashMapResult = map.createHashMapResult();
-        JoinUtil.JoinResult joinResult = map.lookup(key, hashMapResult);
-        if (joinResult != JoinUtil.JoinResult.MATCH) {
-          assertTrue(false);
+        long longKey = element.getKey();
+        if (longKey == searchLong) {
+          return index;
         }
+      }
+      return -1;
+    }
 
+    // We assume there have been no reads/lookups before this call.
+    // And, keys are *UNIQUE*.
+    public void verifyNonMatched(VectorMapJoinFastLongHashMap map, Random random)
+        throws HiveException {
+      int mapSize = map.size();
+      if (mapSize != count) {
+        TestCase.fail("map.size() does not match expected count");
+      }
+
+      MatchTracker matchTracker = map.createMatchTracker();
+      boolean[] nonMatched = new boolean[mapSize];
+      int nonMatchedCount = 0;
+      for (int index = 0; index < count; index++) {
+        nonMatched[index] = random.nextBoolean();
+        if (!nonMatched[index]) {
+          verifyOne(map, index, matchTracker);
+        } else {
+          nonMatchedCount++;
+        }
+      }
+
+      boolean[] returnedNonMatched = new boolean[mapSize];
+      int returnedNonMatchedCount = 0;
+
+      VectorMapJoinNonMatchedIterator nonMatchedIterator =
+          map.createNonMatchedIterator(matchTracker);
+      nonMatchedIterator.init();
+
+      while (nonMatchedIterator.findNextNonMatched()) {
+        boolean isNull = !nonMatchedIterator.readNonMatchedLongKey();
+        if (isNull) {
+          TestCase.fail("NULL key found in expected keys");
+        }
+        long longKey = nonMatchedIterator.getNonMatchedLongKey();
+        int index = findKeyInArray(longKey);
+        if (index == -1) {
+          TestCase.fail("non-matched key not found in expected keys");
+        }
+        if (!nonMatched[index]) {
+          TestCase.fail("non-matched key not one of the expected non-matched keys");
+        }
+        if (returnedNonMatched[index]) {
+          TestCase.fail("non-matched key already returned");
+        }
+        returnedNonMatched[index] = true;
+        returnedNonMatchedCount++;
+        VectorMapJoinHashMapResult hashMapResult = nonMatchedIterator.getNonMatchedHashMapResult();
+        FastLongHashMapElement element = array[index];
+        List<byte[]> values = element.getValues();
         verifyHashMapValues(hashMapResult, values);
+      }
+      if (nonMatchedCount != returnedNonMatchedCount) {
+        TestCase.fail("non-matched key count mismatch");
       }
     }
   }
@@ -246,6 +322,11 @@ public class CheckFastHashTable {
 
     public void addValue(byte[] value) {
       values.add(value);
+    }
+
+    @Override
+    public String toString() {
+      return "Key length " + key.length + ", value count " + values.size();
     }
   }
 
@@ -310,6 +391,21 @@ public class CheckFastHashTable {
       return array[index].getValues();
     }
 
+    private void verifyOne(VectorMapJoinFastBytesHashMap map, int index,
+        MatchTracker matchTracker) {
+      FastBytesHashMapElement element = array[index];
+      byte[] key = element.getKey();
+      List<byte[]> values = element.getValues();
+
+      VectorMapJoinHashMapResult hashMapResult = map.createHashMapResult();
+      JoinUtil.JoinResult joinResult = map.lookup(key, 0, key.length, hashMapResult, matchTracker);
+      if (joinResult != JoinUtil.JoinResult.MATCH) {
+        assertTrue(false);
+      }
+
+      verifyHashMapValues(hashMapResult, values);
+    }
+
     public void verify(VectorMapJoinFastBytesHashMap map) {
       int mapSize = map.size();
       if (mapSize != count) {
@@ -317,17 +413,81 @@ public class CheckFastHashTable {
       }
 
       for (int index = 0; index < count; index++) {
+        verifyOne(map, index, null);
+      }
+    }
+
+    private int findKeyInArray(byte[] searchKeyBytes, int searchKeyOffset, int searchKeyLength) {
+
+      // Brute force search.
+      for (int index = 0; index < count; index++) {
         FastBytesHashMapElement element = array[index];
-        byte[] key = element.getKey();
-        List<byte[]> values = element.getValues();
-
-        VectorMapJoinHashMapResult hashMapResult = map.createHashMapResult();
-        JoinUtil.JoinResult joinResult = map.lookup(key, 0, key.length, hashMapResult);
-        if (joinResult != JoinUtil.JoinResult.MATCH) {
-          assertTrue(false);
+        byte[] keyBytes = element.getKey();
+        if (keyBytes.length == searchKeyLength &&
+            StringExpr.equal(
+                keyBytes, 0, keyBytes.length,
+                searchKeyBytes, searchKeyOffset, searchKeyLength)) {
+          return index;
         }
+      }
+      return -1;
+    }
 
+    // We assume there have been no reads/lookups before this call.
+    // And, keys are *UNIQUE*.
+    public void verifyNonMatched(VectorMapJoinFastBytesHashMap map, Random random)
+        throws HiveException {
+      int mapSize = map.size();
+      if (mapSize != count) {
+        TestCase.fail("map.size() does not match expected count");
+      }
+
+      MatchTracker matchTracker = map.createMatchTracker();
+      boolean[] nonMatched = new boolean[mapSize];
+      int nonMatchedCount = 0;
+      for (int index = 0; index < count; index++) {
+        nonMatched[index] = random.nextBoolean();
+        if (!nonMatched[index]) {
+          verifyOne(map, index, matchTracker);
+        } else {
+          nonMatchedCount++;
+        }
+      }
+
+      boolean[] returnedNonMatched = new boolean[mapSize];
+      int returnedNonMatchedCount = 0;
+
+      VectorMapJoinNonMatchedIterator nonMatchedIterator =
+          map.createNonMatchedIterator(matchTracker);
+      nonMatchedIterator.init();
+
+      while (nonMatchedIterator.findNextNonMatched()) {
+        boolean isNull = !nonMatchedIterator.readNonMatchedBytesKey();;
+        if (isNull) {
+          TestCase.fail("NULL key found in expected keys");
+        }
+        byte[] keyBytes = nonMatchedIterator.getNonMatchedBytes();
+        int keyOffset = nonMatchedIterator.getNonMatchedBytesOffset();
+        int keyLength = nonMatchedIterator.getNonMatchedBytesLength();
+        int index = findKeyInArray(keyBytes, keyOffset, keyLength);
+        if (index == -1) {
+          TestCase.fail("non-matched key not found in expected keys");
+        }
+        if (!nonMatched[index]) {
+          TestCase.fail("non-matched key not one of the expected non-matched keys");
+        }
+        if (returnedNonMatched[index]) {
+          TestCase.fail("non-matched key already returned");
+        }
+        returnedNonMatched[index] = true;
+        returnedNonMatchedCount++;
+        VectorMapJoinHashMapResult hashMapResult = nonMatchedIterator.getNonMatchedHashMapResult();
+        FastBytesHashMapElement element = array[index];
+        List<byte[]> values = element.getValues();
         verifyHashMapValues(hashMapResult, values);
+      }
+      if (nonMatchedCount != returnedNonMatchedCount) {
+        TestCase.fail("non-matched key count mismatch");
       }
     }
   }

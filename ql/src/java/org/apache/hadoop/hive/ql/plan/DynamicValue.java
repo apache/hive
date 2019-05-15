@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.NoDynamicValuesException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.DynamicValueRegistry;
 import org.apache.hadoop.hive.ql.exec.ObjectCache;
@@ -107,21 +108,27 @@ public class DynamicValue implements LiteralDelegate, Serializable {
     }
 
     if (conf == null) {
-      throw new IllegalStateException("Cannot retrieve dynamic value " + id + " - no conf set");
+      throw new NoDynamicValuesException("Cannot retrieve dynamic value " + id + " - no conf set");
     }
 
     try {
       // Get object cache
       String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
-      ObjectCache cache = ObjectCacheFactory.getCache(conf, queryId, false);
+      ObjectCache cache = ObjectCacheFactory.getCache(conf, queryId, false, true);
+
+      if (cache == null) {
+        return null;
+      }
 
       // Get the registry
       DynamicValueRegistry valueRegistry = cache.retrieve(DYNAMIC_VALUE_REGISTRY_CACHE_KEY);
       if (valueRegistry == null) {
-        throw new IllegalStateException("DynamicValueRegistry not available");
+        throw new NoDynamicValuesException("DynamicValueRegistry not available");
       }
       val = valueRegistry.getValue(id);
       initialized = true;
+    } catch (NoDynamicValuesException err) {
+      throw err;
     } catch (Exception err) {
       throw new IllegalStateException("Failed to retrieve dynamic value for " + id, err);
     }

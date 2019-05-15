@@ -56,25 +56,25 @@ POSTHOOK: query: drop table testreserved
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testreserved
 POSTHOOK: Output: default@testreserved
-PREHOOK: query: create table s (default struct<src:struct<`end`:struct<key:string>, id: string>, id: string>)
+PREHOOK: query: create table s_n1 (default struct<src:struct<`end`:struct<key:string>, id: string>, id: string>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@s
-POSTHOOK: query: create table s (default struct<src:struct<`end`:struct<key:string>, id: string>, id: string>)
+PREHOOK: Output: default@s_n1
+POSTHOOK: query: create table s_n1 (default struct<src:struct<`end`:struct<key:string>, id: string>, id: string>)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@s
-PREHOOK: query: create view vs1 as select default.src.`end`.key from s
+POSTHOOK: Output: default@s_n1
+PREHOOK: query: create view vs1 as select default.src.`end`.key from s_n1
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@s
+PREHOOK: Input: default@s_n1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@vs1
-POSTHOOK: query: create view vs1 as select default.src.`end`.key from s
+POSTHOOK: query: create view vs1 as select default.src.`end`.key from s_n1
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@s
+POSTHOOK: Input: default@s_n1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@vs1
-POSTHOOK: Lineage: vs1.key EXPRESSION [(s)s.FieldSchema(name:default, type:struct<src:struct<end:struct<key:string>,id:string>,id:string>, comment:null), ]
+POSTHOOK: Lineage: vs1.key EXPRESSION [(s_n1)s_n1.FieldSchema(name:default, type:struct<src:struct<end:struct<key:string>,id:string>,id:string>, comment:null), ]
 PREHOOK: query: describe extended vs1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@vs1
@@ -84,17 +84,17 @@ POSTHOOK: Input: default@vs1
 key                 	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: create view vs2 as select default.src.`end` from s
+PREHOOK: query: create view vs2 as select default.src.`end` from s_n1
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@s
+PREHOOK: Input: default@s_n1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@vs2
-POSTHOOK: query: create view vs2 as select default.src.`end` from s
+POSTHOOK: query: create view vs2 as select default.src.`end` from s_n1
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@s
+POSTHOOK: Input: default@s_n1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@vs2
-POSTHOOK: Lineage: vs2.end EXPRESSION [(s)s.FieldSchema(name:default, type:struct<src:struct<end:struct<key:string>,id:string>,id:string>, comment:null), ]
+POSTHOOK: Lineage: vs2.end EXPRESSION [(s_n1)s_n1.FieldSchema(name:default, type:struct<src:struct<end:struct<key:string>,id:string>,id:string>, comment:null), ]
 PREHOOK: query: describe extended vs2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@vs2
@@ -120,92 +120,92 @@ POSTHOOK: query: drop view vs2
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: default@vs2
 POSTHOOK: Output: default@vs2
-PREHOOK: query: create view v as select named_struct('key', 1).key from src limit 1
+PREHOOK: query: create view v_n3 as select named_struct('key', 1).key from src limit 1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as select named_struct('key', 1).key from src limit 1
+PREHOOK: Output: default@v_n3
+POSTHOOK: query: create view v_n3 as select named_struct('key', 1).key from src limit 1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v.key EXPRESSION []
-PREHOOK: query: desc extended v
+POSTHOOK: Output: default@v_n3
+POSTHOOK: Lineage: v_n3.key EXPRESSION []
+PREHOOK: query: desc extended v_n3
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: desc extended v
+PREHOOK: Input: default@v_n3
+POSTHOOK: query: desc extended v_n3
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n3
 key                 	int                 	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: select * from v
+PREHOOK: query: select * from v_n3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@v
+PREHOOK: Input: default@v_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select * from v
+POSTHOOK: query: select * from v_n3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n3
 #### A masked pattern was here ####
 1
-PREHOOK: query: select * from v
+PREHOOK: query: select * from v_n3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@v
+PREHOOK: Input: default@v_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select * from v
+POSTHOOK: query: select * from v_n3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n3
 #### A masked pattern was here ####
 1
-PREHOOK: query: drop view v
+PREHOOK: query: drop view v_n3
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v
-PREHOOK: Output: default@v
-POSTHOOK: query: drop view v
+PREHOOK: Input: default@v_n3
+PREHOOK: Output: default@v_n3
+POSTHOOK: query: drop view v_n3
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v
-POSTHOOK: Output: default@v
-PREHOOK: query: create view v as select named_struct('end', 1).`end` from src limit 1
+POSTHOOK: Input: default@v_n3
+POSTHOOK: Output: default@v_n3
+PREHOOK: query: create view v_n3 as select named_struct('end', 1).`end` from src limit 1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as select named_struct('end', 1).`end` from src limit 1
+PREHOOK: Output: default@v_n3
+POSTHOOK: query: create view v_n3 as select named_struct('end', 1).`end` from src limit 1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v.end EXPRESSION []
-PREHOOK: query: desc extended v
+POSTHOOK: Output: default@v_n3
+POSTHOOK: Lineage: v_n3.end EXPRESSION []
+PREHOOK: query: desc extended v_n3
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: desc extended v
+PREHOOK: Input: default@v_n3
+POSTHOOK: query: desc extended v_n3
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n3
 end                 	int                 	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: select * from v
+PREHOOK: query: select * from v_n3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@v
+PREHOOK: Input: default@v_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select * from v
+POSTHOOK: query: select * from v_n3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n3
 #### A masked pattern was here ####
 1
-PREHOOK: query: drop view v
+PREHOOK: query: drop view v_n3
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v
-PREHOOK: Output: default@v
-POSTHOOK: query: drop view v
+PREHOOK: Input: default@v_n3
+PREHOOK: Output: default@v_n3
+POSTHOOK: query: drop view v_n3
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v
-POSTHOOK: Output: default@v
+POSTHOOK: Input: default@v_n3
+POSTHOOK: Output: default@v_n3

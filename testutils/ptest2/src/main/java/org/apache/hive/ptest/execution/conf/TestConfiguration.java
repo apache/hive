@@ -18,11 +18,7 @@
  */
 package org.apache.hive.ptest.execution.conf;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 
 import org.slf4j.Logger;
 
@@ -303,22 +299,8 @@ public class TestConfiguration {
         + buildTool + ", jiraName=" + jiraName + ", clearLibraryCache="
         + clearLibraryCache + ", additionalProfiles=" + additionalProfiles + "]";
   }
-  public static TestConfiguration fromInputStream(InputStream inputStream, Logger logger)
+  public static TestConfiguration withContext(Context context, Logger logger)
       throws IOException {
-    Properties properties = new Properties();
-    properties.load(inputStream);
-    Context context = new Context(Maps.fromProperties(properties));
     return new TestConfiguration(context, logger);
-  }
-  public static TestConfiguration fromFile(String file, Logger logger) throws IOException {
-    return fromFile(new File(file), logger);
-  }
-  public static TestConfiguration fromFile(File file, Logger logger) throws IOException {
-    InputStream in = new FileInputStream(file);
-    try {
-      return fromInputStream(in, logger);
-    } finally {
-      in.close();
-    }
   }
 }

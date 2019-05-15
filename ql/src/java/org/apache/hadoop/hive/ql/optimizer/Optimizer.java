@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverterPostProc;
 import org.apache.hadoop.hive.ql.optimizer.correlation.CorrelationOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkDeDuplication;
-import org.apache.hadoop.hive.ql.optimizer.index.RewriteGBUsingIndex;
 import org.apache.hadoop.hive.ql.optimizer.lineage.Generator;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPruner;
 import org.apache.hadoop.hive.ql.optimizer.metainfo.annotation.AnnotateWithOpTraits;
@@ -79,7 +78,7 @@ public class Optimizer {
     if (postExecHooks.contains("org.apache.hadoop.hive.ql.hooks.PostExecutePrinter")
         || postExecHooks.contains("org.apache.hadoop.hive.ql.hooks.LineageLogger")
         || postExecHooks.contains("org.apache.atlas.hive.hook.HiveHook")) {
-      transformations.add(new Generator());
+      transformations.add(new Generator(postExecHooks));
     }
 
     // Try to transform OR predicates in Filter into simpler IN clauses first
@@ -110,18 +109,13 @@ public class Optimizer {
     }
 
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION) &&
-            !pctx.getContext().isCboSucceeded()) {    
-      // We run constant propagation twice because after predicate pushdown, filter expressions   
-      // are combined and may become eligible for reduction (like is not null filter).    
+            !pctx.getContext().isCboSucceeded()) {
+      // We run constant propagation twice because after predicate pushdown, filter expressions
+      // are combined and may become eligible for reduction (like is not null filter).
       transformations.add(new ConstantPropagate());
     }
 
-    if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.DYNAMICPARTITIONING) &&
-        HiveConf.getVar(hiveConf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE).equals("nonstrict") &&
-        HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITION) &&
-        !HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTLISTBUCKETING)) {
-      transformations.add(new SortedDynPartitionOptimizer());
-    }
+
 
     transformations.add(new SortedDynPartitionTimeGranularityOptimizer());
 
@@ -144,15 +138,16 @@ public class Optimizer {
       transformations.add(new GroupByOptimizer());
     }
     transformations.add(new ColumnPruner());
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVECOUNTDISTINCTOPTIMIZER)
+        && (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_IN_TEST) || isTezExecEngine)) {
+      transformations.add(new CountDistinctRewriteProc());
+    }
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPTIMIZE_SKEWJOIN_COMPILETIME)) {
       if (!isTezExecEngine) {
         transformations.add(new SkewJoinOptimizer());
       } else {
         LOG.warn("Skew join is currently not supported in tez! Disabling the skew join optimization.");
       }
-    }
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTGBYUSINGINDEX)) {
-      transformations.add(new RewriteGBUsingIndex());
     }
     transformations.add(new SamplePruner());
 
@@ -210,7 +205,7 @@ public class Optimizer {
     if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCORRELATION) &&
         !HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEGROUPBYSKEW) &&
         !HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPTIMIZE_SKEWJOIN_COMPILETIME) &&
-        !isTezExecEngine) {
+        !isTezExecEngine && !isSparkExecEngine) {
       transformations.add(new CorrelationOptimizer());
     }
     if (HiveConf.getFloatVar(hiveConf, HiveConf.ConfVars.HIVELIMITPUSHDOWNMEMORYUSAGE) > 0) {
@@ -232,10 +227,10 @@ public class Optimizer {
       transformations.add(new SimpleFetchAggregation());
     }
 
-    if (pctx.getContext().getExplainConfig() != null
-        && pctx.getContext().getExplainConfig().isFormatted()) {
-      transformations.add(new AnnotateReduceSinkOutputOperator());
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPTIMIZE_TABLE_PROPERTIES_FROM_SERDE)) {
+      transformations.add(new TablePropertyEnrichmentOptimizer());
     }
+
   }
 
   /**

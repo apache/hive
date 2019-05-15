@@ -37,14 +37,15 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 /**
  * An implementation of ChannelInboundHandler that dispatches incoming messages to an instance
  * method based on the method signature.
- * <p/>
+ * <p>
  * A handler's signature must be of the form:
- * <p/>
+ * </p>
  * <blockquote><tt>protected void handle(ChannelHandlerContext, MessageType)</tt></blockquote>
- * <p/>
+ * <p>
  * Where "MessageType" must match exactly the type of the message to handle. Polymorphism is not
  * supported. Handlers can return a value, which becomes the RPC reply; if a null is returned, then
  * a reply is still sent, with an empty payload.
+ * </p>
  */
 @InterfaceAudience.Private
 public abstract class RpcDispatcher extends SimpleChannelInboundHandler<Object> {
@@ -65,13 +66,12 @@ public abstract class RpcDispatcher extends SimpleChannelInboundHandler<Object> 
   protected final void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
     if (lastHeader == null) {
       if (!(msg instanceof Rpc.MessageHeader)) {
-        LOG.warn("[{}] Expected RPC header, got {} instead.", name(),
-            msg != null ? msg.getClass().getName() : null);
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException(String.format("[%s] Expected RPC header, got %s instead.", name(),
+                msg != null ? msg.getClass().getName() : null));
       }
       lastHeader = (Rpc.MessageHeader) msg;
     } else {
-      LOG.debug("[{}] Received RPC message: type={} id={} payload={}", name(),
+      LOG.trace("[{}] Received RPC message: type={} id={} payload={}", name(),
         lastHeader.type, lastHeader.id, msg != null ? msg.getClass().getName() : null);
       try {
         switch (lastHeader.type) {
@@ -85,7 +85,7 @@ public abstract class RpcDispatcher extends SimpleChannelInboundHandler<Object> 
           handleError(ctx, msg, findRpc(lastHeader.id));
           break;
         default:
-          throw new IllegalArgumentException("Unknown RPC message type: " + lastHeader.type);
+          throw new IllegalArgumentException("[" + name() + "] Unknown RPC message type: " + lastHeader.type);
         }
       } finally {
         lastHeader = null;
@@ -102,7 +102,7 @@ public abstract class RpcDispatcher extends SimpleChannelInboundHandler<Object> 
       }
     }
     throw new IllegalArgumentException(String.format(
-        "Received RPC reply for unknown RPC (%d).", id));
+        "[%s] Received RPC reply for unknown RPC (%d).", name(), id));
   }
 
   private void handleCall(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -123,7 +123,7 @@ public abstract class RpcDispatcher extends SimpleChannelInboundHandler<Object> 
       }
       replyType = Rpc.MessageType.REPLY;
     } catch (InvocationTargetException ite) {
-      LOG.debug(String.format("[%s] Error in RPC handler.", name()), ite.getCause());
+      LOG.error(String.format("[%s] Error in RPC handler.", name()), ite.getCause());
       replyPayload = Throwables.getStackTraceAsString(ite.getCause());
       replyType = Rpc.MessageType.ERROR;
     }
@@ -139,12 +139,12 @@ public abstract class RpcDispatcher extends SimpleChannelInboundHandler<Object> 
   private void handleError(ChannelHandlerContext ctx, Object msg, OutstandingRpc rpc)
       throws Exception {
     if (msg instanceof String) {
-      LOG.warn("Received error message:{}.", msg);
+      LOG.error("[{}] Received error message: {}.", name(), msg);
       rpc.future.setFailure(new RpcException((String) msg));
     } else {
       String error = String.format("Received error with unexpected payload (%s).",
           msg != null ? msg.getClass().getName() : null);
-      LOG.warn(String.format("[%s] %s", name(), error));
+      LOG.error(String.format("[%s] %s", name(), error));
       rpc.future.setFailure(new IllegalArgumentException(error));
       ctx.close();
     }
@@ -177,7 +177,7 @@ public abstract class RpcDispatcher extends SimpleChannelInboundHandler<Object> 
   }
 
   void registerRpc(long id, Promise promise, String type) {
-    LOG.debug("[{}] Registered outstanding rpc {} ({}).", name(), id, type);
+    LOG.trace("[{}] Registered outstanding rpc {} ({}).", name(), id, type);
     rpcs.add(new OutstandingRpc(id, promise));
   }
 
@@ -195,5 +195,4 @@ public abstract class RpcDispatcher extends SimpleChannelInboundHandler<Object> 
       this.future = future;
     }
   }
-
 }

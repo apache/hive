@@ -49,8 +49,8 @@ public class TestAcidInputFormat {
     deltaMetaData.readFields(mockDataInput);
 
     verify(mockDataInput, times(1)).readInt();
-    assertThat(deltaMetaData.getMinTxnId(), is(1L));
-    assertThat(deltaMetaData.getMaxTxnId(), is(2L));
+    assertThat(deltaMetaData.getMinWriteId(), is(1L));
+    assertThat(deltaMetaData.getMaxWriteId(), is(2L));
     assertThat(deltaMetaData.getStmtIds().isEmpty(), is(true));
   }
 
@@ -63,8 +63,8 @@ public class TestAcidInputFormat {
     deltaMetaData.readFields(mockDataInput);
 
     verify(mockDataInput, times(3)).readInt();
-    assertThat(deltaMetaData.getMinTxnId(), is(1L));
-    assertThat(deltaMetaData.getMaxTxnId(), is(2L));
+    assertThat(deltaMetaData.getMinWriteId(), is(1L));
+    assertThat(deltaMetaData.getMaxWriteId(), is(2L));
     assertThat(deltaMetaData.getStmtIds().size(), is(2));
     assertThat(deltaMetaData.getStmtIds().get(0), is(100));
     assertThat(deltaMetaData.getStmtIds().get(1), is(101));
@@ -72,10 +72,11 @@ public class TestAcidInputFormat {
 
   @Test
   public void testDeltaMetaConstructWithState() throws Exception {
-    DeltaMetaData deltaMetaData = new AcidInputFormat.DeltaMetaData(2000L, 2001L, Arrays.asList(97, 98, 99));
+    DeltaMetaData deltaMetaData = new AcidInputFormat
+        .DeltaMetaData(2000L, 2001L, Arrays.asList(97, 98, 99), 0);
 
-    assertThat(deltaMetaData.getMinTxnId(), is(2000L));
-    assertThat(deltaMetaData.getMaxTxnId(), is(2001L));
+    assertThat(deltaMetaData.getMinWriteId(), is(2000L));
+    assertThat(deltaMetaData.getMaxWriteId(), is(2001L));
     assertThat(deltaMetaData.getStmtIds().size(), is(3));
     assertThat(deltaMetaData.getStmtIds().get(0), is(97));
     assertThat(deltaMetaData.getStmtIds().get(1), is(98));
@@ -91,12 +92,13 @@ public class TestAcidInputFormat {
     statementIds.add(97);
     statementIds.add(98);
     statementIds.add(99);
-    DeltaMetaData deltaMetaData = new AcidInputFormat.DeltaMetaData(2000L, 2001L, statementIds);
+    DeltaMetaData deltaMetaData = new AcidInputFormat
+        .DeltaMetaData(2000L, 2001L, statementIds, 0);
     deltaMetaData.readFields(mockDataInput);
 
     verify(mockDataInput, times(3)).readInt();
-    assertThat(deltaMetaData.getMinTxnId(), is(1L));
-    assertThat(deltaMetaData.getMaxTxnId(), is(2L));
+    assertThat(deltaMetaData.getMinWriteId(), is(1L));
+    assertThat(deltaMetaData.getMaxWriteId(), is(2L));
     assertThat(deltaMetaData.getStmtIds().size(), is(2));
     assertThat(deltaMetaData.getStmtIds().get(0), is(100));
     assertThat(deltaMetaData.getStmtIds().get(1), is(101));

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -90,7 +90,8 @@ public class TestSQLStdHiveAccessControllerHS2 {
         "hive.optimize.index.filter.compact.maxsize", "hive.tez.dummy", "tez.task.dummy",
         "hive.exec.dynamic.partition", "hive.exec.dynamic.partition.mode",
         "hive.exec.max.dynamic.partitions", "hive.exec.max.dynamic.partitions.pernode",
-        "oozie.HadoopAccessorService.created", "tez.queue.name");
+        "oozie.HadoopAccessorService.created", "tez.queue.name","hive.druid.select.distribute",
+        "distcp.options.px");
 
     // combine two lists
     List<String> varList = new ArrayList<String>();

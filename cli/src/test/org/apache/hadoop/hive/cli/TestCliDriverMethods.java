@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,10 +19,8 @@ package org.apache.hadoop.hive.cli;
 
 
 import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -49,14 +47,15 @@ import junit.framework.TestCase;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
-import org.apache.hadoop.util.Shell;
+import org.junit.Test;
 
 
 // Cannot call class TestCliDriver since that's the name of the generated
@@ -80,7 +79,7 @@ public class TestCliDriverMethods extends TestCase {
   }
 
   // If the command has an associated schema, make sure it gets printed to use
-  public void testThatCliDriverPrintsHeaderForCommandsWithSchema() throws CommandNeedRetryException {
+  public void testThatCliDriverPrintsHeaderForCommandsWithSchema() {
     Schema mockSchema = mock(Schema.class);
     List<FieldSchema> fieldSchemas = new ArrayList<FieldSchema>();
     String fieldName = "FlightOfTheConchords";
@@ -94,14 +93,56 @@ public class TestCliDriverMethods extends TestCase {
   }
 
   // If the command has no schema, make sure nothing is printed
-  public void testThatCliDriverPrintsNoHeaderForCommandsWithNoSchema()
-      throws CommandNeedRetryException {
+  public void testThatCliDriverPrintsNoHeaderForCommandsWithNoSchema() {
     Schema mockSchema = mock(Schema.class);
     when(mockSchema.getFieldSchemas()).thenReturn(null);
 
     PrintStream mockOut = headerPrintingTestDriver(mockSchema);
     // Should not have tried to print any thing.
     verify(mockOut, never()).print(anyString());
+  }
+
+  // Test that CliDriver does not strip comments starting with '--'
+  public void testThatCliDriverDoesNotStripComments() throws Exception {
+    // We need to overwrite System.out and System.err as that is what is used in ShellCmdExecutor
+    // So save old values...
+    PrintStream oldOut = System.out;
+    PrintStream oldErr = System.err;
+
+    // Capture stdout and stderr
+    ByteArrayOutputStream dataOut = new ByteArrayOutputStream();
+    SessionStream out = new SessionStream(dataOut);
+    System.setOut(out);
+    ByteArrayOutputStream dataErr = new ByteArrayOutputStream();
+    SessionStream err = new SessionStream(dataErr);
+    System.setErr(err);
+
+    CliSessionState ss = new CliSessionState(new HiveConf());
+    ss.out = out;
+    ss.err = err;
+
+    // Save output as yo cannot print it while System.out and System.err are weird
+    String message;
+    String errors;
+    CommandProcessorResponse response;
+    try {
+      CliSessionState.start(ss);
+      CliDriver cliDriver = new CliDriver();
+      // issue a command with bad options
+      response = cliDriver.processCmd("!ls --abcdefghijklmnopqrstuvwxyz123456789");
+    } finally {
+      // restore System.out and System.err
+      System.setOut(oldOut);
+      System.setErr(oldErr);
+    }
+    message = dataOut.toString("UTF-8");
+    errors = dataErr.toString("UTF-8");
+    assertTrue("Comments with '--; should not have been stripped,"
+        + " so command should fail", response.getResponseCode() != 0);
+    assertTrue("Comments with '--; should not have been stripped,"
+        + " so we should have got an error in the output: '" + errors + "'.",
+        errors.contains("option"));
+    assertNotNull(message); // message kept around in for debugging
   }
 
   /**
@@ -113,7 +154,7 @@ public class TestCliDriverMethods extends TestCase {
    * @throws CommandNeedRetryException
    *           won't actually be thrown
    */
-  private PrintStream headerPrintingTestDriver(Schema mockSchema) throws CommandNeedRetryException {
+  private PrintStream headerPrintingTestDriver(Schema mockSchema) {
     CliDriver cliDriver = new CliDriver();
 
     // We want the driver to try to print the header...
@@ -123,17 +164,19 @@ public class TestCliDriverMethods extends TestCase {
         .thenReturn(true);
     cliDriver.setConf(conf);
 
-    Driver proc = mock(Driver.class);
+    IDriver proc = mock(IDriver.class);
 
     CommandProcessorResponse cpr = mock(CommandProcessorResponse.class);
+    QueryState queryState = new QueryState.Builder().withGenerateNewQueryId(true).build();
     when(cpr.getResponseCode()).thenReturn(0);
     when(proc.run(anyString())).thenReturn(cpr);
+    when(proc.getQueryState()).thenReturn(queryState);
 
     // and then see what happens based on the provided schema
     when(proc.getSchema()).thenReturn(mockSchema);
 
     CliSessionState mockSS = mock(CliSessionState.class);
-    PrintStream mockOut = mock(PrintStream.class);
+    SessionStream mockOut = mock(SessionStream.class);
 
     mockSS.out = mockOut;
 
@@ -203,8 +246,8 @@ public class TestCliDriverMethods extends TestCase {
   public void testQuit() throws Exception {
 
     CliSessionState ss = new CliSessionState(new HiveConf());
-    ss.err = System.err;
-    ss.out = System.out;
+    ss.err = new SessionStream(System.err);
+    ss.out = new SessionStream(System.out);
 
     try {
       CliSessionState.start(ss);
@@ -234,7 +277,7 @@ public class TestCliDriverMethods extends TestCase {
     CliSessionState sessinState = new CliSessionState(new HiveConf());
     CliSessionState.start(sessinState);
     ByteArrayOutputStream data = new ByteArrayOutputStream();
-    sessinState.err = new PrintStream(data);
+    sessinState.err = new SessionStream(data);
     sessinState.database = "database";
     CliDriver driver = new CliDriver();
 
@@ -269,8 +312,8 @@ public class TestCliDriverMethods extends TestCase {
 
     ByteArrayOutputStream data = new ByteArrayOutputStream();
 
-    sessionState.err = new PrintStream(data);
-    sessionState.out = System.out;
+    sessionState.err = new SessionStream(data);
+    sessionState.out = new SessionStream(System.out);
     try {
       CliSessionState.start(sessionState);
       CliDriver cliDriver = new CliDriver();
@@ -313,6 +356,28 @@ public class TestCliDriverMethods extends TestCase {
       assertTrue(data.toString().contains("cannot recognize input near 'bla' 'bla' 'bla'"));
 
     }
+  }
+
+  @Test
+  public void testCommandSplits() {
+    // Test double quote in the string
+    String cmd1 = "insert into escape1 partition (ds='1', part='\"') values (\"!\")";
+    assertEquals(cmd1, CliDriver.splitSemiColon(cmd1).get(0));
+    assertEquals(cmd1, CliDriver.splitSemiColon(cmd1 + ";").get(0));
+
+    // Test escape
+    String cmd2 = "insert into escape1 partition (ds='1', part='\"\\'') values (\"!\")";
+    assertEquals(cmd2, CliDriver.splitSemiColon(cmd2).get(0));
+    assertEquals(cmd2, CliDriver.splitSemiColon(cmd2 + ";").get(0));
+
+    // Test multiple commands
+    List<String> results = CliDriver.splitSemiColon(cmd1 + ";" + cmd2);
+    assertEquals(cmd1, results.get(0));
+    assertEquals(cmd2, results.get(1));
+
+    results = CliDriver.splitSemiColon(cmd1 + ";" + cmd2 + ";");
+    assertEquals(cmd1, results.get(0));
+    assertEquals(cmd2, results.get(1));
   }
 
   private static void setEnv(String key, String value) throws Exception {

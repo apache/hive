@@ -1,3 +1,47 @@
+PREHOOK: query: drop table if exists acid_iot_stage
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists acid_iot_stage
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table acid_iot_stage(
+    ctinyint TINYINT,
+    csmallint SMALLINT,
+    cint INT,
+    cbigint BIGINT,
+    cfloat FLOAT,
+    cdouble DOUBLE,
+    cstring1 STRING,
+    cstring2 STRING,
+    ctimestamp1 TIMESTAMP,
+    ctimestamp2 TIMESTAMP,
+    cboolean1 BOOLEAN,
+    cboolean2 BOOLEAN) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid_iot_stage
+POSTHOOK: query: create table acid_iot_stage(
+    ctinyint TINYINT,
+    csmallint SMALLINT,
+    cint INT,
+    cbigint BIGINT,
+    cfloat FLOAT,
+    cdouble DOUBLE,
+    cstring1 STRING,
+    cstring2 STRING,
+    ctimestamp1 TIMESTAMP,
+    ctimestamp2 TIMESTAMP,
+    cboolean1 BOOLEAN,
+    cboolean2 BOOLEAN) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid_iot_stage
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/alltypesorc" into table acid_iot_stage
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@acid_iot_stage
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/alltypesorc" into table acid_iot_stage
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@acid_iot_stage
 PREHOOK: query: create table acid_iot(
     ctinyint TINYINT,
     csmallint SMALLINT,
@@ -30,14 +74,26 @@ POSTHOOK: query: create table acid_iot(
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_iot
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/alltypesorc" into table acid_iot
-PREHOOK: type: LOAD
-#### A masked pattern was here ####
+PREHOOK: query: insert into acid_iot select * from acid_iot_stage
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_iot_stage
 PREHOOK: Output: default@acid_iot
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/alltypesorc" into table acid_iot
-POSTHOOK: type: LOAD
-#### A masked pattern was here ####
+POSTHOOK: query: insert into acid_iot select * from acid_iot_stage
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_iot_stage
 POSTHOOK: Output: default@acid_iot
+POSTHOOK: Lineage: acid_iot.cbigint SIMPLE [(acid_iot_stage)acid_iot_stage.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: acid_iot.cboolean1 SIMPLE [(acid_iot_stage)acid_iot_stage.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: acid_iot.cboolean2 SIMPLE [(acid_iot_stage)acid_iot_stage.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: acid_iot.cdouble SIMPLE [(acid_iot_stage)acid_iot_stage.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: acid_iot.cfloat SIMPLE [(acid_iot_stage)acid_iot_stage.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: acid_iot.cint SIMPLE [(acid_iot_stage)acid_iot_stage.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_iot.csmallint SIMPLE [(acid_iot_stage)acid_iot_stage.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: acid_iot.cstring1 SIMPLE [(acid_iot_stage)acid_iot_stage.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: acid_iot.cstring2 SIMPLE [(acid_iot_stage)acid_iot_stage.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: acid_iot.ctimestamp1 SIMPLE [(acid_iot_stage)acid_iot_stage.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: acid_iot.ctimestamp2 SIMPLE [(acid_iot_stage)acid_iot_stage.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: acid_iot.ctinyint SIMPLE [(acid_iot_stage)acid_iot_stage.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: select count(*) from acid_iot
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_iot

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -140,7 +140,7 @@ public class JoinUtil {
         if (key == (byte) posBigTableAlias) {
           valueFields.add(null);
         } else {
-          valueFields.add(ExprNodeEvaluatorFactory.get(expr, conf));
+          valueFields.add(expr == null ? null : ExprNodeEvaluatorFactory.get(expr, conf));
         }
       }
       outMap[key] = valueFields;

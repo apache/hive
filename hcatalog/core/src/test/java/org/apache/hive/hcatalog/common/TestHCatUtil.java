@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,7 +23,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -35,11 +40,10 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
+import org.apache.hive.hcatalog.mapreduce.InputJobInfo;
+
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 public class TestHCatUtil {
 
@@ -180,5 +184,30 @@ public class TestHCatUtil {
 
     Assert.assertEquals(new HCatSchema(expectedHCatSchema),
         HCatUtil.getTableSchemaWithPtnCols(table));
+  }
+
+  @Test
+  public void testInputJobInfoInConf() throws Exception {
+    Configuration conf = new Configuration(false);
+
+    InputJobInfo inputJobInfo = HCatUtil.getLastInputJobInfosFromConf(conf);
+    Assert.assertNull(inputJobInfo);
+    List<InputJobInfo> inputJobInfos = HCatUtil.getInputJobInfosFromConf(conf);
+    Assert.assertNull(inputJobInfos);
+
+    InputJobInfo inputJobInfo0 = InputJobInfo.create("db", "table", "", new Properties());
+    InputJobInfo inputJobInfo1 = InputJobInfo.create("db", "table2", "", new Properties());
+
+    HCatUtil.putInputJobInfoToConf(inputJobInfo0, conf);
+    HCatUtil.putInputJobInfoToConf(inputJobInfo1, conf);
+
+    inputJobInfo = HCatUtil.getLastInputJobInfosFromConf(conf);
+    inputJobInfos = HCatUtil.getInputJobInfosFromConf(conf);
+
+    Assert.assertEquals(inputJobInfo1.getDatabaseName(), inputJobInfo.getDatabaseName());
+    Assert.assertEquals(inputJobInfo1.getTableName(), inputJobInfo.getTableName());
+    Assert.assertEquals(inputJobInfo0.getDatabaseName(), inputJobInfos.get(0).getDatabaseName());
+    Assert.assertEquals(inputJobInfo0.getTableName(), inputJobInfos.get(0).getTableName());
+
   }
 }

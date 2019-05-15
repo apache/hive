@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,12 +19,13 @@
 package org.apache.hadoop.hive.accumulo.serde;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.accumulo.Utils;
 import org.apache.hadoop.hive.accumulo.columns.ColumnEncoding;
 import org.apache.hadoop.hive.accumulo.columns.HiveAccumuloRowIdColumnMapping;
+import org.apache.hadoop.hive.ql.metadata.JarUtils;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
@@ -61,7 +62,7 @@ public class DefaultAccumuloRowIdFactory implements AccumuloRowIdFactory {
 
   @Override
   public void addDependencyJars(Configuration conf) throws IOException {
-    Utils.addDependencyJars(conf, getClass());
+    JarUtils.addDependencyJars(conf, Collections.<Class<?>> singletonList(getClass()));
   }
 
   @Override
@@ -76,7 +77,7 @@ public class DefaultAccumuloRowIdFactory implements AccumuloRowIdFactory {
 //    return LazyFactory.createLazyObject(inspector,
 //            ColumnEncoding.BINARY == rowIdMapping.getEncoding());
     return LazyFactory.createLazyObject(inspector,
-        inspector.getTypeName() != TypeInfoFactory.stringTypeInfo.getTypeName()
+            !TypeInfoFactory.stringTypeInfo.getTypeName().equals(inspector.getTypeName())
             && ColumnEncoding.BINARY == rowIdMapping.getEncoding());
   }
 

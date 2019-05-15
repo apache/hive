@@ -1,0 +1,54 @@
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: select current_catalog()
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select current_catalog()
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+hive
+PREHOOK: query: select current_schema()
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select current_schema()
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+default
+PREHOOK: query: create database test_current_database
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test_current_database
+POSTHOOK: query: create database test_current_database
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test_current_database
+PREHOOK: query: use test_current_database
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test_current_database
+POSTHOOK: query: use test_current_database
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test_current_database
+PREHOOK: query: select current_catalog()
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select current_catalog()
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+hive
+PREHOOK: query: select current_schema()
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select current_schema()
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+test_current_database

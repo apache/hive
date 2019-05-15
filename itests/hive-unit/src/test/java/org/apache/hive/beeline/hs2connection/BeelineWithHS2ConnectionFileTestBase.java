@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,6 +17,7 @@
  */
 package org.apache.hive.beeline.hs2connection;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import java.io.ByteArrayOutputStream;
@@ -89,7 +90,7 @@ public abstract class BeelineWithHS2ConnectionFileTestBase {
     }
 
     @Override
-    public HS2ConnectionFileParser getUserHS2ConnFileParser() {
+    public UserHS2ConnectionFileParser getUserHS2ConnFileParser() {
       return testHs2ConfigFileManager;
     }
 
@@ -191,8 +192,28 @@ public abstract class BeelineWithHS2ConnectionFileTestBase {
     assertFalse(rowSet.numRows() == 0);
   }
 
-  protected String testBeeLineConnection(String path, String[] beelineArgs,
-      String expectedOutput) throws IOException {
+  protected void assertBeelineOutputContains(String path, String[] beelineArgs,
+      String expectedOutput) throws Exception {
+    BeelineResult res = getBeelineOutput(path, beelineArgs);
+    assertEquals(0, res.exitCode);
+    Assert.assertNotNull(res.output);
+    Assert.assertTrue("Output " + res.output + " does not contain " + expectedOutput,
+        res.output.toLowerCase().contains(expectedOutput.toLowerCase()));
+  }
+
+  static class BeelineResult {
+
+    public final String output;
+    public final int exitCode;
+
+    public BeelineResult(String output, int exitCode) {
+      this.output = output;
+      this.exitCode = exitCode;
+    }
+
+  }
+
+  protected BeelineResult getBeelineOutput(String path, String[] beelineArgs) throws Exception {
     TestBeeLine beeLine = null;
     try {
       if(path != null) {
@@ -202,13 +223,10 @@ public abstract class BeelineWithHS2ConnectionFileTestBase {
       } else {
         beeLine = new TestBeeLine();
       }
-      beeLine.begin(beelineArgs, null);
+      int exitCode = beeLine.begin(beelineArgs, null);
       String output = beeLine.getOutput();
       System.out.println(output);
-      Assert.assertNotNull(output);
-      Assert.assertTrue("Output " + output + " does not contain " + expectedOutput,
-          output.toLowerCase().contains(expectedOutput.toLowerCase()));
-      return output;
+      return new BeelineResult(output, exitCode);
     } finally {
       if (beeLine != null) {
         beeLine.close();

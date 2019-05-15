@@ -94,8 +94,8 @@ POSTHOOK: query: insert overwrite table varchar1_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar1
 POSTHOOK: Output: default@varchar1_1
-POSTHOOK: Lineage: varchar1_1.key SIMPLE [(varchar1)varchar1.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar1_1.value SIMPLE [(varchar1)varchar1.FieldSchema(name:value, type:varchar(20), comment:null), ]
+POSTHOOK: Lineage: varchar1_1.key EXPRESSION [(varchar1)varchar1.FieldSchema(name:key, type:varchar(10), comment:null), ]
+POSTHOOK: Lineage: varchar1_1.value EXPRESSION [(varchar1)varchar1.FieldSchema(name:value, type:varchar(20), comment:null), ]
 PREHOOK: query: select key, value from varchar1_1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@varchar1_1

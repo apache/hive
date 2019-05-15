@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,11 +28,11 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.LinkedHashSet;
 
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -86,7 +86,7 @@ public class MacroSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     List<FieldSchema> arguments =
-      BaseSemanticAnalyzer.getColumns((ASTNode)ast.getChild(1), true);
+      BaseSemanticAnalyzer.getColumns((ASTNode)ast.getChild(1), true, conf);
     boolean isNoArgumentMacro = arguments.size() == 0;
     RowResolver rowResolver = new RowResolver();
     ArrayList<String> macroColNames = new ArrayList<String>(arguments.size());
@@ -140,7 +140,7 @@ public class MacroSemanticAnalyzer extends BaseSemanticAnalyzer {
         body = sa.genExprNodeDesc((ASTNode)ast.getChild(2), rowResolver);
     }
     CreateMacroDesc desc = new CreateMacroDesc(functionName, macroColNames, macroColTypes, body);
-    rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
+    rootTasks.add(TaskFactory.get(new FunctionWork(desc)));
 
     addEntities();
   }
@@ -164,13 +164,13 @@ public class MacroSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     DropMacroDesc desc = new DropMacroDesc(functionName);
-    rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
+    rootTasks.add(TaskFactory.get(new FunctionWork(desc)));
 
     addEntities();
   }
 
   private void addEntities() throws SemanticException {
-    Database database = getDatabase(MetaStoreUtils.DEFAULT_DATABASE_NAME);
+    Database database = getDatabase(Warehouse.DEFAULT_DATABASE_NAME);
     // This restricts macro creation to privileged users.
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
   }

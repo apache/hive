@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,7 +24,6 @@ import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDefaultDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
@@ -48,11 +47,6 @@ public final class ExprNodeEvaluatorFactory {
     // Constant node
     if (desc instanceof ExprNodeConstantDesc) {
       return new ExprNodeConstantEvaluator((ExprNodeConstantDesc) desc, conf);
-    }
-
-    // Special 'default' constant node
-    if (desc instanceof ExprNodeConstantDefaultDesc) {
-      return new ExprNodeConstantDefaultEvaluator((ExprNodeConstantDefaultDesc) desc);
     }
 
     // Column-reference node, e.g. a column in the input row
@@ -105,7 +99,7 @@ public final class ExprNodeEvaluatorFactory {
   }
 
   private static ExprNodeEvaluator iterate(ExprNodeEvaluator eval, EvaluatorContext context) {
-    if (!(eval instanceof ExprNodeConstantEvaluator) && eval.isDeterministic()) {
+    if (!(eval instanceof ExprNodeConstantEvaluator) && eval.isConsistentWithinQuery()) {
       ExprNodeEvaluator replace = context.getEvaluated(eval);
       if (replace != null) {
         return replace;

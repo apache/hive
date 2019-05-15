@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,6 +30,8 @@ import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import org.apache.hadoop.hive.common.cli.EscapeCRLFHelper;
+
 /**
  * Abstract base class representing a set of rows to be displayed.
  * Holds column values as strings
@@ -39,6 +41,7 @@ abstract class Rows implements Iterator {
   final ResultSetMetaData rsMeta;
   final Boolean[] primaryKeys;
   final NumberFormat numberFormat;
+  private boolean convertBinaryArray;
   private final String nullStr;
 
   Rows(BeeLine beeLine, ResultSet rs) throws SQLException {
@@ -52,8 +55,10 @@ abstract class Rows implements Iterator {
     } else {
       numberFormat = new DecimalFormat(beeLine.getOpts().getNumberFormat());
     }
+    this.convertBinaryArray = beeLine.getOpts().getConvertBinaryArrayToString();
   }
 
+  @Override
   public void remove() {
     throw new UnsupportedOperationException();
   }
@@ -71,41 +76,37 @@ abstract class Rows implements Iterator {
    * is not reliable for all databases.
    */
   boolean isPrimaryKey(int col) {
-    if (primaryKeys[col] != null) {
-      return primaryKeys[col].booleanValue();
-    }
-
-    try {
-      // this doesn't always work, since some JDBC drivers (e.g.,
-      // Oracle's) return a blank string from getTableName.
-      String table = rsMeta.getTableName(col + 1);
-      String column = rsMeta.getColumnName(col + 1);
-
-      if (table == null || table.length() == 0 ||
-          column == null || column.length() == 0) {
-        return (primaryKeys[col] = new Boolean(false)).booleanValue();
-      }
-
-      ResultSet pks = beeLine.getDatabaseConnection().getDatabaseMetaData().getPrimaryKeys(
-          beeLine.getDatabaseConnection().getDatabaseMetaData().getConnection().getCatalog(), null, table);
-
+    if (primaryKeys[col] == null) {
       try {
-        while (pks.next()) {
-          if (column.equalsIgnoreCase(
-              pks.getString("COLUMN_NAME"))) {
-            return (primaryKeys[col] = new Boolean(true)).booleanValue();
+        // this doesn't always work, since some JDBC drivers (e.g.,
+        // Oracle's) return a blank string from getTableName.
+        String table = rsMeta.getTableName(col + 1);
+        String column = rsMeta.getColumnName(col + 1);
+
+        if (table == null || table.isEmpty() || column == null || column.isEmpty()) {
+          primaryKeys[col] = Boolean.FALSE;
+        } else {
+          ResultSet pks = beeLine.getDatabaseConnection().getDatabaseMetaData().getPrimaryKeys(
+              beeLine.getDatabaseConnection().getDatabaseMetaData().getConnection().getCatalog(), null, table);
+
+          primaryKeys[col] = Boolean.FALSE;
+          try {
+            while (pks.next()) {
+              if (column.equalsIgnoreCase(pks.getString("COLUMN_NAME"))) {
+                primaryKeys[col] = Boolean.TRUE;
+                break;
+              }
+            }
+          } finally {
+            pks.close();
           }
         }
-      } finally {
-        pks.close();
+      } catch (SQLException sqle) {
+        primaryKeys[col] = Boolean.FALSE;
       }
-
-      return (primaryKeys[col] = new Boolean(false)).booleanValue();
-    } catch (SQLException sqle) {
-      return (primaryKeys[col] = new Boolean(false)).booleanValue();
     }
+    return primaryKeys[col].booleanValue();
   }
-
 
   class Row {
     final String[] values;
@@ -152,21 +153,26 @@ abstract class Rows implements Iterator {
       } catch (Throwable t) {
       }
 
-      for (int i = 0; i < size; i++) {
-        if (numberFormat != null) {
-          Object o = rs.getObject(i + 1);
-          if (o == null) {
-            values[i] = null;
-          }  else if (o instanceof Number) {
-            values[i] = numberFormat.format(o);
-          } else {
-            values[i] = o.toString();
-          }
+       for (int i = 0; i < size; i++) {
+        Object o = rs.getObject(i + 1);
+        String value = null;
+
+        if (o == null) {
+          value = nullStr;
+        } else if (o instanceof Number) {
+          value = numberFormat != null ? numberFormat.format(o) : o.toString();
+        } else if (o instanceof byte[]) {
+          value = convertBinaryArray ? new String((byte[])o) : Arrays.toString((byte[])o);
         } else {
-          values[i] = rs.getString(i + 1);
+          value = o.toString();
         }
-        values[i] = values[i] == null ? nullStr : values[i];
-        sizes[i] = values[i].length();
+
+        if (beeLine.getOpts().getEscapeCRLF()) {
+          value = EscapeCRLFHelper.escapeCRLF(value);
+        }
+
+        values[i] = value.intern();
+        sizes[i] = value.length();
       }
     }
   }

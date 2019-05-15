@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -34,11 +34,17 @@ import org.apache.hadoop.io.LongWritable;
 
 @Description(name = "%", value = "a _FUNC_ b - Returns the remainder when dividing a by b")
 @VectorizedExpressions({LongColModuloLongColumn.class, LongColModuloDoubleColumn.class,
+    LongColModuloLongColumnChecked.class, LongColModuloDoubleColumnChecked.class,
   DoubleColModuloLongColumn.class, DoubleColModuloDoubleColumn.class,
+    DoubleColModuloLongColumnChecked.class, DoubleColModuloDoubleColumnChecked.class,
   LongColModuloLongScalar.class, LongColModuloDoubleScalar.class,
+    LongColModuloLongScalarChecked.class, LongColModuloDoubleScalarChecked.class,
   DoubleColModuloLongScalar.class, DoubleColModuloDoubleScalar.class,
+    DoubleColModuloLongScalarChecked.class, DoubleColModuloDoubleScalarChecked.class,
   LongScalarModuloLongColumn.class, LongScalarModuloDoubleColumn.class,
+    LongScalarModuloLongColumnChecked.class, LongScalarModuloDoubleColumnChecked.class,
   DoubleScalarModuloLongColumn.class, DoubleScalarModuloDoubleColumn.class,
+    DoubleScalarModuloLongColumnChecked.class, DoubleScalarModuloDoubleColumnChecked.class,
   DecimalColModuloDecimalColumn.class, DecimalColModuloDecimalScalar.class,
   DecimalScalarModuloDecimalColumn.class})
 public class GenericUDFOPMod extends GenericUDFBaseNumeric {

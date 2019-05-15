@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,11 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
@@ -29,10 +28,10 @@ import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.core.RelFactories.FilterFactory;
-import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
@@ -45,13 +44,17 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+/**
+ * Responsible for adding not null rules to joins, when the declaration of a join implies that some coulmns
+ * may not be null.
+ */
 public final class HiveJoinAddNotNullRule extends RelOptRule {
 
   public static final HiveJoinAddNotNullRule INSTANCE_JOIN =
-          new HiveJoinAddNotNullRule(HiveJoin.class, HiveRelFactories.HIVE_FILTER_FACTORY);
+      new HiveJoinAddNotNullRule(HiveJoin.class, HiveRelFactories.HIVE_FILTER_FACTORY);
 
   public static final HiveJoinAddNotNullRule INSTANCE_SEMIJOIN =
-          new HiveJoinAddNotNullRule(HiveSemiJoin.class, HiveRelFactories.HIVE_FILTER_FACTORY);
+      new HiveJoinAddNotNullRule(HiveSemiJoin.class, HiveRelFactories.HIVE_FILTER_FACTORY);
 
   private final FilterFactory filterFactory;
 
@@ -61,7 +64,7 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
    * Creates an HiveJoinAddNotNullRule.
    */
   public HiveJoinAddNotNullRule(Class<? extends Join> clazz,
-          RelFactories.FilterFactory filterFactory) {
+                                RelFactories.FilterFactory filterFactory) {
     super(operand(clazz, any()));
     this.filterFactory = filterFactory;
   }
@@ -70,18 +73,8 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
 
   @Override
   public void onMatch(RelOptRuleCall call) {
-    final Join join = call.rel(0);
-    RelNode lChild = join.getLeft();
-    RelNode rChild = join.getRight();
-
-    HiveRulesRegistry registry = call.getPlanner().getContext().unwrap(HiveRulesRegistry.class);
-    assert registry != null;
-
-    if (join.getJoinType() != JoinRelType.INNER) {
-      return;
-    }
-
-    if (join.getCondition().isAlwaysTrue()) {
+    Join join = call.rel(0);
+    if (join.getJoinType() == JoinRelType.FULL || join.getCondition().isAlwaysTrue()) {
       return;
     }
 
@@ -92,46 +85,27 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
       return;
     }
 
-    Set<Integer> joinLeftKeyPositions = new HashSet<Integer>();
-    Set<Integer> joinRightKeyPositions = new HashSet<Integer>();
-    for (int i = 0; i < joinPredInfo.getEquiJoinPredicateElements().size(); i++) {
-      JoinLeafPredicateInfo joinLeafPredInfo = joinPredInfo.
-              getEquiJoinPredicateElements().get(i);
-      joinLeftKeyPositions.addAll(joinLeafPredInfo.getProjsFromLeftPartOfJoinKeysInChildSchema());
-      joinRightKeyPositions.addAll(joinLeafPredInfo.getProjsFromRightPartOfJoinKeysInChildSchema());
-    }
-
-    // Build not null conditions
-    final RelOptCluster cluster = join.getCluster();
-    final RexBuilder rexBuilder = join.getCluster().getRexBuilder();
+    HiveRulesRegistry registry = call.getPlanner().getContext().unwrap(HiveRulesRegistry.class);
+    assert registry != null;
 
     Set<String> leftPushedPredicates = Sets.newHashSet(registry.getPushedPredicates(join, 0));
-    final List<RexNode> newLeftConditions = getNotNullConditions(cluster,
-            rexBuilder, join.getLeft(), joinLeftKeyPositions, leftPushedPredicates);
     Set<String> rightPushedPredicates = Sets.newHashSet(registry.getPushedPredicates(join, 1));
-    final List<RexNode> newRightConditions = getNotNullConditions(cluster,
-            rexBuilder, join.getRight(), joinRightKeyPositions, rightPushedPredicates);
 
-    // Nothing will be added to the expression
-    RexNode newLeftPredicate = RexUtil.composeConjunction(rexBuilder, newLeftConditions, false);
-    RexNode newRightPredicate = RexUtil.composeConjunction(rexBuilder, newRightConditions, false);
+    boolean genPredOnLeft = join.getJoinType() == JoinRelType.RIGHT || join.getJoinType() == JoinRelType.INNER;
+    boolean genPredOnRight = join.getJoinType() == JoinRelType.LEFT || join.getJoinType() == JoinRelType.INNER;
+
+    RexNode newLeftPredicate = getNewPredicate(join, registry, joinPredInfo, leftPushedPredicates, genPredOnLeft, 0);
+    RexNode newRightPredicate = getNewPredicate(join, registry, joinPredInfo, rightPushedPredicates, genPredOnRight, 1);
+
     if (newLeftPredicate.isAlwaysTrue() && newRightPredicate.isAlwaysTrue()) {
       return;
     }
 
-    if (!newLeftPredicate.isAlwaysTrue()) {
-      RelNode curr = lChild;
-      lChild = filterFactory.createFilter(lChild, newLeftPredicate);
-      call.getPlanner().onCopy(curr, lChild);
-    }
-    if (!newRightPredicate.isAlwaysTrue()) {
-      RelNode curr = rChild;
-      rChild = filterFactory.createFilter(rChild, newRightPredicate);
-      call.getPlanner().onCopy(curr, rChild);
-    }
+    RelNode lChild = getNewChild(call, join, join.getLeft(), newLeftPredicate);
+    RelNode rChild = getNewChild(call, join, join.getRight(), newRightPredicate);
 
-    Join newJoin = join.copy(join.getTraitSet(), join.getCondition(),
-            lChild, rChild, join.getJoinType(), join.isSemiJoinDone());
+    Join newJoin = join.copy(join.getTraitSet(), join.getCondition(), lChild, rChild, join.getJoinType(),
+        join.isSemiJoinDone());
     call.getPlanner().onCopy(join, newJoin);
 
     // Register information about created predicates
@@ -141,18 +115,34 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
     call.transformTo(newJoin);
   }
 
-  private static List<RexNode> getNotNullConditions(RelOptCluster cluster,
-          RexBuilder rexBuilder, RelNode input, Set<Integer> inputKeyPositions,
-          Set<String> pushedPredicates) {
-    final List<RexNode> newConditions = Lists.newArrayList();
-    for (int pos : inputKeyPositions) {
-      RelDataType keyType = input.getRowType().getFieldList().get(pos).getType();
-      // Nothing to do if key cannot be null
-      if (!keyType.isNullable()) {
-        continue;
+  private RexNode getNewPredicate(Join join, HiveRulesRegistry registry, JoinPredicateInfo joinPredInfo,
+      Set<String> pushedPredicates, boolean genPred, int pos) {
+    RexBuilder rexBuilder = join.getCluster().getRexBuilder();
+
+    if (genPred) {
+      List<RexNode> joinExprsList = new ArrayList<>();
+      for (JoinLeafPredicateInfo joinLeafPredicateInfo : joinPredInfo.getEquiJoinPredicateElements()) {
+        joinExprsList.addAll(joinLeafPredicateInfo.getJoinExprs(pos));
       }
-      RexNode cond = rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL,
-              rexBuilder.makeInputRef(input, pos));
+      for (JoinLeafPredicateInfo joinLeafPredicateInfo : joinPredInfo.getNonEquiJoinPredicateElements()) {
+        if (SqlKind.COMPARISON.contains(joinLeafPredicateInfo.getComparisonType())) {
+          joinExprsList.addAll(joinLeafPredicateInfo.getJoinExprs(pos));
+        }
+      }
+
+      List<RexNode> newConditions = getNotNullConditions(rexBuilder, joinExprsList, pushedPredicates);
+      return RexUtil.composeConjunction(rexBuilder, newConditions, false);
+    } else {
+      return rexBuilder.makeLiteral(true);
+    }
+  }
+
+  private static List<RexNode> getNotNullConditions(RexBuilder rexBuilder, List<RexNode> inputJoinExprs,
+      Set<String> pushedPredicates) {
+    List<RexNode> newConditions = Lists.newArrayList();
+
+    for (RexNode rexNode : inputJoinExprs) {
+      RexNode cond = rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, rexNode);
       String digest = cond.toString();
       if (pushedPredicates.add(digest)) {
         newConditions.add(cond);
@@ -161,4 +151,13 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
     return newConditions;
   }
 
+  private RelNode getNewChild(RelOptRuleCall call, Join join, RelNode child, RexNode newPredicate) {
+    if (!newPredicate.isAlwaysTrue()) {
+      RelNode newChild = filterFactory.createFilter(child, newPredicate);
+      call.getPlanner().onCopy(child, newChild);
+      return newChild;
+    }
+
+    return child;
+  }
 }

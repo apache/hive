@@ -1,3 +1,4 @@
+--! qt:dataset:part
 --1. testLagWithPTFWindowing
 select p_mfgr, p_name,
 rank() over (partition by p_mfgr order by p_name) as r,

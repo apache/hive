@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 * GenericUDFIntervalYearMonth
 *
 * Example usage:
-* ... CAST(<Interval string> as INTERVAL YEAR TO MONTH) ...
+* ... CAST(&lt;Interval string&gt; as INTERVAL YEAR TO MONTH) ...
 *
 * Creates a HiveIntervalYearMonthWritable object using PrimitiveObjectInspectorConverter
 *

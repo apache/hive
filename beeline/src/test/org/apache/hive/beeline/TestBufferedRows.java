@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -98,7 +98,7 @@ public class TestBufferedRows {
       }
     });
 
-    when(mockResultSet.getString(Matchers.anyInt())).thenAnswer(new Answer<String>() {
+    when(mockResultSet.getObject(Matchers.anyInt())).thenAnswer(new Answer<String>() {
       public String answer(InvocationOnMock invocation) {
         Object[] args = invocation.getArguments();
         int index = ((Integer) args[0]).intValue();

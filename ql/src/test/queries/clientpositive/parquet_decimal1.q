@@ -1,3 +1,5 @@
+set hive.vectorized.execution.enabled=false;
+
 DROP TABLE IF EXISTS dec_comp;
 
 CREATE TABLE dec_comp(arr ARRAY<decimal(5,2)>, m MAP<String, decimal(5,2)>, s STRUCT<i:int, d:decimal(5,2)>)

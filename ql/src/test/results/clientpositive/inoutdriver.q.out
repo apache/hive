@@ -1,17 +1,17 @@
-PREHOOK: query: create table test (a int) stored as inputformat 'org.apache.hadoop.hive.ql.io.RCFileInputFormat' outputformat 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat' inputdriver 'RCFileInDriver' outputdriver 'RCFileOutDriver'
+PREHOOK: query: create table test_n3 (a int) stored as inputformat 'org.apache.hadoop.hive.ql.io.RCFileInputFormat' outputformat 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat' inputdriver 'RCFileInDriver' outputdriver 'RCFileOutDriver'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test
-POSTHOOK: query: create table test (a int) stored as inputformat 'org.apache.hadoop.hive.ql.io.RCFileInputFormat' outputformat 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat' inputdriver 'RCFileInDriver' outputdriver 'RCFileOutDriver'
+PREHOOK: Output: default@test_n3
+POSTHOOK: query: create table test_n3 (a int) stored as inputformat 'org.apache.hadoop.hive.ql.io.RCFileInputFormat' outputformat 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat' inputdriver 'RCFileInDriver' outputdriver 'RCFileOutDriver'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test
-PREHOOK: query: desc extended test
+POSTHOOK: Output: default@test_n3
+PREHOOK: query: desc extended test_n3
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@test
-POSTHOOK: query: desc extended test
+PREHOOK: Input: default@test_n3
+POSTHOOK: query: desc extended test_n3
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@test
+POSTHOOK: Input: default@test_n3
 a                   	int                 	                    
 	 	 
 #### A masked pattern was here ####

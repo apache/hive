@@ -67,6 +67,7 @@ message SignableVertexSpec
   repeated GroupInputSpecProto grouped_input_specs = 12;
 
   optional int32 vertex_parallelism = 13; // An internal field required for Tez.
+  optional bool is_external_submission = 14 [default = false];
 }
 
 // Union
@@ -128,9 +129,19 @@ message SubmitWorkRequestProto {
 
   // Serialized (and signed) NotTezEvent; used only for external clients for now.
   optional bytes initial_event_bytes = 10;
-  optional bytes initial_event_signature = 11; 
+  optional bytes initial_event_signature = 11;
+
+  optional bool is_guaranteed = 12 [default = false];
 }
 
+message RegisterDagRequestProto {
+  optional string user = 1;
+  required QueryIdentifierProto query_identifier = 2;
+  optional bytes credentials_binary = 3;
+}
+
+message RegisterDagResponseProto {
+}
 
 enum SubmissionStateProto {
   ACCEPTED = 1;
@@ -168,6 +179,17 @@ message TerminateFragmentRequestProto {
 message TerminateFragmentResponseProto {
 }
 
+message UpdateFragmentRequestProto {
+  optional QueryIdentifierProto query_identifier = 1;
+  optional string fragment_identifier_string = 2;
+  optional bool is_guaranteed = 3;
+}
+
+message UpdateFragmentResponseProto {
+  optional bool result = 1;
+  optional bool is_guaranteed = 2;
+}
+
 message GetTokenRequestProto {
   optional string app_id = 1;
 }
@@ -182,13 +204,23 @@ message LlapOutputSocketInitMessage {
   optional bytes token = 2;
 }
 
+message PurgeCacheRequestProto {
+}
+
+message PurgeCacheResponseProto {
+  optional int64 purged_memory_bytes = 1;
+}
+
 service LlapDaemonProtocol {
+  rpc registerDag(RegisterDagRequestProto) returns (RegisterDagResponseProto);
   rpc submitWork(SubmitWorkRequestProto) returns (SubmitWorkResponseProto);
   rpc sourceStateUpdated(SourceStateUpdatedRequestProto) returns (SourceStateUpdatedResponseProto);
   rpc queryComplete(QueryCompleteRequestProto) returns (QueryCompleteResponseProto);
   rpc terminateFragment(TerminateFragmentRequestProto) returns (TerminateFragmentResponseProto);
+  rpc updateFragment(UpdateFragmentRequestProto) returns (UpdateFragmentResponseProto);
 }
 
 service LlapManagementProtocol {
   rpc getDelegationToken(GetTokenRequestProto) returns (GetTokenResponseProto);
+  rpc purgeCache(PurgeCacheRequestProto) returns (PurgeCacheResponseProto);
 }

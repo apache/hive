@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,12 +20,16 @@ package org.apache.hadoop.hive.cli.control;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Stopwatch;
-import org.apache.hadoop.hive.cli.control.AbstractCliConfig.MetastoreType;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.QTestArguments;
+import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
-import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.util.ElapsedTimeLoggingWrapper;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -34,11 +38,14 @@ import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Stopwatch;
+import com.google.common.base.Strings;
+
 public class CoreCliDriver extends CliAdapter {
 
   private static final Logger LOG = LoggerFactory.getLogger(CoreCliDriver.class);
   private static QTestUtil qt;
-  
+
   public CoreCliDriver(AbstractCliConfig testCliConfig) {
     super(testCliConfig);
   }
@@ -49,20 +56,27 @@ public class CoreCliDriver extends CliAdapter {
     String message = "Starting " + CoreCliDriver.class.getName() + " run at " + System.currentTimeMillis();
     LOG.info(message);
     System.err.println(message);
-    final MiniClusterType miniMR =cliConfig.getClusterType();
-    final String hiveConfDir = cliConfig.getHiveConfDir();
-    final String initScript = cliConfig.getInitScript();
-    final String cleanupScript = cliConfig.getCleanupScript();
-    final boolean useHBaseMetastore = cliConfig.getMetastoreType() == MetastoreType.hbase;
-    try {
-      final String hadoopVer = cliConfig.getHadoopVersion();
 
+    MiniClusterType miniMR =cliConfig.getClusterType();
+    String hiveConfDir = cliConfig.getHiveConfDir();
+    String initScript = cliConfig.getInitScript();
+    String cleanupScript = cliConfig.getCleanupScript();
+
+    try {
       qt = new ElapsedTimeLoggingWrapper<QTestUtil>() {
         @Override
         public QTestUtil invokeInternal() throws Exception {
-          return new QTestUtil((cliConfig.getResultsDir()), (cliConfig.getLogDir()), miniMR,
-              hiveConfDir, hadoopVer, initScript, cleanupScript, useHBaseMetastore, true,
-              cliConfig.getFsType());
+          return new QTestUtil(
+              QTestArguments.QTestArgumentsBuilder.instance()
+                .withOutDir(cliConfig.getResultsDir())
+                .withLogDir(cliConfig.getLogDir())
+                .withClusterType(miniMR)
+                .withConfDir(hiveConfDir)
+                .withInitScript(initScript)
+                .withCleanupScript(cleanupScript)
+                .withLlapIo(true)
+                .withFsType(cliConfig.getFsType())
+                .build());
         }
       }.invoke("QtestUtil instance created", LOG, true);
 
@@ -70,7 +84,8 @@ public class CoreCliDriver extends CliAdapter {
       new ElapsedTimeLoggingWrapper<Void>() {
         @Override
         public Void invokeInternal() throws Exception {
-          qt.cleanUp();
+          qt.newSession();
+          qt.cleanUp(); // I don't think this is neccessary...
           return null;
         }
       }.invoke("Initialization cleanup done.", LOG, true);
@@ -87,7 +102,7 @@ public class CoreCliDriver extends CliAdapter {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
       System.err.flush();
-      throw new RuntimeException("Unexpected exception in static initialization",e);
+      throw new RuntimeException("Unexpected exception in static initialization", e);
     }
   }
 
@@ -98,10 +113,11 @@ public class CoreCliDriver extends CliAdapter {
       new ElapsedTimeLoggingWrapper<Void>() {
         @Override
         public Void invokeInternal() throws Exception {
-          qt.clearTestSideEffects();
+          qt.newSession();
           return null;
         }
       }.invoke("PerTestSetup done.", LOG, false);
+
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -118,9 +134,11 @@ public class CoreCliDriver extends CliAdapter {
         @Override
         public Void invokeInternal() throws Exception {
           qt.clearPostTestEffects();
+          qt.clearTestSideEffects();
           return null;
         }
       }.invoke("PerTestTearDown done.", LOG, false);
+
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -131,7 +149,7 @@ public class CoreCliDriver extends CliAdapter {
 
   @Override
   @AfterClass
-  public void shutdown() throws Exception {
+  public void shutdown() {
     try {
       new ElapsedTimeLoggingWrapper<Void>() {
         @Override
@@ -140,6 +158,7 @@ public class CoreCliDriver extends CliAdapter {
           return null;
         }
       }.invoke("Teardown done.", LOG, false);
+
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -148,12 +167,9 @@ public class CoreCliDriver extends CliAdapter {
     }
   }
 
-  static String debugHint = "\nSee ./ql/target/tmp/log/hive.log or ./itests/qtest/target/tmp/log/hive.log, "
-     + "or check ./ql/target/surefire-reports or ./itests/qtest/target/surefire-reports/ for specific test cases logs.";
-
   @Override
-  public void runTest(String tname, String fname, String fpath) throws Exception {
-    Stopwatch sw = new Stopwatch().start();
+  public void runTest(String testName, String fname, String fpath) {
+    Stopwatch sw = Stopwatch.createStarted();
     boolean skipped = false;
     boolean failed = false;
     try {
@@ -161,35 +177,54 @@ public class CoreCliDriver extends CliAdapter {
       System.err.println("Begin query: " + fname);
 
       qt.addFile(fpath);
+      qt.cliInit(new File(fpath));
 
-      if (qt.shouldBeSkipped(fname)) {
-        LOG.info("Test " + fname + " skipped");
-        System.err.println("Test " + fname + " skipped");
-        skipped = true;
-        return;
-      }
-
-      qt.cliInit(fname, false);
-      int ecode = qt.executeClient(fname);
+      CommandProcessorResponse response = qt.executeClient(fname);
+      int ecode = response.getResponseCode();
       if (ecode != 0) {
         failed = true;
-        qt.failed(ecode, fname, debugHint);
+        qt.failedQuery(response.getException(), response.getResponseCode(), fname, QTestUtil.DEBUG_HINT);
       }
-      ecode = qt.checkCliDriverResults(fname);
-      if (ecode != 0) {
+
+      setupAdditionalPartialMasks();
+      QTestProcessExecResult result = qt.checkCliDriverResults(fname);
+      resetAdditionalPartialMasks();
+      if (result.getReturnCode() != 0) {
         failed = true;
-        qt.failedDiff(ecode, fname, debugHint);
+        String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ? QTestUtil.DEBUG_HINT
+            : "\r\n" + result.getCapturedOutput();
+        qt.failedDiff(result.getReturnCode(), fname, message);
       }
     }
-    catch (Throwable e) {
+    catch (Exception e) {
       failed = true;
-      qt.failed(e, fname, debugHint);
+      qt.failedWithException(e, fname, QTestUtil.DEBUG_HINT);
     } finally {
-      String message = "Done query" + fname + ". succeeded=" + !failed + ", skipped=" + skipped +
+      String message = "Done query " + fname + ". succeeded=" + !failed + ", skipped=" + skipped +
           ". ElapsedTime(ms)=" + sw.stop().elapsed(TimeUnit.MILLISECONDS);
       LOG.info(message);
       System.err.println(message);
     }
     assertTrue("Test passed", true);
+  }
+
+  private void setupAdditionalPartialMasks() {
+    String patternStr = HiveConf.getVar(qt.getConf(), ConfVars.HIVE_ADDITIONAL_PARTIAL_MASKS_PATTERN);
+    String replacementStr = HiveConf.getVar(qt.getConf(), ConfVars.HIVE_ADDITIONAL_PARTIAL_MASKS_REPLACEMENT_TEXT);
+    if (patternStr != null  && replacementStr != null && !replacementStr.isEmpty() && !patternStr.isEmpty()) {
+      String[] patterns = patternStr.split(",");
+      String[] replacements = replacementStr.split(",");
+      if (patterns.length != replacements.length) {
+        throw new RuntimeException("Count mismatch for additional partial masks and their replacements");
+      }
+      for (int i = 0; i < patterns.length; i++) {
+        qt.getQOutProcessor().addPatternWithMaskComment(patterns[i],
+            String.format("### %s ###", replacements[i]));
+      }
+    }
+  }
+
+  private void resetAdditionalPartialMasks() {
+    qt.getQOutProcessor().resetPatternwithMaskComments();
   }
 }

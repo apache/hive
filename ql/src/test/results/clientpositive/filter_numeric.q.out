@@ -26,8 +26,12 @@ POSTHOOK: Lineage: partint PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart
 1B2M2Y8AsgTpgAmY7PhCfg==
 PREHOOK: query: explain select key, value, hr from partint where hr < 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partint
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key, value, hr from partint where hr < 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partint
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -38,14 +42,15 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: partint
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          filterExpr: (hr < 11) (type: boolean)
+          Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
           Filter Operator
             predicate: (hr < 11) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
             Select Operator
               expressions: key (type: string), value (type: string), hr (type: int)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
               ListSink
 
 PREHOOK: query: select key, value, hr from partint where hr < 11
@@ -59,8 +64,14 @@ POSTHOOK: Input: default@partint
 1B2M2Y8AsgTpgAmY7PhCfg==
 PREHOOK: query: explain select key, value, hr from partint where hr <= 12 and hr > 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partint
+PREHOOK: Input: default@partint@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key, value, hr from partint where hr <= 12 and hr > 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partint
+POSTHOOK: Input: default@partint@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -71,11 +82,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: partint
-          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+          filterExpr: ((hr <= 12) and (hr > 11)) (type: boolean)
+          Statistics: Num rows: 500 Data size: 91000 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string), value (type: string), hr (type: int)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 91000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: select key, value, hr from partint where hr <= 12 and hr > 11
@@ -591,8 +603,16 @@ POSTHOOK: Input: default@partint@ds=2008-04-08/hr=12
 XrhdsR2p43qW9hpMcP/9nw==
 PREHOOK: query: explain select key, value, hr from partint where hr between 11 and 12
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partint
+PREHOOK: Input: default@partint@ds=2008-04-08/hr=11
+PREHOOK: Input: default@partint@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key, value, hr from partint where hr between 11 and 12
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partint
+POSTHOOK: Input: default@partint@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@partint@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -603,11 +623,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: partint
-          Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+          filterExpr: hr BETWEEN 11 AND 12 (type: boolean)
+          Statistics: Num rows: 1000 Data size: 182000 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string), value (type: string), hr (type: int)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 182000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: select key, value, hr from partint where hr between 11 and 12
@@ -1625,8 +1646,14 @@ POSTHOOK: Input: default@partint@ds=2008-04-08/hr=12
 irG2+wNa4ZWkUKb0+hXweg==
 PREHOOK: query: explain select key, value, hr from partint where hr not between 12 and 14
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partint
+PREHOOK: Input: default@partint@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key, value, hr from partint where hr not between 12 and 14
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partint
+POSTHOOK: Input: default@partint@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1637,11 +1664,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: partint
-          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+          filterExpr: hr NOT BETWEEN 12 AND 14 (type: boolean)
+          Statistics: Num rows: 500 Data size: 91000 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string), value (type: string), hr (type: int)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 91000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: select key, value, hr from partint where hr not between 12 and 14
@@ -2157,8 +2185,16 @@ POSTHOOK: Input: default@partint@ds=2008-04-08/hr=11
 v6vY2XVDyLw+4d5w+xCycg==
 PREHOOK: query: explain select key, value, hr from partint where hr < 13
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partint
+PREHOOK: Input: default@partint@ds=2008-04-08/hr=11
+PREHOOK: Input: default@partint@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key, value, hr from partint where hr < 13
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partint
+POSTHOOK: Input: default@partint@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@partint@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -2169,11 +2205,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: partint
-          Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+          filterExpr: (hr < 13) (type: boolean)
+          Statistics: Num rows: 1000 Data size: 182000 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string), value (type: string), hr (type: int)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 182000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: select key, value, hr from partint where hr < 13

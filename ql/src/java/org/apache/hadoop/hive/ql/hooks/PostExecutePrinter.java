@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -116,8 +116,8 @@ public class PostExecutePrinter implements ExecuteWithHookContext {
     }
 
     if (queryState != null) {
-      console.printError("POSTHOOK: query: " + queryState.getQueryString().trim());
-      console.printError("POSTHOOK: type: " + queryState.getCommandType());
+      console.printInfo("POSTHOOK: query: " + queryState.getQueryString().trim(), false);
+      console.printInfo("POSTHOOK: type: " + queryState.getCommandType(), false);
     }
 
     PreExecutePrinter.printEntities(console, inputs, "POSTHOOK: Input: ");
@@ -167,7 +167,7 @@ public class PostExecutePrinter implements ExecuteWithHookContext {
         }
         sb.append("]");
 
-        console.printError(sb.toString());
+        console.printInfo(sb.toString(), false);
       }
     }
   }

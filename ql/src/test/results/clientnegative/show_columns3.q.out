@@ -24,4 +24,4 @@ PREHOOK: Input: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
-FAILED: SemanticException Duplicates declaration for database name
+FAILED: ParseException line 2:32 missing EOF at 'from' near '"a*"'

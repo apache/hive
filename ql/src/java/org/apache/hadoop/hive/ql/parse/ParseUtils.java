@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,15 +18,11 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.hadoop.hive.ql.Context;
+import com.google.common.base.Preconditions;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.antlr.runtime.tree.CommonTree;
-import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTBuilder;
-import org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
-
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -35,14 +31,20 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
-
+import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
+import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTBuilder;
+import org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
@@ -50,6 +52,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -65,14 +69,14 @@ public final class ParseUtils {
 
   /** Parses the Hive query. */
   public static ASTNode parse(String command, Context ctx) throws ParseException {
-    return parse(command, ctx, true);
+    return parse(command, ctx, null);
   }
 
   /** Parses the Hive query. */
   public static ASTNode parse(
-      String command, Context ctx, boolean setTokenRewriteStream) throws ParseException {
+      String command, Context ctx, String viewFullyQualifiedName) throws ParseException {
     ParseDriver pd = new ParseDriver();
-    ASTNode tree = pd.parse(command, ctx, setTokenRewriteStream);
+    ASTNode tree = pd.parse(command, ctx, viewFullyQualifiedName);
     tree = findRootNonNullToken(tree);
     handleSetColRefs(tree);
     return tree;
@@ -400,10 +404,9 @@ public final class ParseUtils {
           }
         }
       }
-      // We find the SELECT closest to the top. This assumes there's only one FROM or FROM-s
-      // are all equivalent (union case). Also, this assumption could be false for an already
-      // malformed query; we don't check for that here - it will fail later anyway.
-      // TODO: Maybe we should find ALL the SELECT-s not nested in another from, and compare.
+      // Note: we assume that this isn't an already malformed query;
+      //       we don't check for that here - it will fail later anyway.
+      // First, we find the SELECT closest to the top.
       ASTNode select = searcher.simpleBreadthFirstSearchAny((ASTNode)fromNode,
           HiveParser.TOK_SELECT, HiveParser.TOK_SELECTDI);
       if (select == null) {
@@ -412,11 +415,35 @@ public final class ParseUtils {
         setCols.token.setType(HiveParser.TOK_ALLCOLREF);
         return;
       }
+
+      // Then, find the leftmost logical sibling select, because that's what Hive uses for aliases. 
+      while (true) {
+        CommonTree queryOfSelect = select.parent;
+        while (queryOfSelect != null && queryOfSelect.getType() != HiveParser.TOK_QUERY) {
+          queryOfSelect = queryOfSelect.parent;
+        }
+        // We should have some QUERY; and also its parent because by supposition we are in subq.
+        if (queryOfSelect == null || queryOfSelect.parent == null) {
+          LOG.debug("Replacing SETCOLREF with ALLCOLREF because we couldn't find the QUERY");
+          setCols.token.setType(HiveParser.TOK_ALLCOLREF);
+          return;
+        }
+        if (queryOfSelect.childIndex == 0) break; // We are the left-most child.
+        Tree moreToTheLeft = queryOfSelect.parent.getChild(0);
+        Preconditions.checkState(moreToTheLeft != queryOfSelect);
+        ASTNode newSelect = searcher.simpleBreadthFirstSearchAny((ASTNode)moreToTheLeft,
+          HiveParser.TOK_SELECT, HiveParser.TOK_SELECTDI);
+        Preconditions.checkState(newSelect != select);
+        select = newSelect;
+        // Repeat the procedure for the new select.
+      }
+
       // Found the proper columns.
       List<ASTNode> newChildren = new ArrayList<>(select.getChildCount());
       HashSet<String> aliases = new HashSet<>();
       for (int i = 0; i < select.getChildCount(); ++i) {
         Tree selExpr = select.getChild(i);
+        if (selExpr.getType() == HiveParser.QUERY_HINT) continue;
         assert selExpr.getType() == HiveParser.TOK_SELEXPR;
         assert selExpr.getChildCount() > 0;
         // Examine the last child. It could be an alias.
@@ -499,4 +526,47 @@ public final class ParseUtils {
       newChildren.add(selExpr.node());
       return true;
     }
+
+    public static String getKeywords(Set<String> excludes) {
+      StringBuilder sb = new StringBuilder();
+      for (Field f : HiveLexer.class.getDeclaredFields()) {
+        if (!Modifier.isStatic(f.getModifiers())) continue;
+        String name = f.getName();
+        if (!name.startsWith("KW_")) continue;
+        name = name.substring(3);
+        if (excludes != null && excludes.contains(name)) continue;
+        if (sb.length() > 0) {
+          sb.append(",");
+        }
+        sb.append(name);
+      }
+      return sb.toString();
+    }
+
+  public static RelNode parseQuery(HiveConf conf, String viewQuery)
+      throws SemanticException, IOException, ParseException {
+    final Context ctx = new Context(conf);
+    ctx.setIsLoadingMaterializedView(true);
+    final ASTNode ast = parse(viewQuery, ctx);
+    final CalcitePlanner analyzer = getAnalyzer(conf, ctx);
+    return analyzer.genLogicalPlan(ast);
+  }
+
+  public static List<FieldSchema> parseQueryAndGetSchema(HiveConf conf, String viewQuery)
+      throws SemanticException, IOException, ParseException {
+    final Context ctx = new Context(conf);
+    ctx.setIsLoadingMaterializedView(true);
+    final ASTNode ast = parse(viewQuery, ctx);
+    final CalcitePlanner analyzer = getAnalyzer(conf, ctx);
+    analyzer.analyze(ast, ctx);
+    return analyzer.getResultSchema();
+  }
+
+  private static CalcitePlanner getAnalyzer(HiveConf conf, Context ctx) throws SemanticException {
+    final QueryState qs = new QueryState.Builder().withHiveConf(conf).build();
+    final CalcitePlanner analyzer = new CalcitePlanner(qs);
+    analyzer.initCtx(ctx);
+    analyzer.init(false);
+    return analyzer;
+  }
 }

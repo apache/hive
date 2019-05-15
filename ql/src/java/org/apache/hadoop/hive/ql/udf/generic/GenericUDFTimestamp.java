@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,9 +24,11 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDateToTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDoubleToTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastLongToTimestamp;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringToTimestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -40,15 +42,15 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  * GenericUDFTimestamp
  *
  * Example usage:
- * ... CAST(<Timestamp string> as TIMESTAMP) ...
+ * ... CAST(&lt;Timestamp string&gt; as TIMESTAMP) ...
  *
- * Creates a TimestampWritable object using PrimitiveObjectInspectorConverter
+ * Creates a TimestampWritableV2 object using PrimitiveObjectInspectorConverter
  *
  */
 @Description(name = "timestamp",
 value = "cast(date as timestamp) - Returns timestamp")
-@VectorizedExpressions({CastLongToTimestamp.class,
-  CastDoubleToTimestamp.class, CastDecimalToTimestamp.class})
+@VectorizedExpressions({CastLongToTimestamp.class, CastDateToTimestamp.class,
+  CastDoubleToTimestamp.class, CastDecimalToTimestamp.class, CastStringToTimestamp.class})
 public class GenericUDFTimestamp extends GenericUDF {
 
   private transient PrimitiveObjectInspector argumentOI;

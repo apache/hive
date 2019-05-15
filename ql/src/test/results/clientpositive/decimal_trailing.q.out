@@ -1,8 +1,8 @@
-PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_TRAILING
+PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_TRAILING_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_TRAILING
+POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_TRAILING_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE DECIMAL_TRAILING (
+PREHOOK: query: CREATE TABLE DECIMAL_TRAILING_n0 (
   id int,
   a decimal(10,4),
   b decimal(15,8)
@@ -12,8 +12,8 @@ ROW FORMAT DELIMITED
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DECIMAL_TRAILING
-POSTHOOK: query: CREATE TABLE DECIMAL_TRAILING (
+PREHOOK: Output: default@DECIMAL_TRAILING_n0
+POSTHOOK: query: CREATE TABLE DECIMAL_TRAILING_n0 (
   id int,
   a decimal(10,4),
   b decimal(15,8)
@@ -23,22 +23,22 @@ ROW FORMAT DELIMITED
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DECIMAL_TRAILING
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv10.txt' INTO TABLE DECIMAL_TRAILING
+POSTHOOK: Output: default@DECIMAL_TRAILING_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv10.txt' INTO TABLE DECIMAL_TRAILING_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@decimal_trailing
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv10.txt' INTO TABLE DECIMAL_TRAILING
+PREHOOK: Output: default@decimal_trailing_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv10.txt' INTO TABLE DECIMAL_TRAILING_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@decimal_trailing
-PREHOOK: query: SELECT * FROM DECIMAL_TRAILING ORDER BY id
+POSTHOOK: Output: default@decimal_trailing_n0
+PREHOOK: query: SELECT * FROM DECIMAL_TRAILING_n0 ORDER BY id
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_trailing
+PREHOOK: Input: default@decimal_trailing_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM DECIMAL_TRAILING ORDER BY id
+POSTHOOK: query: SELECT * FROM DECIMAL_TRAILING_n0 ORDER BY id
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_trailing
+POSTHOOK: Input: default@decimal_trailing_n0
 #### A masked pattern was here ####
 0	0.0000	0.00000000
 1	0.0000	0.00000000
@@ -70,11 +70,11 @@ POSTHOOK: Input: default@decimal_trailing
 27	0.0000	0.00000000
 28	12313.2000	134134.31252500
 29	99999.9990	134134.31242553
-PREHOOK: query: DROP TABLE DECIMAL_TRAILING
+PREHOOK: query: DROP TABLE DECIMAL_TRAILING_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@decimal_trailing
-PREHOOK: Output: default@decimal_trailing
-POSTHOOK: query: DROP TABLE DECIMAL_TRAILING
+PREHOOK: Input: default@decimal_trailing_n0
+PREHOOK: Output: default@decimal_trailing_n0
+POSTHOOK: query: DROP TABLE DECIMAL_TRAILING_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@decimal_trailing
-POSTHOOK: Output: default@decimal_trailing
+POSTHOOK: Input: default@decimal_trailing_n0
+POSTHOOK: Output: default@decimal_trailing_n0

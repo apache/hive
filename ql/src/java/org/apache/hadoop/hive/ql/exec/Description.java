@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -25,6 +28,8 @@ import java.lang.annotation.RetentionPolicy;
  * Description.
  *
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Description {
   String value() default "_FUNC_ is undocumented";

@@ -1,3 +1,4 @@
+--! qt:dataset:src1
 set hive.fetch.task.conversion=more;
 
 DESCRIBE FUNCTION find_in_set;

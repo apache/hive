@@ -29,13 +29,11 @@ POSTHOOK: query: desc formatted alter_table_partition_clusterby_sortby partition
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter_table_partition_clusterby_sortby
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 c                   	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -44,7 +42,7 @@ Database:           	default
 Table:              	alter_table_partition_clusterby_sortby	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
 #### A masked pattern was here ####
 	numFiles            	0                   
 	numRows             	0                   
@@ -78,13 +76,11 @@ POSTHOOK: query: desc formatted alter_table_partition_clusterby_sortby partition
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter_table_partition_clusterby_sortby
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 c                   	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -93,7 +89,7 @@ Database:           	default
 Table:              	alter_table_partition_clusterby_sortby	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
 #### A masked pattern was here ####
 	numFiles            	0                   
 	numRows             	0                   
@@ -127,13 +123,11 @@ POSTHOOK: query: desc formatted alter_table_partition_clusterby_sortby partition
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter_table_partition_clusterby_sortby
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 c                   	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -142,7 +136,7 @@ Database:           	default
 Table:              	alter_table_partition_clusterby_sortby	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
 #### A masked pattern was here ####
 	numFiles            	0                   
 	numRows             	0                   
@@ -167,13 +161,11 @@ POSTHOOK: query: desc formatted alter_table_partition_clusterby_sortby
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter_table_partition_clusterby_sortby
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 c                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -183,7 +175,14 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	SORTBUCKETCOLSPREFIX	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	1                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

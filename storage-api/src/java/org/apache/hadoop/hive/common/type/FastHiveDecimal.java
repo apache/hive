@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -273,6 +273,24 @@ public class FastHiveDecimal {
             scratchLongs);
   }
 
+  /*
+   * Deserializes 64-bit decimals up to the maximum 64-bit precision (18 decimal digits).
+   */
+  protected void fastDeserialize64(long decimalLong, int scale) {
+    FastHiveDecimalImpl.fastDeserialize64(
+        decimalLong, scale, this);
+  }
+
+  /*
+   * Serializes decimal64 up to the maximum 64-bit precision (18 decimal digits).
+   */
+  protected long fastSerialize64(int scale) {
+    return
+        FastHiveDecimalImpl.fastSerialize64(
+            scale,
+            fastSignum, fast1, fast0, fastScale);
+  }
+
   // The fastBigIntegerBytes method returns 3 56 bit (7 byte) words and a possible sign byte.
   // However, the fastBigIntegerBytes can take on trailing zeroes -- so make it larger.
   protected static final int FAST_SCRATCH_BUFFER_LEN_BIG_INTEGER_BYTES = 1 + 48;
@@ -410,6 +428,9 @@ public class FastHiveDecimal {
   }
 
   protected void fastAbs() {
+    if (fastSignum == 0) {
+      return;
+    }
     fastSignum = 1;
   }
 

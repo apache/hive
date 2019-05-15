@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -39,25 +39,25 @@ import java.util.Map;
 public class PerfLogger {
   public static final String ACQUIRE_READ_WRITE_LOCKS = "acquireReadWriteLocks";
   public static final String COMPILE = "compile";
+  public static final String WAIT_COMPILE = "waitCompile";
   public static final String PARSE = "parse";
   public static final String ANALYZE = "semanticAnalyze";
   public static final String OPTIMIZER = "optimizer";
   public static final String DO_AUTHORIZATION = "doAuthorization";
   public static final String DRIVER_EXECUTE = "Driver.execute";
   public static final String INPUT_SUMMARY = "getInputSummary";
+  public static final String INPUT_PATHS = "getInputPaths";
   public static final String GET_SPLITS = "getSplits";
   public static final String RUN_TASKS = "runTasks";
   public static final String SERIALIZE_PLAN = "serializePlan";
   public static final String DESERIALIZE_PLAN = "deserializePlan";
   public static final String CLONE_PLAN = "clonePlan";
-  public static final String TASK = "task.";
   public static final String RELEASE_LOCKS = "releaseLocks";
   public static final String PRUNE_LISTING = "prune-listing";
   public static final String PARTITION_RETRIEVING = "partition-retrieving";
   public static final String PRE_HOOK = "PreHook.";
   public static final String POST_HOOK = "PostHook.";
   public static final String FAILURE_HOOK = "FailureHook.";
-  public static final String DRIVER_RUN = "Driver.run";
   public static final String TEZ_COMPILER = "TezCompiler";
   public static final String TEZ_SUBMIT_TO_RUNNING = "TezSubmitToRunningDag";
   public static final String TEZ_BUILD_DAG = "TezBuildDag";
@@ -69,10 +69,13 @@ public class PerfLogger {
   public static final String TEZ_RUN_PROCESSOR = "TezRunProcessor";
   public static final String TEZ_INIT_OPERATORS = "TezInitializeOperators";
   public static final String LOAD_HASHTABLE = "LoadHashtable";
+  public static final String TEZ_GET_SESSION = "TezGetSession";
+  public static final String SAVE_TO_RESULTS_CACHE = "saveToResultsCache";
 
   public static final String SPARK_SUBMIT_TO_RUNNING = "SparkSubmitToRunning";
   public static final String SPARK_BUILD_PLAN = "SparkBuildPlan";
   public static final String SPARK_BUILD_RDD_GRAPH = "SparkBuildRDDGraph";
+  public static final String SPARK_CREATE_EXPLAIN_PLAN = "SparkCreateExplainPlan.";
   public static final String SPARK_SUBMIT_JOB = "SparkSubmitJob";
   public static final String SPARK_RUN_JOB = "SparkRunJob";
   public static final String SPARK_CREATE_TRAN = "SparkCreateTran.";
@@ -82,6 +85,13 @@ public class PerfLogger {
   public static final String SPARK_OPTIMIZE_OPERATOR_TREE = "SparkOptimizeOperatorTree";
   public static final String SPARK_OPTIMIZE_TASK_TREE = "SparkOptimizeTaskTree";
   public static final String SPARK_FLUSH_HASHTABLE = "SparkFlushHashTable.";
+  public static final String SPARK_DYNAMICALLY_PRUNE_PARTITIONS =
+          "SparkDynamicallyPrunePartitions.";
+
+  public static final String FILE_MOVES = "FileMoves";
+  public static final String LOAD_TABLE = "LoadTable";
+  public static final String LOAD_PARTITION = "LoadPartition";
+  public static final String LOAD_DYNAMIC_PARTITIONS = "LoadDynamicPartitions";
 
   protected final Map<String, Long> startTimes = new HashMap<String, Long>();
   protected final Map<String, Long> endTimes = new HashMap<String, Long>();
@@ -124,7 +134,7 @@ public class PerfLogger {
    */
   public void PerfLogBegin(String callerName, String method) {
     long startTime = System.currentTimeMillis();
-    startTimes.put(method, new Long(startTime));
+    startTimes.put(method, Long.valueOf(startTime));
     if (LOG.isDebugEnabled()) {
       LOG.debug("<PERFLOG method=" + method + " from=" + callerName + ">");
     }
@@ -149,7 +159,7 @@ public class PerfLogger {
   public long PerfLogEnd(String callerName, String method, String additionalInfo) {
     Long startTime = startTimes.get(method);
     long endTime = System.currentTimeMillis();
-    endTimes.put(method, new Long(endTime));
+    endTimes.put(method, Long.valueOf(endTime));
     long duration = startTime == null ? -1 : endTime - startTime.longValue();
 
     if (LOG.isDebugEnabled()) {

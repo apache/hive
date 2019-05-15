@@ -1,6 +1,6 @@
-PREHOOK: query: drop table staging
+PREHOOK: query: drop table staging_n3
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table staging
+POSTHOOK: query: drop table staging_n3
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table parquet_ctas
 PREHOOK: type: DROPTABLE
@@ -18,36 +18,36 @@ PREHOOK: query: drop table parquet_ctas_mixed
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table parquet_ctas_mixed
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table staging (key int, value string) stored as textfile
+PREHOOK: query: create table staging_n3 (key int, value string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@staging
-POSTHOOK: query: create table staging (key int, value string) stored as textfile
+PREHOOK: Output: default@staging_n3
+POSTHOOK: query: create table staging_n3 (key int, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@staging
-PREHOOK: query: insert into table staging select * from src order by key limit 10
+POSTHOOK: Output: default@staging_n3
+PREHOOK: query: insert into table staging_n3 select * from src order by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@staging
-POSTHOOK: query: insert into table staging select * from src order by key limit 10
+PREHOOK: Output: default@staging_n3
+POSTHOOK: query: insert into table staging_n3 select * from src order by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@staging
-POSTHOOK: Lineage: staging.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: staging.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: create table parquet_ctas stored as parquet as select * from staging
+POSTHOOK: Output: default@staging_n3
+POSTHOOK: Lineage: staging_n3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: staging_n3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table parquet_ctas stored as parquet as select * from staging_n3
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@staging
+PREHOOK: Input: default@staging_n3
 PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_ctas
-POSTHOOK: query: create table parquet_ctas stored as parquet as select * from staging
+POSTHOOK: query: create table parquet_ctas stored as parquet as select * from staging_n3
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@staging
+POSTHOOK: Input: default@staging_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_ctas
-POSTHOOK: Lineage: parquet_ctas.key SIMPLE [(staging)staging.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: parquet_ctas.value SIMPLE [(staging)staging.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: parquet_ctas.key SIMPLE [(staging_n3)staging_n3.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_ctas.value SIMPLE [(staging_n3)staging_n3.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: describe parquet_ctas
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@parquet_ctas
@@ -74,18 +74,18 @@ POSTHOOK: Input: default@parquet_ctas
 103	val_103
 104	val_104
 104	val_104
-PREHOOK: query: create table parquet_ctas_advanced stored as parquet as select key+1,concat(value,"value") from staging
+PREHOOK: query: create table parquet_ctas_advanced stored as parquet as select key+1,concat(value,"value") from staging_n3
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@staging
+PREHOOK: Input: default@staging_n3
 PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_ctas_advanced
-POSTHOOK: query: create table parquet_ctas_advanced stored as parquet as select key+1,concat(value,"value") from staging
+POSTHOOK: query: create table parquet_ctas_advanced stored as parquet as select key+1,concat(value,"value") from staging_n3
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@staging
+POSTHOOK: Input: default@staging_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_ctas_advanced
-POSTHOOK: Lineage: parquet_ctas_advanced._c0 EXPRESSION [(staging)staging.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: parquet_ctas_advanced._c1 EXPRESSION [(staging)staging.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: parquet_ctas_advanced._c0 EXPRESSION [(staging_n3)staging_n3.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_ctas_advanced._c1 EXPRESSION [(staging_n3)staging_n3.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: describe parquet_ctas_advanced
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@parquet_ctas_advanced
@@ -112,18 +112,18 @@ POSTHOOK: Input: default@parquet_ctas_advanced
 104	val_103value
 105	val_104value
 105	val_104value
-PREHOOK: query: create table parquet_ctas_alias stored as parquet as select key+1 as mykey,concat(value,"value") as myvalue from staging
+PREHOOK: query: create table parquet_ctas_alias stored as parquet as select key+1 as mykey,concat(value,"value") as myvalue from staging_n3
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@staging
+PREHOOK: Input: default@staging_n3
 PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_ctas_alias
-POSTHOOK: query: create table parquet_ctas_alias stored as parquet as select key+1 as mykey,concat(value,"value") as myvalue from staging
+POSTHOOK: query: create table parquet_ctas_alias stored as parquet as select key+1 as mykey,concat(value,"value") as myvalue from staging_n3
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@staging
+POSTHOOK: Input: default@staging_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_ctas_alias
-POSTHOOK: Lineage: parquet_ctas_alias.mykey EXPRESSION [(staging)staging.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: parquet_ctas_alias.myvalue EXPRESSION [(staging)staging.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: parquet_ctas_alias.mykey EXPRESSION [(staging_n3)staging_n3.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_ctas_alias.myvalue EXPRESSION [(staging_n3)staging_n3.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: describe parquet_ctas_alias
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@parquet_ctas_alias
@@ -150,19 +150,19 @@ POSTHOOK: Input: default@parquet_ctas_alias
 104	val_103value
 105	val_104value
 105	val_104value
-PREHOOK: query: create table parquet_ctas_mixed stored as parquet as select key,key+1,concat(value,"value") as myvalue from staging
+PREHOOK: query: create table parquet_ctas_mixed stored as parquet as select key,key+1,concat(value,"value") as myvalue from staging_n3
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@staging
+PREHOOK: Input: default@staging_n3
 PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_ctas_mixed
-POSTHOOK: query: create table parquet_ctas_mixed stored as parquet as select key,key+1,concat(value,"value") as myvalue from staging
+POSTHOOK: query: create table parquet_ctas_mixed stored as parquet as select key,key+1,concat(value,"value") as myvalue from staging_n3
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@staging
+POSTHOOK: Input: default@staging_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_ctas_mixed
-POSTHOOK: Lineage: parquet_ctas_mixed._c1 EXPRESSION [(staging)staging.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: parquet_ctas_mixed.key SIMPLE [(staging)staging.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: parquet_ctas_mixed.myvalue EXPRESSION [(staging)staging.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: parquet_ctas_mixed._c1 EXPRESSION [(staging_n3)staging_n3.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_ctas_mixed.key SIMPLE [(staging_n3)staging_n3.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_ctas_mixed.myvalue EXPRESSION [(staging_n3)staging_n3.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: describe parquet_ctas_mixed
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@parquet_ctas_mixed

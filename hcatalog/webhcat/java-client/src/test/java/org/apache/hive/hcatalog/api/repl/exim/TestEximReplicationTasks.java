@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -266,7 +266,8 @@ public class TestEximReplicationTasks{
     t.setDbName("testdb");
     t.setTableName("testtable");
     NotificationEvent event = new NotificationEvent(getEventId(), getTime(),
-        HCatConstants.HCAT_ALTER_TABLE_EVENT, msgFactory.buildAlterTableMessage(t, t).toString());
+        HCatConstants.HCAT_ALTER_TABLE_EVENT,
+            msgFactory.buildAlterTableMessage(t, t, t.getWriteId()).toString());
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
 
@@ -454,7 +455,8 @@ public class TestEximReplicationTasks{
     Partition p = createPtn(t, Arrays.asList("102", "lmn"));
 
     NotificationEvent event = new NotificationEvent(getEventId(), getTime(),
-        HCatConstants.HCAT_ALTER_PARTITION_EVENT, msgFactory.buildAlterPartitionMessage(t,p,p).toString());
+        HCatConstants.HCAT_ALTER_PARTITION_EVENT, msgFactory.buildAlterPartitionMessage(t,
+            p, p, p.getWriteId()).toString());
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
 

@@ -17,11 +17,11 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>14</version>
+    <version>18</version>
   </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive</artifactId>
-  <version>2.2.0-SNAPSHOT</version>
+  <version>4.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Hive</name>
@@ -31,14 +31,17 @@
   </prerequisites>
 
   <modules>
+    <module>storage-api</module>
     <module>accumulo-handler</module>
     <module>vector-code-gen</module>
     <module>beeline</module>
+    <module>classification</module>
     <module>cli</module>
     <module>common</module>
     <module>contrib</module>
     <module>druid-handler</module>
     <module>hbase-handler</module>
+    <module>jdbc-handler</module>
     <module>hcatalog</module>
     <module>hplsql</module>
     <module>jdbc</module>
@@ -47,6 +50,7 @@
     <module>serde</module>
     <module>service-rpc</module>
     <module>service</module>
+    <module>streaming</module>
     <module>llap-common</module>
     <module>llap-client</module>
     <module>llap-ext-client</module>
@@ -54,24 +58,30 @@
     <module>llap-server</module>
     <module>shims</module>
     <module>spark-client</module>
-    <module>storage-api</module>
+    <module>kryo-registrator</module>
     <module>testutils</module>
     <module>packaging</module>
+    <module>standalone-metastore</module>
+    <module>upgrade-acid</module>
+    <module>kafka-handler</module>
   </modules>
 
   <properties>
-    <hive.version.shortname>2.2.0</hive.version.shortname>
+    <hive.version.shortname>4.0.0</hive.version.shortname>
 
     <!-- Build Properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
     <maven.repo.local>${settings.localRepository}</maven.repo.local>
     <hive.path.to.root>.</hive.path.to.root>
     <hive.jdbc.driver.classifier>standalone</hive.jdbc.driver.classifier>
-    <checkstyle.conf.dir>${hive.path.to.root}/checkstyle</checkstyle.conf.dir>
+    <checkstyle.conf.dir>${basedir}/${hive.path.to.root}/checkstyle</checkstyle.conf.dir>
 
     <!-- Test Properties -->
     <test.extra.path></test.extra.path>
+    <!--suppress UnresolvedMavenProperty -->
     <test.hive.hadoop.classpath>${maven.test.classpath}</test.hive.hadoop.classpath>
     <test.log4j.scheme>file://</test.log4j.scheme>
     <test.tmp.dir>${project.build.directory}/tmp</test.tmp.dir>
@@ -89,122 +99,141 @@
     <!-- Plugin and Plugin Dependency Versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
     <datanucleus.maven.plugin.version>3.3.0-release</datanucleus.maven.plugin.version>
-    <maven.test.jvm.args>-Xmx1024m -XX:MaxPermSize=256M</maven.test.jvm.args>
+    <maven.test.jvm.args>-Xmx2048m</maven.test.jvm.args>
     <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
-    <maven.assembly.plugin.version>2.3</maven.assembly.plugin.version>
-    <maven.checkstyle.plugin.version>2.12.1</maven.checkstyle.plugin.version>
-    <maven.compiler.plugin.version>3.1</maven.compiler.plugin.version>
+    <maven.assembly.plugin.version>3.1.0</maven.assembly.plugin.version>
+    <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
+    <maven.compiler.plugin.version>3.6.1</maven.compiler.plugin.version>
     <maven.enforcer.plugin.version>1.3.1</maven.enforcer.plugin.version>
     <maven.install.plugin.version>2.4</maven.install.plugin.version>
     <maven.jar.plugin.version>2.4</maven.jar.plugin.version>
     <maven.javadoc.plugin.version>2.4</maven.javadoc.plugin.version>
-    <maven.shade.plugin.version>2.4.3</maven.shade.plugin.version>
-    <maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version>
+    <maven.shade.plugin.version>3.2.0</maven.shade.plugin.version>
+    <maven.surefire.plugin.version>2.21.0</maven.surefire.plugin.version>
     <maven.war.plugin.version>2.4</maven.war.plugin.version>
     <maven.dependency.plugin.version>2.8</maven.dependency.plugin.version>
     <maven.eclipse.plugin.version>2.9</maven.eclipse.plugin.version>
     <maven.build-helper.plugin.version>1.8</maven.build-helper.plugin.version>
 
     <!-- Library Dependency Versions -->
-    <accumulo.version>1.6.0</accumulo.version>
+    <accumulo.version>1.7.3</accumulo.version>
     <activemq.version>5.5.0</activemq.version>
     <ant.version>1.9.1</ant.version>
     <antlr.version>3.5.2</antlr.version>
     <apache-directory-server.version>1.5.6</apache-directory-server.version>
     <apache-directory-clientapi.version>0.1</apache-directory-clientapi.version>
-    <avatica.version>1.8.0</avatica.version>
-    <avro.version>1.7.7</avro.version>
+    <!-- Include arrow for LlapOutputFormatService -->
+    <arrow.version>0.10.0</arrow.version>
+    <avatica.version>1.12.0</avatica.version>
+    <avro.version>1.8.2</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
-    <calcite.version>1.10.0</calcite.version>
-    <datanucleus-api-jdo.version>4.2.1</datanucleus-api-jdo.version>
-    <datanucleus-core.version>4.1.6</datanucleus-core.version>
-    <datanucleus-rdbms.version>4.1.7</datanucleus-rdbms.version>
+    <calcite.version>1.19.0</calcite.version>
+    <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
+    <datanucleus-core.version>4.1.17</datanucleus-core.version>
+    <datanucleus-rdbms.version>4.1.19</datanucleus-rdbms.version>
     <datanucleus-jdo.version>3.2.0-m3</datanucleus-jdo.version>
     <commons-cli.version>1.2</commons-cli.version>
-    <commons-codec.version>1.4</commons-codec.version>
+    <commons-codec.version>1.7</commons-codec.version>
     <commons-collections.version>3.2.2</commons-collections.version>
-    <commons-compress.version>1.9</commons-compress.version>
+    <commons-compress.version>1.18</commons-compress.version>
     <commons-exec.version>1.1</commons-exec.version>
-    <commons-httpclient.version>3.0.1</commons-httpclient.version>
     <commons-io.version>2.4</commons-io.version>
     <commons-lang.version>2.6</commons-lang.version>
-    <commons-lang3.version>3.1</commons-lang3.version>
+    <commons-lang3.version>3.2</commons-lang3.version>
     <commons-pool.version>1.5.4</commons-pool.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
-    <derby.version>10.10.2.0</derby.version>
+    <commons-pool2.version>2.6.1</commons-pool2.version>
+    <commons-dbcp2.version>2.6.0</commons-dbcp2.version>
+    <derby.version>10.14.1.0</derby.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2</dropwizard-metrics-hadoop-metrics2-reporter.version>
-    <druid.version>0.9.2</druid.version>
-    <guava.version>14.0.1</guava.version>
-    <groovy.version>2.4.4</groovy.version>
-    <hadoop.version>2.7.2</hadoop.version>
+    <druid.version>0.14.0-incubating</druid.version>
+    <flatbuffers.version>1.2.0-3f79e055</flatbuffers.version>
+    <guava.version>19.0</guava.version>
+    <groovy.version>2.4.11</groovy.version>
+    <h2database.version>1.3.166</h2database.version>
+    <hadoop.version>3.1.0</hadoop.version>
     <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
-    <hbase.version>1.1.1</hbase.version>
+    <hamcrest.version>1.3</hamcrest.version>
+    <hbase.version>2.0.0-alpha4</hbase.version>
+    <hppc.version>0.7.2</hppc.version>
     <!-- required for logging test to avoid including hbase which pulls disruptor transitively -->
-    <disruptor.version>3.3.0</disruptor.version>
-    <hikaricp.version>2.5.1</hikaricp.version>
+    <disruptor.version>3.3.7</disruptor.version>
+    <hikaricp.version>2.6.1</hikaricp.version>
     <!-- httpcomponents are not always in version sync -->
-    <httpcomponents.client.version>4.4</httpcomponents.client.version>
-    <httpcomponents.core.version>4.4</httpcomponents.core.version>
+    <httpcomponents.client.version>4.5.6</httpcomponents.client.version>
+    <httpcomponents.core.version>4.4.10</httpcomponents.core.version>
     <ivy.version>2.4.0</ivy.version>
-    <jackson.version>1.9.13</jackson.version>
-    <!-- jackson 1 and 2 lines can coexist without issue, as they have different artifactIds -->
-    <jackson.new.version>2.6.5</jackson.new.version>
-    <jasper.version>5.5.23</jasper.version>
+    <jackson.version>2.9.8</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
     <jamon-runtime.version>2.3.1</jamon-runtime.version>
     <javaewah.version>0.3.2</javaewah.version>
-    <javax-servlet.version>3.0.0.v201112011016</javax-servlet.version>
+    <javax-servlet.version>3.1.0</javax-servlet.version>
+    <javax-servlet-jsp.version>2.3.1</javax-servlet-jsp.version>
     <javolution.version>5.5.1</javolution.version>
     <jdo-api.version>3.0.1</jdo-api.version>
-    <jetty.version>7.6.0.v20120127</jetty.version>
-    <jersey.version>1.14</jersey.version>
+    <jettison.version>1.1</jettison.version>
+    <jetty.version>9.3.25.v20180904</jetty.version>
+    <jersey.version>1.19</jersey.version>
     <!-- Glassfish jersey is included for Spark client test only -->
     <glassfish.jersey.version>2.22.2</glassfish.jersey.version>
     <jline.version>2.12</jline.version>
-    <jms.version>1.1</jms.version>
-    <joda.version>2.8.1</joda.version>
+    <jms.version>2.0.2</jms.version>
+    <joda.version>2.9.9</joda.version>
     <jodd.version>3.5.2</jodd.version>
-    <json.version>20090211</json.version>
+    <json.version>1.8</json.version>
     <junit.version>4.11</junit.version>
-    <kryo.version>3.0.3</kryo.version>
+    <kryo.version>4.0.2</kryo.version>
     <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.9.3</libthrift.version>
-    <log4j2.version>2.6.2</log4j2.version>
+    <log4j2.version>2.10.0</log4j2.version>
     <opencsv.version>2.3</opencsv.version>
-    <orc.version>1.3.1</orc.version>
-    <mockito-all.version>1.9.5</mockito-all.version>
+    <orc.version>1.5.4</orc.version>
+    <mockito-core.version>1.10.19</mockito-core.version>
+    <powermock.version>1.7.4</powermock.version>
     <mina.version>2.0.0-M5</mina.version>
-    <netty.version>4.0.29.Final</netty.version>
-    <parquet.version>1.8.1</parquet.version>
+    <netty.version>4.1.17.Final</netty.version>
+    <netty3.version>3.10.5.Final</netty3.version>
+    <parquet.version>1.10.0</parquet.version>
     <pig.version>0.16.0</pig.version>
+    <plexus.version>1.5.6</plexus.version>
     <protobuf.version>2.5.0</protobuf.version>
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.10</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
-    <storage-api.version>2.3.0-SNAPSHOT</storage-api.version>
-    <tez.version>0.8.4</tez.version>
-    <slider.version>0.90.2-incubating</slider.version>
+    <storage-api.version>2.7.0-SNAPSHOT</storage-api.version>
+    <tez.version>0.9.1</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
-    <spark.version>2.0.0</spark.version>
+    <spark.version>2.3.0</spark.version>
     <scala.binary.version>2.11</scala.binary.version>
     <scala.version>2.11.8</scala.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
-    <snappy.version>0.2</snappy.version>
+    <snappy.version>1.1.4</snappy.version>
     <wadl-resourcedoc-doclet.version>1.4</wadl-resourcedoc-doclet.version>
     <velocity.version>1.5</velocity.version>
     <xerces.version>2.9.1</xerces.version>
     <zookeeper.version>3.4.6</zookeeper.version>
     <jpam.version>1.1</jpam.version>
     <felix.version>2.4.0</felix.version>
-    <curator.version>2.7.1</curator.version>
+    <curator.version>2.12.0</curator.version>
     <jsr305.version>3.0.0</jsr305.version>
     <tephra.version>0.6.0</tephra.version>
     <gson.version>2.2.4</gson.version>
+    <rs-api.version>2.0.1</rs-api.version>
   </properties>
 
   <repositories>
    <!-- This needs to be removed before checking in-->
+    <repository>
+      <id>central</id>
+      <name>central</name>
+      <url>https://repo.maven.apache.org/maven2</url>
+      <layout>default</layout>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>warn</checksumPolicy>
+      </releases>
+    </repository>
     <repository>
       <id>datanucleus</id>
       <name>datanucleus maven repository</name>
@@ -246,6 +275,16 @@
        </releases>
        <snapshots>
          <enabled>false</enabled>
+       </snapshots>
+    </repository>
+    <repository>
+       <id>druid-apache-rc-testing</id>
+       <url>https://repository.apache.org/content/repositories/orgapachedruid-1001/</url>
+       <releases>
+         <enabled>true</enabled>
+       </releases>
+       <snapshots>
+         <enabled>true</enabled>
        </snapshots>
     </repository>
   </repositories>
@@ -345,11 +384,6 @@
         <artifactId>commons-collections</artifactId>
         <version>${commons-collections.version}</version>
       </dependency>
-     <dependency>
-        <groupId>commons-httpclient</groupId>
-        <artifactId>commons-httpclient</artifactId>
-        <version>${commons-httpclient.version}</version>
-      </dependency>
       <dependency>
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
@@ -371,8 +405,8 @@
         <version>${jdo-api.version}</version>
       </dependency>
       <dependency>
-        <groupId>javax.jms</groupId>
-        <artifactId>jms</artifactId>
+        <groupId>jakarta.jms</groupId>
+        <artifactId>jakarta.jms-api</artifactId>
         <version>${jms.version}</version>
       </dependency>
       <dependency>
@@ -476,7 +510,7 @@
         <artifactId>avro-mapred</artifactId>
         <classifier>hadoop2</classifier>
         <version>${avro.version}</version>
-      </dependency>
+     </dependency>
       <dependency>
         <groupId>org.apache.derby</groupId>
         <artifactId>derby</artifactId>
@@ -526,7 +560,7 @@
         <groupId>org.apache.pig</groupId>
         <artifactId>pig</artifactId>
         <version>${pig.version}</version>
-      </dependency>
+     </dependency>
       <dependency>
         <groupId>org.apache.thrift</groupId>
         <artifactId>libfb303</artifactId>
@@ -547,7 +581,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
           <exclusion>
@@ -585,29 +619,75 @@
         <version>${groovy.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.codehaus.jackson</groupId>
-        <artifactId>jackson-core-asl</artifactId>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-annotations</artifactId>
         <version>${jackson.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.codehaus.jackson</groupId>
-        <artifactId>jackson-mapper-asl</artifactId>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
         <version>${jackson.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.codehaus.jackson</groupId>
-        <artifactId>jackson-jaxrs</artifactId>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
         <version>${jackson.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.codehaus.jackson</groupId>
-        <artifactId>jackson-xc</artifactId>
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-module-scala_${scala.binary.version}</artifactId>
         <version>${jackson.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.eclipse.jetty.aggregate</groupId>
-        <artifactId>jetty-all-server</artifactId>
+        <groupId>com.fasterxml.jackson.dataformat</groupId>
+        <artifactId>jackson-dataformat-smile</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.jaxrs</groupId>
+        <artifactId>jackson-jaxrs-json-provider</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-module-jaxb-annotations</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.jettison</groupId>
+        <artifactId>jettison</artifactId>
+        <version>${jettison.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>stax</groupId>
+            <artifactId>stax-api</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-rewrite</artifactId>
         <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-server</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-servlet</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-webapp</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>javax.servlet-api</artifactId>
+        <version>${javax-servlet.version}</version>
       </dependency>
       <dependency>
         <groupId>org.datanucleus</groupId>
@@ -630,14 +710,14 @@
         <version>${datanucleus-jdo.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.json</groupId>
+        <groupId>com.tdunning</groupId>
         <artifactId>json</artifactId>
         <version>${json.version}</version>
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>
-        <artifactId>mockito-all</artifactId>
-        <version>${mockito-all.version}</version>
+        <artifactId>mockito-core</artifactId>
+        <version>${mockito-core.version}</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
@@ -655,22 +735,33 @@
         <version>${hadoop.version}</version>
          <exclusions>
            <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
          </exclusions>
-     </dependency>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-auth</artifactId>
+        <version>${hadoop.version}</version>
+         <exclusions>
+           <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+         </exclusions>
+      </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-common</artifactId>
         <version>${hadoop.version}</version>
         <exclusions>
-            <exclusion>
+         <exclusion>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
           <exclusion>
@@ -698,7 +789,26 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.codahale.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+          </exclusion>
+        </exclusions>
+     </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-mapreduce-client-common</artifactId>
+        <version>${hadoop.version}</version>
+         <exclusions>
+            <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
         </exclusions>
@@ -713,14 +823,44 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
         </exclusions>
-     </dependency>
+      </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-minikdc</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-yarn-api</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-yarn-client</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-yarn-common</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-yarn-registry</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-yarn-server-web-common</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-yarn-server-web-proxy</artifactId>
         <version>${hadoop.version}</version>
       </dependency>
       <dependency>
@@ -737,10 +877,59 @@
         <groupId>org.apache.hbase</groupId>
         <artifactId>hbase-hadoop2-compat</artifactId>
         <version>${hbase.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>javax.servlet.jsp</groupId>
+            <artifactId>jsp-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.jruby</groupId>
+            <artifactId>jruby-complete</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.jboss.netty</groupId>
+            <artifactId>netty</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-core</artifactId>
+         </exclusion>
+          <exclusion>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-json</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-server</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.codahale.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hbase</groupId>
         <artifactId>hbase-server</artifactId>
+        <version>${hbase.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.glassfish.web</groupId>
+            <artifactId>javax.servlet.jsp</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hbase</groupId>
+        <artifactId>hbase-mapreduce</artifactId>
         <version>${hbase.version}</version>
       </dependency>
       <dependency>
@@ -769,6 +958,11 @@
         <artifactId>jamon-runtime</artifactId>
         <version>${jamon-runtime.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.xerial.snappy</groupId>
+        <artifactId>snappy-java</artifactId>
+        <version>${snappy.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -782,8 +976,14 @@
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.eclipse.jetty</groupId>
+          <artifactId>jetty-util</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 
@@ -800,10 +1000,6 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>${maven.compiler.plugin.version}</version>
-          <configuration>
-            <source>1.7</source>
-            <target>1.7</target>
-          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -835,6 +1031,7 @@
           <configuration>
             <downloadJavadocs>true</downloadJavadocs>
             <downloadSources>true</downloadSources>
+            <buildOutputDirectory>target/eclipse/classes</buildOutputDirectory>
             <workspaceActiveCodeStyleProfileName>Hive</workspaceActiveCodeStyleProfileName>
             <workspaceCodeStylesURL>${basedir}/dev-support/eclipse-styles.xml</workspaceCodeStylesURL>
           </configuration>
@@ -979,6 +1176,8 @@
         <artifactId>maven-checkstyle-plugin</artifactId>
         <configuration>
           <configLocation>${checkstyle.conf.dir}/checkstyle.xml</configLocation>
+          <propertyExpansion>config_loc=${checkstyle.conf.dir}</propertyExpansion>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
         </configuration>
       </plugin>
       <plugin>
@@ -1002,7 +1201,7 @@
             </configuration>
           </execution>
           <execution>
-            <id>enforce-banned-dependencies</id>
+            <id>enforce-banned-dependencies-licenses</id>
             <goals>
               <goal>enforce</goal>
             </goals>
@@ -1013,6 +1212,27 @@
                     <!--LGPL licenced library-->
                     <exclude>com.google.code.findbugs:annotations</exclude>
                   </excludes>
+                  <message>A banned license dependency was found!</message>
+                </bannedDependencies>
+              </rules>
+              <fail>true</fail>
+            </configuration>
+          </execution>
+          <execution>
+            <id>enforce-banned-dependencies-logging</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <bannedDependencies>
+                  <excludes>
+                    <!-- Move to SLF4J -->
+                    <exclude>commons-logging:commons-logging</exclude>
+                    <exclude>log4j:log4j</exclude>
+                  </excludes>
+                  <searchTransitive>false</searchTransitive>
+                  <message>A banned logging dependency was found!</message>
                 </bannedDependencies>
               </rules>
               <fail>true</fail>
@@ -1050,6 +1270,8 @@
             <HIVE_HADOOP_TEST_CLASSPATH>${test.hive.hadoop.classpath}</HIVE_HADOOP_TEST_CLASSPATH>
             <SPARK_SUBMIT_CLASSPATH>${spark.home}/lib/spark-assembly-${spark.version}-hadoop2.4.0.jar:${test.hive.hadoop.classpath}</SPARK_SUBMIT_CLASSPATH>
             <SPARK_OSX_TEST_OPTS>-Dorg.xerial.snappy.tempdir=/tmp -Dorg.xerial.snappy.lib.name=libsnappyjava.jnilib</SPARK_OSX_TEST_OPTS>
+            <SPARK_SCALA_VERSION>2.11</SPARK_SCALA_VERSION>
+            <SPARK_HOME>${spark.home}</SPARK_HOME>
             <PATH>${env.PATH}${test.extra.path}</PATH>
           </environmentVariables>
           <systemPropertyVariables>
@@ -1085,10 +1307,11 @@
             <test.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</test.warehouse.dir>
             <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
             <!-- EnforceReadOnlyTables hook and QTestUtil -->
-            <test.src.tables>src,src1,srcbucket,srcbucket2,src_json,src_thrift,src_sequencefile,srcpart,alltypesorc,src_hbase,cbo_t1,cbo_t2,cbo_t3,src_cbo,part,lineitem</test.src.tables>
+            <test.src.tables></test.src.tables>
             <java.security.krb5.conf>${test.conf.dir}/krb5.conf</java.security.krb5.conf>
             <!-- Required by spark to work around SPARK-14958 -->
             <antlr.version>${antlr.version}</antlr.version>
+            <hadoop.version>${hadoop.version}</hadoop.version>
             <qfile>${qfile}</qfile>
             <initScript>${initScript}</initScript>
             <clustermode>${clustermode}</clustermode>
@@ -1103,12 +1326,12 @@
 	<version>0.10</version>
 	<configuration>
 	  <excludes>
+	    <exclude>binary-package-licenses/**</exclude>
 	    <exclude>data/**</exclude>
 	    <exclude>conf/**</exclude>
 	    <exclude>checkstyle/**</exclude>
 	    <exclude>bin/**</exclude>
 	    <exclude>itests/**</exclude>
-	    <exclude>docs/**</exclude>
             <exclude>**/README.md</exclude>
             <exclude>**/*.iml</exclude>
 	    <exclude>**/*.txt</exclude>
@@ -1118,6 +1341,7 @@
 	    <exclude>**/*.properties</exclude>
 	    <exclude>**/*.q</exclude>
 	    <exclude>**/*.q.out</exclude>
+	    <exclude>**/*.q.out_*</exclude>
 	    <exclude>**/*.xml</exclude>
 	    <exclude>**/gen/**</exclude>
 	    <exclude>**/scripts/**</exclude>
@@ -1137,6 +1361,8 @@
 	    <exclude>**/*.html</exclude>
 	    <exclude>**/sit</exclude>
       <exclude>**/test/queries/**/*.sql</exclude>
+        <exclude>**/patchprocess/**</exclude>
+        <exclude>**/metastore_db/**</exclude>
 	  </excludes>
 	</configuration>
       </plugin>
@@ -1170,7 +1396,7 @@
                     <mkdir dir="${thrift.gen.dir}"/>
                     <for param="thrift.file">
                       <path>
-                        <fileset dir="." includes="if/*.thrift,if/test/*.thrift" />
+                        <fileset dir="." includes="if/*.thrift,if/test/*.thrift,src/main/thrift/*.thrift" />
                       </path>
                       <sequential>
                         <echo message="Generating Thrift code for @{thrift.file}"/>
@@ -1238,6 +1464,9 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
+            <configuration>
+              <additionalparam>-Xdoclint:none</additionalparam>
+            </configuration>
             <executions>
               <execution>
                 <id>attach-javadocs</id>
@@ -1253,6 +1482,21 @@
 
     <profile>
     <id>findbugs</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>findbugs-maven-plugin</artifactId>
+            <version>3.0.0</version>
+            <configuration>
+              <fork>true</fork>
+              <maxHeap>2048</maxHeap>
+              <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
+              <excludeFilterFile>${basedir}/${hive.path.to.root}/findbugs/findbugs-exclude.xml</excludeFilterFile>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
       <reporting>
         <plugins>
           <plugin>
@@ -1263,7 +1507,7 @@
               <fork>true</fork>
               <maxHeap>2048</maxHeap>
               <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
-              <excludeFilterFile>${project.parent.basedir}/findbugs/findbugs-exclude.xml</excludeFilterFile>
+              <excludeFilterFile>${basedir}/${hive.path.to.root}/findbugs/findbugs-exclude.xml</excludeFilterFile>
             </configuration>
           </plugin>
         </plugins>
@@ -1307,6 +1551,7 @@
       </build>
       <properties>
         <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop.cmd</hadoop.bin.path>
+        <!--suppress UnresolvedMavenProperty -->
         <test.extra.path>;${env.HADOOP_HOME}/bin</test.extra.path>
         <test.hive.hadoop.classpath>${project.build.directory}/deplibs/*</test.hive.hadoop.classpath>
         <test.tmp.dir.uri>file:///${test.tmp.dir}</test.tmp.dir.uri>

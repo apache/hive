@@ -17,9 +17,11 @@
 package org.apache.hadoop.hive.accumulo.serde;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.accumulo.core.security.ColumnVisibility;
@@ -58,12 +60,21 @@ public class AccumuloSerDeParameters extends AccumuloConnectionParameters {
 
   public static final String COMPOSITE_ROWID_FACTORY = "accumulo.composite.rowid.factory";
   public static final String COMPOSITE_ROWID_CLASS = "accumulo.composite.rowid";
+  public static final int DEFAULT_MAX_ROWIDS = 20000;
+  public static final String INDEX_SCANNER = "accumulo.index.scanner";
+  public static final String MAX_INDEX_ROWS = "accumulo.index.rows.max";
+  public static final String INDEXED_COLUMNS = "accumulo.indexed.columns";
+  public static final String INDEXTABLE_NAME = "accumulo.indextable.name";
+  private static final Set<String> EMPTY_SET = new HashSet<String>();
+
+
 
   protected final ColumnMapper columnMapper;
 
   private Properties tableProperties;
   private String serdeName;
   private LazySerDeParameters lazySerDeParameters;
+  private AccumuloIndexParameters indexParams;
   private AccumuloRowIdFactory rowIdFactory;
 
   public AccumuloSerDeParameters(Configuration conf, Properties tableProperties, String serdeName)
@@ -73,6 +84,7 @@ public class AccumuloSerDeParameters extends AccumuloConnectionParameters {
     this.serdeName = serdeName;
 
     lazySerDeParameters = new LazySerDeParameters(conf, tableProperties, serdeName);
+    indexParams = new AccumuloIndexParameters(conf);
 
     // The default encoding for this table when not otherwise specified
     String defaultStorage = tableProperties.getProperty(DEFAULT_STORAGE_TYPE);
@@ -135,9 +147,16 @@ public class AccumuloSerDeParameters extends AccumuloConnectionParameters {
     return new DefaultAccumuloRowIdFactory();
   }
 
+  public AccumuloIndexParameters getIndexParams() {
+    return indexParams;
+  }
+
   public LazySerDeParameters getSerDeParameters() {
+
     return lazySerDeParameters;
   }
+
+
 
   public Properties getTableProperties() {
     return tableProperties;

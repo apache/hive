@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,6 +24,8 @@ import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.VectorAppMasterEventDesc;
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Writable;
@@ -33,11 +35,13 @@ import com.google.common.annotations.VisibleForTesting;
 /**
  * App Master Event operator implementation.
  **/
-public class VectorAppMasterEventOperator extends AppMasterEventOperator {
+public class VectorAppMasterEventOperator extends AppMasterEventOperator
+    implements VectorizationOperator {
 
   private static final long serialVersionUID = 1L;
 
   private VectorizationContext vContext;
+  private VectorAppMasterEventDesc vectorDesc;
 
   // The above members are initialized by the constructor and must not be
   // transient.
@@ -50,10 +54,12 @@ public class VectorAppMasterEventOperator extends AppMasterEventOperator {
   protected transient Object[] singleRow;
 
   public VectorAppMasterEventOperator(
-      CompilationOpContext ctx, VectorizationContext vContext, OperatorDesc conf) {
+      CompilationOpContext ctx, OperatorDesc conf, VectorizationContext vContext,
+      VectorDesc vectorDesc) {
     super(ctx);
     this.conf = (AppMasterEventDesc) conf;
     this.vContext = vContext;
+    this.vectorDesc = (VectorAppMasterEventDesc) vectorDesc;
   }
 
   /** Kryo ctor. */
@@ -132,4 +138,15 @@ public class VectorAppMasterEventOperator extends AppMasterEventOperator {
 
     forward(data, rowInspector);
   }
+
+  @Override
+  public VectorizationContext getInputVectorizationContext() {
+    return vContext;
+  }
+
+  @Override
+  public VectorDesc getVectorDesc() {
+    return vectorDesc;
+  }
+
 }

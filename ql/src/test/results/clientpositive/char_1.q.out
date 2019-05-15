@@ -94,8 +94,8 @@ POSTHOOK: query: insert overwrite table char1_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char1
 POSTHOOK: Output: default@char1_1
-POSTHOOK: Lineage: char1_1.key SIMPLE [(char1)char1.FieldSchema(name:key, type:char(10), comment:null), ]
-POSTHOOK: Lineage: char1_1.value SIMPLE [(char1)char1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char1_1.key EXPRESSION [(char1)char1.FieldSchema(name:key, type:char(10), comment:null), ]
+POSTHOOK: Lineage: char1_1.value EXPRESSION [(char1)char1.FieldSchema(name:value, type:char(20), comment:null), ]
 PREHOOK: query: select key, value from char1_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char1_1
@@ -104,8 +104,8 @@ POSTHOOK: query: select key, value from char1_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char1_1
 #### A masked pattern was here ####
-0         	val_0               
-0         	val_0               
+0	val_0
+0	val_0
 PREHOOK: query: insert overwrite table char1 
   select key, cast(value as char(3)) from src order by key, value limit 2
 PREHOOK: type: QUERY

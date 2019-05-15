@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.parse;
 import java.io.Serializable;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.Hook;
 
@@ -36,6 +38,8 @@ import org.apache.hadoop.hive.ql.hooks.Hook;
  * Note that the lifetime of an instantiated hook object is scoped to
  * the analysis of a single statement; hook instances are never reused.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface HiveSemanticAnalyzerHook extends Hook {
   /**
    * Invoked before Hive performs its own semantic analysis on

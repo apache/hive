@@ -1,0 +1,46 @@
+PREHOOK: query: CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: dboutput
+POSTHOOK: query: CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: dboutput
+PREHOOK: query: FROM src
+SELECT
+#### A masked pattern was here ####
+'CREATE TABLE EXTERNAL_JDBC_NEGATIVE_TABLE1 ("ikey" INTEGER)' ),
+#### A masked pattern was here ####
+'INSERT INTO EXTERNAL_JDBC_NEGATIVE_TABLE1 ("ikey") VALUES (?,?,?,?)','20')
+limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: FROM src
+SELECT
+#### A masked pattern was here ####
+'CREATE TABLE EXTERNAL_JDBC_NEGATIVE_TABLE1 ("ikey" INTEGER)' ),
+#### A masked pattern was here ####
+'INSERT INTO EXTERNAL_JDBC_NEGATIVE_TABLE1 ("ikey") VALUES (?,?,?,?)','20')
+limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	1
+PREHOOK: query: CREATE EXTERNAL TABLE db1_ext_negative1
+(
+ ikey int,
+ bkey bigint
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user1",
+                "hive.sql.dbcp.password" = "passwd1",
+                "hive.sql.table" = "EXTERNAL_JDBC_NEGATIVE_TABLE1",
+                "hive.sql.dbcp.maxActive" = "1"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@db1_ext_negative1
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. java.lang.RuntimeException: MetaException(message:org.apache.hadoop.hive.serde2.SerDeException org.apache.hadoop.hive.serde2.SerDeException: Column numbers do not match. Remote table columns are [ikey] and declared table columns in Hive external table are [ikey, bkey])

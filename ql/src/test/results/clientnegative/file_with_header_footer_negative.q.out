@@ -1,19 +1,19 @@
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:default
 PREHOOK: Output: default@header_footer_table_1
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@header_footer_table_1
 PREHOOK: query: SELECT * FROM header_footer_table_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@header_footer_table_1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM header_footer_table_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Failed with exception java.io.IOException:java.io.IOException: footer number exceeds the limit defined in hive.file.max.footer

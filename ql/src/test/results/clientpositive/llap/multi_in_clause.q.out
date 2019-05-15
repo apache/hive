@@ -1,0 +1,40 @@
+PREHOOK: query: create table very_simple_table_for_in_test (name STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@very_simple_table_for_in_test
+POSTHOOK: query: create table very_simple_table_for_in_test (name STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@very_simple_table_for_in_test
+PREHOOK: query: insert into very_simple_table_for_in_test values ('a')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@very_simple_table_for_in_test
+POSTHOOK: query: insert into very_simple_table_for_in_test values ('a')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@very_simple_table_for_in_test
+POSTHOOK: Lineage: very_simple_table_for_in_test.name SCRIPT []
+PREHOOK: query: explain cbo
+select * from very_simple_table_for_in_test where name IN('g','r') AND name IN('a','b')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@very_simple_table_for_in_test
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from very_simple_table_for_in_test where name IN('g','r') AND name IN('a','b')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@very_simple_table_for_in_test
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(name=[$0])
+  HiveFilter(condition=[false])
+    HiveTableScan(table=[[default, very_simple_table_for_in_test]], table:alias=[very_simple_table_for_in_test])
+
+PREHOOK: query: select * from very_simple_table_for_in_test where name IN('g','r') AND name IN('a','b')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@very_simple_table_for_in_test
+#### A masked pattern was here ####
+POSTHOOK: query: select * from very_simple_table_for_in_test where name IN('g','r') AND name IN('a','b')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@very_simple_table_for_in_test
+#### A masked pattern was here ####

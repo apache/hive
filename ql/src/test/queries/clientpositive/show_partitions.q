@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 SHOW PARTITIONS srcpart;
 SHOW PARTITIONS default.srcpart;
 SHOW PARTITIONS srcpart PARTITION(hr='11');
@@ -19,7 +20,9 @@ ALTER TABLE srcpart ADD PARTITION (ds='4', hr='4');
 ALTER TABLE srcpart ADD PARTITION (ds='4', hr='5');
 
 -- from db1 to default db
+EXPLAIN SHOW PARTITIONS default.srcpart PARTITION(hr='11');
 SHOW PARTITIONS default.srcpart PARTITION(hr='11');
+EXPLAIN SHOW PARTITIONS default.srcpart PARTITION(ds='2008-04-08', hr='12');
 SHOW PARTITIONS default.srcpart PARTITION(ds='2008-04-08', hr='12');
 
 -- from db1 to db1

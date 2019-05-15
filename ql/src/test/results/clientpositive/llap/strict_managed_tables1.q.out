@@ -1,0 +1,176 @@
+PREHOOK: query: drop table if exists smt1_tab1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists smt1_tab1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists smt1_tab2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists smt1_tab2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table smt1_tab1 (c1 string, c2 string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smt1_tab1
+POSTHOOK: query: create table smt1_tab1 (c1 string, c2 string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smt1_tab1
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table smt1_tab1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@smt1_tab1
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table smt1_tab1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@smt1_tab1
+PREHOOK: query: select * from smt1_tab1 where c1 = '0'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smt1_tab1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from smt1_tab1 where c1 = '0'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smt1_tab1
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+PREHOOK: query: create table smt1_tab2 (c1 string, c2 string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smt1_tab2
+POSTHOOK: query: create table smt1_tab2 (c1 string, c2 string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smt1_tab2
+PREHOOK: query: insert into table smt1_tab2 select * from smt1_tab1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smt1_tab1
+PREHOOK: Output: default@smt1_tab2
+POSTHOOK: query: insert into table smt1_tab2 select * from smt1_tab1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smt1_tab1
+POSTHOOK: Output: default@smt1_tab2
+POSTHOOK: Lineage: smt1_tab2.c1 SIMPLE [(smt1_tab1)smt1_tab1.FieldSchema(name:c1, type:string, comment:null), ]
+POSTHOOK: Lineage: smt1_tab2.c2 SIMPLE [(smt1_tab1)smt1_tab1.FieldSchema(name:c2, type:string, comment:null), ]
+PREHOOK: query: select * from smt1_tab2 where c1 = '0'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smt1_tab2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from smt1_tab2 where c1 = '0'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smt1_tab2
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+PREHOOK: query: alter table smt1_tab1 set tblproperties('EXTERNAL'='TRUE')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@smt1_tab1
+PREHOOK: Output: default@smt1_tab1
+POSTHOOK: query: alter table smt1_tab1 set tblproperties('EXTERNAL'='TRUE')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@smt1_tab1
+POSTHOOK: Output: default@smt1_tab1
+PREHOOK: query: select * from smt1_tab1 where c1 = '0'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smt1_tab1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from smt1_tab1 where c1 = '0'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smt1_tab1
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+PREHOOK: query: alter table smt1_tab2 set tblproperties('EXTERNAL'='TRUE')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@smt1_tab2
+PREHOOK: Output: default@smt1_tab2
+POSTHOOK: query: alter table smt1_tab2 set tblproperties('EXTERNAL'='TRUE')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@smt1_tab2
+POSTHOOK: Output: default@smt1_tab2
+PREHOOK: query: select * from smt1_tab2 where c1 = '0'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smt1_tab2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from smt1_tab2 where c1 = '0'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smt1_tab2
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+PREHOOK: query: alter table smt1_tab1 set tblproperties('EXTERNAL'='FALSE', 'transactional'='true', 'transactional_properties'='insert_only')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@smt1_tab1
+PREHOOK: Output: default@smt1_tab1
+POSTHOOK: query: alter table smt1_tab1 set tblproperties('EXTERNAL'='FALSE', 'transactional'='true', 'transactional_properties'='insert_only')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@smt1_tab1
+POSTHOOK: Output: default@smt1_tab1
+PREHOOK: query: select * from smt1_tab1 where c1 = '0'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smt1_tab1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from smt1_tab1 where c1 = '0'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smt1_tab1
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+PREHOOK: query: alter table smt1_tab2 set tblproperties('EXTERNAL'='FALSE', 'transactional'='true', 'transactional_properties'='insert_only')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@smt1_tab2
+PREHOOK: Output: default@smt1_tab2
+POSTHOOK: query: alter table smt1_tab2 set tblproperties('EXTERNAL'='FALSE', 'transactional'='true', 'transactional_properties'='insert_only')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@smt1_tab2
+POSTHOOK: Output: default@smt1_tab2
+PREHOOK: query: select * from smt1_tab2 where c1 = '0'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smt1_tab2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from smt1_tab2 where c1 = '0'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smt1_tab2
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+PREHOOK: query: create temporary table smt1_tmp (c1 string, c2 string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smt1_tmp
+POSTHOOK: query: create temporary table smt1_tmp (c1 string, c2 string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smt1_tmp
+PREHOOK: query: insert into table smt1_tmp values ('123', '456')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@smt1_tmp
+POSTHOOK: query: insert into table smt1_tmp values ('123', '456')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@smt1_tmp
+POSTHOOK: Lineage: smt1_tmp.c1 SCRIPT []
+POSTHOOK: Lineage: smt1_tmp.c2 SCRIPT []
+PREHOOK: query: select * from smt1_tmp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smt1_tmp
+#### A masked pattern was here ####
+POSTHOOK: query: select * from smt1_tmp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smt1_tmp
+#### A masked pattern was here ####
+123	456
+PREHOOK: query: select c1, count(*) from smt1_tmp group by c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smt1_tmp
+#### A masked pattern was here ####
+POSTHOOK: query: select c1, count(*) from smt1_tmp group by c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smt1_tmp
+#### A masked pattern was here ####
+123	1

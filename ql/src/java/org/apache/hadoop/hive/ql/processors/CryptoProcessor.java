@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims;
 
@@ -37,7 +36,7 @@ import java.util.Arrays;
 
 /**
  * This class processes HADOOP commands used for HDFS encryption. It is meant to be run
- * only by Hive unit & queries tests.
+ * only by Hive unit &amp; queries tests.
  */
 public class CryptoProcessor implements CommandProcessor {
   public static final Logger LOG = LoggerFactory.getLogger(CryptoProcessor.class.getName());
@@ -82,11 +81,7 @@ public class CryptoProcessor implements CommandProcessor {
   }
 
   @Override
-  public void init() {
-  }
-
-  @Override
-  public CommandProcessorResponse run(String command) throws CommandNeedRetryException {
+  public CommandProcessorResponse run(String command) {
     String[] args = command.split("\\s+");
 
     if (args.length < 1) {
@@ -130,7 +125,7 @@ public class CryptoProcessor implements CommandProcessor {
     String bitLength = args.getOptionValue("bitLength", Integer.toString(DEFAULT_BIT_LENGTH));
 
     try {
-      encryptionShim.createKey(keyName, new Integer(bitLength));
+      encryptionShim.createKey(keyName, Integer.parseInt(bitLength));
     } catch (Exception e) {
       throw new Exception("Cannot create encryption key: " + e.getMessage());
     }
@@ -148,11 +143,11 @@ public class CryptoProcessor implements CommandProcessor {
     CommandLine args = parseCommandArgs(CREATE_ZONE_OPTIONS, params);
 
     String keyName = args.getOptionValue("keyName");
-    Path cryptoZone = new Path(args.getOptionValue("path"));
-    if (cryptoZone == null) {
-      throw new Exception("Cannot create encryption zone: Invalid path '"
-          + args.getOptionValue("path") + "'");
+    String cryptoZoneStr = args.getOptionValue("path");
+    if (cryptoZoneStr == null) {
+      throw new Exception("Cannot create encryption zone: Invalid path 'null'");
     }
+    Path cryptoZone = new Path(cryptoZoneStr);
 
     try {
       encryptionShim.createEncryptionZone(cryptoZone, keyName);
@@ -180,5 +175,9 @@ public class CryptoProcessor implements CommandProcessor {
     }
 
     writeTestOutput("Encryption key deleted: '" + keyName + "'");
+  }
+
+  @Override
+  public void close() throws Exception {
   }
 }

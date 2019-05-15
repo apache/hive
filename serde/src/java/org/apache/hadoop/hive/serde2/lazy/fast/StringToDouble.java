@@ -1,4 +1,21 @@
 /*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*
  *	Source code for the "strtod" library procedure.
  *
  * Copyright 1988-1992 Regents of the University of California
@@ -15,12 +32,12 @@ package org.apache.hadoop.hive.serde2.lazy.fast;
 import java.nio.charset.StandardCharsets;
 
 public class StringToDouble {
-  static int maxExponent = 511;	/* Largest possible base 10 exponent.  Any
+  static final int maxExponent = 511;	/* Largest possible base 10 exponent.  Any
 				 * exponent larger than this will already
 				 * produce underflow or overflow, so there's
 				 * no need to worry about additional digits.
 				 */
-  static double powersOf10[] = {	/* Table giving binary powers of 10.  Entry */
+  static final double powersOf10[] = {	/* Table giving binary powers of 10.  Entry */
       10.,			/* is 10^2^i.  Used to convert decimal */
       100.,			/* exponents into floating-point numbers. */
       1.0e4,
@@ -42,6 +59,9 @@ public class StringToDouble {
 
   public static double strtod(byte[] utf8, int offset, int length)
   {
+    if (length == 0) {
+      throw new NumberFormatException();
+    }
     boolean signIsNegative = true;
     boolean expSignIsNegative = true;
     double fraction;

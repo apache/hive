@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -64,7 +64,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
  *
  * The output of select in the left branch and output of the UDTF in the right
  * branch are then sent to the lateral view join (LVJ). In most cases, the UDTF
- * will generate > 1 row for every row received from the TS, while the left
+ * will generate &gt; 1 row for every row received from the TS, while the left
  * select operator will generate only one. For each row output from the TS, the
  * LVJ outputs all possible rows that can be created by joining the row from the
  * left select and one of the rows output from the UDTF.

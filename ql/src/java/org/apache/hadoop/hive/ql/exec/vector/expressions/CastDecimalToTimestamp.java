@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -33,16 +33,15 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 public class CastDecimalToTimestamp extends FuncDecimalToTimestamp {
   private static final long serialVersionUID = 1L;
 
-  private HiveDecimalWritable scratchHiveDecimalWritable1;
-  private HiveDecimalWritable scratchHiveDecimalWritable2;
+  private transient final HiveDecimalWritable scratchHiveDecimalWritable1 = new HiveDecimalWritable();
+  private transient final HiveDecimalWritable scratchHiveDecimalWritable2 = new HiveDecimalWritable();
 
-  public CastDecimalToTimestamp(int inputColumn, int outputColumn) {
-    super(inputColumn, outputColumn);
-    scratchHiveDecimalWritable1 = new HiveDecimalWritable();
-    scratchHiveDecimalWritable2 = new HiveDecimalWritable();
+  public CastDecimalToTimestamp(int inputColumn, int outputColumnNum) {
+    super(inputColumn, outputColumnNum);
   }
 
   public CastDecimalToTimestamp() {
+    super();
   }
 
   @Override

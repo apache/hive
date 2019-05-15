@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 -- create table with 1000 rows
 create table srcorc(key string, value string) stored as textfile;

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -28,7 +29,6 @@ import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
-import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +52,9 @@ public class TableDesc implements Serializable, Cloneable {
   private Class<? extends OutputFormat> outputFileFormatClass;
   private java.util.Properties properties;
   private Map<String, String> jobProperties;
+  private Map<String, String> jobSecrets;
+  public static final String SECRET_PREFIX = "TABLE_SECRET";
+  public static final String SECRET_DELIMIT = "#";
 
   public TableDesc() {
   }
@@ -67,7 +70,7 @@ public class TableDesc implements Serializable, Cloneable {
     this.inputFileFormatClass = inputFormatClass;
     outputFileFormatClass = HiveFileFormatUtils
         .getOutputFormatSubstitute(outputFormatClass);
-    this.properties = properties;
+    setProperties(properties);
   }
 
   public Class<? extends Deserializer> getDeserializerClass() {
@@ -125,10 +128,11 @@ public class TableDesc implements Serializable, Cloneable {
 
   @Explain(displayName = "properties", explainLevels = { Level.EXTENDED })
   public Map getPropertiesExplain() {
-    return HiveStringUtils.getPropertiesExplain(getProperties());
+    return PlanUtils.getPropertiesExplain(getProperties());
   }
 
   public void setProperties(final Properties properties) {
+    StringInternUtils.internValuesInMap((Map) properties);
     this.properties = properties;
   }
 
@@ -141,6 +145,14 @@ public class TableDesc implements Serializable, Cloneable {
     return jobProperties;
   }
 
+  public void setJobSecrets(Map<String, String> jobSecrets) {
+    this.jobSecrets = jobSecrets;
+  }
+
+  public Map<String, String> getJobSecrets() {
+    return jobSecrets;
+  }
+
   /**
    * @return the serdeClassName
    */
@@ -151,8 +163,12 @@ public class TableDesc implements Serializable, Cloneable {
 
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTableName() {
-    return properties
-        .getProperty(hive_metastoreConstants.META_TABLE_NAME);
+    return properties.getProperty(hive_metastoreConstants.META_TABLE_NAME);
+  }
+
+  @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getDbName() {
+    return properties.getProperty(hive_metastoreConstants.META_TABLE_DB);
   }
 
   @Explain(displayName = "input format")
@@ -167,6 +183,14 @@ public class TableDesc implements Serializable, Cloneable {
 
   public boolean isNonNative() {
     return (properties.getProperty(hive_metastoreConstants.META_TABLE_STORAGE) != null);
+  }
+
+  public boolean isSetBucketingVersion() {
+    return properties.getProperty(hive_metastoreConstants.TABLE_BUCKETING_VERSION) != null;
+  }
+  public int getBucketingVersion() {
+    return Utilities.getBucketingVersion(
+        properties.getProperty(hive_metastoreConstants.TABLE_BUCKETING_VERSION));
   }
 
   @Override
@@ -222,5 +246,12 @@ public class TableDesc implements Serializable, Cloneable {
     ret = ret && (jobProperties == null ? target.jobProperties == null :
       jobProperties.equals(target.jobProperties));
     return ret;
+  }
+
+  @Override
+  public String toString() {
+    return "TableDesc [inputFileFormatClass=" + inputFileFormatClass
+        + ", outputFileFormatClass=" + outputFileFormatClass + ", properties="
+        + properties + ", jobProperties=" + jobProperties + "]";
   }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -77,7 +77,7 @@ public abstract class HiveReduceExpressionsRule extends ReduceExpressionsRule {
    * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin}.
    */
   public static final ReduceExpressionsRule JOIN_INSTANCE =
-      new JoinReduceExpressionsRule(HiveJoin.class, HiveRelFactories.HIVE_BUILDER);
+      new JoinReduceExpressionsRule(HiveJoin.class, false, HiveRelFactories.HIVE_BUILDER);
 
   //~ Constructors -----------------------------------------------------------
 
@@ -109,10 +109,10 @@ public abstract class HiveReduceExpressionsRule extends ReduceExpressionsRule {
           Lists.newArrayList(filter.getCondition());
       RexNode newConditionExp;
       boolean reduced;
-      final RelMetadataQuery mq = RelMetadataQuery.instance();
+      final RelMetadataQuery mq = call.getMetadataQuery();
       final RelOptPredicateList predicates =
           mq.getPulledUpPredicates(filter.getInput());
-      if (reduceExpressions(filter, expList, predicates, true)) {
+      if (reduceExpressions(filter, expList, predicates, true, false)) {
         assert expList.size() == 1;
         newConditionExp = expList.get(0);
         reduced = true;

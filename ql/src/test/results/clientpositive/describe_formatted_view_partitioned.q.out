@@ -43,12 +43,10 @@ POSTHOOK: query: DESCRIBE FORMATTED view_partitioned PARTITION (value='val_86')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view_partitioned
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 value               	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -57,7 +55,7 @@ Database:           	default
 Table:              	view_partitioned    	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   

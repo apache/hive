@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.fetch.task.conversion=more;
 
 SET hive.metastore.disallow.incompatible.col.type.changes=false;

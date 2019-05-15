@@ -16,8 +16,10 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
+bucketing_version	2
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 totalSize	0
@@ -34,11 +36,13 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
 a	1
+bucketing_version	2
 c	3
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 totalSize	0
@@ -55,9 +59,11 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
+bucketing_version	2
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 totalSize	0
@@ -74,12 +80,14 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
 a	1
+bucketing_version	2
 c	3
 d	4
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 totalSize	0
@@ -96,10 +104,12 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
+bucketing_version	2
 c	3
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 totalSize	0
@@ -116,9 +126,11 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
+bucketing_version	2
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 totalSize	0
@@ -135,13 +147,15 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
 a	1
 b	2
+bucketing_version	2
 c	3
 d	4
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 totalSize	0
@@ -158,11 +172,13 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
 a	1
+bucketing_version	2
 c	3
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 totalSize	0
@@ -179,10 +195,12 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
 a	1
+bucketing_version	2
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 totalSize	0
@@ -218,6 +236,7 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testView
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
+bucketing_version	2
 #### A masked pattern was here ####
 propA	100
 propB	200
@@ -234,6 +253,7 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testView
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
+bucketing_version	2
 #### A masked pattern was here ####
 PREHOOK: query: ALTER VIEW vt.testView SET TBLPROPERTIES ('propA'='100', 'propC'='300', 'propD'='400')
 PREHOOK: type: ALTERVIEW_PROPERTIES
@@ -247,6 +267,7 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testView
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
+bucketing_version	2
 #### A masked pattern was here ####
 propA	100
 propC	300
@@ -264,6 +285,7 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testView
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
+bucketing_version	2
 #### A masked pattern was here ####
 propD	400
 #### A masked pattern was here ####
@@ -279,6 +301,7 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testView
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
+bucketing_version	2
 #### A masked pattern was here ####
 PREHOOK: query: ALTER VIEW vt.testView SET TBLPROPERTIES ('propA'='100', 'propB' = '200', 'propC'='300', 'propD'='400')
 PREHOOK: type: ALTERVIEW_PROPERTIES
@@ -292,6 +315,7 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testView
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
+bucketing_version	2
 #### A masked pattern was here ####
 propA	100
 propB	200
@@ -310,6 +334,7 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testView
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
+bucketing_version	2
 #### A masked pattern was here ####
 propA	100
 propB	200
@@ -326,6 +351,7 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testView
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
+bucketing_version	2
 #### A masked pattern was here ####
 propA	100
 #### A masked pattern was here ####

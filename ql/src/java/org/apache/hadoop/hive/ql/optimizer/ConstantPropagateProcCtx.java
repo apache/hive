@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -47,7 +47,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 /**
  * This class implements the processor context for Constant Propagate.
  *
- * ConstantPropagateProcCtx keeps track of propagated constants in a column->const map for each
+ * ConstantPropagateProcCtx keeps track of propagated constants in a column-&gt;const map for each
  * operator, enabling constants to be revolved across operators.
  */
 public class ConstantPropagateProcCtx implements NodeProcessorCtx {

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -34,13 +34,12 @@ import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerialize
 import org.apache.hadoop.hive.serde2.fast.SerializeWrite;
 import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinarySerializeWrite;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.Writable;
 import org.junit.Test;
 
 /*
@@ -83,8 +82,8 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
             keyColumnNullMarker, keyColumnNotNullMarker);
 
 
-    PrimitiveTypeInfo[] valuePrimitiveTypeInfos = valueSource.primitiveTypeInfos();
-    final int columnCount = valuePrimitiveTypeInfos.length;
+    TypeInfo[] valueTypeInfos = valueSource.typeInfos();
+    final int columnCount = valueTypeInfos.length;
 
     SerializeWrite valueSerializeWrite = new LazyBinarySerializeWrite(columnCount);
 
@@ -97,10 +96,7 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
         ((LazyBinarySerializeWrite) valueSerializeWrite).set(valueOutput);
 
       for (int index = 0; index < columnCount; index++) {
-
-        Writable writable = (Writable) valueRow[index];
-
-        VerifyFastRow.serializeWrite(valueSerializeWrite, valuePrimitiveTypeInfos[index], writable);
+        VerifyFastRow.serializeWrite(valueSerializeWrite, valueTypeInfos[index], valueRow[index]);
       }
 
       byte[] value = Arrays.copyOf(valueOutput.getData(), valueOutput.getLength());
@@ -109,17 +105,13 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
       byte[] key;
       if (random.nextBoolean() || verifyTable.getCount() == 0) {
         Object[] keyRow =
-            VectorRandomRowSource.randomRow(keyCount, random, keyPrimitiveObjectInspectorList,
-                keyPrimitiveCategories, keyPrimitiveTypeInfos);
+            VectorRandomRowSource.randomWritablePrimitiveRow(keyCount, random, keyPrimitiveTypeInfos);
 
         Output keyOutput = new Output();
         keySerializeWrite.set(keyOutput);
 
         for (int index = 0; index < keyCount; index++) {
-
-          Writable writable = (Writable) keyRow[index];
-
-          VerifyFastRow.serializeWrite(keySerializeWrite, keyPrimitiveTypeInfos[index], writable);
+          VerifyFastRow.serializeWrite(keySerializeWrite, keyPrimitiveTypeInfos[index], keyRow[index]);
         }
 
         key = Arrays.copyOf(keyOutput.getData(), keyOutput.getLength());
@@ -135,7 +127,7 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
       map.putRow(keyWritable, valueWritable);
       // verifyTable.verify(map);
     }
-    verifyTable.verify(map, hashTableKeyType, valuePrimitiveTypeInfos,
+    verifyTable.verify(map, hashTableKeyType, valueTypeInfos,
         doClipping, useExactBytes, random);
   }
 
@@ -152,9 +144,12 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
     VectorRandomRowSource valueSource = new VectorRandomRowSource();
-    valueSource.init(random);
 
-    int rowCount = 10000;
+    valueSource.init(
+        random, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
+
+    int rowCount = 1000;
     Object[][] rows = valueSource.randomRows(rowCount);
 
     addAndVerifyRows(valueSource, rows,
@@ -176,9 +171,12 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
     VectorRandomRowSource valueSource = new VectorRandomRowSource();
-    valueSource.init(random);
 
-    int rowCount = 10000;
+    valueSource.init(
+        random, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
+
+    int rowCount = 1000;
     Object[][] rows = valueSource.randomRows(rowCount);
 
     addAndVerifyRows(valueSource, rows,
@@ -200,9 +198,12 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
     VectorRandomRowSource valueSource = new VectorRandomRowSource();
-    valueSource.init(random);
 
-    int rowCount = 10000;
+    valueSource.init(
+        random, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
+
+    int rowCount = 1000;
     Object[][] rows = valueSource.randomRows(rowCount);
 
     addAndVerifyRows(valueSource, rows,
@@ -224,9 +225,12 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
     VectorRandomRowSource valueSource = new VectorRandomRowSource();
-    valueSource.init(random);
 
-    int rowCount = 10000;
+    valueSource.init(
+        random, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
+
+    int rowCount = 1000;
     Object[][] rows = valueSource.randomRows(rowCount);
 
     addAndVerifyRows(valueSource, rows,
@@ -248,9 +252,12 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
     VectorRandomRowSource valueSource = new VectorRandomRowSource();
-    valueSource.init(random);
 
-    int rowCount = 10000;
+    valueSource.init(
+        random, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
+
+    int rowCount = 1000;
     Object[][] rows = valueSource.randomRows(rowCount);
 
     addAndVerifyRows(valueSource, rows,
@@ -272,9 +279,12 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
     VectorRandomRowSource valueSource = new VectorRandomRowSource();
-    valueSource.init(random);
 
-    int rowCount = 10000;
+    valueSource.init(
+        random, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
+
+    int rowCount = 1000;
     Object[][] rows = valueSource.randomRows(rowCount);
 
     addAndVerifyRows(valueSource, rows,
@@ -296,9 +306,12 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
     VectorRandomRowSource valueSource = new VectorRandomRowSource();
-    valueSource.init(random);
 
-    int rowCount = 10000;
+    valueSource.init(
+        random, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
+
+    int rowCount = 1000;
     Object[][] rows = valueSource.randomRows(rowCount);
 
     addAndVerifyRows(valueSource, rows,
@@ -320,9 +333,12 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
     VectorRandomRowSource valueSource = new VectorRandomRowSource();
-    valueSource.init(random);
 
-    int rowCount = 10000;
+    valueSource.init(
+        random, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
+
+    int rowCount = 1000;
     Object[][] rows = valueSource.randomRows(rowCount);
 
     addAndVerifyRows(valueSource, rows,
@@ -344,9 +360,12 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
     VectorRandomRowSource valueSource = new VectorRandomRowSource();
-    valueSource.init(random);
 
-    int rowCount = 10000;
+    valueSource.init(
+        random, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
+
+    int rowCount = 1000;
     Object[][] rows = valueSource.randomRows(rowCount);
 
     addAndVerifyRows(valueSource, rows,
@@ -368,9 +387,12 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
     VectorRandomRowSource valueSource = new VectorRandomRowSource();
-    valueSource.init(random);
 
-    int rowCount = 10000;
+    valueSource.init(
+        random, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
+
+    int rowCount = 1000;
     Object[][] rows = valueSource.randomRows(rowCount);
 
     addAndVerifyRows(valueSource, rows,
@@ -392,9 +414,12 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
     VectorRandomRowSource valueSource = new VectorRandomRowSource();
-    valueSource.init(random);
 
-    int rowCount = 10000;
+    valueSource.init(
+        random, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
+
+    int rowCount = 1000;
     Object[][] rows = valueSource.randomRows(rowCount);
 
     addAndVerifyRows(valueSource, rows,
@@ -416,9 +441,12 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
     VectorRandomRowSource valueSource = new VectorRandomRowSource();
-    valueSource.init(random);
 
-    int rowCount = 10000;
+    valueSource.init(
+        random, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
+
+    int rowCount = 1000;
     Object[][] rows = valueSource.randomRows(rowCount);
 
     addAndVerifyRows(valueSource, rows,
@@ -441,9 +469,12 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
     VectorRandomRowSource valueSource = new VectorRandomRowSource();
-    valueSource.init(random);
 
-    int rowCount = 10000;
+    valueSource.init(
+        random, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
+
+    int rowCount = 1000;
     Object[][] rows = valueSource.randomRows(rowCount);
 
     addAndVerifyRows(valueSource, rows,
@@ -465,9 +496,12 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
     VectorRandomRowSource valueSource = new VectorRandomRowSource();
-    valueSource.init(random);
 
-    int rowCount = 10000;
+    valueSource.init(
+        random, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
+
+    int rowCount = 1000;
     Object[][] rows = valueSource.randomRows(rowCount);
 
     addAndVerifyRows(valueSource, rows,
@@ -489,9 +523,12 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
     VectorRandomRowSource valueSource = new VectorRandomRowSource();
-    valueSource.init(random);
 
-    int rowCount = 10000;
+    valueSource.init(
+        random, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
+
+    int rowCount = 1000;
     Object[][] rows = valueSource.randomRows(rowCount);
 
     addAndVerifyRows(valueSource, rows,
@@ -513,9 +550,12 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
     VectorRandomRowSource valueSource = new VectorRandomRowSource();
-    valueSource.init(random);
 
-    int rowCount = 10000;
+    valueSource.init(
+        random, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
+
+    int rowCount = 1000;
     Object[][] rows = valueSource.randomRows(rowCount);
 
     addAndVerifyRows(valueSource, rows,
@@ -537,9 +577,12 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
     VectorRandomRowSource valueSource = new VectorRandomRowSource();
-    valueSource.init(random);
 
-    int rowCount = 10000;
+    valueSource.init(
+        random, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
+
+    int rowCount = 1000;
     Object[][] rows = valueSource.randomRows(rowCount);
 
     addAndVerifyRows(valueSource, rows,
@@ -561,9 +604,12 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
     VectorRandomRowSource valueSource = new VectorRandomRowSource();
-    valueSource.init(random);
 
-    int rowCount = 10000;
+    valueSource.init(
+        random, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
+
+    int rowCount = 1000;
     Object[][] rows = valueSource.randomRows(rowCount);
 
     addAndVerifyRows(valueSource, rows,
@@ -585,9 +631,12 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
     VectorRandomRowSource valueSource = new VectorRandomRowSource();
-    valueSource.init(random);
 
-    int rowCount = 10000;
+    valueSource.init(
+        random, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
+
+    int rowCount = 1000;
     Object[][] rows = valueSource.randomRows(rowCount);
 
     addAndVerifyRows(valueSource, rows,
@@ -609,9 +658,12 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
     VectorRandomRowSource valueSource = new VectorRandomRowSource();
-    valueSource.init(random);
 
-    int rowCount = 10000;
+    valueSource.init(
+        random, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
+
+    int rowCount = 1000;
     Object[][] rows = valueSource.randomRows(rowCount);
 
     addAndVerifyRows(valueSource, rows,
@@ -633,9 +685,12 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
     VectorRandomRowSource valueSource = new VectorRandomRowSource();
-    valueSource.init(random);
 
-    int rowCount = 10000;
+    valueSource.init(
+        random, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
+
+    int rowCount = 1000;
     Object[][] rows = valueSource.randomRows(rowCount);
 
     addAndVerifyRows(valueSource, rows,
@@ -657,9 +712,12 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
     VectorRandomRowSource valueSource = new VectorRandomRowSource();
-    valueSource.init(random);
 
-    int rowCount = 10000;
+    valueSource.init(
+        random, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
+
+    int rowCount = 1000;
     Object[][] rows = valueSource.randomRows(rowCount);
 
     addAndVerifyRows(valueSource, rows,
@@ -681,9 +739,12 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
     VectorRandomRowSource valueSource = new VectorRandomRowSource();
-    valueSource.init(random);
 
-    int rowCount = 10000;
+    valueSource.init(
+        random, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
+
+    int rowCount = 1000;
     Object[][] rows = valueSource.randomRows(rowCount);
 
     addAndVerifyRows(valueSource, rows,
@@ -705,9 +766,12 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
     VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
 
     VectorRandomRowSource valueSource = new VectorRandomRowSource();
-    valueSource.init(random);
 
-    int rowCount = 10000;
+    valueSource.init(
+        random, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ false, /* isUnicodeOk */ false);
+
+    int rowCount = 1000;
     Object[][] rows = valueSource.randomRows(rowCount);
 
     addAndVerifyRows(valueSource, rows,

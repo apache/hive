@@ -1,3 +1,4 @@
+--! qt:dataset:lineitem
 set hive.compute.query.using.stats=false;
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
@@ -7,9 +8,13 @@ set hive.tez.dynamic.partition.pruning=true;
 set hive.tez.dynamic.semijoin.reduction=true;
 set hive.optimize.metadataonly=false;
 set hive.optimize.index.filter=true;
+set hive.tez.bigtable.minsize.semijoin.reduction=1;
+set hive.tez.min.bloom.filter.entries=1;
 
 set hive.vectorized.adaptor.usage.mode=none;
 set hive.vectorized.execution.enabled=true;
+set hive.stats.fetch.column.stats=true;
+set hive.tez.dynamic.semijoin.reduction.threshold=-999999999999;
 
 -- Create Tables
 create table dsrv2_big stored as orc as
@@ -34,7 +39,7 @@ EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.partkey_bigint
 select count(*) from dsrv2_big a join dsrv2_small b on (a.partkey_bigint = b.partkey_bigint);
 
 -- single key (decimal)
-EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.partkey_decimal = b.partkey_decimal);
+EXPLAIN VECTORIZATION DETAIL select count(*) from dsrv2_big a join dsrv2_small b on (a.partkey_decimal = b.partkey_decimal);
 select count(*) from dsrv2_big a join dsrv2_small b on (a.partkey_decimal = b.partkey_decimal);
 
 -- single key (double)

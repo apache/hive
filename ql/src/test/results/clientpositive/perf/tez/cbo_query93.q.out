@@ -1,0 +1,59 @@
+PREHOOK: query: explain cbo
+select  ss_customer_sk
+            ,sum(act_sales) sumsales
+      from (select ss_item_sk
+                  ,ss_ticket_number
+                  ,ss_customer_sk
+                  ,case when sr_return_quantity is not null then (ss_quantity-sr_return_quantity)*ss_sales_price
+                                                            else (ss_quantity*ss_sales_price) end act_sales
+            from store_sales left outer join store_returns on (sr_item_sk = ss_item_sk
+                                                               and sr_ticket_number = ss_ticket_number)
+                ,reason
+            where sr_reason_sk = r_reason_sk
+              and r_reason_desc = 'Did not like the warranty') t
+      group by ss_customer_sk
+      order by sumsales, ss_customer_sk
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@reason
+PREHOOK: Input: default@store_returns
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select  ss_customer_sk
+            ,sum(act_sales) sumsales
+      from (select ss_item_sk
+                  ,ss_ticket_number
+                  ,ss_customer_sk
+                  ,case when sr_return_quantity is not null then (ss_quantity-sr_return_quantity)*ss_sales_price
+                                                            else (ss_quantity*ss_sales_price) end act_sales
+            from store_sales left outer join store_returns on (sr_item_sk = ss_item_sk
+                                                               and sr_ticket_number = ss_ticket_number)
+                ,reason
+            where sr_reason_sk = r_reason_sk
+              and r_reason_desc = 'Did not like the warranty') t
+      group by ss_customer_sk
+      order by sumsales, ss_customer_sk
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@reason
+POSTHOOK: Input: default@store_returns
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(sort0=[$1], sort1=[$0], dir0=[ASC], dir1=[ASC], fetch=[100])
+  HiveProject(ss_customer_sk=[$0], $f1=[$1])
+    HiveAggregate(group=[{0}], agg#0=[sum($1)])
+      HiveProject(ss_customer_sk=[$1], act_sales=[CASE(IS NOT NULL($8), *(CAST(-($3, $8)):DECIMAL(10, 0), $4), *(CAST($3):DECIMAL(10, 0), $4))])
+        HiveJoin(condition=[AND(=($5, $0), =($7, $2))], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveProject(ss_item_sk=[$2], ss_customer_sk=[$3], ss_ticket_number=[$9], ss_quantity=[$10], ss_sales_price=[$13])
+            HiveFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($9))])
+              HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+          HiveJoin(condition=[=($1, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveProject(sr_item_sk=[$2], sr_reason_sk=[$8], sr_ticket_number=[$9], sr_return_quantity=[$10])
+              HiveFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($9), IS NOT NULL($8))])
+                HiveTableScan(table=[[default, store_returns]], table:alias=[store_returns])
+            HiveProject(r_reason_sk=[$0])
+              HiveFilter(condition=[AND(=($2, _UTF-16LE'Did not like the warranty'), IS NOT NULL($0))])
+                HiveTableScan(table=[[default, reason]], table:alias=[reason])
+

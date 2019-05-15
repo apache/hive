@@ -1,3 +1,4 @@
+--! qt:dataset:src_thrift
 FROM src_thrift
 SELECT size(src_thrift.lint, src_thrift.lintstring), 
        size()

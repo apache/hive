@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -25,9 +25,10 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
- * This is a generated class to evaluate a <OperatorSymbol> comparison on a vector of decimal
+ * This is a generated class to evaluate a comparison on a vector of decimal
  * values.
  */
 public class <ClassName> extends VectorExpression {
@@ -38,33 +39,39 @@ public class <ClassName> extends VectorExpression {
   private HiveDecimal value;
 
   public <ClassName>(int colNum, HiveDecimal value) {
+    super();
     this.colNum = colNum;
     this.value = value;
   }
 
   public <ClassName>() {
+    super();
+
+    // Dummy final assignments.
+    colNum = -1;
+    value = null;
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
+
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
+
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
     DecimalColumnVector inputColVector = (DecimalColumnVector) batch.cols[colNum];
     int[] sel = batch.selected;
-    boolean[] nullPos = inputColVector.isNull;
-    int n = batch.size;
-    HiveDecimalWritable[] vector = inputColVector.vector;
+    boolean[] inputIsNull = inputColVector.isNull;
 
-    // return immediately if batch is empty
-    if (n == 0) {
-      return;
-    }
+    HiveDecimalWritable[] vector = inputColVector.vector;
 
     if (inputColVector.noNulls) {
       if (inputColVector.isRepeating) {
-
-        // All must be selected otherwise size would be zero. Repeating property will not change.
         if (!(DecimalUtil.compare(vector[0], value) <OperatorSymbol> 0)) {
 
           // Entire batch is filtered out.
@@ -93,9 +100,7 @@ public class <ClassName> extends VectorExpression {
       }
     } else {
       if (inputColVector.isRepeating) {
-
-        // All must be selected otherwise size would be zero. Repeating property will not change.
-        if (!nullPos[0]) {
+        if (!inputIsNull[0]) {
           if (!(DecimalUtil.compare(vector[0], value) <OperatorSymbol> 0)) {
 
             // Entire batch is filtered out.
@@ -108,7 +113,7 @@ public class <ClassName> extends VectorExpression {
         int newSize = 0;
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          if (!nullPos[i]) {
+          if (!inputIsNull[i]) {
            if (DecimalUtil.compare(vector[i], value) <OperatorSymbol> 0) {
              sel[newSize++] = i;
            }
@@ -120,7 +125,7 @@ public class <ClassName> extends VectorExpression {
       } else {
         int newSize = 0;
         for(int i = 0; i != n; i++) {
-          if (!nullPos[i]) {
+          if (!inputIsNull[i]) {
             if (DecimalUtil.compare(vector[i], value) <OperatorSymbol> 0) {
               sel[newSize++] = i;
             }
@@ -135,18 +140,8 @@ public class <ClassName> extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return -1;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", val " + value.toString();
+    return getColumnParamString(0, colNum) + ", val " + value.toString();
   }
 
   @Override

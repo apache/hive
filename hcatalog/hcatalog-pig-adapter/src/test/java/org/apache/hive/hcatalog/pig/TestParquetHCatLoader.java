@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,12 +18,7 @@
  */
 package org.apache.hive.hcatalog.pig;
 
-import java.io.IOException;
-
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.io.IOConstants;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,54 +27,5 @@ public class TestParquetHCatLoader extends AbstractHCatLoaderTest {
   @Override
   String getStorageFormat() {
     return IOConstants.PARQUET;
-  }
-
-  @Override
-  @Test
-  @Ignore("Temporarily disable until fixed")
-  public void testReadDataBasic() throws IOException {
-    super.testReadDataBasic();
-  }
-
-  @Override
-  @Test
-  @Ignore("Temporarily disable until fixed")
-  public void testReadPartitionedBasic() throws IOException, CommandNeedRetryException {
-    super.testReadPartitionedBasic();
-  }
-
-  @Override
-  @Test
-  @Ignore("Temporarily disable until fixed")
-  public void testProjectionsBasic() throws IOException {
-    super.testProjectionsBasic();
-  }
-
-  /**
-   * Tests the failure case caused by HIVE-10752
-   * @throws Exception
-   */
-  @Override
-  @Test
-  @Ignore("Temporarily disable until fixed")
-  public void testColumnarStorePushdown2() throws Exception {
-    super.testColumnarStorePushdown2();
-  }
-
-  @Override
-  @Test
-  @Ignore("Temporarily disable until fixed")
-  public void testReadMissingPartitionBasicNeg() throws IOException, CommandNeedRetryException {
-    super.testReadMissingPartitionBasicNeg();
-  }
-
-  /**
-   * Test if we can read a date partitioned table
-   */
-  @Override
-  @Test
-  @Ignore("Temporarily disable until fixed")
-  public void testDatePartitionPushUp() throws Exception {
-    super.testDatePartitionPushUp();
   }
 }

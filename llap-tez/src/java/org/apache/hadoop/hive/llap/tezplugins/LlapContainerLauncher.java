@@ -30,14 +30,20 @@ public class LlapContainerLauncher extends ContainerLauncher {
 
   @Override
   public void launchContainer(ContainerLaunchRequest containerLaunchRequest) {
-    LOG.info("No-op launch for container: " + containerLaunchRequest.getContainerId() +
-        " succeeded on host: " + containerLaunchRequest.getNodeId());
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("No-op launch for container: " +
+          containerLaunchRequest.getContainerId() +
+          " succeeded on host: " + containerLaunchRequest.getNodeId());
+    }
     getContext().containerLaunched(containerLaunchRequest.getContainerId());
   }
 
   @Override
   public void stopContainer(ContainerStopRequest containerStopRequest) {
-    LOG.info("DEBUG: Ignoring STOP_REQUEST for event: " + containerStopRequest);
-    getContext().containerStopRequested(containerStopRequest.getContainerId());
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("No-op stopContainer invocation for containerId={}",
+          containerStopRequest.getContainerId());
+    }
+    // Nothing to do here.
   }
 }

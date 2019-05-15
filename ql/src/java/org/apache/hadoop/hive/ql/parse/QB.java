@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,9 +30,9 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableDesc;
+import org.apache.hadoop.hive.ql.ddl.view.CreateViewDesc;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
-import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
 
 /**
  * Implementation of the query block.
@@ -60,7 +60,6 @@ public class QB {
   private boolean isAnalyzeRewrite;
   private CreateTableDesc tblDesc = null; // table descriptor of the final
   private CreateTableDesc directoryDesc = null ;
-  private List<Path> encryptedTargetTablePaths;
   private boolean insideView;
   private Set<String> aliasInsideView;
 
@@ -424,21 +423,8 @@ public class QB {
     return viewDesc != null && !viewDesc.isMaterialized();
   }
 
-  void addEncryptedTargetTablePath(Path p) {
-    if(encryptedTargetTablePaths == null) {
-      encryptedTargetTablePaths = new ArrayList<>();
-    }
-    encryptedTargetTablePaths.add(p);
-  }
-  /**
-   * List of dbName.tblName of encrypted target tables of insert statement
-   * Used to support Insert ... values(...)
-   */
-  List<Path> getEncryptedTargetTablePaths() {
-    if(encryptedTargetTablePaths == null) {
-      return Collections.emptyList();
-    }
-    return encryptedTargetTablePaths;
+  public boolean isMultiDestQuery() {
+    return qbp != null && qbp.getClauseNamesForDest() != null && qbp.getClauseNamesForDest().size() > 1;
   }
 
   public HashMap<String, Table> getViewToTabSchema() {

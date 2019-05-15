@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -219,8 +219,8 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     if (tableSize == 0) {
       tableSize = 1;
     }
-    LOG.info("Mapjoin " + mapJoinOp + "(bucket map join = )" + joinConf.isBucketMapJoin()
-    + ", pos: " + pos + " --> " + parentWork.getName() + " (" + keyCount
+    LOG.info("Mapjoin " + mapJoinOp + "(bucket map join = " + joinConf.isBucketMapJoin()
+    + "), pos: " + pos + " --> " + parentWork.getName() + " (" + keyCount
     + " keys estimated from " + rowCount + " rows, " + bucketCount + " buckets)");
     joinConf.getParentToInput().put(pos, parentWork.getName());
     if (keyCount != Long.MAX_VALUE) {
@@ -270,7 +270,11 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
         }
       }
     } else if (mapJoinOp.getConf().isDynamicPartitionHashJoin()) {
-      edgeType = EdgeType.CUSTOM_SIMPLE_EDGE;
+      if (parentRS.getConf().isForwarding()) {
+        edgeType = EdgeType.ONE_TO_ONE_EDGE;
+      } else {
+        edgeType = EdgeType.CUSTOM_SIMPLE_EDGE;
+      }
     }
     if (edgeType == EdgeType.CUSTOM_EDGE) {
       // disable auto parallelism for bucket map joins
@@ -290,7 +294,7 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
 
         ReduceSinkOperator r = null;
         if (context.connectedReduceSinks.contains(parentRS)) {
-          LOG.debug("Cloning reduce sink for multi-child broadcast edge");
+          LOG.debug("Cloning reduce sink " + parentRS + " for multi-child broadcast edge");
           // we've already set this one up. Need to clone for the next work.
           r = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(
               parentRS.getCompilationOpContext(),

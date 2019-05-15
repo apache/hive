@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedUDAFs;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -74,8 +76,22 @@ public class GenericUDAFStd extends GenericUDAFVariance {
    * and overriding the terminate() method of the evaluator.
    *
    */
+  @VectorizedUDAFs({
+    VectorUDAFVarLong.class, VectorUDAFVarLongComplete.class,
+    VectorUDAFVarDouble.class, VectorUDAFVarDoubleComplete.class,
+    VectorUDAFVarDecimal.class, VectorUDAFVarDecimalComplete.class,
+    VectorUDAFVarTimestamp.class, VectorUDAFVarTimestampComplete.class,
+    VectorUDAFVarPartial2.class, VectorUDAFVarFinal.class})
   public static class GenericUDAFStdEvaluator extends
       GenericUDAFVarianceEvaluator {
+
+    /*
+     * Calculate the std result when count > 1.  Public so vectorization code can
+     * use it, etc.
+     */
+    public static double calculateStdResult(double variance, long count) {
+      return Math.sqrt(variance / count);
+    }
 
     @Override
     public Object terminate(AggregationBuffer agg) throws HiveException {
@@ -85,7 +101,8 @@ public class GenericUDAFStd extends GenericUDAFVariance {
         return null;
       } else {
         if (myagg.count > 1) {
-          getResult().set(Math.sqrt(myagg.variance / (myagg.count)));
+          getResult().set(
+              calculateStdResult(myagg.variance, myagg.count));
         } else { // for one element the variance is always 0
           getResult().set(0);
         }

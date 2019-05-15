@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,7 +28,7 @@ package org.apache.hadoop.hive.ql.plan;
  */
 public class VectorReduceSinkDesc extends AbstractVectorDesc  {
 
-  private static long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
   public static enum ReduceSinkKeyType {
     NONE,
@@ -64,13 +64,16 @@ public class VectorReduceSinkDesc extends AbstractVectorDesc  {
 
   private boolean isVectorizationReduceSinkNativeEnabled;
   private String engine;
-  private boolean acidChange;
-  private boolean hasBuckets;
-  private boolean hasTopN;
-  private boolean useUniformHash;
+  private boolean isEmptyKey;
+  private boolean isEmptyValue;
+  private boolean isEmptyBuckets;
+  private boolean isEmptyPartitions;
+  private boolean hasPTFTopN;
   private boolean hasDistinctColumns;
   private boolean isKeyBinarySortable;
   private boolean isValueLazyBinary;
+  private boolean isUnexpectedCondition;
+  private boolean isAcidChange;
 
   /*
    * The following conditions are for native Vector ReduceSink.
@@ -87,29 +90,35 @@ public class VectorReduceSinkDesc extends AbstractVectorDesc  {
   public String getEngine() {
     return engine;
   }
-  public void setAcidChange(boolean acidChange) {
-    this.acidChange = acidChange;
+  public void setIsEmptyKey(boolean isEmptyKey) {
+    this.isEmptyKey = isEmptyKey;
   }
-  public boolean getAcidChange() {
-    return acidChange;
+  public boolean getIsEmptyKey() {
+    return isEmptyKey;
   }
-  public void setHasBuckets(boolean hasBuckets) {
-    this.hasBuckets = hasBuckets;
-  }  
-  public boolean getHasBuckets() {
-    return hasBuckets;
+  public void setIsEmptyValue(boolean isEmptyValue) {
+    this.isEmptyValue = isEmptyValue;
   }
-  public void setHasTopN(boolean hasTopN) {
-    this.hasTopN = hasTopN;
+  public boolean getIsEmptyValue() {
+    return isEmptyValue;
   }
-  public boolean getHasTopN() {
-    return hasTopN;
+  public void setIsEmptyBuckets(boolean isEmptyBuckets) {
+    this.isEmptyBuckets = isEmptyBuckets;
   }
-  public void setUseUniformHash(boolean useUniformHash) {
-    this.useUniformHash = useUniformHash;
+  public boolean getIsEmptyBuckets() {
+    return isEmptyBuckets;
   }
-  public boolean getUseUniformHash() {
-    return useUniformHash;
+  public void setIsEmptyPartitions(boolean isEmptyPartitions) {
+    this.isEmptyPartitions = isEmptyPartitions;
+  }
+  public boolean getIsEmptyPartitions() {
+    return isEmptyPartitions;
+  }
+  public void setHasPTFTopN(boolean hasPTFTopN) {
+    this.hasPTFTopN = hasPTFTopN;
+  }
+  public boolean getHasPTFTopN() {
+    return hasPTFTopN;
   }
   public void setHasDistinctColumns(boolean hasDistinctColumns) {
     this.hasDistinctColumns = hasDistinctColumns;
@@ -128,5 +137,19 @@ public class VectorReduceSinkDesc extends AbstractVectorDesc  {
   }
   public boolean getIsValueLazyBinary() {
     return isValueLazyBinary;
+  }
+  public void setIsUnexpectedCondition(boolean isUnexpectedCondition) {
+    this.isUnexpectedCondition = isUnexpectedCondition;
+  }
+  public boolean getIsUnexpectedCondition() {
+    return isUnexpectedCondition;
+  }
+
+  public void setIsAcidChange(boolean isAcidChange) {
+    this.isAcidChange = isAcidChange;
+  }
+
+  public boolean getIsAcidChange() {
+    return isAcidChange;
   }
 }

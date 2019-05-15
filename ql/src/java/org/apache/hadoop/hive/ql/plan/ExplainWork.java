@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,6 +26,8 @@ import java.util.List;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.VectorizationDetailLevel;
@@ -39,9 +41,12 @@ public class ExplainWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private Path resFile;
-  private ArrayList<Task<? extends Serializable>> rootTasks;
-  private Task<? extends Serializable> fetchTask;
+  private ArrayList<Task<?>> rootTasks;
+  private Task<?> fetchTask;
+  private ASTNode astTree;
+  private String astStringTree;
   private HashSet<ReadEntity> inputs;
+  private HashSet<WriteEntity> outputs;
   private ParseContext pCtx;
 
   private ExplainConfiguration config;
@@ -49,6 +54,9 @@ public class ExplainWork implements Serializable {
   boolean appendTaskType;
 
   String cboInfo;
+  String cboPlan;
+
+  private String optimizedSQL;
 
   private transient BaseSemanticAnalyzer analyzer;
 
@@ -57,20 +65,31 @@ public class ExplainWork implements Serializable {
 
   public ExplainWork(Path resFile,
       ParseContext pCtx,
-      List<Task<? extends Serializable>> rootTasks,
-      Task<? extends Serializable> fetchTask,
+      List<Task<?>> rootTasks,
+      Task<?> fetchTask,
+      ASTNode astTree,
       BaseSemanticAnalyzer analyzer,
       ExplainConfiguration config,
-      String cboInfo) {
+      String cboInfo,
+      String optimizedSQL,
+      String cboPlan) {
     this.resFile = resFile;
-    this.rootTasks = new ArrayList<Task<? extends Serializable>>(rootTasks);
+    this.rootTasks = new ArrayList<Task<?>>(rootTasks);
     this.fetchTask = fetchTask;
+    if(astTree != null) {
+      this.astTree = astTree;
+    }
     this.analyzer = analyzer;
     if (analyzer != null) {
       this.inputs = analyzer.getInputs();
     }
+    if (analyzer != null) {
+      this.outputs = analyzer.getAllOutputs();
+    }
     this.pCtx = pCtx;
     this.cboInfo = cboInfo;
+    this.optimizedSQL = optimizedSQL;
+    this.cboPlan = cboPlan;
     this.config = config;
   }
 
@@ -82,19 +101,19 @@ public class ExplainWork implements Serializable {
     this.resFile = resFile;
   }
 
-  public ArrayList<Task<? extends Serializable>> getRootTasks() {
+  public ArrayList<Task<?>> getRootTasks() {
     return rootTasks;
   }
 
-  public void setRootTasks(ArrayList<Task<? extends Serializable>> rootTasks) {
+  public void setRootTasks(ArrayList<Task<?>> rootTasks) {
     this.rootTasks = rootTasks;
   }
 
-  public Task<? extends Serializable> getFetchTask() {
+  public Task<?> getFetchTask() {
     return fetchTask;
   }
 
-  public void setFetchTask(Task<? extends Serializable> fetchTask) {
+  public void setFetchTask(Task<?> fetchTask) {
     this.fetchTask = fetchTask;
   }
 
@@ -104,6 +123,25 @@ public class ExplainWork implements Serializable {
 
   public void setInputs(HashSet<ReadEntity> inputs) {
     this.inputs = inputs;
+  }
+
+  public HashSet<WriteEntity> getOutputs() {
+    return outputs;
+  }
+
+  public void setOutputs(HashSet<WriteEntity> outputs) {
+    this.outputs = outputs;
+  }
+
+  public ASTNode getAstTree() {
+    return astTree;
+  }
+
+  public String getAstStringTree() {
+    if (astStringTree == null) {
+      astStringTree = astTree.dump();
+    }
+    return astStringTree;
   }
 
   public boolean getExtended() {
@@ -130,12 +168,20 @@ public class ExplainWork implements Serializable {
     return config.getVectorizationDetailLevel();
   }
 
+  public boolean isDebug() {
+    return config.isDebug();
+  }
+
   public ParseContext getParseContext() {
     return pCtx;
   }
 
   public void setParseContext(ParseContext pCtx) {
     this.pCtx = pCtx;
+  }
+
+  public boolean isCbo() {
+    return config.isCbo();
   }
 
   public boolean isLogical() {
@@ -170,6 +216,22 @@ public class ExplainWork implements Serializable {
     this.cboInfo = cboInfo;
   }
 
+  public String getOptimizedSQL() {
+    return optimizedSQL;
+  }
+
+  public void setOptimizedSQL(String optimizedSQL) {
+    this.optimizedSQL = optimizedSQL;
+  }
+
+  public String getCboPlan() {
+    return cboPlan;
+  }
+
+  public void setCboPlan(String cboPlan) {
+    this.cboPlan = cboPlan;
+  }
+
   public ExplainConfiguration getConfig() {
     return config;
   }
@@ -178,4 +240,10 @@ public class ExplainWork implements Serializable {
     this.config = config;
   }
 
+  public boolean isLocks() {
+    return config.isLocks();
+  }
+  public boolean isAst() {
+    return config.isAst();
+  }
 }

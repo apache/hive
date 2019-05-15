@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,7 +30,7 @@ public interface Node {
    * Gets the vector of children nodes. This is used in the graph walker
    * algorithms.
    * 
-   * @return List<? extends Node>
+   * @return List&lt;? extends Node&gt;
    */
   List<? extends Node> getChildren();
 

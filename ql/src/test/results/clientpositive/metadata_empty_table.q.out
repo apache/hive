@@ -24,11 +24,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@onerow_table
 PREHOOK: query: insert into table onerow_table values(0)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@onerow_table
 POSTHOOK: query: insert into table onerow_table values(0)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@onerow_table
-POSTHOOK: Lineage: onerow_table.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: onerow_table.i SCRIPT []
 PREHOOK: query: select (1=1) from nullscan_table group by (1=1)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nullscan_table

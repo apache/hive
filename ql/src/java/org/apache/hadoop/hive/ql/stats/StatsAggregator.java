@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,18 +18,19 @@
 
 package org.apache.hadoop.hive.ql.stats;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 /**
  * An interface for any possible implementation for gathering statistics.
  */
-
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface StatsAggregator {
 
   /**
    * This method connects to the temporary storage.
    *
-   * @param hconf
-   *          HiveConf that contains the connection parameters.
-   * @param sourceTask
    * @return true if connection is successful, false otherwise.
    */
   public boolean connect(StatsCollectionContext scc);

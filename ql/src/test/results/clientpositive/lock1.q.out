@@ -1,58 +1,58 @@
-PREHOOK: query: drop table tstsrc
+PREHOOK: query: drop table tstsrc_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table tstsrc
+POSTHOOK: query: drop table tstsrc_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table tstsrc like src
+PREHOOK: query: create table tstsrc_n1 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tstsrc
-POSTHOOK: query: create table tstsrc like src
+PREHOOK: Output: default@tstsrc_n1
+POSTHOOK: query: create table tstsrc_n1 like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tstsrc
-PREHOOK: query: insert overwrite table tstsrc select key, value from src
+POSTHOOK: Output: default@tstsrc_n1
+PREHOOK: query: insert overwrite table tstsrc_n1 select key, value from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tstsrc
-POSTHOOK: query: insert overwrite table tstsrc select key, value from src
+PREHOOK: Output: default@tstsrc_n1
+POSTHOOK: query: insert overwrite table tstsrc_n1 select key, value from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tstsrc
-POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@tstsrc_n1
+POSTHOOK: Lineage: tstsrc_n1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc_n1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SHOW LOCKS
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: SHOW LOCKS
 POSTHOOK: type: SHOWLOCKS
-PREHOOK: query: SHOW LOCKS tstsrc
+PREHOOK: query: SHOW LOCKS tstsrc_n1
 PREHOOK: type: SHOWLOCKS
-POSTHOOK: query: SHOW LOCKS tstsrc
+POSTHOOK: query: SHOW LOCKS tstsrc_n1
 POSTHOOK: type: SHOWLOCKS
-PREHOOK: query: LOCK TABLE tstsrc shared
+PREHOOK: query: LOCK TABLE tstsrc_n1 shared
 PREHOOK: type: LOCKTABLE
-POSTHOOK: query: LOCK TABLE tstsrc shared
+POSTHOOK: query: LOCK TABLE tstsrc_n1 shared
 POSTHOOK: type: LOCKTABLE
 PREHOOK: query: SHOW LOCKS
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: SHOW LOCKS
 POSTHOOK: type: SHOWLOCKS
-default@tstsrc	SHARED
-PREHOOK: query: SHOW LOCKS tstsrc
+default@tstsrc_n1	SHARED
+PREHOOK: query: SHOW LOCKS tstsrc_n1
 PREHOOK: type: SHOWLOCKS
-POSTHOOK: query: SHOW LOCKS tstsrc
+POSTHOOK: query: SHOW LOCKS tstsrc_n1
 POSTHOOK: type: SHOWLOCKS
-default@tstsrc	SHARED
-PREHOOK: query: SHOW LOCKS tstsrc extended
+default@tstsrc_n1	SHARED
+PREHOOK: query: SHOW LOCKS tstsrc_n1 extended
 PREHOOK: type: SHOWLOCKS
-POSTHOOK: query: SHOW LOCKS tstsrc extended
+POSTHOOK: query: SHOW LOCKS tstsrc_n1 extended
 POSTHOOK: type: SHOWLOCKS
-default@tstsrc	SHARED
+default@tstsrc_n1	SHARED
 #### A masked pattern was here ####
 LOCK_MODE:EXPLICIT	 
-LOCK_QUERYSTRING:LOCK TABLE tstsrc shared	 
-PREHOOK: query: UNLOCK TABLE tstsrc
+LOCK_QUERYSTRING:LOCK TABLE tstsrc_n1 shared	 
+PREHOOK: query: UNLOCK TABLE tstsrc_n1
 PREHOOK: type: UNLOCKTABLE
-POSTHOOK: query: UNLOCK TABLE tstsrc
+POSTHOOK: query: UNLOCK TABLE tstsrc_n1
 POSTHOOK: type: UNLOCKTABLE
 PREHOOK: query: SHOW LOCKS
 PREHOOK: type: SHOWLOCKS
@@ -62,63 +62,63 @@ PREHOOK: query: SHOW LOCKS extended
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: SHOW LOCKS extended
 POSTHOOK: type: SHOWLOCKS
-PREHOOK: query: SHOW LOCKS tstsrc
+PREHOOK: query: SHOW LOCKS tstsrc_n1
 PREHOOK: type: SHOWLOCKS
-POSTHOOK: query: SHOW LOCKS tstsrc
+POSTHOOK: query: SHOW LOCKS tstsrc_n1
 POSTHOOK: type: SHOWLOCKS
-PREHOOK: query: lock TABLE tstsrc SHARED
+PREHOOK: query: lock TABLE tstsrc_n1 SHARED
 PREHOOK: type: LOCKTABLE
-POSTHOOK: query: lock TABLE tstsrc SHARED
+POSTHOOK: query: lock TABLE tstsrc_n1 SHARED
 POSTHOOK: type: LOCKTABLE
 PREHOOK: query: SHOW LOCKS
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: SHOW LOCKS
 POSTHOOK: type: SHOWLOCKS
-default@tstsrc	SHARED
+default@tstsrc_n1	SHARED
 PREHOOK: query: SHOW LOCKS extended
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: SHOW LOCKS extended
 POSTHOOK: type: SHOWLOCKS
-default@tstsrc	SHARED
+default@tstsrc_n1	SHARED
 #### A masked pattern was here ####
 LOCK_MODE:EXPLICIT	 
-LOCK_QUERYSTRING:lock TABLE tstsrc SHARED	 
-PREHOOK: query: SHOW LOCKS tstsrc
+LOCK_QUERYSTRING:lock TABLE tstsrc_n1 SHARED	 
+PREHOOK: query: SHOW LOCKS tstsrc_n1
 PREHOOK: type: SHOWLOCKS
-POSTHOOK: query: SHOW LOCKS tstsrc
+POSTHOOK: query: SHOW LOCKS tstsrc_n1
 POSTHOOK: type: SHOWLOCKS
-default@tstsrc	SHARED
-PREHOOK: query: LOCK TABLE tstsrc SHARED
+default@tstsrc_n1	SHARED
+PREHOOK: query: LOCK TABLE tstsrc_n1 SHARED
 PREHOOK: type: LOCKTABLE
-POSTHOOK: query: LOCK TABLE tstsrc SHARED
+POSTHOOK: query: LOCK TABLE tstsrc_n1 SHARED
 POSTHOOK: type: LOCKTABLE
 PREHOOK: query: SHOW LOCKS
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: SHOW LOCKS
 POSTHOOK: type: SHOWLOCKS
-default@tstsrc	SHARED
-default@tstsrc	SHARED
+default@tstsrc_n1	SHARED
+default@tstsrc_n1	SHARED
 PREHOOK: query: SHOW LOCKS extended
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: SHOW LOCKS extended
 POSTHOOK: type: SHOWLOCKS
-default@tstsrc	SHARED
+default@tstsrc_n1	SHARED
 #### A masked pattern was here ####
 LOCK_MODE:EXPLICIT	 
-LOCK_QUERYSTRING:lock TABLE tstsrc SHARED	 
-default@tstsrc	SHARED
+LOCK_QUERYSTRING:lock TABLE tstsrc_n1 SHARED	 
+default@tstsrc_n1	SHARED
 #### A masked pattern was here ####
 LOCK_MODE:EXPLICIT	 
-LOCK_QUERYSTRING:LOCK TABLE tstsrc SHARED	 
-PREHOOK: query: SHOW LOCKS tstsrc
+LOCK_QUERYSTRING:LOCK TABLE tstsrc_n1 SHARED	 
+PREHOOK: query: SHOW LOCKS tstsrc_n1
 PREHOOK: type: SHOWLOCKS
-POSTHOOK: query: SHOW LOCKS tstsrc
+POSTHOOK: query: SHOW LOCKS tstsrc_n1
 POSTHOOK: type: SHOWLOCKS
-default@tstsrc	SHARED
-default@tstsrc	SHARED
-PREHOOK: query: UNLOCK TABLE tstsrc
+default@tstsrc_n1	SHARED
+default@tstsrc_n1	SHARED
+PREHOOK: query: UNLOCK TABLE tstsrc_n1
 PREHOOK: type: UNLOCKTABLE
-POSTHOOK: query: UNLOCK TABLE tstsrc
+POSTHOOK: query: UNLOCK TABLE tstsrc_n1
 POSTHOOK: type: UNLOCKTABLE
 PREHOOK: query: SHOW LOCKS
 PREHOOK: type: SHOWLOCKS
@@ -128,15 +128,15 @@ PREHOOK: query: SHOW LOCKS extended
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: SHOW LOCKS extended
 POSTHOOK: type: SHOWLOCKS
-PREHOOK: query: SHOW LOCKS tstsrc
+PREHOOK: query: SHOW LOCKS tstsrc_n1
 PREHOOK: type: SHOWLOCKS
-POSTHOOK: query: SHOW LOCKS tstsrc
+POSTHOOK: query: SHOW LOCKS tstsrc_n1
 POSTHOOK: type: SHOWLOCKS
-PREHOOK: query: drop table tstsrc
+PREHOOK: query: drop table tstsrc_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@tstsrc
-PREHOOK: Output: default@tstsrc
-POSTHOOK: query: drop table tstsrc
+PREHOOK: Input: default@tstsrc_n1
+PREHOOK: Output: default@tstsrc_n1
+POSTHOOK: query: drop table tstsrc_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@tstsrc
-POSTHOOK: Output: default@tstsrc
+POSTHOOK: Input: default@tstsrc_n1
+POSTHOOK: Output: default@tstsrc_n1

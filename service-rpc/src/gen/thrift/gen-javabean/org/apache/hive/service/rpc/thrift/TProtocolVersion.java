@@ -21,7 +21,8 @@ public enum TProtocolVersion implements org.apache.thrift.TEnum {
   HIVE_CLI_SERVICE_PROTOCOL_V7(6),
   HIVE_CLI_SERVICE_PROTOCOL_V8(7),
   HIVE_CLI_SERVICE_PROTOCOL_V9(8),
-  HIVE_CLI_SERVICE_PROTOCOL_V10(9);
+  HIVE_CLI_SERVICE_PROTOCOL_V10(9),
+  HIVE_CLI_SERVICE_PROTOCOL_V11(10);
 
   private final int value;
 
@@ -62,6 +63,8 @@ public enum TProtocolVersion implements org.apache.thrift.TEnum {
         return HIVE_CLI_SERVICE_PROTOCOL_V9;
       case 9:
         return HIVE_CLI_SERVICE_PROTOCOL_V10;
+      case 10:
+        return HIVE_CLI_SERVICE_PROTOCOL_V11;
       default:
         return null;
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -173,10 +172,9 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
 
   // create map join task and set big table as bigTablePosition
   private MapRedTask convertTaskToMapJoinTask(MapredWork newWork, int bigTablePosition)
-      throws UnsupportedEncodingException, SemanticException {
+      throws SemanticException {
     // create a mapred task for this work
-    MapRedTask newTask = (MapRedTask) TaskFactory.get(newWork, physicalContext
-        .getParseContext().getConf());
+    MapRedTask newTask = (MapRedTask) TaskFactory.get(newWork);
     JoinOperator newJoinOp = getJoinOp(newTask);
     // optimize this newWork given the big table position
     MapJoinProcessor.genMapJoinOpAndLocalWork(physicalContext.getParseContext().getConf(),
@@ -397,9 +395,6 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     HashMap<Path, ArrayList<String>> pathToAliases = currWork.getPathToAliases();
     Map<String, Operator<? extends OperatorDesc>> aliasToWork = currWork.getAliasToWork();
 
-    // get parseCtx for this Join Operator
-    ParseContext parseCtx = physicalContext.getParseContext();
-
     // start to generate multiple map join tasks
     JoinDesc joinDesc = joinOp.getConf();
 
@@ -483,12 +478,6 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
         if (!bigTableCandidates.contains(pos)) {
           continue;
         }
-        // deep copy a new mapred work from xml
-        // Once HIVE-4396 is in, it would be faster to use a cheaper method to clone the plan
-        MapredWork newWork = SerializationUtilities.clonePlan(currTask.getWork());
-
-        // create map join task and set big table as i
-        MapRedTask newTask = convertTaskToMapJoinTask(newWork, pos);
 
         Operator<?> startOp = joinOp.getParentOperators().get(pos);
         Set<String> aliases = GenMapRedUtils.findAliases(currWork, startOp);
@@ -497,6 +486,11 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
         if (cannotConvert(aliasKnownSize, aliasTotalKnownInputSize, ThresholdOfSmallTblSizeSum)) {
           continue;
         }
+
+        MapredWork newWork = SerializationUtilities.clonePlan(currTask.getWork());
+
+        // create map join task and set big table as i
+        MapRedTask newTask = convertTaskToMapJoinTask(newWork, pos);
 
         // add into conditional task
         listWorks.add(newTask.getWork());
@@ -515,6 +509,10 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
       throw new SemanticException("Generate Map Join Task Error: " + e.getMessage(), e);
     }
 
+    if (listTasks.isEmpty()) {
+      return currTask;
+    }
+
     // insert current common join task to conditional task
     listWorks.add(currTask.getWork());
     listTasks.add(currTask);
@@ -525,7 +523,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
 
     // create conditional task and insert conditional task into task tree
     ConditionalWork cndWork = new ConditionalWork(listWorks);
-    ConditionalTask cndTsk = (ConditionalTask) TaskFactory.get(cndWork, parseCtx.getConf());
+    ConditionalTask cndTsk = (ConditionalTask) TaskFactory.get(cndWork);
     cndTsk.setListTasks(listTasks);
 
     // set resolver and resolver context

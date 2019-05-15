@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -53,6 +53,11 @@ public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
         "Object registry not setup yet. This should have been setup by the TezProcessor");
     registry = staticRegistry;
   }
+
+  public static boolean isObjectRegistryConfigured() {
+    return (staticRegistry != null);
+  }
+
 
   public static void setupObjectRegistry(ObjectRegistry objectRegistry) {
     staticRegistry = objectRegistry;

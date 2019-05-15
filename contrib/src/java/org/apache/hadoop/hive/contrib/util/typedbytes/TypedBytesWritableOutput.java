@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,6 +24,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -212,7 +213,10 @@ public class TypedBytesWritableOutput {
 
   public void writeSortedMap(SortedMapWritable smw) throws IOException {
     out.writeMapHeader(smw.size());
-    for (Map.Entry<WritableComparable, Writable> entry : smw.entrySet()) {
+    // Make sure it compiles with both Hadoop 2 and Hadoop 3.
+    Set<Map.Entry<? extends WritableComparable, Writable>> entrySet =
+      (Set<Map.Entry<? extends WritableComparable, Writable>>)((Object)smw.entrySet());
+    for (Map.Entry<? extends WritableComparable, Writable> entry : entrySet) {
       write(entry.getKey());
       write(entry.getValue());
     }

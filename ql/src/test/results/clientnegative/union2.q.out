@@ -14,4 +14,4 @@ POSTHOOK: query: create table if not exists union2_t2(s string, c string, v stri
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union2_t2
-FAILED: SemanticException 8:47 Schema of both sides of union should match: Column v is of type array<string> on first table and type double on second table. Error encountered near token 'union2_t2'
+FAILED: SemanticException 8:47 Schema of both sides of setop should match: Column v is of type array<string> on first table and type double on second table. Error encountered near token 'union2_t2'

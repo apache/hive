@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,92 +18,60 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import static org.apache.commons.lang.StringUtils.join;
-import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
-import static org.apache.hadoop.util.StringUtils.stringifyException;
-
-import java.io.BufferedWriter;
 import java.io.DataOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Serializable;
-import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
-import java.util.AbstractList;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.io.HdfsUtils;
-import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
-import org.apache.hadoop.hive.metastore.PartitionDropOptions;
+import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
+import org.apache.hadoop.hive.metastore.Msck;
+import org.apache.hadoop.hive.metastore.MsckInfo;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
-import org.apache.hadoop.hive.metastore.api.Index;
+import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.metastore.api.PrincipalType;
-import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
-import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
-import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
-import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
-import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
-import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.api.TxnInfo;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils.PartSpecInfo;
-import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
-import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -113,138 +81,54 @@ import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
-import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateTask;
-import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateWork;
-import org.apache.hadoop.hive.ql.lockmgr.DbLockManager;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
-import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
-import org.apache.hadoop.hive.ql.metadata.CheckResult;
-import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
-import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreChecker;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
-import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
-import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
-import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
+import org.apache.hadoop.hive.ql.metadata.formatting.TextMetaDataTable;
 import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
-import org.apache.hadoop.hive.ql.parse.PreInsertTableDesc;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AbortTxnsDesc;
-import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
-import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
-import org.apache.hadoop.hive.ql.plan.AlterTableAlterPartDesc;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
-import org.apache.hadoop.hive.ql.plan.AlterTableExchangePartition;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.CacheMetadataDesc;
-import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
-import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
-import org.apache.hadoop.hive.ql.plan.CreateTableLikeDesc;
-import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
-import org.apache.hadoop.hive.ql.plan.DescDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.DescFunctionDesc;
-import org.apache.hadoop.hive.ql.plan.DescTableDesc;
-import org.apache.hadoop.hive.ql.plan.DropDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.DropIndexDesc;
-import org.apache.hadoop.hive.ql.plan.DropTableDesc;
 import org.apache.hadoop.hive.ql.plan.FileMergeDesc;
-import org.apache.hadoop.hive.ql.plan.GrantDesc;
-import org.apache.hadoop.hive.ql.plan.GrantRevokeRoleDDL;
-import org.apache.hadoop.hive.ql.plan.InsertTableDesc;
+import org.apache.hadoop.hive.ql.plan.InsertCommitHookDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
-import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.LockTableDesc;
+import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
+import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.OrcFileMergeDesc;
-import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
-import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
-import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
 import org.apache.hadoop.hive.ql.plan.RCFileMergeDesc;
-import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
-import org.apache.hadoop.hive.ql.plan.RevokeDesc;
-import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
+import org.apache.hadoop.hive.ql.plan.ReplRemoveFirstIncLoadPendFlagDesc;
 import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
-import org.apache.hadoop.hive.ql.plan.ShowCompactionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowConfDesc;
-import org.apache.hadoop.hive.ql.plan.ShowCreateDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.ShowCreateTableDesc;
-import org.apache.hadoop.hive.ql.plan.ShowDatabasesDesc;
-import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
-import org.apache.hadoop.hive.ql.plan.ShowGrantDesc;
-import org.apache.hadoop.hive.ql.plan.ShowIndexesDesc;
-import org.apache.hadoop.hive.ql.plan.ShowLocksDesc;
-import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
-import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
-import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
-import org.apache.hadoop.hive.ql.plan.ShowTblPropertiesDesc;
-import org.apache.hadoop.hive.ql.plan.ShowTxnsDesc;
-import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
-import org.apache.hadoop.hive.ql.plan.TruncateTableDesc;
-import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
-import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
-import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationTranslator;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizationTranslator;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilege;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeInfo;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRoleGrant;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveV1Authorizer;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
-import org.apache.hadoop.hive.serde2.SerDeSpec;
+import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.shims.HadoopShims;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hadoop.tools.HadoopArchives;
 import org.apache.hadoop.util.ToolRunner;
-import org.apache.hive.common.util.AnnotationUtils;
-import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.stringtemplate.v4.ST;
-
-import com.google.common.collect.Iterables;
 
 /**
  * DDLTask implementation.
@@ -263,14 +147,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private static String INTERMEDIATE_ORIGINAL_DIR_SUFFIX;
   private static String INTERMEDIATE_EXTRACTED_DIR_SUFFIX;
 
-  private MetaDataFormatter formatter;
-  private final HiveAuthorizationTranslator defaultAuthorizationTranslator = new DefaultHiveAuthorizationTranslator();
-  private Task<? extends Serializable> subtask = null;
-
-  public Task<? extends Serializable> getSubtask() {
-    return subtask;
-  }
-
   @Override
   public boolean requireLock() {
     return this.work != null && this.work.getNeedLock();
@@ -287,7 +163,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     // Pick the formatter to use to display the results.  Either the
     // normal human readable output or a json object.
-    formatter = MetaDataFormatUtils.getFormatter(conf);
     INTERMEDIATE_ARCHIVED_DIR_SUFFIX =
         HiveConf.getVar(conf, ConfVars.METASTORE_INT_ARCHIVED);
     INTERMEDIATE_ORIGINAL_DIR_SUFFIX =
@@ -307,96 +182,21 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     try {
       db = Hive.get(conf);
 
-      CreateDatabaseDesc createDatabaseDesc = work.getCreateDatabaseDesc();
-      if (null != createDatabaseDesc) {
-        return createDatabase(db, createDatabaseDesc);
-      }
-
-      DropDatabaseDesc dropDatabaseDesc = work.getDropDatabaseDesc();
-      if (dropDatabaseDesc != null) {
-        return dropDatabase(db, dropDatabaseDesc);
-      }
-
-      LockDatabaseDesc lockDatabaseDesc = work.getLockDatabaseDesc();
-      if (lockDatabaseDesc != null) {
-        return lockDatabase(db, lockDatabaseDesc);
-      }
-
-      UnlockDatabaseDesc unlockDatabaseDesc = work.getUnlockDatabaseDesc();
-      if (unlockDatabaseDesc != null) {
-        return unlockDatabase(db, unlockDatabaseDesc);
-      }
-
-      SwitchDatabaseDesc switchDatabaseDesc = work.getSwitchDatabaseDesc();
-      if (switchDatabaseDesc != null) {
-        return switchDatabase(db, switchDatabaseDesc);
-      }
-
-      DescDatabaseDesc descDatabaseDesc = work.getDescDatabaseDesc();
-      if (descDatabaseDesc != null) {
-        return descDatabase(db, descDatabaseDesc);
-      }
-
-      AlterDatabaseDesc alterDatabaseDesc = work.getAlterDatabaseDesc();
-      if (alterDatabaseDesc != null) {
-        return alterDatabase(db, alterDatabaseDesc);
-      }
-
-      CreateTableDesc crtTbl = work.getCreateTblDesc();
-      if (crtTbl != null) {
-        return createTable(db, crtTbl);
-      }
-
-      CreateIndexDesc crtIndex = work.getCreateIndexDesc();
-      if (crtIndex != null) {
-        return createIndex(db, crtIndex);
-      }
-
-      AlterIndexDesc alterIndex = work.getAlterIndexDesc();
-      if (alterIndex != null) {
-        return alterIndex(db, alterIndex);
-      }
-
-      DropIndexDesc dropIdx = work.getDropIdxDesc();
-      if (dropIdx != null) {
-        return dropIndex(db, dropIdx);
-      }
-
-      CreateTableLikeDesc crtTblLike = work.getCreateTblLikeDesc();
-      if (crtTblLike != null) {
-        return createTableLike(db, crtTblLike);
-      }
-
-      DropTableDesc dropTbl = work.getDropTblDesc();
-      if (dropTbl != null) {
-        dropTableOrPartitions(db, dropTbl);
-        return 0;
-      }
-
       AlterTableDesc alterTbl = work.getAlterTblDesc();
       if (alterTbl != null) {
+        if (!allowOperationInReplicationScope(db, alterTbl.getOldName(), null, alterTbl.getReplicationSpec())) {
+          // no alter, the table is missing either due to drop/rename which follows the alter.
+          // or the existing table is newer than our update.
+          LOG.debug("DDLTask: Alter Table is skipped as table {} is newer than update", alterTbl.getOldName());
+          return 0;
+        }
         if (alterTbl.getOp() == AlterTableTypes.DROPCONSTRAINT ) {
           return dropConstraint(db, alterTbl);
         } else if (alterTbl.getOp() == AlterTableTypes.ADDCONSTRAINT) {
-          return addConstraint(db, alterTbl);
+          return addConstraints(db, alterTbl);
         } else {
           return alterTable(db, alterTbl);
         }
-      }
-
-      CreateViewDesc crtView = work.getCreateViewDesc();
-      if (crtView != null) {
-        return createView(db, crtView);
-      }
-
-      AddPartitionDesc addPartitionDesc = work.getAddPartitionDesc();
-      if (addPartitionDesc != null) {
-        return addPartitions(db, addPartitionDesc);
-      }
-
-      RenamePartitionDesc renamePartitionDesc = work.getRenamePartitionDesc();
-      if (renamePartitionDesc != null) {
-        return renamePartition(db, renamePartitionDesc);
       }
 
       AlterTableSimpleDesc simpleDesc = work.getAlterTblSimpleDesc();
@@ -417,89 +217,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         return msck(db, msckDesc);
       }
 
-      DescTableDesc descTbl = work.getDescTblDesc();
-      if (descTbl != null) {
-        return describeTable(db, descTbl);
-      }
-
-      DescFunctionDesc descFunc = work.getDescFunctionDesc();
-      if (descFunc != null) {
-        return describeFunction(db, descFunc);
-      }
-
-      ShowDatabasesDesc showDatabases = work.getShowDatabasesDesc();
-      if (showDatabases != null) {
-        return showDatabases(db, showDatabases);
-      }
-
-      ShowTablesDesc showTbls = work.getShowTblsDesc();
-      if (showTbls != null) {
-        return showTablesOrViews(db, showTbls);
-      }
-
       ShowColumnsDesc showCols = work.getShowColumnsDesc();
       if (showCols != null) {
         return showColumns(db, showCols);
-      }
-
-      ShowTableStatusDesc showTblStatus = work.getShowTblStatusDesc();
-      if (showTblStatus != null) {
-        return showTableStatus(db, showTblStatus);
-      }
-
-      ShowTblPropertiesDesc showTblProperties = work.getShowTblPropertiesDesc();
-      if (showTblProperties != null) {
-        return showTableProperties(db, showTblProperties);
-      }
-
-      ShowFunctionsDesc showFuncs = work.getShowFuncsDesc();
-      if (showFuncs != null) {
-        return showFunctions(db, showFuncs);
-      }
-
-      ShowLocksDesc showLocks = work.getShowLocksDesc();
-      if (showLocks != null) {
-        return showLocks(db, showLocks);
-      }
-
-      ShowCompactionsDesc compactionsDesc = work.getShowCompactionsDesc();
-      if (compactionsDesc != null) {
-        return showCompactions(db, compactionsDesc);
-      }
-
-      ShowTxnsDesc txnsDesc = work.getShowTxnsDesc();
-      if (txnsDesc != null) {
-        return showTxns(db, txnsDesc);
-      }
-
-      AbortTxnsDesc abortTxnsDesc = work.getAbortTxnsDesc();
-      if (abortTxnsDesc != null) {
-        return abortTxns(db, abortTxnsDesc);
-      }
-
-      LockTableDesc lockTbl = work.getLockTblDesc();
-      if (lockTbl != null) {
-        return lockTable(db, lockTbl);
-      }
-
-      UnlockTableDesc unlockTbl = work.getUnlockTblDesc();
-      if (unlockTbl != null) {
-        return unlockTable(db, unlockTbl);
-      }
-
-      ShowPartitionsDesc showParts = work.getShowPartsDesc();
-      if (showParts != null) {
-        return showPartitions(db, showParts);
-      }
-
-      ShowCreateDatabaseDesc showCreateDb = work.getShowCreateDbDesc();
-      if (showCreateDb != null) {
-        return showCreateDatabase(db, showCreateDb);
-      }
-
-      ShowCreateTableDesc showCreateTbl = work.getShowCreateTblDesc();
-      if (showCreateTbl != null) {
-        return showCreateTable(db, showCreateTbl);
       }
 
       ShowConfDesc showConf = work.getShowConfDesc();
@@ -507,72 +227,22 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         return showConf(db, showConf);
       }
 
-      RoleDDLDesc roleDDLDesc = work.getRoleDDLDesc();
-      if (roleDDLDesc != null) {
-        return roleDDL(db, roleDDLDesc);
-      }
-
-      GrantDesc grantDesc = work.getGrantDesc();
-      if (grantDesc != null) {
-        return grantOrRevokePrivileges(db, grantDesc.getPrincipals(), grantDesc
-            .getPrivileges(), grantDesc.getPrivilegeSubjectDesc(), grantDesc.getGrantor(),
-            grantDesc.getGrantorType(), grantDesc.isGrantOption(), true);
-      }
-
-      RevokeDesc revokeDesc = work.getRevokeDesc();
-      if (revokeDesc != null) {
-        return grantOrRevokePrivileges(db, revokeDesc.getPrincipals(), revokeDesc
-            .getPrivileges(), revokeDesc.getPrivilegeSubjectDesc(), null, null,
-            revokeDesc.isGrantOption(), false);
-      }
-
-      ShowGrantDesc showGrantDesc = work.getShowGrantDesc();
-      if (showGrantDesc != null) {
-        return showGrants(db, showGrantDesc);
-      }
-
-      GrantRevokeRoleDDL grantOrRevokeRoleDDL = work.getGrantRevokeRoleDDL();
-      if (grantOrRevokeRoleDDL != null) {
-        return grantOrRevokeRole(db, grantOrRevokeRoleDDL);
-      }
-
-      ShowIndexesDesc showIndexes = work.getShowIndexesDesc();
-      if (showIndexes != null) {
-        return showIndexes(db, showIndexes);
-      }
-
       AlterTablePartMergeFilesDesc mergeFilesDesc = work.getMergeFilesDesc();
       if (mergeFilesDesc != null) {
         return mergeFiles(db, mergeFilesDesc, driverContext);
-      }
-
-      AlterTableAlterPartDesc alterPartDesc = work.getAlterTableAlterPartDesc();
-      if(alterPartDesc != null) {
-        return alterTableAlterPart(db, alterPartDesc);
-      }
-
-      TruncateTableDesc truncateTableDesc = work.getTruncateTblDesc();
-      if (truncateTableDesc != null) {
-        return truncateTable(db, truncateTableDesc);
-      }
-
-      AlterTableExchangePartition alterTableExchangePartition =
-          work.getAlterTableExchangePartition();
-      if (alterTableExchangePartition != null) {
-        return exchangeTablePartition(db, alterTableExchangePartition);
       }
 
       CacheMetadataDesc cacheMetadataDesc = work.getCacheMetadataDesc();
       if (cacheMetadataDesc != null) {
         return cacheMetadata(db, cacheMetadataDesc);
       }
-      InsertTableDesc insertTableDesc = work.getInsertTableDesc();
-      if (insertTableDesc != null) {
-        return insertCommitWork(db, insertTableDesc);
+      InsertCommitHookDesc insertCommitHookDesc = work.getInsertCommitHookDesc();
+      if (insertCommitHookDesc != null) {
+        return insertCommitWork(db, insertCommitHookDesc);
       }
-      PreInsertTableDesc preInsertTableDesc = work.getPreInsertTableDesc();
-      if (preInsertTableDesc != null) {
-        return preInsertWork(db, preInsertTableDesc);
+
+      if (work.getReplSetFirstIncLoadFlagDesc() != null) {
+        return remFirstIncPendFlag(db, work.getReplSetFirstIncLoadFlagDesc());
       }
     } catch (Throwable e) {
       failed(e);
@@ -582,36 +252,22 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
-  private int preInsertWork(Hive db, PreInsertTableDesc preInsertTableDesc) throws HiveException {
-    try{
-      HiveMetaHook hook = preInsertTableDesc.getTable().getStorageHandler().getMetaHook();
-      if (hook == null || !(hook instanceof DefaultHiveMetaHook)) {
-        return 0;
-      }
-      DefaultHiveMetaHook hiveMetaHook = (DefaultHiveMetaHook) hook;
-      hiveMetaHook.preInsertTable(preInsertTableDesc.getTable().getTTable(), preInsertTableDesc.isOverwrite());
-    } catch (MetaException e) {
-      throw new HiveException(e);
-    }
-    return 0;
-  }
-
-  private int insertCommitWork(Hive db, InsertTableDesc insertTableDesc) throws MetaException {
+  private int insertCommitWork(Hive db, InsertCommitHookDesc insertCommitHookDesc) throws MetaException {
     boolean failed = true;
-    HiveMetaHook hook = insertTableDesc.getTable().getStorageHandler().getMetaHook();
+    HiveMetaHook hook = insertCommitHookDesc.getTable().getStorageHandler().getMetaHook();
     if (hook == null || !(hook instanceof DefaultHiveMetaHook)) {
       return 0;
     }
     DefaultHiveMetaHook hiveMetaHook = (DefaultHiveMetaHook) hook;
     try {
-      hiveMetaHook.commitInsertTable(insertTableDesc.getTable().getTTable(),
-              insertTableDesc.isOverwrite()
+      hiveMetaHook.commitInsertTable(insertCommitHookDesc.getTable().getTTable(),
+              insertCommitHookDesc.isOverwrite()
       );
       failed = false;
     } finally {
       if (failed) {
-        hiveMetaHook.rollbackInsertTable(insertTableDesc.getTable().getTTable(),
-                insertTableDesc.isOverwrite()
+        hiveMetaHook.rollbackInsertTable(insertCommitHookDesc.getTable().getTTable(),
+                insertCommitHookDesc.isOverwrite()
         );
       }
     }
@@ -629,7 +285,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       e = e.getCause();
     }
     setException(e);
-    LOG.error(stringifyException(e));
+    LOG.error("Failed", e);
   }
 
   private int showConf(Hive db, ShowConfDesc showConf) throws Exception {
@@ -697,7 +353,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     // merge work only needs input and output.
     MergeFileWork mergeWork = new MergeFileWork(mergeFilesDesc.getInputDir(),
-        mergeFilesDesc.getOutputDir(), mergeFilesDesc.getInputFormatClass().getName());
+        mergeFilesDesc.getOutputDir(), mergeFilesDesc.getInputFormatClass().getName(),
+        mergeFilesDesc.getTableDesc());
     LinkedHashMap<Path, ArrayList<String>> pathToAliases = new LinkedHashMap<>();
     ArrayList<String> inputDirstr = new ArrayList<String>(1);
     inputDirstr.add(mergeFilesDesc.getInputDir().toString());
@@ -729,484 +386,26 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     aliasToWork.put(mergeFilesDesc.getInputDir().toString(), mergeOp);
     mergeWork.setAliasToWork(aliasToWork);
     DriverContext driverCxt = new DriverContext();
-    Task task;
+    Task<?> task;
     if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
-      TezWork tezWork = new TezWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID), conf);
+      TezWork tezWork = new TezWork(queryState.getQueryId(), conf);
       mergeWork.setName("File Merge");
       tezWork.add(mergeWork);
       task = new TezTask();
-      task.setWork(tezWork);
+      ((TezTask) task).setWork(tezWork);
     } else {
       task = new MergeFileTask();
-      task.setWork(mergeWork);
+      ((MergeFileTask) task).setWork(mergeWork);
     }
 
     // initialize the task and execute
     task.initialize(queryState, getQueryPlan(), driverCxt, opContext);
-    subtask = task;
+    Task<? extends Serializable> subtask = task;
     int ret = task.execute(driverCxt);
     if (subtask.getException() != null) {
       setException(subtask.getException());
     }
     return ret;
-  }
-
-  private HiveAuthorizer getSessionAuthorizer(Hive db) {
-    HiveAuthorizer authorizer = SessionState.get().getAuthorizerV2();
-    if (authorizer == null) {
-      authorizer = new HiveV1Authorizer(conf, db);
-    }
-    return authorizer;
-  }
-
-  private int grantOrRevokeRole(Hive db, GrantRevokeRoleDDL grantOrRevokeRoleDDL)
-      throws HiveException {
-    HiveAuthorizer authorizer = getSessionAuthorizer(db);
-    //convert to the types needed for plugin api
-    HivePrincipal grantorPrinc = null;
-    if(grantOrRevokeRoleDDL.getGrantor() != null){
-      grantorPrinc = new HivePrincipal(grantOrRevokeRoleDDL.getGrantor(),
-          AuthorizationUtils.getHivePrincipalType(grantOrRevokeRoleDDL.getGrantorType()));
-    }
-    List<HivePrincipal> principals = AuthorizationUtils.getHivePrincipals(
-        grantOrRevokeRoleDDL.getPrincipalDesc(), getAuthorizationTranslator(authorizer));
-    List<String> roles = grantOrRevokeRoleDDL.getRoles();
-
-    boolean grantOption = grantOrRevokeRoleDDL.isGrantOption();
-    if (grantOrRevokeRoleDDL.getGrant()) {
-      authorizer.grantRole(principals, roles, grantOption, grantorPrinc);
-    } else {
-      authorizer.revokeRole(principals, roles, grantOption, grantorPrinc);
-    }
-    return 0;
-  }
-
-  private HiveAuthorizationTranslator getAuthorizationTranslator(HiveAuthorizer authorizer)
-      throws HiveAuthzPluginException {
-    if (authorizer.getHiveAuthorizationTranslator() == null) {
-      return defaultAuthorizationTranslator;
-    } else {
-      return (HiveAuthorizationTranslator)authorizer.getHiveAuthorizationTranslator();
-    }
-  }
-
-  private int showGrants(Hive db, ShowGrantDesc showGrantDesc) throws HiveException {
-
-    HiveAuthorizer authorizer = getSessionAuthorizer(db);
-    try {
-      List<HivePrivilegeInfo> privInfos = authorizer.showPrivileges(
-          getAuthorizationTranslator(authorizer).getHivePrincipal(showGrantDesc.getPrincipalDesc()),
-          getAuthorizationTranslator(authorizer).getHivePrivilegeObject(showGrantDesc.getHiveObj()));
-      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
-      writeToFile(writeGrantInfo(privInfos, testMode), showGrantDesc.getResFile());
-    } catch (IOException e) {
-      throw new HiveException("Error in show grant statement", e);
-    }
-    return 0;
-  }
-
-  private int grantOrRevokePrivileges(Hive db, List<PrincipalDesc> principals,
-      List<PrivilegeDesc> privileges, PrivilegeObjectDesc privSubjectDesc,
-      String grantor, PrincipalType grantorType, boolean grantOption, boolean isGrant)
-          throws HiveException {
-
-    HiveAuthorizer authorizer = getSessionAuthorizer(db);
-
-    //Convert to object types used by the authorization plugin interface
-    List<HivePrincipal> hivePrincipals = AuthorizationUtils.getHivePrincipals(
-        principals, getAuthorizationTranslator(authorizer));
-    List<HivePrivilege> hivePrivileges = AuthorizationUtils.getHivePrivileges(
-        privileges, getAuthorizationTranslator(authorizer));
-    HivePrivilegeObject hivePrivObject = getAuthorizationTranslator(authorizer)
-        .getHivePrivilegeObject(privSubjectDesc);
-
-    HivePrincipal grantorPrincipal = new HivePrincipal(
-        grantor, AuthorizationUtils.getHivePrincipalType(grantorType));
-
-    if(isGrant){
-      authorizer.grantPrivileges(hivePrincipals, hivePrivileges, hivePrivObject,
-          grantorPrincipal, grantOption);
-    }else {
-      authorizer.revokePrivileges(hivePrincipals, hivePrivileges,
-          hivePrivObject, grantorPrincipal, grantOption);
-    }
-    //no exception thrown, so looks good
-    return 0;
-  }
-
-  private int roleDDL(Hive db, RoleDDLDesc roleDDLDesc) throws Exception {
-    HiveAuthorizer authorizer = getSessionAuthorizer(db);
-    RoleDDLDesc.RoleOperation operation = roleDDLDesc.getOperation();
-    //call the appropriate hive authorizer function
-    switch(operation){
-    case CREATE_ROLE:
-      authorizer.createRole(roleDDLDesc.getName(), null);
-      break;
-    case DROP_ROLE:
-      authorizer.dropRole(roleDDLDesc.getName());
-      break;
-    case SHOW_ROLE_GRANT:
-      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
-      List<HiveRoleGrant> roles = authorizer.getRoleGrantInfoForPrincipal(
-          AuthorizationUtils.getHivePrincipal(roleDDLDesc.getName(), roleDDLDesc.getPrincipalType()));
-      writeToFile(writeRolesGrantedInfo(roles, testMode), roleDDLDesc.getResFile());
-      break;
-    case SHOW_ROLES:
-      List<String> allRoles = authorizer.getAllRoles();
-      writeListToFileAfterSort(allRoles, roleDDLDesc.getResFile());
-      break;
-    case SHOW_CURRENT_ROLE:
-      List<String> roleNames = authorizer.getCurrentRoleNames();
-      writeListToFileAfterSort(roleNames, roleDDLDesc.getResFile());
-      break;
-    case SET_ROLE:
-      authorizer.setCurrentRole(roleDDLDesc.getName());
-      break;
-    case SHOW_ROLE_PRINCIPALS:
-      testMode = conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
-      List<HiveRoleGrant> roleGrants = authorizer.getPrincipalGrantInfoForRole(roleDDLDesc.getName());
-      writeToFile(writeHiveRoleGrantInfo(roleGrants, testMode), roleDDLDesc.getResFile());
-      break;
-    default:
-      throw new HiveException("Unkown role operation "
-          + operation.getOperationName());
-    }
-
-    return 0;
-  }
-
-  private String writeHiveRoleGrantInfo(List<HiveRoleGrant> roleGrants, boolean testMode) {
-    if (roleGrants == null || roleGrants.isEmpty()) {
-      return "";
-    }
-    StringBuilder builder = new StringBuilder();
-    // sort the list to get sorted (deterministic) output (for ease of testing)
-    Collections.sort(roleGrants);
-    for (HiveRoleGrant roleGrant : roleGrants) {
-      // schema:
-      // principal_name,principal_type,grant_option,grantor,grantor_type,grant_time
-      appendNonNull(builder, roleGrant.getPrincipalName(), true);
-      appendNonNull(builder, roleGrant.getPrincipalType());
-      appendNonNull(builder, roleGrant.isGrantOption());
-      appendNonNull(builder, roleGrant.getGrantor());
-      appendNonNull(builder, roleGrant.getGrantorType());
-      appendNonNull(builder, testMode ? -1 : roleGrant.getGrantTime() * 1000L);
-    }
-    return builder.toString();
-  }
-
-  /**
-   * Write list of string entries into given file
-   * @param entries
-   * @param resFile
-   * @throws IOException
-   */
-  private void writeListToFileAfterSort(List<String> entries, String resFile) throws IOException {
-    Collections.sort(entries);
-    StringBuilder sb = new StringBuilder();
-    for(String entry : entries){
-      appendNonNull(sb, entry, true);
-    }
-    writeToFile(sb.toString(), resFile);
-  }
-
-  private int alterDatabase(Hive db, AlterDatabaseDesc alterDbDesc) throws HiveException {
-
-    String dbName = alterDbDesc.getDatabaseName();
-    Database database = db.getDatabase(dbName);
-    if (database == null) {
-      throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, dbName);
-    }
-
-    switch (alterDbDesc.getAlterType()) {
-    case ALTER_PROPERTY:
-      Map<String, String> newParams = alterDbDesc.getDatabaseProperties();
-      Map<String, String> params = database.getParameters();
-      // if both old and new params are not null, merge them
-      if (params != null && newParams != null) {
-        params.putAll(newParams);
-        database.setParameters(params);
-      } else {
-        // if one of them is null, replace the old params with the new one
-        database.setParameters(newParams);
-      }
-      break;
-
-    case ALTER_OWNER:
-      database.setOwnerName(alterDbDesc.getOwnerPrincipal().getName());
-      database.setOwnerType(alterDbDesc.getOwnerPrincipal().getType());
-      break;
-
-    default:
-      throw new AssertionError("Unsupported alter database type! : " + alterDbDesc.getAlterType());
-    }
-
-    db.alterDatabase(database.getName(), database);
-    return 0;
-  }
-
-  private int dropIndex(Hive db, DropIndexDesc dropIdx) throws HiveException {
-
-    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
-      throw new UnsupportedOperationException("Indexes unsupported for Tez execution engine");
-    }
-
-    db.dropIndex(dropIdx.getTableName(), dropIdx.getIndexName(), dropIdx.isThrowException(), true);
-    return 0;
-  }
-
-  private int createIndex(Hive db, CreateIndexDesc crtIndex) throws HiveException {
-
-    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
-      throw new UnsupportedOperationException("Indexes unsupported for Tez execution engine");
-    }
-
-    if( crtIndex.getSerde() != null) {
-      validateSerDe(crtIndex.getSerde());
-    }
-
-    String indexTableName = crtIndex.getIndexTableName();
-    if (!Utilities.isDefaultNameNode(conf)) {
-      // If location is specified - ensure that it is a full qualified name
-      makeLocationQualified(crtIndex, indexTableName);
-    }
-
-    db
-    .createIndex(
-        crtIndex.getTableName(), crtIndex.getIndexName(), crtIndex.getIndexTypeHandlerClass(),
-        crtIndex.getIndexedCols(), crtIndex.getIndexTableName(), crtIndex.getDeferredRebuild(),
-        crtIndex.getInputFormat(), crtIndex.getOutputFormat(), crtIndex.getSerde(),
-        crtIndex.getStorageHandler(), crtIndex.getLocation(), crtIndex.getIdxProps(), crtIndex.getTblProps(),
-        crtIndex.getSerdeProps(), crtIndex.getCollItemDelim(), crtIndex.getFieldDelim(), crtIndex.getFieldEscape(),
-        crtIndex.getLineDelim(), crtIndex.getMapKeyDelim(), crtIndex.getIndexComment()
-        );
-    if (HiveUtils.getIndexHandler(conf, crtIndex.getIndexTypeHandlerClass()).usesIndexTable()) {
-          Table indexTable = db.getTable(indexTableName);
-          addIfAbsentByName(new WriteEntity(indexTable, WriteEntity.WriteType.DDL_NO_LOCK));
-    }
-    return 0;
-  }
-
-  private int alterIndex(Hive db, AlterIndexDesc alterIndex) throws HiveException {
-
-    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
-      throw new UnsupportedOperationException("Indexes unsupported for Tez execution engine");
-    }
-
-    String baseTableName = alterIndex.getBaseTableName();
-    String indexName = alterIndex.getIndexName();
-    Index idx = db.getIndex(baseTableName, indexName);
-
-    switch(alterIndex.getOp()) {
-    case ADDPROPS:
-      idx.getParameters().putAll(alterIndex.getProps());
-      break;
-    case UPDATETIMESTAMP:
-      try {
-        Map<String, String> props = new HashMap<String, String>();
-        Map<Map<String, String>, Long> basePartTs = new HashMap<Map<String, String>, Long>();
-
-        Table baseTbl = db.getTable(baseTableName);
-
-        if (baseTbl.isPartitioned()) {
-          List<Partition> baseParts;
-          if (alterIndex.getSpec() != null) {
-            baseParts = db.getPartitions(baseTbl, alterIndex.getSpec());
-          } else {
-            baseParts = db.getPartitions(baseTbl);
-          }
-          if (baseParts != null) {
-            for (Partition p : baseParts) {
-              FileSystem fs = p.getDataLocation().getFileSystem(db.getConf());
-              FileStatus fss = fs.getFileStatus(p.getDataLocation());
-              basePartTs.put(p.getSpec(), fss.getModificationTime());
-            }
-          }
-        } else {
-          FileSystem fs = baseTbl.getPath().getFileSystem(db.getConf());
-          FileStatus fss = fs.getFileStatus(baseTbl.getPath());
-          basePartTs.put(null, fss.getModificationTime());
-        }
-        for (Map<String, String> spec : basePartTs.keySet()) {
-          if (spec != null) {
-            props.put(spec.toString(), basePartTs.get(spec).toString());
-          } else {
-            props.put("base_timestamp", basePartTs.get(null).toString());
-          }
-        }
-        idx.getParameters().putAll(props);
-      } catch (HiveException e) {
-        throw new HiveException("ERROR: Failed to update index timestamps");
-      } catch (IOException e) {
-        throw new HiveException("ERROR: Failed to look up timestamps on filesystem");
-      }
-
-      break;
-    default:
-      console.printError("Unsupported Alter command");
-      return 1;
-    }
-
-    // set last modified by properties
-    if (!updateModifiedParameters(idx.getParameters(), conf)) {
-      return 1;
-    }
-
-    try {
-      db.alterIndex(baseTableName, indexName, idx);
-    } catch (InvalidOperationException e) {
-      console.printError("Invalid alter operation: " + e.getMessage());
-      LOG.info("alter index: " + stringifyException(e));
-      return 1;
-    } catch (HiveException e) {
-      console.printError("Invalid alter operation: " + e.getMessage());
-      return 1;
-    }
-    return 0;
-  }
-
-  /**
-   * Add a partitions to a table.
-   *
-   * @param db
-   *          Database to add the partition to.
-   * @param addPartitionDesc
-   *          Add these partitions.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   */
-  private int addPartitions(Hive db, AddPartitionDesc addPartitionDesc) throws HiveException {
-    List<Partition> parts = db.createPartitions(addPartitionDesc);
-    for (Partition part : parts) {
-      addIfAbsentByName(new WriteEntity(part, WriteEntity.WriteType.INSERT));
-    }
-    return 0;
-  }
-
-  /**
-   * Rename a partition in a table
-   *
-   * @param db
-   *          Database to rename the partition.
-   * @param renamePartitionDesc
-   *          rename old Partition to new one.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   */
-  private int renamePartition(Hive db, RenamePartitionDesc renamePartitionDesc) throws HiveException {
-
-    Table tbl = db.getTable(renamePartitionDesc.getTableName());
-
-    LinkedHashMap<String, String> oldPartSpec = renamePartitionDesc.getOldPartSpec();
-    Partition oldPart = db.getPartition(tbl, oldPartSpec, false);
-    if (oldPart == null) {
-      String partName = FileUtils.makePartName(new ArrayList<String>(oldPartSpec.keySet()),
-          new ArrayList<String>(oldPartSpec.values()));
-      throw new HiveException("Rename partition: source partition [" + partName
-          + "] does not exist.");
-    }
-    Partition part = db.getPartition(tbl, oldPartSpec, false);
-    part.setValues(renamePartitionDesc.getNewPartSpec());
-    db.renamePartition(tbl, oldPartSpec, part);
-    Partition newPart = db
-        .getPartition(tbl, renamePartitionDesc.getNewPartSpec(), false);
-    work.getInputs().add(new ReadEntity(oldPart));
-    // We've already obtained a lock on the table, don't lock the partition too
-    addIfAbsentByName(new WriteEntity(newPart, WriteEntity.WriteType.DDL_NO_LOCK));
-    return 0;
-  }
-
-  /**
-   * Alter partition column type in a table
-   *
-   * @param db
-   *          Database to rename the partition.
-   * @param alterPartitionDesc
-   *          change partition column type.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   */
-  private int alterTableAlterPart(Hive db, AlterTableAlterPartDesc alterPartitionDesc)
-      throws HiveException {
-
-    Table tbl = db.getTable(alterPartitionDesc.getTableName(), true);
-    String tabName = alterPartitionDesc.getTableName();
-
-    // This is checked by DDLSemanticAnalyzer
-    assert(tbl.isPartitioned());
-
-    List<FieldSchema> newPartitionKeys = new ArrayList<FieldSchema>();
-
-    //Check if the existing partition values can be type casted to the new column type
-    // with a non null value before trying to alter the partition column type.
-    try {
-      Set<Partition> partitions = db.getAllPartitionsOf(tbl);
-      int colIndex = -1;
-      for(FieldSchema col : tbl.getTTable().getPartitionKeys()) {
-        colIndex++;
-        if (col.getName().compareTo(alterPartitionDesc.getPartKeySpec().getName()) == 0) {
-          break;
-        }
-      }
-
-      if (colIndex == -1 || colIndex == tbl.getTTable().getPartitionKeys().size()) {
-        throw new HiveException("Cannot find partition column " +
-            alterPartitionDesc.getPartKeySpec().getName());
-      }
-
-      TypeInfo expectedType =
-          TypeInfoUtils.getTypeInfoFromTypeString(alterPartitionDesc.getPartKeySpec().getType());
-      ObjectInspector outputOI =
-          TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(expectedType);
-      Converter converter = ObjectInspectorConverters.getConverter(
-          PrimitiveObjectInspectorFactory.javaStringObjectInspector, outputOI);
-
-      // For all the existing partitions, check if the value can be type casted to a non-null object
-      for(Partition part : partitions) {
-        if (part.getName().equals(conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME))) {
-          continue;
-        }
-        try {
-          String value = part.getValues().get(colIndex);
-          Object convertedValue =
-              converter.convert(value);
-          if (convertedValue == null) {
-            throw new HiveException(" Converting from " + TypeInfoFactory.stringTypeInfo + " to " +
-              expectedType + " for value : " + value + " resulted in NULL object");
-          }
-        } catch (Exception e) {
-          throw new HiveException("Exception while converting " +
-              TypeInfoFactory.stringTypeInfo + " to " +
-              expectedType + " for value : " + part.getValues().get(colIndex));
-        }
-      }
-    } catch(Exception e) {
-      throw new HiveException(
-          "Exception while checking type conversion of existing partition values to " +
-          alterPartitionDesc.getPartKeySpec() + " : " + e.getMessage());
-    }
-
-    for(FieldSchema col : tbl.getTTable().getPartitionKeys()) {
-      if (col.getName().compareTo(alterPartitionDesc.getPartKeySpec().getName()) == 0) {
-        newPartitionKeys.add(alterPartitionDesc.getPartKeySpec());
-      } else {
-        newPartitionKeys.add(col);
-      }
-    }
-
-    tbl.getTTable().setPartitionKeys(newPartitionKeys);
-
-    try {
-      db.alterTable(tabName, tbl, null);
-    } catch (InvalidOperationException e) {
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "Unable to alter " + tabName);
-    }
-
-    work.getInputs().add(new ReadEntity(tbl));
-    // We've already locked the table as the input, don't relock it as the output.
-    addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
-
-    return 0;
   }
 
   /**
@@ -1220,17 +419,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    */
   private int touch(Hive db, AlterTableSimpleDesc touchDesc)
       throws HiveException {
-
+    // TODO: catalog
     Table tbl = db.getTable(touchDesc.getTableName());
     EnvironmentContext environmentContext = new EnvironmentContext();
     environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
 
     if (touchDesc.getPartSpec() == null) {
-      try {
-        db.alterTable(touchDesc.getTableName(), tbl, environmentContext);
-      } catch (InvalidOperationException e) {
-        throw new HiveException("Uable to update table");
-      }
+      db.alterTable(tbl, false, environmentContext, true);
       work.getInputs().add(new ReadEntity(tbl));
       addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
     } else {
@@ -1239,7 +434,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         throw new HiveException("Specified partition does not exist");
       }
       try {
-        db.alterPartition(touchDesc.getTableName(), part, environmentContext);
+        db.alterPartition(tbl.getCatalogName(), tbl.getDbName(), tbl.getTableName(),
+            part, environmentContext, true);
       } catch (InvalidOperationException e) {
         throw new HiveException(e);
       }
@@ -1339,10 +535,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
   }
 
-  private void deleteDir(Path dir) throws HiveException {
+  private void deleteDir(Path dir, Database db) throws HiveException {
     try {
       Warehouse wh = new Warehouse(conf);
-      wh.deleteDir(dir, true);
+      wh.deleteDir(dir, true, db);
     } catch (MetaException e) {
       throw new HiveException(e);
     }
@@ -1588,7 +784,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             authority.toString(),
             harPartitionDir.getPath()); // make in Path to ensure no slash at the end
         setArchived(p, harPath, partSpecInfo.values.size());
-        db.alterPartition(simpleDesc.getTableName(), p, null);
+        // TODO: catalog
+        db.alterPartition(simpleDesc.getTableName(), p, null, true);
       }
     } catch (Exception e) {
       throw new HiveException("Unable to change the partition info for HAR", e);
@@ -1597,7 +794,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // If a failure occurs here, the directory containing the original files
     // will not be deleted. The user will run ARCHIVE again to clear this up
     if(pathExists(intermediateOriginalDir)) {
-      deleteDir(intermediateOriginalDir);
+      deleteDir(intermediateOriginalDir, db.getDatabase(tbl.getDbName()));
     }
 
     if(recovery) {
@@ -1737,7 +934,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         try {
           ret = ToolRunner.run(fss, args.toArray(new String[0]));
         } catch (Exception e) {
-          e.printStackTrace();
           throw new HiveException(e);
         }
 
@@ -1794,7 +990,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     for(Partition p: partitions) {
       setUnArchived(p);
       try {
-        db.alterPartition(simpleDesc.getTableName(), p, null);
+        // TODO: catalog
+        db.alterPartition(simpleDesc.getTableName(), p, null, true);
       } catch (InvalidOperationException e) {
         throw new HiveException(e);
       }
@@ -1803,7 +1000,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // If a failure happens here, the intermediate archive files won't be
     // deleted. The user will need to call unarchive again to clear those up.
     if(pathExists(intermediateArchivedDir)) {
-      deleteDir(intermediateArchivedDir);
+      deleteDir(intermediateArchivedDir, db.getDatabase(tbl.getDbName()));
     }
 
     if(recovery) {
@@ -1828,23 +1025,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
   }
 
-  private void msckAddPartitionsOneByOne(Hive db, Table table,
-      Set<CheckResult.PartitionResult> partsNotInMs, List<String> repairOutput) {
-    for (CheckResult.PartitionResult part : partsNotInMs) {
-      try {
-        db.createPartition(table, Warehouse.makeSpecFromName(part.getPartitionName()));
-        repairOutput.add("Repair: Added partition to metastore "
-            + table.getTableName() + ':' + part.getPartitionName());
-      } catch (Exception e) {
-        LOG.warn("Repair error, could not add partition to metastore: ", e);
-      }
-    }
-  }
-
   private int compact(Hive db, AlterTableSimpleDesc desc) throws HiveException {
 
     Table tbl = db.getTable(desc.getTableName());
-    if (!AcidUtils.isAcidTable(tbl)) {
+    if (!AcidUtils.isTransactionalTable(tbl)) {
       throw new HiveException(ErrorMsg.NONACID_COMPACTION_NOT_SUPPORTED, tbl.getDbName(),
           tbl.getTableName());
     }
@@ -1874,6 +1058,42 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       console.printInfo("Compaction already enqueued with id " + resp.getId() +
         "; State is " + resp.getState());
     }
+    if(desc.isBlocking() && resp.isAccepted()) {
+      StringBuilder progressDots = new StringBuilder();
+      long waitTimeMs = 1000;
+      wait: while (true) {
+        //double wait time until 5min
+        waitTimeMs = waitTimeMs*2;
+        waitTimeMs = waitTimeMs < 5*60*1000 ? waitTimeMs : 5*60*1000;
+        try {
+          Thread.sleep(waitTimeMs);
+        }
+        catch(InterruptedException ex) {
+          console.printInfo("Interrupted while waiting for compaction with id=" + resp.getId());
+          break;
+        }
+        //this could be expensive when there are a lot of compactions....
+        //todo: update to search by ID once HIVE-13353 is done
+        ShowCompactResponse allCompactions = db.showCompactions();
+        for(ShowCompactResponseElement compaction : allCompactions.getCompacts()) {
+          if (resp.getId() != compaction.getId()) {
+            continue;
+          }
+          switch (compaction.getState()) {
+            case TxnStore.WORKING_RESPONSE:
+            case TxnStore.INITIATED_RESPONSE:
+              //still working
+              console.printInfo(progressDots.toString());
+              progressDots.append(".");
+              continue wait;
+            default:
+              //done
+              console.printInfo("Compaction with id " + resp.getId() + " finished with status: " + compaction.getState());
+              break wait;
+          }
+        }
+      }
+    }
     return 0;
   }
 
@@ -1889,650 +1109,54 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @return Returns 0 when execution succeeds and above 0 if it fails.
    */
   private int msck(Hive db, MsckDesc msckDesc) {
-    CheckResult result = new CheckResult();
-    List<String> repairOutput = new ArrayList<String>();
+    Msck msck;
     try {
-      HiveMetaStoreChecker checker = new HiveMetaStoreChecker(db);
+      msck = new Msck( false, false);
+      msck.init(db.getConf());
       String[] names = Utilities.getDbTableName(msckDesc.getTableName());
-      checker.checkMetastore(names[0], names[1], msckDesc.getPartSpecs(), result);
-      Set<CheckResult.PartitionResult> partsNotInMs = result.getPartitionsNotInMs();
-      if (msckDesc.isRepairPartitions() && !partsNotInMs.isEmpty()) {
-        AbstractList<String> vals = null;
-        String settingStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_MSCK_PATH_VALIDATION);
-        boolean doValidate = !("ignore".equals(settingStr));
-        boolean doSkip = doValidate && "skip".equals(settingStr);
-        // The default setting is "throw"; assume doValidate && !doSkip means throw.
-        if (doValidate) {
-          // Validate that we can add partition without escaping. Escaping was originally intended
-          // to avoid creating invalid HDFS paths; however, if we escape the HDFS path (that we
-          // deem invalid but HDFS actually supports - it is possible to create HDFS paths with
-          // unprintable characters like ASCII 7), metastore will create another directory instead
-          // of the one we are trying to "repair" here.
-          Iterator<CheckResult.PartitionResult> iter = partsNotInMs.iterator();
-          while (iter.hasNext()) {
-            CheckResult.PartitionResult part = iter.next();
-            try {
-              vals = Warehouse.makeValsFromName(part.getPartitionName(), vals);
-            } catch (MetaException ex) {
-              throw new HiveException(ex);
-            }
-            for (String val : vals) {
-              String escapedPath = FileUtils.escapePathName(val);
-              assert escapedPath != null;
-              if (escapedPath.equals(val)) continue;
-              String errorMsg = "Repair: Cannot add partition " + msckDesc.getTableName()
-                  + ':' + part.getPartitionName() + " due to invalid characters in the name";
-              if (doSkip) {
-                repairOutput.add(errorMsg);
-                iter.remove();
-              } else {
-                throw new HiveException(errorMsg);
-              }
-            }
-          }
-        }
-        Table table = db.getTable(msckDesc.getTableName());
-        AddPartitionDesc apd = new AddPartitionDesc(
-            table.getDbName(), table.getTableName(), false);
-        try {
-          int batch_size = conf.getIntVar(ConfVars.HIVE_MSCK_REPAIR_BATCH_SIZE);
-          if (batch_size > 0 && partsNotInMs.size() > batch_size) {
-            int counter = 0;
-            for (CheckResult.PartitionResult part : partsNotInMs) {
-              counter++;
-              apd.addPartition(Warehouse.makeSpecFromName(part.getPartitionName()), null);
-              repairOutput.add("Repair: Added partition to metastore " + msckDesc.getTableName()
-                  + ':' + part.getPartitionName());
-              if (counter % batch_size == 0 || counter == partsNotInMs.size()) {
-                db.createPartitions(apd);
-                apd = new AddPartitionDesc(table.getDbName(), table.getTableName(), false);
-              }
-            }
-          } else {
-            for (CheckResult.PartitionResult part : partsNotInMs) {
-              apd.addPartition(Warehouse.makeSpecFromName(part.getPartitionName()), null);
-              repairOutput.add("Repair: Added partition to metastore " + msckDesc.getTableName()
-                  + ':' + part.getPartitionName());
-            }
-            db.createPartitions(apd);
-          }
-        } catch (Exception e) {
-          LOG.info("Could not bulk-add partitions to metastore; trying one by one", e);
-          repairOutput.clear();
-          msckAddPartitionsOneByOne(db, table, partsNotInMs, repairOutput);
-        }
-      }
-    } catch (HiveException e) {
-      LOG.warn("Failed to run metacheck: ", e);
+      MsckInfo msckInfo = new MsckInfo(SessionState.get().getCurrentCatalog(), names[0],
+        names[1], msckDesc.getPartSpecs(), msckDesc.getResFile(),
+        msckDesc.isRepairPartitions(), msckDesc.isAddPartitions(), msckDesc.isDropPartitions(), -1);
+      return msck.repair(msckInfo);
+    } catch (MetaException e) {
+      LOG.error("Unable to create msck instance.", e);
       return 1;
-    } catch (IOException e) {
-      LOG.warn("Failed to run metacheck: ", e);
-      return 1;
-    } finally {
-      BufferedWriter resultOut = null;
-      try {
-        Path resFile = new Path(msckDesc.getResFile());
-        FileSystem fs = resFile.getFileSystem(conf);
-        resultOut = new BufferedWriter(new OutputStreamWriter(fs
-            .create(resFile)));
-
-        boolean firstWritten = false;
-        firstWritten |= writeMsckResult(result.getTablesNotInMs(),
-            "Tables not in metastore:", resultOut, firstWritten);
-        firstWritten |= writeMsckResult(result.getTablesNotOnFs(),
-            "Tables missing on filesystem:", resultOut, firstWritten);
-        firstWritten |= writeMsckResult(result.getPartitionsNotInMs(),
-            "Partitions not in metastore:", resultOut, firstWritten);
-        firstWritten |= writeMsckResult(result.getPartitionsNotOnFs(),
-            "Partitions missing from filesystem:", resultOut, firstWritten);
-        for (String rout : repairOutput) {
-          if (firstWritten) {
-            resultOut.write(terminator);
-          } else {
-            firstWritten = true;
-          }
-          resultOut.write(rout);
-        }
-      } catch (IOException e) {
-        LOG.warn("Failed to save metacheck output: ", e);
-        return 1;
-      } finally {
-        if (resultOut != null) {
-          try {
-            resultOut.close();
-          } catch (IOException e) {
-            LOG.warn("Failed to close output file: ", e);
-            return 1;
-          }
-        }
-      }
-    }
-
-    return 0;
-  }
-
-  /**
-   * Write the result of msck to a writer.
-   *
-   * @param result
-   *          The result we're going to write
-   * @param msg
-   *          Message to write.
-   * @param out
-   *          Writer to write to
-   * @param wrote
-   *          if any previous call wrote data
-   * @return true if something was written
-   * @throws IOException
-   *           In case the writing fails
-   */
-  private boolean writeMsckResult(Set<? extends Object> result, String msg,
-      Writer out, boolean wrote) throws IOException {
-
-    if (!result.isEmpty()) {
-      if (wrote) {
-        out.write(terminator);
-      }
-
-      out.write(msg);
-      for (Object entry : result) {
-        out.write(separator);
-        out.write(entry.toString());
-      }
-      return true;
-    }
-
-    return false;
-  }
-
-  /**
-   * Write a list of partitions to a file.
-   *
-   * @param db
-   *          The database in question.
-   * @param showParts
-   *          These are the partitions we're interested in.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
-   */
-  private int showPartitions(Hive db, ShowPartitionsDesc showParts) throws HiveException {
-    // get the partitions for the table and populate the output
-    String tabName = showParts.getTabName();
-    Table tbl = null;
-    List<String> parts = null;
-
-    tbl = db.getTable(tabName);
-
-    if (!tbl.isPartitioned()) {
-      throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, tabName);
-    }
-    if (showParts.getPartSpec() != null) {
-      parts = db.getPartitionNames(tbl.getDbName(),
-          tbl.getTableName(), showParts.getPartSpec(), (short) -1);
-    } else {
-      parts = db.getPartitionNames(tbl.getDbName(), tbl.getTableName(), (short) -1);
-    }
-
-    // write the results in the file
-    DataOutputStream outStream = getOutputStream(showParts.getResFile());
-    try {
-      formatter.showTablePartitions(outStream, parts);
-    } catch (Exception e) {
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "show partitions for table " + tabName);
-    } finally {
-      IOUtils.closeStream(outStream);
-    }
-
-    return 0;
-  }
-
-  private static final String[] DELIMITER_PREFIXES = new String[] {
-      "FIELDS TERMINATED BY",
-      "COLLECTION ITEMS TERMINATED BY",
-      "MAP KEYS TERMINATED BY",
-      "LINES TERMINATED BY",
-      "NULL DEFINED AS"
-  };
-
-  private int showCreateDatabase(Hive db, ShowCreateDatabaseDesc showCreateDb) throws HiveException {
-    DataOutputStream outStream = getOutputStream(showCreateDb.getResFile());
-    try {
-      String dbName = showCreateDb.getDatabaseName();
-      return showCreateDatabase(db, outStream, dbName);
-    } catch (Exception e) {
-      throw new HiveException(e);
-    } finally {
-      IOUtils.closeStream(outStream);
-    }
-  }
-
-  private int showCreateDatabase(Hive db, DataOutputStream outStream, String databaseName)
-      throws Exception {
-    Database database = db.getDatabase(databaseName);
-
-    StringBuilder createDb_str = new StringBuilder();
-    createDb_str.append("CREATE DATABASE `").append(database.getName()).append("`\n");
-    if (database.getDescription() != null) {
-      createDb_str.append("COMMENT\n  '");
-      createDb_str.append(
-          HiveStringUtils.escapeHiveCommand(database.getDescription())).append("'\n");
-    }
-    createDb_str.append("LOCATION\n  '");
-    createDb_str.append(database.getLocationUri()).append("'\n");
-    String propertiesToString = propertiesToString(database.getParameters(), null);
-    if (!propertiesToString.isEmpty()) {
-      createDb_str.append("WITH DBPROPERTIES (\n");
-      createDb_str.append(propertiesToString).append(")\n");
-    }
-
-    outStream.write(createDb_str.toString().getBytes("UTF-8"));
-    return 0;
-  }
-
-  /**
-   * Write a statement of how to create a table to a file.
-   *
-   * @param db
-   *          The database in question.
-   * @param showCreateTbl
-   *          This is the table we're interested in.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
-   */
-  private int showCreateTable(Hive db, ShowCreateTableDesc showCreateTbl) throws HiveException {
-    // get the create table statement for the table and populate the output
-    DataOutputStream outStream = getOutputStream(showCreateTbl.getResFile());
-    try {
-      String tableName = showCreateTbl.getTableName();
-      return showCreateTable(db, outStream, tableName);
-    } catch (Exception e) {
-      throw new HiveException(e);
-    } finally {
-      IOUtils.closeStream(outStream);
-    }
-  }
-
-  private int showCreateTable(Hive db, DataOutputStream outStream, String tableName)
-      throws HiveException {
-    final String EXTERNAL = "external";
-    final String TEMPORARY = "temporary";
-    final String LIST_COLUMNS = "columns";
-    final String TBL_COMMENT = "tbl_comment";
-    final String LIST_PARTITIONS = "partitions";
-    final String SORT_BUCKET = "sort_bucket";
-    final String SKEWED_INFO = "tbl_skewedinfo";
-    final String ROW_FORMAT = "row_format";
-    final String TBL_LOCATION = "tbl_location";
-    final String TBL_PROPERTIES = "tbl_properties";
-    boolean needsLocation = true;
-    StringBuilder createTab_str = new StringBuilder();
-
-    Table tbl = db.getTable(tableName, false);
-    List<String> duplicateProps = new ArrayList<String>();
-    try {
-      needsLocation = doesTableNeedLocation(tbl);
-
-      if (tbl.isView()) {
-        String createTab_stmt = "CREATE VIEW `" + tableName + "` AS " +
-            tbl.getViewExpandedText();
-        outStream.write(createTab_stmt.getBytes(StandardCharsets.UTF_8));
-        return 0;
-      }
-
-      createTab_str.append("CREATE <" + TEMPORARY + "><" + EXTERNAL + ">TABLE `");
-      createTab_str.append(tableName + "`(\n");
-      createTab_str.append("<" + LIST_COLUMNS + ">)\n");
-      createTab_str.append("<" + TBL_COMMENT + ">\n");
-      createTab_str.append("<" + LIST_PARTITIONS + ">\n");
-      createTab_str.append("<" + SORT_BUCKET + ">\n");
-      createTab_str.append("<" + SKEWED_INFO + ">\n");
-      createTab_str.append("<" + ROW_FORMAT + ">\n");
-      if (needsLocation) {
-        createTab_str.append("LOCATION\n");
-        createTab_str.append("<" + TBL_LOCATION + ">\n");
-      }
-      createTab_str.append("TBLPROPERTIES (\n");
-      createTab_str.append("<" + TBL_PROPERTIES + ">)\n");
-      ST createTab_stmt = new ST(createTab_str.toString());
-
-      // For cases where the table is temporary
-      String tbl_temp = "";
-      if (tbl.isTemporary()) {
-        duplicateProps.add("TEMPORARY");
-        tbl_temp = "TEMPORARY ";
-      }
-      // For cases where the table is external
-      String tbl_external = "";
-      if (tbl.getTableType() == TableType.EXTERNAL_TABLE) {
-        duplicateProps.add("EXTERNAL");
-        tbl_external = "EXTERNAL ";
-      }
-
-      // Columns
-      String tbl_columns = "";
-      List<FieldSchema> cols = tbl.getCols();
-      List<String> columns = new ArrayList<String>();
-      for (FieldSchema col : cols) {
-        String columnDesc = "  `" + col.getName() + "` " + col.getType();
-        if (col.getComment() != null) {
-          columnDesc = columnDesc + " COMMENT '"
-              + HiveStringUtils.escapeHiveCommand(col.getComment()) + "'";
-        }
-        columns.add(columnDesc);
-      }
-      tbl_columns = StringUtils.join(columns, ", \n");
-
-      // Table comment
-      String tbl_comment = "";
-      String tabComment = tbl.getProperty("comment");
-      if (tabComment != null) {
-        duplicateProps.add("comment");
-        tbl_comment = "COMMENT '"
-            + HiveStringUtils.escapeHiveCommand(tabComment) + "'";
-      }
-
-      // Partitions
-      String tbl_partitions = "";
-      List<FieldSchema> partKeys = tbl.getPartitionKeys();
-      if (partKeys.size() > 0) {
-        tbl_partitions += "PARTITIONED BY ( \n";
-        List<String> partCols = new ArrayList<String>();
-        for (FieldSchema partKey : partKeys) {
-          String partColDesc = "  `" + partKey.getName() + "` " + partKey.getType();
-          if (partKey.getComment() != null) {
-            partColDesc = partColDesc + " COMMENT '"
-                + HiveStringUtils.escapeHiveCommand(partKey.getComment()) + "'";
-          }
-          partCols.add(partColDesc);
-        }
-        tbl_partitions += StringUtils.join(partCols, ", \n");
-        tbl_partitions += ")";
-      }
-
-      // Clusters (Buckets)
-      String tbl_sort_bucket = "";
-      List<String> buckCols = tbl.getBucketCols();
-      if (buckCols.size() > 0) {
-        duplicateProps.add("SORTBUCKETCOLSPREFIX");
-        tbl_sort_bucket += "CLUSTERED BY ( \n  ";
-        tbl_sort_bucket += StringUtils.join(buckCols, ", \n  ");
-        tbl_sort_bucket += ") \n";
-        List<Order> sortCols = tbl.getSortCols();
-        if (sortCols.size() > 0) {
-          tbl_sort_bucket += "SORTED BY ( \n";
-          // Order
-          List<String> sortKeys = new ArrayList<String>();
-          for (Order sortCol : sortCols) {
-            String sortKeyDesc = "  " + sortCol.getCol() + " ";
-            if (sortCol.getOrder() == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC) {
-              sortKeyDesc = sortKeyDesc + "ASC";
-            }
-            else if (sortCol.getOrder() == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_DESC) {
-              sortKeyDesc = sortKeyDesc + "DESC";
-            }
-            sortKeys.add(sortKeyDesc);
-          }
-          tbl_sort_bucket += StringUtils.join(sortKeys, ", \n");
-          tbl_sort_bucket += ") \n";
-        }
-        tbl_sort_bucket += "INTO " + tbl.getNumBuckets() + " BUCKETS";
-      }
-
-      // Skewed Info
-      StringBuilder tbl_skewedinfo = new StringBuilder();
-      SkewedInfo skewedInfo = tbl.getSkewedInfo();
-      if (skewedInfo != null && !skewedInfo.getSkewedColNames().isEmpty()) {
-        tbl_skewedinfo.append("SKEWED BY (" + StringUtils.join(skewedInfo.getSkewedColNames(), ",") + ")\n");
-        tbl_skewedinfo.append("  ON (");
-        List<String> colValueList = new ArrayList<String>();
-        for (List<String> colValues : skewedInfo.getSkewedColValues()) {
-          colValueList.add("('" + StringUtils.join(colValues, "','") + "')");
-        }
-        tbl_skewedinfo.append(StringUtils.join(colValueList, ",") + ")");
-        if (tbl.isStoredAsSubDirectories()) {
-          tbl_skewedinfo.append("\n  STORED AS DIRECTORIES");
-        }
-      }
-
-      // Row format (SerDe)
-      StringBuilder tbl_row_format = new StringBuilder();
-      StorageDescriptor sd = tbl.getTTable().getSd();
-      SerDeInfo serdeInfo = sd.getSerdeInfo();
-      Map<String, String> serdeParams = serdeInfo.getParameters();
-      tbl_row_format.append("ROW FORMAT SERDE \n");
-      tbl_row_format.append("  '"
-          + HiveStringUtils.escapeHiveCommand(serdeInfo.getSerializationLib()) + "' \n");
-      if (tbl.getStorageHandler() == null) {
-        // If serialization.format property has the default value, it will not to be included in
-        // SERDE properties
-        if (MetaStoreUtils.DEFAULT_SERIALIZATION_FORMAT.equals(serdeParams.get(
-            serdeConstants.SERIALIZATION_FORMAT))){
-          serdeParams.remove(serdeConstants.SERIALIZATION_FORMAT);
-        }
-        if (!serdeParams.isEmpty()) {
-          appendSerdeParams(tbl_row_format, serdeParams).append(" \n");
-        }
-        tbl_row_format.append("STORED AS INPUTFORMAT \n  '"
-            + HiveStringUtils.escapeHiveCommand(sd.getInputFormat()) + "' \n");
-        tbl_row_format.append("OUTPUTFORMAT \n  '"
-            + HiveStringUtils.escapeHiveCommand(sd.getOutputFormat()) + "'");
-      } else {
-        duplicateProps.add(META_TABLE_STORAGE);
-        tbl_row_format.append("STORED BY \n  '"
-            + HiveStringUtils.escapeHiveCommand(tbl.getParameters().get(
-            META_TABLE_STORAGE)) + "' \n");
-        // SerDe Properties
-        if (!serdeParams.isEmpty()) {
-          appendSerdeParams(tbl_row_format, serdeInfo.getParameters());
-        }
-      }
-      String tbl_location = "  '" + HiveStringUtils.escapeHiveCommand(sd.getLocation()) + "'";
-
-      // Table properties
-      duplicateProps.addAll(Arrays.asList(StatsSetupConst.TABLE_PARAMS_STATS_KEYS));
-      String tbl_properties = propertiesToString(tbl.getParameters(), duplicateProps);
-
-      createTab_stmt.add(TEMPORARY, tbl_temp);
-      createTab_stmt.add(EXTERNAL, tbl_external);
-      createTab_stmt.add(LIST_COLUMNS, tbl_columns);
-      createTab_stmt.add(TBL_COMMENT, tbl_comment);
-      createTab_stmt.add(LIST_PARTITIONS, tbl_partitions);
-      createTab_stmt.add(SORT_BUCKET, tbl_sort_bucket);
-      createTab_stmt.add(SKEWED_INFO, tbl_skewedinfo);
-      createTab_stmt.add(ROW_FORMAT, tbl_row_format);
-      // Table location should not be printed with hbase backed tables
-      if (needsLocation) {
-        createTab_stmt.add(TBL_LOCATION, tbl_location);
-      }
-      createTab_stmt.add(TBL_PROPERTIES, tbl_properties);
-
-      outStream.write(createTab_stmt.render().getBytes(StandardCharsets.UTF_8));
-    } catch (IOException e) {
-      LOG.info("show create table: " + stringifyException(e));
+    } catch (SemanticException e) {
+      LOG.error("Msck failed.", e);
       return 1;
     }
-
-    return 0;
-  }
-
-  private String propertiesToString(Map<String, String> props, List<String> exclude) {
-    String prop_string = "";
-    if (!props.isEmpty()) {
-      Map<String, String> properties = new TreeMap<String, String>(props);
-      List<String> realProps = new ArrayList<String>();
-      for (String key : properties.keySet()) {
-        if (properties.get(key) != null && (exclude == null || !exclude.contains(key))) {
-          realProps.add("  '" + key + "'='" +
-              HiveStringUtils.escapeHiveCommand(properties.get(key)) + "'");
-        }
-      }
-      prop_string += StringUtils.join(realProps, ", \n");
-    }
-    return prop_string;
-  }
-
-  private StringBuilder appendSerdeParams(StringBuilder builder, Map<String, String> serdeParam) {
-    serdeParam = new TreeMap<String, String>(serdeParam);
-    builder.append("WITH SERDEPROPERTIES ( \n");
-    List<String> serdeCols = new ArrayList<String>();
-    for (Entry<String, String> entry : serdeParam.entrySet()) {
-      serdeCols.add("  '" + entry.getKey() + "'='"
-          + HiveStringUtils.escapeHiveCommand(entry.getValue()) + "'");
-    }
-    builder.append(StringUtils.join(serdeCols, ", \n")).append(')');
-    return builder;
   }
 
   /**
-   * Write a list of indexes to a file.
-   *
-   * @param db
-   *          The database in question.
-   * @param showIndexes
-   *          These are the indexes we're interested in.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
-   */
-  private int showIndexes(Hive db, ShowIndexesDesc showIndexes) throws HiveException {
-    // get the indexes for the table and populate the output
-    String tableName = showIndexes.getTableName();
-    Table tbl = null;
-    List<Index> indexes = null;
-
-    tbl = db.getTable(tableName);
-
-    indexes = db.getIndexes(tbl.getDbName(), tbl.getTableName(), (short) -1);
-
-    // In case the query is served by HiveServer2, don't pad it with spaces,
-    // as HiveServer2 output is consumed by JDBC/ODBC clients.
-    boolean isOutputPadded = !SessionState.get().isHiveServerQuery();
-
-    // write the results in the file
-    DataOutputStream outStream = getOutputStream(showIndexes.getResFile());
-    try {
-      if (showIndexes.isFormatted()) {
-        // column headers
-        outStream.write(MetaDataFormatUtils.getIndexColumnsHeader().getBytes(StandardCharsets.UTF_8));
-        outStream.write(terminator);
-        outStream.write(terminator);
-      }
-
-      for (Index index : indexes)
-      {
-        outStream.write(MetaDataFormatUtils.getIndexInformation(index, isOutputPadded).getBytes(StandardCharsets.UTF_8));
-      }
-    } catch (FileNotFoundException e) {
-      LOG.info("show indexes: " + stringifyException(e));
-      throw new HiveException(e.toString());
-    } catch (IOException e) {
-      LOG.info("show indexes: " + stringifyException(e));
-      throw new HiveException(e.toString());
-    } catch (Exception e) {
-      throw new HiveException(e.toString());
-    } finally {
-      IOUtils.closeStream(outStream);
-    }
-
-    return 0;
-  }
-
-  /**
-   * Write a list of the available databases to a file.
-   *
-   * @param showDatabasesDesc
-   *          These are the databases we're interested in.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
-   */
-  private int showDatabases(Hive db, ShowDatabasesDesc showDatabasesDesc) throws HiveException {
-    // get the databases for the desired pattern - populate the output stream
-    List<String> databases = null;
-    if (showDatabasesDesc.getPattern() != null) {
-      LOG.info("pattern: " + showDatabasesDesc.getPattern());
-      databases = db.getDatabasesByPattern(showDatabasesDesc.getPattern());
-    } else {
-      databases = db.getAllDatabases();
-    }
-    LOG.info("results : " + databases.size());
-
-    // write the results in the file
-    DataOutputStream outStream = getOutputStream(showDatabasesDesc.getResFile());
-    try {
-      formatter.showDatabases(outStream, databases);
-    } catch (Exception e) {
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "show databases");
-    } finally {
-      IOUtils.closeStream(outStream);
-    }
-    return 0;
-  }
-
-  /**
-   * Write a list of the tables/views in the database to a file.
+   * Write a list of the columns in the table to a file.
    *
    * @param db
    *          The database in context.
-   * @param showDesc
-   *        A ShowTablesDesc for tables or views we're interested in.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
+   * @param showCols
+   *        A ShowColumnsDesc for columns we're interested in.
+   * @return Returns 0 when execution succeeds.
    * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
+   *        Throws this exception if an unexpected error occurs.
    */
-  private int showTablesOrViews(Hive db, ShowTablesDesc showDesc) throws HiveException {
-    // get the tables/views for the desired pattern - populate the output stream
-    List<String> tablesOrViews = null;
-
-    String dbName      = showDesc.getDbName();
-    String pattern     = showDesc.getPattern(); // if null, all tables/views are returned
-    String resultsFile = showDesc.getResFile();
-    TableType type     = showDesc.getType(); // will be null for tables, VIRTUAL_VIEW for views
-
-    if (!db.databaseExists(dbName)) {
-      throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, dbName);
-    }
-
-    LOG.debug("pattern: " + pattern);
-    tablesOrViews = db.getTablesByType(dbName, pattern, type);
-    LOG.debug("results : " + tablesOrViews.size());
-
-    // write the results in the file
-    DataOutputStream outStream = null;
-    try {
-      Path resFile = new Path(resultsFile);
-      FileSystem fs = resFile.getFileSystem(conf);
-      outStream = fs.create(resFile);
-
-      SortedSet<String> sortedSet = new TreeSet<String>(tablesOrViews);
-      formatter.showTables(outStream, sortedSet);
-      outStream.close();
-      outStream = null;
-    } catch (Exception e) {
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "in database" + dbName);
-    } finally {
-      IOUtils.closeStream(outStream);
-    }
-    return 0;
-  }
-
   public int showColumns(Hive db, ShowColumnsDesc showCols)
       throws HiveException {
 
     Table table = db.getTable(showCols.getTableName());
 
     // write the results in the file
-    DataOutputStream outStream = getOutputStream(showCols.getResFile());;
+    DataOutputStream outStream = getOutputStream(showCols.getResFile());
     try {
-      List<FieldSchema> cols = table.getCols();
-      cols.addAll(table.getPartCols());
+      List<FieldSchema> allCols = table.getCols();
+      allCols.addAll(table.getPartCols());
+      List<FieldSchema> cols = getColumnsByPattern(allCols,showCols.getPattern());
       // In case the query is served by HiveServer2, don't pad it with spaces,
       // as HiveServer2 output is consumed by JDBC/ODBC clients.
       boolean isOutputPadded = !SessionState.get().isHiveServerQuery();
-      outStream.writeBytes(MetaDataFormatUtils.getAllColumnsInformation(
-          cols, false, isOutputPadded, null));
+      TextMetaDataTable tmd = new TextMetaDataTable();
+      for (FieldSchema fieldSchema : cols) {
+        tmd.addRow(MetaDataFormatUtils.extractColumnValues(fieldSchema));
+      }
+      outStream.writeBytes(tmd.renderTable(isOutputPadded));
     } catch (IOException e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
     } finally {
@@ -2542,880 +1166,39 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   /**
-   * Write a list of the user defined functions to a file.
-   * @param db
+   * Returns a sorted list of columns matching a column pattern.
    *
-   * @param showFuncs
-   *          are the functions we're interested in.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
+   * @param cols
+   *        Columns of a table.
+   * @param columnPattern
+   *        we want to find columns similar to a column pattern.
+   * @return sorted list of columns.
    */
-  private int showFunctions(Hive db, ShowFunctionsDesc showFuncs) throws HiveException {
-    // get the tables for the desired patten - populate the output stream
-    Set<String> funcs = null;
-    if (showFuncs.getPattern() != null) {
-      LOG.info("pattern: " + showFuncs.getPattern());
-      if (showFuncs.getIsLikePattern()) {
-         funcs = FunctionRegistry.getFunctionNamesByLikePattern(showFuncs.getPattern());
-      } else {
-         console.printInfo("SHOW FUNCTIONS is deprecated, please use SHOW FUNCTIONS LIKE instead.");
-         funcs = FunctionRegistry.getFunctionNames(showFuncs.getPattern());
-      }
-      LOG.info("results : " + funcs.size());
-    } else {
-      funcs = FunctionRegistry.getFunctionNames();
+  private List<FieldSchema> getColumnsByPattern(List<FieldSchema> cols, String columnPattern) {
+
+    if(columnPattern == null) {
+      columnPattern = "*";
     }
+    columnPattern = columnPattern.toLowerCase();
+    columnPattern = columnPattern.replaceAll("\\*", ".*");
+    Pattern pattern = Pattern.compile(columnPattern);
+    Matcher matcher = pattern.matcher("");
 
-    // write the results in the file
-    DataOutputStream outStream = getOutputStream(showFuncs.getResFile());
-    try {
-      SortedSet<String> sortedFuncs = new TreeSet<String>(funcs);
-      // To remove the primitive types
-      sortedFuncs.removeAll(serdeConstants.PrimitiveTypes);
-      Iterator<String> iterFuncs = sortedFuncs.iterator();
-
-      while (iterFuncs.hasNext()) {
-        // create a row per table name
-        outStream.writeBytes(iterFuncs.next());
-        outStream.write(terminator);
-      }
-    } catch (FileNotFoundException e) {
-      LOG.warn("show function: " + stringifyException(e));
-      return 1;
-    } catch (IOException e) {
-      LOG.warn("show function: " + stringifyException(e));
-      return 1;
-    } catch (Exception e) {
-      throw new HiveException(e);
-    } finally {
-      IOUtils.closeStream(outStream);
-    }
-    return 0;
-  }
-
-  /**
-   * Write a list of the current locks to a file.
-   * @param db
-   *
-   * @param showLocks
-   *          the locks we're interested in.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
-   */
-  private int showLocks(Hive db, ShowLocksDesc showLocks) throws HiveException {
-    Context ctx = driverContext.getCtx();
-    HiveTxnManager txnManager = ctx.getHiveTxnManager();
-    HiveLockManager lockMgr = txnManager.getLockManager();
-
-    if (txnManager.useNewShowLocksFormat()) return showLocksNewFormat(showLocks, lockMgr);
-
-    boolean isExt = showLocks.isExt();
-    if (lockMgr == null) {
-      throw new HiveException("show Locks LockManager not specified");
-    }
-
-    // write the results in the file
-    DataOutputStream outStream = getOutputStream(showLocks.getResFile());
-    try {
-      List<HiveLock> locks = null;
-
-      if (showLocks.getTableName() == null) {
-        // TODO should be doing security check here.  Users should not be
-        // able to see each other's locks.
-        locks = lockMgr.getLocks(false, isExt);
-      }
-      else {
-        locks = lockMgr.getLocks(HiveLockObject.createFrom(db,
-            showLocks.getTableName(), showLocks.getPartSpec()),
-            true, isExt);
-      }
-
-      Collections.sort(locks, new Comparator<HiveLock>() {
-
-        @Override
-        public int compare(HiveLock o1, HiveLock o2) {
-          int cmp = o1.getHiveLockObject().getName().compareTo(o2.getHiveLockObject().getName());
-          if (cmp == 0) {
-            if (o1.getHiveLockMode() == o2.getHiveLockMode()) {
-              return cmp;
-            }
-            // EXCLUSIVE locks occur before SHARED locks
-            if (o1.getHiveLockMode() == HiveLockMode.EXCLUSIVE) {
-              return -1;
-            }
-            return +1;
-          }
-          return cmp;
-        }
-
-      });
-
-      Iterator<HiveLock> locksIter = locks.iterator();
-
-      while (locksIter.hasNext()) {
-        HiveLock lock = locksIter.next();
-        outStream.writeBytes(lock.getHiveLockObject().getDisplayName());
-        outStream.write(separator);
-        outStream.writeBytes(lock.getHiveLockMode().toString());
-        if (isExt) {
-          HiveLockObjectData lockData = lock.getHiveLockObject().getData();
-          if (lockData != null) {
-            outStream.write(terminator);
-            outStream.writeBytes("LOCK_QUERYID:" + lockData.getQueryId());
-            outStream.write(terminator);
-            outStream.writeBytes("LOCK_TIME:" + lockData.getLockTime());
-            outStream.write(terminator);
-            outStream.writeBytes("LOCK_MODE:" + lockData.getLockMode());
-            outStream.write(terminator);
-            outStream.writeBytes("LOCK_QUERYSTRING:" + lockData.getQueryStr());
-          }
-        }
-        outStream.write(terminator);
-      }
-    } catch (FileNotFoundException e) {
-      LOG.warn("show function: " + stringifyException(e));
-      return 1;
-    } catch (IOException e) {
-      LOG.warn("show function: " + stringifyException(e));
-      return 1;
-    } catch (Exception e) {
-      throw new HiveException(e.toString(), e);
-    } finally {
-      IOUtils.closeStream(outStream);
-    }
-    return 0;
-  }
-  public static void dumpLockInfo(DataOutputStream os, ShowLocksResponse rsp) throws IOException {
-    // Write a header
-    os.writeBytes("Lock ID");
-    os.write(separator);
-    os.writeBytes("Database");
-    os.write(separator);
-    os.writeBytes("Table");
-    os.write(separator);
-    os.writeBytes("Partition");
-    os.write(separator);
-    os.writeBytes("State");
-    os.write(separator);
-    os.writeBytes("Blocked By");
-    os.write(separator);
-    os.writeBytes("Type");
-    os.write(separator);
-    os.writeBytes("Transaction ID");
-    os.write(separator);
-    os.writeBytes("Last Heartbeat");
-    os.write(separator);
-    os.writeBytes("Acquired At");
-    os.write(separator);
-    os.writeBytes("User");
-    os.write(separator);
-    os.writeBytes("Hostname");
-    os.write(separator);
-    os.writeBytes("Agent Info");
-    os.write(terminator);
-
-    List<ShowLocksResponseElement> locks = rsp.getLocks();
-    if (locks != null) {
-      for (ShowLocksResponseElement lock : locks) {
-        if(lock.isSetLockIdInternal()) {
-          os.writeBytes(Long.toString(lock.getLockid()) + "." + Long.toString(lock.getLockIdInternal()));
-        }
-        else {
-          os.writeBytes(Long.toString(lock.getLockid()));
-        }
-        os.write(separator);
-        os.writeBytes(lock.getDbname());
-        os.write(separator);
-        os.writeBytes((lock.getTablename() == null) ? "NULL" : lock.getTablename());
-        os.write(separator);
-        os.writeBytes((lock.getPartname() == null) ? "NULL" : lock.getPartname());
-        os.write(separator);
-        os.writeBytes(lock.getState().toString());
-        os.write(separator);
-        if(lock.isSetBlockedByExtId()) {//both "blockedby" are either there or not
-          os.writeBytes(Long.toString(lock.getBlockedByExtId()) + "." + Long.toString(lock.getBlockedByIntId()));
-        }
-        else {
-          os.writeBytes("            ");//12 chars - try to keep cols aligned
-        }
-        os.write(separator);
-        os.writeBytes(lock.getType().toString());
-        os.write(separator);
-        os.writeBytes((lock.getTxnid() == 0) ? "NULL" : Long.toString(lock.getTxnid()));
-        os.write(separator);
-        os.writeBytes(Long.toString(lock.getLastheartbeat()));
-        os.write(separator);
-        os.writeBytes((lock.getAcquiredat() == 0) ? "NULL" : Long.toString(lock.getAcquiredat()));
-        os.write(separator);
-        os.writeBytes(lock.getUser());
-        os.write(separator);
-        os.writeBytes(lock.getHostname());
-        os.write(separator);
-        os.writeBytes(lock.getAgentInfo() == null ? "NULL" : lock.getAgentInfo());
-        os.write(separator);
-        os.write(terminator);
-      }
-    }
-  }
-  private int showLocksNewFormat(ShowLocksDesc showLocks, HiveLockManager lm)
-      throws  HiveException {
-
-    DbLockManager lockMgr;
-    if (!(lm instanceof DbLockManager)) {
-      throw new RuntimeException("New lock format only supported with db lock manager.");
-    }
-    lockMgr = (DbLockManager)lm;
-
-    String dbName = showLocks.getDbName();
-    String tblName = showLocks.getTableName();
-    Map<String, String> partSpec = showLocks.getPartSpec();
-    if (dbName == null && tblName != null) {
-      dbName = SessionState.get().getCurrentDatabase();
-    }
-
-    ShowLocksRequest rqst = new ShowLocksRequest();
-    rqst.setDbname(dbName);
-    rqst.setTablename(tblName);
-    if (partSpec != null) {
-      List<String> keyList = new ArrayList<String>();
-      List<String> valList = new ArrayList<String>();
-      for (String partKey : partSpec.keySet()) {
-        String partVal = partSpec.remove(partKey);
-        keyList.add(partKey);
-        valList.add(partVal);
-      }
-      String partName = FileUtils.makePartName(keyList, valList);
-      rqst.setPartname(partName);
-    }
-
-    ShowLocksResponse rsp = lockMgr.getLocks(rqst);
-
-    // write the results in the file
-    DataOutputStream os = getOutputStream(showLocks.getResFile());
-    try {
-      dumpLockInfo(os, rsp);
-    } catch (FileNotFoundException e) {
-      LOG.warn("show function: " + stringifyException(e));
-      return 1;
-    } catch (IOException e) {
-      LOG.warn("show function: " + stringifyException(e));
-      return 1;
-    } catch (Exception e) {
-      throw new HiveException(e.toString());
-    } finally {
-      IOUtils.closeStream(os);
-    }
-    return 0;
-  }
-
-  private int showCompactions(Hive db, ShowCompactionsDesc desc) throws HiveException {
-    // Call the metastore to get the currently queued and running compactions.
-    ShowCompactResponse rsp = db.showCompactions();
-
-    // Write the results into the file
-    final String noVal = " --- ";
-
-    DataOutputStream os = getOutputStream(desc.getResFile());
-    try {
-      // Write a header
-      os.writeBytes("Database");
-      os.write(separator);
-      os.writeBytes("Table");
-      os.write(separator);
-      os.writeBytes("Partition");
-      os.write(separator);
-      os.writeBytes("Type");
-      os.write(separator);
-      os.writeBytes("State");
-      os.write(separator);
-      os.writeBytes("Worker");
-      os.write(separator);
-      os.writeBytes("Start Time");
-      os.write(separator);
-      os.writeBytes("Duration(ms)");
-      os.write(separator);
-      os.writeBytes("HadoopJobId");
-      os.write(terminator);
-
-      if (rsp.getCompacts() != null) {
-        for (ShowCompactResponseElement e : rsp.getCompacts()) {
-          os.writeBytes(e.getDbname());
-          os.write(separator);
-          os.writeBytes(e.getTablename());
-          os.write(separator);
-          String part = e.getPartitionname();
-          os.writeBytes(part == null ? noVal : part);
-          os.write(separator);
-          os.writeBytes(e.getType().toString());
-          os.write(separator);
-          os.writeBytes(e.getState());
-          os.write(separator);
-          String wid = e.getWorkerid();
-          os.writeBytes(wid == null ? noVal : wid);
-          os.write(separator);
-          os.writeBytes(e.isSetStart() ? Long.toString(e.getStart()) : noVal);
-          os.write(separator);
-          os.writeBytes(e.isSetEndTime() ? Long.toString(e.getEndTime() - e.getStart()) : noVal);
-          os.write(separator);
-          os.writeBytes(e.isSetHadoopJobId() ?  e.getHadoopJobId() : noVal);
-          os.write(terminator);
-        }
-      }
-    } catch (IOException e) {
-      LOG.warn("show compactions: " + stringifyException(e));
-      return 1;
-    } finally {
-      IOUtils.closeStream(os);
-    }
-    return 0;
-  }
-
-  private int showTxns(Hive db, ShowTxnsDesc desc) throws HiveException {
-    // Call the metastore to get the currently queued and running compactions.
-    GetOpenTxnsInfoResponse rsp = db.showTransactions();
-
-    // Write the results into the file
-    DataOutputStream os = getOutputStream(desc.getResFile());
-    try {
-      // Write a header
-      os.writeBytes("Transaction ID");
-      os.write(separator);
-      os.writeBytes("Transaction State");
-      os.write(separator);
-      os.writeBytes("Started Time");
-      os.write(separator);
-      os.writeBytes("Last Heartbeat Time");
-      os.write(separator);
-      os.writeBytes("User");
-      os.write(separator);
-      os.writeBytes("Hostname");
-      os.write(terminator);
-
-      for (TxnInfo txn : rsp.getOpen_txns()) {
-        os.writeBytes(Long.toString(txn.getId()));
-        os.write(separator);
-        os.writeBytes(txn.getState().toString());
-        os.write(separator);
-        os.writeBytes(Long.toString(txn.getStartedTime()));
-        os.write(separator);
-        os.writeBytes(Long.toString(txn.getLastHeartbeatTime()));
-        os.write(separator);
-        os.writeBytes(txn.getUser());
-        os.write(separator);
-        os.writeBytes(txn.getHostname());
-        os.write(terminator);
-      }
-    } catch (IOException e) {
-      LOG.warn("show transactions: " + stringifyException(e));
-      return 1;
-    } finally {
-      IOUtils.closeStream(os);
-    }
-    return 0;
-  }
-
-  private int abortTxns(Hive db, AbortTxnsDesc desc) throws HiveException {
-    db.abortTransactions(desc.getTxnids());
-    return 0;
-  }
-
-   /**
-   * Lock the table/partition specified
-   * @param db
-   *
-   * @param lockTbl
-   *          the table/partition to be locked along with the mode
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
-   */
-  private int lockTable(Hive db, LockTableDesc lockTbl) throws HiveException {
-    Context ctx = driverContext.getCtx();
-    HiveTxnManager txnManager = ctx.getHiveTxnManager();
-    return txnManager.lockTable(db, lockTbl);
-  }
-
-  /**
-   * Lock the database
-   *
-   * @param lockDb
-   *          the database to be locked along with the mode
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
-   */
-  private int lockDatabase(Hive db, LockDatabaseDesc lockDb) throws HiveException {
-    Context ctx = driverContext.getCtx();
-    HiveTxnManager txnManager = ctx.getHiveTxnManager();
-    return txnManager.lockDatabase(db, lockDb);
-  }
-
-  /**
-   * Unlock the database specified
-   *
-   * @param unlockDb
-   *          the database to be unlocked
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
-   */
-  private int unlockDatabase(Hive db, UnlockDatabaseDesc unlockDb) throws HiveException {
-    Context ctx = driverContext.getCtx();
-    HiveTxnManager txnManager = ctx.getHiveTxnManager();
-    return txnManager.unlockDatabase(db, unlockDb);
-  }
-
-  /**
-   * Unlock the table/partition specified
-   * @param db
-   *
-   * @param unlockTbl
-   *          the table/partition to be unlocked
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
-   */
-  private int unlockTable(Hive db, UnlockTableDesc unlockTbl) throws HiveException {
-    Context ctx = driverContext.getCtx();
-    HiveTxnManager txnManager = ctx.getHiveTxnManager();
-    return txnManager.unlockTable(db, unlockTbl);
-  }
-
-  /**
-   * Shows a description of a function.
-   * @param db
-   *
-   * @param descFunc
-   *          is the function we are describing
-   * @throws HiveException
-   */
-  private int describeFunction(Hive db, DescFunctionDesc descFunc) throws HiveException, SQLException {
-    String funcName = descFunc.getName();
-
-    // write the results in the file
-    DataOutputStream outStream = getOutputStream(descFunc.getResFile());
-    try {
-      // get the function documentation
-      Description desc = null;
-      Class<?> funcClass = null;
-      FunctionInfo functionInfo = FunctionRegistry.getFunctionInfo(funcName);
-      if (functionInfo != null) {
-        funcClass = functionInfo.getFunctionClass();
-      }
-      if (funcClass != null) {
-        desc = AnnotationUtils.getAnnotation(funcClass, Description.class);
-      }
-      if (desc != null) {
-        outStream.writeBytes(desc.value().replace("_FUNC_", funcName));
-        if (descFunc.isExtended()) {
-          Set<String> synonyms = FunctionRegistry.getFunctionSynonyms(funcName);
-          if (synonyms.size() > 0) {
-            outStream.writeBytes("\nSynonyms: " + join(synonyms, ", "));
-          }
-          if (desc.extended().length() > 0) {
-            outStream.writeBytes("\n"
-                + desc.extended().replace("_FUNC_", funcName));
-          }
-        }
-      } else {
-        if (funcClass != null) {
-          outStream.writeBytes("There is no documentation for function '"
-              + funcName + "'");
-        } else {
-          outStream.writeBytes("Function '" + funcName + "' does not exist.");
-        }
-      }
-
-      outStream.write(terminator);
-      if (descFunc.isExtended()) {
-        if (funcClass != null) {
-          outStream.writeBytes("Function class:" + funcClass.getName() + "\n");
-        }
-        if (functionInfo != null) {
-          outStream.writeBytes("Function type:" + functionInfo.getFunctionType() + "\n");
-          FunctionResource[] resources = functionInfo.getResources();
-          if (resources != null) {
-            for (FunctionResource resource : resources) {
-              outStream.writeBytes("Resource:" + resource.getResourceURI() + "\n");
-            }
-          }
-        }
-      }
-    } catch (FileNotFoundException e) {
-      LOG.warn("describe function: " + stringifyException(e));
-      return 1;
-    } catch (IOException e) {
-      LOG.warn("describe function: " + stringifyException(e));
-      return 1;
-    } catch (Exception e) {
-      throw new HiveException(e);
-    } finally {
-      IOUtils.closeStream(outStream);
-    }
-    return 0;
-  }
-
-  private int descDatabase(Hive db, DescDatabaseDesc descDatabase) throws HiveException {
-    DataOutputStream outStream = getOutputStream(descDatabase.getResFile());
-    try {
-      Database database = db.getDatabase(descDatabase.getDatabaseName());
-
-      if (database == null) {
-        throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, descDatabase.getDatabaseName());
-      }
-      Map<String, String> params = null;
-      if (descDatabase.isExt()) {
-        params = database.getParameters();
-      }
-
-      // If this is a q-test, let's order the params map (lexicographically) by
-      // key. This is to get consistent param ordering between Java7 and Java8.
-      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST) &&
-          params != null) {
-        params = new TreeMap<String, String>(params);
-      }
-
-      String location = database.getLocationUri();
-      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST)) {
-        location = "location/in/test";
-      }
-      PrincipalType ownerType = database.getOwnerType();
-      formatter.showDatabaseDescription(outStream, database.getName(),
-          database.getDescription(), location,
-          database.getOwnerName(), (null == ownerType) ? null : ownerType.name(), params);
-
-    } catch (Exception e) {
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
-    } finally {
-      IOUtils.closeStream(outStream);
-    }
-    return 0;
-  }
-
-  /**
-   * Write the status of tables to a file.
-   *
-   * @param db
-   *          The database in question.
-   * @param showTblStatus
-   *          tables we are interested in
-   * @return Return 0 when execution succeeds and above 0 if it fails.
-   */
-  private int showTableStatus(Hive db, ShowTableStatusDesc showTblStatus) throws HiveException {
-    // get the tables for the desired pattern - populate the output stream
-    List<Table> tbls = new ArrayList<Table>();
-    Map<String, String> part = showTblStatus.getPartSpec();
-    Partition par = null;
-    if (part != null) {
-      Table tbl = db.getTable(showTblStatus.getDbName(), showTblStatus.getPattern());
-      par = db.getPartition(tbl, part, false);
-      if (par == null) {
-        throw new HiveException("Partition " + part + " for table "
-            + showTblStatus.getPattern() + " does not exist.");
-      }
-      tbls.add(tbl);
-    } else {
-      LOG.info("pattern: " + showTblStatus.getPattern());
-      List<String> tblStr = db.getTablesForDb(showTblStatus.getDbName(),
-          showTblStatus.getPattern());
-      SortedSet<String> sortedTbls = new TreeSet<String>(tblStr);
-      Iterator<String> iterTbls = sortedTbls.iterator();
-      while (iterTbls.hasNext()) {
-        // create a row per table name
-        String tblName = iterTbls.next();
-        Table tbl = db.getTable(showTblStatus.getDbName(), tblName);
-        tbls.add(tbl);
-      }
-      LOG.info("results : " + tblStr.size());
-    }
-
-    // write the results in the file
-    DataOutputStream outStream = getOutputStream(showTblStatus.getResFile());
-    try {
-      formatter.showTableStatus(outStream, db, conf, tbls, part, par);
-    } catch (Exception e) {
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "show table status");
-    } finally {
-      IOUtils.closeStream(outStream);
-    }
-    return 0;
-  }
-
-  /**
-   * Write the properties of a table to a file.
-   *
-   * @param db
-   *          The database in question.
-   * @param showTblPrpt
-   *          This is the table we're interested in.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
-   */
-  private int showTableProperties(Hive db, ShowTblPropertiesDesc showTblPrpt) throws HiveException {
-    String tableName = showTblPrpt.getTableName();
-
-    // show table properties - populate the output stream
-    Table tbl = db.getTable(tableName, false);
-    try {
-      if (tbl == null) {
-        String errMsg = "Table " + tableName + " does not exist";
-        writeToFile(errMsg, showTblPrpt.getResFile());
-        return 0;
-      }
-
-      LOG.info("DDLTask: show properties for " + tbl.getTableName());
-
-      StringBuilder builder = new StringBuilder();
-      String propertyName = showTblPrpt.getPropertyName();
-      if (propertyName != null) {
-        String propertyValue = tbl.getProperty(propertyName);
-        if (propertyValue == null) {
-          String errMsg = "Table " + tableName + " does not have property: " + propertyName;
-          builder.append(errMsg);
-        }
-        else {
-          builder.append(propertyValue);
-        }
-      }
-      else {
-        Map<String, String> properties = new TreeMap<String, String>(tbl.getParameters());
-        for (Entry<String, String> entry : properties.entrySet()) {
-          appendNonNull(builder, entry.getKey(), true);
-          appendNonNull(builder, entry.getValue());
-        }
-      }
-
-      LOG.info("DDLTask: written data for showing properties of " + tbl.getTableName());
-      writeToFile(builder.toString(), showTblPrpt.getResFile());
-
-    } catch (FileNotFoundException e) {
-      LOG.info("show table properties: " + stringifyException(e));
-      return 1;
-    } catch (IOException e) {
-      LOG.info("show table properties: " + stringifyException(e));
-      return 1;
-    } catch (Exception e) {
-      throw new HiveException(e);
-    }
-
-    return 0;
-  }
-
-  private void writeToFile(String data, String file) throws IOException {
-    Path resFile = new Path(file);
-    FileSystem fs = resFile.getFileSystem(conf);
-    FSDataOutputStream out = fs.create(resFile);
-    try {
-      if (data != null && !data.isEmpty()) {
-        OutputStreamWriter writer = new OutputStreamWriter(out, "UTF-8");
-        writer.write(data);
-        writer.write((char) terminator);
-        writer.flush();
-      }
-    } finally {
-      IOUtils.closeStream(out);
-    }
-  }
-
-  /**
-   * Write the description of a table to a file.
-   *
-   * @param db
-   *          The database in question.
-   * @param descTbl
-   *          This is the table we're interested in.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
-   */
-  private int describeTable(Hive db, DescTableDesc descTbl) throws HiveException {
-    String colPath = descTbl.getColumnPath();
-    String tableName = descTbl.getTableName();
-
-    // describe the table - populate the output stream
-    Table tbl = db.getTable(tableName, false);
-    if (tbl == null) {
-      throw new HiveException(ErrorMsg.INVALID_TABLE, tableName);
-    }
-    Partition part = null;
-    if (descTbl.getPartSpec() != null) {
-      part = db.getPartition(tbl, descTbl.getPartSpec(), false);
-      if (part == null) {
-        throw new HiveException(ErrorMsg.INVALID_PARTITION,
-            StringUtils.join(descTbl.getPartSpec().keySet(), ','), tableName);
-      }
-      tbl = part.getTable();
-    }
-
-    DataOutputStream outStream = getOutputStream(descTbl.getResFile());
-    try {
-      LOG.info("DDLTask: got data for " + tbl.getTableName());
-
-      List<FieldSchema> cols = null;
-      List<ColumnStatisticsObj> colStats = null;
-
-      Deserializer deserializer = tbl.getDeserializer(true);
-      if (deserializer instanceof AbstractSerDe) {
-        String errorMsgs = ((AbstractSerDe) deserializer).getConfigurationErrors();
-        if (errorMsgs != null && !errorMsgs.isEmpty()) {
-          throw new SQLException(errorMsgs);
-        }
-      }
-
-      if (colPath.equals(tableName)) {
-        cols = (part == null || tbl.getTableType() == TableType.VIRTUAL_VIEW) ?
-            tbl.getCols() : part.getCols();
-
-        if (!descTbl.isFormatted()) {
-          cols.addAll(tbl.getPartCols());
-        }
-      } else {
-        cols = Hive.getFieldsFromDeserializer(colPath, deserializer);
-        if (descTbl.isFormatted()) {
-          // when column name is specified in describe table DDL, colPath will
-          // will be table_name.column_name
-          String colName = colPath.split("\\.")[1];
-          String[] dbTab = Utilities.getDbTableName(tableName);
-          List<String> colNames = new ArrayList<String>();
-          colNames.add(colName.toLowerCase());
-          if (null == part) {
-            colStats = db.getTableColumnStatistics(dbTab[0].toLowerCase(), dbTab[1].toLowerCase(), colNames);
-          } else {
-            List<String> partitions = new ArrayList<String>();
-            partitions.add(part.getName());
-            colStats = db.getPartitionColumnStatistics(dbTab[0].toLowerCase(), dbTab[1].toLowerCase(), partitions, colNames).get(part.getName());
-          }
-        }
-      }
-      PrimaryKeyInfo pkInfo = null;
-      ForeignKeyInfo fkInfo = null;
-      if (descTbl.isExt() || descTbl.isFormatted()) {
-        pkInfo = db.getPrimaryKeys(tbl.getDbName(), tbl.getTableName());
-        fkInfo = db.getForeignKeys(tbl.getDbName(), tbl.getTableName());
-      }
-      fixDecimalColumnTypeName(cols);
-      // In case the query is served by HiveServer2, don't pad it with spaces,
-      // as HiveServer2 output is consumed by JDBC/ODBC clients.
-      boolean isOutputPadded = !SessionState.get().isHiveServerQuery();
-      formatter.describeTable(outStream, colPath, tableName, tbl, part,
-          cols, descTbl.isFormatted(), descTbl.isExt(),
-          descTbl.isPretty(), isOutputPadded, colStats, pkInfo, fkInfo);
-
-      LOG.info("DDLTask: written data for " + tbl.getTableName());
-
-    } catch (SQLException e) {
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, tableName);
-    } finally {
-      IOUtils.closeStream(outStream);
-    }
-
-    return 0;
-  }
-
-  /**
-   * Fix the type name of a column of type decimal w/o precision/scale specified. This makes
-   * the describe table show "decimal(10,0)" instead of "decimal" even if the type stored
-   * in metastore is "decimal", which is possible with previous hive.
-   *
-   * @param cols columns that to be fixed as such
-   */
-  private static void fixDecimalColumnTypeName(List<FieldSchema> cols) {
-    for (FieldSchema col : cols) {
-      if (serdeConstants.DECIMAL_TYPE_NAME.equals(col.getType())) {
-        col.setType(DecimalTypeInfo.getQualifiedName(HiveDecimal.USER_DEFAULT_PRECISION,
-            HiveDecimal.USER_DEFAULT_SCALE));
-      }
-    }
-  }
-
-  static String writeGrantInfo(List<HivePrivilegeInfo> privileges, boolean testMode) {
-    if (privileges == null || privileges.isEmpty()) {
-      return "";
-    }
-    StringBuilder builder = new StringBuilder();
-    //sort the list to get sorted (deterministic) output (for ease of testing)
-    Collections.sort(privileges, new Comparator<HivePrivilegeInfo>() {
+    SortedSet<FieldSchema> sortedCol = new TreeSet<>( new Comparator<FieldSchema>() {
       @Override
-      public int compare(HivePrivilegeInfo o1, HivePrivilegeInfo o2) {
-        int compare = o1.getObject().compareTo(o2.getObject());
-        if (compare == 0) {
-          compare = o1.getPrincipal().compareTo(o2.getPrincipal());
-        }
-        if (compare == 0) {
-          compare = o1.getPrivilege().compareTo(o2.getPrivilege());
-        }
-        return compare;
+      public int compare(FieldSchema f1, FieldSchema f2) {
+        return f1.getName().compareTo(f2.getName());
       }
     });
 
-    for (HivePrivilegeInfo privilege : privileges) {
-      HivePrincipal principal = privilege.getPrincipal();
-      HivePrivilegeObject resource = privilege.getObject();
-      HivePrincipal grantor = privilege.getGrantorPrincipal();
+    for(FieldSchema column : cols)  {
+      matcher.reset(column.getName());
+      if(matcher.matches()) {
+        sortedCol.add(column);
+      }
+    }
 
-      appendNonNull(builder, resource.getDbname(), true);
-      appendNonNull(builder, resource.getObjectName());
-      appendNonNull(builder, resource.getPartKeys());
-      appendNonNull(builder, resource.getColumns());
-      appendNonNull(builder, principal.getName());
-      appendNonNull(builder, principal.getType());
-      appendNonNull(builder, privilege.getPrivilege().getName());
-      appendNonNull(builder, privilege.isGrantOption());
-      appendNonNull(builder, testMode ? -1 : privilege.getGrantTime() * 1000L);
-      appendNonNull(builder, grantor.getName());
-    }
-    return builder.toString();
-  }
-
-  static String writeRoleGrantsInfo(List<RolePrincipalGrant> roleGrants, boolean testMode) {
-    if (roleGrants == null || roleGrants.isEmpty()) {
-      return "";
-    }
-    StringBuilder builder = new StringBuilder();
-    //sort the list to get sorted (deterministic) output (for ease of testing)
-    Collections.sort(roleGrants);
-    for (RolePrincipalGrant roleGrant : roleGrants) {
-      appendNonNull(builder, roleGrant.getRoleName(), true);
-      appendNonNull(builder, roleGrant.isGrantOption());
-      appendNonNull(builder, testMode ? -1 : roleGrant.getGrantTime() * 1000L);
-      appendNonNull(builder, roleGrant.getGrantorName());
-    }
-    return builder.toString();
-  }
-
-  static String writeRolesGrantedInfo(List<HiveRoleGrant> roles, boolean testMode) {
-    if (roles == null || roles.isEmpty()) {
-      return "";
-    }
-    StringBuilder builder = new StringBuilder();
-    //sort the list to get sorted (deterministic) output (for ease of testing)
-    Collections.sort(roles);
-    for (HiveRoleGrant role : roles) {
-      appendNonNull(builder, role.getRoleName(), true);
-      appendNonNull(builder, role.isGrantOption());
-      appendNonNull(builder, testMode ? -1 : role.getGrantTime() * 1000L);
-      appendNonNull(builder, role.getGrantor());
-    }
-    return builder.toString();
-  }
-
-  static StringBuilder appendNonNull(StringBuilder builder, Object value) {
-    return appendNonNull(builder, value, false);
-  }
-
-  static StringBuilder appendNonNull(StringBuilder builder, Object value, boolean firstColumn) {
-    if (!firstColumn) {
-      builder.append((char)separator);
-    } else if (builder.length() > 0) {
-      builder.append((char)terminator);
-    }
-    if (value != null) {
-      builder.append(value);
-    }
-    return builder;
+    return new ArrayList<FieldSchema>(sortedCol);
   }
 
   /**
@@ -3430,6 +1213,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    *           Throws this exception if an unexpected error occurs.
    */
   private int alterTable(Hive db, AlterTableDesc alterTbl) throws HiveException {
+    if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.RENAME) {
+      String names[] = Utilities.getDbTableName(alterTbl.getOldName());
+      if (Utils.isBootstrapDumpInProgress(db, names[0])) {
+        LOG.error("DDLTask: Rename Table not allowed as bootstrap dump in progress");
+        throw new HiveException("Rename Table: Not allowed as bootstrap dump in progress");
+      }
+    }
+
     // alter the table
     Table tbl = db.getTable(alterTbl.getOldName());
 
@@ -3456,14 +1247,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // Don't change the table object returned by the metastore, as we'll mess with it's caches.
     Table oldTbl = tbl;
     tbl = oldTbl.copy();
+    // Handle child tasks here. We could add them directly whereever we need,
+    // but let's make it a little bit more explicit.
     if (allPartitions != null) {
       // Alter all partitions
       for (Partition part : allPartitions) {
-        alterTableOrSinglePartition(alterTbl, tbl, part);
+        addChildTasks(alterTableOrSinglePartition(alterTbl, tbl, part));
       }
     } else {
       // Just alter the table
-      alterTableOrSinglePartition(alterTbl, tbl, null);
+      addChildTasks(alterTableOrSinglePartition(alterTbl, tbl, null));
     }
 
     if (allPartitions == null) {
@@ -3476,13 +1269,44 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     try {
-      if (allPartitions == null) {
-        db.alterTable(alterTbl.getOldName(), tbl, alterTbl.getIsCascade(), alterTbl.getEnvironmentContext());
-      } else {
-        db.alterPartitions(tbl.getTableName(), allPartitions, alterTbl.getEnvironmentContext());
+      EnvironmentContext environmentContext = alterTbl.getEnvironmentContext();
+      if (environmentContext == null) {
+        environmentContext = new EnvironmentContext();
       }
+      environmentContext.putToProperties(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE, alterTbl.getOp().name());
+      if (allPartitions == null) {
+        long writeId = alterTbl.getWriteId() != null ? alterTbl.getWriteId() : 0;
+        if (alterTbl.getReplicationSpec() != null &&
+                alterTbl.getReplicationSpec().isMigratingToTxnTable()) {
+          Long tmpWriteId = ReplUtils.getMigrationCurrentTblWriteId(conf);
+          if (tmpWriteId == null) {
+            throw new HiveException("DDLTask : Write id is not set in the config by open txn task for migration");
+          }
+          writeId = tmpWriteId;
+        }
+        db.alterTable(alterTbl.getOldName(), tbl, alterTbl.getIsCascade(), environmentContext,
+                true, writeId);
+      } else {
+        // Note: this is necessary for UPDATE_STATISTICS command, that operates via ADDPROPS (why?).
+        //       For any other updates, we don't want to do txn check on partitions when altering table.
+        boolean isTxn = false;
+        if (alterTbl.getPartSpec() != null && alterTbl.getOp() == AlterTableTypes.ADDPROPS) {
+          // ADDPROPS is used to add replication properties like repl.last.id, which isn't
+          // transactional change. In case of replication check for transactional properties
+          // explicitly.
+          Map<String, String> props = alterTbl.getProps();
+          if (alterTbl.getReplicationSpec() != null && alterTbl.getReplicationSpec().isInReplicationScope()) {
+            isTxn = (props.get(StatsSetupConst.COLUMN_STATS_ACCURATE) != null);
+          } else {
+            isTxn = true;
+          }
+        }
+        db.alterPartitions(Warehouse.getQualifiedName(tbl.getTTable()), allPartitions, environmentContext, isTxn);
+      }
+      // Add constraints if necessary
+      addConstraints(db, alterTbl);
     } catch (InvalidOperationException e) {
-      LOG.error("alter table: " + stringifyException(e));
+      LOG.error("alter table: ", e);
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
     }
 
@@ -3513,7 +1337,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * how this is desirable.
    *
    * As of HIVE-14993, WriteEntity with different WriteType must be considered different.
-   * So WriteEntity create in DDLTask cause extra output in golden files, but only because
+   * So WriteEntity created in DDLTask cause extra output in golden files, but only because
    * DDLTask sets a different WriteType for the same Entity.
    *
    * In the spirit of bug-for-bug compatibility, this method ensures we only add new
@@ -3524,8 +1348,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   static boolean addIfAbsentByName(WriteEntity newWriteEntity, Set<WriteEntity> outputs) {
     for(WriteEntity writeEntity : outputs) {
       if(writeEntity.getName().equalsIgnoreCase(newWriteEntity.getName())) {
-        LOG.debug("Ignoring request to add " + newWriteEntity.toStringDetail() + " because " +
-          writeEntity.toStringDetail() + " is present");
+        LOG.debug("Ignoring request to add {} because {} is present",
+          newWriteEntity.toStringDetail(), writeEntity.toStringDetail());
         return false;
       }
     }
@@ -3536,6 +1360,15 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return addIfAbsentByName(newWriteEntity, work.getOutputs());
   }
 
+  private void addChildTasks(List<Task<?>> extraTasks) {
+    if (extraTasks == null) {
+      return;
+    }
+    for (Task<?> newTask : extraTasks) {
+      addDependentTask(newTask);
+    }
+  }
+
   private boolean isSchemaEvolutionEnabled(Table tbl) {
     boolean isAcid = AcidUtils.isTablePropertyTransactional(tbl.getMetadata());
     if (isAcid || HiveConf.getBoolVar(conf, ConfVars.HIVE_SCHEMA_EVOLUTION)) {
@@ -3544,8 +1377,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return false;
   }
 
-  private int alterTableOrSinglePartition(AlterTableDesc alterTbl, Table tbl, Partition part)
-      throws HiveException {
+
+  private static StorageDescriptor retrieveStorageDescriptor(Table tbl, Partition part) {
+    return (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
+  }
+
+  private List<Task<?>> alterTableOrSinglePartition(AlterTableDesc alterTbl, Table tbl,
+                                                    Partition part) throws HiveException {
     EnvironmentContext environmentContext = alterTbl.getEnvironmentContext();
     if (environmentContext == null) {
       environmentContext = new EnvironmentContext();
@@ -3561,11 +1399,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       tbl.setDbName(Utilities.getDatabaseName(alterTbl.getNewName()));
       tbl.setTableName(Utilities.getTableName(alterTbl.getNewName()));
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDCOLS) {
+      StorageDescriptor sd = retrieveStorageDescriptor(tbl, part);
+      String serializationLib = sd.getSerdeInfo().getSerializationLib();
+      AvroSerdeUtils.handleAlterTableForAvro(conf, serializationLib, tbl.getTTable().getParameters());
       List<FieldSchema> oldCols = (part == null
           ? tbl.getColsForMetastore() : part.getColsForMetastore());
-      StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
       List<FieldSchema> newCols = alterTbl.getNewCols();
-      String serializationLib = sd.getSerdeInfo().getSerializationLib();
       if (serializationLib.equals(
           "org.apache.hadoop.hive.serde.thrift.columnsetSerDe")) {
         console
@@ -3590,9 +1429,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         sd.setCols(oldCols);
       }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.RENAMECOLUMN) {
+      StorageDescriptor sd = retrieveStorageDescriptor(tbl, part);
+      String serializationLib = sd.getSerdeInfo().getSerializationLib();
+      AvroSerdeUtils.handleAlterTableForAvro(conf, serializationLib, tbl.getTTable().getParameters());
       List<FieldSchema> oldCols = (part == null
           ? tbl.getColsForMetastore() : part.getColsForMetastore());
-      StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
       List<FieldSchema> newCols = new ArrayList<FieldSchema>();
       Iterator<FieldSchema> iterOldCols = oldCols.iterator();
       String oldName = alterTbl.getOldColName();
@@ -3662,7 +1503,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       sd.setCols(newCols);
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.REPLACECOLS) {
-      StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
+      StorageDescriptor sd = retrieveStorageDescriptor(tbl, part);
       // change SerDe to LazySimpleSerDe if it is columnsetSerDe
       String serializationLib = sd.getSerdeInfo().getSerializationLib();
       if (serializationLib.equals(
@@ -3691,36 +1532,27 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           throw new HiveException(ErrorMsg.REPLACE_CANNOT_DROP_COLUMNS, alterTbl.getOldName());
         }
       }
+
+      boolean partitioned = tbl.isPartitioned();
+      boolean droppingColumns = alterTbl.getNewCols().size() < sd.getCols().size();
+      if (ParquetHiveSerDe.isParquetTable(tbl) &&
+          isSchemaEvolutionEnabled(tbl) &&
+          !alterTbl.getIsCascade() &&
+          droppingColumns && partitioned) {
+        LOG.warn("Cannot drop columns from a partitioned parquet table without the CASCADE option");
+        throw new HiveException(ErrorMsg.REPLACE_CANNOT_DROP_COLUMNS,
+            alterTbl.getOldName());
+      }
       sd.setCols(alterTbl.getNewCols());
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDPROPS) {
-      if (StatsSetupConst.USER.equals(environmentContext.getProperties()
-              .get(StatsSetupConst.STATS_GENERATED))) {
-        environmentContext.getProperties().remove(StatsSetupConst.DO_NOT_UPDATE_STATS);
-      }
-      if (part != null) {
-        part.getTPartition().getParameters().putAll(alterTbl.getProps());
-      } else {
-        tbl.getTTable().getParameters().putAll(alterTbl.getProps());
-      }
+      return alterTableAddProps(alterTbl, tbl, part, environmentContext);
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.DROPPROPS) {
-      Iterator<String> keyItr = alterTbl.getProps().keySet().iterator();
-      if (StatsSetupConst.USER.equals(environmentContext.getProperties()
-          .get(StatsSetupConst.STATS_GENERATED))) {
-        // drop a stats parameter, which triggers recompute stats update automatically
-        environmentContext.getProperties().remove(StatsSetupConst.DO_NOT_UPDATE_STATS);
-      }
-      while (keyItr.hasNext()) {
-        if (part != null) {
-          part.getTPartition().getParameters().remove(keyItr.next());
-        } else {
-          tbl.getTTable().getParameters().remove(keyItr.next());
-        }
-      }
+      return alterTableDropProps(alterTbl, tbl, part, environmentContext);
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSERDEPROPS) {
-      StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
+      StorageDescriptor sd = retrieveStorageDescriptor(tbl, part);
       sd.getSerdeInfo().getParameters().putAll(alterTbl.getProps());
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSERDE) {
-      StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
+      StorageDescriptor sd = retrieveStorageDescriptor(tbl, part);
       String serdeName = alterTbl.getSerdeName();
       String oldSerdeName = sd.getSerdeInfo().getSerializationLib();
       // if orc table, restrict changing the serde as it can break schema evolution
@@ -3744,7 +1576,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           // the fields so that new SerDe could operate. Note that this may fail if some fields
           // from old SerDe are too long to be stored in metastore, but there's nothing we can do.
           try {
-            Deserializer oldSerde = MetaStoreUtils.getDeserializer(
+            Deserializer oldSerde = HiveMetaStoreUtils.getDeserializer(
                 conf, tbl.getTTable(), false, oldSerdeName);
             tbl.setFields(Hive.getFieldsFromDeserializer(tbl.getTableName(), oldSerde));
           } catch (MetaException ex) {
@@ -3753,7 +1585,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
       }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDFILEFORMAT) {
-      StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
+      StorageDescriptor sd = retrieveStorageDescriptor(tbl, part);
       // if orc table, restrict changing the file format as it can break schema evolution
       if (isSchemaEvolutionEnabled(tbl) &&
           sd.getInputFormat().equals(OrcInputFormat.class.getName())
@@ -3766,7 +1598,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         sd.getSerdeInfo().setSerializationLib(alterTbl.getSerdeName());
       }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDCLUSTERSORTCOLUMN) {
-      StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
+      StorageDescriptor sd = retrieveStorageDescriptor(tbl, part);
       // validate sort columns and bucket columns
       List<String> columns = Utilities.getColumnNamesFromFieldSchema(tbl
           .getCols());
@@ -3791,7 +1623,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         sd.setSortCols(alterTbl.getSortColumns());
       }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ALTERLOCATION) {
-      StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
+      StorageDescriptor sd = retrieveStorageDescriptor(tbl, part);
       String newLocation = alterTbl.getNewLocation();
       try {
         URI locUri = new URI(newLocation);
@@ -3830,6 +1662,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
 
       tbl.setStoredAsSubDirectories(alterTbl.isStoredAsSubDirectories());
+    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.OWNER) {
+      if (alterTbl.getOwnerPrincipal() != null) {
+        tbl.setOwner(alterTbl.getOwnerPrincipal().getName());
+        tbl.setOwnerType(alterTbl.getOwnerPrincipal().getType());
+      }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ALTERSKEWEDLOCATION) {
       // process location one-by-one
       Map<List<String>,String> locMaps = alterTbl.getSkewedLocations();
@@ -3854,217 +1691,242 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } else if (alterTbl.getOp() == AlterTableTypes.ALTERBUCKETNUM) {
       if (part != null) {
         if (part.getBucketCount() == alterTbl.getNumberBuckets()) {
-          return 0;
+          return null;
         }
         part.setBucketCount(alterTbl.getNumberBuckets());
       } else {
         if (tbl.getNumBuckets() == alterTbl.getNumberBuckets()) {
-          return 0;
+          return null;
         }
         tbl.setNumBuckets(alterTbl.getNumberBuckets());
       }
+    } else if (alterTbl.getOp() == AlterTableTypes.UPDATECOLUMNS) {
+      updateColumns(tbl, part);
     } else {
       throw new HiveException(ErrorMsg.UNSUPPORTED_ALTER_TBL_OP, alterTbl.getOp().toString());
     }
 
+    return null;
+  }
+
+  private List<Task<?>> alterTableDropProps(AlterTableDesc alterTbl, Table tbl,
+      Partition part, EnvironmentContext environmentContext) throws HiveException {
+    if (StatsSetupConst.USER.equals(environmentContext.getProperties()
+        .get(StatsSetupConst.STATS_GENERATED))) {
+      // drop a stats parameter, which triggers recompute stats update automatically
+      environmentContext.getProperties().remove(StatsSetupConst.DO_NOT_UPDATE_STATS);
+    }
+
+    List<Task<?>> result = null;
+    if (part == null) {
+      Set<String> removedSet = alterTbl.getProps().keySet();
+      boolean isFromMmTable = AcidUtils.isInsertOnlyTable(tbl.getParameters()),
+          isRemoved = AcidUtils.isRemovedInsertOnlyTable(removedSet);
+      if (isFromMmTable && isRemoved) {
+        throw new HiveException("Cannot convert an ACID table to non-ACID");
+      }
+
+      // Check if external table property being removed
+      if (removedSet.contains("EXTERNAL") && tbl.getTableType() == TableType.EXTERNAL_TABLE) {
+        tbl.setTableType(TableType.MANAGED_TABLE);
+      }
+    }
+    Iterator<String> keyItr = alterTbl.getProps().keySet().iterator();
+    while (keyItr.hasNext()) {
+      if (part != null) {
+        part.getTPartition().getParameters().remove(keyItr.next());
+      } else {
+        tbl.getTTable().getParameters().remove(keyItr.next());
+      }
+    }
+    return result;
+  }
+
+  private void checkMmLb(Table tbl) throws HiveException {
+    if (!tbl.isStoredAsSubDirectories()) {
+      return;
+    }
+    // TODO [MM gap?]: by design; no-one seems to use LB tables. They will work, but not convert.
+    //                 It's possible to work around this by re-creating and re-inserting the table.
+    throw new HiveException("Converting list bucketed tables stored as subdirectories "
+        + " to MM is not supported. Please re-create a table in the desired format.");
+  }
+
+  private void checkMmLb(Partition part) throws HiveException {
+    if (!part.isStoredAsSubDirectories()) {
+      return;
+    }
+    throw new HiveException("Converting list bucketed tables stored as subdirectories "
+        + " to MM is not supported. Please re-create a table in the desired format.");
+  }
+
+  private List<Task<?>> generateAddMmTasks(Table tbl, Long writeId) throws HiveException {
+    // We will move all the files in the table/partition directories into the first MM
+    // directory, then commit the first write ID.
+    List<Path> srcs = new ArrayList<>(), tgts = new ArrayList<>();
+    if (writeId == null) {
+      throw new HiveException("Internal error - write ID not set for MM conversion");
+    }
+
+    int stmtId = 0;
+    String mmDir = AcidUtils.deltaSubdir(writeId, writeId, stmtId);
+
+    Hive db = getHive();
+    if (tbl.getPartitionKeys().size() > 0) {
+      PartitionIterable parts = new PartitionIterable(db, tbl, null,
+          HiveConf.getIntVar(conf, ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
+      Iterator<Partition> partIter = parts.iterator();
+      while (partIter.hasNext()) {
+        Partition part = partIter.next();
+        checkMmLb(part);
+        Path src = part.getDataLocation(), tgt = new Path(src, mmDir);
+        srcs.add(src);
+        tgts.add(tgt);
+        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+          Utilities.FILE_OP_LOGGER.trace("Will move " + src + " to " + tgt);
+        }
+      }
+    } else {
+      checkMmLb(tbl);
+      Path src = tbl.getDataLocation(), tgt = new Path(src, mmDir);
+      srcs.add(src);
+      tgts.add(tgt);
+      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+        Utilities.FILE_OP_LOGGER.trace("Will move " + src + " to " + tgt);
+      }
+    }
+    // Don't set inputs and outputs - the locks have already been taken so it's pointless.
+    MoveWork mw = new MoveWork(null, null, null, null, false);
+    mw.setMultiFilesDesc(new LoadMultiFilesDesc(srcs, tgts, true, null, null));
+    return Lists.<Task<?>>newArrayList(TaskFactory.get(mw));
+  }
+
+  private List<Task<?>> alterTableAddProps(AlterTableDesc alterTbl, Table tbl,
+      Partition part, EnvironmentContext environmentContext) throws HiveException {
+    if (StatsSetupConst.USER.equals(environmentContext.getProperties()
+        .get(StatsSetupConst.STATS_GENERATED))) {
+      environmentContext.getProperties().remove(StatsSetupConst.DO_NOT_UPDATE_STATS);
+    }
+    List<Task<?>> result = null;
+    if (part != null) {
+      part.getTPartition().getParameters().putAll(alterTbl.getProps());
+    } else {
+      boolean isFromMmTable = AcidUtils.isInsertOnlyTable(tbl.getParameters());
+      Boolean isToMmTable = AcidUtils.isToInsertOnlyTable(tbl, alterTbl.getProps());
+      if (isToMmTable != null) {
+        if (!isFromMmTable && isToMmTable) {
+          if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_MM_ALLOW_ORIGINALS)) {
+            result = generateAddMmTasks(tbl, alterTbl.getWriteId());
+          } else {
+            if (tbl.getPartitionKeys().size() > 0) {
+              Hive db = getHive();
+              PartitionIterable parts = new PartitionIterable(db, tbl, null,
+                  HiveConf.getIntVar(conf, ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
+              Iterator<Partition> partIter = parts.iterator();
+              while (partIter.hasNext()) {
+                Partition part0 = partIter.next();
+                checkMmLb(part0);
+              }
+            } else {
+              checkMmLb(tbl);
+            }
+          }
+        } else if (isFromMmTable && !isToMmTable) {
+          throw new HiveException("Cannot convert an ACID table to non-ACID");
+        }
+      }
+
+      // Converting to/from external table
+      String externalProp = alterTbl.getProps().get("EXTERNAL");
+      if (externalProp != null) {
+        if (Boolean.parseBoolean(externalProp) && tbl.getTableType() == TableType.MANAGED_TABLE) {
+          tbl.setTableType(TableType.EXTERNAL_TABLE);
+        } else if (!Boolean.parseBoolean(externalProp) && tbl.getTableType() == TableType.EXTERNAL_TABLE) {
+          tbl.setTableType(TableType.MANAGED_TABLE);
+        }
+      }
+
+      tbl.getTTable().getParameters().putAll(alterTbl.getProps());
+    }
+    return result;
+  }
+
+  private int dropConstraint(Hive db, AlterTableDesc alterTbl)
+          throws SemanticException, HiveException {
+    try {
+     db.dropConstraint(Utilities.getDatabaseName(alterTbl.getOldName()),
+       Utilities.getTableName(alterTbl.getOldName()),
+         alterTbl.getConstraintName());
+     } catch (NoSuchObjectException e) {
+       throw new HiveException(e);
+     }
     return 0;
   }
 
-   private int dropConstraint(Hive db, AlterTableDesc alterTbl)
-    throws SemanticException, HiveException {
-     try {
-      db.dropConstraint(Utilities.getDatabaseName(alterTbl.getOldName()),
-        Utilities.getTableName(alterTbl.getOldName()),
-          alterTbl.getConstraintName());
-      } catch (NoSuchObjectException e) {
-        throw new HiveException(e);
-      }
-     return 0;
-   }
-
-   private int addConstraint(Hive db, AlterTableDesc alterTbl)
-    throws SemanticException, HiveException {
+  private int addConstraints(Hive db, AlterTableDesc alterTbl)
+           throws SemanticException, HiveException {
     try {
-    // This is either an alter table add foreign key or add primary key command.
-    if (!alterTbl.getForeignKeyCols().isEmpty()) {
-       db.addForeignKey(alterTbl.getForeignKeyCols());
-     } else if (!alterTbl.getPrimaryKeyCols().isEmpty()) {
-       db.addPrimaryKey(alterTbl.getPrimaryKeyCols());
-     }
+      // This is either an alter table add foreign key or add primary key command.
+      if (alterTbl.getPrimaryKeyCols() != null && !alterTbl.getPrimaryKeyCols().isEmpty()) {
+        db.addPrimaryKey(alterTbl.getPrimaryKeyCols());
+      }
+      if (alterTbl.getForeignKeyCols() != null && !alterTbl.getForeignKeyCols().isEmpty()) {
+        try {
+          db.addForeignKey(alterTbl.getForeignKeyCols());
+        } catch (HiveException e) {
+          if (e.getCause() instanceof InvalidObjectException
+              && alterTbl.getReplicationSpec()!= null && alterTbl.getReplicationSpec().isInReplicationScope()) {
+            // During repl load, NoSuchObjectException in foreign key shall
+            // ignore as the foreign table may not be part of the replication
+            LOG.debug("InvalidObjectException: ", e);
+          } else {
+            throw e;
+          }
+        }
+      }
+      if (alterTbl.getUniqueConstraintCols() != null
+              && !alterTbl.getUniqueConstraintCols().isEmpty()) {
+        db.addUniqueConstraint(alterTbl.getUniqueConstraintCols());
+      }
+      if (alterTbl.getNotNullConstraintCols() != null
+              && !alterTbl.getNotNullConstraintCols().isEmpty()) {
+        db.addNotNullConstraint(alterTbl.getNotNullConstraintCols());
+      }
+      if (alterTbl.getDefaultConstraintCols() != null
+          && !alterTbl.getDefaultConstraintCols().isEmpty()) {
+        db.addDefaultConstraint(alterTbl.getDefaultConstraintCols());
+      }
+      if (alterTbl.getCheckConstraintCols() != null
+          && !alterTbl.getCheckConstraintCols().isEmpty()) {
+        db.addCheckConstraint(alterTbl.getCheckConstraintCols());
+      }
     } catch (NoSuchObjectException e) {
       throw new HiveException(e);
     }
     return 0;
   }
 
-   /**
-   * Drop a given table or some partitions. DropTableDesc is currently used for both.
-   *
-   * @param db
-   *          The database in question.
-   * @param dropTbl
-   *          This is the table we're dropping.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
-   */
-  private void dropTableOrPartitions(Hive db, DropTableDesc dropTbl) throws HiveException {
-    // We need to fetch the table before it is dropped so that it can be passed to
-    // post-execution hook
-    Table tbl = null;
+  private int updateColumns(Table tbl, Partition part)
+          throws HiveException {
+    String serializationLib = tbl.getSd().getSerdeInfo().getSerializationLib();
+    if (MetastoreConf.getStringCollection(conf,
+            MetastoreConf.ConfVars.SERDES_USING_METASTORE_FOR_SCHEMA).contains(serializationLib)) {
+      throw new HiveException(tbl.getTableName() + " has serde " + serializationLib + " for which schema " +
+              "is already handled by HMS.");
+    }
+    Deserializer deserializer = tbl.getDeserializer(true);
     try {
-      tbl = db.getTable(dropTbl.getTableName());
-    } catch (InvalidTableException e) {
-      // drop table is idempotent
+      LOG.info("Updating metastore columns for table: {}", tbl.getTableName());
+      final List<FieldSchema> fields = HiveMetaStoreUtils.getFieldsFromDeserializer(
+              tbl.getTableName(), deserializer);
+      StorageDescriptor sd = retrieveStorageDescriptor(tbl, part);
+      sd.setCols(fields);
+    } catch (org.apache.hadoop.hive.serde2.SerDeException | MetaException e) {
+      LOG.error("alter table update columns: {}", e);
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
     }
 
-    if (dropTbl.getPartSpecs() == null) {
-      dropTable(db, tbl, dropTbl);
-    } else {
-      dropPartitions(db, tbl, dropTbl);
-    }
-  }
-
-  private void dropPartitions(Hive db, Table tbl, DropTableDesc dropTbl) throws HiveException {
-
-    ReplicationSpec replicationSpec = dropTbl.getReplicationSpec();
-    if (replicationSpec.isInReplicationScope()){
-      /**
-       * ALTER TABLE DROP PARTITION ... FOR REPLICATION(x) behaves as a DROP PARTITION IF OLDER THAN x
-       *
-       * So, we check each partition that matches our DropTableDesc.getPartSpecs(), and drop it only
-       * if it's older than the event that spawned this replicated request to drop partition
-       */
-      // TODO: Current implementation of replication will result in DROP_PARTITION under replication
-      // scope being called per-partition instead of multiple partitions. However, to be robust, we
-      // must still handle the case of multiple partitions in case this assumption changes in the
-      // future. However, if this assumption changes, we will not be very performant if we fetch
-      // each partition one-by-one, and then decide on inspection whether or not this is a candidate
-      // for dropping. Thus, we need a way to push this filter (replicationSpec.allowEventReplacementInto)
-      // to the  metastore to allow it to do drop a partition or not, depending on a Predicate on the
-      // parameter key values.
-      for (DropTableDesc.PartSpec partSpec : dropTbl.getPartSpecs()){
-        try {
-          for (Partition p : Iterables.filter(
-              db.getPartitionsByFilter(tbl, partSpec.getPartSpec().getExprString()),
-              replicationSpec.allowEventReplacementInto())){
-            db.dropPartition(tbl.getDbName(),tbl.getTableName(),p.getValues(),true);
-          }
-        } catch (NoSuchObjectException e){
-          // ignore NSOE because that means there's nothing to drop.
-        } catch (Exception e) {
-          throw new HiveException(e.getMessage(), e);
-        }
-      }
-      return;
-    }
-
-    // ifExists is currently verified in DDLSemanticAnalyzer
-    List<Partition> droppedParts
-        = db.dropPartitions(dropTbl.getTableName(),
-                            dropTbl.getPartSpecs(),
-                            PartitionDropOptions.instance()
-                                                .deleteData(true)
-                                                .ifExists(true)
-                                                .purgeData(dropTbl.getIfPurge()));
-    for (Partition partition : droppedParts) {
-      console.printInfo("Dropped the partition " + partition.getName());
-      // We have already locked the table, don't lock the partitions.
-      addIfAbsentByName(new WriteEntity(partition, WriteEntity.WriteType.DDL_NO_LOCK));
-    };
-  }
-
-  private void dropTable(Hive db, Table tbl, DropTableDesc dropTbl) throws HiveException {
-    // This is a true DROP TABLE
-    if (tbl != null) {
-      if (tbl.isView()) {
-        if (!dropTbl.getExpectView()) {
-          if (dropTbl.getIfExists()) {
-            return;
-          }
-          if (dropTbl.getExpectMaterializedView()) {
-            throw new HiveException("Cannot drop a view with DROP MATERIALIZED VIEW");
-          } else {
-            throw new HiveException("Cannot drop a view with DROP TABLE");
-          }
-        }
-      } else if (tbl.isMaterializedView()) {
-        if (!dropTbl.getExpectMaterializedView()) {
-          if (dropTbl.getIfExists()) {
-            return;
-          }
-          if (dropTbl.getExpectView()) {
-            throw new HiveException("Cannot drop a materialized view with DROP VIEW");
-          } else {
-            throw new HiveException("Cannot drop a materialized view with DROP TABLE");
-          }
-        }
-      } else {
-        if (dropTbl.getExpectView()) {
-          if (dropTbl.getIfExists()) {
-            return;
-          }
-          throw new HiveException(
-              "Cannot drop a base table with DROP VIEW");
-        } else if (dropTbl.getExpectMaterializedView()) {
-          if (dropTbl.getIfExists()) {
-            return;
-          }
-          throw new HiveException(
-              "Cannot drop a base table with DROP MATERIALIZED VIEW");
-        }
-      }
-    }
-
-    ReplicationSpec replicationSpec = dropTbl.getReplicationSpec();
-    if ((tbl!= null) && replicationSpec.isInReplicationScope()){
-      /**
-       * DROP TABLE FOR REPLICATION behaves differently from DROP TABLE IF EXISTS - it more closely
-       * matches a DROP TABLE IF OLDER THAN(x) semantic.
-       *
-       * Ideally, commands executed under the scope of replication need to be idempotent and resilient
-       * to repeats. What can happen, sometimes, is that a drone processing a replication task can
-       * have been abandoned for not returning in time, but still execute its task after a while,
-       * which should not result in it mucking up data that has been impressed later on. So, for eg.,
-       * if we create partition P1, followed by droppping it, followed by creating it yet again,
-       * the replication of that drop should not drop the newer partition if it runs after the destination
-       * object is already in the newer state.
-       *
-       * Thus, we check the replicationSpec.allowEventReplacementInto to determine whether or not we can
-       * drop the object in question(will return false if object is newer than the event, true if not)
-       *
-       * In addition, since DROP TABLE FOR REPLICATION can result in a table not being dropped, while DROP
-       * TABLE will always drop the table, and the included partitions, DROP TABLE FOR REPLICATION must
-       * do one more thing - if it does not drop the table because the table is in a newer state, it must
-       * drop the partitions inside it that are older than this event. To wit, DROP TABLE FOR REPL
-       * acts like a recursive DROP TABLE IF OLDER.
-       */
-      if (!replicationSpec.allowEventReplacementInto(tbl)){
-        // Drop occured as part of replicating a drop, but the destination
-        // table was newer than the event being replicated. Ignore, but drop
-        // any partitions inside that are older.
-        if (tbl.isPartitioned()){
-
-          PartitionIterable partitions = new PartitionIterable(db,tbl,null,conf.getIntVar(
-              HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
-
-          for (Partition p : Iterables.filter(partitions, replicationSpec.allowEventReplacementInto())){
-            db.dropPartition(tbl.getDbName(),tbl.getTableName(),p.getValues(),true);
-          }
-        }
-        return; // table is newer, leave it be.
-      }
-    }
-
-    // drop the table
-    db.dropTable(dropTbl.getTableName(), dropTbl.getIfPurge());
-    if (tbl != null) {
-      // Remove from cache if it is a materialized view
-      if (tbl.isMaterializedView()) {
-        HiveMaterializedViewsRegistry.get().dropMaterializedView(tbl);
-      }
-      // We have already locked the table in DDLSemanticAnalyzer, don't do it again here
-      addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
-    }
+    return 0;
   }
 
   /**
@@ -4083,10 +1945,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return true;
   }
 
-  private void validateSerDe(String serdeName) throws HiveException {
-    validateSerDe(serdeName, conf);
-  }
-
   /**
    * Check if the given serde is valid.
    */
@@ -4096,553 +1954,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       Deserializer d = ReflectionUtil.newInstance(conf.getClassByName(serdeName).
           asSubclass(Deserializer.class), conf);
       if (d != null) {
-        LOG.debug("Found class for " + serdeName);
+        LOG.debug("Found class for {}", serdeName);
       }
     } catch (Exception e) {
       throw new HiveException("Cannot validate serde: " + serdeName, e);
     }
-  }
-
-  /**
-   * Create a Database
-   * @param db
-   * @param crtDb
-   * @return Always returns 0
-   * @throws HiveException
-   */
-  private int createDatabase(Hive db, CreateDatabaseDesc crtDb)
-      throws HiveException {
-    Database database = new Database();
-    database.setName(crtDb.getName());
-    database.setDescription(crtDb.getComment());
-    database.setLocationUri(crtDb.getLocationUri());
-    database.setParameters(crtDb.getDatabaseProperties());
-    database.setOwnerName(SessionState.getUserFromAuthenticator());
-    database.setOwnerType(PrincipalType.USER);
-    try {
-      if (!Utilities.isDefaultNameNode(conf)) {
-        makeLocationQualified(database);
-      }
-      db.createDatabase(database, crtDb.getIfNotExists());
-    }
-    catch (AlreadyExistsException ex) {
-      //it would be better if AlreadyExistsException had an errorCode field....
-      throw new HiveException(ex, ErrorMsg.DATABSAE_ALREADY_EXISTS, crtDb.getName());
-    }
-    return 0;
-  }
-
-  /**
-   * Drop a Database
-   * @param db
-   * @param dropDb
-   * @return Always returns 0
-   * @throws HiveException
-   */
-  private int dropDatabase(Hive db, DropDatabaseDesc dropDb)
-      throws HiveException {
-    try {
-      String dbName = dropDb.getDatabaseName();
-      db.dropDatabase(dbName, true, dropDb.getIfExists(), dropDb.isCasdade());
-      // Unregister the functions as well
-      if (dropDb.isCasdade()) {
-        FunctionRegistry.unregisterPermanentFunctions(dbName);
-      }
-    }
-    catch (NoSuchObjectException ex) {
-      throw new HiveException(ex, ErrorMsg.DATABASE_NOT_EXISTS, dropDb.getDatabaseName());
-    }
-    return 0;
-  }
-
-  /**
-   * Switch to a different Database
-   * @param db
-   * @param switchDb
-   * @return Always returns 0
-   * @throws HiveException
-   */
-  private int switchDatabase(Hive db, SwitchDatabaseDesc switchDb)
-      throws HiveException {
-    String dbName = switchDb.getDatabaseName();
-    if (!db.databaseExists(dbName)) {
-      throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, dbName);
-    }
-    SessionState.get().setCurrentDatabase(dbName);
-
-    // set database specific parameters
-    Database database = db.getDatabase(dbName);
-    assert(database != null);
-    Map<String, String> dbParams = database.getParameters();
-    if (dbParams != null) {
-      for (HiveConf.ConfVars var: HiveConf.dbVars) {
-        String newValue = dbParams.get(var.varname);
-        if (newValue != null) {
-          LOG.info("Changing " + var.varname +
-              " from " + conf.getVar(var) + " to " + newValue);
-          conf.setVar(var, newValue);
-        }
-      }
-    }
-
-    return 0;
-  }
-
-  /**
-   * Create a new table.
-   *
-   * @param db
-   *          The database in question.
-   * @param crtTbl
-   *          This is the table we're creating.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
-   */
-  private int createTable(Hive db, CreateTableDesc crtTbl) throws HiveException {
-    // create the table
-    Table tbl = crtTbl.toTable(conf);
-    List<SQLPrimaryKey> primaryKeys = crtTbl.getPrimaryKeys();
-    List<SQLForeignKey> foreignKeys = crtTbl.getForeignKeys();
-    LOG.info("creating table " + tbl.getDbName() + "." + tbl.getTableName() + " on " +
-            tbl.getDataLocation());
-
-    if (crtTbl.getReplicationSpec().isInReplicationScope() && (!crtTbl.getReplaceMode())){
-      // if this is a replication spec, then replace-mode semantics might apply.
-      // if we're already asking for a table replacement, then we can skip this check.
-      // however, otherwise, if in replication scope, and we've not been explicitly asked
-      // to replace, we should check if the object we're looking at exists, and if so,
-      // trigger replace-mode semantics.
-      Table existingTable = db.getTable(tbl.getDbName(), tbl.getTableName(), false);
-      if (existingTable != null){
-        if (!crtTbl.getReplicationSpec().allowEventReplacementInto(existingTable)){
-          return 0; // no replacement, the existing table state is newer than our update.
-        } else {
-          crtTbl.setReplaceMode(true); // we replace existing table.
-        }
-      }
-    }
-
-    // create the table
-    if (crtTbl.getReplaceMode()){
-      // replace-mode creates are really alters using CreateTableDesc.
-      try {
-        db.alterTable(tbl.getDbName()+"."+tbl.getTableName(),tbl,null);
-      } catch (InvalidOperationException e) {
-        throw new HiveException("Unable to alter table. " + e.getMessage(), e);
-      }
-    } else {
-      if ((foreignKeys != null && foreignKeys.size() > 0 ) ||
-          (primaryKeys != null && primaryKeys.size() > 0)) {
-        db.createTable(tbl, crtTbl.getIfNotExists(), primaryKeys, foreignKeys);
-      } else {
-        db.createTable(tbl, crtTbl.getIfNotExists());
-      }
-      if ( crtTbl.isCTAS()) {
-        Table createdTable = db.getTable(tbl.getDbName(), tbl.getTableName());
-        DataContainer dc = new DataContainer(createdTable.getTTable());
-        SessionState.get().getLineageState().setLineage(
-                createdTable.getPath(), dc, createdTable.getCols()
-        );
-      }
-    }
-    addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
-    return 0;
-  }
-
-  /**
-   * Create a new table like an existing table.
-   *
-   * @param db
-   *          The database in question.
-   * @param crtTbl
-   *          This is the table we're creating.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
-   */
-  private int createTableLike(Hive db, CreateTableLikeDesc crtTbl) throws Exception {
-    // Get the existing table
-    Table oldtbl = db.getTable(crtTbl.getLikeTableName());
-    Table tbl;
-    if (oldtbl.getTableType() == TableType.VIRTUAL_VIEW ||
-        oldtbl.getTableType() == TableType.MATERIALIZED_VIEW) {
-      String targetTableName = crtTbl.getTableName();
-      tbl=db.newTable(targetTableName);
-
-      if (crtTbl.getTblProps() != null) {
-        tbl.getTTable().getParameters().putAll(crtTbl.getTblProps());
-      }
-
-      tbl.setTableType(TableType.MANAGED_TABLE);
-
-      if (crtTbl.isExternal()) {
-        tbl.setProperty("EXTERNAL", "TRUE");
-        tbl.setTableType(TableType.EXTERNAL_TABLE);
-      }
-
-      tbl.setFields(oldtbl.getCols());
-      tbl.setPartCols(oldtbl.getPartCols());
-
-      if (crtTbl.getDefaultSerName() == null) {
-        LOG.info("Default to LazySimpleSerDe for table " + crtTbl.getTableName());
-        tbl.setSerializationLib(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
-      } else {
-        // let's validate that the serde exists
-        validateSerDe(crtTbl.getDefaultSerName());
-        tbl.setSerializationLib(crtTbl.getDefaultSerName());
-      }
-
-      if (crtTbl.getDefaultSerdeProps() != null) {
-        Iterator<Entry<String, String>> iter = crtTbl.getDefaultSerdeProps().entrySet()
-            .iterator();
-        while (iter.hasNext()) {
-          Entry<String, String> m = iter.next();
-          tbl.setSerdeParam(m.getKey(), m.getValue());
-        }
-      }
-
-      tbl.setInputFormatClass(crtTbl.getDefaultInputFormat());
-      tbl.setOutputFormatClass(crtTbl.getDefaultOutputFormat());
-
-      tbl.getTTable().getSd().setInputFormat(
-          tbl.getInputFormatClass().getName());
-      tbl.getTTable().getSd().setOutputFormat(
-          tbl.getOutputFormatClass().getName());
-    } else {
-      tbl=oldtbl;
-
-      // find out database name and table name of target table
-      String targetTableName = crtTbl.getTableName();
-      String[] names = Utilities.getDbTableName(targetTableName);
-
-      tbl.setDbName(names[0]);
-      tbl.setTableName(names[1]);
-
-      // using old table object, hence reset the owner to current user for new table.
-      tbl.setOwner(SessionState.getUserFromAuthenticator());
-
-      if (crtTbl.getLocation() != null) {
-        tbl.setDataLocation(new Path(crtTbl.getLocation()));
-      } else {
-        tbl.unsetDataLocation();
-      }
-
-      Class<? extends Deserializer> serdeClass = oldtbl.getDeserializerClass();
-
-      Map<String, String> params = tbl.getParameters();
-      // We should copy only those table parameters that are specified in the config.
-      SerDeSpec spec = AnnotationUtils.getAnnotation(serdeClass, SerDeSpec.class);
-      String paramsStr = HiveConf.getVar(conf, HiveConf.ConfVars.DDL_CTL_PARAMETERS_WHITELIST);
-
-      Set<String> retainer = new HashSet<String>();
-      // for non-native table, property storage_handler should be retained
-      retainer.add(META_TABLE_STORAGE);
-      if (spec != null && spec.schemaProps() != null) {
-        retainer.addAll(Arrays.asList(spec.schemaProps()));
-      }
-      if (paramsStr != null) {
-        retainer.addAll(Arrays.asList(paramsStr.split(",")));
-      }
-      if (!retainer.isEmpty()) {
-        params.keySet().retainAll(retainer);
-      } else {
-        params.clear();
-      }
-
-      if (crtTbl.getTblProps() != null) {
-        params.putAll(crtTbl.getTblProps());
-      }
-
-      if (crtTbl.isUserStorageFormat()) {
-        tbl.setInputFormatClass(crtTbl.getDefaultInputFormat());
-        tbl.setOutputFormatClass(crtTbl.getDefaultOutputFormat());
-        tbl.getTTable().getSd().setInputFormat(
-        tbl.getInputFormatClass().getName());
-        tbl.getTTable().getSd().setOutputFormat(
-        tbl.getOutputFormatClass().getName());
-        if (crtTbl.getDefaultSerName() == null) {
-          LOG.info("Default to LazySimpleSerDe for like table " + crtTbl.getTableName());
-          tbl.setSerializationLib(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
-        } else {
-          // let's validate that the serde exists
-          validateSerDe(crtTbl.getDefaultSerName());
-          tbl.setSerializationLib(crtTbl.getDefaultSerName());
-        }
-      }
-
-      tbl.getTTable().setTemporary(crtTbl.isTemporary());
-
-      if (crtTbl.isExternal()) {
-        tbl.setProperty("EXTERNAL", "TRUE");
-        tbl.setTableType(TableType.EXTERNAL_TABLE);
-      } else {
-        tbl.getParameters().remove("EXTERNAL");
-      }
-    }
-
-    if (!Utilities.isDefaultNameNode(conf)) {
-      // If location is specified - ensure that it is a full qualified name
-      makeLocationQualified(tbl.getDbName(), tbl.getTTable().getSd(), tbl.getTableName(), conf);
-    }
-
-    if (crtTbl.getLocation() == null && !tbl.isPartitioned()
-        && conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-      StatsSetupConst.setBasicStatsStateForCreateTable(tbl.getTTable().getParameters(),
-          StatsSetupConst.TRUE);
-    }
-
-    // create the table
-    db.createTable(tbl, crtTbl.getIfNotExists());
-    addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
-    return 0;
-  }
-
-  /**
-   * Create a new view.
-   *
-   * @param db
-   *          The database in question.
-   * @param crtView
-   *          This is the view we're creating.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
-   */
-  private int createView(Hive db, CreateViewDesc crtView) throws HiveException {
-    Table oldview = db.getTable(crtView.getViewName(), false);
-    if (crtView.getOrReplace() && oldview != null) {
-      if (!crtView.isMaterialized()) {
-        // replace existing view
-        // remove the existing partition columns from the field schema
-        oldview.setViewOriginalText(crtView.getViewOriginalText());
-        oldview.setViewExpandedText(crtView.getViewExpandedText());
-        oldview.setFields(crtView.getSchema());
-        if (crtView.getComment() != null) {
-          oldview.setProperty("comment", crtView.getComment());
-        }
-        if (crtView.getTblProps() != null) {
-          oldview.getTTable().getParameters().putAll(crtView.getTblProps());
-        }
-        oldview.setPartCols(crtView.getPartCols());
-        if (crtView.getInputFormat() != null) {
-          oldview.setInputFormatClass(crtView.getInputFormat());
-        }
-        if (crtView.getOutputFormat() != null) {
-          oldview.setOutputFormatClass(crtView.getOutputFormat());
-        }
-        oldview.checkValidity(null);
-        try {
-          db.alterTable(crtView.getViewName(), oldview, null);
-        } catch (InvalidOperationException e) {
-          throw new HiveException(e);
-        }
-        addIfAbsentByName(new WriteEntity(oldview, WriteEntity.WriteType.DDL_NO_LOCK));
-      } else {
-        // This is a replace, so we need an exclusive lock
-        addIfAbsentByName(new WriteEntity(oldview, WriteEntity.WriteType.DDL_EXCLUSIVE));
-      }
-    } else {
-      // create new view
-      Table tbl = db.newTable(crtView.getViewName());
-      tbl.setViewOriginalText(crtView.getViewOriginalText());
-      if (crtView.isMaterialized()) {
-        tbl.setRewriteEnabled(crtView.isRewriteEnabled());
-        tbl.setTableType(TableType.MATERIALIZED_VIEW);
-      } else {
-        tbl.setViewExpandedText(crtView.getViewExpandedText());
-        tbl.setTableType(TableType.VIRTUAL_VIEW);
-      }
-      tbl.setSerializationLib(null);
-      tbl.clearSerDeInfo();
-      tbl.setFields(crtView.getSchema());
-      if (crtView.getComment() != null) {
-        tbl.setProperty("comment", crtView.getComment());
-      }
-      if (crtView.getTblProps() != null) {
-        tbl.getTTable().getParameters().putAll(crtView.getTblProps());
-      }
-
-      if (crtView.getPartCols() != null) {
-        tbl.setPartCols(crtView.getPartCols());
-      }
-
-      if (crtView.getInputFormat() != null) {
-        tbl.setInputFormatClass(crtView.getInputFormat());
-      }
-
-      if (crtView.getOutputFormat() != null) {
-        tbl.setOutputFormatClass(crtView.getOutputFormat());
-      }
-
-      if (crtView.isMaterialized()) {
-        if (crtView.getLocation() != null) {
-          tbl.setDataLocation(new Path(crtView.getLocation()));
-        }
-        // Short circuit the checks that the input format is valid, this is configured for all
-        // materialized views and doesn't change so we don't need to check it constantly.
-        tbl.getSd().setInputFormat(crtView.getInputFormat());
-        tbl.getSd().setOutputFormat(crtView.getOutputFormat());
-        tbl.getSd().setSerdeInfo(new SerDeInfo(crtView.getSerde(), crtView.getSerde(),
-                crtView.getSerdeProps()));
-      }
-
-      db.createTable(tbl, crtView.getIfNotExists());
-      // Add to cache if it is a materialized view
-      if (tbl.isMaterializedView()) {
-        HiveMaterializedViewsRegistry.get().addMaterializedView(tbl);
-      }
-      addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
-
-      //set lineage info
-      DataContainer dc = new DataContainer(tbl.getTTable());
-      SessionState.get().getLineageState().setLineage(new Path(crtView.getViewName()), dc, tbl.getCols());
-    }
-    return 0;
-  }
-
-  private int truncateTable(Hive db, TruncateTableDesc truncateTableDesc) throws HiveException {
-
-    if (truncateTableDesc.getColumnIndexes() != null) {
-      ColumnTruncateWork truncateWork = new ColumnTruncateWork(
-          truncateTableDesc.getColumnIndexes(), truncateTableDesc.getInputDir(),
-          truncateTableDesc.getOutputDir());
-      truncateWork.setListBucketingCtx(truncateTableDesc.getLbCtx());
-      truncateWork.setMapperCannotSpanPartns(true);
-      DriverContext driverCxt = new DriverContext();
-      ColumnTruncateTask taskExec = new ColumnTruncateTask();
-      taskExec.initialize(queryState, null, driverCxt, null);
-      taskExec.setWork(truncateWork);
-      taskExec.setQueryPlan(this.getQueryPlan());
-      subtask = taskExec;
-      int ret = taskExec.execute(driverCxt);
-      if (subtask.getException() != null) {
-        setException(subtask.getException());
-      }
-      return ret;
-    }
-
-    String tableName = truncateTableDesc.getTableName();
-    Map<String, String> partSpec = truncateTableDesc.getPartSpec();
-
-    Table table = db.getTable(tableName, true);
-
-    try {
-      // this is not transactional
-      for (Path location : getLocations(db, table, partSpec)) {
-        FileSystem fs = location.getFileSystem(conf);
-        HadoopShims.HdfsEncryptionShim shim
-          = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, conf);
-        if (!shim.isPathEncrypted(location)) {
-          HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(conf, fs, location);
-          FileStatus targetStatus = fs.getFileStatus(location);
-          String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
-          FileUtils.moveToTrash(fs, location, conf);
-          fs.mkdirs(location);
-          HdfsUtils.setFullFileStatus(conf, status, targetGroup, fs, location, false);
-        } else {
-          FileStatus[] statuses = fs.listStatus(location, FileUtils.HIDDEN_FILES_PATH_FILTER);
-          if (statuses == null || statuses.length == 0) {
-            continue;
-          }
-          boolean success = Hive.trashFiles(fs, statuses, conf);
-          if (!success) {
-            throw new HiveException("Error in deleting the contents of " + location.toString());
-          }
-        }
-      }
-    } catch (Exception e) {
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
-    }
-    return 0;
-  }
-
-  private int exchangeTablePartition(Hive db,
-      AlterTableExchangePartition exchangePartition) throws HiveException {
-    Map<String, String> partitionSpecs = exchangePartition.getPartitionSpecs();
-    Table destTable = exchangePartition.getDestinationTable();
-    Table sourceTable = exchangePartition.getSourceTable();
-    List<Partition> partitions =
-        db.exchangeTablePartitions(partitionSpecs, sourceTable.getDbName(),
-        sourceTable.getTableName(),destTable.getDbName(),
-        destTable.getTableName());
-
-    for(Partition partition : partitions) {
-      // Reuse the partition specs from dest partition since they should be the same
-      work.getInputs().add(new ReadEntity(new Partition(sourceTable, partition.getSpec(), null)));
-
-      addIfAbsentByName(new WriteEntity(new Partition(sourceTable, partition.getSpec(), null),
-          WriteEntity.WriteType.DELETE));
-
-      addIfAbsentByName(new WriteEntity(new Partition(destTable, partition.getSpec(), null),
-          WriteEntity.WriteType.INSERT));
-    }
-
-    return 0;
-  }
-
-  private List<Path> getLocations(Hive db, Table table, Map<String, String> partSpec)
-      throws HiveException, InvalidOperationException {
-    List<Path> locations = new ArrayList<Path>();
-    if (partSpec == null) {
-      if (table.isPartitioned()) {
-        for (Partition partition : db.getPartitions(table)) {
-          locations.add(partition.getDataLocation());
-          EnvironmentContext environmentContext = new EnvironmentContext();
-          if (needToUpdateStats(partition.getParameters(), environmentContext)) {
-            db.alterPartition(table.getDbName(), table.getTableName(), partition, environmentContext);
-          }
-        }
-      } else {
-        locations.add(table.getPath());
-        EnvironmentContext environmentContext = new EnvironmentContext();
-        if (needToUpdateStats(table.getParameters(), environmentContext)) {
-          db.alterTable(table.getDbName()+"."+table.getTableName(), table, environmentContext);
-        }
-      }
-    } else {
-      for (Partition partition : db.getPartitionsByNames(table, partSpec)) {
-        locations.add(partition.getDataLocation());
-        EnvironmentContext environmentContext = new EnvironmentContext();
-        if (needToUpdateStats(partition.getParameters(), environmentContext)) {
-          db.alterPartition(table.getDbName(), table.getTableName(), partition, environmentContext);
-        }
-      }
-    }
-    return locations;
-  }
-
-  private boolean needToUpdateStats(Map<String,String> props, EnvironmentContext environmentContext) {
-    if (null == props) {
-      return false;
-    }
-    boolean statsPresent = false;
-    for (String stat : StatsSetupConst.supportedStats) {
-      String statVal = props.get(stat);
-      if (statVal != null && Long.parseLong(statVal) > 0) {
-        statsPresent = true;
-        //In the case of truncate table, we set the stats to be 0.
-        props.put(stat, "0");
-      }
-    }
-    //first set basic stats to true
-    StatsSetupConst.setBasicStatsState(props, StatsSetupConst.TRUE);
-    environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
-    //then invalidate column stats
-    StatsSetupConst.clearColumnStatsState(props);
-    return statsPresent;
-  }
-
-  private String escapeHiveCommand(String str) {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < str.length(); i ++) {
-      char c = str.charAt(i);
-      if (c == '\'') {
-        sb.append('\\');
-      }
-      sb.append(c);
-    }
-    return sb.toString();
   }
 
   @Override
@@ -4655,99 +1971,81 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return "DDL";
   }
 
-   /**
-   * Make location in specified sd qualified.
+  /**
+   * Validate if the given table/partition is eligible for update
    *
-   * @param databaseName
-   *          Database name.
-   * @param sd
-   *          Storage descriptor.
-   * @param name
-   *          Object name.
+   * @param db Database.
+   * @param tableName Table name of format db.table
+   * @param partSpec Partition spec for the partition
+   * @param replicationSpec Replications specification
+   *
+   * @return boolean true if allow the operation
+   * @throws HiveException
    */
-  public static void makeLocationQualified(String databaseName, StorageDescriptor sd,
-      String name, HiveConf conf) throws HiveException {
-    Path path = null;
-    if (!sd.isSetLocation())
-    {
-      // Location is not set, leave it as-is if this is not a default DB
-      if (databaseName.equalsIgnoreCase(MetaStoreUtils.DEFAULT_DATABASE_NAME))
-      {
-        // Default database name path is always ignored, use METASTOREWAREHOUSE and object name
-        // instead
-        path = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE), MetaStoreUtils.encodeTableName(name.toLowerCase()));
+  private boolean allowOperationInReplicationScope(Hive db, String tableName,
+              Map<String, String> partSpec, ReplicationSpec replicationSpec) throws HiveException {
+    if ((null == replicationSpec) || (!replicationSpec.isInReplicationScope())) {
+      // Always allow the operation if it is not in replication scope.
+      return true;
+    }
+    // If the table/partition exist and is older than the event, then just apply
+    // the event else noop.
+    Table existingTable = db.getTable(tableName, false);
+    if ((existingTable != null)
+            && replicationSpec.allowEventReplacementInto(existingTable.getParameters())) {
+      // Table exists and is older than the update. Now, need to ensure if update allowed on the
+      // partition.
+      if (partSpec != null) {
+        Partition existingPtn = db.getPartition(existingTable, partSpec, false);
+        return ((existingPtn != null)
+                && replicationSpec.allowEventReplacementInto(existingPtn.getParameters()));
+      }
+
+      // Replacement is allowed as the existing table is older than event
+      return true;
+    }
+
+    // The table is missing either due to drop/rename which follows the operation.
+    // Or the existing table is newer than our update. So, don't allow the update.
+    return false;
+  }
+
+  private int remFirstIncPendFlag(Hive hive, ReplRemoveFirstIncLoadPendFlagDesc desc) throws HiveException, TException {
+    String dbNameOrPattern = desc.getDatabaseName();
+    String tableNameOrPattern = desc.getTableName();
+    Map<String, String> parameters;
+    // For database level load tableNameOrPattern will be null. Flag is set only in database for db level load.
+    if (tableNameOrPattern != null && !tableNameOrPattern.isEmpty()) {
+      // For table level load, dbNameOrPattern is db name and not a pattern.
+      for (String tableName : Utils.matchesTbl(hive, dbNameOrPattern, tableNameOrPattern)) {
+        org.apache.hadoop.hive.metastore.api.Table tbl = hive.getMSC().getTable(dbNameOrPattern, tableName);
+        parameters = tbl.getParameters();
+        String incPendPara = parameters != null ? parameters.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG) : null;
+        if (incPendPara != null) {
+          parameters.remove(ReplUtils.REPL_FIRST_INC_PENDING_FLAG);
+          hive.getMSC().alter_table(dbNameOrPattern, tableName, tbl);
+        }
+      }
+    } else {
+      for (String dbName : Utils.matchesDb(hive, dbNameOrPattern)) {
+        Database database = hive.getMSC().getDatabase(dbName);
+        parameters = database.getParameters();
+        String incPendPara = parameters != null ? parameters.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG) : null;
+        if (incPendPara != null) {
+          parameters.remove(ReplUtils.REPL_FIRST_INC_PENDING_FLAG);
+          hive.getMSC().alterDatabase(dbName, database);
+        }
       }
     }
-    else
-    {
-      path = new Path(sd.getLocation());
-    }
-
-    if (path != null)
-    {
-      sd.setLocation(Utilities.getQualifiedPath(conf, path));
-    }
+    return 0;
   }
 
-   /**
-   * Make qualified location for an index .
-   *
-   * @param crtIndex
-   *          Create index descriptor.
-   * @param name
-   *          Object name.
+  /*
+  uses the authorizer from SessionState will need some more work to get this to run in parallel,
+  however this should not be a bottle neck so might not need to parallelize this.
    */
-  private void makeLocationQualified(CreateIndexDesc crtIndex, String name) throws HiveException
-  {
-    Path path = null;
-    if (crtIndex.getLocation() == null) {
-      // Location is not set, leave it as-is if index doesn't belong to default DB
-      // Currently all indexes are created in current DB only
-      if (Utilities.getDatabaseName(name).equalsIgnoreCase(MetaStoreUtils.DEFAULT_DATABASE_NAME)) {
-        // Default database name path is always ignored, use METASTOREWAREHOUSE and object name
-        // instead
-        String warehouse = HiveConf.getVar(conf, ConfVars.METASTOREWAREHOUSE);
-        String tableName = Utilities.getTableName(name);
-        path = new Path(warehouse, tableName.toLowerCase());
-      }
-    }
-    else {
-      path = new Path(crtIndex.getLocation());
-    }
-
-    if (path != null) {
-      crtIndex.setLocation(Utilities.getQualifiedPath(conf, path));
-    }
-  }
-
-   /**
-   * Make qualified location for a database .
-   *
-   * @param database
-   *          Database.
-   */
-  public static final String DATABASE_PATH_SUFFIX = ".db";
-  private void makeLocationQualified(Database database) throws HiveException {
-    if (database.isSetLocationUri()) {
-      database.setLocationUri(Utilities.getQualifiedPath(conf, new Path(database.getLocationUri())));
-    }
-    else {
-      // Location is not set we utilize METASTOREWAREHOUSE together with database name
-      database.setLocationUri(
-          Utilities.getQualifiedPath(conf, new Path(HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE),
-              database.getName().toLowerCase() + DATABASE_PATH_SUFFIX)));
-    }
-  }
-
-  public static boolean doesTableNeedLocation(Table tbl) {
-    // TODO: If we are ok with breaking compatibility of existing 3rd party StorageHandlers,
-    // this method could be moved to the HiveStorageHandler interface.
-    boolean retval = true;
-    if (tbl.getStorageHandler() != null) {
-      String sh = tbl.getStorageHandler().toString();
-      retval = !sh.equals("org.apache.hadoop.hive.hbase.HBaseStorageHandler")
-              && !sh.equals(Constants.DRUID_HIVE_STORAGE_HANDLER_ID);
-    }
-    return retval;
+  @Override
+  public boolean canExecuteInParallel() {
+    return false;
   }
 }

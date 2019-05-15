@@ -1,57 +1,57 @@
-PREHOOK: query: CREATE TABLE doctors (
+PREHOOK: query: CREATE TABLE doctors_n0 (
   number int,
   first_name string)
 STORED AS AVRO
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@doctors
-POSTHOOK: query: CREATE TABLE doctors (
+PREHOOK: Output: default@doctors_n0
+POSTHOOK: query: CREATE TABLE doctors_n0 (
   number int,
   first_name string)
 STORED AS AVRO
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@doctors
-PREHOOK: query: DESCRIBE doctors
+POSTHOOK: Output: default@doctors_n0
+PREHOOK: query: DESCRIBE doctors_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@doctors
-POSTHOOK: query: DESCRIBE doctors
+PREHOOK: Input: default@doctors_n0
+POSTHOOK: query: DESCRIBE doctors_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@doctors
+POSTHOOK: Input: default@doctors_n0
 number              	int                 	                    
 first_name          	string              	                    
-PREHOOK: query: ALTER TABLE doctors ADD COLUMNS (last_name string)
+PREHOOK: query: ALTER TABLE doctors_n0 ADD COLUMNS (last_name string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
-PREHOOK: Input: default@doctors
-PREHOOK: Output: default@doctors
-POSTHOOK: query: ALTER TABLE doctors ADD COLUMNS (last_name string)
+PREHOOK: Input: default@doctors_n0
+PREHOOK: Output: default@doctors_n0
+POSTHOOK: query: ALTER TABLE doctors_n0 ADD COLUMNS (last_name string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
-POSTHOOK: Input: default@doctors
-POSTHOOK: Output: default@doctors
-PREHOOK: query: DESCRIBE doctors
+POSTHOOK: Input: default@doctors_n0
+POSTHOOK: Output: default@doctors_n0
+PREHOOK: query: DESCRIBE doctors_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@doctors
-POSTHOOK: query: DESCRIBE doctors
+PREHOOK: Input: default@doctors_n0
+POSTHOOK: query: DESCRIBE doctors_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@doctors
+POSTHOOK: Input: default@doctors_n0
 number              	int                 	                    
 first_name          	string              	                    
 last_name           	string              	                    
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@doctors
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors
+PREHOOK: Output: default@doctors_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@doctors
-PREHOOK: query: SELECT * FROM doctors
+POSTHOOK: Output: default@doctors_n0
+PREHOOK: query: SELECT * FROM doctors_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@doctors
+PREHOOK: Input: default@doctors_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM doctors
+POSTHOOK: query: SELECT * FROM doctors_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@doctors
+POSTHOOK: Input: default@doctors_n0
 #### A masked pattern was here ####
 1	William	Hartnell
 10	David	Tennant

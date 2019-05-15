@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,15 +26,15 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * An optionally-bounded {@linkplain BlockingDeque blocking deque} based on
  * a navigable set.
- * <p/>
+ * <br>
  * <p> The optional capacity bound constructor argument serves as a
  * way to prevent excessive expansion. The capacity, if unspecified,
  * is equal to {@link Integer#MAX_VALUE}.
- * <p/>
+ * <br>
  * <p>This class and its iterator implement all of the
  * <em>optional</em> methods of the {@link Collection} and {@link
  * Iterator} interfaces.
- * <p/>
+ * <br>
  * This code is loosely based on the {@linkplain java.util.concurrent.LinkedBlockingDeque linked blocking deque} code.
  */
 public class PriorityBlockingDeque<E>
@@ -439,8 +439,8 @@ public class PriorityBlockingDeque<E>
    * Inserts the specified element to the deque unless it would
    * violate capacity restrictions.  When using a capacity-restricted deque,
    * it is generally preferable to use method {@link #offer(Object) offer}.
-   * <p/>
-   * <p>This method is equivalent to {@link #addLast}.
+   * <br>
+   * This method is equivalent to {@link #addLast}.
    *
    * @throws IllegalStateException if the element cannot be added at this
    *                               time due to capacity restrictions
@@ -481,8 +481,8 @@ public class PriorityBlockingDeque<E>
    * Retrieves and removes the head of the queue represented by this deque.
    * This method differs from {@link #poll poll} only in that it throws an
    * exception if this deque is empty.
-   * <p/>
-   * <p>This method is equivalent to {@link #removeFirst() removeFirst}.
+   * <br>
+   * This method is equivalent to {@link #removeFirst() removeFirst}.
    *
    * @return the head of the queue represented by this deque
    * @throws NoSuchElementException if this deque is empty
@@ -508,8 +508,8 @@ public class PriorityBlockingDeque<E>
    * Retrieves, but does not remove, the head of the queue represented by
    * this deque.  This method differs from {@link #peek peek} only in that
    * it throws an exception if this deque is empty.
-   * <p/>
-   * <p>This method is equivalent to {@link #getFirst() getFirst}.
+   * <br>
+   * This method is equivalent to {@link #getFirst() getFirst}.
    *
    * @return the head of the queue represented by this deque
    * @throws NoSuchElementException if this deque is empty
@@ -528,8 +528,8 @@ public class PriorityBlockingDeque<E>
    * (in the absence of memory or resource constraints) accept without
    * blocking. This is always equal to the initial capacity of this deque
    * less the current <tt>size</tt> of this deque.
-   * <p/>
-   * <p>Note that you <em>cannot</em> always tell if an attempt to insert
+   * <br>
+   * Note that you <em>cannot</em> always tell if an attempt to insert
    * an element will succeed by inspecting <tt>remainingCapacity</tt>
    * because it may be the case that another thread is about to
    * insert or remove an element.
@@ -622,8 +622,8 @@ public class PriorityBlockingDeque<E>
    * <tt>o.equals(e)</tt> (if such an element exists).
    * Returns <tt>true</tt> if this deque contained the specified element
    * (or equivalently, if this deque changed as a result of the call).
-   * <p/>
-   * <p>This method is equivalent to
+   * <br>
+   * This method is equivalent to
    * {@link #removeFirstOccurrence(Object) removeFirstOccurrence}.
    *
    * @param o element to be removed from this deque, if present
@@ -671,12 +671,12 @@ public class PriorityBlockingDeque<E>
   /**
    * Returns an array containing all of the elements in this deque, in
    * proper sequence (from first to last element).
-   * <p/>
+   * <br>
    * <p>The returned array will be "safe" in that no references to it are
    * maintained by this deque.  (In other words, this method must allocate
    * a new array).  The caller is thus free to modify the returned array.
-   * <p/>
-   * <p>This method acts as bridge between array-based and collection-based
+   * </p>
+   * <br>This method acts as bridge between array-based and collection-based
    * APIs.
    *
    * @return an array containing all of the elements in this deque
@@ -697,24 +697,24 @@ public class PriorityBlockingDeque<E>
    * the specified array.  If the deque fits in the specified array, it
    * is returned therein.  Otherwise, a new array is allocated with the
    * runtime type of the specified array and the size of this deque.
-   * <p/>
+   * <br>
    * <p>If this deque fits in the specified array with room to spare
    * (i.e., the array has more elements than this deque), the element in
    * the array immediately following the end of the deque is set to
    * <tt>null</tt>.
-   * <p/>
+   * </p>
    * <p>Like the {@link #toArray()} method, this method acts as bridge between
    * array-based and collection-based APIs.  Further, this method allows
    * precise control over the runtime type of the output array, and may,
    * under certain circumstances, be used to save allocation costs.
-   * <p/>
+   * </p>
    * <p>Suppose <tt>x</tt> is a deque known to contain only strings.
    * The following code can be used to dump the deque into a newly
    * allocated array of <tt>String</tt>:
-   * <p/>
+   * </p>
    * <pre>
    *     String[] y = x.toArray(new String[0]);</pre>
-   * <p/>
+   * <br>
    * Note that <tt>toArray(new Object[0])</tt> is identical in function to
    * <tt>toArray()</tt>.
    *

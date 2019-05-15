@@ -101,6 +101,17 @@ public class TestAvroObjectInspectorGenerator {
       "  ]\n" +
       "}";
   public static final String NULLABLE_RECORD_SCHEMA = "[\"null\", " + RECORD_SCHEMA + "]";
+  public static final String SINGLE_ITEM_UNION_SCHEMA = "{\n" +
+      "  \"namespace\": \"test.a.rossa\",\n" +
+      "  \"name\": \"oneUnion\",\n" +
+      "  \"type\": \"record\",\n" +
+      "  \"fields\": [\n" +
+      "    {\n" +
+      "      \"name\":\"aUnion\",\n" +
+      "      \"type\":[\"string\"]\n" +
+      "    }\n" +
+      "  ]\n" +
+      "}";
   public static final String UNION_SCHEMA = "{\n" +
       "  \"namespace\": \"test.a.rossa\",\n" +
       "  \"name\": \"oneUnion\",\n" +
@@ -208,6 +219,16 @@ public class TestAvroObjectInspectorGenerator {
       "  \"name\": \"bytesTest\",\n" +
       "  \"fields\" : [\n" +
       "    {\"name\":\"bytesField\", \"type\":\"bytes\"}\n" +
+      "  ]\n" +
+      "}";
+
+  public static final String TIMESTAMP_SCHEMA = "{\n" +
+      "  \"type\": \"record\", \n" +
+      "  \"name\": \"timestampTest\",\n" +
+      "  \"fields\" : [\n" +
+      "    {\"name\":\"timestampField\", " +
+      "     \"type\":\"" + AvroSerDe.AVRO_LONG_TYPE_NAME + "\", " +
+      "         \"logicalType\":\"" + AvroSerDe.TIMESTAMP_TYPE_NAME + "\"}" +
       "  ]\n" +
       "}";
 

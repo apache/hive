@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -39,7 +39,7 @@ import com.google.common.collect.ImmutableList;
 
 public class HiveAlgorithmsUtil {
 
-  private final double cpuCost;
+  private final double cpuUnitCost;
   private final double netCost;
   private final double localFSWrite;
   private final double localFSRead;
@@ -47,8 +47,8 @@ public class HiveAlgorithmsUtil {
   private final double hdfsRead;
 
   HiveAlgorithmsUtil(HiveConf conf) {
-    cpuCost = Double.parseDouble(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_CBO_COST_MODEL_CPU));
-    netCost = cpuCost
+    cpuUnitCost = Double.parseDouble(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_CBO_COST_MODEL_CPU));
+    netCost = cpuUnitCost
         * Double.parseDouble(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_CBO_COST_MODEL_NET));
     localFSWrite = netCost
         * Double.parseDouble(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_CBO_COST_MODEL_LFS_WRITE));
@@ -60,8 +60,8 @@ public class HiveAlgorithmsUtil {
         * Double.parseDouble(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_CBO_COST_MODEL_HDFS_READ));
   }
 
-  public static RelOptCost computeCardinalityBasedCost(HiveRelNode hr) {
-    return new HiveCost(hr.getRows(), 0, 0);
+  public static RelOptCost computeCardinalityBasedCost(HiveRelNode hr, RelMetadataQuery mq) {
+    return new HiveCost(mq.getRowCount(hr), 0, 0);
   }
 
   public HiveCost computeScanCost(double cardinality, double avgTupleSize) {
@@ -80,13 +80,13 @@ public class HiveAlgorithmsUtil {
         cpuCost += computeSortCPUCost(cardinality);
       }
       // Merge cost
-      cpuCost += cardinality * cpuCost;
+      cpuCost += cardinality * cpuUnitCost;
     }
     return cpuCost;
   }
 
   public double computeSortCPUCost(Double cardinality) {
-    return cardinality * Math.log(cardinality) * cpuCost;
+    return cardinality * Math.log(cardinality) * cpuUnitCost;
   }
 
   public double computeSortMergeIOCost(
@@ -113,7 +113,7 @@ public class HiveAlgorithmsUtil {
     return ioCost;
   }
 
-  public static double computeMapJoinCPUCost(
+  public double computeMapJoinCPUCost(
           ImmutableList<Double> cardinalities,
           ImmutableBitSet streaming) {
     // Hash-join
@@ -123,7 +123,7 @@ public class HiveAlgorithmsUtil {
       if (!streaming.get(i)) {
         cpuCost += cardinality;
       }
-      cpuCost += cardinality * cpuCost;
+      cpuCost += cardinality * cpuUnitCost;
     }
     return cpuCost;
   }
@@ -151,9 +151,9 @@ public class HiveAlgorithmsUtil {
     for (int i=0; i<cardinalities.size(); i++) {
       double cardinality = cardinalities.get(i);
       if (!streaming.get(i)) {
-        cpuCost += cardinality * cpuCost;
+        cpuCost += cardinality * cpuUnitCost;
       }
-      cpuCost += cardinality * cpuCost;
+      cpuCost += cardinality * cpuUnitCost;
     }
     return cpuCost;
   }
@@ -173,12 +173,12 @@ public class HiveAlgorithmsUtil {
     return ioCost;
   }
 
-  public static double computeSMBMapJoinCPUCost(
+  public double computeSMBMapJoinCPUCost(
           ImmutableList<Double> cardinalities) {
     // Hash-join
     double cpuCost = 0.0;
     for (int i=0; i<cardinalities.size(); i++) {
-      cpuCost += cardinalities.get(i) * cpuCost;
+      cpuCost += cardinalities.get(i) * cpuUnitCost;
     }
     return cpuCost;
   }
@@ -199,7 +199,8 @@ public class HiveAlgorithmsUtil {
   }
 
   public static boolean isFittingIntoMemory(Double maxSize, RelNode input, int buckets) {
-    Double currentMemory = RelMetadataQuery.instance().cumulativeMemoryWithinPhase(input);
+    final RelMetadataQuery mq = input.getCluster().getMetadataQuery();
+    Double currentMemory = mq.cumulativeMemoryWithinPhase(input);
     if (currentMemory != null) {
       if(currentMemory / buckets > maxSize) {
         return false;
@@ -224,12 +225,12 @@ public class HiveAlgorithmsUtil {
       for (int leftPos : joinLeafPredInfo.getProjsFromLeftPartOfJoinKeysInJoinSchema()) {
         final RelFieldCollation leftFieldCollation = new RelFieldCollation(leftPos);
         collationListBuilder.add(leftFieldCollation);
-        leftCollationListBuilder.add(leftFieldCollation);        
+        leftCollationListBuilder.add(leftFieldCollation);
       }
       for (int rightPos : joinLeafPredInfo.getProjsFromRightPartOfJoinKeysInJoinSchema()) {
         final RelFieldCollation rightFieldCollation = new RelFieldCollation(rightPos);
         collationListBuilder.add(rightFieldCollation);
-        rightCollationListBuilder.add(rightFieldCollation);        
+        rightCollationListBuilder.add(rightFieldCollation);
       }
     }
 
@@ -284,10 +285,10 @@ public class HiveAlgorithmsUtil {
       JoinLeafPredicateInfo joinLeafPredInfo = joinPredInfo.
           getEquiJoinPredicateElements().get(i);
       for (int leftPos : joinLeafPredInfo.getProjsFromLeftPartOfJoinKeysInJoinSchema()) {
-        leftKeysListBuilder.add(leftPos);        
+        leftKeysListBuilder.add(leftPos);
       }
       for (int rightPos : joinLeafPredInfo.getProjsFromRightPartOfJoinKeysInJoinSchema()) {
-        rightKeysListBuilder.add(rightPos);        
+        rightKeysListBuilder.add(rightPos);
       }
     }
 
@@ -310,7 +311,7 @@ public class HiveAlgorithmsUtil {
 
   public static Double getJoinMemory(HiveJoin join, MapJoinStreamingRelation streamingSide) {
     Double memory = 0.0;
-    RelMetadataQuery mq = RelMetadataQuery.instance();
+    final RelMetadataQuery mq = join.getCluster().getMetadataQuery();
     if (streamingSide == MapJoinStreamingRelation.NONE ||
             streamingSide == MapJoinStreamingRelation.RIGHT_RELATION) {
       // Left side
@@ -338,7 +339,7 @@ public class HiveAlgorithmsUtil {
     final Double maxSplitSize = join.getCluster().getPlanner().getContext().
             unwrap(HiveAlgorithmsConf.class).getMaxSplitSize();
     // We repartition: new number of splits
-    RelMetadataQuery mq = RelMetadataQuery.instance();
+    final RelMetadataQuery mq = join.getCluster().getMetadataQuery();
     final Double averageRowSize = mq.getAverageRowSize(join);
     final Double rowCount = mq.getRowCount(join);
     if (averageRowSize == null || rowCount == null) {
@@ -358,7 +359,8 @@ public class HiveAlgorithmsUtil {
     } else {
       return null;
     }
-    return RelMetadataQuery.instance().splitCount(largeInput);
+    final RelMetadataQuery mq = join.getCluster().getMetadataQuery();
+    return mq.splitCount(largeInput);
   }
 
 }

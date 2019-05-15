@@ -1,52 +1,52 @@
-PREHOOK: query: create table partition_test_partitioned(key string, value string) partitioned by (dt string)
+PREHOOK: query: create table partition_test_partitioned_n11(key string, value string) partitioned by (dt string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@partition_test_partitioned
-POSTHOOK: query: create table partition_test_partitioned(key string, value string) partitioned by (dt string)
+PREHOOK: Output: default@partition_test_partitioned_n11
+POSTHOOK: query: create table partition_test_partitioned_n11(key string, value string) partitioned by (dt string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@partition_test_partitioned
-PREHOOK: query: alter table partition_test_partitioned set fileformat rcfile
+POSTHOOK: Output: default@partition_test_partitioned_n11
+PREHOOK: query: alter table partition_test_partitioned_n11 set fileformat rcfile
 PREHOOK: type: ALTERTABLE_FILEFORMAT
-PREHOOK: Input: default@partition_test_partitioned
-PREHOOK: Output: default@partition_test_partitioned
-POSTHOOK: query: alter table partition_test_partitioned set fileformat rcfile
+PREHOOK: Input: default@partition_test_partitioned_n11
+PREHOOK: Output: default@partition_test_partitioned_n11
+POSTHOOK: query: alter table partition_test_partitioned_n11 set fileformat rcfile
 POSTHOOK: type: ALTERTABLE_FILEFORMAT
-POSTHOOK: Input: default@partition_test_partitioned
-POSTHOOK: Output: default@partition_test_partitioned
-PREHOOK: query: insert overwrite table partition_test_partitioned partition(dt=101) select * from src1
+POSTHOOK: Input: default@partition_test_partitioned_n11
+POSTHOOK: Output: default@partition_test_partitioned_n11
+PREHOOK: query: insert overwrite table partition_test_partitioned_n11 partition(dt=101) select * from src1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Output: default@partition_test_partitioned@dt=101
-POSTHOOK: query: insert overwrite table partition_test_partitioned partition(dt=101) select * from src1
+PREHOOK: Output: default@partition_test_partitioned_n11@dt=101
+POSTHOOK: query: insert overwrite table partition_test_partitioned_n11 partition(dt=101) select * from src1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: default@partition_test_partitioned@dt=101
-POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select count(1) from partition_test_partitioned  a join partition_test_partitioned  b on a.key = b.key
+POSTHOOK: Output: default@partition_test_partitioned_n11@dt=101
+POSTHOOK: Lineage: partition_test_partitioned_n11 PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned_n11 PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select count(1) from partition_test_partitioned_n11  a join partition_test_partitioned_n11  b on a.key = b.key
 where a.dt = '101' and b.dt = '101'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@partition_test_partitioned
-PREHOOK: Input: default@partition_test_partitioned@dt=101
+PREHOOK: Input: default@partition_test_partitioned_n11
+PREHOOK: Input: default@partition_test_partitioned_n11@dt=101
 #### A masked pattern was here ####
-POSTHOOK: query: select count(1) from partition_test_partitioned  a join partition_test_partitioned  b on a.key = b.key
+POSTHOOK: query: select count(1) from partition_test_partitioned_n11  a join partition_test_partitioned_n11  b on a.key = b.key
 where a.dt = '101' and b.dt = '101'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@partition_test_partitioned
-POSTHOOK: Input: default@partition_test_partitioned@dt=101
+POSTHOOK: Input: default@partition_test_partitioned_n11
+POSTHOOK: Input: default@partition_test_partitioned_n11@dt=101
 #### A masked pattern was here ####
 115
-PREHOOK: query: select count(1) from partition_test_partitioned  a join partition_test_partitioned  b on a.key = b.key
+PREHOOK: query: select count(1) from partition_test_partitioned_n11  a join partition_test_partitioned_n11  b on a.key = b.key
 where a.dt = '101' and b.dt = '101' and a.key < 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@partition_test_partitioned
-PREHOOK: Input: default@partition_test_partitioned@dt=101
+PREHOOK: Input: default@partition_test_partitioned_n11
+PREHOOK: Input: default@partition_test_partitioned_n11@dt=101
 #### A masked pattern was here ####
-POSTHOOK: query: select count(1) from partition_test_partitioned  a join partition_test_partitioned  b on a.key = b.key
+POSTHOOK: query: select count(1) from partition_test_partitioned_n11  a join partition_test_partitioned_n11  b on a.key = b.key
 where a.dt = '101' and b.dt = '101' and a.key < 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@partition_test_partitioned
-POSTHOOK: Input: default@partition_test_partitioned@dt=101
+POSTHOOK: Input: default@partition_test_partitioned_n11
+POSTHOOK: Input: default@partition_test_partitioned_n11@dt=101
 #### A masked pattern was here ####
 2

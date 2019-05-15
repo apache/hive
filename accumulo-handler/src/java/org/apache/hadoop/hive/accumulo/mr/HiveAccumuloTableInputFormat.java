@@ -18,8 +18,6 @@
 package org.apache.hadoop.hive.accumulo.mr;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,6 +37,7 @@ import org.apache.accumulo.core.client.mapred.RangeInputSplit;
 import org.apache.accumulo.core.client.mapreduce.lib.impl.ConfiguratorBase;
 import org.apache.accumulo.core.client.mock.MockInstance;
 import org.apache.accumulo.core.client.security.tokens.AuthenticationToken;
+import org.apache.accumulo.core.client.security.tokens.KerberosToken;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
@@ -73,9 +72,8 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.security.token.Token;
-import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.log4j.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,22 +107,41 @@ public class HiveAccumuloTableInputFormat implements
     Path[] tablePaths = FileInputFormat.getInputPaths(context);
 
     try {
-      UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
-      final Connector connector;
+      Connector connector = null;
 
       // Need to get a Connector so we look up the user's authorizations if not otherwise specified
-      if (accumuloParams.useSasl() && !ugi.hasKerberosCredentials()) {
+      if (accumuloParams.useSasl()) {
+        log.info("Current user: " + UserGroupInformation.getCurrentUser());
         // In a YARN/Tez job, don't have the Kerberos credentials anymore, use the delegation token
         AuthenticationToken token = ConfiguratorBase.getAuthenticationToken(
             AccumuloInputFormat.class, jobConf);
-        // Convert the stub from the configuration back into a normal Token
-        // More reflection to support 1.6
-        token = helper.unwrapAuthenticationToken(jobConf, token);
-        connector = instance.getConnector(accumuloParams.getAccumuloUserName(), token);
+        if (null != token && !jobConf.getCredentials().getAllTokens().isEmpty()) {
+          // Convert the stub from the configuration back into a normal Token
+          log.info("Found authentication token in Configuration: " + token);
+          log.info("Job credential tokens: " + jobConf.getCredentials().getAllTokens());
+          AuthenticationToken unwrappedToken = ConfiguratorBase.unwrapAuthenticationToken(jobConf, token);
+          log.info("Converted authentication token from Configuration into: " + unwrappedToken);
+          // It's possible that the Job doesn't have the token in its credentials. In this case, unwrapAuthenticatinoToken
+          // will return back the original token (which we know is insufficient)
+          if (unwrappedToken != token) {
+            log.info("Creating Accumulo Connector with unwrapped delegation token");
+            connector = instance.getConnector(accumuloParams.getAccumuloUserName(), unwrappedToken);
+          } else {
+            log.info("Job credentials did not contain delegation token, fetching new token");
+          }
+        }
+
+        if (connector == null) {
+          log.info("Obtaining Accumulo Connector using KerberosToken");
+          // Construct a KerberosToken -- relies on ProxyUser configuration. Will be the client making
+          // the request on top of the HS2's user. Accumulo will require proper proxy-user auth configs.
+          connector = instance.getConnector(accumuloParams.getAccumuloUserName(), new KerberosToken(accumuloParams.getAccumuloUserName()));
+        }
       } else {
         // Still in the local JVM, use the username+password or Kerberos credentials
         connector = accumuloParams.getConnector(instance);
       }
+
       final List<ColumnMapping> columnMappings = columnMapper.getColumnMappings();
       final List<IteratorSetting> iterators = predicateHandler.getIterators(jobConf, columnMapper);
       final Collection<Range> ranges = predicateHandler.getRanges(jobConf, columnMapper);
@@ -153,6 +170,7 @@ public class HiveAccumuloTableInputFormat implements
       HiveAccumuloSplit[] hiveSplits = new HiveAccumuloSplit[splits.length];
       for (int i = 0; i < splits.length; i++) {
         RangeInputSplit ris = (RangeInputSplit) splits[i];
+        ris.setLogLevel(Level.DEBUG);
         hiveSplits[i] = new HiveAccumuloSplit(ris, tablePaths[0]);
       }
 
@@ -172,12 +190,6 @@ public class HiveAccumuloTableInputFormat implements
   /**
    * Setup accumulo input format from conf properties. Delegates to final RecordReader from mapred
    * package.
-   *
-   * @param inputSplit
-   * @param jobConf
-   * @param reporter
-   * @return RecordReader
-   * @throws IOException
    */
   @Override
   public RecordReader<Text,AccumuloHiveRow> getRecordReader(InputSplit inputSplit,
@@ -190,6 +202,8 @@ public class HiveAccumuloTableInputFormat implements
     }
 
     try {
+      final AccumuloConnectionParameters accumuloParams = new AccumuloConnectionParameters(
+          jobConf);
       final List<IteratorSetting> iterators = predicateHandler.getIterators(jobConf, columnMapper);
 
       HiveAccumuloSplit hiveSplit = (HiveAccumuloSplit) inputSplit;
@@ -213,11 +227,14 @@ public class HiveAccumuloTableInputFormat implements
 
       // ACCUMULO-3015 Like the above, RangeInputSplit should have the table name
       // but we want it to, so just re-set it if it's null.
-      if (null == getTableName(rangeSplit)) {
-        final AccumuloConnectionParameters accumuloParams = new AccumuloConnectionParameters(
-            jobConf);
-        log.debug("Re-setting table name on InputSplit due to Accumulo bug.");
-        setTableName(rangeSplit, accumuloParams.getAccumuloTableName());
+      if (null == rangeSplit.getTableName()) {
+        rangeSplit.setTableName(accumuloParams.getAccumuloTableName());
+      }
+
+      // ACCUMULO-4670 RangeInputSplit doesn't preserve useSasl on the ClientConfiguration/ZooKeeperInstance
+      // We have to manually re-set it in the JobConf to make sure it gets picked up.
+      if (accumuloParams.useSasl()) {
+        helper.setInputFormatZooKeeperInstance(jobConf, accumuloParams.getAccumuloInstanceName(), accumuloParams.getZooKeepers(), accumuloParams.useSasl());
       }
 
       final RecordReader<Text,PeekingIterator<Map.Entry<Key,Value>>> recordReader = accumuloInputFormat
@@ -268,9 +285,6 @@ public class HiveAccumuloTableInputFormat implements
    *          Any iterators to be configured server-side
    * @param ranges
    *          Accumulo ranges on for the query
-   * @throws AccumuloSecurityException
-   * @throws AccumuloException
-   * @throws SerDeException
    */
   protected void configure(JobConf conf, Instance instance, Connector connector,
       AccumuloConnectionParameters accumuloParams, ColumnMapper columnMapper,
@@ -279,44 +293,17 @@ public class HiveAccumuloTableInputFormat implements
 
     // Handle implementation of Instance and invoke appropriate InputFormat method
     if (instance instanceof MockInstance) {
-      setMockInstance(conf, instance.getInstanceName());
+      getHelper().setInputFormatMockInstance(conf, instance.getInstanceName());
     } else {
-      setZooKeeperInstance(conf, instance.getInstanceName(), instance.getZooKeepers(),
+      getHelper().setInputFormatZooKeeperInstance(conf, instance.getInstanceName(), instance.getZooKeepers(),
           accumuloParams.useSasl());
     }
 
     // Set the username/passwd for the Accumulo connection
     if (accumuloParams.useSasl()) {
-      UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
-
-      // If we have Kerberos credentials, we should obtain the delegation token
-      if (ugi.hasKerberosCredentials()) {
-        Connector conn = accumuloParams.getConnector();
-        AuthenticationToken token = helper.getDelegationToken(conn);
-
-        // Send the DelegationToken down to the Configuration for Accumulo to use
-        setConnectorInfo(conf, accumuloParams.getAccumuloUserName(), token);
-
-        // Convert the Accumulo token in a Hadoop token
-        Token<? extends TokenIdentifier> accumuloToken = helper.getHadoopToken(token);
-
-        log.info("Adding Hadoop Token for Accumulo to Job's Credentials");
-
-        // Add the Hadoop token to the JobConf
-        helper.mergeTokenIntoJobConf(conf, accumuloToken);
-
-        if (!ugi.addToken(accumuloToken)) {
-          throw new IOException("Failed to add Accumulo Token to UGI");
-        }
-      }
-
-      try {
-        helper.addTokenFromUserToJobConf(ugi, conf);
-      } catch (IOException e) {
-        throw new IOException("Current user did not contain necessary delegation Tokens " + ugi, e);
-      }
+      getHelper().updateInputFormatConfWithAccumuloToken(conf, UserGroupInformation.getCurrentUser(), accumuloParams);
     } else {
-      setConnectorInfo(conf, accumuloParams.getAccumuloUserName(),
+      getHelper().setInputFormatConnectorInfo(conf, accumuloParams.getAccumuloUserName(),
           new PasswordToken(accumuloParams.getAccumuloPassword()));
     }
 
@@ -354,45 +341,6 @@ public class HiveAccumuloTableInputFormat implements
 
   // Wrap the static AccumuloInputFormat methods with methods that we can
   // verify were correctly called via Mockito
-
-  protected void setMockInstance(JobConf conf, String instanceName) {
-    try {
-      AccumuloInputFormat.setMockInstance(conf, instanceName);
-    } catch (IllegalStateException e) {
-      // AccumuloInputFormat complains if you re-set an already set value. We just don't care.
-      log.debug("Ignoring exception setting mock instance of " + instanceName, e);
-    }
-  }
-
-  @SuppressWarnings("deprecation")
-  protected void setZooKeeperInstance(JobConf conf, String instanceName, String zkHosts,
-      boolean isSasl) throws IOException {
-    // To support builds against 1.5, we can't use the new 1.6 setZooKeeperInstance which
-    // takes a ClientConfiguration class that only exists in 1.6
-    try {
-      if (isSasl) {
-        // Reflection to support Accumulo 1.5. Remove when Accumulo 1.5 support is dropped
-        // 1.6 works with the deprecated 1.5 method, but must use reflection for 1.7-only SASL support
-        helper.setZooKeeperInstance(conf, AccumuloInputFormat.class, zkHosts, instanceName, isSasl);
-      } else {
-        AccumuloInputFormat.setZooKeeperInstance(conf, instanceName, zkHosts);
-      }
-    } catch (IllegalStateException ise) {
-      // AccumuloInputFormat complains if you re-set an already set value. We just don't care.
-      log.debug("Ignoring exception setting ZooKeeper instance of " + instanceName + " at "
-          + zkHosts, ise);
-    }
-  }
-
-  protected void setConnectorInfo(JobConf conf, String user, AuthenticationToken token)
-      throws AccumuloSecurityException {
-    try {
-      AccumuloInputFormat.setConnectorInfo(conf, user, token);
-    } catch (IllegalStateException e) {
-      // AccumuloInputFormat complains if you re-set an already set value. We just don't care.
-      log.debug("Ignoring exception setting Accumulo Connector instance for user " + user, e);
-    }
-  }
 
   protected void setInputTableName(JobConf conf, String tableName) {
     AccumuloInputFormat.setInputTableName(conf, tableName);
@@ -454,109 +402,7 @@ public class HiveAccumuloTableInputFormat implements
     return pairs;
   }
 
-  /**
-   * Reflection to work around Accumulo 1.5 and 1.6 incompatibilities. Throws an {@link IOException}
-   * for any reflection related exceptions
-   *
-   * @param split
-   *          A RangeInputSplit
-   * @return The name of the table from the split
-   * @throws IOException
-   */
-  protected String getTableName(RangeInputSplit split) throws IOException {
-    // ACCUMULO-3017 shenanigans with method names changing without deprecation
-    Method getTableName = null;
-    try {
-      getTableName = RangeInputSplit.class.getMethod("getTableName");
-    } catch (SecurityException e) {
-      log.debug("Could not get getTableName method from RangeInputSplit", e);
-    } catch (NoSuchMethodException e) {
-      log.debug("Could not get getTableName method from RangeInputSplit", e);
-    }
-
-    if (null != getTableName) {
-      try {
-        return (String) getTableName.invoke(split);
-      } catch (IllegalArgumentException e) {
-        log.debug("Could not invoke getTableName method from RangeInputSplit", e);
-      } catch (IllegalAccessException e) {
-        log.debug("Could not invoke getTableName method from RangeInputSplit", e);
-      } catch (InvocationTargetException e) {
-        log.debug("Could not invoke getTableName method from RangeInputSplit", e);
-      }
-    }
-
-    Method getTable;
-    try {
-      getTable = RangeInputSplit.class.getMethod("getTable");
-    } catch (SecurityException e) {
-      throw new IOException("Could not get table name from RangeInputSplit", e);
-    } catch (NoSuchMethodException e) {
-      throw new IOException("Could not get table name from RangeInputSplit", e);
-    }
-
-    try {
-      return (String) getTable.invoke(split);
-    } catch (IllegalArgumentException e) {
-      throw new IOException("Could not get table name from RangeInputSplit", e);
-    } catch (IllegalAccessException e) {
-      throw new IOException("Could not get table name from RangeInputSplit", e);
-    } catch (InvocationTargetException e) {
-      throw new IOException("Could not get table name from RangeInputSplit", e);
-    }
-  }
-
-  /**
-   * Sets the table name on a RangeInputSplit, accounting for change in method name. Any reflection
-   * related exception is wrapped in an {@link IOException}
-   *
-   * @param split
-   *          The RangeInputSplit to operate on
-   * @param tableName
-   *          The name of the table to set
-   * @throws IOException
-   */
-  protected void setTableName(RangeInputSplit split, String tableName) throws IOException {
-    // ACCUMULO-3017 shenanigans with method names changing without deprecation
-    Method setTableName = null;
-    try {
-      setTableName = RangeInputSplit.class.getMethod("setTableName", String.class);
-    } catch (SecurityException e) {
-      log.debug("Could not get getTableName method from RangeInputSplit", e);
-    } catch (NoSuchMethodException e) {
-      log.debug("Could not get getTableName method from RangeInputSplit", e);
-    }
-
-    if (null != setTableName) {
-      try {
-        setTableName.invoke(split, tableName);
-        return;
-      } catch (IllegalArgumentException e) {
-        log.debug("Could not invoke getTableName method from RangeInputSplit", e);
-      } catch (IllegalAccessException e) {
-        log.debug("Could not invoke getTableName method from RangeInputSplit", e);
-      } catch (InvocationTargetException e) {
-        log.debug("Could not invoke getTableName method from RangeInputSplit", e);
-      }
-    }
-
-    Method setTable;
-    try {
-      setTable = RangeInputSplit.class.getMethod("setTable", String.class);
-    } catch (SecurityException e) {
-      throw new IOException("Could not set table name from RangeInputSplit", e);
-    } catch (NoSuchMethodException e) {
-      throw new IOException("Could not set table name from RangeInputSplit", e);
-    }
-
-    try {
-      setTable.invoke(split, tableName);
-    } catch (IllegalArgumentException e) {
-      throw new IOException("Could not set table name from RangeInputSplit", e);
-    } catch (IllegalAccessException e) {
-      throw new IOException("Could not set table name from RangeInputSplit", e);
-    } catch (InvocationTargetException e) {
-      throw new IOException("Could not set table name from RangeInputSplit", e);
-    }
+  HiveAccumuloHelper getHelper() {
+    return helper;
   }
 }

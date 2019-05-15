@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,18 +31,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Properties;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
-
+import com.google.common.base.Splitter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
 import org.apache.commons.lang3.text.translate.EntityArrays;
@@ -86,18 +83,11 @@ public class HiveStringUtils {
       }).with(
         new LookupTranslator(EntityArrays.JAVA_CTRL_CHARS_ESCAPE()));
 
-  /**
-   * Maintain a String pool to reduce memory.
-   */
-  private static final Interner<String> STRING_INTERNER;
-
   static {
     NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.ENGLISH);
     decimalFormat = (DecimalFormat) numberFormat;
     decimalFormat.applyPattern("#.##");
-
-    STRING_INTERNER = Interners.newWeakInterner();
-  }
+}
 
   /**
    * Return the internalized string, or null if the given string is null.
@@ -108,7 +98,7 @@ public class HiveStringUtils {
     if(str == null) {
       return null;
     }
-    return STRING_INTERNER.intern(str);
+    return str.intern();
   }
 
   /**
@@ -172,35 +162,6 @@ public class HiveStringUtils {
       return fullHostname.substring(0, offset);
     }
     return fullHostname;
-  }
-
-  private static DecimalFormat oneDecimal = new DecimalFormat("0.0");
-
-  /**
-   * Given an integer, return a string that is in an approximate, but human
-   * readable format.
-   * It uses the bases 'k', 'm', and 'g' for 1024, 1024**2, and 1024**3.
-   * @param number the number to format
-   * @return a human readable form of the integer
-   */
-  public static String humanReadableInt(long number) {
-    long absNumber = Math.abs(number);
-    double result = number;
-    String suffix = "";
-    if (absNumber < 1024) {
-      // since no division has occurred, don't format with a decimal point
-      return String.valueOf(number);
-    } else if (absNumber < 1024 * 1024) {
-      result = number / 1024.0;
-      suffix = "k";
-    } else if (absNumber < 1024 * 1024 * 1024) {
-      result = number / (1024.0 * 1024);
-      suffix = "m";
-    } else {
-      result = number / (1024.0 * 1024 * 1024);
-      suffix = "g";
-    }
-    return oneDecimal.format(result) + suffix;
   }
 
   /**
@@ -426,7 +387,7 @@ public class HiveStringUtils {
 
   /**
    * Splits a comma separated value <code>String</code>, trimming leading and trailing whitespace on each value.
-   * @param str a comma separated <String> with values
+   * @param str a comma separated <code>String</code> with values
    * @return a <code>Collection</code> of <code>String</code> values
    */
   public static Collection<String> getTrimmedStringCollection(String str){
@@ -436,7 +397,7 @@ public class HiveStringUtils {
 
   /**
    * Splits a comma separated value <code>String</code>, trimming leading and trailing whitespace on each value.
-   * @param str a comma separated <String> with values
+   * @param str a comma separated <code>String</code> with values
    * @return an array of <code>String</code> values
    */
   public static String[] getTrimmedStrings(String str){
@@ -549,32 +510,40 @@ public class HiveStringUtils {
   }
 
   /**
-   * In a given string of comma-separated key=value pairs insert a new value of a given key
+   * In a given string of comma-separated key=value pairs associates the specified value with
+   * the specified key.
+   * If the `string` previously contained a mapping for the key, the old value is replaced.
    *
-   * @param key The key whose value needs to be replaced
-   * @param newValue The new value of the key
+   * @param key key with which the specified value is to be associated
+   * @param value value to be associated with the specified key
    * @param strKvPairs Comma separated key=value pairs Eg: "k1=v1, k2=v2, k3=v3"
-   * @return Comma separated string of key=value pairs with the new value for key keyName
+   * @return Updated comma separated string of key=value pairs
    */
-  public static String insertValue(String key, String newValue,
-      String strKvPairs) {
+  public static String insertValue(String key, String value, String strKvPairs) {
+    boolean keyNotFound = true;
+
     String[] keyValuePairs = HiveStringUtils.split(strKvPairs);
     StringBuilder sb = new StringBuilder();
+
     for (int i = 0; i < keyValuePairs.length; i++) {
       String[] pair = HiveStringUtils.split(keyValuePairs[i], ESCAPE_CHAR, EQUALS);
       if (pair.length != 2) {
         throw new RuntimeException("Error parsing the keyvalue pair " + keyValuePairs[i]);
       }
-      sb.append(pair[0]);
-      sb.append(EQUALS);
+      sb.append(pair[0]).append(EQUALS);
       if (pair[0].equals(key)) {
-        sb.append(newValue);
+        sb.append(value);
+        keyNotFound = false;
       } else {
         sb.append(pair[1]);
       }
-      if (i < (keyValuePairs.length - 1)) {
+      if (i < (keyValuePairs.length - 1) || keyNotFound) {
         sb.append(COMMA);
       }
+    }
+
+    if (keyNotFound) {
+      sb.append(key).append(EQUALS).append(value);
     }
     return sb.toString();
   }
@@ -1013,22 +982,60 @@ public class HiveStringUtils {
     return len;
   }
 
+  /**
+   * Checks if b is an ascii character
+   */
+  public static boolean isAscii(byte b) {
+    return (b & 0x80) == 0;
+  }
+
+  /**
+   * Returns the number of leading whitespace characters in the utf-8 string
+   */
+  public static int findLeadingSpaces(byte[] bytes, int start, int length) {
+    int numSpaces;
+    for (numSpaces = 0; numSpaces < length; ++numSpaces) {
+      int curPos = start + numSpaces;
+      if (isAscii(bytes[curPos]) && Character.isWhitespace(bytes[curPos])) {
+        continue;
+      }
+      break; // non-space character
+    }
+    return (numSpaces - start);
+  }
+
+  /**
+   * Returns the number of trailing whitespace characters in the utf-8 string
+   */
+  public static int findTrailingSpaces(byte[] bytes, int start, int length) {
+    int numSpaces;
+    for (numSpaces = 0; numSpaces < length; ++numSpaces) {
+      int curPos = start + (length - (numSpaces + 1));
+      if (isAscii(bytes[curPos]) && Character.isWhitespace(bytes[curPos])) {
+        continue;
+      } else {
+        break; // non-space character
+      }
+    }
+    return numSpaces;
+  }
+
+  /**
+   * Finds trimmed length of utf-8 string
+   */
+  public static int findTrimmedLength(byte[] bytes, int start, int length, int leadingSpaces) {
+    int trailingSpaces = findTrailingSpaces(bytes, start, length);
+    length = length - leadingSpaces;
+    // If string is entirely whitespace, no need to apply trailingSpaces.
+    if (length > 0) {
+      length = length - trailingSpaces;
+    }
+    return length;
+  }
+
   public static String normalizeIdentifier(String identifier) {
 	  return identifier.trim().toLowerCase();
 	}
-
-  public static Map getPropertiesExplain(Properties properties) {
-    if (properties != null) {
-      String value = properties.getProperty("columns.comments");
-      if (value != null) {
-        // should copy properties first
-        Map clone = new HashMap(properties);
-        clone.put("columns.comments", quoteComments(value));
-        return clone;
-      }
-    }
-    return properties;
-  }
 
   public static String quoteComments(String value) {
     char[] chars = value.toCharArray();
@@ -1073,4 +1080,84 @@ public class HiveStringUtils {
   
     return null;
   }
+
+  /**
+   * Strip comments from a sql statement, tracking when the statement contains a string literal.
+   *
+   * @param statement the input string
+   * @return a stripped statement
+   */
+  public static String removeComments(String statement) {
+    if (statement == null) {
+      return null;
+    }
+    Iterator<String> iterator = Splitter.on("\n").omitEmptyStrings().split(statement).iterator();
+    int[] startQuote = {-1};
+    StringBuilder ret = new StringBuilder(statement.length());
+    while (iterator.hasNext()) {
+      String lineWithComments = iterator.next();
+      String lineNoComments = removeComments(lineWithComments, startQuote);
+      ret.append(lineNoComments);
+      if (iterator.hasNext() && !lineNoComments.isEmpty()) {
+        ret.append("\n");
+      }
+    }
+    return ret.toString();
+  }
+
+  /**
+   * Remove comments from the current line of a query.
+   * Avoid removing comment-like strings inside quotes.
+   * @param line a line of sql text
+   * @param startQuote The value -1 indicates that line does not begin inside a string literal.
+   *                   Other values indicate that line does begin inside a string literal
+   *                   and the value passed is the delimiter character.
+   *                   The array type is used to pass int type as input/output parameter.
+   * @return the line with comments removed.
+   */
+  public static String removeComments(String line, int[] startQuote) {
+    if (line == null || line.isEmpty()) {
+      return line;
+    }
+    if (startQuote[0] == -1 && isComment(line)) {
+      return "";  //assume # can only be used at the beginning of line.
+    }
+    StringBuilder builder = new StringBuilder();
+    for (int index = 0; index < line.length();) {
+      if (startQuote[0] == -1 && index < line.length() - 1 && line.charAt(index) == '-'
+          && line.charAt(index + 1) == '-') {
+        // Jump to the end of current line. When a multiple line query is executed with -e parameter,
+        // it is passed in as one line string separated with '\n'
+        for (; index < line.length() && line.charAt(index) != '\n'; ++index);
+        continue;
+      }
+
+      char letter = line.charAt(index);
+      if (startQuote[0] == letter && (index == 0 || line.charAt(index - 1) != '\\')) {
+        startQuote[0] = -1; // Turn escape off.
+      } else if (startQuote[0] == -1 && (letter == '\'' || letter == '"') && (index == 0
+          || line.charAt(index - 1) != '\\')) {
+        startQuote[0] = letter; // Turn escape on.
+      }
+
+      builder.append(letter);
+      index++;
+    }
+
+    return builder.toString().trim();
+  }
+
+  /**
+   * Test whether a line is a comment.
+   *
+   * @param line the line to be tested
+   * @return true if a comment
+   */
+  private static boolean isComment(String line) {
+    // SQL92 comment prefix is "--"
+    // beeline also supports shell-style "#" prefix
+    String lineTrimmed = line.trim();
+    return lineTrimmed.startsWith("#") || lineTrimmed.startsWith("--");
+  }
+
 }

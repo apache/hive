@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,8 +14,8 @@
 package org.apache.hadoop.hive.ql.io.parquet;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -68,6 +68,15 @@ public class MapredParquetOutputFormat extends FileOutputFormat<NullWritable, Pa
     realOutputFormat.checkOutputSpecs(ShimLoader.getHadoopShims().getHCatShim().createJobContext(job, null));
   }
 
+  /**
+   *
+   * @param ignored Unused parameter
+   * @param job JobConf - expecting mandatory parameter PARQUET_HIVE_SCHEMA
+   * @param name Path to write to
+   * @param progress Progress
+   * @return
+   * @throws IOException
+   */
   @Override
   public RecordWriter<NullWritable, ParquetHiveRecord> getRecordWriter(
       final FileSystem ignored,
@@ -75,7 +84,7 @@ public class MapredParquetOutputFormat extends FileOutputFormat<NullWritable, Pa
       final String name,
       final Progressable progress
       ) throws IOException {
-    throw new RuntimeException("Should never be used");
+    return new ParquetRecordWriterWrapper(realOutputFormat, job, name, progress);
   }
 
   /**
@@ -92,23 +101,20 @@ public class MapredParquetOutputFormat extends FileOutputFormat<NullWritable, Pa
       final Properties tableProperties,
       final Progressable progress) throws IOException {
 
-    LOG.info("creating new record writer..." + this);
+    LOG.info("Creating new record writer: {}", this);
 
     final String columnNameProperty = tableProperties.getProperty(IOConstants.COLUMNS);
     final String columnTypeProperty = tableProperties.getProperty(IOConstants.COLUMNS_TYPES);
-    List<String> columnNames;
-    List<TypeInfo> columnTypes;
+    List<String> columnNames = Collections.emptyList();
+    List<TypeInfo> columnTypes = Collections.emptyList();
     final String columnNameDelimiter = tableProperties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tableProperties
         .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
-    if (columnNameProperty.length() == 0) {
-      columnNames = new ArrayList<String>();
-    } else {
+
+    if (!columnNameProperty.isEmpty()) {
       columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
     }
 
-    if (columnTypeProperty.length() == 0) {
-      columnTypes = new ArrayList<TypeInfo>();
-    } else {
+    if (!columnTypeProperty.isEmpty()) {
       columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
     }
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -29,7 +29,9 @@ import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.plan.BaseWork.BaseExplainVectorization;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.mapred.JobConf;
 
 public class MergeJoinWork extends BaseWork {
@@ -49,7 +51,7 @@ public class MergeJoinWork extends BaseWork {
 
   @Override
   public Set<Operator<?>> getAllRootOperators() {
-    Set<Operator<?>> set = new HashSet<>();
+    Set<Operator<?>> set = new LinkedHashSet<>();
     set.addAll(getMainWork().getAllRootOperators());
     for (BaseWork w : mergeWorkList) {
       set.addAll(w.getAllRootOperators());
@@ -92,7 +94,7 @@ public class MergeJoinWork extends BaseWork {
          * output name in the reduce sink needs to be setup appropriately. In the case of reduce
          * side merge work, we need to ensure that the parent work that provides data to this merge
          * work is setup to point to the right vertex name - the main work name.
-         * 
+         *
          * In this case, if the big table work has already been created, we can hook up the merge
          * work items for the small table correctly.
          */
@@ -175,8 +177,64 @@ public class MergeJoinWork extends BaseWork {
   public boolean getLlapMode() {
     return getMainWork().getLlapMode();
   }
-  
+
+  @Override
   public void addDummyOp(HashTableDummyOperator dummyOp) {
     getMainWork().addDummyOp(dummyOp);
+  }
+
+  /**
+   * For now, this class just says in EXPLAIN VECTORIZATION we don't support vectorization of the
+   * Merge Join vertex instead of being silent about it.
+   */
+  public class MergeJoinExplainVectorization extends BaseExplainVectorization {
+
+    private final MergeJoinWork mergeJoinWork;
+
+    private VectorizationCondition[] mergeWorkVectorizationConditions;
+
+    public MergeJoinExplainVectorization(MergeJoinWork mergeJoinWork) {
+      super(mergeJoinWork);
+      this.mergeJoinWork = mergeJoinWork;
+    }
+
+    private VectorizationCondition[] createMergeWorkExplainVectorizationConditions() {
+
+      boolean enabled = false;
+
+      VectorizationCondition[] conditions = new VectorizationCondition[] {
+          new VectorizationCondition(
+              enabled,
+              "Vectorizing MergeJoin Supported")
+      };
+      return conditions;
+    }
+
+    @Explain(vectorization = Vectorization.SUMMARY, displayName = "enableConditionsMet",
+        explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public List<String> getEnableConditionsMet() {
+      if (mergeWorkVectorizationConditions == null) {
+        mergeWorkVectorizationConditions = createMergeWorkExplainVectorizationConditions();
+      }
+      return VectorizationCondition.getConditionsMet(mergeWorkVectorizationConditions);
+    }
+
+    @Explain(vectorization = Vectorization.SUMMARY, displayName = "enableConditionsNotMet",
+        explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public List<String> getEnableConditionsNotMet() {
+      if (mergeWorkVectorizationConditions == null) {
+        mergeWorkVectorizationConditions = createMergeWorkExplainVectorizationConditions();
+      }
+      return VectorizationCondition.getConditionsNotMet(mergeWorkVectorizationConditions);
+    }
+  }
+
+  @Explain(vectorization = Vectorization.SUMMARY, displayName = "MergeJoin Vectorization",
+      explainLevels = { Level.DEFAULT, Level.EXTENDED })
+  public MergeJoinExplainVectorization getReduceExplainVectorization() {
+    if (!getVectorizationExamined()) {
+      return null;
+    }
+    return new MergeJoinExplainVectorization(this);
   }
 }

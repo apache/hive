@@ -1,3 +1,4 @@
+--! qt:dataset:src
 dfs -mkdir  ${system:test.tmp.dir}/aux;
 dfs -cp ${system:hive.root}/data/files/identity_udf.jar ${system:test.tmp.dir}/aux/udfexample.jar;
 

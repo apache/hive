@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -25,6 +25,7 @@ import java.util.List;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -39,6 +40,7 @@ public class AlterTablePartMergeFilesDesc {
   private List<Path> inputDir = new ArrayList<Path>();
   private Path outputDir = null;
   private Class<? extends InputFormat> inputFormatClass;
+  private TableDesc tableDesc;
 
   public AlterTablePartMergeFilesDesc(String tableName,
       HashMap<String, String> partSpec) {
@@ -102,4 +104,11 @@ public class AlterTablePartMergeFilesDesc {
     this.inputFormatClass = inputFormatClass;
   }
 
+  public void setTableDesc(TableDesc tableDesc) {
+    this.tableDesc = tableDesc;
+  }
+
+  public TableDesc getTableDesc() {
+    return tableDesc;
+  }
 }

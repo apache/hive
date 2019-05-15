@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,7 +26,6 @@ import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.shims.HadoopShimsSecure;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -91,6 +90,9 @@ public class TestTempletonUtils {
 
     String fifty = "2011-12-15 18:12:36,333 [main] INFO  org.apache.pig.backend.hadoop.executionengine.mapReduceLayer.MapReduceLauncher - 50% complete";
     Assert.assertEquals("50% complete", TempletonUtils.extractPercentComplete(fifty));
+
+    String beeline = "VERTICES: 01/02  [==========================>>] 70%  ELAPSED TIME: 3.79 s";
+    Assert.assertEquals("70% complete", TempletonUtils.extractPercentComplete(beeline));
   }
 
   @Test
@@ -271,18 +273,20 @@ public class TestTempletonUtils {
     String[] sources = new String[] { "output+", "/user/hadoop/output",
       "hdfs://container", "hdfs://container/", "hdfs://container/path",
       "output#link", "hdfs://cointaner/output#link",
-      "hdfs://container@acc/test" };
+      "hdfs://container@acc/test", "/user/webhcat/düsseldorf", "düsseldorf", 
+      "䶴狝A﨩O", "hdfs://host:8080"};
     String[] expectedResults = new String[] { "/user/webhcat/output+",
       "/user/hadoop/output", "hdfs://container/user/webhcat",
       "hdfs://container/", "hdfs://container/path",
       "/user/webhcat/output#link", "hdfs://cointaner/output#link",
-      "hdfs://container@acc/test" };
+      "hdfs://container@acc/test", "/user/webhcat/düsseldorf","/user/webhcat/düsseldorf",
+      "/user/webhcat/䶴狝A﨩O", "hdfs://host:8080/user/webhcat" };
     for (int i = 0; i < sources.length; i++) {
       String source = sources[i];
       String expectedResult = expectedResults[i];
       String result = TempletonUtils.addUserHomeDirectoryIfApplicable(source,
           "webhcat");
-      Assert.assertEquals(result, expectedResult);
+      Assert.assertEquals("i=" + i, expectedResult, result);
     }
 
     String badUri = "c:\\some\\path";
@@ -290,7 +294,7 @@ public class TestTempletonUtils {
       TempletonUtils.addUserHomeDirectoryIfApplicable(badUri, "webhcat");
       Assert.fail("addUserHomeDirectoryIfApplicable should fail for bad URI: "
           + badUri);
-    } catch (URISyntaxException ex) {
+    } catch (IllegalArgumentException ex) {
     }
   }
   

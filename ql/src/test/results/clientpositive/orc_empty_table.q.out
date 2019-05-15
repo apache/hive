@@ -1,0 +1,68 @@
+PREHOOK: query: CREATE TABLE test_orc_empty_table_with_struct (struct_field STRUCT<int_field: INT>) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_orc_empty_table_with_struct
+POSTHOOK: query: CREATE TABLE test_orc_empty_table_with_struct (struct_field STRUCT<int_field: INT>) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_orc_empty_table_with_struct
+PREHOOK: query: SELECT count(*) FROM test_orc_empty_table_with_struct
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_orc_empty_table_with_struct
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM test_orc_empty_table_with_struct
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_orc_empty_table_with_struct
+#### A masked pattern was here ####
+0
+PREHOOK: query: CREATE TABLE test_orc_empty_table_with_map (map_field MAP<STRING,STRING>) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_orc_empty_table_with_map
+POSTHOOK: query: CREATE TABLE test_orc_empty_table_with_map (map_field MAP<STRING,STRING>) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_orc_empty_table_with_map
+PREHOOK: query: SELECT count(*) FROM test_orc_empty_table_with_map
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_orc_empty_table_with_map
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM test_orc_empty_table_with_map
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_orc_empty_table_with_map
+#### A masked pattern was here ####
+0
+PREHOOK: query: CREATE TABLE test_orc_empty_table_with_list (list_field ARRAY<INT>) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_orc_empty_table_with_list
+POSTHOOK: query: CREATE TABLE test_orc_empty_table_with_list (list_field ARRAY<INT>) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_orc_empty_table_with_list
+PREHOOK: query: SELECT count(*) FROM test_orc_empty_table_with_list
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_orc_empty_table_with_list
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM test_orc_empty_table_with_list
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_orc_empty_table_with_list
+#### A masked pattern was here ####
+0
+PREHOOK: query: CREATE TABLE test_orc_empty_table_with_union (union_field UNIONTYPE<int, double>) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_orc_empty_table_with_union
+POSTHOOK: query: CREATE TABLE test_orc_empty_table_with_union (union_field UNIONTYPE<int, double>) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_orc_empty_table_with_union
+PREHOOK: query: SELECT count(*) FROM test_orc_empty_table_with_union
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_orc_empty_table_with_union
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM test_orc_empty_table_with_union
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_orc_empty_table_with_union
+#### A masked pattern was here ####
+0

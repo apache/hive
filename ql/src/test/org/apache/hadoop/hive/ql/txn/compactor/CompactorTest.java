@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,11 +24,15 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -41,6 +45,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -61,6 +66,7 @@ import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.Progressable;
 import org.apache.thrift.TException;
+import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,6 +75,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,19 +93,19 @@ public abstract class CompactorTest {
 
   protected TxnStore txnHandler;
   protected IMetaStoreClient ms;
-  protected long sleepTime = 1000;
   protected HiveConf conf;
 
   private final AtomicBoolean stop = new AtomicBoolean();
-  private final File tmpdir;
+  protected File tmpdir;
 
-  protected CompactorTest() throws Exception {
+  @Before
+  public void setup() throws Exception {
     conf = new HiveConf();
     TxnDbUtil.setConfValues(conf);
-    TxnDbUtil.cleanDb();
+    TxnDbUtil.cleanDb(conf);
     ms = new HiveMetaStoreClient(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
-    tmpdir = new File (Files.createTempDirectory("compactor_test_table_").toString());
+    tmpdir = new File(Files.createTempDirectory("compactor_test_table_").toString());
   }
 
   protected void compactorTestCleanup() throws IOException {
@@ -140,6 +147,7 @@ public abstract class CompactorTest {
                            boolean  isTemporary)
       throws  TException {
     Table table = new Table();
+    table.setTableType(TableType.MANAGED_TABLE.name());
     table.setTableName(tableName);
     table.setDbName(dbName);
     table.setOwner("me");
@@ -150,6 +158,16 @@ public abstract class CompactorTest {
       table.setPartitionKeys(partKeys);
     }
 
+    // Set the table as transactional for compaction to work
+    if (parameters == null) {
+      parameters = new HashMap<>();
+    }
+    parameters.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
+    if (sortCols != null) {
+      // Sort columns are not allowed for full ACID table. So, change it to insert-only table
+      parameters.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
+              TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY);
+    }
     table.setParameters(parameters);
     if (isTemporary) table.setTemporary(true);
 
@@ -179,6 +197,15 @@ public abstract class CompactorTest {
     List<Long> txns = txnHandler.openTxns(new OpenTxnRequest(1, System.getProperty("user.name"),
         Worker.hostname())).getTxn_ids();
     return txns.get(0);
+  }
+
+  protected long allocateWriteId(String dbName, String tblName, long txnid)
+          throws MetaException, TxnAbortedException, NoSuchTxnException {
+    AllocateTableWriteIdsRequest awiRqst
+            = new AllocateTableWriteIdsRequest(dbName, tblName);
+    awiRqst.setTxnIds(Collections.singletonList(txnid));
+    AllocateTableWriteIdsResponse awiResp = txnHandler.allocateTableWriteIds(awiRqst);
+    return awiResp.getTxnToWriteIds().get(0).getWriteId();
   }
 
   protected void addDeltaFile(Table t, Partition p, long minTxn, long maxTxn, int numRecords)
@@ -220,15 +247,20 @@ public abstract class CompactorTest {
     return paths;
   }
 
-  protected void burnThroughTransactions(int num)
+  protected void burnThroughTransactions(String dbName, String tblName, int num)
       throws MetaException, NoSuchTxnException, TxnAbortedException {
-    burnThroughTransactions(num, null, null);
+    burnThroughTransactions(dbName, tblName, num, null, null);
   }
 
-  protected void burnThroughTransactions(int num, Set<Long> open, Set<Long> aborted)
+  protected void burnThroughTransactions(String dbName, String tblName, int num, Set<Long> open, Set<Long> aborted)
       throws MetaException, NoSuchTxnException, TxnAbortedException {
     OpenTxnsResponse rsp = txnHandler.openTxns(new OpenTxnRequest(num, "me", "localhost"));
+    AllocateTableWriteIdsRequest awiRqst = new AllocateTableWriteIdsRequest(dbName, tblName);
+    awiRqst.setTxnIds(rsp.getTxn_ids());
+    AllocateTableWriteIdsResponse awiResp = txnHandler.allocateTableWriteIds(awiRqst);
+    int i = 0;
     for (long tid : rsp.getTxn_ids()) {
+      assert(awiResp.getTxnToWriteIds().get(i++).getTxnId() == tid);
       if (aborted != null && aborted.contains(tid)) {
         txnHandler.abortTxn(new AbortTxnRequest(tid));
       } else if (open == null || (open != null && !open.contains(tid))) {
@@ -280,7 +312,7 @@ public abstract class CompactorTest {
       default: throw new RuntimeException("Huh? Unknown thread type.");
     }
     t.setThreadId((int) t.getId());
-    t.setHiveConf(conf);
+    t.setConf(conf);
     stop.set(stopAfterOne);
     t.init(stop, looped);
     if (stopAfterOne) t.run();
@@ -327,7 +359,7 @@ public abstract class CompactorTest {
       }
       FSDataOutputStream out = fs.create(partFile);
       if (type == FileType.LENGTH_FILE) {
-        out.writeInt(numRecords);
+        out.writeInt(numRecords);//hmm - length files should store length in bytes...
       } else {
         for (int i = 0; i < numRecords; i++) {
           RecordIdentifier ri = new RecordIdentifier(maxTxn - 1, bucket, i);
@@ -350,7 +382,7 @@ public abstract class CompactorTest {
 
     @Override
     public RawReader<Text> getRawReader(Configuration conf, boolean collapseEvents, int bucket,
-                                        ValidTxnList validTxnList,
+                                        ValidWriteIdList validWriteIdList,
                                         Path baseDirectory, Path... deltaDirectory) throws IOException {
 
       List<Path> filesToRead = new ArrayList<Path>();
@@ -409,6 +441,11 @@ public abstract class CompactorTest {
       return null;
     }
 
+    /**
+     * This is bogus especially with split update acid tables.  This causes compaction to create
+     * delete_delta_x_y where none existed before.  Makes the data layout such as would never be
+     * created by 'real' code path.
+     */
     @Override
     public boolean isDelete(Text value) {
       // Alternate between returning deleted and not.  This is easier than actually
@@ -551,5 +588,8 @@ public abstract class CompactorTest {
    */
   String makeDeltaDirNameCompacted(long minTxnId, long maxTxnId) {
     return AcidUtils.deltaSubdir(minTxnId, maxTxnId);
+  }
+  String makeDeleteDeltaDirNameCompacted(long minTxnId, long maxTxnId) {
+    return AcidUtils.deleteDeltaSubdir(minTxnId, maxTxnId);
   }
 }

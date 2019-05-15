@@ -1,3 +1,5 @@
+set hive.mapred.mode=nonstrict;
+-- start query 1 in stream 0 using template query40.tpl and seed 1819994127
 explain
 select  
    w_state
@@ -25,3 +27,4 @@ select
  order by w_state,i_item_id
 limit 100;
 
+-- end query 1 in stream 0 using template query40.tpl

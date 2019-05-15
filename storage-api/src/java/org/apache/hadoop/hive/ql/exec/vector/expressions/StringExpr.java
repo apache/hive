@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -127,6 +127,38 @@ public class StringExpr {
       j++;
     }
     return charCount;
+  }
+
+  public static void padRight(BytesColumnVector outV, int i, byte[] bytes, int start, int length,
+      int maxCharacterLength) {
+
+    final int characterLength = StringExpr.characterCount(bytes, start, length);
+    final int blankPadLength = Math.max(maxCharacterLength - characterLength, 0);
+    final int resultLength = length + blankPadLength;
+    outV.ensureValPreallocated(resultLength);
+    byte[] resultBytes = outV.getValPreallocatedBytes();
+    final int resultStart = outV.getValPreallocatedStart();
+    System.arraycopy(bytes, start, resultBytes, resultStart, length);
+    final int padEnd = resultStart + resultLength;
+    for (int p = resultStart + length; p < padEnd; p++) {
+      resultBytes[p] = ' ';
+    }
+    outV.setValPreallocated(i, resultLength);
+  }
+
+  public static byte[] padRight(byte[] bytes, int start, int length, int maxCharacterLength) {
+    final byte[] resultBytes;
+    final int characterLength = StringExpr.characterCount(bytes, start, length);
+    final int blankPadLength = Math.max(maxCharacterLength - characterLength, 0);
+    final int resultLength = length + blankPadLength;
+    resultBytes = new byte[resultLength];
+    final int resultStart = 0;
+    System.arraycopy(bytes, start, resultBytes, resultStart, length);
+    final int padEnd = resultStart + resultLength;
+    for (int p = resultStart + length; p < padEnd; p++) {
+      resultBytes[p] = ' ';
+    }
+    return resultBytes;
   }
 
   // A setVal with the same function signature as rightTrim, leftTrim, truncate, etc, below.

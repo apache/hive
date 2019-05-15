@@ -28,7 +28,6 @@ dt                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 PREHOOK: query: alter table partition_schema1 add columns (x string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
@@ -51,7 +50,6 @@ dt                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 PREHOOK: query: desc partition_schema1 partition (dt='100')
 PREHOOK: type: DESCTABLE
@@ -65,5 +63,4 @@ dt                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    

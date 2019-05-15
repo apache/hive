@@ -1,15 +1,19 @@
-PREHOOK: query: CREATE TABLE partitioned1(a INT, b STRING) PARTITIONED BY(part INT) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE partitioned1_n1(a INT, b STRING) PARTITIONED BY(part INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@partitioned1
-POSTHOOK: query: CREATE TABLE partitioned1(a INT, b STRING) PARTITIONED BY(part INT) STORED AS TEXTFILE
+PREHOOK: Output: default@partitioned1_n1
+POSTHOOK: query: CREATE TABLE partitioned1_n1(a INT, b STRING) PARTITIONED BY(part INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@partitioned1
-PREHOOK: query: explain insert into table partitioned1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
+POSTHOOK: Output: default@partitioned1_n1
+PREHOOK: query: explain insert into table partitioned1_n1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert into table partitioned1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@partitioned1_n1@part=1
+POSTHOOK: query: explain insert into table partitioned1_n1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@partitioned1_n1@part=1
 Explain
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -17,7 +21,6 @@ STAGE DEPENDENCIES:
   Stage-4
   Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
   Stage-2 depends on stages: Stage-0
-  Stage-8 depends on stages: Stage-2
   Stage-3
   Stage-5
   Stage-6 depends on stages: Stage-5
@@ -27,50 +30,59 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: values__tmp__table__1
-            Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+            alias: _dummy_table
+            Row Limit Per Split: 1
+            Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: UDFToInteger(tmp_values_col1) (type: int), tmp_values_col2 (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.partitioned1
-              Select Operator
-                expressions: _col0 (type: int), _col1 (type: string), UDFToInteger('1') (type: int)
-                outputColumnNames: a, b, part
-                Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: compute_stats(a, 16), compute_stats(b, 16)
-                  keys: part (type: int)
-                  mode: hash
-                  outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+              expressions: array(const struct(1,'original'),const struct(2,'original'),const struct(3,'original'),const struct(4,'original')) (type: array<struct<col1:int,col2:string>>)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+              UDTF Operator
+                Statistics: Num rows: 1 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+                function name: inline
+                Select Operator
+                  expressions: col1 (type: int), col2 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.partitioned1_n1
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: string), UDFToInteger('1') (type: int)
+                    outputColumnNames: a, b, part
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: compute_stats(a, 'hll'), compute_stats(b, 'hll')
+                      keys: part (type: int)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 868 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 868 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 884 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col0 (type: int)
+            expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: int)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 884 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 884 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -95,17 +107,15 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.partitioned1
+              name: default.partitioned1_n1
 
   Stage: Stage-2
-    Stats-Aggr Operator
-
-  Stage: Stage-8
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
       Column Stats Desc:
           Columns: a, b
           Column Types: int, string
-          Table: default.partitioned1
+          Table: default.partitioned1_n1
 
   Stage: Stage-3
     Map Reduce
@@ -117,7 +127,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.partitioned1
+                  name: default.partitioned1_n1
 
   Stage: Stage-5
     Map Reduce
@@ -129,7 +139,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.partitioned1
+                  name: default.partitioned1_n1
 
   Stage: Stage-6
     Move Operator
@@ -137,36 +147,36 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: insert into table partitioned1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
+PREHOOK: query: insert into table partitioned1_n1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
 PREHOOK: type: QUERY
-PREHOOK: Output: default@partitioned1@part=1
-POSTHOOK: query: insert into table partitioned1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@partitioned1_n1@part=1
+POSTHOOK: query: insert into table partitioned1_n1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Output: default@partitioned1@part=1
-POSTHOOK: Lineage: partitioned1 PARTITION(part=1).a EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned1 PARTITION(part=1).b SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-_col0	_col1
-PREHOOK: query: desc formatted partitioned1 partition(part=1)
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@partitioned1_n1@part=1
+POSTHOOK: Lineage: partitioned1_n1 PARTITION(part=1).a SCRIPT []
+POSTHOOK: Lineage: partitioned1_n1 PARTITION(part=1).b SCRIPT []
+col1	col2
+PREHOOK: query: desc formatted partitioned1_n1 partition(part=1)
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@partitioned1
-POSTHOOK: query: desc formatted partitioned1 partition(part=1)
+PREHOOK: Input: default@partitioned1_n1
+POSTHOOK: query: desc formatted partitioned1_n1 partition(part=1)
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@partitioned1
+POSTHOOK: Input: default@partitioned1_n1
 col_name	data_type	comment
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 part                	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	partitioned1        	 
+Table:              	partitioned1_n1     	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
@@ -186,45 +196,52 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: desc formatted partitioned1 partition(part=1) a
+PREHOOK: query: desc formatted partitioned1_n1 partition(part=1) a
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@partitioned1
-POSTHOOK: query: desc formatted partitioned1 partition(part=1) a
+PREHOOK: Input: default@partitioned1_n1
+POSTHOOK: query: desc formatted partitioned1_n1 partition(part=1) a
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@partitioned1
-col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	comment
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-a                   	int                 	1                   	4                   	0                   	5                   	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: alter table partitioned1 add columns(c int, d string)
+POSTHOOK: Input: default@partitioned1_n1
+col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	bitvector	comment
+col_name            	a                   	 	 	 	 	 	 	 	 	 	 
+data_type           	int                 	 	 	 	 	 	 	 	 	 	 
+min                 	1                   	 	 	 	 	 	 	 	 	 	 
+max                 	4                   	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	4                   	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+PREHOOK: query: alter table partitioned1_n1 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
-PREHOOK: Input: default@partitioned1
-PREHOOK: Output: default@partitioned1
-POSTHOOK: query: alter table partitioned1 add columns(c int, d string)
+PREHOOK: Input: default@partitioned1_n1
+PREHOOK: Output: default@partitioned1_n1
+POSTHOOK: query: alter table partitioned1_n1 add columns(c int, d string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
-POSTHOOK: Input: default@partitioned1
-POSTHOOK: Output: default@partitioned1
-PREHOOK: query: desc formatted partitioned1 partition(part=1)
+POSTHOOK: Input: default@partitioned1_n1
+POSTHOOK: Output: default@partitioned1_n1
+PREHOOK: query: desc formatted partitioned1_n1 partition(part=1)
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@partitioned1
-POSTHOOK: query: desc formatted partitioned1 partition(part=1)
+PREHOOK: Input: default@partitioned1_n1
+POSTHOOK: query: desc formatted partitioned1_n1 partition(part=1)
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@partitioned1
+POSTHOOK: Input: default@partitioned1_n1
 col_name	data_type	comment
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 part                	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	partitioned1        	 
+Table:              	partitioned1_n1     	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
@@ -244,10 +261,14 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: explain insert into table partitioned1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', 20, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
+PREHOOK: query: explain insert into table partitioned1_n1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', 20, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert into table partitioned1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', 20, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@partitioned1_n1@part=2
+POSTHOOK: query: explain insert into table partitioned1_n1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', 20, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@partitioned1_n1@part=2
 Explain
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -255,7 +276,6 @@ STAGE DEPENDENCIES:
   Stage-4
   Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
   Stage-2 depends on stages: Stage-0
-  Stage-8 depends on stages: Stage-2
   Stage-3
   Stage-5
   Stage-6 depends on stages: Stage-5
@@ -265,50 +285,59 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: values__tmp__table__3
-            Statistics: Num rows: 1 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+            alias: _dummy_table
+            Row Limit Per Split: 1
+            Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: UDFToInteger(tmp_values_col1) (type: int), tmp_values_col2 (type: string), UDFToInteger(tmp_values_col3) (type: int), tmp_values_col4 (type: string)
-              outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 1 Data size: 60 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 1 Data size: 60 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.partitioned1
-              Select Operator
-                expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string), UDFToInteger('2') (type: int)
-                outputColumnNames: a, b, c, d, part
-                Statistics: Num rows: 1 Data size: 60 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: compute_stats(a, 16), compute_stats(b, 16), compute_stats(c, 16), compute_stats(d, 16)
-                  keys: part (type: int)
-                  mode: hash
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                  Statistics: Num rows: 1 Data size: 60 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 1 Data size: 60 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col4 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+              expressions: array(const struct(1,'new',10,'ten'),const struct(2,'new',20,'twenty'),const struct(3,'new',30,'thirty'),const struct(4,'new',40,'forty')) (type: array<struct<col1:int,col2:string,col3:int,col4:string>>)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+              UDTF Operator
+                Statistics: Num rows: 1 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+                function name: inline
+                Select Operator
+                  expressions: col1 (type: int), col2 (type: string), col3 (type: int), col4 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.partitioned1_n1
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string), UDFToInteger('2') (type: int)
+                    outputColumnNames: a, b, c, d, part
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: compute_stats(a, 'hll'), compute_stats(b, 'hll'), compute_stats(c, 'hll'), compute_stats(d, 'hll')
+                      keys: part (type: int)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 1 Data size: 1732 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 1732 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col4 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 1 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 1764 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col4 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col0 (type: int)
+            expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col4 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4
-            Statistics: Num rows: 1 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1764 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 1764 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -333,17 +362,15 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.partitioned1
+              name: default.partitioned1_n1
 
   Stage: Stage-2
-    Stats-Aggr Operator
-
-  Stage: Stage-8
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
       Column Stats Desc:
           Columns: a, b, c, d
           Column Types: int, string, int, string
-          Table: default.partitioned1
+          Table: default.partitioned1_n1
 
   Stage: Stage-3
     Map Reduce
@@ -355,7 +382,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.partitioned1
+                  name: default.partitioned1_n1
 
   Stage: Stage-5
     Map Reduce
@@ -367,7 +394,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.partitioned1
+                  name: default.partitioned1_n1
 
   Stage: Stage-6
     Move Operator
@@ -375,26 +402,27 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: insert into table partitioned1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', 20, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
+PREHOOK: query: insert into table partitioned1_n1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', 20, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
 PREHOOK: type: QUERY
-PREHOOK: Output: default@partitioned1@part=2
-POSTHOOK: query: insert into table partitioned1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', 20, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@partitioned1_n1@part=2
+POSTHOOK: query: insert into table partitioned1_n1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', 20, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
 POSTHOOK: type: QUERY
-POSTHOOK: Output: default@partitioned1@part=2
-POSTHOOK: Lineage: partitioned1 PARTITION(part=2).a EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned1 PARTITION(part=2).b SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned1 PARTITION(part=2).c EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned1 PARTITION(part=2).d SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-_col0	_col1	_col2	_col3
-PREHOOK: query: desc formatted partitioned1 partition(part=2)
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@partitioned1_n1@part=2
+POSTHOOK: Lineage: partitioned1_n1 PARTITION(part=2).a SCRIPT []
+POSTHOOK: Lineage: partitioned1_n1 PARTITION(part=2).b SCRIPT []
+POSTHOOK: Lineage: partitioned1_n1 PARTITION(part=2).c SCRIPT []
+POSTHOOK: Lineage: partitioned1_n1 PARTITION(part=2).d SCRIPT []
+col1	col2	col3	col4
+PREHOOK: query: desc formatted partitioned1_n1 partition(part=2)
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@partitioned1
-POSTHOOK: query: desc formatted partitioned1 partition(part=2)
+PREHOOK: Input: default@partitioned1_n1
+POSTHOOK: query: desc formatted partitioned1_n1 partition(part=2)
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@partitioned1
+POSTHOOK: Input: default@partitioned1_n1
 col_name	data_type	comment
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	string              	                    
 c                   	int                 	                    
@@ -402,13 +430,12 @@ d                   	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 part                	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[2]                 	 
 Database:           	default             	 
-Table:              	partitioned1        	 
+Table:              	partitioned1_n1     	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\"}}
@@ -428,20 +455,33 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: desc formatted partitioned1 partition(part=2) c
+PREHOOK: query: desc formatted partitioned1_n1 partition(part=2) c
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@partitioned1
-POSTHOOK: query: desc formatted partitioned1 partition(part=2) c
+PREHOOK: Input: default@partitioned1_n1
+POSTHOOK: query: desc formatted partitioned1_n1 partition(part=2) c
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@partitioned1
-col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	comment
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-c                   	int                 	10                  	40                  	0                   	4                   	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: explain insert into table partitioned1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
+POSTHOOK: Input: default@partitioned1_n1
+col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	bitvector	comment
+col_name            	c                   	 	 	 	 	 	 	 	 	 	 
+data_type           	int                 	 	 	 	 	 	 	 	 	 	 
+min                 	10                  	 	 	 	 	 	 	 	 	 	 
+max                 	40                  	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	4                   	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+PREHOOK: query: explain insert into table partitioned1_n1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert into table partitioned1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@partitioned1_n1@part=1
+POSTHOOK: query: explain insert into table partitioned1_n1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@partitioned1_n1@part=1
 Explain
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -449,7 +489,6 @@ STAGE DEPENDENCIES:
   Stage-4
   Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
   Stage-2 depends on stages: Stage-0
-  Stage-8 depends on stages: Stage-2
   Stage-3
   Stage-5
   Stage-6 depends on stages: Stage-5
@@ -459,50 +498,59 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: values__tmp__table__5
-            Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+            alias: _dummy_table
+            Row Limit Per Split: 1
+            Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: UDFToInteger(tmp_values_col1) (type: int), tmp_values_col2 (type: string), UDFToInteger(tmp_values_col3) (type: int), tmp_values_col4 (type: string)
-              outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.partitioned1
-              Select Operator
-                expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string), UDFToInteger('1') (type: int)
-                outputColumnNames: a, b, c, d, part
-                Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: compute_stats(a, 16), compute_stats(b, 16), compute_stats(c, 16), compute_stats(d, 16)
-                  keys: part (type: int)
-                  mode: hash
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                  Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col4 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+              expressions: array(const struct(5,'new',100,'hundred'),const struct(6,'new',200,'two hundred')) (type: array<struct<col1:int,col2:string,col3:int,col4:string>>)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+              UDTF Operator
+                Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                function name: inline
+                Select Operator
+                  expressions: col1 (type: int), col2 (type: string), col3 (type: int), col4 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.partitioned1_n1
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string), UDFToInteger('1') (type: int)
+                    outputColumnNames: a, b, c, d, part
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: compute_stats(a, 'hll'), compute_stats(b, 'hll'), compute_stats(c, 'hll'), compute_stats(d, 'hll')
+                      keys: part (type: int)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 1 Data size: 1732 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 1732 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col4 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 1764 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col4 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col0 (type: int)
+            expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col4 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4
-            Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1764 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 1764 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -527,17 +575,15 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.partitioned1
+              name: default.partitioned1_n1
 
   Stage: Stage-2
-    Stats-Aggr Operator
-
-  Stage: Stage-8
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
       Column Stats Desc:
           Columns: a, b, c, d
           Column Types: int, string, int, string
-          Table: default.partitioned1
+          Table: default.partitioned1_n1
 
   Stage: Stage-3
     Map Reduce
@@ -549,7 +595,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.partitioned1
+                  name: default.partitioned1_n1
 
   Stage: Stage-5
     Map Reduce
@@ -561,7 +607,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.partitioned1
+                  name: default.partitioned1_n1
 
   Stage: Stage-6
     Move Operator
@@ -569,41 +615,41 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: insert into table partitioned1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
+PREHOOK: query: insert into table partitioned1_n1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
 PREHOOK: type: QUERY
-PREHOOK: Output: default@partitioned1@part=1
-POSTHOOK: query: insert into table partitioned1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@partitioned1_n1@part=1
+POSTHOOK: query: insert into table partitioned1_n1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
 POSTHOOK: type: QUERY
-POSTHOOK: Output: default@partitioned1@part=1
-POSTHOOK: Lineage: partitioned1 PARTITION(part=1).a EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned1 PARTITION(part=1).b SIMPLE [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned1 PARTITION(part=1).c EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned1 PARTITION(part=1).d SIMPLE [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-_col0	_col1	_col2	_col3
-PREHOOK: query: desc formatted partitioned1 partition(part=1)
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@partitioned1_n1@part=1
+POSTHOOK: Lineage: partitioned1_n1 PARTITION(part=1).a SCRIPT []
+POSTHOOK: Lineage: partitioned1_n1 PARTITION(part=1).b SCRIPT []
+POSTHOOK: Lineage: partitioned1_n1 PARTITION(part=1).c SCRIPT []
+POSTHOOK: Lineage: partitioned1_n1 PARTITION(part=1).d SCRIPT []
+col1	col2	col3	col4
+PREHOOK: query: desc formatted partitioned1_n1 partition(part=1)
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@partitioned1
-POSTHOOK: query: desc formatted partitioned1 partition(part=1)
+PREHOOK: Input: default@partitioned1_n1
+POSTHOOK: query: desc formatted partitioned1_n1 partition(part=1)
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@partitioned1
+POSTHOOK: Input: default@partitioned1_n1
 col_name	data_type	comment
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 part                	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	partitioned1        	 
+Table:              	partitioned1_n1     	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
 	numFiles            	2                   
 	numRows             	6                   
 	rawDataSize         	78                  
@@ -620,23 +666,31 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: desc formatted partitioned1 partition(part=1) a
+PREHOOK: query: desc formatted partitioned1_n1 partition(part=1) a
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@partitioned1
-POSTHOOK: query: desc formatted partitioned1 partition(part=1) a
+PREHOOK: Input: default@partitioned1_n1
+POSTHOOK: query: desc formatted partitioned1_n1 partition(part=1) a
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@partitioned1
-col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	comment
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-a                   	int                 	1                   	6                   	0                   	5                   	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: desc formatted partitioned1 partition(part=1) c
+POSTHOOK: Input: default@partitioned1_n1
+col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	bitvector	comment
+col_name            	a                   	 	 	 	 	 	 	 	 	 	 
+data_type           	int                 	 	 	 	 	 	 	 	 	 	 
+min                 	1                   	 	 	 	 	 	 	 	 	 	 
+max                 	6                   	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	6                   	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+PREHOOK: query: desc formatted partitioned1_n1 partition(part=1) c
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@partitioned1
-POSTHOOK: query: desc formatted partitioned1 partition(part=1) c
+PREHOOK: Input: default@partitioned1_n1
+POSTHOOK: query: desc formatted partitioned1_n1 partition(part=1) c
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@partitioned1
-col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	comment
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-c                   	int                 	100                 	200                 	0                   	3                   	                    	                    	                    	                    	from deserializer   
+POSTHOOK: Input: default@partitioned1_n1
+col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	bitvector	comment
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
+c                   	int                 	from deserializer   	 	 	 	 	 	 	 	 	 

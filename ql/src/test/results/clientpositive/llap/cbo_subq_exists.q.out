@@ -173,7 +173,7 @@ POSTHOOK: Input: default@src_cbo
 118	val_118
 119	val_119
 12	val_12
-PREHOOK: query: create view cv1 as 
+PREHOOK: query: create view cv1_n2 as 
 select * 
 from src_cbo b 
 where exists
@@ -183,8 +183,8 @@ where exists
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src_cbo
 PREHOOK: Output: database:default
-PREHOOK: Output: default@cv1
-POSTHOOK: query: create view cv1 as 
+PREHOOK: Output: default@cv1_n2
+POSTHOOK: query: create view cv1_n2 as 
 select * 
 from src_cbo b 
 where exists
@@ -194,17 +194,17 @@ where exists
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src_cbo
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@cv1
-POSTHOOK: Lineage: cv1.key SIMPLE [(src_cbo)b.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: cv1.value SIMPLE [(src_cbo)b.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from cv1
+POSTHOOK: Output: default@cv1_n2
+POSTHOOK: Lineage: cv1_n2.key SIMPLE [(src_cbo)b.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cv1_n2.value SIMPLE [(src_cbo)b.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from cv1_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@cv1
+PREHOOK: Input: default@cv1_n2
 PREHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
-POSTHOOK: query: select * from cv1
+POSTHOOK: query: select * from cv1_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@cv1
+POSTHOOK: Input: default@cv1_n2
 POSTHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
 90	val_90

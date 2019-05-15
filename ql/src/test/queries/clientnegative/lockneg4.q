@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 drop table tstsrcpart;
 create table tstsrcpart like srcpart;
 

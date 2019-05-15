@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,6 +20,7 @@ package org.apache.hive.hcatalog.mapreduce;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.Policy;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +28,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -36,16 +37,18 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -54,7 +57,7 @@ import org.apache.hadoop.mapred.MiniMRCluster;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
-import org.apache.hadoop.util.Shell;
+import org.apache.hive.hcatalog.DerbyPolicy;
 import org.apache.hive.hcatalog.NoExitSecurityManager;
 import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hive.hcatalog.data.DefaultHCatRecord;
@@ -71,15 +74,16 @@ public class TestHCatPartitionPublish {
   private static FileSystem fs = null;
   private static MiniMRCluster mrCluster = null;
   private static boolean isServerRunning = false;
-  private static int msPort;
   private static HiveConf hcatConf;
   private static HiveMetaStoreClient msc;
   private static SecurityManager securityManager;
   private static Configuration conf = new Configuration(true);
+  private static String testName;
 
   public static File handleWorkDir() throws IOException {
+    testName = "test_hcat_partitionpublish_" + Math.abs(new Random().nextLong());
     String testDir = System.getProperty("test.data.dir", "./");
-    testDir = testDir + "/test_hcat_partitionpublish_" + Math.abs(new Random().nextLong()) + "/";
+    testDir = testDir + "/" + testName + "/";
     File workDir = new File(new File(testDir).getCanonicalPath());
     FileUtil.fullyDelete(workDir);
     workDir.mkdirs();
@@ -88,6 +92,10 @@ public class TestHCatPartitionPublish {
   @BeforeClass
   public static void setup() throws Exception {
     File workDir = handleWorkDir();
+    Path tmpDir = new Path(System.getProperty("test.tmp.dir",
+        "target" + File.separator + "test" + File.separator + "tmp"));
+    conf.set("yarn.app.mapreduce.am.staging-dir", tmpDir + File.separator + testName
+        + File.separator + "hadoop-yarn" + File.separator + "staging");
     conf.set("yarn.scheduler.capacity.root.queues", "default");
     conf.set("yarn.scheduler.capacity.root.default.capacity", "100");
     conf.set("fs.pfile.impl", "org.apache.hadoop.fs.ProxyLocalFileSystem");
@@ -104,18 +112,14 @@ public class TestHCatPartitionPublish {
       return;
     }
 
-    msPort = MetaStoreUtils.findFreePort();
+    hcatConf = new HiveConf(TestHCatPartitionPublish.class);
+    MetaStoreTestUtils.startMetaStoreWithRetry(hcatConf);
 
-    MetaStoreUtils.startMetaStore(msPort, ShimLoader
-        .getHadoopThriftAuthBridge());
-    Thread.sleep(10000);
     isServerRunning = true;
     securityManager = System.getSecurityManager();
     System.setSecurityManager(new NoExitSecurityManager());
+    Policy.setPolicy(new DerbyPolicy());
 
-    hcatConf = new HiveConf(TestHCatPartitionPublish.class);
-    hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
-        + msPort);
     hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTFAILURERETRIES, 3);
     hcatConf.setTimeVar(HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT, 120, TimeUnit.SECONDS);
@@ -128,6 +132,12 @@ public class TestHCatPartitionPublish {
     msc = new HiveMetaStoreClient(hcatConf);
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
+    System.setProperty(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
+        MetastoreConf.getVar(hcatConf, MetastoreConf.ConfVars.WAREHOUSE));
+    System.setProperty(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname,
+        MetastoreConf.getVar(hcatConf, MetastoreConf.ConfVars.CONNECT_URL_KEY));
+    System.setProperty(HiveConf.ConfVars.METASTOREURIS.varname,
+        MetastoreConf.getVar(hcatConf, MetastoreConf.ConfVars.THRIFT_URIS));
   }
 
   @AfterClass
@@ -224,7 +234,7 @@ public class TestHCatPartitionPublish {
   }
 
   private void createTable(String dbName, String tableName) throws Exception {
-    String databaseName = (dbName == null) ? MetaStoreUtils.DEFAULT_DATABASE_NAME
+    String databaseName = (dbName == null) ? Warehouse.DEFAULT_DATABASE_NAME
         : dbName;
     try {
       msc.dropTable(databaseName, tableName);

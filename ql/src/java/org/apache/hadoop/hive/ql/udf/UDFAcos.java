@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -44,8 +44,13 @@ public class UDFAcos extends UDFMath {
    */
   @Override
   protected DoubleWritable doEvaluate(DoubleWritable a) {
-    result.set(Math.acos(a.get()));
-    return result;
+    double d = a.get();
+    if (d < -1 || d > 1) {
+      return null;
+    } else {
+      result.set(Math.acos(d));
+      return result;
+    }
   }
 
 }

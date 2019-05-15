@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -47,20 +47,6 @@ public class MetricsConstant {
   public static final String SQL_OPERATION_PREFIX = "hs2_sql_operation_";
   public static final String COMPLETED_SQL_OPERATION_PREFIX = "hs2_completed_sql_operation_";
 
-  public static final String INIT_TOTAL_DATABASES = "init_total_count_dbs";
-  public static final String INIT_TOTAL_TABLES = "init_total_count_tables";
-  public static final String INIT_TOTAL_PARTITIONS = "init_total_count_partitions";
-
-  public static final String CREATE_TOTAL_DATABASES = "create_total_count_dbs";
-  public static final String CREATE_TOTAL_TABLES = "create_total_count_tables";
-  public static final String CREATE_TOTAL_PARTITIONS = "create_total_count_partitions";
-
-  public static final String DELETE_TOTAL_DATABASES = "delete_total_count_dbs";
-  public static final String DELETE_TOTAL_TABLES = "delete_total_count_tables";
-  public static final String DELETE_TOTAL_PARTITIONS = "delete_total_count_partitions";
-
-  public static final String DIRECTSQL_ERRORS = "directsql_errors";
-
   // The number of Hive operations that are waiting to enter the compile block
   public static final String WAITING_COMPILE_OPS = "waiting_compile_ops";
 
@@ -80,5 +66,21 @@ public class MetricsConstant {
   public static final String HS2_COMPILING_QUERIES = "hs2_compiling_queries";
   public static final String HS2_EXECUTING_QUERIES = "hs2_executing_queries";
   public static final String HS2_FAILED_QUERIES = "hs2_failed_queries";
-  public static final String HS2_SUCEEDED_QUERIES = "hs2_suceeded_queries";
+  public static final String HS2_SUCCEEDED_QUERIES = "hs2_succeeded_queries";
+
+  public static final String QC_MAX_SIZE = "qc_max_size";
+  public static final String QC_CURRENT_SIZE = "qc_current_size";
+  public static final String QC_VALID_ENTRIES = "qc_valid_entries";
+  public static final String QC_LOOKUPS = "qc_lookups";
+  public static final String QC_VALID_HITS = "qc_valid_hits";
+  public static final String QC_PENDING_HITS = "qc_pending_hits";
+  public static final String QC_PENDING_FAILS = "qc_pending_fails";
+  public static final String QC_PENDING_FAILS_WAIT_TIME = "qc_pending_fails_wait_time";
+  public static final String QC_PENDING_SUCCESS_WAIT_TIME = "qc_pending_success_wait_time";
+  // Queries rejected from being cached due to non-deterministic functions, temp tables, or other conditions.
+  public static final String QC_INVALID_FOR_CACHING = "qc_invalid_for_caching";
+  // Queries rejected from being cached because they exceeded the max cache entry size.
+  public static final String QC_REJECTED_TOO_LARGE = "qc_rejected_too_large";
+  public static final String QC_TOTAL_ENTRIES_ADDED = "qc_total_entries_added";
+
 }

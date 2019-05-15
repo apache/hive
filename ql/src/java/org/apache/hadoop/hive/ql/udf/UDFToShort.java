@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,15 +20,15 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringToLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastDoubleToLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastTimestampToLong;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.lazy.LazyShort;
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.io.BooleanWritable;
@@ -43,7 +43,7 @@ import org.apache.hadoop.io.Text;
  *
  */
 @VectorizedExpressions({CastTimestampToLong.class, CastDoubleToLong.class,
-    CastDecimalToLong.class})
+    CastDecimalToLong.class, CastStringToLong.class})
 public class UDFToShort extends UDF {
   ShortWritable shortWritable = new ShortWritable();
 
@@ -173,7 +173,7 @@ public class UDFToShort extends UDF {
       }
       try {
         shortWritable.set(LazyShort.parseShort(i.getBytes(), 0, i.getLength(),
-            10));
+            10, true));
         return shortWritable;
       } catch (NumberFormatException e) {
         // MySQL returns 0 if the string is not a well-formed numeric value.
@@ -184,11 +184,16 @@ public class UDFToShort extends UDF {
     }
   }
 
-  public ShortWritable evaluate(TimestampWritable i) {
+  public ShortWritable evaluate(TimestampWritableV2 i) {
     if (i == null) {
       return null;
     } else {
-      shortWritable.set((short) i.getSeconds());
+      final long longValue = i.getSeconds();
+      final short shortValue = (short) longValue;
+      if (shortValue != longValue) {
+        return null;
+      }
+      shortWritable.set(shortValue);
       return shortWritable;
     }
   }

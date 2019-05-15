@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -62,7 +62,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
  * Based on Hive {@link GenericUDAFEvaluator}. Break up the responsibility of the old AbstractTableFunction
  * class into a Resolver and Evaluator.
  * <p>
- * The Evaluator also holds onto the {@link TableFunctionDef}. This provides information
+ * The Evaluator also holds onto the {@link PartitionedTableFunctionDef}. This provides information
  * about the arguments to the function, the shape of the Input partition and the Partitioning details.
  * The Evaluator is responsible for providing the 2 execute methods:
  * <ol>
@@ -93,6 +93,15 @@ public abstract class TableFunctionEvaluator {
   boolean transformsRawInput;
   transient protected PTFPartition outputPartition;
   transient protected boolean canAcceptInputAsStream;
+  protected boolean nullsLast;
+
+  public boolean getNullsLast() {
+    return nullsLast;
+  }
+
+  public void setNullsLast(boolean nullsLast) {
+    this.nullsLast = nullsLast;
+  }
 
   public StructObjectInspector getOutputOI() {
     return OI;

@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 CREATE TABLE sent_tmp (val array<string>);
 CREATE TABLE sent_tmp2 (val string);

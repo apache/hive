@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -48,7 +48,6 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDefaultDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
@@ -67,6 +66,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 
 /**
  * The transformation step that does partition pruning.
@@ -119,7 +120,7 @@ public class PartitionPruner extends Transform {
 
     // It cannot contain a non-deterministic function
     if ((expr instanceof ExprNodeGenericFuncDesc)
-        && !FunctionRegistry.isDeterministic(((ExprNodeGenericFuncDesc) expr)
+        && !FunctionRegistry.isConsistentWithinQuery(((ExprNodeGenericFuncDesc) expr)
         .getGenericUDF())) {
       return false;
     }
@@ -176,7 +177,7 @@ public class PartitionPruner extends Transform {
       LOG.trace("prune Expression = " + (prunerExpr == null ? "" : prunerExpr));
     }
 
-    String key = tab.getDbName() + "." + tab.getTableName() + ";";
+    String key = tab.getFullyQualifiedName() + ";";
 
     if (!tab.isPartitioned()) {
       // If the table is not partitioned, return empty list.
@@ -205,24 +206,26 @@ public class PartitionPruner extends Transform {
     String oldFilter = prunerExpr.getExprString();
     if (compactExpr == null || isBooleanExpr(compactExpr)) {
       if (isFalseExpr(compactExpr)) {
-        return new PrunedPartitionList(
-            tab, new LinkedHashSet<Partition>(0), new ArrayList<String>(0), false);
+        return new PrunedPartitionList(tab, key + compactExpr.getExprString(),
+            new LinkedHashSet<Partition>(0), new ArrayList<String>(0), false);
       }
       // For null and true values, return every partition
       return getAllPartsFromCacheOrServer(tab, key, true, prunedPartitionsMap);
     }
+
+    String compactExprString = compactExpr.getExprString();
     if (LOG.isDebugEnabled()) {
-      LOG.debug("Filter w/ compacting: " + compactExpr.getExprString()
+      LOG.debug("Filter w/ compacting: " + compactExprString
           + "; filter w/o compacting: " + oldFilter);
     }
-
-    key = key + compactExpr.getExprString();
+    key = key + compactExprString;
     PrunedPartitionList ppList = prunedPartitionsMap.get(key);
     if (ppList != null) {
       return ppList;
     }
 
-    ppList = getPartitionsFromServer(tab, (ExprNodeGenericFuncDesc)compactExpr, conf, alias, partColsUsedInFilter, oldFilter.equals(compactExpr.getExprString()));
+    ppList = getPartitionsFromServer(tab, key, (ExprNodeGenericFuncDesc)compactExpr,
+        conf, alias, partColsUsedInFilter, oldFilter.equals(compactExpr.getExprString()));
     prunedPartitionsMap.put(key, ppList);
     return ppList;
   }
@@ -239,7 +242,7 @@ public class PartitionPruner extends Transform {
     } catch (HiveException e) {
       throw new SemanticException(e);
     }
-    ppList = new PrunedPartitionList(tab, parts, null, unknownPartitions);
+    ppList = new PrunedPartitionList(tab, key, parts, null, unknownPartitions);
     if (partsCache != null) {
       partsCache.put(key, ppList);
     }
@@ -277,11 +280,15 @@ public class PartitionPruner extends Transform {
       return null;
     }
     if (expr instanceof ExprNodeConstantDesc) {
-      if (((ExprNodeConstantDesc)expr).getValue() == null) return null;
+      if (((ExprNodeConstantDesc)expr).getValue() == null) {
+        return null;
+      }
       if (!isBooleanExpr(expr)) {
         throw new IllegalStateException("Unexpected non-boolean ExprNodeConstantDesc: "
             + expr.getExprString());
       }
+      return expr;
+    } else if (expr instanceof ExprNodeColumnDesc) {
       return expr;
     } else if (expr instanceof ExprNodeGenericFuncDesc) {
       GenericUDF udf = ((ExprNodeGenericFuncDesc)expr).getGenericUDF();
@@ -307,7 +314,7 @@ public class PartitionPruner extends Transform {
             allTrue = false;
           }
         }
-        
+
         if (allTrue) {
           return new ExprNodeConstantDesc(Boolean.TRUE);
         }
@@ -378,7 +385,7 @@ public class PartitionPruner extends Transform {
       // list or struct fields.
       return new ExprNodeConstantDesc(expr.getTypeInfo(), null);
     }
-    if (expr instanceof ExprNodeColumnDesc) {
+    else if (expr instanceof ExprNodeColumnDesc) {
       String column = ((ExprNodeColumnDesc) expr).getColumn();
       if (!partCols.contains(column)) {
         // Column doesn't appear to be a partition column for the table.
@@ -386,10 +393,25 @@ public class PartitionPruner extends Transform {
       }
       referred.add(column);
     }
-    if (expr instanceof ExprNodeGenericFuncDesc) {
+    else if (expr instanceof ExprNodeGenericFuncDesc) {
       List<ExprNodeDesc> children = expr.getChildren();
       for (int i = 0; i < children.size(); ++i) {
-        children.set(i, removeNonPartCols(children.get(i), partCols, referred));
+        ExprNodeDesc other = removeNonPartCols(children.get(i), partCols, referred);
+        if (ExprNodeDescUtils.isNullConstant(other)) {
+          if (FunctionRegistry.isOpAnd(expr)) {
+            // partcol=... AND nonpartcol=...   is replaced with partcol=... AND TRUE
+            // which will be folded to partcol=...
+            // This cannot be done also for OR
+            Preconditions.checkArgument(expr.getTypeInfo().accept(TypeInfoFactory.booleanTypeInfo));
+            other = new ExprNodeConstantDesc(expr.getTypeInfo(), true);
+          } else {
+            // Functions like NVL, COALESCE, CASE can change a
+            // NULL introduced by a nonpart column removal into a non-null
+            // and cause overaggressive prunning, missing data (incorrect result)
+            return new ExprNodeConstantDesc(expr.getTypeInfo(), null);
+          }
+        }
+        children.set(i, other);
       }
     }
     return expr;
@@ -414,8 +436,8 @@ public class PartitionPruner extends Transform {
     return false;
   }
 
-  private static PrunedPartitionList getPartitionsFromServer(Table tab,
-      final ExprNodeGenericFuncDesc compactExpr, HiveConf conf, String alias, Set<String> partColsUsedInFilter, boolean isPruningByExactFilter) throws SemanticException {
+  private static PrunedPartitionList getPartitionsFromServer(Table tab, final String key, final ExprNodeGenericFuncDesc compactExpr,
+      HiveConf conf, String alias, Set<String> partColsUsedInFilter, boolean isPruningByExactFilter) throws SemanticException {
     try {
 
       // Finally, check the filter for non-built-in UDFs. If these are present, we cannot
@@ -446,7 +468,8 @@ public class PartitionPruner extends Transform {
       // The partitions are "unknown" if the call says so due to the expression
       // evaluator returning null for a partition, or if we sent a partial expression to
       // metastore and so some partitions may have no data based on other filters.
-      return new PrunedPartitionList(tab, new LinkedHashSet<Partition>(partitions),
+      return new PrunedPartitionList(tab, key,
+          new LinkedHashSet<Partition>(partitions),
           new ArrayList<String>(partColsUsedInFilter),
           hasUnknownPartitions || !isPruningByExactFilter);
     } catch (SemanticException e) {
@@ -554,7 +577,7 @@ public class PartitionPruner extends Transform {
         PrimitiveTypeInfo typeInfo = partColumnTypeInfos.get(i);
 
         if (partitionValue.equals(defaultPartitionName)) {
-          convertedValues.add(new ExprNodeConstantDefaultDesc(typeInfo, defaultPartitionName));
+          convertedValues.add(null); // Null for default partition.
         } else {
           Object o = ObjectInspectorConverters.getConverter(
               PrimitiveObjectInspectorFactory.javaStringObjectInspector,

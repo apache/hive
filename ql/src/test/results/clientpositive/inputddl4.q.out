@@ -36,7 +36,6 @@ country             	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 country             	string              	                    
 PREHOOK: query: DESCRIBE EXTENDED INPUTDDL4
@@ -57,7 +56,6 @@ country             	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 country             	string              	                    
 	 	 

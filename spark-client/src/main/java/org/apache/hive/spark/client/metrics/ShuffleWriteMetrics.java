@@ -33,22 +33,34 @@ public class ShuffleWriteMetrics implements Serializable {
   public final long shuffleBytesWritten;
   /** Time tasks spent blocking on writes to disk or buffer cache, in nanoseconds. */
   public final long shuffleWriteTime;
+  /** Total number of records written to the shuffle by this task. */
+  public final long shuffleRecordsWritten;
 
   private ShuffleWriteMetrics() {
     // For Serialization only.
-    this(0L, 0L);
+    this(0L, 0L, 0L);
   }
 
   public ShuffleWriteMetrics(
       long shuffleBytesWritten,
-      long shuffleWriteTime) {
+      long shuffleWriteTime,
+      long shuffleRecordsWritten) {
     this.shuffleBytesWritten = shuffleBytesWritten;
     this.shuffleWriteTime = shuffleWriteTime;
+    this.shuffleRecordsWritten = shuffleRecordsWritten;
   }
 
   public ShuffleWriteMetrics(TaskMetrics metrics) {
     this(metrics.shuffleWriteMetrics().shuffleBytesWritten(),
-      metrics.shuffleWriteMetrics().shuffleWriteTime());
+      metrics.shuffleWriteMetrics().shuffleWriteTime(),
+      metrics.shuffleWriteMetrics().shuffleRecordsWritten());
   }
 
+  @Override
+  public String toString() {
+    return "ShuffleWriteMetrics{" +
+            "shuffleBytesWritten=" + shuffleBytesWritten +
+            ", shuffleWriteTime=" + shuffleWriteTime +
+            '}';
+  }
 }

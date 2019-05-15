@@ -23,6 +23,7 @@ import java.util.Properties;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.mock.MockInstance;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.accumulo.columns.ColumnEncoding;
 import org.apache.hadoop.hive.accumulo.serde.AccumuloSerDeParameters;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -30,6 +31,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -42,14 +44,17 @@ import org.mockito.Mockito;
  */
 public class TestAccumuloStorageHandler {
 
-  protected AccumuloStorageHandler storageHandler;
+  private AccumuloStorageHandler storageHandler;
+  private Configuration conf;
 
   @Rule
   public TestName test = new TestName();
 
   @Before
   public void setup() {
+    conf = new Configuration();
     storageHandler = new AccumuloStorageHandler();
+    storageHandler.setConf(conf);
   }
 
   @Test
@@ -59,6 +64,8 @@ public class TestAccumuloStorageHandler {
     Map<String,String> jobProperties = new HashMap<String,String>();
 
     props.setProperty(AccumuloSerDeParameters.COLUMN_MAPPINGS, "cf:cq1,cf:cq2,cf:cq3");
+    props.setProperty(serdeConstants.LIST_COLUMN_TYPES, "string:int:string");
+    props.setProperty(serdeConstants.LIST_COLUMNS, "name,age,email");
     props.setProperty(AccumuloSerDeParameters.TABLE_NAME, "table");
     props.setProperty(AccumuloSerDeParameters.VISIBILITY_LABEL_KEY, "foo");
 
@@ -193,8 +200,8 @@ public class TestAccumuloStorageHandler {
     // Return our known table name
     Mockito.when(storageHandler.getTableName(table)).thenReturn(tableName);
 
-    // Not an EXTERNAL table
-    Mockito.when(storageHandler.isExternalTable(table)).thenReturn(false);
+    // Is marked for purge
+    Mockito.when(storageHandler.isPurge(table)).thenReturn(true);
 
     // Return the mocked StorageDescriptor
     Mockito.when(table.getSd()).thenReturn(sd);
@@ -241,8 +248,8 @@ public class TestAccumuloStorageHandler {
     // Return our known table name
     Mockito.when(storageHandler.getTableName(table)).thenReturn(tableName);
 
-    // Not an EXTERNAL table
-    Mockito.when(storageHandler.isExternalTable(table)).thenReturn(false);
+    // Is marked for purge
+    Mockito.when(storageHandler.isPurge(table)).thenReturn(true);
 
     // Return the mocked StorageDescriptor
     Mockito.when(table.getSd()).thenReturn(sd);
@@ -287,8 +294,8 @@ public class TestAccumuloStorageHandler {
     // Return our known table name
     Mockito.when(storageHandler.getTableName(table)).thenReturn(tableName);
 
-    // Not an EXTERNAL table
-    Mockito.when(storageHandler.isExternalTable(table)).thenReturn(false);
+    // Is marked for purge
+    Mockito.when(storageHandler.isPurge(table)).thenReturn(true);
 
     // Return the mocked StorageDescriptor
     Mockito.when(table.getSd()).thenReturn(sd);
@@ -310,8 +317,8 @@ public class TestAccumuloStorageHandler {
     storageHandler.preCreateTable(table);
   }
 
-  @Test(expected = MetaException.class)
-  public void testExternalNonExistentTableFails() throws Exception {
+  @Test
+  public void testExternalNonExistentTable() throws Exception {
     MockInstance inst = new MockInstance(test.getMethodName());
     Connector conn = inst.getConnector("root", new PasswordToken(""));
     String tableName = "table";
@@ -333,8 +340,8 @@ public class TestAccumuloStorageHandler {
     // Return our known table name
     Mockito.when(storageHandler.getTableName(table)).thenReturn(tableName);
 
-    // Is an EXTERNAL table
-    Mockito.when(storageHandler.isExternalTable(table)).thenReturn(true);
+    // Is not marked for purge
+    Mockito.when(storageHandler.isPurge(table)).thenReturn(false);
 
     // Return the mocked StorageDescriptor
     Mockito.when(table.getSd()).thenReturn(sd);
@@ -356,8 +363,8 @@ public class TestAccumuloStorageHandler {
     storageHandler.preCreateTable(table);
   }
 
-  @Test(expected = MetaException.class)
-  public void testNonExternalExistentTable() throws Exception {
+  @Test
+  public void testExternalExistentTable() throws Exception {
     MockInstance inst = new MockInstance(test.getMethodName());
     Connector conn = inst.getConnector("root", new PasswordToken(""));
     String tableName = "table";
@@ -382,8 +389,8 @@ public class TestAccumuloStorageHandler {
     // Return our known table name
     Mockito.when(storageHandler.getTableName(table)).thenReturn(tableName);
 
-    // Is not an EXTERNAL table
-    Mockito.when(storageHandler.isExternalTable(table)).thenReturn(false);
+    // Is marked for purge
+    Mockito.when(storageHandler.isPurge(table)).thenReturn(true);
 
     // Return the mocked StorageDescriptor
     Mockito.when(table.getSd()).thenReturn(sd);
@@ -422,8 +429,8 @@ public class TestAccumuloStorageHandler {
     // Return our known table name
     Mockito.when(storageHandler.getTableName(table)).thenReturn(tableName);
 
-    // Is not an EXTERNAL table
-    Mockito.when(storageHandler.isExternalTable(table)).thenReturn(false);
+    // Is marked for purge
+    Mockito.when(storageHandler.isPurge(table)).thenReturn(true);
 
     // Return the MockInstance's Connector
     Mockito.when(connectionParams.getConnector()).thenReturn(conn);
@@ -454,8 +461,8 @@ public class TestAccumuloStorageHandler {
     // Return our known table name
     Mockito.when(storageHandler.getTableName(table)).thenReturn(tableName);
 
-    // Is not an EXTERNAL table
-    Mockito.when(storageHandler.isExternalTable(table)).thenReturn(false);
+    // Is marked for purge
+    Mockito.when(storageHandler.isPurge(table)).thenReturn(true);
 
     // Return the MockInstance's Connector
     Mockito.when(connectionParams.getConnector()).thenReturn(conn);
@@ -488,8 +495,8 @@ public class TestAccumuloStorageHandler {
     // Return our known table name
     Mockito.when(storageHandler.getTableName(table)).thenReturn(tableName);
 
-    // Is not an EXTERNAL table
-    Mockito.when(storageHandler.isExternalTable(table)).thenReturn(true);
+    // Is not marked for purge
+    Mockito.when(storageHandler.isPurge(table)).thenReturn(false);
 
     // Return the MockInstance's Connector
     Mockito.when(connectionParams.getConnector()).thenReturn(conn);
@@ -521,8 +528,8 @@ public class TestAccumuloStorageHandler {
     // Return our known table name
     Mockito.when(storageHandler.getTableName(table)).thenReturn(tableName);
 
-    // Is not an EXTERNAL table
-    Mockito.when(storageHandler.isExternalTable(table)).thenReturn(false);
+    // Is marked for purge
+    Mockito.when(storageHandler.isPurge(table)).thenReturn(true);
 
     // Return the MockInstance's Connector
     Mockito.when(connectionParams.getConnector()).thenReturn(conn);

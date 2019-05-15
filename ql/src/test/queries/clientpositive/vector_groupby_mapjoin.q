@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled = true;
@@ -19,4 +20,18 @@ select *
 from src
 where not key in
 (select key from src)
+order by key;
+
+CREATE TABLE orcsrc STORED AS ORC AS SELECT * FROM src;
+
+select *
+from orcsrc
+where not key in
+(select key from orcsrc)
+order by key;
+
+select *
+from orcsrc
+where not key in
+(select key from orcsrc)
 order by key;

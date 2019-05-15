@@ -62,7 +62,7 @@ PREHOOK: Input: default@llap_stats@cint=-9566
 PREHOOK: Input: default@llap_stats@cint=15007
 PREHOOK: Input: default@llap_stats@cint=4963
 PREHOOK: Input: default@llap_stats@cint=7021
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from llap_stats
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@llap_stats
@@ -76,7 +76,7 @@ POSTHOOK: Input: default@llap_stats@cint=-9566
 POSTHOOK: Input: default@llap_stats@cint=15007
 POSTHOOK: Input: default@llap_stats@cint=4963
 POSTHOOK: Input: default@llap_stats@cint=7021
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -17	-50	-13326
 -17	-11	-15431
 -17	61	-15549
@@ -88,9 +88,55 @@ POSTHOOK: Input: default@llap_stats@cint=7021
 -17	31	4963
 -17	29	7021
 PREHOOK: query: explain analyze table llap_stats partition (cint) compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@llap_stats
+PREHOOK: Input: default@llap_stats@cint=-13326
+PREHOOK: Input: default@llap_stats@cint=-15431
+PREHOOK: Input: default@llap_stats@cint=-15549
+PREHOOK: Input: default@llap_stats@cint=-15813
+PREHOOK: Input: default@llap_stats@cint=-4213
+PREHOOK: Input: default@llap_stats@cint=-7824
+PREHOOK: Input: default@llap_stats@cint=-9566
+PREHOOK: Input: default@llap_stats@cint=15007
+PREHOOK: Input: default@llap_stats@cint=4963
+PREHOOK: Input: default@llap_stats@cint=7021
+PREHOOK: Output: default@llap_stats
+PREHOOK: Output: default@llap_stats@cint=-13326
+PREHOOK: Output: default@llap_stats@cint=-15431
+PREHOOK: Output: default@llap_stats@cint=-15549
+PREHOOK: Output: default@llap_stats@cint=-15813
+PREHOOK: Output: default@llap_stats@cint=-4213
+PREHOOK: Output: default@llap_stats@cint=-7824
+PREHOOK: Output: default@llap_stats@cint=-9566
+PREHOOK: Output: default@llap_stats@cint=15007
+PREHOOK: Output: default@llap_stats@cint=4963
+PREHOOK: Output: default@llap_stats@cint=7021
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze table llap_stats partition (cint) compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@llap_stats
+POSTHOOK: Input: default@llap_stats@cint=-13326
+POSTHOOK: Input: default@llap_stats@cint=-15431
+POSTHOOK: Input: default@llap_stats@cint=-15549
+POSTHOOK: Input: default@llap_stats@cint=-15813
+POSTHOOK: Input: default@llap_stats@cint=-4213
+POSTHOOK: Input: default@llap_stats@cint=-7824
+POSTHOOK: Input: default@llap_stats@cint=-9566
+POSTHOOK: Input: default@llap_stats@cint=15007
+POSTHOOK: Input: default@llap_stats@cint=4963
+POSTHOOK: Input: default@llap_stats@cint=7021
+POSTHOOK: Output: default@llap_stats
+POSTHOOK: Output: default@llap_stats@cint=-13326
+POSTHOOK: Output: default@llap_stats@cint=-15431
+POSTHOOK: Output: default@llap_stats@cint=-15549
+POSTHOOK: Output: default@llap_stats@cint=-15813
+POSTHOOK: Output: default@llap_stats@cint=-4213
+POSTHOOK: Output: default@llap_stats@cint=-7824
+POSTHOOK: Output: default@llap_stats@cint=-9566
+POSTHOOK: Output: default@llap_stats@cint=15007
+POSTHOOK: Output: default@llap_stats@cint=4963
+POSTHOOK: Output: default@llap_stats@cint=7021
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-2 depends on stages: Stage-0
@@ -107,23 +153,24 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: llap_stats
-                  Statistics: Num rows: 10 Data size: 116 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 10 Data size: 120 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
-                    expressions: cint (type: int), ctinyint (type: tinyint), csmallint (type: smallint)
-                    outputColumnNames: cint, ctinyint, csmallint
-                    Statistics: Num rows: 10 Data size: 116 Basic stats: COMPLETE Column stats: PARTIAL
+                    expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int)
+                    outputColumnNames: ctinyint, csmallint, cint
+                    Statistics: Num rows: 10 Data size: 120 Basic stats: COMPLETE Column stats: PARTIAL
                     Group By Operator
-                      aggregations: compute_stats(ctinyint, 16), compute_stats(csmallint, 16)
+                      aggregations: compute_stats(ctinyint, 'hll'), compute_stats(csmallint, 'hll')
                       keys: cint (type: int)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 5 Data size: 4780 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 5 Data size: 4260 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 5 Data size: 4780 Basic stats: COMPLETE Column stats: PARTIAL
-                        value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+                        Statistics: Num rows: 5 Data size: 4260 Basic stats: COMPLETE Column stats: PARTIAL
+                        value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -134,28 +181,29 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 5 Data size: 4820 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 5 Data size: 4420 Basic stats: COMPLETE Column stats: PARTIAL
                 Select Operator
-                  expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col0 (type: int)
+                  expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: int)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 5 Data size: 4820 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 5 Data size: 4420 Basic stats: COMPLETE Column stats: PARTIAL
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 5 Data size: 4820 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 5 Data size: 4420 Basic stats: COMPLETE Column stats: PARTIAL
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-2
-    Column Stats Work
+    Stats Work
+      Basic Stats NoJob Work:
       Column Stats Desc:
           Columns: ctinyint, csmallint
           Column Types: tinyint, smallint
           Table: default.llap_stats
 
 PREHOOK: query: analyze table llap_stats partition (cint) compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@llap_stats
 PREHOOK: Input: default@llap_stats@cint=-13326
 PREHOOK: Input: default@llap_stats@cint=-15431
@@ -167,9 +215,20 @@ PREHOOK: Input: default@llap_stats@cint=-9566
 PREHOOK: Input: default@llap_stats@cint=15007
 PREHOOK: Input: default@llap_stats@cint=4963
 PREHOOK: Input: default@llap_stats@cint=7021
-#### A masked pattern was here ####
+PREHOOK: Output: default@llap_stats
+PREHOOK: Output: default@llap_stats@cint=-13326
+PREHOOK: Output: default@llap_stats@cint=-15431
+PREHOOK: Output: default@llap_stats@cint=-15549
+PREHOOK: Output: default@llap_stats@cint=-15813
+PREHOOK: Output: default@llap_stats@cint=-4213
+PREHOOK: Output: default@llap_stats@cint=-7824
+PREHOOK: Output: default@llap_stats@cint=-9566
+PREHOOK: Output: default@llap_stats@cint=15007
+PREHOOK: Output: default@llap_stats@cint=4963
+PREHOOK: Output: default@llap_stats@cint=7021
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: analyze table llap_stats partition (cint) compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@llap_stats
 POSTHOOK: Input: default@llap_stats@cint=-13326
 POSTHOOK: Input: default@llap_stats@cint=-15431
@@ -181,7 +240,18 @@ POSTHOOK: Input: default@llap_stats@cint=-9566
 POSTHOOK: Input: default@llap_stats@cint=15007
 POSTHOOK: Input: default@llap_stats@cint=4963
 POSTHOOK: Input: default@llap_stats@cint=7021
-#### A masked pattern was here ####
+POSTHOOK: Output: default@llap_stats
+POSTHOOK: Output: default@llap_stats@cint=-13326
+POSTHOOK: Output: default@llap_stats@cint=-15431
+POSTHOOK: Output: default@llap_stats@cint=-15549
+POSTHOOK: Output: default@llap_stats@cint=-15813
+POSTHOOK: Output: default@llap_stats@cint=-4213
+POSTHOOK: Output: default@llap_stats@cint=-7824
+POSTHOOK: Output: default@llap_stats@cint=-9566
+POSTHOOK: Output: default@llap_stats@cint=15007
+POSTHOOK: Output: default@llap_stats@cint=4963
+POSTHOOK: Output: default@llap_stats@cint=7021
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE llap_stats
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@llap_stats

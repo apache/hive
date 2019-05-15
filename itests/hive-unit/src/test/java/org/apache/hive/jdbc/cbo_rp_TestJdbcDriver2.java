@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -1455,6 +1455,8 @@ public class cbo_rp_TestJdbcDriver2 {
   @Test
   public void testResultSetMetaData() throws SQLException {
     Statement stmt = con.createStatement();
+
+    stmt.execute("set " + HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname + "=false");
 
     ResultSet res = stmt.executeQuery(
         "select c1, c2, c3, c4, c5 as a, c6, c7, c8, c9, c10, c11, c12, " +

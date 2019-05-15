@@ -17,8 +17,8 @@ THISSERVICE=llap
 export SERVICE_LIST="${SERVICE_LIST}${THISSERVICE} "
 
 llap () {
-  TMPDIR=$(mktemp -d /tmp/staging-slider-XXXXXX)
-  CLASS=org.apache.hadoop.hive.llap.cli.LlapServiceDriver;
+  TMPDIR=$(mktemp -d /tmp/staging-yarn-XXXXXX)
+  CLASS=org.apache.hadoop.hive.llap.cli.service.LlapServiceDriver;
   if [ ! -f ${HIVE_LIB}/hive-cli-*.jar ]; then
     echo "Missing Hive CLI Jar"
     exit 3;
@@ -37,14 +37,14 @@ llap () {
   # check for config files
   test -f $TMPDIR/config.json
 
-  python $HIVE_HOME/scripts/llap/slider/package.py --input $TMPDIR "$@"
+  python $HIVE_HOME/scripts/llap/yarn/package.py --input $TMPDIR "$@"
 
   # remove temp files
   rm -rf $TMPDIR
 }
 
 llap_help () {
-  CLASS=org.apache.hadoop.hive.llap.cli.LlapServiceDriver;
+  CLASS=org.apache.hadoop.hive.llap.cli.service.LlapServiceDriver;
   execHiveCmd $CLASS "--help"
 } 
 

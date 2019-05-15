@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -38,7 +38,8 @@ public class TestQBJoinTreeApplyPredicate {
 
   @BeforeClass
   public static void initialize() {
-    queryState = new QueryState(new HiveConf(SemanticAnalyzer.class));
+    queryState =
+        new QueryState.Builder().withHiveConf(new HiveConf(SemanticAnalyzer.class)).build();
     conf = queryState.getConf();
     SessionState.start(conf);
   }

@@ -1,0 +1,91 @@
+Warning: Shuffle Join MERGEJOIN[149][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 6' is a cross product
+PREHOOK: query: explain cbo
+select  cast(amc as decimal(15,4))/cast(pmc as decimal(15,4)) am_pm_ratio
+ from ( select count(*) amc
+       from web_sales, household_demographics , time_dim, web_page
+       where ws_sold_time_sk = time_dim.t_time_sk
+         and ws_ship_hdemo_sk = household_demographics.hd_demo_sk
+         and ws_web_page_sk = web_page.wp_web_page_sk
+         and time_dim.t_hour between 6 and 6+1
+         and household_demographics.hd_dep_count = 8
+         and web_page.wp_char_count between 5000 and 5200) at,
+      ( select count(*) pmc
+       from web_sales, household_demographics , time_dim, web_page
+       where ws_sold_time_sk = time_dim.t_time_sk
+         and ws_ship_hdemo_sk = household_demographics.hd_demo_sk
+         and ws_web_page_sk = web_page.wp_web_page_sk
+         and time_dim.t_hour between 14 and 14+1
+         and household_demographics.hd_dep_count = 8
+         and web_page.wp_char_count between 5000 and 5200) pt
+ order by am_pm_ratio
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@household_demographics
+PREHOOK: Input: default@time_dim
+PREHOOK: Input: default@web_page
+PREHOOK: Input: default@web_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select  cast(amc as decimal(15,4))/cast(pmc as decimal(15,4)) am_pm_ratio
+ from ( select count(*) amc
+       from web_sales, household_demographics , time_dim, web_page
+       where ws_sold_time_sk = time_dim.t_time_sk
+         and ws_ship_hdemo_sk = household_demographics.hd_demo_sk
+         and ws_web_page_sk = web_page.wp_web_page_sk
+         and time_dim.t_hour between 6 and 6+1
+         and household_demographics.hd_dep_count = 8
+         and web_page.wp_char_count between 5000 and 5200) at,
+      ( select count(*) pmc
+       from web_sales, household_demographics , time_dim, web_page
+       where ws_sold_time_sk = time_dim.t_time_sk
+         and ws_ship_hdemo_sk = household_demographics.hd_demo_sk
+         and ws_web_page_sk = web_page.wp_web_page_sk
+         and time_dim.t_hour between 14 and 14+1
+         and household_demographics.hd_dep_count = 8
+         and web_page.wp_char_count between 5000 and 5200) pt
+ order by am_pm_ratio
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@household_demographics
+POSTHOOK: Input: default@time_dim
+POSTHOOK: Input: default@web_page
+POSTHOOK: Input: default@web_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveProject(am_pm_ratio=[/(CAST($0):DECIMAL(15, 4), CAST($1):DECIMAL(15, 4))])
+  HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject($f0=[$0])
+      HiveAggregate(group=[{}], agg#0=[count()])
+        HiveJoin(condition=[=($1, $5)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveJoin(condition=[=($2, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(ws_sold_time_sk=[$1], ws_ship_hdemo_sk=[$10], ws_web_page_sk=[$12])
+                HiveFilter(condition=[AND(IS NOT NULL($10), IS NOT NULL($1), IS NOT NULL($12))])
+                  HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+              HiveProject(wp_web_page_sk=[$0])
+                HiveFilter(condition=[AND(BETWEEN(false, $10, 5000, 5200), IS NOT NULL($0))])
+                  HiveTableScan(table=[[default, web_page]], table:alias=[web_page])
+            HiveProject(t_time_sk=[$0])
+              HiveFilter(condition=[AND(BETWEEN(false, $3, 6, 7), IS NOT NULL($0))])
+                HiveTableScan(table=[[default, time_dim]], table:alias=[time_dim])
+          HiveProject(hd_demo_sk=[$0])
+            HiveFilter(condition=[AND(=($3, 8), IS NOT NULL($0))])
+              HiveTableScan(table=[[default, household_demographics]], table:alias=[household_demographics])
+    HiveProject($f0=[$0])
+      HiveAggregate(group=[{}], agg#0=[count()])
+        HiveJoin(condition=[=($1, $5)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveJoin(condition=[=($2, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(ws_sold_time_sk=[$1], ws_ship_hdemo_sk=[$10], ws_web_page_sk=[$12])
+                HiveFilter(condition=[AND(IS NOT NULL($10), IS NOT NULL($1), IS NOT NULL($12))])
+                  HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+              HiveProject(wp_web_page_sk=[$0])
+                HiveFilter(condition=[AND(BETWEEN(false, $10, 5000, 5200), IS NOT NULL($0))])
+                  HiveTableScan(table=[[default, web_page]], table:alias=[web_page])
+            HiveProject(t_time_sk=[$0])
+              HiveFilter(condition=[AND(BETWEEN(false, $3, 14, 15), IS NOT NULL($0))])
+                HiveTableScan(table=[[default, time_dim]], table:alias=[time_dim])
+          HiveProject(hd_demo_sk=[$0])
+            HiveFilter(condition=[AND(=($3, 8), IS NOT NULL($0))])
+              HiveTableScan(table=[[default, household_demographics]], table:alias=[household_demographics])
+

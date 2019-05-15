@@ -21,8 +21,8 @@ select
 select date '2012-01-01' + 30 days;
 select date '2012-01-01' - 30 days;
 
-create table t (dt int);
-insert into t values (1),(2);
+create table t_n18 (dt int);
+insert into t_n18 values (1),(2);
 
 -- expressions/columnref
 explain
@@ -31,11 +31,11 @@ select
 	date '2012-01-01' - interval (-dt*dt) day,
 	date '2012-01-01' + 1 day + '2' days,
 	date '2012-01-01' + interval (dt || '-1') year to month
-	from t;
+	from t_n18;
 
 select
         date '2012-01-01' + interval (-dt*dt) day,
         date '2012-01-01' - interval (-dt*dt) day,
         date '2012-01-01' + 1 day + '2' days,
         date '2012-01-01' + interval (dt || '-1') year to month
-        from t;
+        from t_n18;

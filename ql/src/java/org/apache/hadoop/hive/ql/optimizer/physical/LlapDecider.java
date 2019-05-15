@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,7 +26,6 @@ import static org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider.LlapMode.
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.EnumSet;
@@ -51,7 +50,6 @@ import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -75,6 +73,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,12 +105,20 @@ public class LlapDecider implements PhysicalPlanResolver {
   }
 
   private LlapMode mode;
+  private final LlapClusterStateForCompile clusterState;
+
+  public LlapDecider(LlapClusterStateForCompile clusterState) {
+    this.clusterState = clusterState;
+  }
+
 
   class LlapDecisionDispatcher implements Dispatcher {
     private final HiveConf conf;
     private final boolean doSkipUdfCheck;
     private final boolean arePermanentFnsAllowed;
     private final boolean shouldUber;
+    private final float minReducersPerExec;
+    private final int executorsPerNode;
     private List<MapJoinOperator> mapJoinOpList;
     private final Map<Rule, NodeProcessor> rules;
 
@@ -121,6 +128,9 @@ public class LlapDecider implements PhysicalPlanResolver {
       arePermanentFnsAllowed = HiveConf.getBoolVar(conf, ConfVars.LLAP_ALLOW_PERMANENT_FNS);
       // Don't user uber in "all" mode - everything can go into LLAP, which is better than uber.
       shouldUber = HiveConf.getBoolVar(conf, ConfVars.LLAP_AUTO_ALLOW_UBER) && (mode != all);
+      minReducersPerExec = HiveConf.getFloatVar(
+          conf, ConfVars.TEZ_LLAP_MIN_REDUCER_PER_EXECUTOR);
+      executorsPerNode = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_NUM_EXECUTORS);
       mapJoinOpList = new ArrayList<MapJoinOperator>();
       rules = getRules();
     }
@@ -139,20 +149,57 @@ public class LlapDecider implements PhysicalPlanResolver {
       return null;
     }
 
-    private void handleWork(TezWork tezWork, BaseWork work)
-      throws SemanticException {
+    private void handleWork(TezWork tezWork, BaseWork work) throws SemanticException {
       boolean workCanBeDoneInLlap = evaluateWork(tezWork, work);
       LOG.debug(
           "Work " + work + " " + (workCanBeDoneInLlap ? "can" : "cannot") + " be done in LLAP");
       if (workCanBeDoneInLlap) {
         for (MapJoinOperator graceMapJoinOp : mapJoinOpList) {
-          LOG.debug(
-              "Disabling hybrid grace hash join in case of LLAP and non-dynamic partition hash join.");
+          LOG.debug("Disabling hybrid grace hash join in case of LLAP "
+              + "and non-dynamic partition hash join.");
           graceMapJoinOp.getConf().setHybridHashJoin(false);
         }
+        adjustAutoParallelism(work);
+        
         convertWork(tezWork, work);
       }
       mapJoinOpList.clear();
+    }
+
+    private void adjustAutoParallelism(BaseWork work) {
+      if (minReducersPerExec <= 0 || !(work instanceof ReduceWork)) return;
+      ReduceWork reduceWork = (ReduceWork)work;
+      if (reduceWork.isAutoReduceParallelism() == false && reduceWork.isUniformDistribution() == false) {
+        return; // Not based on ARP and cannot assume uniform distribution, bail.
+      }
+      clusterState.initClusterInfo();
+      int targetCount = 0;
+      if (!clusterState.hasClusterInfo()) {
+        LOG.warn("Cannot determine LLAP cluster information");
+        targetCount = (int)Math.ceil(minReducersPerExec * 1 * executorsPerNode);
+      } else {
+        targetCount = (int)Math.ceil(minReducersPerExec * (clusterState.getKnownExecutorCount()
+            + clusterState.getNodeCountWithUnknownExecutors() * executorsPerNode));
+      }
+      // We only increase the targets here.
+      if (reduceWork.isAutoReduceParallelism()) {
+        // Do not exceed the configured max reducers.
+        int newMin = Math.min(conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS),
+            Math.max(reduceWork.getMinReduceTasks(), targetCount));
+        if (newMin < reduceWork.getMaxReduceTasks()) {
+          reduceWork.setMinReduceTasks(newMin);
+          reduceWork.getEdgePropRef().setAutoReduce(conf, true, newMin,
+              reduceWork.getMaxReduceTasks(), conf.getLongVar(HiveConf.ConfVars.BYTESPERREDUCER));
+        } else {
+          reduceWork.setAutoReduceParallelism(false);
+          reduceWork.setNumReduceTasks(newMin);
+          // TODO: is this correct? based on the same logic as HIVE-14200
+          reduceWork.getEdgePropRef().setAutoReduce(null, false, 0, 0, 0);
+        }
+      } else {
+        // UNIFORM || AUTOPARALLEL (maxed out)
+        reduceWork.setNumReduceTasks(Math.max(reduceWork.getNumReduceTasks(), targetCount));
+      }
     }
 
 
@@ -335,63 +382,56 @@ public class LlapDecider implements PhysicalPlanResolver {
           public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
               Object... os) {
             LOG.debug("Cannot run operator [" + n + "] in llap mode.");
-            return new Boolean(false);
+              return Boolean.FALSE;
           }
         });
-      opRules.put(new RuleRegExp("No user code in fil", FilterOperator.getOperatorName() + "%"),
-          new NodeProcessor() {
-          @Override
-          public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
-              Object... os) {
-            ExprNodeDesc expr = ((FilterOperator)n).getConf().getPredicate();
-            Boolean retval = new Boolean(checkExpression(expr));
-            if (!retval) {
-              LOG.info("Cannot run filter operator [" + n + "] in llap mode");
-            }
-            return new Boolean(retval);
+      opRules.put(new RuleRegExp("No user code in fil", FilterOperator.getOperatorName() + "%"), new NodeProcessor() {
+        @Override
+        public Object process(Node n, Stack<Node> s, NodeProcessorCtx c, Object... os) {
+          ExprNodeDesc expr = ((FilterOperator) n).getConf().getPredicate();
+          boolean retval = checkExpression(expr);
+          if (!retval) {
+            LOG.info("Cannot run filter operator [" + n + "] in llap mode");
           }
-        });
-      opRules.put(new RuleRegExp("No user code in gby", GroupByOperator.getOperatorName() + "%"),
-          new NodeProcessor() {
-          @Override
-          public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
-              Object... os) {
-            @SuppressWarnings("unchecked")
-            List<AggregationDesc> aggs = ((Operator<GroupByDesc>) n).getConf().getAggregators();
-            Boolean retval = new Boolean(checkAggregators(aggs));
-            if (!retval) {
-              LOG.info("Cannot run group by operator [" + n + "] in llap mode");
-            }
-            return new Boolean(retval);
+          return Boolean.valueOf(retval);
+        }
+      });
+      opRules.put(new RuleRegExp("No user code in gby", GroupByOperator.getOperatorName() + "%"), new NodeProcessor() {
+        @Override
+        public Object process(Node n, Stack<Node> s, NodeProcessorCtx c, Object... os) {
+          @SuppressWarnings("unchecked")
+          List<AggregationDesc> aggs = ((Operator<GroupByDesc>) n).getConf().getAggregators();
+          boolean retval = checkAggregators(aggs);
+          if (!retval) {
+            LOG.info("Cannot run group by operator [" + n + "] in llap mode");
           }
-        });
+          return Boolean.valueOf(retval);
+        }
+      });
       opRules.put(new RuleRegExp("No user code in select", SelectOperator.getOperatorName() + "%"),
           new NodeProcessor() {
-          @Override
-          public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
-              Object... os) {
-            @SuppressWarnings({ "unchecked" })
-            List<ExprNodeDesc> exprs = ((Operator<SelectDesc>) n).getConf().getColList();
-            Boolean retval = new Boolean(checkExpressions(exprs));
-            if (!retval) {
-              LOG.info("Cannot run select operator [" + n + "] in llap mode");
+            @Override
+            public Object process(Node n, Stack<Node> s, NodeProcessorCtx c, Object... os) {
+              @SuppressWarnings({"unchecked"})
+              List<ExprNodeDesc> exprs = ((Operator<SelectDesc>) n).getConf().getColList();
+              boolean retval = checkExpressions(exprs);
+              if (!retval) {
+                LOG.info("Cannot run select operator [" + n + "] in llap mode");
+              }
+              return Boolean.valueOf(retval);
             }
-            return new Boolean(retval);
-          }
-        });
+          });
 
       if (!conf.getBoolVar(HiveConf.ConfVars.LLAP_ENABLE_GRACE_JOIN_IN_LLAP)) {
-        opRules.put(
-            new RuleRegExp("Disable grace hash join if LLAP mode and not dynamic partition hash join",
-                MapJoinOperator.getOperatorName() + "%"), new NodeProcessor() {
+        opRules.put(new RuleRegExp("Disable grace hash join if LLAP mode and not dynamic partition hash join",
+            MapJoinOperator.getOperatorName() + "%"), new NodeProcessor() {
               @Override
               public Object process(Node n, Stack<Node> s, NodeProcessorCtx c, Object... os) {
                 MapJoinOperator mapJoinOp = (MapJoinOperator) n;
-                if (mapJoinOp.getConf().isHybridHashJoin()
-                    && !(mapJoinOp.getConf().isDynamicPartitionHashJoin())) {
+                if (mapJoinOp.getConf().isHybridHashJoin() && !(mapJoinOp.getConf().isDynamicPartitionHashJoin())) {
                   mapJoinOpList.add((MapJoinOperator) n);
                 }
-                return new Boolean(true);
+                return Boolean.TRUE;
               }
             });
       }
@@ -433,9 +473,11 @@ public class LlapDecider implements PhysicalPlanResolver {
 
     private boolean checkInputsVectorized(MapWork mapWork) {
       boolean mayWrap = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_NONVECTOR_WRAPPER_ENABLED);
+      Collection<Class<?>> excludedInputFormats = Utilities.getClassNamesFromConfig(conf, ConfVars.HIVE_VECTORIZATION_VECTORIZED_INPUT_FILE_FORMAT_EXCLUDES);
       for (PartitionDesc pd : mapWork.getPathToPartitionInfo().values()) {
-        if (Utilities.isInputFileFormatVectorized(pd) || (mayWrap
-            && HiveInputFormat.canWrapForLlap(pd.getInputFileFormatClass(), true))) {
+        if ((Utilities.isInputFileFormatVectorized(pd) && !excludedInputFormats
+            .contains(pd.getInputFileFormatClass())) || (mayWrap && HiveInputFormat
+            .canWrapForLlap(pd.getInputFileFormatClass(), true))) {
           continue;
         }
         LOG.info("Input format: " + pd.getInputFileFormatClassName()

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,15 +20,22 @@ package org.apache.hadoop.hive.cli.control;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
+
+import org.apache.hadoop.hive.ql.QTestArguments;
+import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
-import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 
+import com.google.common.base.Strings;
+
 public class CoreNegativeCliDriver extends CliAdapter{
 
   private QTestUtil qt;
+
   public CoreNegativeCliDriver(AbstractCliConfig testCliConfig) {
     super(testCliConfig);
   }
@@ -41,17 +48,26 @@ public class CoreNegativeCliDriver extends CliAdapter{
     String cleanupScript = cliConfig.getCleanupScript();
 
     try {
-      String hadoopVer = cliConfig.getHadoopVersion();
-      qt = new QTestUtil((cliConfig.getResultsDir()), (cliConfig.getLogDir()), miniMR,
-       hiveConfDir, hadoopVer, initScript, cleanupScript, false, false);
+      qt = new QTestUtil(
+          QTestArguments.QTestArgumentsBuilder.instance()
+            .withOutDir(cliConfig.getResultsDir())
+            .withLogDir(cliConfig.getLogDir())
+            .withClusterType(miniMR)
+            .withConfDir(hiveConfDir)
+            .withInitScript(initScript)
+            .withCleanupScript(cleanupScript)
+            .withLlapIo(false)
+            .build());
       // do a one time initialization
+      qt.newSession();
       qt.cleanUp();
       qt.createSources();
+
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
       System.err.flush();
-      fail("Unexpected exception in static initialization");
+      throw new RuntimeException("Unexpected exception in static initialization", e);
     }
   }
 
@@ -59,7 +75,8 @@ public class CoreNegativeCliDriver extends CliAdapter{
   @Before
   public void setUp() {
     try {
-      qt.clearTestSideEffects();
+      qt.newSession();
+
     } catch (Throwable e) {
       e.printStackTrace();
       System.err.flush();
@@ -71,7 +88,9 @@ public class CoreNegativeCliDriver extends CliAdapter{
   @After
   public void tearDown() {
     try {
+      qt.clearTestSideEffects();
       qt.clearPostTestEffects();
+
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -82,9 +101,10 @@ public class CoreNegativeCliDriver extends CliAdapter{
 
   @Override
   @AfterClass
-  public void shutdown() throws Exception {
+  public void shutdown() {
     try {
       qt.shutdown();
+
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -93,17 +113,6 @@ public class CoreNegativeCliDriver extends CliAdapter{
     }
   }
 
-  /**
-   * Dummy last test. This is only meant to shutdown qt
-   */
-  public void testNegativeCliDriver_shutdown() {
-    System.err.println ("Cleaning up " + "$className");
-  }
-
-  static String debugHint = "\nSee ./ql/target/tmp/log/hive.log or ./itests/qtest/target/tmp/log/hive.log, "
-     + "or check ./ql/target/surefire-reports or ./itests/qtest/target/surefire-reports/ for specific test cases logs.";
-
-
   @Override
   public void runTest(String tname, String fname, String fpath) throws Exception {
     long startTime = System.currentTimeMillis();
@@ -111,25 +120,28 @@ public class CoreNegativeCliDriver extends CliAdapter{
       System.err.println("Begin query: " + fname);
 
       qt.addFile(fpath);
+      qt.cliInit(new File(fpath));
 
-      if (qt.shouldBeSkipped(fname)) {
-        System.err.println("Test " + fname + " skipped");
-        return;
-      }
-
-      qt.cliInit(fname, false);
-      int ecode = qt.executeClient(fname);
+      int ecode = qt.executeClient(fname).getResponseCode();
       if (ecode == 0) {
-        qt.failed(fname, debugHint);
+        qt.failed(fname, QTestUtil.DEBUG_HINT);
       }
 
-      ecode = qt.checkCliDriverResults(fname);
-      if (ecode != 0) {
-        qt.failedDiff(ecode, fname, debugHint);
+      QTestProcessExecResult result = qt.checkCliDriverResults(fname);
+      if (result.getReturnCode() != 0) {
+        String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ? QTestUtil.DEBUG_HINT
+          : "\r\n" + result.getCapturedOutput();
+        qt.failedDiff(result.getReturnCode(), fname, message);
       }
-    }
-    catch (Throwable e) {
-      qt.failed(e, fname, debugHint);
+    } catch (Error error) {
+      QTestProcessExecResult qTestProcessExecResult = qt.checkNegativeResults(fname, error);
+      if (qTestProcessExecResult.getReturnCode() != 0) {
+        String message = Strings.isNullOrEmpty(qTestProcessExecResult.getCapturedOutput())
+          ? QTestUtil.DEBUG_HINT : "\r\n" + qTestProcessExecResult.getCapturedOutput();
+        qt.failedDiff(qTestProcessExecResult.getReturnCode(), fname, message);
+      }
+    } catch (Exception e) {
+      qt.failedWithException(e, fname, QTestUtil.DEBUG_HINT);
     }
 
     long elapsedTime = System.currentTimeMillis() - startTime;

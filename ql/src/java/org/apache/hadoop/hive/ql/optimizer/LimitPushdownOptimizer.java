@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -54,7 +54,7 @@ import org.apache.hadoop.hive.ql.plan.LimitDesc;
  * If RS is only for limiting rows, RSHash counts row with same key separately.
  * But if RS is for GBY, RSHash should forward all the rows with the same key.
  *
- * Legend : A(a) --> key A, value a, row A(a)
+ * Legend : A(a) --&gt; key A, value a, row A(a)
  *
  * If each RS in mapper tasks is forwarded rows like this
  *
@@ -133,9 +133,17 @@ public class LimitPushdownOptimizer extends Transform {
         }
       }
       if (rs != null) {
-        if (OperatorUtils.findOperators(rs, GroupByOperator.class).size() > 1){
-          // Not safe to continue for RS-GBY-GBY-LIM kind of pipelines. See HIVE-10607 for more.
-          return false;
+        Operator<?> currentOp = rs;
+        boolean foundGroupByOperator = false;
+        while (currentOp != nd) { // nd = limitOp
+          if (currentOp instanceof GroupByOperator) {
+            if (foundGroupByOperator) {
+              // Not safe to continue for RS-GBY-GBY-LIM kind of pipelines. See HIVE-10607 for more.
+              return false;
+            }
+            foundGroupByOperator = true;
+          }
+          currentOp = currentOp.getChildOperators().get(0);
         }
         LimitOperator limit = (LimitOperator) nd;
         LimitDesc limitDesc = limit.getConf();
@@ -175,9 +183,17 @@ public class LimitPushdownOptimizer extends Transform {
         }
       }
       if (pRS != null) {
-        if (OperatorUtils.findOperators(pRS, GroupByOperator.class).size() > 1){
-          // Not safe to continue for RS-GBY-GBY-LIM kind of pipelines. See HIVE-10607 for more.
-          return false;
+        Operator<?> currentOp = pRS;
+        boolean foundGroupByOperator = false;
+        while (currentOp != nd) { // nd = cRS
+          if (currentOp instanceof GroupByOperator) {
+            if (foundGroupByOperator) {
+              // Not safe to continue for RS-GBY-GBY-LIM kind of pipelines. See HIVE-10607 for more.
+              return false;
+            }
+            foundGroupByOperator = true;
+          }
+          currentOp = currentOp.getChildOperators().get(0);
         }
         List<ExprNodeDesc> cKeys = cRS.getConf().getKeyCols();
         List<ExprNodeDesc> pKeys = pRS.getConf().getKeyCols();

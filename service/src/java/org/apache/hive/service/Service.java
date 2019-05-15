@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -49,7 +49,7 @@ public interface Service {
    * The transition must be from {@link STATE#NOTINITED} to {@link STATE#INITED} unless the
    * operation failed and an exception was raised.
    *
-   * @param config
+   * @param conf
    *          the configuration of the service
    */
   void init(HiveConf conf);

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,10 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import java.io.Serializable;
 import java.util.List;
-
-import junit.framework.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -33,6 +30,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMacro;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.junit.Assert;
+
 public class TestMacroSemanticAnalyzer {
 
   private MacroSemanticAnalyzer analyzer;
@@ -42,7 +41,7 @@ public class TestMacroSemanticAnalyzer {
 
   @Before
   public void setup() throws Exception {
-    queryState = new QueryState(null);
+    queryState = new QueryState.Builder().build();
     conf = queryState.getConf();
     SessionState.start(conf);
     context = new Context(conf);
@@ -54,10 +53,10 @@ public class TestMacroSemanticAnalyzer {
   }
   private void analyze(ASTNode ast) throws Exception {
     analyzer.analyze(ast, context);
-    List<Task<? extends Serializable>> rootTasks = analyzer.getRootTasks();
+    List<Task<?>> rootTasks = analyzer.getRootTasks();
     Assert.assertEquals(1, rootTasks.size());
-    for(Task<? extends Serializable> task : rootTasks) {
-      Assert.assertEquals(0, task.executeTask());
+    for (Task<?> task : rootTasks) {
+      Assert.assertEquals(0, task.executeTask(null));
     }
   }
   @Test

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -40,10 +40,12 @@ public class VectorMapJoinOptimizedCreateHashTable {
     ReusableGetAdaptor hashMapRowGetter = mapJoinTableContainer.createGetter(refKey);
 
     boolean isOuterJoin = !desc.isNoOuterJoin();
+
+    // UNDONE
     VectorMapJoinDesc vectorDesc = (VectorMapJoinDesc) desc.getVectorDesc();
-    HashTableKind hashTableKind = vectorDesc.hashTableKind();
-    HashTableKeyType hashTableKeyType = vectorDesc.hashTableKeyType();
-    boolean minMaxEnabled = vectorDesc.minMaxEnabled();
+    HashTableKind hashTableKind = vectorDesc.getHashTableKind();
+    HashTableKeyType hashTableKeyType = vectorDesc.getHashTableKeyType();
+    boolean minMaxEnabled = vectorDesc.getMinMaxEnabled();
 
     VectorMapJoinOptimizedHashTable hashTable = null;
 
@@ -114,16 +116,4 @@ public class VectorMapJoinOptimizedCreateHashTable {
     }
     return hashTable;
   }
-
-  /*
-  @Override
-  public com.esotericsoftware.kryo.io.Output getHybridBigTableSpillOutput(int partitionId) {
-
-    HybridHashTableContainer ht = (HybridHashTableContainer) mapJoinTableContainer;
-
-    HashPartition hp = ht.getHashPartitions()[partitionId];
-
-    return hp.getMatchfileOutput();
-  }
-  */
 }

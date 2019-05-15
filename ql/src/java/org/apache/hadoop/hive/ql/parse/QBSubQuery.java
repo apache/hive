@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -45,6 +45,8 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     NOT_EXISTS,
     IN,
     NOT_IN,
+    SOME,
+    ALL,
     SCALAR;
 
     public static SubQueryType get(ASTNode opNode) throws SemanticException {
@@ -71,6 +73,10 @@ public class QBSubQuery implements ISubQueryJoinInfo {
         return IN;
       case HiveParser.TOK_SUBQUERY_OP_NOTIN:
         return NOT_IN;
+      case HiveParser.KW_SOME:
+        return SOME;
+      case HiveParser.KW_ALL:
+        return ALL;
       default:
         throw new SemanticException(SemanticAnalyzer.generateErrorMessage(opNode,
             "Operator not supported in SubQuery use."));
@@ -305,20 +311,14 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     }
 
     /*
-     * 1. The only correlation operator we check for is EQUAL; because that is
-     *    the one for which we can do a Algebraic transformation.
-     * 2. For expressions that are not an EQUAL predicate, we treat them as conjuncts
-     *    having only 1 side. These should only contain references to the SubQuery
-     *    table sources.
-     * 3. For expressions that are an EQUAL predicate; we analyze each side and let the
+     *  we analyze each side and let the
      *    left and right exprs in the Conjunct object.
      *
      * @return Conjunct  contains details on the left and right side of the conjunct expression.
      */
     Conjunct analyzeConjunct(ASTNode conjunct) throws SemanticException {
-      int type = conjunct.getType();
 
-      if ( type == HiveParser.EQUAL ) {
+       if(conjunct.getChildCount() == 2) {
         ASTNode left = (ASTNode) conjunct.getChild(0);
         ASTNode right = (ASTNode) conjunct.getChild(1);
         ObjectPair<ExprType,ColumnInfo> leftInfo = analyzeExpr(left);
@@ -526,9 +526,9 @@ public class QBSubQuery implements ISubQueryJoinInfo {
    * @return true if it is correlated scalar subquery with an aggregate
    * @throws SemanticException
    */
-  boolean subqueryRestrictionsCheck(RowResolver parentQueryRR,
+  void subqueryRestrictionsCheck(RowResolver parentQueryRR,
                                  boolean forHavingClause,
-                                 String outerQueryAlias)
+                                 String outerQueryAlias, boolean [] subqueryConfig)
           throws SemanticException {
     ASTNode insertClause = getChildFromSubqueryAST("Insert", HiveParser.TOK_INSERT);
 
@@ -568,36 +568,36 @@ public class QBSubQuery implements ISubQueryJoinInfo {
       hasCount = hasCount | ( r == 2 );
     }
 
-
-
-    ASTNode whereClause = SubQueryUtils.subQueryWhere(insertClause);
-
-    if ( whereClause == null ) {
-      return false;
-    }
-    ASTNode searchCond = (ASTNode) whereClause.getChild(0);
-    List<ASTNode> conjuncts = new ArrayList<ASTNode>();
-    SubQueryUtils.extractConjuncts(searchCond, conjuncts);
-
-    ConjunctAnalyzer conjunctAnalyzer = new ConjunctAnalyzer(parentQueryRR,
-            forHavingClause, outerQueryAlias);
-
+    // figure out correlation and presence of non-equi join predicate
     boolean hasCorrelation = false;
     boolean hasNonEquiJoinPred = false;
-    for(ASTNode conjunctAST : conjuncts) {
-      Conjunct conjunct = conjunctAnalyzer.analyzeConjunct(conjunctAST);
-      if(conjunct.isCorrelated()){
-       hasCorrelation = true;
-      }
-      if ( conjunct.eitherSideRefersBoth() && conjunctAST.getType() != HiveParser.EQUAL) {
-        hasNonEquiJoinPred = true;
+
+    ASTNode whereClause = SubQueryUtils.subQueryWhere(insertClause);
+    if ( whereClause != null ) {
+      ASTNode searchCond = (ASTNode) whereClause.getChild(0);
+      List<ASTNode> conjuncts = new ArrayList<ASTNode>();
+      SubQueryUtils.extractConjuncts(searchCond, conjuncts);
+
+      ConjunctAnalyzer conjunctAnalyzer =
+          new ConjunctAnalyzer(parentQueryRR, forHavingClause, outerQueryAlias);
+
+      for (ASTNode conjunctAST : conjuncts) {
+        Conjunct conjunct = conjunctAnalyzer.analyzeConjunct(conjunctAST);
+        if (conjunct.isCorrelated()) {
+          hasCorrelation = true;
+        }
+        if (conjunct.eitherSideRefersBoth() && conjunctAST.getType() != HiveParser.EQUAL) {
+          hasNonEquiJoinPred = true;
+        }
       }
     }
+
+    // figure out if there is group by
     boolean noImplicityGby = true;
-    if ( insertClause.getChild(1).getChildCount() > 3 &&
-            insertClause.getChild(1).getChild(3).getType() == HiveParser.TOK_GROUPBY ) {
-      if((ASTNode) insertClause.getChild(1).getChild(3) != null){
+    for(int i=0; i<insertClause.getChildCount(); i++) {
+      if(insertClause.getChild(i).getType() == HiveParser.TOK_GROUPBY) {
         noImplicityGby = false;
+        break;
       }
     }
 
@@ -620,7 +620,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
       // Following is special cases for different type of subqueries which have aggregate and no implicit group by
       // and are correlatd
       // * EXISTS/NOT EXISTS - NOT allowed, throw an error for now. We plan to allow this later
-      // * SCALAR - only allow if it has non equi join predicate. This should return true since later in subquery remove
+      // * SCALAR - This should return true since later in subquery remove
       //              rule we need to know about this case.
       // * IN - always allowed, BUT returns true for cases with aggregate other than COUNT since later in subquery remove
       //        rule we need to know about this case.
@@ -638,27 +638,24 @@ public class QBSubQuery implements ISubQueryJoinInfo {
           }
         }
         else if(operator.getType() == SubQueryType.SCALAR) {
-            if(hasNonEquiJoinPred) {
-              throw new CalciteSubquerySemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
-                      subQueryAST,
-                      "Scalar subqueries with aggregate cannot have non-equi join predicate"));
+            if(!hasWindowing) {
+              subqueryConfig[1] = true;
             }
             if(hasCorrelation) {
-              return true;
+              subqueryConfig[0] = true;
             }
         }
         else if(operator.getType() == SubQueryType.IN) {
           if(hasCount && hasCorrelation) {
-            return true;
+            subqueryConfig[0] = true;
           }
         }
         else if (operator.getType() == SubQueryType.NOT_IN) {
             if(hasCorrelation) {
-              return true;
+              subqueryConfig[0] = true;
             }
         }
       }
-    return false;
   }
 
   void validateAndRewriteAST(RowResolver outerQueryRR,

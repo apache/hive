@@ -1,3 +1,5 @@
+set hive.vectorized.execution.enabled=false;
+
 DROP TABLE parquet_mixed_case;
 
 CREATE TABLE parquet_mixed_case (

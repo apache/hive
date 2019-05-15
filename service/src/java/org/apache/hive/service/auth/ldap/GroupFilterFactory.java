@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * <br>
  * The produced filter object filters out all users that are not members of at least one of
  * the groups provided in Hive configuration.
- * @see HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER
+ * @see HiveConf.ConfVars#HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER
  */
 public final class GroupFilterFactory implements FilterFactory {
 
@@ -86,7 +86,7 @@ public final class GroupFilterFactory implements FilterFactory {
 
       for (String groupDn : memberOf) {
         String shortName = LdapUtils.getShortName(groupDn);
-        if (groupFilter.contains(shortName)) {
+        if (groupFilter.stream().anyMatch(shortName::equalsIgnoreCase)) {
           LOG.debug("GroupMembershipKeyFilter passes: user '{}' is a member of '{}' group",
               user, groupDn);
           LOG.info("Authentication succeeded based on group membership");

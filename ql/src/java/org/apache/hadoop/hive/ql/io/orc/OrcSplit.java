@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,8 +26,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
+import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.ColumnarSplit;
 import org.apache.hadoop.hive.ql.io.LlapAwareSplit;
 import org.apache.hadoop.hive.ql.io.SyntheticFileId;
@@ -48,13 +54,27 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
   private static final Logger LOG = LoggerFactory.getLogger(OrcSplit.class);
   private OrcTail orcTail;
   private boolean hasFooter;
+  /**
+   * This means {@link AcidUtils.AcidBaseFileType#ORIGINAL_BASE}
+   */
   private boolean isOriginal;
   private boolean hasBase;
+  //partition root
+  private Path rootDir;
   private final List<AcidInputFormat.DeltaMetaData> deltas = new ArrayList<>();
   private long projColsUncompressedSize;
   private transient Object fileKey;
   private long fileLen;
+  private transient long writeId = 0;
+  private transient int bucketId = 0;
+  private transient int stmtId = 0;
 
+  /**
+   * This contains the synthetic ROW__ID offset and bucket properties for original file splits in an ACID table.
+   */
+  private OffsetAndBucketProperty syntheticAcidProps;
+
+  static final int HAS_SYNTHETIC_ACID_PROPS_FLAG = 32;
   static final int HAS_SYNTHETIC_FILEID_FLAG = 16;
   static final int HAS_LONG_FILEID_FLAG = 8;
   static final int BASE_FLAG = 4;
@@ -70,7 +90,8 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
 
   public OrcSplit(Path path, Object fileId, long offset, long length, String[] hosts,
       OrcTail orcTail, boolean isOriginal, boolean hasBase,
-      List<AcidInputFormat.DeltaMetaData> deltas, long projectedDataSize, long fileLen) {
+      List<AcidInputFormat.DeltaMetaData> deltas, long projectedDataSize, long fileLen, Path rootDir,
+      OffsetAndBucketProperty syntheticAcidProps) {
     super(path, offset, length, hosts);
     // For HDFS, we could avoid serializing file ID and just replace the path with inode-based
     // path. However, that breaks bunch of stuff because Hive later looks up things by split path.
@@ -79,10 +100,12 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
     hasFooter = this.orcTail != null;
     this.isOriginal = isOriginal;
     this.hasBase = hasBase;
+    this.rootDir = rootDir;
     this.deltas.addAll(deltas);
     this.projColsUncompressedSize = projectedDataSize <= 0 ? length : projectedDataSize;
     // setting file length to Long.MAX_VALUE will let orc reader read file length from file system
     this.fileLen = fileLen <= 0 ? Long.MAX_VALUE : fileLen;
+    this.syntheticAcidProps = syntheticAcidProps;
   }
 
   @Override
@@ -110,7 +133,8 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
         (isOriginal ? ORIGINAL_FLAG : 0) |
         (hasFooter ? FOOTER_FLAG : 0) |
         (isFileIdLong ? HAS_LONG_FILEID_FLAG : 0) |
-        (isFileIdWritable ? HAS_SYNTHETIC_FILEID_FLAG : 0);
+        (isFileIdWritable ? HAS_SYNTHETIC_FILEID_FLAG : 0) |
+        (syntheticAcidProps != null? HAS_SYNTHETIC_ACID_PROPS_FLAG : 0);
     out.writeByte(flags);
     out.writeInt(deltas.size());
     for(AcidInputFormat.DeltaMetaData delta: deltas) {
@@ -129,6 +153,12 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
       ((Writable)fileKey).write(out);
     }
     out.writeLong(fileLen);
+    out.writeUTF(rootDir.toString());
+    if (syntheticAcidProps != null) {
+      out.writeLong(syntheticAcidProps.rowIdOffset);
+      out.writeInt(syntheticAcidProps.bucketProperty);
+      out.writeLong(syntheticAcidProps.syntheticWriteId);
+    }
   }
 
   @Override
@@ -141,7 +171,8 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
     isOriginal = (ORIGINAL_FLAG & flags) != 0;
     hasBase = (BASE_FLAG & flags) != 0;
     boolean hasLongFileId = (HAS_LONG_FILEID_FLAG & flags) != 0,
-        hasWritableFileId = (HAS_SYNTHETIC_FILEID_FLAG & flags) != 0;
+        hasWritableFileId = (HAS_SYNTHETIC_FILEID_FLAG & flags) != 0,
+        hasSyntheticProps = (HAS_SYNTHETIC_ACID_PROPS_FLAG & flags) != 0;
     if (hasLongFileId && hasWritableFileId) {
       throw new IOException("Invalid split - both file ID types present");
     }
@@ -168,6 +199,15 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
       this.fileKey = fileId;
     }
     fileLen = in.readLong();
+    rootDir = new Path(in.readUTF());
+
+    if (hasSyntheticProps) {
+      long rowId = in.readLong();
+      int bucket = in.readInt();
+      long writeId = in.readLong();
+
+      syntheticAcidProps = new OffsetAndBucketProperty(rowId, bucket, writeId);
+    }
   }
 
   public OrcTail getOrcTail() {
@@ -178,6 +218,14 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
     return hasFooter;
   }
 
+  /**
+   * @return {@code true} if file schema doesn't have Acid metadata columns
+   * Such file may be in a delta_x_y/ or base_x due to being added via
+   * "load data" command.  It could be at partition|table root due to table having
+   * been converted from non-acid to acid table.  It could even be something like
+   * "warehouse/t/HIVE_UNION_SUBDIR_15/000000_0" if it was written by an
+   * "insert into t select ... from A union all select ... from B"
+   */
   public boolean isOriginal() {
     return isOriginal;
   }
@@ -186,6 +234,9 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
     return hasBase;
   }
 
+  public Path getRootDir() {
+    return rootDir;
+  }
   public List<AcidInputFormat.DeltaMetaData> getDeltas() {
     return deltas;
   }
@@ -211,14 +262,107 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
     return fileKey;
   }
 
+  public OffsetAndBucketProperty getSyntheticAcidProps() {
+    return syntheticAcidProps;
+  }
+
   @Override
   public long getColumnarProjectionSize() {
     return projColsUncompressedSize;
   }
 
   @Override
-  public boolean canUseLlapIo() {
-    return isOriginal && (deltas == null || deltas.isEmpty());
+  public boolean canUseLlapIo(Configuration conf) {
+    final boolean hasDelta = deltas != null && !deltas.isEmpty();
+    final boolean isAcidRead = AcidUtils.isFullAcidScan(conf);
+    final boolean isVectorized = Utilities.getIsVectorized(conf);
+    Boolean isSplitUpdate = null;
+    if (isAcidRead) {
+      final AcidUtils.AcidOperationalProperties acidOperationalProperties
+          = AcidUtils.getAcidOperationalProperties(conf);
+      isSplitUpdate = acidOperationalProperties.isSplitUpdate();
+      // TODO: this is brittle. Who said everyone has to upgrade using upgrade process?
+      assert isSplitUpdate : "should be true in Hive 3.0";
+    }
+
+    if (isOriginal) {
+      if (!isAcidRead && !hasDelta) {
+        // Original scan only
+        return true;
+      }
+    } else {
+      boolean isAcidEnabled = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ACID_ENABLED);
+      if (isAcidEnabled && isAcidRead && hasBase && isVectorized) {
+        if (hasDelta) {
+          if (isSplitUpdate) {
+            // Base with delete deltas
+            return true;
+          }
+        } else {
+          // Base scan only
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Used for generating synthetic ROW__IDs for reading "original" files.
+   */
+  public static final class OffsetAndBucketProperty {
+    private final long rowIdOffset;
+    private final int bucketProperty;
+    private final long syntheticWriteId;
+    OffsetAndBucketProperty(long rowIdOffset, int bucketProperty, long syntheticWriteId) {
+      this.rowIdOffset = rowIdOffset;
+      this.bucketProperty = bucketProperty;
+      this.syntheticWriteId = syntheticWriteId;
+    }
+
+    public long getRowIdOffset() {
+      return rowIdOffset;
+    }
+
+    public int getBucketProperty() {
+      return bucketProperty;
+    }
+
+    public long getSyntheticWriteId() {
+      return syntheticWriteId;
+    }
+  }
+  
+  /**
+   * Note: this is the write id as seen in the file name that contains this split
+   * For files that have min/max writeId, this is the starting one.  
+   * @return
+   */
+  public long getWriteId() {
+    return writeId;
+  }
+
+  public int getStatementId() {
+    return stmtId;
+  }
+
+  /**
+   * Note: this is the bucket number as seen in the file name that contains this split.
+   * Hive 3.0 encodes a bunch of info in the Acid schema's bucketId attribute.
+   * See: {@link org.apache.hadoop.hive.ql.io.BucketCodec#V1} for details.
+   * @return
+   */
+  public int getBucketId() {
+    return bucketId;
+  }
+
+  public void parse(Configuration conf) throws IOException {
+    OrcRawRecordMerger.TransactionMetaData tmd =
+        OrcRawRecordMerger.TransactionMetaData.findWriteIDForSynthetcRowIDs(getPath(), rootDir, conf);
+    writeId = tmd.syntheticWriteId;
+    stmtId = tmd.statementId;
+    AcidOutputFormat.Options opt = AcidUtils.parseBaseOrDeltaBucketFilename(getPath(), conf);
+    bucketId = opt.getBucketId();
   }
 
   @Override

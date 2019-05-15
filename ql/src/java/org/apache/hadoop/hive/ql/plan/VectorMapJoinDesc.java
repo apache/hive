@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
@@ -35,7 +36,7 @@ import com.google.common.base.Preconditions;
  */
 public class VectorMapJoinDesc extends AbstractVectorDesc  {
 
-  private static long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
   public static enum HashTableImplementationType {
     NONE,
@@ -83,19 +84,22 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
     }
   }
 
-  public static enum OperatorVariation {
-    NONE,
-    INNER_BIG_ONLY,
+  public static enum VectorMapJoinVariation {
     INNER,
+    INNER_BIG_ONLY,
     LEFT_SEMI,
-    OUTER
+    OUTER,
+    FULL_OUTER
   }
 
   private HashTableImplementationType hashTableImplementationType;
   private HashTableKind hashTableKind;
   private HashTableKeyType hashTableKeyType;
-  private OperatorVariation operatorVariation;
+  private VectorMapJoinVariation vectorMapJoinVariation;
   private boolean minMaxEnabled;
+
+  private VectorExpression[] allBigTableKeyExpressions;
+  private VectorExpression[] allBigTableValueExpressions;
 
   private VectorMapJoinInfo vectorMapJoinInfo;
 
@@ -103,8 +107,12 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
     hashTableImplementationType = HashTableImplementationType.NONE;
     hashTableKind = HashTableKind.NONE;
     hashTableKeyType = HashTableKeyType.NONE;
-    operatorVariation = OperatorVariation.NONE;
+    vectorMapJoinVariation = null;
     minMaxEnabled = false;
+
+    allBigTableKeyExpressions = null;
+    allBigTableValueExpressions = null;
+
     vectorMapJoinInfo = null;
   }
 
@@ -114,7 +122,7 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
     clone.hashTableImplementationType = this.hashTableImplementationType;
     clone.hashTableKind = this.hashTableKind;
     clone.hashTableKeyType = this.hashTableKeyType;
-    clone.operatorVariation = this.operatorVariation;
+    clone.vectorMapJoinVariation = this.vectorMapJoinVariation;
     clone.minMaxEnabled = this.minMaxEnabled;
     if (vectorMapJoinInfo != null) {
       throw new RuntimeException("Cloning VectorMapJoinInfo not supported");
@@ -122,7 +130,7 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
     return clone;
   }
 
-  public HashTableImplementationType hashTableImplementationType() {
+  public HashTableImplementationType getHashTableImplementationType() {
     return hashTableImplementationType;
   }
 
@@ -130,7 +138,7 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
     this.hashTableImplementationType = hashTableImplementationType;
   }
 
-  public HashTableKind hashTableKind() {
+  public HashTableKind getHashTableKind() {
     return hashTableKind;
   }
 
@@ -138,7 +146,7 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
     this.hashTableKind = hashTableKind;
   }
 
-  public HashTableKeyType hashTableKeyType() {
+  public HashTableKeyType getHashTableKeyType() {
     return hashTableKeyType;
   }
 
@@ -146,20 +154,36 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
     this.hashTableKeyType = hashTableKeyType;
   }
 
-  public OperatorVariation operatorVariation() {
-    return operatorVariation;
+  public VectorMapJoinVariation getVectorMapJoinVariation() {
+    return vectorMapJoinVariation;
   }
 
-  public void setOperatorVariation(OperatorVariation operatorVariation) {
-    this.operatorVariation = operatorVariation;
+  public void setVectorMapJoinVariation(VectorMapJoinVariation vectorMapJoinVariation) {
+    this.vectorMapJoinVariation = vectorMapJoinVariation;
   }
 
-  public boolean minMaxEnabled() {
+  public boolean getMinMaxEnabled() {
     return minMaxEnabled;
   }
 
   public void setMinMaxEnabled(boolean minMaxEnabled) {
     this.minMaxEnabled = minMaxEnabled;
+  }
+
+  public VectorExpression[] getAllBigTableKeyExpressions() {
+    return allBigTableKeyExpressions;
+  }
+
+  public void setAllBigTableKeyExpressions(VectorExpression[] allBigTableKeyExpressions) {
+    this.allBigTableKeyExpressions = allBigTableKeyExpressions;
+  }
+
+  public VectorExpression[] getAllBigTableValueExpressions() {
+    return allBigTableValueExpressions;
+  }
+
+  public void setAllBigTableValueExpressions(VectorExpression[] allBigTableValueExpressions) {
+    this.allBigTableValueExpressions = allBigTableValueExpressions;
   }
 
   public void setVectorMapJoinInfo(VectorMapJoinInfo vectorMapJoinInfo) {
@@ -180,7 +204,11 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
   private boolean isHybridHashJoin;
   private boolean supportsKeyTypes;
   private List<String> notSupportedKeyTypes;
+  private boolean supportsValueTypes;
+  private List<String> notSupportedValueTypes;
   private boolean smallTableExprVectorizes;
+  private boolean outerJoinHasNoKeys;
+  boolean isFullOuter;
 
   public void setUseOptimizedTable(boolean useOptimizedTable) {
     this.useOptimizedTable = useOptimizedTable;
@@ -224,11 +252,29 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
   public List<String> getNotSupportedKeyTypes() {
     return notSupportedKeyTypes;
   }
+  public void setSupportsValueTypes(boolean supportsValueTypes) {
+    this.supportsValueTypes = supportsValueTypes;
+  }
+  public boolean getSupportsValueTypes() {
+    return supportsValueTypes;
+  }
+  public void setNotSupportedValueTypes(List<String> notSupportedValueTypes) {
+    this.notSupportedValueTypes = notSupportedValueTypes;
+  }
+  public List<String> getNotSupportedValueTypes() {
+    return notSupportedValueTypes;
+  }
   public void setSmallTableExprVectorizes(boolean smallTableExprVectorizes) {
     this.smallTableExprVectorizes = smallTableExprVectorizes;
   }
   public boolean getSmallTableExprVectorizes() {
     return smallTableExprVectorizes;
+  }
+  public void setOuterJoinHasNoKeys(boolean outerJoinHasNoKeys) {
+    this.outerJoinHasNoKeys = outerJoinHasNoKeys;
+  }
+  public boolean getOuterJoinHasNoKeys() {
+    return outerJoinHasNoKeys;
   }
 
   public void setIsFastHashTableEnabled(boolean isFastHashTableEnabled) {
@@ -243,5 +289,10 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
   public boolean getIsHybridHashJoin() {
     return isHybridHashJoin;
   }
-
+  public void setIsFullOuter(boolean isFullOuter) {
+    this.isFullOuter = isFullOuter;
+  }
+  public boolean getIsFullOuter() {
+    return isFullOuter;
+  }
 }

@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.rmi.server.UID;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -32,6 +33,7 @@ import java.util.Map;
 
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardListObjectInspector;
@@ -41,6 +43,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TestAvroDeserializer {
@@ -256,6 +261,68 @@ public class TestAvroDeserializer {
   }
 
   @Test
+  public void canDeserializeSingleItemUnions() throws SerDeException, IOException {
+    Schema s = AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.SINGLE_ITEM_UNION_SCHEMA);
+    GenericData.Record record = new GenericData.Record(s);
+
+    record.put("aUnion", "this is a string");
+
+    ResultPair result = unionTester(s, record);
+    assertTrue(result.value instanceof String);
+    assertEquals("this is a string", result.value);
+    UnionObjectInspector uoi = (UnionObjectInspector)result.oi;
+    assertEquals(0, uoi.getTag(result.unionObject));
+  }
+
+  /**
+   * Test whether Avro timestamps can be deserialized according to new behavior (storage in UTC but
+   * LocalDateTime semantics as timestamps are converted back to the writer time zone) as well as
+   * old behavior (Instant semantics).
+   */
+  @Test
+  public void canDeserializeTimestamps() throws SerDeException, IOException {
+    List<String> columnNames = new ArrayList<>();
+    columnNames.add("timestampField");
+    List<TypeInfo> columnTypes = new ArrayList<>();
+    columnTypes.add(TypeInfoFactory.getPrimitiveTypeInfo("timestamp"));
+    Schema readerSchema =
+        AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.TIMESTAMP_SCHEMA);
+
+    // 2019-01-02 00:00:00 GMT is 1546387200000 milliseconds after epoch
+    GenericData.Record record = new GenericData.Record(readerSchema);
+    record.put("timestampField", 1546387200999L);
+    assertTrue(GENERIC_DATA.validate(readerSchema, record));
+
+    AvroGenericRecordWritable agrw = new AvroGenericRecordWritable(ZoneId.of("America/New_York"));
+    agrw.setRecord(record);
+    agrw.setFileSchema(readerSchema);
+    agrw.setRecordReaderID(new UID());
+
+    AvroDeserializer deserializer = new AvroDeserializer();
+    ArrayList<Object> row =
+        (ArrayList<Object>) deserializer.deserialize(columnNames, columnTypes, agrw, readerSchema);
+    Timestamp resultTimestamp = (Timestamp) row.get(0);
+
+    // 2019-01-02 00:00:00 GMT is 2019-01-01 19:00:00 GMT-0500 (America/New_York / EST)
+    assertEquals(Timestamp.valueOf("2019-01-01 19:00:00.999"), resultTimestamp);
+
+    // Do the same without specifying writer time zone. This tests deserialization of older records
+    // which should be interpreted in Instant semantics
+    AvroGenericRecordWritable agrw2 = new AvroGenericRecordWritable();
+    agrw2.setRecord(record);
+    agrw2.setFileSchema(readerSchema);
+    agrw2.setRecordReaderID(new UID());
+
+    row =
+        (ArrayList<Object>) deserializer.deserialize(columnNames, columnTypes, agrw2, readerSchema);
+    resultTimestamp = (Timestamp) row.get(0);
+
+    // 2019-01-02 00:00:00 GMT is 2019-01-01 16:00:00 in zone GMT-0800 (PST)
+    // This is the time zone for VM in test.
+    assertEquals(Timestamp.valueOf("2019-01-01 16:00:00.999"), resultTimestamp);
+  }
+
+  @Test
   public void canDeserializeUnions() throws SerDeException, IOException {
     Schema s = AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.UNION_SCHEMA);
     GenericData.Record record = new GenericData.Record(s);
@@ -359,6 +426,58 @@ public class TestAvroDeserializer {
     Object value = fieldObjectInspector.getField(theUnion);
 
     return new ResultPair(fieldObjectInspector, value, theUnion);
+  }
+
+  @Test
+  public void primitiveSchemaEvolution() throws Exception {
+    Schema fileSchema = AvroSerdeUtils.getSchemaFor(
+     "{\n"
+         + "  \"type\": \"record\",\n"
+         + "  \"name\": \"r1\",\n"
+         + "  \"fields\": [\n"
+         + "    {\n"
+         + "      \"name\": \"int_field\",\n"
+         + "      \"type\": \"int\"\n"
+         + "    }\n"
+         + "  ]\n"
+         + "}"
+    );
+    Schema readerSchema = AvroSerdeUtils.getSchemaFor(
+       "{\n"
+           + "  \"type\": \"record\",\n"
+           + "  \"name\": \"r1\",\n"
+           + "  \"fields\": [\n"
+           + "    {\n"
+           + "      \"name\": \"int_field\",\n"
+           + "      \"type\": \"int\"\n"
+           + "    },\n"
+           + "    {\n"
+           + "      \"name\": \"dec_field\",\n"
+           + "      \"type\": [\n"
+           + "        \"null\",\n"
+           + "        {\n"
+           + "          \"type\": \"bytes\",\n"
+           + "          \"logicalType\": \"decimal\",\n"
+           + "          \"precision\": 5,\n"
+           + "          \"scale\": 4\n"
+           + "        }\n"
+           + "      ],\n"
+           + "      \"default\": null\n"
+           + "    }\n"
+           + "  ]\n"
+           + "}"
+    );
+    GenericData.Record record = new GenericData.Record(fileSchema);
+
+    record.put("int_field", 1);
+    assertTrue(GENERIC_DATA.validate(fileSchema, record));
+    AvroGenericRecordWritable garw = Utils.serializeAndDeserializeRecord(record);
+    AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(readerSchema);
+
+    AvroDeserializer de = new AvroDeserializer();
+    List<Object> row = (List<Object>) de.deserialize(aoig.getColumnNames(), aoig.getColumnTypes(), garw, readerSchema);
+    Assert.assertEquals(1, row.get(0));
+    Assert.assertNull(row.get(1));
   }
 
   @Test // Enums are one of two types we fudge for Hive. Enums go in, Strings come out.

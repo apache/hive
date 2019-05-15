@@ -4,7 +4,7 @@ CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
   `user` STRING,
-  time TIMESTAMP,
+  `time` TIMESTAMP,
   request STRING,
   status INT,
   size INT,

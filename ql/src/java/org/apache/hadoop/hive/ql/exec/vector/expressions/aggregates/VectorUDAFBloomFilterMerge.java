@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,36 +19,31 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
+import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationDesc;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression.AggregationBuffer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.io.BytesWritable;
-import org.apache.hive.common.util.BloomFilter;
+import org.apache.hadoop.io.IOUtils;
+import org.apache.hive.common.util.BloomKFilter;
 
 public class VectorUDAFBloomFilterMerge extends VectorAggregateExpression {
-
   private static final long serialVersionUID = 1L;
 
-  private VectorExpression inputExpression;
-
-  @Override
-  public VectorExpression inputExpression() {
-    return inputExpression;
-  }
-
   private long expectedEntries = -1;
-  transient private int aggBufferSize = -1;
-  transient private BytesWritable bw = new BytesWritable();
+  transient private int aggBufferSize;
 
   /**
    * class for storing the current aggregate value.
@@ -59,13 +54,16 @@ public class VectorUDAFBloomFilterMerge extends VectorAggregateExpression {
     byte[] bfBytes;
 
     public Aggregation(long expectedEntries) {
+      ByteArrayOutputStream bytesOut = null;
       try {
-        BloomFilter bf = new BloomFilter(expectedEntries);
-        ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
-        BloomFilter.serialize(bytesOut, bf);
+        BloomKFilter bf = new BloomKFilter(expectedEntries);
+        bytesOut = new ByteArrayOutputStream();
+        BloomKFilter.serialize(bytesOut, bf);
         bfBytes = bytesOut.toByteArray();
       } catch (Exception err) {
         throw new IllegalArgumentException("Error creating aggregation buffer", err);
+      } finally {
+        IOUtils.closeStream(bytesOut);
       }
     }
 
@@ -77,17 +75,27 @@ public class VectorUDAFBloomFilterMerge extends VectorAggregateExpression {
     @Override
     public void reset() {
       // Do not change the initial bytes which contain NumHashFunctions/NumBits!
-      Arrays.fill(bfBytes, BloomFilter.START_OF_SERIALIZED_LONGS, bfBytes.length, (byte) 0);
+      Arrays.fill(bfBytes, BloomKFilter.START_OF_SERIALIZED_LONGS, bfBytes.length, (byte) 0);
     }
   }
 
-  public VectorUDAFBloomFilterMerge(VectorExpression inputExpression) {
-    this();
-    this.inputExpression = inputExpression;
-  }
-
+  // This constructor is used to momentarily create the object so match can be called.
   public VectorUDAFBloomFilterMerge() {
     super();
+  }
+
+  public VectorUDAFBloomFilterMerge(VectorAggregationDesc vecAggrDesc) {
+    super(vecAggrDesc);
+    init();
+  }
+
+  private void init() {
+
+    GenericUDAFBloomFilterEvaluator udafBloomFilter =
+        (GenericUDAFBloomFilterEvaluator) vecAggrDesc.getEvaluator();
+    expectedEntries = udafBloomFilter.getExpectedEntries();
+
+    aggBufferSize = -1;
   }
 
   @Override
@@ -104,7 +112,7 @@ public class VectorUDAFBloomFilterMerge extends VectorAggregateExpression {
 
     inputExpression.evaluate(batch);
 
-    ColumnVector inputColumn =  batch.cols[this.inputExpression.getOutputColumn()];
+    ColumnVector inputColumn =  batch.cols[this.inputExpression.getOutputColumnNum()];
 
     int batchSize = batch.size;
 
@@ -115,7 +123,7 @@ public class VectorUDAFBloomFilterMerge extends VectorAggregateExpression {
     Aggregation myagg = (Aggregation) agg;
 
     if (inputColumn.isRepeating) {
-      if (inputColumn.noNulls) {
+      if (inputColumn.noNulls || !inputColumn.isNull[0]) {
         processValue(myagg, inputColumn, 0);
       }
       return;
@@ -195,7 +203,7 @@ public class VectorUDAFBloomFilterMerge extends VectorAggregateExpression {
 
     inputExpression.evaluate(batch);
 
-    ColumnVector inputColumn = batch.cols[this.inputExpression.getOutputColumn()];
+    ColumnVector inputColumn = batch.cols[this.inputExpression.getOutputColumnNum()];
 
     if (inputColumn.noNulls) {
       if (inputColumn.isRepeating) {
@@ -215,7 +223,11 @@ public class VectorUDAFBloomFilterMerge extends VectorAggregateExpression {
       }
     } else {
       if (inputColumn.isRepeating) {
-        // All nulls, no-op for min/max
+        if (!inputColumn.isNull[0]) {
+          iterateNoNullsRepeatingWithAggregationSelection(
+              aggregationBufferSets, aggregateIndex,
+              inputColumn, batchSize);
+        }
       } else {
         if (batch.selectedInUse) {
           iterateHasNullsSelectionWithAggregationSelection(
@@ -327,19 +339,7 @@ public class VectorUDAFBloomFilterMerge extends VectorAggregateExpression {
   }
 
   @Override
-  public Object evaluateOutput(AggregationBuffer agg) throws HiveException {
-    Aggregation bfAgg = (Aggregation) agg;
-    bw.set(bfAgg.bfBytes, 0, bfAgg.bfBytes.length);
-    return bw;
-  }
-
-  @Override
-  public ObjectInspector getOutputObjectInspector() {
-    return PrimitiveObjectInspectorFactory.writableBinaryObjectInspector;
-  }
-
-  @Override
-  public int getAggregationBufferFixedSize() {
+  public long getAggregationBufferFixedSize() {
     if (aggBufferSize < 0) {
       // Not pretty, but we need a way to get the size
       try {
@@ -353,19 +353,40 @@ public class VectorUDAFBloomFilterMerge extends VectorAggregateExpression {
     return aggBufferSize;
   }
 
-  @Override
-  public void init(AggregationDesc desc) throws HiveException {
-    GenericUDAFBloomFilterEvaluator udafBloomFilter =
-        (GenericUDAFBloomFilterEvaluator) desc.getGenericUDAFEvaluator();
-    expectedEntries = udafBloomFilter.getExpectedEntries();
-  }
-
   void processValue(Aggregation myagg, ColumnVector columnVector, int i) {
     // columnVector entry is byte array representing serialized BloomFilter.
     // BloomFilter.mergeBloomFilterBytes() does a simple byte ORing
     // which should be faster than deserialize/merge.
     BytesColumnVector inputColumn = (BytesColumnVector) columnVector;
-    BloomFilter.mergeBloomFilterBytes(myagg.bfBytes, 0, myagg.bfBytes.length,
+    BloomKFilter.mergeBloomFilterBytes(myagg.bfBytes, 0, myagg.bfBytes.length,
         inputColumn.vector[i], inputColumn.start[i], inputColumn.length[i]);
+  }
+
+
+  @Override
+  public boolean matches(String name, ColumnVector.Type inputColVectorType,
+      ColumnVector.Type outputColVectorType, Mode mode) {
+
+    /*
+     * Bloom filter merge input and output are BYTES.
+     *
+     * Just modes (PARTIAL2, FINAL).
+     */
+    return
+        name.equals("bloom_filter") &&
+        inputColVectorType == ColumnVector.Type.BYTES &&
+        outputColVectorType == ColumnVector.Type.BYTES &&
+        (mode == Mode.PARTIAL2 || mode == Mode.FINAL);
+  }
+
+  @Override
+  public void assignRowColumn(VectorizedRowBatch batch, int batchIndex, int columnNum,
+      AggregationBuffer agg) throws HiveException {
+
+    BytesColumnVector outputColVector = (BytesColumnVector) batch.cols[columnNum];
+    outputColVector.isNull[batchIndex] = false;
+
+    Aggregation bfAgg = (Aggregation) agg;
+    outputColVector.setVal(batchIndex, bfAgg.bfBytes, 0, bfAgg.bfBytes.length);
   }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.ql.exec.UDF;
  * 'Ref' parse_url('http://facebook.com/path/p1.php?query=1#Ref', 'PROTOCOL')
  * will return 'http' Possible values are
  * HOST,PATH,QUERY,REF,PROTOCOL,AUTHORITY,FILE,USERINFO Also you can get a value
- * of particular key in QUERY, using syntax QUERY:<KEY_NAME> eg: QUERY:k1.
+ * of particular key in QUERY, using syntax QUERY:&lt;KEY_NAME&gt; eg: QUERY:k1.
  */
 @Description(name = "parse_url",
     value = "_FUNC_(url, partToExtract[, key]) - extracts a part from a URL",

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -35,7 +35,6 @@ public class QueryProperties {
 
   boolean query;
   boolean analyzeCommand;
-  boolean partialScanAnalyzeCommand;
   boolean noScanAnalyzeCommand;
   boolean analyzeRewrite;
   boolean ctas;
@@ -58,9 +57,11 @@ public class QueryProperties {
   boolean mapJoinRemoved = false;
   boolean hasMapGroupBy = false;
 
+  private boolean hasLateralViews = false;
+  private boolean cboSupportedLateralViews = true;
+
   private int noOfJoins = 0;
   private int noOfOuterJoins = 0;
-  private boolean hasLateralViews;
 
   private boolean multiDestQuery;
   private boolean filterWithSubQuery;
@@ -82,14 +83,6 @@ public class QueryProperties {
 
   public void setAnalyzeCommand(boolean analyzeCommand) {
     this.analyzeCommand = analyzeCommand;
-  }
-
-  public boolean isPartialScanAnalyzeCommand() {
-    return partialScanAnalyzeCommand;
-  }
-
-  public void setPartialScanAnalyzeCommand(boolean partialScanAnalyzeCommand) {
-    this.partialScanAnalyzeCommand = partialScanAnalyzeCommand;
   }
 
   public boolean isNoScanAnalyzeCommand() {
@@ -130,8 +123,9 @@ public class QueryProperties {
 
   public void incrementJoinCount(boolean outerJoin) {
     noOfJoins++;
-    if (outerJoin)
+    if (outerJoin) {
       noOfOuterJoins++;
+    }
   }
 
   public int getJoinCount() {
@@ -148,6 +142,14 @@ public class QueryProperties {
 
   public boolean hasLateralViews() {
     return hasLateralViews;
+  }
+
+  public void setCBOSupportedLateralViews(boolean cboSupportedLateralViews) {
+    this.cboSupportedLateralViews = cboSupportedLateralViews;
+  }
+
+  public boolean isCBOSupportedLateralViews() {
+    return cboSupportedLateralViews;
   }
 
   public boolean hasGroupBy() {
@@ -278,11 +280,11 @@ public class QueryProperties {
   public void clear() {
     query = false;
     analyzeCommand = false;
-    partialScanAnalyzeCommand = false;
     noScanAnalyzeCommand = false;
     analyzeRewrite = false;
     ctas = false;
     outerQueryLimit = -1;
+    isMaterializedView = false;
 
     hasJoin = false;
     hasGroupBy = false;

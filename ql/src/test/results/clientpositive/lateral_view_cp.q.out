@@ -22,8 +22,14 @@ POSTHOOK: Lineage: array_valued_src.key SIMPLE [(src)src.FieldSchema(name:key, t
 POSTHOOK: Lineage: array_valued_src.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain select count(val) from (select a.key as key, b.value as array_val from src a join array_valued_src b on a.key=b.key) i lateral view explode (array_val) c as val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@array_valued_src
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(val) from (select a.key as key, b.value as array_val from src a join array_valued_src b on a.key=b.key) i lateral view explode (array_val) c as val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@array_valued_src
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -35,26 +41,28 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string)
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: b
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 500 Data size: 1001504 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 475 Data size: 951428 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 475 Data size: 951428 Basic stats: COMPLETE Column stats: NONE
                 value expressions: value (type: array<string>)
       Reduce Operator Tree:
         Join Operator
@@ -64,20 +72,21 @@ STAGE PLANS:
             0 key (type: string)
             1 key (type: string)
           outputColumnNames: _col6
-          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 550 Data size: 47850 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col6 (type: array<string>)
             outputColumnNames: _col1
-            Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 550 Data size: 47850 Basic stats: COMPLETE Column stats: NONE
             Lateral View Forward
-              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 550 Data size: 47850 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 550 Data size: 47850 Basic stats: COMPLETE Column stats: NONE
                 Lateral View Join Operator
                   outputColumnNames: _col2
-                  Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1100 Data size: 95700 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count(_col2)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -90,15 +99,16 @@ STAGE PLANS:
               Select Operator
                 expressions: _col1 (type: array<string>)
                 outputColumnNames: _col0
-                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 550 Data size: 47850 Basic stats: COMPLETE Column stats: NONE
                 UDTF Operator
-                  Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 550 Data size: 47850 Basic stats: COMPLETE Column stats: NONE
                   function name: explode
                   Lateral View Join Operator
                     outputColumnNames: _col2
-                    Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1100 Data size: 95700 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(_col2)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -117,6 +127,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)

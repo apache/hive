@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,8 +26,8 @@ public final class VectorUDFMinuteString extends VectorUDFTimestampFieldString {
 
   private static final long serialVersionUID = 1L;
 
-  public VectorUDFMinuteString(int colNum, int outputColumn) {
-    super(colNum, outputColumn, 14, 2);
+  public VectorUDFMinuteString(int colNum, int outputColumnNum) {
+    super(colNum, outputColumnNum, 14, 2);
   }
 
   public VectorUDFMinuteString() {

@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.strict.checks.bucketing=false;
 
 set hive.mapred.mode=nonstrict;
@@ -16,8 +17,8 @@ create table smb_join_results(k1 int, v1 string, k2 int, v2 string);
 create table smb_join_results_empty_bigtable(k1 int, v1 string, k2 int, v2 string);
 create table normal_join_results(k1 int, v1 string, k2 int, v2 string);
 
-load data local inpath '../../data/files/empty1.txt' into table smb_bucket4_1;
-load data local inpath '../../data/files/empty2.txt' into table smb_bucket4_1;
+load data local inpath '../../data/files/empty/000000_0' into table smb_bucket4_1;
+load data local inpath '../../data/files/empty/000001_0' into table smb_bucket4_1;
 
 insert overwrite table smb_bucket4_2
 select * from src;
@@ -25,7 +26,7 @@ select * from src;
 set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
 set hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
-
+set hive.cbo.enable=false;
 insert overwrite table smb_join_results_empty_bigtable
 select /*+mapjoin(b)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key;
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,11 +17,16 @@
  */
 package org.apache.hadoop.hive.ql.exec.persistence;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 
 @SuppressWarnings("deprecation")
 public class MapJoinObjectSerDeContext {
@@ -53,6 +58,18 @@ public class MapJoinObjectSerDeContext {
 
   public boolean hasFilterTag() {
     return hasFilter;
+  }
+
+  public String stringify() {
+    StandardStructObjectInspector standardStructOI = (StandardStructObjectInspector) standardOI;
+    List<? extends StructField> structFields = standardStructOI.getAllStructFieldRefs();
+    List<String> typeInfoStrings = new ArrayList<String>();
+    for (StructField field : structFields) {
+      ObjectInspector fieldOI = field.getFieldObjectInspector();
+      typeInfoStrings.add(fieldOI.getTypeName());
+    }
+    return "[types " + typeInfoStrings.toString() + ", serde=" + serde.getClass().getName()
+        + ", hasFilter=" + hasFilter + "]";
   }
 
   @Override

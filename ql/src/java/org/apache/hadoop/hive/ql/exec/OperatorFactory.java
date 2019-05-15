@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -37,7 +38,10 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorSMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSelectOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSparkHashTableSinkOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSparkPartitionPruningSinkOperator;
+import org.apache.hadoop.hive.ql.exec.vector.VectorTopNKeyOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
+import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkCommonOperator;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFOperator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc;
 import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
@@ -73,6 +77,7 @@ import org.apache.hadoop.hive.ql.plan.ScriptDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.SparkHashTableSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.ql.plan.TopNKeyDesc;
 import org.apache.hadoop.hive.ql.plan.UDTFDesc;
 import org.apache.hadoop.hive.ql.plan.UnionDesc;
 import org.apache.hadoop.hive.ql.plan.VectorDesc;
@@ -123,6 +128,7 @@ public final class OperatorFactory {
     opvec.put(OrcFileMergeDesc.class, OrcFileMergeOperator.class);
     opvec.put(CommonMergeJoinDesc.class, CommonMergeJoinOperator.class);
     opvec.put(ListSinkDesc.class, ListSinkOperator.class);
+    opvec.put(TopNKeyDesc.class, TopNKeyOperator.class);
   }
 
   static {
@@ -138,31 +144,44 @@ public final class OperatorFactory {
     vectorOpvec.put(FileSinkDesc.class, VectorFileSinkOperator.class);
     vectorOpvec.put(FilterDesc.class, VectorFilterOperator.class);
     vectorOpvec.put(LimitDesc.class, VectorLimitOperator.class);
+    vectorOpvec.put(PTFDesc.class, VectorPTFOperator.class);
     vectorOpvec.put(SparkHashTableSinkDesc.class, VectorSparkHashTableSinkOperator.class);
+    vectorOpvec.put(TopNKeyDesc.class, VectorTopNKeyOperator.class);
   }
 
   public static <T extends OperatorDesc> Operator<T> getVectorOperator(
     Class<? extends Operator<?>> opClass, CompilationOpContext cContext, T conf,
-        VectorizationContext vContext) throws HiveException {
+        VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
+
+    Constructor<? extends Operator<?>> constructor;
     try {
-      VectorDesc vectorDesc = ((AbstractOperatorDesc) conf).getVectorDesc();
+      constructor = opClass.getDeclaredConstructor(
+          CompilationOpContext.class, OperatorDesc.class,
+          VectorizationContext.class, VectorDesc.class);
+    } catch (Exception e) {
+      throw new HiveException(
+          "Constructor " + opClass.getSimpleName() +
+          "(CompilationOpContext, OperatorDesc, VectorizationContext, VectorDesc) not found", e);
+    }
+    try {
       vectorDesc.setVectorOp(opClass);
-      Operator<T> op = (Operator<T>) opClass.getDeclaredConstructor(
-          CompilationOpContext.class, VectorizationContext.class, OperatorDesc.class)
-          .newInstance(cContext, vContext, conf);
+      Operator<T> op = (Operator<T>) constructor.newInstance(
+          cContext, conf, vContext, vectorDesc);
       return op;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new HiveException(e);
+      throw new HiveException(
+          "Error encountered calling constructor " + opClass.getSimpleName() +
+          "(CompilationOpContext, OperatorDesc, VectorizationContext, VectorDesc)", e);
     }
   }
 
   public static <T extends OperatorDesc> Operator<T> getVectorOperator(
-      CompilationOpContext cContext, T conf, VectorizationContext vContext) throws HiveException {
+      CompilationOpContext cContext, T conf, VectorizationContext vContext, VectorDesc vectorDesc)
+          throws HiveException {
     Class<T> descClass = (Class<T>) conf.getClass();
     Class<?> opClass = vectorOpvec.get(descClass);
     if (opClass != null) {
-      return getVectorOperator(vectorOpvec.get(descClass), cContext, conf, vContext);
+      return getVectorOperator(vectorOpvec.get(descClass), cContext, conf, vContext, vectorDesc);
     }
     throw new HiveException("No vector operator for descriptor class " + descClass.getName());
   }
@@ -176,7 +195,6 @@ public final class OperatorFactory {
         return (Operator<T>)opClass.getDeclaredConstructor(
           CompilationOpContext.class).newInstance(cContext);
       } catch (Exception e) {
-        e.printStackTrace();
         throw new RuntimeException(e);
       }
     }
@@ -247,6 +265,9 @@ public final class OperatorFactory {
       T conf, Operator oplist0, Operator... oplist) {
     Operator<T> ret = get(oplist0.getCompilationOpContext(), (Class<T>) conf.getClass());
     ret.setConf(conf);
+
+    // Set the bucketing Version
+    ret.setBucketingVersion(oplist0.getBucketingVersion());
 
     // Add the new operator as child of each of the passed in operators
     List<Operator> children = oplist0.getChildOperators();

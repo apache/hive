@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -69,6 +69,7 @@ public interface HiveHistory {
     TASK_NUM_MAPPERS,
     TASK_NUM_REDUCERS,
     ROWS_INSERTED,
+    SPARK_JOB_HANDLE_ID,
     SPARK_JOB_ID
   };
 

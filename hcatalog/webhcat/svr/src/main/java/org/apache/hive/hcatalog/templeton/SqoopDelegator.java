@@ -50,7 +50,7 @@ public class SqoopDelegator extends LauncherDelegator {
                String callback, String completedUrl, boolean enablelog,
                Boolean enableJobReconnect, String libdir)
   throws NotAuthorizedException, BadParam, BusyException, QueueException,
-  IOException, InterruptedException
+  IOException, InterruptedException, TooManyRequestsException
   {
     if(TempletonUtils.isset(appConf.sqoopArchive())) {
       if(!TempletonUtils.isset(appConf.sqoopPath()) && !TempletonUtils.isset(appConf.sqoopHome())) {

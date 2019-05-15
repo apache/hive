@@ -12,22 +12,26 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@macro_testing
 PREHOOK: query: insert into table macro_testing values (1,2,3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@macro_testing
 POSTHOOK: query: insert into table macro_testing values (1,2,3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@macro_testing
-POSTHOOK: Lineage: macro_testing.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: macro_testing.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: macro_testing.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: macro_testing.a SCRIPT []
+POSTHOOK: Lineage: macro_testing.b SCRIPT []
+POSTHOOK: Lineage: macro_testing.c SCRIPT []
 PREHOOK: query: insert into table macro_testing values (4,5,6)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@macro_testing
 POSTHOOK: query: insert into table macro_testing values (4,5,6)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@macro_testing
-POSTHOOK: Lineage: macro_testing.a EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: macro_testing.b EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: macro_testing.c EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: macro_testing.a SCRIPT []
+POSTHOOK: Lineage: macro_testing.b SCRIPT []
+POSTHOOK: Lineage: macro_testing.c SCRIPT []
 PREHOOK: query: create temporary macro math_square(x int) x*x
 PREHOOK: type: CREATEMACRO
 PREHOOK: Output: database:default

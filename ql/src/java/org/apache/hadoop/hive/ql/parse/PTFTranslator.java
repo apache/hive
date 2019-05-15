@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -613,6 +613,7 @@ public class PTFTranslator {
     case SHORT:
     case DECIMAL:
     case TIMESTAMP:
+    case TIMESTAMPLOCALTZ:
     case DATE:
     case STRING:
     case VARCHAR:

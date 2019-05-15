@@ -53,4 +53,4 @@ PREHOOK: query: ALTER TABLE ex_table1 EXCHANGE PARTITION (part='part1') WITH TAB
 PREHOOK: type: ALTERTABLE_EXCHANGEPARTITION
 PREHOOK: Input: default@ex_table2
 PREHOOK: Output: default@ex_table1
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Got exception: java.io.IOException Cannot rename the source path. The destination path already exists.)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. MetaException(message:Got exception: java.io.IOException Cannot rename the source path. The destination path already exists.)

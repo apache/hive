@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -46,6 +46,7 @@ public class PTFPartition {
   StructObjectInspector inputOI;
   StructObjectInspector outputOI;
   private final PTFRowContainer<List<Object>> elems;
+  private final BoundaryCache boundaryCache;
 
   protected PTFPartition(Configuration cfg,
       AbstractSerDe serDe, StructObjectInspector inputOI,
@@ -70,6 +71,8 @@ public class PTFPartition {
     } else {
       elems = null;
     }
+    int boundaryCacheSize = HiveConf.getIntVar(cfg, ConfVars.HIVE_PTF_RANGECACHE_SIZE);
+    boundaryCache = boundaryCacheSize > 1 ? new BoundaryCache(boundaryCacheSize) : null;
   }
 
   public void reset() throws HiveException {
@@ -260,6 +263,10 @@ public class PTFPartition {
       StructObjectInspector tblFnOI) throws SerDeException {
     return (StructObjectInspector) ObjectInspectorUtils.getStandardObjectInspector(tblFnOI,
         ObjectInspectorCopyOption.WRITABLE);
+  }
+
+  public BoundaryCache getBoundaryCache() {
+    return boundaryCache;
   }
 
 }

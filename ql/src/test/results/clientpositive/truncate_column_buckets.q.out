@@ -19,14 +19,14 @@ POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:
 PREHOOK: query: SELECT cnt FROM (
 SELECT INPUT__FILE__NAME file_name, count(*) cnt FROM 
 test_tab GROUP BY INPUT__FILE__NAME
-ORDER BY file_name DESC)a
+)a ORDER BY file_name DESC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_tab
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT cnt FROM (
 SELECT INPUT__FILE__NAME file_name, count(*) cnt FROM 
 test_tab GROUP BY INPUT__FILE__NAME
-ORDER BY file_name DESC)a
+)a ORDER BY file_name DESC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_tab
 #### A masked pattern was here ####
@@ -43,14 +43,14 @@ POSTHOOK: Output: default@test_tab
 PREHOOK: query: SELECT cnt FROM (
 SELECT INPUT__FILE__NAME file_name, count(*) cnt FROM 
 test_tab GROUP BY INPUT__FILE__NAME
-ORDER BY file_name DESC)a
+)a ORDER BY file_name DESC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_tab
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT cnt FROM (
 SELECT INPUT__FILE__NAME file_name, count(*) cnt FROM 
 test_tab GROUP BY INPUT__FILE__NAME
-ORDER BY file_name DESC)a
+)a ORDER BY file_name DESC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_tab
 #### A masked pattern was here ####

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -25,9 +25,12 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.MemoryMonitorInfo;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -107,20 +110,26 @@ public class JoinDesc extends AbstractOperatorDesc {
   private transient boolean leftInputJoin;
   private transient List<String> streamAliases;
 
+  // represents the total memory that this Join operator will use if it is a MapJoin operator
+  protected transient long inMemoryDataSize;
+
+  // non-transient field, used at runtime to kill a task if it exceeded memory limits when running in LLAP
+  protected MemoryMonitorInfo memoryMonitorInfo;
+
   public JoinDesc() {
   }
 
   public JoinDesc(final Map<Byte, List<ExprNodeDesc>> exprs,
       List<String> outputColumnNames, final boolean noOuterJoin,
       final JoinCondDesc[] conds, final Map<Byte, List<ExprNodeDesc>> filters,
-      ExprNodeDesc[][] joinKeys) {
+      ExprNodeDesc[][] joinKeys, final MemoryMonitorInfo memoryMonitorInfo) {
     this.exprs = exprs;
     this.outputColumnNames = outputColumnNames;
     this.noOuterJoin = noOuterJoin;
     this.conds = conds;
     this.filters = filters;
     this.joinKeys = joinKeys;
-
+    this.memoryMonitorInfo = memoryMonitorInfo;
     resetOrder();
   }
 
@@ -147,6 +156,9 @@ public class JoinDesc extends AbstractOperatorDesc {
     ret.setHandleSkewJoin(handleSkewJoin);
     ret.setSkewKeyDefinition(getSkewKeyDefinition());
     ret.setTagOrder(getTagOrder().clone());
+    if (getMemoryMonitorInfo() != null) {
+      ret.setMemoryMonitorInfo(new MemoryMonitorInfo(getMemoryMonitorInfo()));
+    }
     if (getKeyTableDesc() != null) {
       ret.setKeyTableDesc((TableDesc) getKeyTableDesc().clone());
     }
@@ -197,6 +209,9 @@ public class JoinDesc extends AbstractOperatorDesc {
     this.filterMap = clone.filterMap;
     this.residualFilterExprs = clone.residualFilterExprs;
     this.statistics = clone.statistics;
+    this.inMemoryDataSize = clone.inMemoryDataSize;
+    this.memoryMonitorInfo = clone.memoryMonitorInfo;
+    this.colExprMap = clone.colExprMap;
   }
 
   public Map<Byte, List<ExprNodeDesc>> getExprs() {
@@ -215,14 +230,15 @@ public class JoinDesc extends AbstractOperatorDesc {
    * @return the keys in string form
    */
   @Explain(displayName = "keys")
-  public Map<Byte, String> getKeysString() {
+  @Signature
+  public Map<String, String> getKeysString() {
     if (joinKeys == null) {
       return null;
     }
 
-    Map<Byte, String> keyMap = new LinkedHashMap<Byte, String>();
+    Map<String, String> keyMap = new LinkedHashMap<String, String>();
     for (byte i = 0; i < joinKeys.length; i++) {
-      keyMap.put(i, PlanUtils.getExprListString(Arrays.asList(joinKeys[i])));
+      keyMap.put(String.valueOf(i), PlanUtils.getExprListString(Arrays.asList(joinKeys[i])));
     }
     return keyMap;
   }
@@ -252,12 +268,13 @@ public class JoinDesc extends AbstractOperatorDesc {
    * @return Map from alias to filters on the alias.
    */
   @Explain(displayName = "filter predicates")
-  public Map<Byte, String> getFiltersStringMap() {
+  @Signature
+  public Map<String, String> getFiltersStringMap() {
     if (getFilters() == null || getFilters().size() == 0) {
       return null;
     }
 
-    LinkedHashMap<Byte, String> ret = new LinkedHashMap<Byte, String>();
+    LinkedHashMap<String, String> ret = new LinkedHashMap<>();
     boolean filtersPresent = false;
 
     for (Map.Entry<Byte, List<ExprNodeDesc>> ent : getFilters().entrySet()) {
@@ -274,11 +291,11 @@ public class JoinDesc extends AbstractOperatorDesc {
 
           first = false;
           sb.append("{");
-          sb.append(expr.getExprString());
+          sb.append(expr == null ? "NULL" : expr.getExprString());
           sb.append("}");
         }
       }
-      ret.put(ent.getKey(), sb.toString());
+      ret.put(String.valueOf(ent.getKey()), sb.toString());
     }
 
     if (filtersPresent) {
@@ -328,6 +345,7 @@ public class JoinDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "outputColumnNames")
+  @Signature
   public List<String> getOutputColumnNames() {
     return outputColumnNames;
   }
@@ -351,6 +369,7 @@ public class JoinDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "condition map", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Signature
   public List<JoinCondDesc> getCondsList() {
     if (conds == null) {
       return null;
@@ -362,6 +381,21 @@ public class JoinDesc extends AbstractOperatorDesc {
     }
 
     return l;
+  }
+
+  @Override
+  @Explain(displayName = "columnExprMap", jsonOnly = true)
+  public Map<String, String> getColumnExprMapForExplain() {
+    if(this.reversedExprs == null) {
+      return super.getColumnExprMapForExplain();
+    }
+    Map<String, String> explainColMap = new HashMap<>();
+    for(String col:this.colExprMap.keySet()){
+      String taggedCol = this.reversedExprs.get(col) + ":"
+          + this.colExprMap.get(col).getExprString();
+      explainColMap.put(col, taggedCol);
+    }
+    return explainColMap;
   }
 
   public ExprNodeDesc [][] getJoinKeys() {
@@ -396,6 +430,7 @@ public class JoinDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "handleSkewJoin", displayOnlyOnTrue = true)
+  @Signature
   public boolean getHandleSkewJoin() {
     return handleSkewJoin;
   }
@@ -495,6 +530,7 @@ public class JoinDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "nullSafes")
+  @Signature
   public String getNullSafeString() {
     if (nullsafes == null) {
       return null;
@@ -520,10 +556,10 @@ public class JoinDesc extends AbstractOperatorDesc {
   }
 
   protected Map<Integer, String> toCompactString(int[][] filterMap) {
+    filterMap = compactFilter(filterMap);
     if (filterMap == null) {
       return null;
     }
-    filterMap = compactFilter(filterMap);
     Map<Integer, String> result = new LinkedHashMap<Integer, String>();
     for (int i = 0 ; i < filterMap.length; i++) {
       if (filterMap[i] == null) {
@@ -654,6 +690,7 @@ public class JoinDesc extends AbstractOperatorDesc {
     aliasToOpInfo = joinDesc.aliasToOpInfo;
     leftInputJoin = joinDesc.leftInputJoin;
     streamAliases = joinDesc.streamAliases;
+    joinKeys = joinDesc.joinKeys;
   }
 
   public void setQBJoinTreeProps(QBJoinTree joinTree) {
@@ -680,6 +717,42 @@ public class JoinDesc extends AbstractOperatorDesc {
     aliasToOpInfo = new HashMap<String, Operator<? extends OperatorDesc>>(joinDesc.aliasToOpInfo);
     leftInputJoin = joinDesc.leftInputJoin;
     streamAliases = joinDesc.streamAliases == null ? null : new ArrayList<String>(joinDesc.streamAliases);
+    if (joinDesc.joinKeys != null) {
+      joinKeys = new ExprNodeDesc[joinDesc.joinKeys.length][];
+      for(int i = 0; i < joinDesc.joinKeys.length; i++) {
+        joinKeys[i] = joinDesc.joinKeys[i].clone();
+      }
+    }
+  }
+
+  public MemoryMonitorInfo getMemoryMonitorInfo() {
+    return memoryMonitorInfo;
+  }
+
+  public void setMemoryMonitorInfo(final MemoryMonitorInfo memoryMonitorInfo) {
+    this.memoryMonitorInfo = memoryMonitorInfo;
+  }
+
+  public long getInMemoryDataSize() {
+    return inMemoryDataSize;
+  }
+
+  public void setInMemoryDataSize(final long inMemoryDataSize) {
+    this.inMemoryDataSize = inMemoryDataSize;
+  }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (getClass().getName().equals(other.getClass().getName())) {
+      JoinDesc otherDesc = (JoinDesc) other;
+      return Objects.equals(getKeysString(), otherDesc.getKeysString()) &&
+          Objects.equals(getFiltersStringMap(), otherDesc.getFiltersStringMap()) &&
+          Objects.equals(getOutputColumnNames(), otherDesc.getOutputColumnNames()) &&
+          Objects.equals(getCondsList(), otherDesc.getCondsList()) &&
+          getHandleSkewJoin() == otherDesc.getHandleSkewJoin() &&
+          Objects.equals(getNullSafeString(), otherDesc.getNullSafeString());
+    }
+    return false;
   }
 
 }

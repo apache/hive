@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,10 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * This expression evaluates to true if the given input columns is not null.
@@ -28,21 +31,23 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  */
 public class IsNotNull extends VectorExpression {
   private static final long serialVersionUID = 1L;
-  private int colNum;
-  private int outputColumn;
 
-  public IsNotNull(int colNum, int outputColumn) {
-    this();
+  private final int colNum;
+
+  public IsNotNull(int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
-    this.outputColumn = outputColumn;
   }
 
   public IsNotNull() {
     super();
+
+    // Dummy final assignments.
+    colNum = -1;
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
@@ -50,65 +55,53 @@ public class IsNotNull extends VectorExpression {
 
     ColumnVector inputColVector = batch.cols[colNum];
     int[] sel = batch.selected;
-    boolean[] nullPos = inputColVector.isNull;
+    boolean[] inputIsNull = inputColVector.isNull;
     int n = batch.size;
-    long[] outputVector = ((LongColumnVector) batch.cols[outputColumn]).vector;
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
+    long[] outputVector = outputColVector.vector;
+    boolean[] outputIsNull = outputColVector.isNull;
 
     if (n <= 0) {
       // Nothing to do
       return;
     }
 
-    // output never has nulls for this operator
-    batch.cols[outputColumn].noNulls = true;
-    if (inputColVector.noNulls) {
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
+
+   if (inputColVector.noNulls) {
+      outputColVector.isRepeating = true;
+      outputIsNull[0] = false;
       outputVector[0] = 1;
-      batch.cols[outputColumn].isRepeating = true;
     } else if (inputColVector.isRepeating) {
-      // All must be selected otherwise size would be zero
-      // Selection property will not change.
-      outputVector[0] = nullPos[0] ? 0 : 1;
-      batch.cols[outputColumn].isRepeating = true;
+      outputColVector.isRepeating = true;
+      outputIsNull[0] = false;
+      outputVector[0] = inputIsNull[0] ? 0 : 1;
     } else {
-      batch.cols[outputColumn].isRepeating = false;
+
+      /*
+       * Since we have a result for all rows, we don't need to do conditional NULL maintenance or
+       * turn off noNulls..
+       */
+
       if (batch.selectedInUse) {
         for (int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = nullPos[i] ? 0 : 1;
+          outputIsNull[i] = false;
+          outputVector[i] = inputIsNull[i] ? 0 : 1;
         }
       } else {
+        Arrays.fill(outputIsNull, 0, n, false);
         for (int i = 0; i != n; i++) {
-          outputVector[i] = nullPos[i] ? 0 : 1;
+          outputVector[i] = inputIsNull[i] ? 0 : 1;
         }
       }
     }
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum;
+    return getColumnParamString(0, colNum);
   }
 
   @Override

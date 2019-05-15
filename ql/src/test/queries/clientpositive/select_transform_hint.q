@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.entity.capture.transform=true;
 
 EXPLAIN

@@ -1,43 +1,43 @@
-PREHOOK: query: create table orc_staging (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp)
+PREHOOK: query: create table orc_staging_n0 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_staging
-POSTHOOK: query: create table orc_staging (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp)
+PREHOOK: Output: default@orc_staging_n0
+POSTHOOK: query: create table orc_staging_n0 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_staging
-PREHOOK: query: create table orc_test (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp)
+POSTHOOK: Output: default@orc_staging_n0
+PREHOOK: query: create table orc_test_n1 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_test
-POSTHOOK: query: create table orc_test (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp)
+PREHOOK: Output: default@orc_test_n1
+POSTHOOK: query: create table orc_test_n1 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_test
-PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_staging
+POSTHOOK: Output: default@orc_test_n1
+PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_staging_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@orc_staging
-POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_staging
+PREHOOK: Output: default@orc_staging_n0
+POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_staging_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@orc_staging
+POSTHOOK: Output: default@orc_staging_n0
 Found 1 items
 #### A masked pattern was here ####
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@orc_test
+PREHOOK: Output: default@orc_test_n1
 #### A masked pattern was here ####
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@orc_test
-PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_test
+POSTHOOK: Output: default@orc_test_n1
+PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_test_n1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@orc_test
-POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_test
+PREHOOK: Output: default@orc_test_n1
+POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_test_n1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@orc_test
+POSTHOOK: Output: default@orc_test_n1
 Found 2 items
 #### A masked pattern was here ####

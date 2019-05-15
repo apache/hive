@@ -25,12 +25,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sorted_mod_4
 POSTHOOK: Output: default@sorted_mod_4
 PREHOOK: query: ANALYZE TABLE sorted_mod_4 COMPUTE STATISTICS FOR COLUMNS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@sorted_mod_4
+PREHOOK: Output: default@sorted_mod_4
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE sorted_mod_4 COMPUTE STATISTICS FOR COLUMNS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@sorted_mod_4
+POSTHOOK: Output: default@sorted_mod_4
 #### A masked pattern was here ####
 PREHOOK: query: create table small_table stored
 as orc as select ctinyint, cbigint from alltypesorc limit 100
@@ -55,12 +57,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_table
 POSTHOOK: Output: default@small_table
 PREHOOK: query: ANALYZE TABLE small_table COMPUTE STATISTICS FOR COLUMNS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@small_table
+PREHOOK: Output: default@small_table
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE small_table COMPUTE STATISTICS FOR COLUMNS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@small_table
+POSTHOOK: Output: default@small_table
 #### A masked pattern was here ####
 PREHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.*, st.*
@@ -69,6 +73,9 @@ left outer join small_table st
 on s.ctinyint = st.ctinyint
 ) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@small_table
+PREHOOK: Input: default@sorted_mod_4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.*, st.*
 from sorted_mod_4 s
@@ -76,6 +83,8 @@ left outer join small_table st
 on s.ctinyint = st.ctinyint
 ) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_table
+POSTHOOK: Input: default@sorted_mod_4
 #### A masked pattern was here ####
 PREHOOK: query: select count(*) from (select s.*, st.*
 from sorted_mod_4 s
@@ -103,6 +112,9 @@ left outer join small_table sm
 on s.ctinyint = sm.ctinyint and s.cmodint = 2
 ) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@small_table
+PREHOOK: Input: default@sorted_mod_4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.ctinyint, s.cmodint, sm.cbigint 
 from sorted_mod_4 s
@@ -110,6 +122,8 @@ left outer join small_table sm
 on s.ctinyint = sm.ctinyint and s.cmodint = 2
 ) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_table
+POSTHOOK: Input: default@sorted_mod_4
 #### A masked pattern was here ####
 PREHOOK: query: select count(*) from (select s.ctinyint, s.cmodint, sm.cbigint 
 from sorted_mod_4 s
@@ -137,6 +151,9 @@ left outer join small_table sm
 on s.ctinyint = sm.ctinyint and pmod(s.ctinyint, 4) = s.cmodint
 ) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@small_table
+PREHOOK: Input: default@sorted_mod_4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.ctinyint, s.cmodint, sm.cbigint 
 from sorted_mod_4 s
@@ -144,6 +161,8 @@ left outer join small_table sm
 on s.ctinyint = sm.ctinyint and pmod(s.ctinyint, 4) = s.cmodint
 ) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_table
+POSTHOOK: Input: default@sorted_mod_4
 #### A masked pattern was here ####
 PREHOOK: query: select count(*) from (select s.ctinyint, s.cmodint, sm.cbigint 
 from sorted_mod_4 s
@@ -171,6 +190,9 @@ left outer join small_table sm
 on s.ctinyint = sm.ctinyint and s.ctinyint < 100
 ) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@small_table
+PREHOOK: Input: default@sorted_mod_4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.ctinyint, s.cmodint, sm.cbigint 
 from sorted_mod_4 s
@@ -178,6 +200,8 @@ left outer join small_table sm
 on s.ctinyint = sm.ctinyint and s.ctinyint < 100
 ) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_table
+POSTHOOK: Input: default@sorted_mod_4
 #### A masked pattern was here ####
 PREHOOK: query: select count(*) from (select s.ctinyint, s.cmodint, sm.cbigint 
 from sorted_mod_4 s
@@ -207,6 +231,9 @@ left outer join sorted_mod_4 s2
   on s2.ctinyint = s.ctinyint
 ) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@small_table
+PREHOOK: Input: default@sorted_mod_4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.*, sm.*, s2.* 
 from sorted_mod_4 s
@@ -216,6 +243,8 @@ left outer join sorted_mod_4 s2
   on s2.ctinyint = s.ctinyint
 ) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_table
+POSTHOOK: Input: default@sorted_mod_4
 #### A masked pattern was here ####
 PREHOOK: query: select count(*) from (select s.*, sm.*, s2.* 
 from sorted_mod_4 s
@@ -265,12 +294,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mod_8_mod_4
 POSTHOOK: Output: default@mod_8_mod_4
 PREHOOK: query: ANALYZE TABLE mod_8_mod_4 COMPUTE STATISTICS FOR COLUMNS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@mod_8_mod_4
+PREHOOK: Output: default@mod_8_mod_4
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE mod_8_mod_4 COMPUTE STATISTICS FOR COLUMNS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@mod_8_mod_4
+POSTHOOK: Output: default@mod_8_mod_4
 #### A masked pattern was here ####
 PREHOOK: query: create table small_table2 stored
 as orc as select pmod(ctinyint, 16) as cmodtinyint, cbigint from alltypesorc limit 100
@@ -295,12 +326,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_table2
 POSTHOOK: Output: default@small_table2
 PREHOOK: query: ANALYZE TABLE small_table2 COMPUTE STATISTICS FOR COLUMNS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@small_table2
+PREHOOK: Output: default@small_table2
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE small_table2 COMPUTE STATISTICS FOR COLUMNS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@small_table2
+POSTHOOK: Output: default@small_table2
 #### A masked pattern was here ####
 PREHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.*, st.*
@@ -309,6 +342,9 @@ left outer join small_table2 st
 on s.cmodtinyint = st.cmodtinyint
 ) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mod_8_mod_4
+PREHOOK: Input: default@small_table2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.*, st.*
 from mod_8_mod_4 s
@@ -316,6 +352,8 @@ left outer join small_table2 st
 on s.cmodtinyint = st.cmodtinyint
 ) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mod_8_mod_4
+POSTHOOK: Input: default@small_table2
 #### A masked pattern was here ####
 PREHOOK: query: select count(*) from (select s.*, st.*
 from mod_8_mod_4 s
@@ -343,6 +381,9 @@ left outer join small_table2 sm
 on s.cmodtinyint = sm.cmodtinyint and s.cmodint = 2
 ) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mod_8_mod_4
+PREHOOK: Input: default@small_table2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.cmodtinyint, s.cmodint, sm.cbigint 
 from mod_8_mod_4 s
@@ -350,6 +391,8 @@ left outer join small_table2 sm
 on s.cmodtinyint = sm.cmodtinyint and s.cmodint = 2
 ) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mod_8_mod_4
+POSTHOOK: Input: default@small_table2
 #### A masked pattern was here ####
 PREHOOK: query: select count(*) from (select s.cmodtinyint, s.cmodint, sm.cbigint 
 from mod_8_mod_4 s
@@ -377,6 +420,9 @@ left outer join small_table2 sm
 on s.cmodtinyint = sm.cmodtinyint and pmod(s.cmodtinyint, 4) = s.cmodint
 ) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mod_8_mod_4
+PREHOOK: Input: default@small_table2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.cmodtinyint, s.cmodint, sm.cbigint 
 from mod_8_mod_4 s
@@ -384,6 +430,8 @@ left outer join small_table2 sm
 on s.cmodtinyint = sm.cmodtinyint and pmod(s.cmodtinyint, 4) = s.cmodint
 ) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mod_8_mod_4
+POSTHOOK: Input: default@small_table2
 #### A masked pattern was here ####
 PREHOOK: query: select count(*) from (select s.cmodtinyint, s.cmodint, sm.cbigint 
 from mod_8_mod_4 s
@@ -411,6 +459,9 @@ left outer join small_table2 sm
 on s.cmodtinyint = sm.cmodtinyint and s.cmodtinyint < 3
 ) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mod_8_mod_4
+PREHOOK: Input: default@small_table2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.cmodtinyint, s.cmodint, sm.cbigint 
 from mod_8_mod_4 s
@@ -418,6 +469,8 @@ left outer join small_table2 sm
 on s.cmodtinyint = sm.cmodtinyint and s.cmodtinyint < 3
 ) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mod_8_mod_4
+POSTHOOK: Input: default@small_table2
 #### A masked pattern was here ####
 PREHOOK: query: select count(*) from (select s.cmodtinyint, s.cmodint, sm.cbigint 
 from mod_8_mod_4 s
@@ -447,6 +500,9 @@ left outer join mod_8_mod_4 s2
   on s2.cmodtinyint = s.cmodtinyint
 ) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mod_8_mod_4
+PREHOOK: Input: default@small_table2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.*, sm.*, s2.* 
 from mod_8_mod_4 s
@@ -456,6 +512,8 @@ left outer join mod_8_mod_4 s2
   on s2.cmodtinyint = s.cmodtinyint
 ) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mod_8_mod_4
+POSTHOOK: Input: default@small_table2
 #### A masked pattern was here ####
 PREHOOK: query: select count(*) from (select s.*, sm.*, s2.* 
 from mod_8_mod_4 s

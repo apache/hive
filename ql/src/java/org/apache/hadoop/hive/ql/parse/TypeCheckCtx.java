@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,9 +19,10 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.calcite.rel.RelNode;
+import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+
 import java.util.Map;
 
 /**
@@ -207,7 +208,7 @@ public class TypeCheckCtx implements NodeProcessorCtx {
     if (LOG.isDebugEnabled()) {
       // Logger the callstack from which the error has been set.
       LOG.debug("Setting error: [" + error + "] from "
-          + ((errorSrcNode == null) ? "null" : errorSrcNode.toStringTree()), new Exception());
+          + ((errorSrcNode == null) ? "null" : errorSrcNode.toStringTree())/*, new Exception()*/);
     }
     this.error = error;
     this.errorSrcNode = errorSrcNode;
@@ -261,6 +262,10 @@ public class TypeCheckCtx implements NodeProcessorCtx {
   }
 
   public boolean isFoldExpr() {
+    return foldExpr;
+  }
+
+  public boolean isCBOExecuted() {
     return foldExpr;
   }
 }

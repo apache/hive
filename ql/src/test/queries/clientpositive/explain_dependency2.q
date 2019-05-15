@@ -1,3 +1,5 @@
+--! qt:dataset:srcpart
+--! qt:dataset:src
 -- This test is used for testing EXPLAIN DEPENDENCY command
 
 -- select from a table which does not involve a map-reduce job

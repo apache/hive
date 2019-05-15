@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,30 +17,17 @@
  */
 package org.apache.hadoop.hive.ql.exec.vector.udf;
 
-import java.sql.Date;
-import java.sql.Timestamp;
-
-import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.vector.*;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
-import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.*;
-import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableBinaryObjectInspector;
-import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
  * A VectorUDFAdaptor is a vectorized expression for invoking a custom
@@ -50,14 +37,15 @@ public class VectorUDFAdaptor extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int outputColumn;
   private String resultType;
   private VectorUDFArgDesc[] argDescs;
   private ExprNodeGenericFuncDesc expr;
+  private boolean suppressEvaluateExceptions;
 
   private transient GenericUDF genericUDF;
   private transient GenericUDF.DeferredObject[] deferredChildren;
-  private transient ObjectInspector outputOI;
+  private transient TypeInfo outputTypeInfo;
+  private transient VectorAssignRow outputVectorAssignRow;
   private transient ObjectInspector[] childrenOIs;
   private transient VectorExpressionWriter[] writers;
 
@@ -67,15 +55,18 @@ public class VectorUDFAdaptor extends VectorExpression {
 
   public VectorUDFAdaptor (
       ExprNodeGenericFuncDesc expr,
-      int outputColumn,
+      int outputColumnNum,
       String resultType,
       VectorUDFArgDesc[] argDescs) throws HiveException {
 
-    this();
+    super(outputColumnNum);
     this.expr = expr;
-    this.outputColumn = outputColumn;
     this.resultType = resultType;
     this.argDescs = argDescs;
+  }
+
+  public void setSuppressEvaluateExceptions(boolean suppressEvaluateExceptions) {
+    this.suppressEvaluateExceptions = suppressEvaluateExceptions;
   }
 
   // Initialize transient fields. To be called after deserialization of other fields.
@@ -91,8 +82,9 @@ public class VectorUDFAdaptor extends VectorExpression {
     if (context != null) {
       context.setup(genericUDF);
     }
-    outputOI = VectorExpressionWriterFactory.genVectorExpressionWritable(expr)
-        .getObjectInspector();
+    outputTypeInfo = expr.getTypeInfo();
+    outputVectorAssignRow = new VectorAssignRow();
+    outputVectorAssignRow.init(outputTypeInfo, outputColumnNum);
 
     genericUDF.initialize(childrenOIs);
 
@@ -105,7 +97,7 @@ public class VectorUDFAdaptor extends VectorExpression {
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (genericUDF == null) {
       try {
@@ -121,7 +113,7 @@ public class VectorUDFAdaptor extends VectorExpression {
 
     int[] sel = batch.selected;
     int n = batch.size;
-    ColumnVector outV = batch.cols[outputColumn];
+    ColumnVector outV = batch.cols[outputColumnNum];
 
     // If the output column is of type string, initialize the buffer to receive data.
     if (outV instanceof BytesColumnVector) {
@@ -133,17 +125,19 @@ public class VectorUDFAdaptor extends VectorExpression {
       return;
     }
 
-    batch.cols[outputColumn].noNulls = true;
+    /*
+     * Do careful maintenance of the outputColVector.noNulls flag.
+     */
 
     /* If all input columns are repeating, just evaluate function
      * for row 0 in the batch and set output repeating.
      */
     if (allInputColsRepeating(batch)) {
       setResult(0, batch);
-      batch.cols[outputColumn].isRepeating = true;
+      batch.cols[outputColumnNum].isRepeating = true;
       return;
     } else {
-      batch.cols[outputColumn].isRepeating = false;
+      batch.cols[outputColumnNum].isRepeating = false;
     }
 
     if (batch.selectedInUse) {
@@ -183,7 +177,7 @@ public class VectorUDFAdaptor extends VectorExpression {
   /* Calculate the function result for row i of the batch and
    * set the output column vector entry i to the result.
    */
-  private void setResult(int i, VectorizedRowBatch b) {
+  private void setResult(int i, VectorizedRowBatch b) throws HiveException {
 
     // get arguments
     for (int j = 0; j < argDescs.length; j++) {
@@ -192,193 +186,24 @@ public class VectorUDFAdaptor extends VectorExpression {
 
     // call function
     Object result;
-    try {
+    if (!suppressEvaluateExceptions) {
       result = genericUDF.evaluate(deferredChildren);
-    } catch (HiveException e) {
-
-      /* For UDFs that expect primitive types (like int instead of Integer or IntWritable),
-       * this will catch the the exception that happens if they are passed a NULL value.
-       * Then the default NULL handling logic will apply, and the result will be NULL.
-       */
-      result = null;
-    }
-
-    // set output column vector entry
-    if (result == null) {
-      b.cols[outputColumn].noNulls = false;
-      b.cols[outputColumn].isNull[i] = true;
     } else {
-      b.cols[outputColumn].isNull[i] = false;
-      setOutputCol(b.cols[outputColumn], i, result);
+      try {
+        result = genericUDF.evaluate(deferredChildren);
+      } catch (HiveException e) {
+
+        /* For UDFs that expect primitive types (like int instead of Integer or IntWritable),
+         * this will catch the the exception that happens if they are passed a NULL value.
+         * Then the default NULL handling logic will apply, and the result will be NULL.
+         */
+        result = null;
+      }
     }
-  }
 
-  private void setOutputCol(ColumnVector colVec, int i, Object value) {
-
-    /* Depending on the output type, get the value, cast the result to the
-     * correct type if needed, and assign the result into the output vector.
-     */
-    if (outputOI instanceof WritableStringObjectInspector) {
-      BytesColumnVector bv = (BytesColumnVector) colVec;
-      Text t;
-      if (value instanceof String) {
-        t = new Text((String) value);
-      } else {
-        t = ((WritableStringObjectInspector) outputOI).getPrimitiveWritableObject(value);
-      }
-      bv.setVal(i, t.getBytes(), 0, t.getLength());
-    } else if (outputOI instanceof WritableHiveCharObjectInspector) {
-      WritableHiveCharObjectInspector writableHiveCharObjectOI = (WritableHiveCharObjectInspector) outputOI;
-      int maxLength = ((CharTypeInfo) writableHiveCharObjectOI.getTypeInfo()).getLength();
-      BytesColumnVector bv = (BytesColumnVector) colVec;
-
-      HiveCharWritable hiveCharWritable;
-      if (value instanceof HiveCharWritable) {
-        hiveCharWritable = ((HiveCharWritable) value);
-      } else {
-        hiveCharWritable = writableHiveCharObjectOI.getPrimitiveWritableObject(value);
-      }
-      Text t = hiveCharWritable.getTextValue();
-
-      // In vector mode, we stored CHAR as unpadded.
-      StringExpr.rightTrimAndTruncate(bv, i, t.getBytes(), 0, t.getLength(), maxLength);
-    } else if (outputOI instanceof WritableHiveVarcharObjectInspector) {
-      WritableHiveVarcharObjectInspector writableHiveVarcharObjectOI = (WritableHiveVarcharObjectInspector) outputOI;
-      int maxLength = ((VarcharTypeInfo) writableHiveVarcharObjectOI.getTypeInfo()).getLength();
-      BytesColumnVector bv = (BytesColumnVector) colVec;
-
-      HiveVarcharWritable hiveVarcharWritable;
-      if (value instanceof HiveVarcharWritable) {
-        hiveVarcharWritable = ((HiveVarcharWritable) value);
-      } else {
-        hiveVarcharWritable = writableHiveVarcharObjectOI.getPrimitiveWritableObject(value);
-      }
-      Text t = hiveVarcharWritable.getTextValue();
-
-      StringExpr.truncate(bv, i, t.getBytes(), 0, t.getLength(), maxLength);
-    } else if (outputOI instanceof WritableIntObjectInspector) {
-      LongColumnVector lv = (LongColumnVector) colVec;
-      if (value instanceof Integer) {
-        lv.vector[i] = (Integer) value;
-      } else {
-        lv.vector[i] = ((WritableIntObjectInspector) outputOI).get(value);
-      }
-    } else if (outputOI instanceof WritableLongObjectInspector) {
-      LongColumnVector lv = (LongColumnVector) colVec;
-      if (value instanceof Long) {
-        lv.vector[i] = (Long) value;
-      } else {
-        lv.vector[i] = ((WritableLongObjectInspector) outputOI).get(value);
-      }
-    } else if (outputOI instanceof WritableDoubleObjectInspector) {
-      DoubleColumnVector dv = (DoubleColumnVector) colVec;
-      if (value instanceof Double) {
-        dv.vector[i] = (Double) value;
-      } else {
-        dv.vector[i] = ((WritableDoubleObjectInspector) outputOI).get(value);
-      }
-    } else if (outputOI instanceof WritableFloatObjectInspector) {
-      DoubleColumnVector dv = (DoubleColumnVector) colVec;
-      if (value instanceof Float) {
-        dv.vector[i] = (Float) value;
-      } else {
-        dv.vector[i] = ((WritableFloatObjectInspector) outputOI).get(value);
-      }
-    } else if (outputOI instanceof WritableShortObjectInspector) {
-      LongColumnVector lv = (LongColumnVector) colVec;
-      if (value instanceof Short) {
-        lv.vector[i] = (Short) value;
-      } else {
-        lv.vector[i] = ((WritableShortObjectInspector) outputOI).get(value);
-      }
-    } else if (outputOI instanceof WritableByteObjectInspector) {
-      LongColumnVector lv = (LongColumnVector) colVec;
-      if (value instanceof Byte) {
-        lv.vector[i] = (Byte) value;
-      } else {
-        lv.vector[i] = ((WritableByteObjectInspector) outputOI).get(value);
-      }
-    } else if (outputOI instanceof WritableTimestampObjectInspector) {
-      TimestampColumnVector tv = (TimestampColumnVector) colVec;
-      Timestamp ts;
-      if (value instanceof Timestamp) {
-        ts = (Timestamp) value;
-      } else {
-        ts = ((WritableTimestampObjectInspector) outputOI).getPrimitiveJavaObject(value);
-      }
-      tv.set(i, ts);
-    } else if (outputOI instanceof WritableDateObjectInspector) {
-      LongColumnVector lv = (LongColumnVector) colVec;
-      Date ts;
-      if (value instanceof Date) {
-        ts = (Date) value;
-      } else {
-        ts = ((WritableDateObjectInspector) outputOI).getPrimitiveJavaObject(value);
-      }
-      long l = DateWritable.dateToDays(ts);
-      lv.vector[i] = l;
-    } else if (outputOI instanceof WritableBooleanObjectInspector) {
-      LongColumnVector lv = (LongColumnVector) colVec;
-      if (value instanceof Boolean) {
-        lv.vector[i] = (Boolean) value ? 1 : 0;
-      } else {
-        lv.vector[i] = ((WritableBooleanObjectInspector) outputOI).get(value) ? 1 : 0;
-      }
-    } else if (outputOI instanceof WritableHiveDecimalObjectInspector) {
-      DecimalColumnVector dcv = (DecimalColumnVector) colVec;
-      if (value instanceof HiveDecimal) {
-        dcv.set(i, (HiveDecimal) value);
-      } else {
-        HiveDecimal hd = ((WritableHiveDecimalObjectInspector) outputOI).getPrimitiveJavaObject(value);
-        dcv.set(i, hd);
-      }
-    } else if (outputOI instanceof WritableBinaryObjectInspector) {
-      BytesWritable bw = (BytesWritable) value;
-      BytesColumnVector bv = (BytesColumnVector) colVec;
-      bv.setVal(i, bw.getBytes(), 0, bw.getLength());
-    } else {
-      throw new RuntimeException("Unhandled object type " + outputOI.getTypeName() +
-          " inspector class " + outputOI.getClass().getName() +
-          " value class " + value.getClass().getName());
-    }
-  }
-
-  @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return resultType;
-  }
-
-  public String getResultType() {
-    return resultType;
-  }
-
-  public void setResultType(String resultType) {
-    this.resultType = resultType;
-  }
-
-  public VectorUDFArgDesc[] getArgDescs() {
-    return argDescs;
-  }
-
-  public void setArgDescs(VectorUDFArgDesc[] argDescs) {
-    this.argDescs = argDescs;
-  }
-
-  public ExprNodeGenericFuncDesc getExpr() {
-    return expr;
-  }
-
-  public void setExpr(ExprNodeGenericFuncDesc expr) {
-    this.expr = expr;
+    // Set output column vector entry.  Since we have one output column, the logical index = 0.
+    outputVectorAssignRow.assignRowColumn(
+        b, /* batchIndex */ i, /* logicalColumnIndex */ 0, result);
   }
 
   @Override
@@ -389,5 +214,13 @@ public class VectorUDFAdaptor extends VectorExpression {
   @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     return (new VectorExpressionDescriptor.Builder()).build();
+  }
+
+  public VectorUDFArgDesc[] getArgDescs() {
+    return argDescs;
+  }
+
+  public void setArgDescs(final VectorUDFArgDesc[] argDescs) {
+    this.argDescs = argDescs;
   }
 }

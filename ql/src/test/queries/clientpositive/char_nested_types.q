@@ -1,3 +1,4 @@
+--! qt:dataset:src
 drop table char_nested_1;
 drop table char_nested_array;
 drop table char_nested_map;

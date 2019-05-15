@@ -14,16 +14,22 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1
 PREHOOK: query: INSERT INTO TABLE table1 VALUES (1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@table1
 POSTHOOK: query: INSERT INTO TABLE table1 VALUES (1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@table1
+POSTHOOK: Lineage: table1.id SCRIPT []
 PREHOOK: query: INSERT INTO TABLE table1 VALUES (2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@table1
 POSTHOOK: query: INSERT INTO TABLE table1 VALUES (2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@table1
+POSTHOOK: Lineage: table1.id SCRIPT []
 PREHOOK: query: SELECT * FROM table1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
@@ -36,8 +42,12 @@ POSTHOOK: Input: default@table1
 2
 PREHOOK: query: EXPLAIN EXTENDED INSERT INTO TABLE table1 VALUES (1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table1
 POSTHOOK: query: EXPLAIN EXTENDED INSERT INTO TABLE table1 VALUES (1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -53,82 +63,142 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: values__tmp__table__3
-            Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+            alias: _dummy_table
+            Row Limit Per Split: 1
+            Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              expressions: UDFToInteger(tmp_values_col1) (type: int)
+              expressions: array(const struct(1)) (type: array<struct<col1:int>>)
               outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                GlobalTableId: 1
-                directory: ### BLOBSTORE_STAGING_PATH ###
-                NumFilesPerFileSink: 1
-                Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
-                Stats Publishing Key Prefix: ### BLOBSTORE_STAGING_PATH ###
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      bucket_count -1
-                      column.name.delimiter ,
-                      columns id
-                      columns.comments 
-                      columns.types int
+              Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+              UDTF Operator
+                Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                function name: inline
+                Select Operator
+                  expressions: col1 (type: int)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 1
+                    directory: ### BLOBSTORE_STAGING_PATH ###
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Stats Publishing Key Prefix: ### BLOBSTORE_STAGING_PATH ###
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        properties:
+                          COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"id":"true"}}
+                          bucket_count -1
+                          bucketing_version 2
+                          column.name.delimiter ,
+                          columns id
+                          columns.comments 
+                          columns.types int
 #### A masked pattern was here ####
-                      location ### test.blobstore.path ###/table1
-                      name default.table1
-                      numFiles 2
-                      serialization.ddl struct table1 { i32 id}
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 4
+                          location ### test.blobstore.path ###/table1
+                          name default.table1
+                          numFiles 2
+                          numRows 2
+                          rawDataSize 2
+                          serialization.ddl struct table1 { i32 id}
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          totalSize 4
 #### A masked pattern was here ####
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.table1
-                TotalFiles: 1
-                GatherStats: true
-                MultiFileSpray: false
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.table1
+                    TotalFiles: 1
+                    GatherStats: true
+                    MultiFileSpray: false
+                  Select Operator
+                    expressions: _col0 (type: int)
+                    outputColumnNames: id
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: compute_stats(id, 'hll')
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: -1
+                        value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
+                        auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: Values__Tmp__Table__3
-            input format: org.apache.hadoop.mapred.TextInputFormat
+            base file name: dummy_path
+            input format: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
-              columns tmp_values_col1
+              columns 
               columns.comments 
-              columns.types string
+              columns.types 
 #### A masked pattern was here ####
-              name default.values__tmp__table__3
-              serialization.ddl struct values__tmp__table__3 { string tmp_values_col1}
+              name _dummy_database._dummy_table
+              serialization.ddl struct _dummy_table { }
               serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
+            serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
-              input format: org.apache.hadoop.mapred.TextInputFormat
+              input format: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
-                columns tmp_values_col1
+                columns 
                 columns.comments 
-                columns.types string
+                columns.types 
 #### A masked pattern was here ####
-                name default.values__tmp__table__3
-                serialization.ddl struct values__tmp__table__3 { string tmp_values_col1}
+                name _dummy_database._dummy_table
+                serialization.ddl struct _dummy_table { }
                 serialization.format 1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.values__tmp__table__3
-            name: default.values__tmp__table__3
+                serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
+              serde: org.apache.hadoop.hive.serde2.NullStructSerDe
+              name: _dummy_database._dummy_table
+            name: _dummy_database._dummy_table
       Truncated Path -> Alias:
 #### A masked pattern was here ####
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+#### A masked pattern was here ####
+            NumFilesPerFileSink: 1
+            Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                properties:
+                  columns _col0
+                  columns.types struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>
+                  escape.delim \
+                  hive.serialization.extend.additional.nesting.levels true
+                  serialization.escape.crlf true
+                  serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-7
     Conditional Operator
@@ -142,7 +212,9 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"id":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns id
                 columns.comments 
@@ -151,6 +223,8 @@ STAGE PLANS:
                 location ### test.blobstore.path ###/table1
                 name default.table1
                 numFiles 2
+                numRows 2
+                rawDataSize 2
                 serialization.ddl struct table1 { i32 id}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -160,8 +234,14 @@ STAGE PLANS:
               name: default.table1
 
   Stage: Stage-2
-    Stats-Aggr Operator
-      Stats Aggregation Key Prefix: ### BLOBSTORE_STAGING_PATH ###
+    Stats Work
+      Basic Stats Work:
+          Stats Aggregation Key Prefix: ### BLOBSTORE_STAGING_PATH ###
+      Column Stats Desc:
+          Columns: id
+          Column Types: int
+          Table: default.table1
+          Is Table Level Stats: true
 
   Stage: Stage-3
     Map Reduce
@@ -177,7 +257,9 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"id":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns id
                     columns.comments 
@@ -186,6 +268,8 @@ STAGE PLANS:
                     location ### test.blobstore.path ###/table1
                     name default.table1
                     numFiles 2
+                    numRows 2
+                    rawDataSize 2
                     serialization.ddl struct table1 { i32 id}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -205,7 +289,9 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"id":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns id
               columns.comments 
@@ -214,6 +300,8 @@ STAGE PLANS:
               location ### test.blobstore.path ###/table1
               name default.table1
               numFiles 2
+              numRows 2
+              rawDataSize 2
               serialization.ddl struct table1 { i32 id}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -224,7 +312,9 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"id":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns id
                 columns.comments 
@@ -233,6 +323,8 @@ STAGE PLANS:
                 location ### test.blobstore.path ###/table1
                 name default.table1
                 numFiles 2
+                numRows 2
+                rawDataSize 2
                 serialization.ddl struct table1 { i32 id}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -253,7 +345,9 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"id":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns id
                 columns.comments 
@@ -262,6 +356,8 @@ STAGE PLANS:
                 location ### test.blobstore.path ###/table1
                 name default.table1
                 numFiles 2
+                numRows 2
+                rawDataSize 2
                 serialization.ddl struct table1 { i32 id}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -284,7 +380,9 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"id":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns id
                     columns.comments 
@@ -293,6 +391,8 @@ STAGE PLANS:
                     location ### test.blobstore.path ###/table1
                     name default.table1
                     numFiles 2
+                    numRows 2
+                    rawDataSize 2
                     serialization.ddl struct table1 { i32 id}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -312,7 +412,9 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"id":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns id
               columns.comments 
@@ -321,6 +423,8 @@ STAGE PLANS:
               location ### test.blobstore.path ###/table1
               name default.table1
               numFiles 2
+              numRows 2
+              rawDataSize 2
               serialization.ddl struct table1 { i32 id}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -331,7 +435,9 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"id":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns id
                 columns.comments 
@@ -340,6 +446,8 @@ STAGE PLANS:
                 location ### test.blobstore.path ###/table1
                 name default.table1
                 numFiles 2
+                numRows 2
+                rawDataSize 2
                 serialization.ddl struct table1 { i32 id}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe

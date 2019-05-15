@@ -1,0 +1,8 @@
+Ln:1 CREATE PROCEDURE test1
+EXEC PROCEDURE test1
+Ln:3 DECLARE ret string = 'Initial value'
+Ln:5 PRINT
+Initial value
+Ln:6 SET ret = 'VALUE IS SET'
+Ln:7 PRINT
+VALUE IS SET

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -25,13 +25,16 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
+import org.apache.hadoop.hive.ql.history.HiveHistory;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.lineage.LineageCtx.Index;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
@@ -39,6 +42,8 @@ import org.apache.hadoop.yarn.api.records.ApplicationId;
  * Hook Context keeps all the necessary information for all the hooks.
  * New implemented hook can get the query plan, job conf and the list of all completed tasks from this hook context
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class HookContext {
 
   static public enum HookType {
@@ -68,11 +73,12 @@ public class HookContext {
   private final String threadId;
   private final boolean isHiveServerQuery;
   private final PerfLogger perfLogger;
+  private final QueryInfo queryInfo;
 
   public HookContext(QueryPlan queryPlan, QueryState queryState,
       Map<String, ContentSummary> inputPathToContentSummary, String userName, String ipAddress,
       String hiveInstanceAddress, String operationId, String sessionId, String threadId,
-      boolean isHiveServerQuery, PerfLogger perfLogger) throws Exception {
+      boolean isHiveServerQuery, PerfLogger perfLogger, QueryInfo queryInfo) throws Exception {
     this.queryPlan = queryPlan;
     this.queryState = queryState;
     this.conf = queryState.getConf();
@@ -81,12 +87,8 @@ public class HookContext {
     inputs = queryPlan.getInputs();
     outputs = queryPlan.getOutputs();
     ugi = Utils.getUGI();
-    linfo= null;
-    depMap = null;
-    if(SessionState.get() != null){
-      linfo = SessionState.get().getLineageState().getLineageInfo();
-      depMap = SessionState.get().getLineageState().getIndex();
-    }
+    linfo = queryState.getLineageState().getLineageInfo();
+    depMap = queryState.getLineageState().getIndex();
     this.userName = userName;
     this.ipAddress = ipAddress;
     this.hiveInstanceAddress = hiveInstanceAddress;
@@ -95,6 +97,7 @@ public class HookContext {
     this.threadId = threadId;
     this.isHiveServerQuery = isHiveServerQuery;
     this.perfLogger = perfLogger;
+    this.queryInfo = queryInfo;
   }
 
   public QueryPlan getQueryPlan() {
@@ -231,5 +234,9 @@ public class HookContext {
 
   public PerfLogger getPerfLogger() {
     return perfLogger;
+  }
+
+  public QueryInfo getQueryInfo() {
+    return queryInfo;
   }
 }

@@ -1,33 +1,33 @@
-PREHOOK: query: CREATE TABLE test_orc (key STRING)
+PREHOOK: query: CREATE TABLE test_orc_n3 (key STRING)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_orc
-POSTHOOK: query: CREATE TABLE test_orc (key STRING)
+PREHOOK: Output: default@test_orc_n3
+POSTHOOK: query: CREATE TABLE test_orc_n3 (key STRING)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_orc
-PREHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT '' FROM src tablesample (10 rows)
+POSTHOOK: Output: default@test_orc_n3
+PREHOOK: query: INSERT OVERWRITE TABLE test_orc_n3 SELECT '' FROM src tablesample (10 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_orc
-POSTHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT '' FROM src tablesample (10 rows)
+PREHOOK: Output: default@test_orc_n3
+POSTHOOK: query: INSERT OVERWRITE TABLE test_orc_n3 SELECT '' FROM src tablesample (10 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_orc
-POSTHOOK: Lineage: test_orc.key SIMPLE []
-PREHOOK: query: SELECT * FROM test_orc
+POSTHOOK: Output: default@test_orc_n3
+POSTHOOK: Lineage: test_orc_n3.key SIMPLE []
+PREHOOK: query: SELECT * FROM test_orc_n3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_orc
+PREHOOK: Input: default@test_orc_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM test_orc
+POSTHOOK: query: SELECT * FROM test_orc_n3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_orc
+POSTHOOK: Input: default@test_orc_n3
 #### A masked pattern was here ####
 
 
@@ -39,22 +39,22 @@ POSTHOOK: Input: default@test_orc
 
 
 
-PREHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT IF (key % 3 = 0, key, '') FROM src tablesample (10 rows)
+PREHOOK: query: INSERT OVERWRITE TABLE test_orc_n3 SELECT IF (key % 3 = 0, key, '') FROM src tablesample (10 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_orc
-POSTHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT IF (key % 3 = 0, key, '') FROM src tablesample (10 rows)
+PREHOOK: Output: default@test_orc_n3
+POSTHOOK: query: INSERT OVERWRITE TABLE test_orc_n3 SELECT IF (key % 3 = 0, key, '') FROM src tablesample (10 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_orc
-POSTHOOK: Lineage: test_orc.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: SELECT * FROM test_orc
+POSTHOOK: Output: default@test_orc_n3
+POSTHOOK: Lineage: test_orc_n3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: SELECT * FROM test_orc_n3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_orc
+PREHOOK: Input: default@test_orc_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM test_orc
+POSTHOOK: query: SELECT * FROM test_orc_n3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_orc
+POSTHOOK: Input: default@test_orc_n3
 #### A masked pattern was here ####
 
 

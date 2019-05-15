@@ -1,0 +1,158 @@
+PREHOOK: query: DROP TABLE empty
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE empty
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE blobstore_dynamic_partitioning
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE blobstore_dynamic_partitioning
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE blobstore_list_bucketing
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE blobstore_list_bucketing
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE empty (
+    id int,
+    name string,
+    dept string,
+    pt string,
+    dt string,
+    hr string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@empty
+POSTHOOK: query: CREATE TABLE empty (
+    id int,
+    name string,
+    dept string,
+    pt string,
+    dt string,
+    hr string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@empty
+PREHOOK: query: CREATE TABLE blobstore_dynamic_partitioning (
+    id int,
+    name string,
+    dept string)
+PARTITIONED BY (
+    pt string,
+    dt string,
+    hr string)
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/insert_empty_into_blobstore/blobstore_dynamic_partitioning
+PREHOOK: Output: database:default
+PREHOOK: Output: default@blobstore_dynamic_partitioning
+POSTHOOK: query: CREATE TABLE blobstore_dynamic_partitioning (
+    id int,
+    name string,
+    dept string)
+PARTITIONED BY (
+    pt string,
+    dt string,
+    hr string)
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/insert_empty_into_blobstore/blobstore_dynamic_partitioning
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@blobstore_dynamic_partitioning
+PREHOOK: query: INSERT INTO TABLE blobstore_dynamic_partitioning PARTITION (pt='a', dt, hr) SELECT id, name, dept, dt, hr FROM empty
+PREHOOK: type: QUERY
+PREHOOK: Input: default@empty
+PREHOOK: Output: default@blobstore_dynamic_partitioning@pt=a
+POSTHOOK: query: INSERT INTO TABLE blobstore_dynamic_partitioning PARTITION (pt='a', dt, hr) SELECT id, name, dept, dt, hr FROM empty
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty
+PREHOOK: query: SELECT COUNT(*) FROM blobstore_dynamic_partitioning
+PREHOOK: type: QUERY
+PREHOOK: Input: default@blobstore_dynamic_partitioning
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM blobstore_dynamic_partitioning
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@blobstore_dynamic_partitioning
+#### A masked pattern was here ####
+0
+PREHOOK: query: CREATE TABLE blobstore_list_bucketing (
+    id int,
+    name string,
+    dept string)
+PARTITIONED BY (
+    pt string,
+    dt string,
+    hr string)
+SKEWED BY (id) ON ('1', '2', '3') STORED AS DIRECTORIES
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/insert_empty_into_blobstore/blobstore_list_bucketing
+PREHOOK: Output: database:default
+PREHOOK: Output: default@blobstore_list_bucketing
+POSTHOOK: query: CREATE TABLE blobstore_list_bucketing (
+    id int,
+    name string,
+    dept string)
+PARTITIONED BY (
+    pt string,
+    dt string,
+    hr string)
+SKEWED BY (id) ON ('1', '2', '3') STORED AS DIRECTORIES
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/insert_empty_into_blobstore/blobstore_list_bucketing
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@blobstore_list_bucketing
+PREHOOK: query: INSERT INTO TABLE blobstore_list_bucketing PARTITION (pt='a', dt='a', hr='a') SELECT id, name, dept FROM empty
+PREHOOK: type: QUERY
+PREHOOK: Input: default@empty
+PREHOOK: Output: default@blobstore_list_bucketing@pt=a/dt=a/hr=a
+POSTHOOK: query: INSERT INTO TABLE blobstore_list_bucketing PARTITION (pt='a', dt='a', hr='a') SELECT id, name, dept FROM empty
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty
+POSTHOOK: Output: default@blobstore_list_bucketing@pt=a/dt=a/hr=a
+POSTHOOK: Lineage: blobstore_list_bucketing PARTITION(pt=a,dt=a,hr=a).dept SIMPLE [(empty)empty.FieldSchema(name:dept, type:string, comment:null), ]
+POSTHOOK: Lineage: blobstore_list_bucketing PARTITION(pt=a,dt=a,hr=a).id SIMPLE [(empty)empty.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: blobstore_list_bucketing PARTITION(pt=a,dt=a,hr=a).name SIMPLE [(empty)empty.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: SELECT COUNT(*) FROM blobstore_list_bucketing
+PREHOOK: type: QUERY
+PREHOOK: Input: default@blobstore_list_bucketing
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM blobstore_list_bucketing
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@blobstore_list_bucketing
+#### A masked pattern was here ####
+0
+PREHOOK: query: INSERT INTO TABLE blobstore_dynamic_partitioning PARTITION (pt='b', dt, hr) SELECT id, name, dept, dt, hr FROM empty
+PREHOOK: type: QUERY
+PREHOOK: Input: default@empty
+PREHOOK: Output: default@blobstore_dynamic_partitioning@pt=b
+POSTHOOK: query: INSERT INTO TABLE blobstore_dynamic_partitioning PARTITION (pt='b', dt, hr) SELECT id, name, dept, dt, hr FROM empty
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty
+PREHOOK: query: SELECT COUNT(*) FROM blobstore_dynamic_partitioning
+PREHOOK: type: QUERY
+PREHOOK: Input: default@blobstore_dynamic_partitioning
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM blobstore_dynamic_partitioning
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@blobstore_dynamic_partitioning
+#### A masked pattern was here ####
+0
+PREHOOK: query: INSERT INTO TABLE blobstore_list_bucketing PARTITION (pt='b', dt='b', hr='b') SELECT id, name, dept FROM empty
+PREHOOK: type: QUERY
+PREHOOK: Input: default@empty
+PREHOOK: Output: default@blobstore_list_bucketing@pt=b/dt=b/hr=b
+POSTHOOK: query: INSERT INTO TABLE blobstore_list_bucketing PARTITION (pt='b', dt='b', hr='b') SELECT id, name, dept FROM empty
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty
+POSTHOOK: Output: default@blobstore_list_bucketing@pt=b/dt=b/hr=b
+POSTHOOK: Lineage: blobstore_list_bucketing PARTITION(pt=b,dt=b,hr=b).dept SIMPLE [(empty)empty.FieldSchema(name:dept, type:string, comment:null), ]
+POSTHOOK: Lineage: blobstore_list_bucketing PARTITION(pt=b,dt=b,hr=b).id SIMPLE [(empty)empty.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: blobstore_list_bucketing PARTITION(pt=b,dt=b,hr=b).name SIMPLE [(empty)empty.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: SELECT COUNT(*) FROM blobstore_list_bucketing
+PREHOOK: type: QUERY
+PREHOOK: Input: default@blobstore_list_bucketing
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM blobstore_list_bucketing
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@blobstore_list_bucketing
+#### A masked pattern was here ####
+0

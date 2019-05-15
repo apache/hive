@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -92,6 +92,7 @@ public class SparkMergeFileRecordHandler extends SparkRecordHandler {
   public void processRow(Object key, Object value) throws IOException {
     row[0] = key;
     row[1] = value;
+    incrementRowNumber();
     try {
       mergeOp.process(row, 0);
     } catch (HiveException e) {
@@ -108,6 +109,7 @@ public class SparkMergeFileRecordHandler extends SparkRecordHandler {
 
   @Override
   public void close() {
+    super.close();
     LOG.info("Closing Merge Operator " + mergeOp.getName());
     try {
       mergeOp.closeOp(abort);

@@ -1,3 +1,4 @@
+--! qt:dataset:part
 set hive.mapred.mode=nonstrict;
 set mapred.reduce.tasks=4;
 -- SORT_QUERY_RESULTS
@@ -182,7 +183,7 @@ stddev(p_retailprice) over w1 as sdev,
 stddev_pop(p_retailprice) over w1 as sdev_pop, 
 collect_set(p_size) over w1 as uniq_size, 
 variance(p_retailprice) over w1 as var,
-corr(p_size, p_retailprice) over w1 as cor,
+round(corr(p_size, p_retailprice) over w1,5) as cor,
 covar_pop(p_size, p_retailprice) over w1 as covarp
 from part
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following);
@@ -441,3 +442,9 @@ where p_mfgr='Manufacturer#1';
 -- 47. empty partition
 select sum(p_size) over (partition by p_mfgr )
 from part where p_mfgr = 'm1';
+
+-- 48. nested tables (HIVE-21104)
+DROP TABLE IF EXISTS struct_table_example;
+CREATE TABLE struct_table_example (a int, s1 struct<f1: boolean, f2: string, f3: int, f4: int> ) STORED AS ORC;
+INSERT INTO TABLE struct_table_example SELECT 1, named_struct('f1', false, 'f2', 'test', 'f3', 3, 'f4', 4)  FROM part limit 1;
+select s1.f1, s1.f2, rank() over (partition by s1.f2 order by s1.f4) from struct_table_example;

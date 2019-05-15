@@ -45,6 +45,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -204,12 +205,25 @@ public class AvroSerdeUtils {
   }
 
   /**
-   * In a nullable type, get the schema for the non-nullable type.  This method
-   * does no checking that the provides Schema is nullable.
+   * If the union schema is a nullable union, get the schema for the non-nullable type.
+   * This method does no checking that the provided Schema is nullable. If the provided
+   * union schema is non-nullable, it simply returns the union schema
    */
-  public static Schema getOtherTypeFromNullableType(Schema schema) {
-    List<Schema> itemSchemas = new ArrayList<>();
-    for (Schema itemSchema : schema.getTypes()) {
+  public static Schema getOtherTypeFromNullableType(Schema unionSchema) {
+    final List<Schema> types = unionSchema.getTypes();
+    if (types.size() == 2) { // most common scenario
+      if (types.get(0).getType() == Schema.Type.NULL) {
+        return types.get(1);
+      }
+      if (types.get(1).getType() == Schema.Type.NULL) {
+        return types.get(0);
+      }
+      // not a nullable union
+      return unionSchema;
+    }
+
+    final List<Schema> itemSchemas = new ArrayList<>();
+    for (Schema itemSchema : types) {
       if (!Schema.Type.NULL.equals(itemSchema.getType())) {
         itemSchemas.add(itemSchema);
       }
@@ -304,6 +318,27 @@ public class AvroSerdeUtils {
         } catch (IOException e) {
           // Ignore
         }
+      }
+    }
+  }
+
+  /**
+   * Called on specific alter table events, removes schema url and schema literal from given tblproperties
+   * After the change, HMS solely will be responsible for handling the schema
+   *
+   * @param conf
+   * @param serializationLib
+   * @param parameters
+   */
+  public static void handleAlterTableForAvro(HiveConf conf, String serializationLib, Map<String, String> parameters) {
+    if (AvroSerDe.class.getName().equals(serializationLib)) {
+      String literalPropName = AvroTableProperties.SCHEMA_LITERAL.getPropName();
+      String urlPropName = AvroTableProperties.SCHEMA_URL.getPropName();
+
+      if (parameters.containsKey(literalPropName) || parameters.containsKey(urlPropName)) {
+          throw new RuntimeException("Not allowed to alter schema of Avro stored table having external schema." +
+                  " Consider removing "+AvroTableProperties.SCHEMA_LITERAL.getPropName() + " or " +
+                  AvroTableProperties.SCHEMA_URL.getPropName() + " from table properties.");
       }
     }
   }

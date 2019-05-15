@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set mapred.output.compress=true;
 set mapred.output.compression.type=BLOCK;
 

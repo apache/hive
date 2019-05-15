@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.exec;
 import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.lazy.LazyDouble;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectsEqualComparer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -29,10 +28,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.Object
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 
 public class KeyWrapperFactory {
+
   public KeyWrapperFactory(ExprNodeEvaluator[] keyFields, ObjectInspector[] keyObjectInspectors,
       ObjectInspector[] currentKeyObjectInspectors) {
     this.keyFields = keyFields;
@@ -66,8 +65,13 @@ public class KeyWrapperFactory {
   transient ListObjectsEqualComparer newKeyStructEqualComparer;
 
   class ListKeyWrapper extends KeyWrapper {
-    int hashcode;
+    int hashcode = -1;
     Object[] keys;
+    @Override
+    public String toString() {
+      return "ListKeyWrapper [keys=" + Arrays.toString(keys) + "]";
+    }
+
     // decide whether this is already in hashmap (keys in hashmap are deepcopied
     // version, and we need to use 'currentKeyObjectInspector').
     ListObjectsEqualComparer equalComparer;
@@ -99,8 +103,16 @@ public class KeyWrapperFactory {
 
     @Override
     public boolean equals(Object obj) {
-      Object[] copied_in_hashmap = ((ListKeyWrapper) obj).keys;
-      return equalComparer.areEqual(copied_in_hashmap, keys);
+      if (!(obj instanceof ListKeyWrapper)) {
+        return false;
+      }
+      ListKeyWrapper other = ((ListKeyWrapper) obj);
+      if (other.hashcode != this.hashcode && this.hashcode != -1 && other.hashcode != -1) {
+        return false;
+      }
+      Object[] copied_in_hashmap = other.keys;
+      boolean result = equalComparer.areEqual(copied_in_hashmap, keys);
+      return result;
     }
 
     @Override
@@ -114,6 +126,7 @@ public class KeyWrapperFactory {
       for (int i = 0; i < keyFields.length; i++) {
         keys[i]  = keyFields[i].evaluate(row);
       }
+      hashcode = -1;
     }
 
     @Override
@@ -155,13 +168,18 @@ public class KeyWrapperFactory {
     }
   }
 
-  transient Object[] singleEleArray = new Object[1];
   transient StringObjectInspector soi_new, soi_copy;
 
   class TextKeyWrapper extends KeyWrapper {
+    @Override
+    public String toString() {
+      return "TextKeyWrapper [key=" + key + "]";
+    }
+
     int hashcode;
     Object key;
     boolean isCopy;
+    transient Object[] singleEleArray = new Object[1];
 
     public TextKeyWrapper(boolean isCopy) {
       this(-1, null, isCopy);
@@ -182,6 +200,9 @@ public class KeyWrapperFactory {
 
     @Override
     public boolean equals(Object other) {
+      if (!(other instanceof TextKeyWrapper)) {
+        return false;
+      }
       Object obj = ((TextKeyWrapper) other).key;
       Text t1;
       Text t2;

@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesorc
 set hive.explain.user=false;
 set hive.fetch.task.conversion=none;
 
@@ -29,7 +30,7 @@ set hive.vectorized.execution.enabled=true;
 set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
 set hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
-
+set hive.cbo.enable=false;
 explain vectorization expression
 select /*+MAPJOIN(a)*/ * from vsmb_bucket_1 a join vsmb_bucket_2 b on a.key = b.key;
 select /*+MAPJOIN(a)*/ * from vsmb_bucket_1 a join vsmb_bucket_2 b on a.key = b.key;

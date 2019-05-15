@@ -59,4 +59,4 @@ POSTHOOK: query: create table exim_department ( dep_id int comment "department i
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:importer
 POSTHOOK: Output: importer@exim_department
-FAILED: SemanticException [Error 10121]: Export/Import cannot be done for a non-native table. 
+FAILED: SemanticException [Error 10121]: Export/Import cannot be done for a non-native table.

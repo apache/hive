@@ -12,6 +12,9 @@ PREHOOK: query: EXPLAIN
  ) b 
  ON (a.key = b.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
  SELECT a.key, a.value, b.key, b.value1,  b.value2
  FROM 
@@ -26,6 +29,9 @@ POSTHOOK: query: EXPLAIN
  ) b 
  ON (a.key = b.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -51,6 +57,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count(value)
                       keys: key (type: string)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -60,6 +67,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: bigint)
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -72,6 +80,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count(DISTINCT value), count(DISTINCT key)
                       keys: key (type: string), value (type: string)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
@@ -81,6 +90,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -98,7 +108,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Outer Join 0 to 1
+                     Full Outer Join 0 to 1
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)

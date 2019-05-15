@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -110,14 +110,14 @@ public class MapJoinTableContainerSerDe {
     try {
 
       if (!fs.exists(folder)) {
-        return getDefaultEmptyContainer(keyContext, valueContext);
+        return getDefaultEmptyContainer(hconf, keyContext, valueContext);
       }
       if (!fs.isDirectory(folder)) {
         throw new HiveException("Error, not a directory: " + folder);
       }
       FileStatus[] fileStatuses = fs.listStatus(folder);
       if (fileStatuses == null || fileStatuses.length == 0) {
-        return getDefaultEmptyContainer(keyContext, valueContext);
+        return getDefaultEmptyContainer(hconf, keyContext, valueContext);
       }
 
       AbstractSerDe keySerDe = keyContext.getSerDe();
@@ -138,7 +138,7 @@ public class MapJoinTableContainerSerDe {
         InputStream is = null;
         ObjectInputStream in = null;
         try {
-          is = fs.open(filePath, 4096);
+          is = fs.open(filePath);
           in = new ObjectInputStream(is);
           String name = in.readUTF();
           Map<String, String> metaData = (Map<String, String>) in.readObject();
@@ -164,6 +164,7 @@ public class MapJoinTableContainerSerDe {
         }
       }
       if (tableContainer != null) {
+        tableContainer.setKey(folder.toString());
         tableContainer.seal();
       }
       return tableContainer;
@@ -238,7 +239,7 @@ public class MapJoinTableContainerSerDe {
             InputStream is = null;
             ObjectInputStream in = null;
             try {
-              is = fs.open(filePath, 4096);
+              is = fs.open(filePath);
               in = new ObjectInputStream(is);
               // skip the name and metadata
               in.readUTF();
@@ -261,8 +262,8 @@ public class MapJoinTableContainerSerDe {
             }
           }
         }
+        tableContainer.setKey(folder.toString());
       }
-
       tableContainer.seal();
       return tableContainer;
     } catch (IOException e) {
@@ -319,8 +320,13 @@ public class MapJoinTableContainerSerDe {
   }
 
   // Get an empty container when the small table is empty.
-  private static MapJoinTableContainer getDefaultEmptyContainer(MapJoinObjectSerDeContext keyCtx,
-      MapJoinObjectSerDeContext valCtx) throws SerDeException {
+  private static MapJoinTableContainer getDefaultEmptyContainer(Configuration hconf,
+      MapJoinObjectSerDeContext keyCtx, MapJoinObjectSerDeContext valCtx) throws SerDeException {
+    boolean useOptimizedContainer = HiveConf.getBoolVar(
+        hconf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE);
+    if (useOptimizedContainer) {
+      return new MapJoinBytesTableContainer(hconf, valCtx, -1, 0);
+    }
     MapJoinTableContainer container = new HashMapWrapper();
     container.setSerde(keyCtx, valCtx);
     container.seal();

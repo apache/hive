@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -46,12 +46,14 @@ import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyPrimitiv
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyShortObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyStringObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyTimestampObjectInspector;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyTimestampLocalTZObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyVoidObjectInspector;
 import org.apache.hadoop.hive.serde2.lazydio.LazyDioBinary;
 import org.apache.hadoop.hive.serde2.lazydio.LazyDioBoolean;
 import org.apache.hadoop.hive.serde2.lazydio.LazyDioByte;
 import org.apache.hadoop.hive.serde2.lazydio.LazyDioDouble;
 import org.apache.hadoop.hive.serde2.lazydio.LazyDioFloat;
+import org.apache.hadoop.hive.serde2.lazydio.LazyDioHiveDecimal;
 import org.apache.hadoop.hive.serde2.lazydio.LazyDioInteger;
 import org.apache.hadoop.hive.serde2.lazydio.LazyDioLong;
 import org.apache.hadoop.hive.serde2.lazydio.LazyDioShort;
@@ -84,7 +86,7 @@ public final class LazyFactory {
    * @param poi PrimitiveObjectInspector
    * @param typeBinary a switch to return either a LazyPrimtive class or it's binary
    *        companion
-   * @return LazyPrimitive<? extends ObjectInspector, ? extends Writable>
+   * @return LazyPrimitive&lt;? extends ObjectInspector, ? extends Writable&gt;
    */
   public static LazyPrimitive<? extends ObjectInspector, ? extends Writable>
   createLazyPrimitiveClass(PrimitiveObjectInspector poi, boolean typeBinary) {
@@ -128,6 +130,8 @@ public final class LazyFactory {
       return new LazyDate((LazyDateObjectInspector) oi);
     case TIMESTAMP:
       return new LazyTimestamp((LazyTimestampObjectInspector) oi);
+    case TIMESTAMPLOCALTZ:
+      return new LazyTimestampLocalTZ((LazyTimestampLocalTZObjectInspector) oi);
     case INTERVAL_YEAR_MONTH:
       return new LazyHiveIntervalYearMonth((LazyHiveIntervalYearMonthObjectInspector) oi);
     case INTERVAL_DAY_TIME:
@@ -165,6 +169,8 @@ public final class LazyFactory {
       return new LazyDioDouble((LazyDoubleObjectInspector) poi);
     case BINARY:
       return new LazyDioBinary((LazyBinaryObjectInspector) poi);
+    case DECIMAL:
+      return new LazyDioHiveDecimal((LazyHiveDecimalObjectInspector) poi);
     default:
       throw new RuntimeException("Hive Internal Error: no LazyObject for " + poi);
     }
@@ -198,7 +204,7 @@ public final class LazyFactory {
    * @param oi ObjectInspector
    * @param typeBinary Boolean value used as switch to return variants of LazyPrimitive
    *                   objects which are initialized from a binary format for the data.
-   * @return LazyObject<? extends ObjectInspector>
+   * @return LazyObject&lt;? extends ObjectInspector&gt;
    */
   public static LazyObject<? extends ObjectInspector>
   createLazyObject(ObjectInspector oi, boolean typeBinary) {
@@ -216,7 +222,7 @@ public final class LazyFactory {
    *
    * @param typeInfo
    *          The type information for the LazyObject
-   * @param separator
+   * @param separators
    *          The array of separators for delimiting each level
    * @param separatorIndex
    *          The current level (for separators). List(array), struct uses 1
@@ -241,7 +247,7 @@ public final class LazyFactory {
    *
    * @param typeInfo
    *          The type information for the LazyObject
-   * @param separator
+   * @param separators
    *          The array of separators for delimiting each level
    * @param separatorIndex
    *          The current level (for separators). List(array), struct uses 1
@@ -264,13 +270,12 @@ public final class LazyFactory {
    * Create a hierarchical ObjectInspector for LazyObject with the given typeInfo.
    *
    * @param typeInfo The type information for the LazyObject
-   * @param separator The array of separators for delimiting each level
+   * @param separators The array of separators for delimiting each level
    * @param separatorIndex The current level (for separators). List(array), struct uses 1 level of
    *          separator, and map uses 2 levels: the first one for delimiting entries, the second one
    *          for delimiting key and values.
    * @param nullSequence The sequence of bytes representing NULL.
    * @param extendedBooleanLiteral whether extended boolean literal set is legal
-   * @param option the {@link ObjectInspectorOption}
    * @return The ObjectInspector
    * @throws SerDeException
    */
@@ -286,13 +291,13 @@ public final class LazyFactory {
    * Create a hierarchical ObjectInspector for LazyObject with the given typeInfo.
    *
    * @param typeInfo The type information for the LazyObject
-   * @param separator The array of separators for delimiting each level
+   * @param separators The array of separators for delimiting each level
    * @param separatorIndex The current level (for separators). List(array), struct uses 1 level of
    *          separator, and map uses 2 levels: the first one for delimiting entries, the second one
    *          for delimiting key and values.
    * @param nullSequence The sequence of bytes representing NULL.
    * @param extendedBooleanLiteral whether extended boolean literal set is legal
-   * @param option the {@link ObjectInspectorOption}
+   * @param option the {@link ObjectInspectorOptions}
    * @return The ObjectInspector
    * @throws SerDeException
    */
@@ -309,12 +314,11 @@ public final class LazyFactory {
    * Create a hierarchical ObjectInspector for LazyObject with the given typeInfo.
    *
    * @param typeInfo The type information for the LazyObject
-   * @param separator The array of separators for delimiting each level
    * @param separatorIndex The current level (for separators). List(array), struct uses 1 level of
    *          separator, and map uses 2 levels: the first one for delimiting entries, the second one
    *          for delimiting key and values.
    * @param lazyParams Params for lazy types
-   * @param option the {@link ObjectInspectorOption}
+   * @param option the {@link ObjectInspectorOptions}
    * @return The ObjectInspector
    * @throws SerDeException
    */
@@ -417,9 +421,6 @@ public final class LazyFactory {
    * Create a hierarchical ObjectInspector for LazyStruct with the given
    * columnNames and columnTypeInfos.
    *
-   * @param lastColumnTakesRest
-   *          whether the last column of the struct should take the rest of the
-   *          row if there are extra fields.
    * @param lazyParams  parameters for the lazy types
    * @throws SerDeException
    * @see LazyFactory#createLazyObjectInspector(TypeInfo, byte[], int, Text,

@@ -1,11 +1,13 @@
+set hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
+
 -- SORT_QUERY_RESULTS
 
 -- orc merge file tests for dynamic partition case
 
-create table orc_merge5 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc;
-create table orc_merge5a (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) partitioned by (st double) stored as orc;
+create table orc_merge5 (userid bigint, string1 string, subtype double, decimal1 decimal(38,0), ts timestamp) stored as orc;
+create table orc_merge5a (userid bigint, string1 string, subtype double, decimal1 decimal(38,0), ts timestamp) partitioned by (st double) stored as orc;
 
 load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5;
 

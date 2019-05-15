@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,12 +22,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.lang.NumberUtils;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
+import org.apache.hadoop.hive.serde2.thrift.Type;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationState;
@@ -35,14 +33,18 @@ import org.apache.hive.service.cli.OperationType;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
-import org.apache.hadoop.hive.serde2.thrift.Type;
 import org.apache.hive.service.cli.session.HiveSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * GetPrimaryKeysOperation.
  *
  */
 public class GetPrimaryKeysOperation extends MetadataOperation {
+
+  private static final Logger LOG = LoggerFactory.getLogger(GetPrimaryKeysOperation.class.getName());
+
 /**
 TABLE_CAT String => table catalog (may be null)
 TABLE_SCHEM String => table schema (may be null)
@@ -60,7 +62,7 @@ PK_NAME String => primary key name (may be null)
       "Table name")
   .addPrimitiveColumn("COLUMN_NAME", Type.STRING_TYPE,
       "Column name")
-  .addPrimitiveColumn("KEQ_SEQ", Type.INT_TYPE,
+  .addPrimitiveColumn("KEY_SEQ", Type.INT_TYPE,
       "Sequence number within primary key")
   .addPrimitiveColumn("PK_NAME", Type.STRING_TYPE,
       "Primary key name (may be null)");
@@ -78,11 +80,15 @@ PK_NAME String => primary key name (may be null)
     this.schemaName = schemaName;
     this.tableName = tableName;
     this.rowSet = RowSetFactory.create(RESULT_SET_SCHEMA, getProtocolVersion(), false);
+    LOG.info(
+        "Starting GetPrimaryKeysOperation with the following parameters: catalogName={}, schemaName={}, tableName={}",
+        catalogName, schemaName, tableName);
   }
 
   @Override
   public void runInternal() throws HiveSQLException {
     setState(OperationState.RUNNING);
+    LOG.info("Fetching primary key metadata");
     try {
       IMetaStoreClient metastoreClient = getParentSession().getMetaStoreClient();
       PrimaryKeysRequest sqlReq = new PrimaryKeysRequest(schemaName, tableName);
@@ -91,16 +97,30 @@ PK_NAME String => primary key name (may be null)
         return;
       }
       for (SQLPrimaryKey pk : pks) {
-	    rowSet.addRow(new Object[] {catalogName, pk.getTable_db(), 
-	      pk.getTable_name(), pk.getColumn_name(), pk.getKey_seq(), pk.getPk_name()});
-	  }
-	  setState(OperationState.FINISHED);
-	} catch (Exception e) {
-	  setState(OperationState.ERROR);
-	  throw new HiveSQLException(e);
-	}
+        Object[] rowData = new Object[] {
+            catalogName,
+            pk.getTable_db(),
+            pk.getTable_name(),
+            pk.getColumn_name(),
+            pk.getKey_seq(),
+            pk.getPk_name()
+        };
+        rowSet.addRow(rowData);
+        if (LOG.isDebugEnabled()) {
+          String debugMessage = getDebugMessage("primary key", RESULT_SET_SCHEMA);
+          LOG.debug(debugMessage, rowData);
+        }
+      }
+      if (LOG.isDebugEnabled() && rowSet.numRows() == 0) {
+        LOG.debug("No primary key metadata has been returned.");
+      }
+      setState(OperationState.FINISHED);
+      LOG.info("Fetching primary key metadata has been successfully finished");
+    } catch (Exception e) {
+      setState(OperationState.ERROR);
+      throw new HiveSQLException(e);
+    }
   }
-
 
   /* (non-Javadoc)
    * @see org.apache.hive.service.cli.Operation#getResultSetSchema()

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,8 +29,8 @@ import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.protocol.HttpContext;
 
 /**
- * The class is instantiated with the username and password, it is then
- * used to add header with these credentials to HTTP requests
+ * The class is instantiated with the username and password, it is then used to add header with
+ * these credentials to HTTP requests
  *
  */
 public class HttpBasicAuthInterceptor extends HttpRequestInterceptorBase {
@@ -38,17 +38,18 @@ public class HttpBasicAuthInterceptor extends HttpRequestInterceptorBase {
   AuthSchemeBase authScheme;
 
   public HttpBasicAuthInterceptor(String username, String password, CookieStore cookieStore,
-                           String cn, boolean isSSL, Map<String, String> additionalHeaders) {
-    super(cookieStore, cn, isSSL, additionalHeaders);
+      String cn, boolean isSSL, Map<String, String> additionalHeaders,
+      Map<String, String> customCookies) {
+    super(cookieStore, cn, isSSL, additionalHeaders, customCookies);
     this.authScheme = new BasicScheme();
-    if (username != null){
+    if (username != null) {
       this.credentials = new UsernamePasswordCredentials(username, password);
     }
   }
 
   @Override
   protected void addHttpAuthHeader(HttpRequest httpRequest, HttpContext httpContext)
-    throws Exception {
+      throws Exception {
     Header basicAuthHeader = authScheme.authenticate(credentials, httpRequest, httpContext);
     httpRequest.addHeader(basicAuthHeader);
   }

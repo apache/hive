@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -61,8 +61,8 @@ import org.apache.hadoop.io.Writable;
  * into a row. If the output type of the column in a query is not a string, it
  * will be automatically converted to String by Hive.
  *
- * For the format of the format String, please refer to {@link http
- * ://java.sun.com/j2se/1.5.0/docs/api/java/util/Formatter.html#syntax}
+ * For the format of the format String, please refer to link: http
+ * ://java.sun.com/j2se/1.5.0/docs/api/java/util/Formatter.html#syntax
  *
  * NOTE: Obviously, all columns have to be strings. Users can use
  * "CAST(a AS INT)" to convert columns to other types.

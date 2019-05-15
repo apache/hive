@@ -1,21 +1,21 @@
-PREHOOK: query: CREATE TABLE dest(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest_n0(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest
-POSTHOOK: query: CREATE TABLE dest(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest_n0
+POSTHOOK: query: CREATE TABLE dest_n0(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest
-PREHOOK: query: INSERT OVERWRITE TABLE dest SELECT src.* FROM src
+POSTHOOK: Output: default@dest_n0
+PREHOOK: query: INSERT OVERWRITE TABLE dest_n0 SELECT src.* FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest
-POSTHOOK: query: INSERT OVERWRITE TABLE dest SELECT src.* FROM src
+PREHOOK: Output: default@dest_n0
+POSTHOOK: query: INSERT OVERWRITE TABLE dest_n0 SELECT src.* FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest
-POSTHOOK: Lineage: dest.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@dest_n0
+POSTHOOK: Lineage: dest_n0.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 238val_238
 86val_86
 311val_311

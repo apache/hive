@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,7 @@
 
 package org.apache.hive.service.server;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -39,14 +40,14 @@ public class TestServerOptionsProcessor {
     Assert.assertEquals(
         "checking system property before processing options",
         null,
-        System.getProperty(key));
+        HiveConf.overrides.get(key));
 
     optProcessor.parse(args);
 
     Assert.assertEquals(
         "checking system property after processing options",
         value,
-        System.getProperty(key));
+        HiveConf.overrides.get(key));
   }
 
 }

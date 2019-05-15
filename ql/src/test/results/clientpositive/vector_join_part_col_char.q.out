@@ -16,13 +16,15 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@studenttab
 PREHOOK: query: insert into table studenttab values ('calvin garcia',56,2.50), ('oscar miller',66,3.00), ('(yuri xylophone',30,2.74),('alice underhill',46,3.50)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@studenttab
 POSTHOOK: query: insert into table studenttab values ('calvin garcia',56,2.50), ('oscar miller',66,3.00), ('(yuri xylophone',30,2.74),('alice underhill',46,3.50)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@studenttab
-POSTHOOK: Lineage: studenttab.age EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: studenttab.gpa EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: studenttab.name SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: studenttab.age SCRIPT []
+POSTHOOK: Lineage: studenttab.gpa SCRIPT []
+POSTHOOK: Lineage: studenttab.name SCRIPT []
 PREHOOK: query: create table char_tbl1(name string, age int) partitioned  by(gpa char(50)) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -97,8 +99,22 @@ gpa=3
 gpa=3.5  
 PREHOOK: query: explain vectorization select c1.name, c1.age, c1.gpa, c2.name, c2.age, c2.gpa from char_tbl1 c1 join char_tbl2 c2 on (c1.gpa = c2.gpa)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@char_tbl1
+PREHOOK: Input: default@char_tbl1@gpa=2.5                                               
+PREHOOK: Input: default@char_tbl1@gpa=3.5                                               
+PREHOOK: Input: default@char_tbl2
+PREHOOK: Input: default@char_tbl2@gpa=3    
+PREHOOK: Input: default@char_tbl2@gpa=3.5  
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select c1.name, c1.age, c1.gpa, c2.name, c2.age, c2.gpa from char_tbl1 c1 join char_tbl2 c2 on (c1.gpa = c2.gpa)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_tbl1
+POSTHOOK: Input: default@char_tbl1@gpa=2.5                                               
+POSTHOOK: Input: default@char_tbl1@gpa=3.5                                               
+POSTHOOK: Input: default@char_tbl2
+POSTHOOK: Input: default@char_tbl2@gpa=3    
+POSTHOOK: Input: default@char_tbl2@gpa=3.5  
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -113,29 +129,31 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: c1
-            Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: gpa is not null (type: boolean)
+            Statistics: Num rows: 2 Data size: 474 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: name (type: string), age (type: int), gpa (type: char(50))
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 474 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col2 (type: char(50))
                 sort order: +
                 Map-reduce partition columns: _col2 (type: char(50))
-                Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 474 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col0 (type: string), _col1 (type: int)
           TableScan
             alias: c2
-            Statistics: Num rows: 2 Data size: 203 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: gpa is not null (type: boolean)
+            Statistics: Num rows: 2 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: name (type: string), age (type: int), gpa (type: char(5))
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 2 Data size: 203 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col2 (type: char(50))
                 sort order: +
                 Map-reduce partition columns: _col2 (type: char(50))
-                Statistics: Num rows: 2 Data size: 203 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col0 (type: string), _col1 (type: int)
       Map Vectorization:
           enabled: false
@@ -152,10 +170,10 @@ STAGE PLANS:
             0 _col2 (type: char(50))
             1 _col2 (type: char(50))
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 858 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 858 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

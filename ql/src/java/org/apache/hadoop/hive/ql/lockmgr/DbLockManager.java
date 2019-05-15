@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.lockmgr;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.JavaUtils;
@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
+import org.apache.hadoop.hive.ql.ddl.table.lock.ShowLocksOperation;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.thrift.TException;
 
@@ -114,7 +115,7 @@ public final class DbLockManager implements HiveLockManager{
         res = txnManager.getMS().checkLock(res.getLockid());
       }
       long retryDuration = System.currentTimeMillis() - startRetry;
-      DbHiveLock hl = new DbHiveLock(res.getLockid(), queryId, lock.getTxnid());
+      DbHiveLock hl = new DbHiveLock(res.getLockid(), queryId, lock.getTxnid(), lock.getComponent());
       if(locks.size() > 0) {
         boolean logMsg = false;
         for(DbHiveLock l : locks) {
@@ -185,7 +186,7 @@ public final class DbLockManager implements HiveLockManager{
     ByteArrayOutputStream baos = new ByteArrayOutputStream(1024*2);
     DataOutputStream os = new DataOutputStream(baos);
     try {
-      DDLTask.dumpLockInfo(os, rsp);
+      ShowLocksOperation.dumpLockInfo(os, rsp);
       os.flush();
       LOG.info(baos.toString());
     }
@@ -310,14 +311,17 @@ public final class DbLockManager implements HiveLockManager{
     long lockId;
     String queryId;
     long txnId;
+    List<LockComponent> components;
 
     DbHiveLock(long id) {
       lockId = id;
     }
-    DbHiveLock(long id, String queryId, long txnId) {
+
+    DbHiveLock(long id, String queryId, long txnId, List<LockComponent> components) {
       lockId = id;
       this.queryId = queryId;
       this.txnId = txnId;
+      this.components = ImmutableList.copyOf(components);
     }
 
     @Override
@@ -328,6 +332,16 @@ public final class DbLockManager implements HiveLockManager{
     @Override
     public HiveLockMode getHiveLockMode() {
       throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean mayContainComponents() {
+      return true;
+    }
+
+    @Override
+    public List<LockComponent> getHiveLockComponents() {
+      return components;
     }
 
     @Override

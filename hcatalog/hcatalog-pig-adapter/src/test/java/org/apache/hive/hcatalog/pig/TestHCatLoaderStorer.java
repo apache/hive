@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,7 +22,6 @@ package org.apache.hive.hcatalog.pig;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hive.hcatalog.HcatTestUtils;
 import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
-import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 import org.apache.pig.backend.executionengine.ExecJob;
 import org.apache.pig.data.DataType;
@@ -66,8 +65,8 @@ public class TestHCatLoaderStorer extends HCatBaseTest {
       " row format delimited fields terminated by '\t' stored as textfile location '" +
       dataDir.toURI().getPath() + "'", driver);
     AbstractHCatLoaderTest.dropTable(tblName2, driver);
-    AbstractHCatLoaderTest.createTable(tblName2, "my_small_int smallint, my_tiny_int tinyint", null, driver,
-      "textfile");
+    AbstractHCatLoaderTest.createTableDefaultDB(tblName2, "my_small_int smallint, " +
+            "my_tiny_int " + "tinyint", null, driver, "textfile");
 
     LOG.debug("File=" + INPUT_FILE_NAME);
     TestHCatStorer.dumpFile(INPUT_FILE_NAME);
@@ -127,7 +126,7 @@ public class TestHCatLoaderStorer extends HCatBaseTest {
     Assert.assertEquals(0, driver.run("load data local inpath '" +
       dataDir.getPath().replaceAll("\\\\", "/") + "' into table " + readTblName).getResponseCode());
 
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = HCatBaseTest.createPigServer(false);
     server.registerQuery(
       "data = load '" + readTblName + "' using org.apache.hive.hcatalog.pig.HCatLoader();");
 
@@ -142,11 +141,11 @@ public class TestHCatLoaderStorer extends HCatBaseTest {
     // Ensure Pig can read data correctly.
     Iterator<Tuple> it = server.openIterator("data");
     Tuple t = it.next();
-    Assert.assertEquals(new Integer(Short.MIN_VALUE), t.get(0));
-    Assert.assertEquals(new Integer(Byte.MIN_VALUE), t.get(1));
+    Assert.assertEquals(Integer.valueOf(Short.MIN_VALUE), t.get(0));
+    Assert.assertEquals(Integer.valueOf(Byte.MIN_VALUE), t.get(1));
     t = it.next();
-    Assert.assertEquals(new Integer(Short.MAX_VALUE), t.get(0));
-    Assert.assertEquals(new Integer(Byte.MAX_VALUE), t.get(1));
+    Assert.assertEquals(Integer.valueOf(Short.MAX_VALUE), t.get(0));
+    Assert.assertEquals(Integer.valueOf(Byte.MAX_VALUE), t.get(1));
     Assert.assertFalse(it.hasNext());
 
     // Ensure Pig can write correctly to smallint/tinyint columns. This means values within the
@@ -186,7 +185,7 @@ public class TestHCatLoaderStorer extends HCatBaseTest {
     Assert.assertEquals(0, driver.run("create table test_tbl" +
       " (my_small_int smallint, my_tiny_int tinyint) stored as rcfile").getResponseCode());
 
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = HCatBaseTest.createPigServer(false);
     server.setBatchOn();
     server.registerQuery("data = load '" + data +
       "' using PigStorage('\t') as (my_small_int:int, my_tiny_int:int);");

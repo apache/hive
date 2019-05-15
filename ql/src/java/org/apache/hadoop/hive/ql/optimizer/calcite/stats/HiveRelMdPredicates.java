@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -70,7 +71,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -165,7 +165,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
             rexBuilder.makeInputRef(project, expr.i), expr.e));
       }
     }
-    return RelOptPredicateList.of(projectPullUpPredicates);
+    return RelOptPredicateList.of(rexBuilder, projectPullUpPredicates);
   }
 
   /** Infers predicates for a {@link org.apache.calcite.rel.core.Join}. */
@@ -202,6 +202,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
     final RelNode input = agg.getInput();
     final RelOptPredicateList inputInfo = mq.getPulledUpPredicates(input);
     final List<RexNode> aggPullUpPredicates = new ArrayList<>();
+    final RexBuilder rexBuilder = agg.getCluster().getRexBuilder();
 
     ImmutableBitSet groupKeys = agg.getGroupSet();
     Mapping m = Mappings.create(MappingType.PARTIAL_FUNCTION,
@@ -219,7 +220,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
         aggPullUpPredicates.add(r);
       }
     }
-    return RelOptPredicateList.of(aggPullUpPredicates);
+    return RelOptPredicateList.of(rexBuilder, aggPullUpPredicates);
   }
 
   /**
@@ -271,7 +272,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
     if (!disjPred.isAlwaysTrue()) {
       preds.add(disjPred);
     }
-    return RelOptPredicateList.of(preds);
+    return RelOptPredicateList.of(rB, preds);
   }
 
   /**
@@ -411,6 +412,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
       final JoinRelType joinType = joinRel.getJoinType();
       final List<RexNode> leftPreds = ImmutableList.copyOf(RelOptUtil.conjunctions(leftChildPredicates));
       final List<RexNode> rightPreds = ImmutableList.copyOf(RelOptUtil.conjunctions(rightChildPredicates));
+      final RexBuilder rexBuilder = joinRel.getCluster().getRexBuilder();
       switch (joinType) {
       case INNER:
       case LEFT:
@@ -476,13 +478,13 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
           pulledUpPredicates = Iterables.concat(leftPreds, rightPreds,
                 RelOptUtil.conjunctions(joinRel.getCondition()), inferredPredicates);
         }
-        return RelOptPredicateList.of(
+        return RelOptPredicateList.of(rexBuilder,
           pulledUpPredicates, leftInferredPredicates, rightInferredPredicates);
-      case LEFT:    
-        return RelOptPredicateList.of(    
+      case LEFT:
+        return RelOptPredicateList.of(rexBuilder,
           leftPreds, EMPTY_LIST, rightInferredPredicates);
-      case RIGHT:   
-        return RelOptPredicateList.of(    
+      case RIGHT:
+        return RelOptPredicateList.of(rexBuilder,
           rightPreds, leftInferredPredicates, EMPTY_LIST);
       default:
         assert inferredPredicates.size() == 0;
@@ -532,7 +534,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
         public Iterator<Mapping> iterator() {
           ImmutableBitSet fields = exprFields.get(predicate.toString());
           if (fields.cardinality() == 0) {
-            return Iterators.emptyIterator();
+            return Collections.emptyIterator();
           }
           return new ExprsItr(fields);
         }
@@ -640,7 +642,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
         } else {
           computeNextMapping(iterationIdx.length - 1);
         }
-        return nextMapping != null;
+          return nextMapping != null;
       }
 
       public Mapping next() {
@@ -657,7 +659,9 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
           if (level == 0) {
             nextMapping = null;
           } else {
-            iterationIdx[level] = 0;
+            int tmp = columnSets[level].nextSetBit(0);
+            nextMapping.set(columns[level], tmp);
+            iterationIdx[level] = tmp + 1;
             computeNextMapping(level - 1);
           }
         } else {

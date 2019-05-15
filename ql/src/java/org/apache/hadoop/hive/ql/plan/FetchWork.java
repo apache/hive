@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,17 +21,19 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
-import org.apache.hadoop.hive.ql.plan.BaseWork.BaseExplainVectorization;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -74,6 +76,13 @@ public class FetchWork implements Serializable {
    * indeed written using ThriftJDBCBinarySerDe
    */
   private boolean isUsingThriftJDBCBinarySerDe = false;
+
+  /**
+   * Whether this FetchWork is returning a cached query result
+   */
+  private boolean isCachedResult = false;
+
+  private Set<FileStatus> filesToFetch = null;
 
   public boolean isHiveServerQuery() {
 	return isHiveServerQuery;
@@ -127,6 +136,7 @@ public class FetchWork implements Serializable {
     this.partDir = new ArrayList<Path>(partDir);
     this.partDesc = new ArrayList<PartitionDesc>(partDesc);
     this.limit = limit;
+    this.filesToFetch = new HashSet<>();
   }
 
   public void initializeForFetch(CompilationOpContext ctx) {
@@ -288,6 +298,13 @@ public class FetchWork implements Serializable {
     return source;
   }
 
+  public boolean isSourceTable() {
+    if(this.source != null && this.source instanceof TableScanOperator) {
+      return true;
+    }
+    return false;
+  }
+
   public void setSource(Operator<?> source) {
     this.source = source;
   }
@@ -363,5 +380,21 @@ public class FetchWork implements Serializable {
       return null;
     }
     return new FetchExplainVectorization(this);
+  }
+  @Explain(displayName = "Cached Query Result", displayOnlyOnTrue = true, explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public boolean isCachedResult() {
+    return isCachedResult;
+  }
+
+  public void setCachedResult(boolean isCachedResult) {
+    this.isCachedResult = isCachedResult;
+  }
+
+  public void setFilesToFetch(Set<FileStatus> filesToFetch) {
+    this.filesToFetch = filesToFetch;
+  }
+
+  public Set<FileStatus> getFilesToFetch() {
+    return filesToFetch;
   }
 }

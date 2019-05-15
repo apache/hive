@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -57,7 +57,7 @@ public class VectorAggregationBufferBatch {
   /**
    * Memory consumed by a set of aggregation buffers
    */
-  private int aggregatorsFixedSize;
+  private long aggregatorsFixedSize;
 
   /**
    * Array of indexes for aggregators that have variable size
@@ -76,7 +76,7 @@ public class VectorAggregationBufferBatch {
    * Returns the fixed size consumed by the aggregation buffers
    * @return
    */
-  public int getAggregatorsFixedSize() {
+  public long getAggregatorsFixedSize() {
     return aggregatorsFixedSize;
   }
 

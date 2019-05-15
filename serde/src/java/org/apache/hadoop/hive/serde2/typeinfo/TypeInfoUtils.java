@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -48,12 +48,16 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * TypeInfoUtils.
  *
  */
 public final class TypeInfoUtils {
+
+  protected static final Logger LOG = LoggerFactory.getLogger(TypeInfoUtils.class);
 
   public static List<PrimitiveCategory> numericTypeList = new ArrayList<PrimitiveCategory>();
   // The ordering of types here is used to determine which numeric types
@@ -62,7 +66,6 @@ public final class TypeInfoUtils {
   // that were arbitrarily assigned in PrimitiveCategory work for our purposes.
   public static EnumMap<PrimitiveCategory, Integer> numericTypes =
       new EnumMap<PrimitiveCategory, Integer>(PrimitiveCategory.class);
-
   static {
     registerNumericType(PrimitiveCategory.BYTE, 1);
     registerNumericType(PrimitiveCategory.SHORT, 2);
@@ -72,6 +75,15 @@ public final class TypeInfoUtils {
     registerNumericType(PrimitiveCategory.FLOAT, 6);
     registerNumericType(PrimitiveCategory.DOUBLE, 7);
     registerNumericType(PrimitiveCategory.STRING, 8);
+  }
+
+  public static List<PrimitiveCategory> dateTypeList = new ArrayList<PrimitiveCategory>();
+  public static EnumMap<PrimitiveCategory, Integer> dateTypes =
+      new EnumMap<PrimitiveCategory, Integer>(PrimitiveCategory.class);
+  static {
+    registerDateType(PrimitiveCategory.DATE, 1);
+    registerDateType(PrimitiveCategory.TIMESTAMP, 2);
+    registerDateType(PrimitiveCategory.TIMESTAMPLOCALTZ, 3);
   }
 
   private TypeInfoUtils() {
@@ -158,7 +170,7 @@ public final class TypeInfoUtils {
 
   /**
    * Returns the array element type, if the Type is an array (Object[]), or
-   * GenericArrayType (Map<String,String>[]). Otherwise return null.
+   * GenericArrayType (Map&lt;String,String&gt;[]). Otherwise return null.
    */
   public static Type getArrayElementType(Type t) {
     if (t instanceof Class && ((Class<?>) t).isArray()) {
@@ -176,7 +188,7 @@ public final class TypeInfoUtils {
    *
    * @param size
    *          In case the last parameter of Method is an array, we will try to
-   *          return a List<TypeInfo> with the specified size by repeating the
+   *          return a List&lt;TypeInfo&gt; with the specified size by repeating the
    *          element of the array at the end. In case the size is smaller than
    *          the minimum possible number of arguments for the method, null will
    *          be returned.
@@ -297,6 +309,23 @@ public final class TypeInfoUtils {
       int end = 1;
       while (end <= typeInfoString.length()) {
         // last character ends a token?
+        // if there are quotes, all the text between the quotes
+        // is considered a single token (this can happen for
+        // timestamp with local time-zone)
+        if (begin > 0 &&
+            typeInfoString.charAt(begin - 1) == '(' &&
+            typeInfoString.charAt(begin) == '\'') {
+          // Ignore starting quote
+          begin++;
+          do {
+            end++;
+          } while (typeInfoString.charAt(end) != '\'');
+        } else if (typeInfoString.charAt(begin) == '\'' &&
+            typeInfoString.charAt(begin + 1) == ')') {
+          // Ignore closing quote
+          begin++;
+          end++;
+        }
         if (end == typeInfoString.length()
             || !isTypeChar(typeInfoString.charAt(end - 1))
             || !isTypeChar(typeInfoString.charAt(end))) {
@@ -443,12 +472,17 @@ public final class TypeInfoUtils {
                 "Type " + typeEntry.typeName+ " only takes one parameter, but " +
                 params.length + " is seen");
           }
+
         case DECIMAL:
           int precision = HiveDecimal.USER_DEFAULT_PRECISION;
           int scale = HiveDecimal.USER_DEFAULT_SCALE;
           if (params == null || params.length == 0) {
             // It's possible that old metadata still refers to "decimal" as a column type w/o
             // precision/scale. In this case, the default (10,0) is assumed. Thus, do nothing here.
+          } else if (params.length == 1) {
+            // only precision is specified
+            precision = Integer.valueOf(params[0]);
+            HiveDecimalUtils.validateParameter(precision, scale);
           } else if (params.length == 2) {
             // New metadata always have two parameters.
             precision = Integer.parseInt(params[0]);
@@ -458,8 +492,8 @@ public final class TypeInfoUtils {
             throw new IllegalArgumentException("Type decimal only takes two parameter, but " +
                 params.length + " is seen");
           }
-
           return TypeInfoFactory.getDecimalTypeInfo(precision, scale);
+
         default:
           return TypeInfoFactory.getPrimitiveTypeInfo(typeEntry.typeName);
         }
@@ -869,9 +903,14 @@ public final class TypeInfoUtils {
     }
   }
 
-  public static void registerNumericType(PrimitiveCategory primitiveCategory, int level) {
+  public static synchronized void registerNumericType(PrimitiveCategory primitiveCategory, int level) {
     numericTypeList.add(primitiveCategory);
     numericTypes.put(primitiveCategory, level);
+  }
+
+  public static synchronized void registerDateType(PrimitiveCategory primitiveCategory, int level) {
+    dateTypeList.add(primitiveCategory);
+    dateTypes.put(primitiveCategory, level);
   }
 
   /**

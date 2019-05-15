@@ -1,3 +1,4 @@
+--! qt:dataset:src
 drop table if exists testDate;
 create table testDate(id int, dt date);
 insert into table testDate select 1, '2014-04-07' from src where key=100 limit 1;

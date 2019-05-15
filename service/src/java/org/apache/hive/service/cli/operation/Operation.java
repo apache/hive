@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,24 +18,28 @@
 package org.apache.hive.service.cli.operation;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.log.LogDivertAppender;
+import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.OperationLog;
-import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationHandle;
@@ -46,33 +50,29 @@ import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.rpc.thrift.TProtocolVersion;
-import org.apache.logging.log4j.ThreadContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
 
 public abstract class Operation {
-  // Constants of the key strings for the log4j ThreadContext.
-  public static final String SESSIONID_LOG_KEY = "sessionId";
-  public static final String QUERYID_LOG_KEY = "queryId";
-
   protected final HiveSession parentSession;
   private volatile OperationState state = OperationState.INITIALIZED;
   private volatile MetricsScope currentStateScope;
   private final OperationHandle opHandle;
   public static final FetchOrientation DEFAULT_FETCH_ORIENTATION = FetchOrientation.FETCH_NEXT;
   public static final Logger LOG = LoggerFactory.getLogger(Operation.class.getName());
-  protected boolean hasResultSet;
+  protected Boolean hasResultSet = null;
   protected volatile HiveSQLException operationException;
   protected volatile Future<?> backgroundHandle;
   protected OperationLog operationLog;
   protected boolean isOperationLogEnabled;
-  protected Map<String, String> confOverlay = new HashMap<String, String>();
+  private ScheduledExecutorService scheduledExecutorService;
 
   private long operationTimeout;
   private volatile long lastAccessTime;
   private final long beginTime;
+  private final CountDownLatch opTerminateMonitorLatch;
 
   protected long operationStart;
   protected long operationComplete;
@@ -86,27 +86,25 @@ public abstract class Operation {
   protected Operation(HiveSession parentSession, OperationType opType) {
     this(parentSession, null, opType);
   }
-  
-  protected Operation(HiveSession parentSession, Map<String, String> confOverlay,
-      OperationType opType) {
-    this(parentSession, confOverlay, opType, false);
-  }
 
   protected Operation(HiveSession parentSession,
-      Map<String, String> confOverlay, OperationType opType, boolean isAsyncQueryState) {
+      Map<String, String> confOverlay, OperationType opType) {
     this.parentSession = parentSession;
-    if (confOverlay != null) {
-      this.confOverlay = confOverlay;
-    }
     this.opHandle = new OperationHandle(opType, parentSession.getProtocolVersion());
+    opTerminateMonitorLatch = new CountDownLatch(1);
     beginTime = System.currentTimeMillis();
     lastAccessTime = beginTime;
     operationTimeout = HiveConf.getTimeVar(parentSession.getHiveConf(),
         HiveConf.ConfVars.HIVE_SERVER2_IDLE_OPERATION_TIMEOUT, TimeUnit.MILLISECONDS);
+    scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
     currentStateScope = updateOperationStateMetrics(null, MetricsConstant.OPERATION_PREFIX,
         MetricsConstant.COMPLETED_OPERATION_PREFIX, state);
-    queryState = new QueryState(parentSession.getHiveConf(), confOverlay, isAsyncQueryState);
+    queryState = new QueryState.Builder()
+                     .withConfOverlay(confOverlay)
+                     .withGenerateNewQueryId(true)
+                     .withHiveConf(parentSession.getHiveConf())
+                     .build();
   }
 
   public Future<?> getBackgroundHandle() {
@@ -148,7 +146,7 @@ public abstract class Operation {
   }
 
   public boolean hasResultSet() {
-    return hasResultSet;
+    return hasResultSet == null ? false : hasResultSet;
   }
 
   protected void setHasResultSet(boolean hasResultSet) {
@@ -194,6 +192,10 @@ public abstract class Operation {
     this.operationTimeout = operationTimeout;
   }
 
+  public long getNumModifiedRows() {
+    return queryState.getNumModifiedRows();
+  }
+
   protected void setOperationException(HiveSQLException operationException) {
     this.operationException = operationException;
   }
@@ -210,64 +212,23 @@ public abstract class Operation {
     return state.isTerminal();
   }
 
-  protected void createOperationLog() {
-    if (parentSession.isOperationLogEnabled()) {
-      File operationLogFile = new File(parentSession.getOperationLogSessionDir(),
-          opHandle.getHandleIdentifier().toString());
-      isOperationLogEnabled = true;
-
-      // create log file
-      try {
-        if (operationLogFile.exists()) {
-          LOG.warn("The operation log file should not exist, but it is already there: " +
-              operationLogFile.getAbsolutePath());
-          operationLogFile.delete();
-        }
-        if (!operationLogFile.getParentFile().exists()) {
-          LOG.warn("Operations log directory for this session does not exist, it could have been deleted " +
-              "externally. Recreating the directory for future queries in this session but the older operation " +
-              "logs for this session are no longer available");
-          if (!operationLogFile.getParentFile().mkdir()) {
-            LOG.warn("Log directory for this session could not be created, disabling " +
-                "operation logs: " + operationLogFile.getParentFile().getAbsolutePath());
-            isOperationLogEnabled = false;
-            return;
-          }
-        }
-        if (!operationLogFile.createNewFile()) {
-          // the log file already exists and cannot be deleted.
-          // If it can be read/written, keep its contents and use it.
-          if (!operationLogFile.canRead() || !operationLogFile.canWrite()) {
-            LOG.warn("The already existed operation log file cannot be recreated, " +
-                "and it cannot be read or written: " + operationLogFile.getAbsolutePath());
-            isOperationLogEnabled = false;
-            return;
-          }
-        }
-      } catch (Exception e) {
-        LOG.warn("Unable to create operation log file: " + operationLogFile.getAbsolutePath(), e);
-        isOperationLogEnabled = false;
-        return;
-      }
-
-      // create OperationLog object with above log file
-      try {
-        operationLog = new OperationLog(opHandle.toString(), operationLogFile, parentSession.getHiveConf());
-      } catch (FileNotFoundException e) {
-        LOG.warn("Unable to instantiate OperationLog object for operation: " +
-            opHandle, e);
-        isOperationLogEnabled = false;
-        return;
-      }
-
-      // register this operationLog to current thread
-      OperationLog.setCurrentOperationLog(operationLog);
-    }
+  /**
+   * Wait until the operation terminates and returns false if timeout.
+   * @param timeOutMs - timeout in milli-seconds
+   * @return true if operation is terminated or false if timed-out
+   * @throws InterruptedException
+   */
+  public boolean waitToTerminate(long timeOutMs) throws InterruptedException {
+    return opTerminateMonitorLatch.await(timeOutMs, TimeUnit.MILLISECONDS);
   }
 
-  protected void unregisterOperationLog() {
-    if (isOperationLogEnabled) {
-      OperationLog.removeCurrentOperationLog();
+  protected void createOperationLog() {
+    if (parentSession.isOperationLogEnabled()) {
+      File operationLogFile = new File(parentSession.getOperationLogSessionDir(), queryState.getQueryId());
+      isOperationLogEnabled = true;
+
+      // create OperationLog object with above log file
+      operationLog = new OperationLog(opHandle.toString(), operationLogFile, parentSession.getHiveConf());
     }
   }
 
@@ -276,23 +237,9 @@ public abstract class Operation {
    * Set up some preconditions, or configurations.
    */
   protected void beforeRun() {
+    ShimLoader.getHadoopShims().setHadoopQueryContext(queryState.getQueryId());
     createOperationLog();
-    registerLoggingContext();
-  }
-
-  /**
-   * Register logging context so that Log4J can print QueryId and/or SessionId for each message
-   */
-  protected void registerLoggingContext() {
-    ThreadContext.put(SESSIONID_LOG_KEY, SessionState.get().getSessionId());
-    ThreadContext.put(QUERYID_LOG_KEY, confOverlay.get(HiveConf.ConfVars.HIVEQUERYID.varname));
-  }
-
-  /**
-   * Unregister logging context
-   */
-  protected void unregisterLoggingContext() {
-    ThreadContext.clearAll();
+    LogUtils.registerLoggingContext(queryState.getConf());
   }
 
   /**
@@ -300,8 +247,9 @@ public abstract class Operation {
    * Clean up resources, which was set up in beforeRun().
    */
   protected void afterRun() {
-    unregisterLoggingContext();
-    unregisterOperationLog();
+    LogUtils.unregisterLoggingContext();
+    // Reset back to session context after the query is done
+    ShimLoader.getHadoopShims().setHadoopSessionContext(parentSession.getSessionState().getSessionId());
   }
 
   /**
@@ -323,7 +271,28 @@ public abstract class Operation {
     }
   }
 
-  protected synchronized void cleanupOperationLog() {
+  private static class OperationLogCleaner implements Runnable {
+    public static final Logger LOG = LoggerFactory.getLogger(OperationLogCleaner.class.getName());
+    private OperationLog operationLog;
+
+    public OperationLogCleaner(OperationLog operationLog) {
+      this.operationLog = operationLog;
+    }
+
+    @Override
+    public void run() {
+      if (operationLog != null) {
+        LOG.info("Closing operation log {}", operationLog);
+        operationLog.close();
+      }
+    }
+  }
+
+  protected synchronized void cleanupOperationLog(final long operationLogCleanupDelayMs) {
+    // stop the appenders for the operation log
+    String queryId = queryState.getQueryId();
+    LogUtils.stopQueryAppender(LogDivertAppender.QUERY_ROUTING_APPENDER, queryId);
+    LogUtils.stopQueryAppender(LogDivertAppenderForTest.TEST_QUERY_ROUTING_APPENDER, queryId);
     if (isOperationLogEnabled) {
       if (opHandle == null) {
         LOG.warn("Operation seems to be in invalid state, opHandle is null");
@@ -334,9 +303,16 @@ public abstract class Operation {
             + "but its OperationLog object cannot be found. "
             + "Perhaps the operation has already terminated.");
       } else {
-        operationLog.close();
+        if (operationLogCleanupDelayMs > 0) {
+          scheduledExecutorService.schedule(new OperationLogCleaner(operationLog), operationLogCleanupDelayMs,
+            TimeUnit.MILLISECONDS);
+        } else {
+          LOG.info("Closing operation log {} without delay", operationLog);
+          operationLog.close();
+        }
       }
     }
+
   }
 
   public abstract void cancel(OperationState stateAfterCancel) throws HiveSQLException;
@@ -437,6 +413,11 @@ public abstract class Operation {
         markOperationCompletedTime();
         break;
     }
+
+    if (state.isTerminal()) {
+      // Unlock the execution thread as operation is already terminated.
+      opTerminateMonitorLatch.countDown();
+    }
   }
 
   public long getOperationComplete() {
@@ -453,5 +434,13 @@ public abstract class Operation {
 
   protected void markOperationCompletedTime() {
     operationComplete = System.currentTimeMillis();
+  }
+
+  public String getQueryTag() {
+    return queryState.getQueryTag();
+  }
+
+  public String getQueryId() {
+    return queryState.getQueryId();
   }
 }

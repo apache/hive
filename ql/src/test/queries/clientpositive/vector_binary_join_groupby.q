@@ -6,11 +6,11 @@ SET hive.auto.convert.join.noconditionaltask.size=1000000000;
 SET hive.vectorized.execution.enabled=true;
 set hive.fetch.task.conversion=none;
 
-DROP TABLE over1k;
+DROP TABLE over1k_n7;
 DROP TABLE hundredorc;
 
 -- data setup
-CREATE TABLE over1k(t tinyint,
+CREATE TABLE over1k_n7(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -19,12 +19,12 @@ CREATE TABLE over1k(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE;
 
-LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k;
+LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k_n7;
 
 CREATE TABLE hundredorc(t tinyint,
            si smallint,
@@ -35,27 +35,31 @@ CREATE TABLE hundredorc(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 STORED AS ORC;
 
-INSERT INTO TABLE hundredorc SELECT * FROM over1k LIMIT 100;
+INSERT INTO TABLE hundredorc SELECT * FROM over1k_n7 LIMIT 100;
 
 EXPLAIN VECTORIZATION EXPRESSION
-SELECT sum(hash(*))
-FROM hundredorc t1 JOIN hundredorc t2 ON t1.bin = t2.bin;
+SELECT sum(hash(*)) k
+FROM hundredorc t1 JOIN hundredorc t2 ON t1.bin = t2.bin
+order by k;
 
-SELECT sum(hash(*))
-FROM hundredorc t1 JOIN hundredorc t2 ON t1.bin = t2.bin;
+SELECT sum(hash(*)) k
+FROM hundredorc t1 JOIN hundredorc t2 ON t1.bin = t2.bin
+order by k;
 
 EXPLAIN VECTORIZATION EXPRESSION
 SELECT count(*), bin
 FROM hundredorc
-GROUP BY bin;
+GROUP BY bin
+order by bin;
 
 SELECT count(*), bin
 FROM hundredorc
-GROUP BY bin;
+GROUP BY bin
+order by bin;
 
 -- HIVE-14045: Involve a binary vector scratch column for small table result (Native Vector MapJoin).
 

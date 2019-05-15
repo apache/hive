@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -38,7 +38,6 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.SemiJoin;
-import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
@@ -60,7 +59,6 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils.Operation;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
@@ -348,6 +346,7 @@ public class HiveOpConverter {
     // through Hive
     String[] baseSrc = new String[joinRel.getInputs().size()];
     String tabAlias = getHiveDerivedTableAlias();
+
     // 1. Convert inputs
     OpAttr[] inputs = new OpAttr[joinRel.getInputs().size()];
     List<Operator<?>> children = new ArrayList<Operator<?>>(joinRel.getInputs().size());
@@ -726,7 +725,7 @@ public class HiveOpConverter {
       List<String> keepColNames) throws SemanticException {
     // 1. Generate RS operator
     // 1.1 Prune the tableNames, only count the tableNames that are not empty strings
-	// as empty string in table aliases is only allowed for virtual columns.
+  // as empty string in table aliases is only allowed for virtual columns.
     String tableAlias = null;
     Set<String> tableNames = input.getSchema().getTableNames();
     for (String tableName : tableNames) {
@@ -885,7 +884,8 @@ public class HiveOpConverter {
 
   private static JoinOperator genJoin(RelNode join, ExprNodeDesc[][] joinExpressions,
       List<List<ExprNodeDesc>> filterExpressions, List<Operator<?>> children,
-      String[] baseSrc, String tabAlias) throws SemanticException {
+      String[] baseSrc, String tabAlias)
+          throws SemanticException {
 
     // 1. Extract join type
     JoinCondDesc[] joinCondns;
@@ -1010,7 +1010,7 @@ public class HiveOpConverter {
 
     // 4. We create the join operator with its descriptor
     JoinDesc desc = new JoinDesc(exprMap, outputColumnNames, noOuterJoin, joinCondns,
-            filters, joinExpressions);
+            filters, joinExpressions, null);
     desc.setReversedExprs(reversedExprs);
     desc.setFilterMap(filterMap);
 

@@ -1,19 +1,25 @@
-PREHOOK: query: create view masking_test as select cast(key as int) as key, value from src
+PREHOOK: query: create view masking_test_n1 as select cast(key as int) as key, value from src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@masking_test
-POSTHOOK: query: create view masking_test as select cast(key as int) as key, value from src
+PREHOOK: Output: default@masking_test_n1
+POSTHOOK: query: create view masking_test_n1 as select cast(key as int) as key, value from src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@masking_test
-POSTHOOK: Lineage: masking_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: masking_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: explain select * from masking_test
+POSTHOOK: Output: default@masking_test_n1
+POSTHOOK: Lineage: masking_test_n1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: masking_test_n1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain select * from masking_test_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from masking_test
+PREHOOK: Input: default@masking_test_n1
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from masking_test_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n1
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -24,23 +30,25 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10)) (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10)) (type: boolean)
-              Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 83 Data size: 14774 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: UDFToInteger(key) (type: int), reverse(value) (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 83 Data size: 15604 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 83 Data size: 15604 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -48,14 +56,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from masking_test
+PREHOOK: query: select * from masking_test_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test
+PREHOOK: Input: default@masking_test_n1
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select * from masking_test
+POSTHOOK: query: select * from masking_test_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test
+POSTHOOK: Input: default@masking_test_n1
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 0	0_lav
@@ -64,10 +72,16 @@ POSTHOOK: Input: default@src
 0	0_lav
 0	0_lav
 2	2_lav
-PREHOOK: query: explain select * from masking_test where key > 0
+PREHOOK: query: explain select * from masking_test_n1 where key > 0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from masking_test where key > 0
+PREHOOK: Input: default@masking_test_n1
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from masking_test_n1 where key > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n1
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -78,23 +92,25 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and (UDFToInteger(key) > 0)) (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and (UDFToInteger(key) > 0)) (type: boolean)
-              Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 27 Data size: 4806 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: UDFToInteger(key) (type: int), reverse(value) (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 27 Data size: 5076 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 27 Data size: 5076 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -102,23 +118,29 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from masking_test where key > 0
+PREHOOK: query: select * from masking_test_n1 where key > 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test
+PREHOOK: Input: default@masking_test_n1
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select * from masking_test where key > 0
+POSTHOOK: query: select * from masking_test_n1 where key > 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test
+POSTHOOK: Input: default@masking_test_n1
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 4	4_lav
 8	8_lav
 2	2_lav
-PREHOOK: query: explain select * from src a join masking_test b on a.key = b.value where b.key > 0
+PREHOOK: query: explain select * from src a join masking_test_n1 b on a.key = b.value where b.key > 0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from src a join masking_test b on a.key = b.value where b.key > 0
+PREHOOK: Input: default@masking_test_n1
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from src a join masking_test_n1 b on a.key = b.value where b.key > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n1
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -129,37 +151,39 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: string)
           TableScan
             alias: src
+            filterExpr: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and (UDFToInteger(key) > 0) and reverse(value) is not null) (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and (UDFToInteger(key) > 0) and reverse(value) is not null) (type: boolean)
-              Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 27 Data size: 4806 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: UDFToInteger(key) (type: int), reverse(value) (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 27 Data size: 5076 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 27 Data size: 5076 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: int)
       Reduce Operator Tree:
         Join Operator
@@ -169,10 +193,10 @@ STAGE PLANS:
             0 _col0 (type: string)
             1 _col1 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 42 Data size: 15372 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 42 Data size: 15372 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -184,10 +208,16 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select a.*, b.key from masking_test a join masking_test b on a.key = b.value where b.key > 0
+PREHOOK: query: explain select a.*, b.key from masking_test_n1 a join masking_test_n1 b on a.key = b.value where b.key > 0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select a.*, b.key from masking_test a join masking_test b on a.key = b.value where b.key > 0
+PREHOOK: Input: default@masking_test_n1
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain select a.*, b.key from masking_test_n1 a join masking_test_n1 b on a.key = b.value where b.key > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n1
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -198,39 +228,41 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and UDFToDouble(UDFToInteger(key)) is not null) (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10)) (type: boolean)
-              Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+              predicate: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and UDFToDouble(UDFToInteger(key)) is not null) (type: boolean)
+              Statistics: Num rows: 83 Data size: 14774 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: UDFToInteger(key) (type: int), reverse(value) (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 83 Data size: 15604 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: UDFToDouble(_col0) (type: double)
                   sort order: +
                   Map-reduce partition columns: UDFToDouble(_col0) (type: double)
-                  Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 83 Data size: 15604 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: int), _col1 (type: string)
           TableScan
             alias: src
+            filterExpr: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and (UDFToInteger(key) > 0) and UDFToDouble(reverse(value)) is not null) (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and (UDFToInteger(key) > 0) and reverse(value) is not null) (type: boolean)
-              Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
+              predicate: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and (UDFToInteger(key) > 0) and UDFToDouble(reverse(value)) is not null) (type: boolean)
+              Statistics: Num rows: 27 Data size: 4806 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: UDFToInteger(key) (type: int), reverse(value) (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 27 Data size: 5076 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: UDFToDouble(_col1) (type: double)
                   sort order: +
                   Map-reduce partition columns: UDFToDouble(_col1) (type: double)
-                  Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 27 Data size: 5076 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: int)
       Reduce Operator Tree:
         Join Operator
@@ -240,10 +272,10 @@ STAGE PLANS:
             0 UDFToDouble(_col0) (type: double)
             1 UDFToDouble(_col1) (type: double)
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 91 Data size: 969 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 42 Data size: 8064 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 91 Data size: 969 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 42 Data size: 8064 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -255,10 +287,16 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select * from masking_test a union select b.* from masking_test b where b.key > 0
+PREHOOK: query: explain select * from masking_test_n1 a union select b.* from masking_test_n1 b where b.key > 0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from masking_test a union select b.* from masking_test b where b.key > 0
+PREHOOK: Input: default@masking_test_n1
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from masking_test_n1 a union select b.* from masking_test_n1 b where b.key > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n1
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -269,61 +307,65 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10)) (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10)) (type: boolean)
-              Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 83 Data size: 14774 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: UDFToInteger(key) (type: int), reverse(value) (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 83 Data size: 15604 Basic stats: COMPLETE Column stats: COMPLETE
                 Union
-                  Statistics: Num rows: 110 Data size: 1167 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 110 Data size: 20680 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     keys: _col0 (type: int), _col1 (type: string)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 110 Data size: 1167 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 55 Data size: 10340 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int), _col1 (type: string)
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
-                      Statistics: Num rows: 110 Data size: 1167 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 55 Data size: 10340 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: src
+            filterExpr: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and (UDFToInteger(key) > 0)) (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and (UDFToInteger(key) > 0)) (type: boolean)
-              Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 27 Data size: 4806 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: UDFToInteger(key) (type: int), reverse(value) (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 27 Data size: 5076 Basic stats: COMPLETE Column stats: COMPLETE
                 Union
-                  Statistics: Num rows: 110 Data size: 1167 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 110 Data size: 20680 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     keys: _col0 (type: int), _col1 (type: string)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 110 Data size: 1167 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 55 Data size: 10340 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int), _col1 (type: string)
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
-                      Statistics: Num rows: 110 Data size: 1167 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 55 Data size: 10340 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int), KEY._col1 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 55 Data size: 583 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 55 Data size: 10340 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 55 Data size: 583 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 55 Data size: 10340 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

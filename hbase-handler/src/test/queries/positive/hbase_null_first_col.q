@@ -4,11 +4,12 @@ DROP TABLE hbase_null;
 CREATE TABLE src_null(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE;
 LOAD DATA LOCAL INPATH '../../data/files/null.txt' INTO TABLE src_null;
 
-CREATE TABLE hbase_null(key string, col1 string, col2 string)
+CREATE EXTERNAL TABLE hbase_null(key string, col1 string, col2 string)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = ":key,cf1:c1,cf1:c2"
-);
+)
+TBLPROPERTIES ("external.table.purge" = "true");
 
 SELECT d, a, c FROM src_null;
 

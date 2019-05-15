@@ -1,14 +1,14 @@
 set hive.fetch.task.conversion=none;
 
-create table test_table(d date);
+create table test_table_n7(d date);
 
-insert into test_table values(null), (null), (null);
+insert into test_table_n7 values(null), (null), (null);
 
-analyze table test_table compute statistics for columns;
+analyze table test_table_n7 compute statistics for columns;
 
-describe formatted test_table;
+describe formatted test_table_n7;
 
-explain select * from test_table where d is not null;
+explain select * from test_table_n7 where d is not null;
 
-select * from test_table where d is not null;
+select * from test_table_n7 where d is not null;
 

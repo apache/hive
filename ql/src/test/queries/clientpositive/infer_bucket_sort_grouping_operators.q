@@ -1,3 +1,5 @@
+--! qt:dataset:src
+--! qt:dataset:part
 set hive.mapred.mode=nonstrict;
 set hive.exec.infer.bucket.sort=true;
 

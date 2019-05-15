@@ -1,24 +1,24 @@
-PREHOOK: query: create table t1( key_int1 int, key_int2 int, key_string1 string, key_string2 string)
+PREHOOK: query: create table t1_n32( key_int1_n32 int, key_int2 int, key_string1 string, key_string2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1( key_int1 int, key_int2 int, key_string1 string, key_string2 string)
+PREHOOK: Output: default@t1_n32
+POSTHOOK: query: create table t1_n32( key_int1_n32 int, key_int2 int, key_string1 string, key_string2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-PREHOOK: query: select Q1.key_int1, sum(Q1.key_int1) from (select * from t1 cluster by key_int1) Q1 group by Q1.key_int1
+POSTHOOK: Output: default@t1_n32
+PREHOOK: query: select Q1.key_int1_n32, sum(Q1.key_int1_n32) from (select * from t1_n32 cluster by key_int1_n32) Q1 group by Q1.key_int1_n32
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n32
 #### A masked pattern was here ####
-POSTHOOK: query: select Q1.key_int1, sum(Q1.key_int1) from (select * from t1 cluster by key_int1) Q1 group by Q1.key_int1
+POSTHOOK: query: select Q1.key_int1_n32, sum(Q1.key_int1_n32) from (select * from t1_n32 cluster by key_int1_n32) Q1 group by Q1.key_int1_n32
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n32
 #### A masked pattern was here ####
-PREHOOK: query: drop table t1
+PREHOOK: query: drop table t1_n32
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: drop table t1
+PREHOOK: Input: default@t1_n32
+PREHOOK: Output: default@t1_n32
+POSTHOOK: query: drop table t1_n32
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
+POSTHOOK: Input: default@t1_n32
+POSTHOOK: Output: default@t1_n32

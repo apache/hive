@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -50,11 +50,11 @@ import com.google.common.collect.Multimap;
 /**
  * This optimizer is used to reduce the input size for the query for queries which are
  * specifying a limit.
- * <p/>
+ * <br>
  * For eg. for a query of type:
- * <p/>
- * select expr from T where <filter> limit 100;
- * <p/>
+ * <br>
+ * select expr from T where &lt;filter&lt; limit 100;
+ * <br>
  * Most probably, the whole table T need not be scanned.
  * Chances are that even if we scan the first file of T, we would get the 100 rows
  * needed by this query.
@@ -75,7 +75,7 @@ public class GlobalLimitOptimizer extends Transform {
     // The query only qualifies when there are only one top operator
     // and there is no transformer or UDTF and no block sampling
     // is used.
-    if (ctx.getTryCount() == 0 && topOps.size() == 1
+    if (topOps.size() == 1
         && !globalLimitCtx.ifHasTransformOrUDTF() &&
         nameToSplitSample.isEmpty()) {
 

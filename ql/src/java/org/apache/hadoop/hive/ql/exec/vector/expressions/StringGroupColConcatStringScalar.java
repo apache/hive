@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,11 +18,12 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Vectorized instruction to concatenate a string column to a scalar and put
@@ -30,35 +31,40 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  */
 public class StringGroupColConcatStringScalar extends VectorExpression {
   private static final long serialVersionUID = 1L;
-  private int colNum;
-  private int outputColumn;
-  private byte[] value;
 
-  public StringGroupColConcatStringScalar(int colNum, byte[] value, int outputColumn) {
-    this();
+  private final int colNum;
+  private final byte[] value;
+
+  public StringGroupColConcatStringScalar(int colNum, byte[] value, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
-    this.outputColumn = outputColumn;
     this.value = value;
   }
 
   public StringGroupColConcatStringScalar() {
     super();
+
+    // Dummy final assignments.
+    colNum = -1;
+    value = null;
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
 
     BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[colNum];
-    BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumn];
+    BytesColumnVector outputColVector = (BytesColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     int n = batch.size;
     byte[][] vector = inputColVector.vector;
     int[] start = inputColVector.start;
     int[] length = inputColVector.length;
+    boolean[] inputIsNull = inputColVector.isNull;
+    boolean[] outputIsNull = outputColVector.isNull;
 
     if (n == 0) {
 
@@ -67,92 +73,86 @@ public class StringGroupColConcatStringScalar extends VectorExpression {
     }
 
     // initialize output vector buffer to receive data
-    outV.initBuffer();
+    outputColVector.initBuffer();
+
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
+
+    if (inputColVector.isRepeating) {
+      if (inputColVector.noNulls || !inputIsNull[0]) {
+        // Set isNull before call in case it changes it mind.
+        outputIsNull[0] = false;
+        outputColVector.setConcat(0, vector[0], start[0], length[0], value, 0, value.length);
+      } else {
+        outputIsNull[0] = true;
+        outputColVector.noNulls = false;
+      }
+      outputColVector.isRepeating = true;
+      return;
+    }
 
     if (inputColVector.noNulls) {
-      outV.noNulls = true;
-      if (inputColVector.isRepeating) {
-        outV.isRepeating = true;
-        outV.setConcat(0, vector[0], start[0], length[0], value, 0, value.length);
-      } else if (batch.selectedInUse) {
-        for(int j = 0; j != n; j++) {
-          int i = sel[j];
-          outV.setConcat(i, vector[i], start[i], length[i], value, 0, value.length);
+      if (batch.selectedInUse) {
+
+        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+        if (!outputColVector.noNulls) {
+          for(int j = 0; j != n; j++) {
+           final int i = sel[j];
+           // Set isNull before call in case it changes it mind.
+           outputIsNull[i] = false;
+           outputColVector.setConcat(i, vector[i], start[i], length[i], value, 0, value.length);
+         }
+        } else {
+          for(int j = 0; j != n; j++) {
+            final int i = sel[j];
+            outputColVector.setConcat(i, vector[i], start[i], length[i], value, 0, value.length);
+          }
         }
-        outV.isRepeating = false;
       } else {
-        for(int i = 0; i != n; i++) {
-          outV.setConcat(i, vector[i], start[i], length[i], value, 0, value.length);
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
         }
-        outV.isRepeating = false;
+        for(int i = 0; i != n; i++) {
+          outputColVector.setConcat(i, vector[i], start[i], length[i], value, 0, value.length);
+        }
       }
-    } else {
+    } else /* there are nulls in the inputColVector */ {
+
+      // Carefully handle NULLs...
 
       /*
        * Handle case with nulls. Don't do function if the value is null, to save time,
        * because calling the function can be expensive.
        */
-      outV.noNulls = false;
-      if (inputColVector.isRepeating) {
-        outV.isRepeating = true;
-        outV.isNull[0] = inputColVector.isNull[0];
-        if (!inputColVector.isNull[0]) {
-          outV.setConcat(0, vector[0], start[0], length[0], value, 0, value.length);
-        }
-      } else if (batch.selectedInUse) {
+      outputColVector.noNulls = false;
+
+      if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
+          outputColVector.isNull[i] = inputColVector.isNull[i];
           if (!inputColVector.isNull[i]) {
-            outV.setConcat(i, vector[i], start[i], length[i], value, 0, value.length);
+            outputColVector.setConcat(i, vector[i], start[i], length[i], value, 0, value.length);
           }
-          outV.isNull[i] = inputColVector.isNull[i];
         }
-        outV.isRepeating = false;
       } else {
         for(int i = 0; i != n; i++) {
+          outputColVector.isNull[i] = inputColVector.isNull[i];
           if (!inputColVector.isNull[i]) {
-            outV.setConcat(i, vector[i], start[i], length[i], value, 0, value.length);
+            outputColVector.setConcat(i, vector[i], start[i], length[i], value, 0, value.length);
           }
-          outV.isNull[i] = inputColVector.isNull[i];
         }
-        outV.isRepeating = false;
       }
     }
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "String_Family";
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public byte[] getValue() {
-    return value;
-  }
-
-  public void setValue(byte[] value) {
-    this.value = value;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", val " + displayUtf8Bytes(value);
+    return getColumnParamString(0, colNum) + ", val " + displayUtf8Bytes(value);
   }
 
   @Override
@@ -163,7 +163,7 @@ public class StringGroupColConcatStringScalar extends VectorExpression {
         .setNumArguments(2)
         .setArgumentTypes(
             VectorExpressionDescriptor.ArgumentType.STRING_FAMILY,
-            VectorExpressionDescriptor.ArgumentType.STRING)
+            VectorExpressionDescriptor.ArgumentType.STRING_FAMILY)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.SCALAR).build();

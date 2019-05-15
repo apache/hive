@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -61,6 +61,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.math.IntMath;
 
 /**
  * Planner rule that expands distinct aggregates
@@ -161,9 +162,10 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
 
     // If all of the agg expressions are distinct and have the same
     // arguments then we can use a more efficient form.
+    final RelMetadataQuery mq = call.getMetadataQuery();
     if ((nonDistinctCount == 0) && (argListSets.size() == 1)) {
       for (Integer arg : argListSets.iterator().next()) {
-        Set<RelColumnOrigin> colOrigs = RelMetadataQuery.instance().getColumnOrigins(aggregate, arg);
+        Set<RelColumnOrigin> colOrigs = mq.getColumnOrigins(aggregate.getInput(), arg);
         if (null != colOrigs) {
           for (RelColumnOrigin colOrig : colOrigs) {
             RelOptHiveTable hiveTbl = (RelOptHiveTable)colOrig.getOriginTable();
@@ -206,10 +208,11 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
     return createCount(groupingSets, argList, cleanArgList, map, sourceOfForCountDistinct);
   }
 
-  private long getGroupingIdValue(List<Integer> list, List<Integer> sourceOfForCountDistinct) {
-    long ind = 0;
+  private int getGroupingIdValue(List<Integer> list, List<Integer> sourceOfForCountDistinct,
+          int groupCount) {
+    int ind = IntMath.pow(2, groupCount) - 1;
     for (int i : list) {
-      ind |= 1 << sourceOfForCountDistinct.indexOf(i);
+      ind &= ~(1 << groupCount - sourceOfForCountDistinct.indexOf(i) - 1);
     }
     return ind;
   }
@@ -240,7 +243,7 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
     for (List<Integer> list : cleanArgList) {
       RexNode condition = rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, originalInputRefs
           .get(originalInputRefs.size() - 1), rexBuilder.makeExactLiteral(new BigDecimal(
-          getGroupingIdValue(list, sourceOfForCountDistinct))));
+          getGroupingIdValue(list, sourceOfForCountDistinct, aggr.getGroupCount()))));
       if (list.size() == 1) {
         int pos = list.get(0);
         RexNode notNull = rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL,
@@ -265,7 +268,7 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
       aggregateCalls.add(aggregateCall);
     }
     Aggregate aggregate = new HiveAggregate(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), gbInputRel,
-        false, ImmutableBitSet.of(), null, aggregateCalls);
+        ImmutableBitSet.of(), null, aggregateCalls);
 
     // create the project after GB. For those repeated values, e.g., select
     // count(distinct x, y), count(distinct y, x), we find the correct mapping.
@@ -324,10 +327,10 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
     // Create GroupingID column
     AggregateCall aggCall = AggregateCall.create(HiveGroupingID.INSTANCE, false,
         new ImmutableList.Builder<Integer>().build(), -1, this.cluster.getTypeFactory()
-            .createSqlType(SqlTypeName.INTEGER), HiveGroupingID.INSTANCE.getName());
+            .createSqlType(SqlTypeName.BIGINT), HiveGroupingID.INSTANCE.getName());
     aggregateCalls.add(aggCall);
     return new HiveAggregate(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
-        aggregate.getInput(), true, groupSet, origGroupSets, aggregateCalls);
+        aggregate.getInput(), groupSet, origGroupSets, aggregateCalls);
   }
 
   /**

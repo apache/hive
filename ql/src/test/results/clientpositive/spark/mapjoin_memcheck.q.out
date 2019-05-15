@@ -20,10 +20,14 @@ PREHOOK: query: explain
 select src1.key as k1, src1.value as v1, src2.key, src2.value
 from src0 src1 inner join src0 src2 on src1.key = src2.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src0
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select src1.key as k1, src1.value as v1, src2.key, src2.value
 from src0 src1 inner join src0 src2 on src1.key = src2.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -38,6 +42,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -50,6 +55,7 @@ STAGE PLANS:
                         keys:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -61,6 +67,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -86,6 +93,7 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 

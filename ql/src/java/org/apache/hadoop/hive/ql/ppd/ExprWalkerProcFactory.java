@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -104,7 +104,11 @@ public final class ExprWalkerProcFactory {
           return false;
         } else {
           if (exp instanceof ExprNodeGenericFuncDesc) {
-            isCandidate = false;
+            if (isDeterministic((ExprNodeGenericFuncDesc) exp)) {
+              isCandidate = true;
+            } else {
+              isCandidate = false;
+            }
           }
           if (exp instanceof ExprNodeColumnDesc && ci == null) {
             ExprNodeColumnDesc column = (ExprNodeColumnDesc)exp;
@@ -133,6 +137,30 @@ public final class ExprWalkerProcFactory {
       return isCandidate;
     }
 
+  }
+
+  /**
+   *
+   * @param funcDesc function descriptor
+   * @return true if the function is deterministic false otherwise
+   */
+  public static boolean isDeterministic(ExprNodeGenericFuncDesc funcDesc) {
+    if (FunctionRegistry.isConsistentWithinQuery(funcDesc.getGenericUDF())) {
+      // check whether the children or deterministic
+      for (ExprNodeDesc exprNodeDesc : funcDesc.getChildren()) {
+        if (exprNodeDesc instanceof ExprNodeGenericFuncDesc) {
+          if (!isDeterministic((ExprNodeGenericFuncDesc) exprNodeDesc)) {
+            // some child is not deterministic - return false
+            return false;
+          }
+        }
+      }
+      // all children are deterministic - return true
+      return true;
+    }
+
+    // function is not deterministic - return false
+    return false;
   }
 
   /**
@@ -198,7 +226,7 @@ public final class ExprWalkerProcFactory {
       String alias = null;
       ExprNodeGenericFuncDesc expr = (ExprNodeGenericFuncDesc) nd;
 
-      if (!FunctionRegistry.isDeterministic(expr.getGenericUDF())) {
+      if (!FunctionRegistry.isConsistentWithinQuery(expr.getGenericUDF())) {
         // this GenericUDF can't be pushed down
         ExprInfo exprInfo = ctx.addOrGetExprInfo(expr);
         exprInfo.isCandidate = false;

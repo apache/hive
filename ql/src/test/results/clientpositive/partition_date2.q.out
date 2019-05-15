@@ -251,7 +251,6 @@ region              	int
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	date                	                    
 region              	int                 	                    
 	 	 
@@ -311,7 +310,6 @@ region              	int
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	date                	                    
 region              	int                 	                    
 	 	 

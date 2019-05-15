@@ -31,7 +31,6 @@ POSTHOOK: query: desc formatted stats_src
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats_src
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -42,7 +41,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
@@ -128,13 +127,11 @@ POSTHOOK: query: desc formatted stats_part
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats_part
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -145,6 +142,12 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	3                   
+	numPartitions       	3                   
+	numRows             	1500                
+	rawDataSize         	15936               
+	totalSize           	17436               
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -164,13 +167,11 @@ POSTHOOK: query: desc formatted stats_part partition (ds='2010-04-08', hr = '11'
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats_part
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -180,7 +181,7 @@ Database:           	default
 Table:              	stats_part          	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
@@ -204,13 +205,11 @@ POSTHOOK: query: desc formatted stats_part partition (ds='2010-04-08', hr = '12'
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats_part
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -220,7 +219,7 @@ Database:           	default
 Table:              	stats_part          	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
@@ -264,13 +263,11 @@ POSTHOOK: query: desc formatted stats_part
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats_part
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -281,6 +278,12 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	3                   
+	numPartitions       	3                   
+	numRows             	1500                
+	rawDataSize         	15936               
+	totalSize           	17436               
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hive.hcatalog.messaging.AddPartitionMessage;
 import org.apache.hive.hcatalog.messaging.CreateDatabaseMessage;
 import org.apache.hive.hcatalog.messaging.CreateTableMessage;
@@ -37,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
@@ -65,8 +67,9 @@ public class TestHCatClientNotification {
 
   @BeforeClass
   public static void setupClient() throws Exception {
-    HiveConf conf = new HiveConf(); conf.setVar(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS,
-        DbNotificationListener.class.getName());
+    HiveConf conf = new HiveConf();
+    conf.setVar(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS, DbNotificationListener.class.getName());
+    conf.setVar(HiveConf.ConfVars.METASTORE_EVENT_MESSAGE_FACTORY, JSONMessageEncoder.class.getName());
     hCatClient = HCatClient.create(conf);
     md = MessageFactory.getInstance().getDeserializer();
   }
@@ -137,6 +140,7 @@ public class TestHCatClientNotification {
     CreateTableMessage createTableMessage = md.getCreateTableMessage(event.getMessage());
     assertEquals(dbName, createTableMessage.getDB());
     assertEquals(tableName, createTableMessage.getTable());
+    assertEquals(TableType.MANAGED_TABLE.toString(), createTableMessage.getTableType());
 
     // fetch the table marked by the message and compare
     HCatTable createdTable = hCatClient.getTable(dbName,tableName);
@@ -167,6 +171,7 @@ public class TestHCatClientNotification {
     DropTableMessage dropTableMessage = md.getDropTableMessage(event.getMessage());
     assertEquals(dbName, dropTableMessage.getDB());
     assertEquals(tableName, dropTableMessage.getTable());
+    assertEquals(TableType.MANAGED_TABLE.toString(), dropTableMessage.getTableType());
   }
 
   @Test
@@ -198,6 +203,7 @@ public class TestHCatClientNotification {
     AddPartitionMessage addPartitionMessage = md.getAddPartitionMessage(event.getMessage());
     assertEquals(dbName, addPartitionMessage.getDB());
     assertEquals(tableName, addPartitionMessage.getTable());
+    assertEquals(TableType.MANAGED_TABLE.toString(), addPartitionMessage.getTableType());
     List<Map<String,String>> ptndescs = addPartitionMessage.getPartitions();
 
     // fetch the partition referred to by the message and compare
@@ -245,6 +251,7 @@ public class TestHCatClientNotification {
     DropPartitionMessage dropPartitionMessage = md.getDropPartitionMessage(event.getMessage());
     assertEquals(dbName, dropPartitionMessage.getDB());
     assertEquals(tableName, dropPartitionMessage.getTable());
+    assertEquals(TableType.MANAGED_TABLE.toString(), dropPartitionMessage.getTableType());
     List<Map<String, String>> droppedPartSpecs = dropPartitionMessage.getPartitions();
     assertNotNull(droppedPartSpecs);
     assertEquals(1,droppedPartSpecs.size());

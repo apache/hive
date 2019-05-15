@@ -2,15 +2,15 @@ CREATE DATABASE test1;
 CREATE DATABASE test2;
 
 USE test1;
-CREATE TABLE shtb_test1(KEY INT, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE;
-CREATE VIEW shtb_test1_view1 AS SELECT * FROM shtb_test1 where KEY > 1000 and KEY < 2000;
-CREATE VIEW shtb_test1_view2 AS SELECT * FROM shtb_test1 where KEY > 100 and KEY < 200;
-CREATE VIEW shtb_full_view2 AS SELECT * FROM shtb_test1;
+CREATE TABLE shtb_test1_n1(KEY INT, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE;
+CREATE VIEW shtb_test1_view1_n0 AS SELECT * FROM shtb_test1_n1 where KEY > 1000 and KEY < 2000;
+CREATE VIEW shtb_test1_view2_n0 AS SELECT * FROM shtb_test1_n1 where KEY > 100 and KEY < 200;
+CREATE VIEW shtb_full_view2_n0 AS SELECT * FROM shtb_test1_n1;
 USE test2;
-CREATE TABLE shtb_test1(KEY INT, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE;
-CREATE TABLE shtb_test2(KEY INT, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE;
-CREATE VIEW shtb_test1_view1 AS SELECT * FROM shtb_test1 where KEY > 1000 and KEY < 2000;
-CREATE VIEW shtb_test2_view2 AS SELECT * FROM shtb_test2 where KEY > 100 and KEY < 200;
+CREATE TABLE shtb_test1_n1(KEY INT, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE;
+CREATE TABLE shtb_test2_n1(KEY INT, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE;
+CREATE VIEW shtb_test1_view1_n0 AS SELECT * FROM shtb_test1_n1 where KEY > 1000 and KEY < 2000;
+CREATE VIEW shtb_test2_view2_n0 AS SELECT * FROM shtb_test2_n1 where KEY > 100 and KEY < 200;
 
 USE test1;
 SHOW VIEWS;
@@ -33,24 +33,24 @@ SHOW VIEWS IN test2 LIKE "nomatch";
 -- SHOW VIEWS from a database with a name that requires escaping
 CREATE DATABASE `database`;
 USE `database`;
-CREATE TABLE foo(a INT);
-CREATE VIEW fooview AS SELECT * FROM foo;
+CREATE TABLE foo_n8(a INT);
+CREATE VIEW fooview_n0 AS SELECT * FROM foo_n8;
 USE default;
-SHOW VIEWS FROM `database` LIKE "fooview";
+SHOW VIEWS FROM `database` LIKE "fooview_n0";
 
-DROP VIEW fooview;
-DROP TABLE foo;
+DROP VIEW fooview_n0;
+DROP TABLE foo_n8;
 
 USE test1;
-DROP VIEW shtb_test1_view1;
-DROP VIEW shtb_test1_view2;
-DROP VIEW shtb_full_view2;
-DROP TABLE shtb_test1;
+DROP VIEW shtb_test1_view1_n0;
+DROP VIEW shtb_test1_view2_n0;
+DROP VIEW shtb_full_view2_n0;
+DROP TABLE shtb_test1_n1;
 DROP DATABASE test1;
 
 USE test2;
-DROP VIEW shtb_test1_view1;
-DROP VIEW shtb_test2_view2;
-DROP TABLE shtb_test1;
-DROP TABLE shtb_test2;
+DROP VIEW shtb_test1_view1_n0;
+DROP VIEW shtb_test2_view2_n0;
+DROP TABLE shtb_test1_n1;
+DROP TABLE shtb_test2_n1;
 DROP DATABASE test2;

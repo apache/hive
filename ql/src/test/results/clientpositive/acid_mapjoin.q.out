@@ -24,20 +24,24 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid2
 PREHOOK: query: insert into acid1 values (1, 'a'), (2, 'b'), (3, 'c'), (4, 'd'), (5, 'e'), (6, 'f'), (7, 'g'), (8, 'h')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acid1
 POSTHOOK: query: insert into acid1 values (1, 'a'), (2, 'b'), (3, 'c'), (4, 'd'), (5, 'e'), (6, 'f'), (7, 'g'), (8, 'h')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@acid1
-POSTHOOK: Lineage: acid1.key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: acid1.value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: acid1.key SCRIPT []
+POSTHOOK: Lineage: acid1.value SCRIPT []
 PREHOOK: query: insert into acid2 values (1,'a'),(3,'c'),(5,'e'),(7,'g')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acid2
 POSTHOOK: query: insert into acid2 values (1,'a'),(3,'c'),(5,'e'),(7,'g')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@acid2
-POSTHOOK: Lineage: acid2.key EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: acid2.value SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: acid2.key SCRIPT []
+POSTHOOK: Lineage: acid2.value SCRIPT []
 PREHOOK: query: alter table acid2 update statistics set('numRows'='210', 'rawDataSize'='840')
 PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
 PREHOOK: Input: default@acid2
@@ -57,9 +61,15 @@ POSTHOOK: Output: default@acid1
 PREHOOK: query: explain
 select count(*) from acid1 join acid2 on acid1.key = acid2.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acid1
+PREHOOK: Input: default@acid2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from acid1 join acid2 on acid1.key = acid2.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid1
+POSTHOOK: Input: default@acid2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-2 depends on stages: Stage-5
@@ -76,14 +86,15 @@ STAGE PLANS:
         $hdt$_1:acid2 
           TableScan
             alias: acid2
-            Statistics: Num rows: 210 Data size: 840 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 210 Data size: 840 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 210 Data size: 840 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 210 Data size: 840 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 210 Data size: 840 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 210 Data size: 840 Basic stats: COMPLETE Column stats: COMPLETE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
@@ -94,30 +105,33 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acid1
-            Statistics: Num rows: 316 Data size: 1265 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 316 Data size: 1264 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 316 Data size: 1265 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 316 Data size: 1264 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 316 Data size: 1265 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 316 Data size: 1264 Basic stats: COMPLETE Column stats: COMPLETE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
                   keys:
                     0 _col0 (type: int)
                     1 _col0 (type: int)
-                  Statistics: Num rows: 347 Data size: 1391 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8295 Data size: 66360 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count()
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -125,10 +139,10 @@ STAGE PLANS:
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

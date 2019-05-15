@@ -25,8 +25,6 @@ bin=`cd "$bin"; pwd`
 
 . "$bin"/hive-config.sh
 
-TMP_USER_DIR="/tmp/${USER}"
-STDERR="${TMP_USER_DIR}/stderr"
 SERVICE=""
 HELP=""
 SKIP_HBASECP=false
@@ -87,6 +85,11 @@ if [ "$SERVICE" = "" ] ; then
   fi
 fi
 
+if [[ "$SERVICE" == "cli" && "$USE_BEELINE_FOR_HIVE_CLI" == "true" ]] ; then
+  CLIUSER=`whoami`
+  SERVICE="beeline"
+fi
+
 if [[ "$SERVICE" =~ ^(help|version|orcfiledump|rcfilecat|schemaTool|cleardanglingscratchdir|metastore|beeline|llapstatus|llap)$ ]] ; then
   SKIP_HBASECP=true
 fi
@@ -112,7 +115,7 @@ then
   fi
 fi
 
-CLASSPATH="${HIVE_CONF_DIR}"
+CLASSPATH="${TEZ_CONF_DIR:-/etc/tez/conf}:${HIVE_CONF_DIR}"
 
 HIVE_LIB=${HIVE_HOME}/lib
 
@@ -133,8 +136,17 @@ if [ ! -f ${HIVE_LIB}/hive-cli-*.jar ]; then
   exit 3;
 fi
 
+# Hbase and Hadoop use their own log4j jars.  Including hives log4j jars can cause
+# log4j warnings.  So save hives log4j jars in LOG_JAR_CLASSPATH, and add it to classpath
+# after Hbase and Hadoop calls finish
+LOG_JAR_CLASSPATH="";
+
 for f in ${HIVE_LIB}/*.jar; do
-  CLASSPATH=${CLASSPATH}:$f;
+  if [[ $f == *"log4j"* ]]; then
+    LOG_JAR_CLASSPATH=${LOG_JAR_CLASSPATH}:$f;
+  else
+    CLASSPATH=${CLASSPATH}:$f;
+  fi
 done
 
 # add the auxillary jars such as serdes
@@ -216,30 +228,21 @@ if [ "$HADOOP_HOME" == "" ]; then
   exit 4;
 fi
 
+# add distcp to classpath, hive depends on it
+for f in ${HADOOP_HOME}/share/hadoop/tools/lib/hadoop-distcp-*.jar; do
+  export HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:$f;
+done
+
 HADOOP=$HADOOP_HOME/bin/hadoop
 if [ ! -f ${HADOOP} ]; then
   echo "Cannot find hadoop installation: \$HADOOP_HOME or \$HADOOP_PREFIX must be set or hadoop must be in the path";
   exit 4;
 fi
 
-if [ ! -d ${TMP_USER_DIR} ]; then
-  mkdir -p ${TMP_USER_DIR} 2> /dev/null
-  if [ $? -ne 0 ]; then
-    STDERR="/dev/tty"
-  fi
-fi
-
-if [ "${STDERR}" != "/dev/null" ] && [ ! -f ${STDERR} ]; then
-  touch ${STDERR} 2> /dev/null
-  if [ $? -ne 0 ]; then
-    STDERR="/dev/tty"
-  fi
-fi
-
 if [ "$SKIP_HADOOPVERSION" = false ]; then
   # Make sure we're using a compatible version of Hadoop
   if [ "x$HADOOP_VERSION" == "x" ]; then
-      HADOOP_VERSION=$($HADOOP version 2>> ${STDERR} | awk -F"\t" '/Hadoop/ {print $0}' | cut -d' ' -f 2);
+      HADOOP_VERSION=$($HADOOP version 2>&2 | awk -F"\t" '/Hadoop/ {print $0}' | cut -d' ' -f 2);
   fi
   
   # Save the regex to a var to workaround quoting incompatabilities
@@ -290,7 +293,7 @@ if [ "$SKIP_HBASECP" = false ]; then
   if [[ -n $HBASE_BIN ]] ; then
     # exclude ZK, PB, and Guava (See HIVE-2055)
     # depends on HBASE-8438 (hbase-0.94.14+, hbase-0.96.1+) for `hbase mapredcp` command
-    for x in $($HBASE_BIN mapredcp 2>> ${STDERR} | tr ':' '\n') ; do
+    for x in $($HBASE_BIN mapredcp 2>&2 | tr ':' '\n') ; do
       if [[ $x == *zookeeper* || $x == *protobuf-java* || $x == *guava* ]] ; then
         continue
       fi
@@ -341,15 +344,20 @@ export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.configurationFile=hive-lo
 if [ -f "${HIVE_CONF_DIR}/parquet-logging.properties" ]; then
   export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Djava.util.logging.config.file=${HIVE_CONF_DIR}/parquet-logging.properties "
 else
-  export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.configurationFile=hive-log4j2.properties -Djava.util.logging.config.file=$bin/../conf/parquet-logging.properties "
+  export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Djava.util.logging.config.file=$bin/../conf/parquet-logging.properties "
 fi
 
 if [[ "$SERVICE" =~ ^(hiveserver2|beeline|cli)$ ]] ; then
   # If process is backgrounded, don't change terminal settings
-  if [[ ( ! $(ps -o stat= -p $$) =~ "+" ) && ! ( -p /dev/stdin ) ]]; then
+  if [[ ( ! $(ps -o stat= -p $$) =~ "+" ) && ! ( -p /dev/stdin ) && ( ! $(ps -o tty= -p $$) =~ "?" ) ]]; then
     export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Djline.terminal=jline.UnsupportedTerminal"
   fi
 fi
+
+# include the log4j jar that is used for hive into the classpath
+CLASSPATH="${CLASSPATH}:${LOG_JAR_CLASSPATH}"
+export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${LOG_JAR_CLASSPATH}"
+export JVM_PID="$$"
 
 if [ "$TORUN" = "" ] ; then
   echo "Service $SERVICE not found"

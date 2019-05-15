@@ -72,6 +72,8 @@ FROM (
 ) c
 INSERT OVERWRITE TABLE dest1_rc SELECT c.c1, c.c2, c.c3, c.c4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_rc
 POSTHOOK: query: EXPLAIN
 FROM (
  FROM 
@@ -87,10 +89,13 @@ FROM (
 ) c
 INSERT OVERWRITE TABLE dest1_rc SELECT c.c1, c.c2, c.c3, c.c4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_rc
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
-  Stage-2 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-0, Stage-3
+  Stage-3 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -98,57 +103,75 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src1
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: ((UDFToDouble(key) < 20.0D) and (UDFToDouble(key) > 15.0D)) (type: boolean)
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((UDFToDouble(key) > 10.0) and (UDFToDouble(key) < 20.0) and (UDFToDouble(key) > 15.0) and (UDFToDouble(key) < 25.0)) (type: boolean)
-              Statistics: Num rows: 6 Data size: 63 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((UDFToDouble(key) < 20.0D) and (UDFToDouble(key) > 15.0D)) (type: boolean)
+              Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 6 Data size: 63 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 6 Data size: 63 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: string)
           TableScan
             alias: src2
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: ((UDFToDouble(key) > 15.0D) and (UDFToDouble(key) < 25.0D)) (type: boolean)
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((UDFToDouble(key) > 15.0) and (UDFToDouble(key) < 25.0)) (type: boolean)
-              Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((UDFToDouble(key) < 25.0D) and (UDFToDouble(key) > 15.0D)) (type: boolean)
+              Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Right Outer Join0 to 1
+               Right Outer Join 0 to 1
           keys:
             0 _col0 (type: string)
             1 _col0 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 60 Data size: 642 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 55 Data size: 19580 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: UDFToInteger(_col0) (type: int), _col1 (type: string), UDFToInteger(_col2) (type: int), _col3 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 60 Data size: 642 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 55 Data size: 10450 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 60 Data size: 642 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 55 Data size: 10450 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
                   name: default.dest1_rc
+            Select Operator
+              expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string)
+              outputColumnNames: c1, c2, c3, c4
+              Statistics: Num rows: 55 Data size: 10450 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: compute_stats(c1, 'hll'), compute_stats(c2, 'hll'), compute_stats(c3, 'hll'), compute_stats(c4, 'hll')
+                minReductionHashAggr: 0.99
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 1 Data size: 1728 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-0
     Move Operator
@@ -161,7 +184,35 @@ STAGE PLANS:
               name: default.dest1_rc
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: c1, c2, c3, c4
+          Column Types: int, string, int, string
+          Table: default.dest1_rc
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 1 Data size: 1728 Basic stats: COMPLETE Column stats: COMPLETE
+              value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: FROM (
  FROM 

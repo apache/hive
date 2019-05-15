@@ -1,0 +1,2342 @@
+PREHOOK: query: drop table if exists testAltCol_n1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists testAltCol_n1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table testAltCol_n1
+(cId        TINYINT,
+ cBigInt    BIGINT,
+ cInt       INT,
+ cSmallInt  SMALLINT,
+ cTinyint   TINYINT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testAltCol_n1
+POSTHOOK: query: create table testAltCol_n1
+(cId        TINYINT,
+ cBigInt    BIGINT,
+ cInt       INT,
+ cSmallInt  SMALLINT,
+ cTinyint   TINYINT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testAltCol_n1
+PREHOOK: query: insert into testAltCol_n1 values
+(1,
+ 1234567890123456789,
+ 1234567890,
+ 12345,
+ 123)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@testaltcol_n1
+POSTHOOK: query: insert into testAltCol_n1 values
+(1,
+ 1234567890123456789,
+ 1234567890,
+ 12345,
+ 123)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@testaltcol_n1
+POSTHOOK: Lineage: testaltcol_n1.cbigint SCRIPT []
+POSTHOOK: Lineage: testaltcol_n1.cid SCRIPT []
+POSTHOOK: Lineage: testaltcol_n1.cint SCRIPT []
+POSTHOOK: Lineage: testaltcol_n1.csmallint SCRIPT []
+POSTHOOK: Lineage: testaltcol_n1.ctinyint SCRIPT []
+PREHOOK: query: insert into testAltCol_n1 values
+(2,
+ 1,
+ 2,
+ 3,
+ 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@testaltcol_n1
+POSTHOOK: query: insert into testAltCol_n1 values
+(2,
+ 1,
+ 2,
+ 3,
+ 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@testaltcol_n1
+POSTHOOK: Lineage: testaltcol_n1.cbigint SCRIPT []
+POSTHOOK: Lineage: testaltcol_n1.cid SCRIPT []
+POSTHOOK: Lineage: testaltcol_n1.cint SCRIPT []
+POSTHOOK: Lineage: testaltcol_n1.csmallint SCRIPT []
+POSTHOOK: Lineage: testaltcol_n1.ctinyint SCRIPT []
+PREHOOK: query: insert into testAltCol_n1 values
+(3,
+ 1234567890123456789,
+ 1234567890,
+ 12345,
+ 123)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@testaltcol_n1
+POSTHOOK: query: insert into testAltCol_n1 values
+(3,
+ 1234567890123456789,
+ 1234567890,
+ 12345,
+ 123)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@testaltcol_n1
+POSTHOOK: Lineage: testaltcol_n1.cbigint SCRIPT []
+POSTHOOK: Lineage: testaltcol_n1.cid SCRIPT []
+POSTHOOK: Lineage: testaltcol_n1.cint SCRIPT []
+POSTHOOK: Lineage: testaltcol_n1.csmallint SCRIPT []
+POSTHOOK: Lineage: testaltcol_n1.ctinyint SCRIPT []
+PREHOOK: query: insert into testAltCol_n1 values
+(4,
+ -1234567890123456789,
+ -1234567890,
+ -12345,
+ -123)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@testaltcol_n1
+POSTHOOK: query: insert into testAltCol_n1 values
+(4,
+ -1234567890123456789,
+ -1234567890,
+ -12345,
+ -123)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@testaltcol_n1
+POSTHOOK: Lineage: testaltcol_n1.cbigint SCRIPT []
+POSTHOOK: Lineage: testaltcol_n1.cid SCRIPT []
+POSTHOOK: Lineage: testaltcol_n1.cint SCRIPT []
+POSTHOOK: Lineage: testaltcol_n1.csmallint SCRIPT []
+POSTHOOK: Lineage: testaltcol_n1.ctinyint SCRIPT []
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltCol_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcol_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltCol_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcol_n1
+#### A masked pattern was here ####
+1	1234567890123456789	1234567890	12345	123
+2	1	2	3	4
+3	1234567890123456789	1234567890	12345	123
+4	-1234567890123456789	-1234567890	-12345	-123
+PREHOOK: query: drop table if exists testAltColT_n1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists testAltColT_n1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table testAltColT_n1 stored as textfile as select * from testAltCol_n1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@testaltcol_n1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testAltColT_n1
+POSTHOOK: query: create table testAltColT_n1 stored as textfile as select * from testAltCol_n1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@testaltcol_n1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testAltColT_n1
+POSTHOOK: Lineage: testaltcolt_n1.cbigint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: testaltcolt_n1.cid SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cid, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: testaltcolt_n1.cint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: testaltcolt_n1.csmallint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: testaltcolt_n1.ctinyint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolt_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolt_n1
+#### A masked pattern was here ####
+1	1234567890123456789	1234567890	12345	123
+2	1	2	3	4
+3	1234567890123456789	1234567890	12345	123
+4	-1234567890123456789	-1234567890	-12345	-123
+PREHOOK: query: alter table testAltColT_n1 replace columns
+(cId        TINYINT,
+ cBigInt    BIGINT,
+ cInt       BIGINT,
+ cSmallInt  BIGINT,
+ cTinyint   BIGINT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolt_n1
+PREHOOK: Output: default@testaltcolt_n1
+POSTHOOK: query: alter table testAltColT_n1 replace columns
+(cId        TINYINT,
+ cBigInt    BIGINT,
+ cInt       BIGINT,
+ cSmallInt  BIGINT,
+ cTinyint   BIGINT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolt_n1
+POSTHOOK: Output: default@testaltcolt_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolt_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolt_n1
+#### A masked pattern was here ####
+1	1234567890123456789	1234567890	12345	123
+2	1	2	3	4
+3	1234567890123456789	1234567890	12345	123
+4	-1234567890123456789	-1234567890	-12345	-123
+PREHOOK: query: alter table testAltColT_n1 replace columns
+(cId        TINYINT,
+ cBigInt    INT,
+ cInt       INT,
+ cSmallInt  INT,
+ cTinyint   INT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolt_n1
+PREHOOK: Output: default@testaltcolt_n1
+POSTHOOK: query: alter table testAltColT_n1 replace columns
+(cId        TINYINT,
+ cBigInt    INT,
+ cInt       INT,
+ cSmallInt  INT,
+ cTinyint   INT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolt_n1
+POSTHOOK: Output: default@testaltcolt_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolt_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolt_n1
+#### A masked pattern was here ####
+1	NULL	1234567890	12345	123
+2	1	2	3	4
+3	NULL	1234567890	12345	123
+4	NULL	-1234567890	-12345	-123
+PREHOOK: query: alter table testAltColT_n1 replace columns
+(cId        TINYINT,
+ cBigInt    SMALLINT,
+ cInt       SMALLINT,
+ cSmallInt  SMALLINT,
+ cTinyint   SMALLINT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolt_n1
+PREHOOK: Output: default@testaltcolt_n1
+POSTHOOK: query: alter table testAltColT_n1 replace columns
+(cId        TINYINT,
+ cBigInt    SMALLINT,
+ cInt       SMALLINT,
+ cSmallInt  SMALLINT,
+ cTinyint   SMALLINT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolt_n1
+POSTHOOK: Output: default@testaltcolt_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolt_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolt_n1
+#### A masked pattern was here ####
+1	NULL	NULL	12345	123
+2	1	2	3	4
+3	NULL	NULL	12345	123
+4	NULL	NULL	-12345	-123
+PREHOOK: query: alter table testAltColT_n1 replace columns
+(cId        TINYINT,
+ cBigInt    TINYINT,
+ cInt       TINYINT,
+ cSmallInt  TINYINT,
+ cTinyint   TINYINT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolt_n1
+PREHOOK: Output: default@testaltcolt_n1
+POSTHOOK: query: alter table testAltColT_n1 replace columns
+(cId        TINYINT,
+ cBigInt    TINYINT,
+ cInt       TINYINT,
+ cSmallInt  TINYINT,
+ cTinyint   TINYINT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolt_n1
+POSTHOOK: Output: default@testaltcolt_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolt_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolt_n1
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	123
+2	1	2	3	4
+3	NULL	NULL	NULL	123
+4	NULL	NULL	NULL	-123
+PREHOOK: query: alter table testAltColT_n1 replace columns
+(cId        TINYINT,
+ cBigInt    FLOAT,
+ cInt       FLOAT,
+ cSmallInt  FLOAT,
+ cTinyint   FLOAT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolt_n1
+PREHOOK: Output: default@testaltcolt_n1
+POSTHOOK: query: alter table testAltColT_n1 replace columns
+(cId        TINYINT,
+ cBigInt    FLOAT,
+ cInt       FLOAT,
+ cSmallInt  FLOAT,
+ cTinyint   FLOAT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolt_n1
+POSTHOOK: Output: default@testaltcolt_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolt_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolt_n1
+#### A masked pattern was here ####
+1	1.23456794E18	1.23456794E9	12345.0	123.0
+2	1.0	2.0	3.0	4.0
+3	1.23456794E18	1.23456794E9	12345.0	123.0
+4	-1.23456794E18	-1.23456794E9	-12345.0	-123.0
+PREHOOK: query: alter table testAltColT_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DOUBLE,
+ cInt       DOUBLE,
+ cSmallInt  DOUBLE,
+ cTinyint   DOUBLE)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolt_n1
+PREHOOK: Output: default@testaltcolt_n1
+POSTHOOK: query: alter table testAltColT_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DOUBLE,
+ cInt       DOUBLE,
+ cSmallInt  DOUBLE,
+ cTinyint   DOUBLE)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolt_n1
+POSTHOOK: Output: default@testaltcolt_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolt_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolt_n1
+#### A masked pattern was here ####
+1	1.23456789012345677E18	1.23456789E9	12345.0	123.0
+2	1.0	2.0	3.0	4.0
+3	1.23456789012345677E18	1.23456789E9	12345.0	123.0
+4	-1.23456789012345677E18	-1.23456789E9	-12345.0	-123.0
+PREHOOK: query: alter table testAltColT_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(22,2),
+ cInt       DECIMAL(22,2),
+ cSmallInt  DECIMAL(22,2),
+ cTinyint   DECIMAL(22,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolt_n1
+PREHOOK: Output: default@testaltcolt_n1
+POSTHOOK: query: alter table testAltColT_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(22,2),
+ cInt       DECIMAL(22,2),
+ cSmallInt  DECIMAL(22,2),
+ cTinyint   DECIMAL(22,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolt_n1
+POSTHOOK: Output: default@testaltcolt_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolt_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolt_n1
+#### A masked pattern was here ####
+1	1234567890123456789.00	1234567890.00	12345.00	123.00
+2	1.00	2.00	3.00	4.00
+3	1234567890123456789.00	1234567890.00	12345.00	123.00
+4	-1234567890123456789.00	-1234567890.00	-12345.00	-123.00
+PREHOOK: query: alter table testAltColT_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(13,2),
+ cInt       DECIMAL(13,2),
+ cSmallInt  DECIMAL(13,2),
+ cTinyint   DECIMAL(13,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolt_n1
+PREHOOK: Output: default@testaltcolt_n1
+POSTHOOK: query: alter table testAltColT_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(13,2),
+ cInt       DECIMAL(13,2),
+ cSmallInt  DECIMAL(13,2),
+ cTinyint   DECIMAL(13,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolt_n1
+POSTHOOK: Output: default@testaltcolt_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolt_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolt_n1
+#### A masked pattern was here ####
+1	NULL	1234567890.00	12345.00	123.00
+2	1.00	2.00	3.00	4.00
+3	NULL	1234567890.00	12345.00	123.00
+4	NULL	-1234567890.00	-12345.00	-123.00
+PREHOOK: query: alter table testAltColT_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(8,2),
+ cInt       DECIMAL(8,2),
+ cSmallInt  DECIMAL(8,2),
+ cTinyint   DECIMAL(8,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolt_n1
+PREHOOK: Output: default@testaltcolt_n1
+POSTHOOK: query: alter table testAltColT_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(8,2),
+ cInt       DECIMAL(8,2),
+ cSmallInt  DECIMAL(8,2),
+ cTinyint   DECIMAL(8,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolt_n1
+POSTHOOK: Output: default@testaltcolt_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolt_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolt_n1
+#### A masked pattern was here ####
+1	NULL	NULL	12345.00	123.00
+2	1.00	2.00	3.00	4.00
+3	NULL	NULL	12345.00	123.00
+4	NULL	NULL	-12345.00	-123.00
+PREHOOK: query: alter table testAltColT_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(6,2),
+ cInt       DECIMAL(6,2),
+ cSmallInt  DECIMAL(6,2),
+ cTinyint   DECIMAL(6,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolt_n1
+PREHOOK: Output: default@testaltcolt_n1
+POSTHOOK: query: alter table testAltColT_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(6,2),
+ cInt       DECIMAL(6,2),
+ cSmallInt  DECIMAL(6,2),
+ cTinyint   DECIMAL(6,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolt_n1
+POSTHOOK: Output: default@testaltcolt_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolt_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolt_n1
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	123.00
+2	1.00	2.00	3.00	4.00
+3	NULL	NULL	NULL	123.00
+4	NULL	NULL	NULL	-123.00
+PREHOOK: query: alter table testAltColT_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(3,2),
+ cInt       DECIMAL(3,2),
+ cSmallInt  DECIMAL(3,2),
+ cTinyint   DECIMAL(3,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolt_n1
+PREHOOK: Output: default@testaltcolt_n1
+POSTHOOK: query: alter table testAltColT_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(3,2),
+ cInt       DECIMAL(3,2),
+ cSmallInt  DECIMAL(3,2),
+ cTinyint   DECIMAL(3,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolt_n1
+POSTHOOK: Output: default@testaltcolt_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolt_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolt_n1
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	NULL
+2	1.00	2.00	3.00	4.00
+3	NULL	NULL	NULL	NULL
+4	NULL	NULL	NULL	NULL
+PREHOOK: query: drop table if exists testAltColT_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testaltcolt_n1
+PREHOOK: Output: default@testaltcolt_n1
+POSTHOOK: query: drop table if exists testAltColT_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testaltcolt_n1
+POSTHOOK: Output: default@testaltcolt_n1
+PREHOOK: query: drop table if exists testAltColSF_n1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists testAltColSF_n1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table testAltColSF_n1 stored as sequencefile as select * from testAltCol_n1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@testaltcol_n1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testAltColSF_n1
+POSTHOOK: query: create table testAltColSF_n1 stored as sequencefile as select * from testAltCol_n1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@testaltcol_n1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testAltColSF_n1
+POSTHOOK: Lineage: testaltcolsf_n1.cbigint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: testaltcolsf_n1.cid SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cid, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: testaltcolsf_n1.cint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: testaltcolsf_n1.csmallint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: testaltcolsf_n1.ctinyint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolsf_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolsf_n1
+#### A masked pattern was here ####
+1	1234567890123456789	1234567890	12345	123
+2	1	2	3	4
+3	1234567890123456789	1234567890	12345	123
+4	-1234567890123456789	-1234567890	-12345	-123
+PREHOOK: query: alter table testAltColSF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    BIGINT,
+ cInt       BIGINT,
+ cSmallInt  BIGINT,
+ cTinyint   BIGINT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolsf_n1
+PREHOOK: Output: default@testaltcolsf_n1
+POSTHOOK: query: alter table testAltColSF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    BIGINT,
+ cInt       BIGINT,
+ cSmallInt  BIGINT,
+ cTinyint   BIGINT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolsf_n1
+POSTHOOK: Output: default@testaltcolsf_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolsf_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolsf_n1
+#### A masked pattern was here ####
+1	1234567890123456789	1234567890	12345	123
+2	1	2	3	4
+3	1234567890123456789	1234567890	12345	123
+4	-1234567890123456789	-1234567890	-12345	-123
+PREHOOK: query: alter table testAltColSF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    INT,
+ cInt       INT,
+ cSmallInt  INT,
+ cTinyint   INT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolsf_n1
+PREHOOK: Output: default@testaltcolsf_n1
+POSTHOOK: query: alter table testAltColSF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    INT,
+ cInt       INT,
+ cSmallInt  INT,
+ cTinyint   INT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolsf_n1
+POSTHOOK: Output: default@testaltcolsf_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolsf_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolsf_n1
+#### A masked pattern was here ####
+1	NULL	1234567890	12345	123
+2	1	2	3	4
+3	NULL	1234567890	12345	123
+4	NULL	-1234567890	-12345	-123
+PREHOOK: query: alter table testAltColSF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    SMALLINT,
+ cInt       SMALLINT,
+ cSmallInt  SMALLINT,
+ cTinyint   SMALLINT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolsf_n1
+PREHOOK: Output: default@testaltcolsf_n1
+POSTHOOK: query: alter table testAltColSF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    SMALLINT,
+ cInt       SMALLINT,
+ cSmallInt  SMALLINT,
+ cTinyint   SMALLINT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolsf_n1
+POSTHOOK: Output: default@testaltcolsf_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolsf_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolsf_n1
+#### A masked pattern was here ####
+1	NULL	NULL	12345	123
+2	1	2	3	4
+3	NULL	NULL	12345	123
+4	NULL	NULL	-12345	-123
+PREHOOK: query: alter table testAltColSF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    TINYINT,
+ cInt       TINYINT,
+ cSmallInt  TINYINT,
+ cTinyint   TINYINT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolsf_n1
+PREHOOK: Output: default@testaltcolsf_n1
+POSTHOOK: query: alter table testAltColSF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    TINYINT,
+ cInt       TINYINT,
+ cSmallInt  TINYINT,
+ cTinyint   TINYINT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolsf_n1
+POSTHOOK: Output: default@testaltcolsf_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolsf_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolsf_n1
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	123
+2	1	2	3	4
+3	NULL	NULL	NULL	123
+4	NULL	NULL	NULL	-123
+PREHOOK: query: alter table testAltColSF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    FLOAT,
+ cInt       FLOAT,
+ cSmallInt  FLOAT,
+ cTinyint   FLOAT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolsf_n1
+PREHOOK: Output: default@testaltcolsf_n1
+POSTHOOK: query: alter table testAltColSF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    FLOAT,
+ cInt       FLOAT,
+ cSmallInt  FLOAT,
+ cTinyint   FLOAT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolsf_n1
+POSTHOOK: Output: default@testaltcolsf_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolsf_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolsf_n1
+#### A masked pattern was here ####
+1	1.23456794E18	1.23456794E9	12345.0	123.0
+2	1.0	2.0	3.0	4.0
+3	1.23456794E18	1.23456794E9	12345.0	123.0
+4	-1.23456794E18	-1.23456794E9	-12345.0	-123.0
+PREHOOK: query: alter table testAltColSF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DOUBLE,
+ cInt       DOUBLE,
+ cSmallInt  DOUBLE,
+ cTinyint   DOUBLE)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolsf_n1
+PREHOOK: Output: default@testaltcolsf_n1
+POSTHOOK: query: alter table testAltColSF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DOUBLE,
+ cInt       DOUBLE,
+ cSmallInt  DOUBLE,
+ cTinyint   DOUBLE)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolsf_n1
+POSTHOOK: Output: default@testaltcolsf_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolsf_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolsf_n1
+#### A masked pattern was here ####
+1	1.23456789012345677E18	1.23456789E9	12345.0	123.0
+2	1.0	2.0	3.0	4.0
+3	1.23456789012345677E18	1.23456789E9	12345.0	123.0
+4	-1.23456789012345677E18	-1.23456789E9	-12345.0	-123.0
+PREHOOK: query: alter table testAltColSF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(22,2),
+ cInt       DECIMAL(22,2),
+ cSmallInt  DECIMAL(22,2),
+ cTinyint   DECIMAL(22,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolsf_n1
+PREHOOK: Output: default@testaltcolsf_n1
+POSTHOOK: query: alter table testAltColSF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(22,2),
+ cInt       DECIMAL(22,2),
+ cSmallInt  DECIMAL(22,2),
+ cTinyint   DECIMAL(22,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolsf_n1
+POSTHOOK: Output: default@testaltcolsf_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolsf_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolsf_n1
+#### A masked pattern was here ####
+1	1234567890123456789.00	1234567890.00	12345.00	123.00
+2	1.00	2.00	3.00	4.00
+3	1234567890123456789.00	1234567890.00	12345.00	123.00
+4	-1234567890123456789.00	-1234567890.00	-12345.00	-123.00
+PREHOOK: query: alter table testAltColSF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(13,2),
+ cInt       DECIMAL(13,2),
+ cSmallInt  DECIMAL(13,2),
+ cTinyint   DECIMAL(13,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolsf_n1
+PREHOOK: Output: default@testaltcolsf_n1
+POSTHOOK: query: alter table testAltColSF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(13,2),
+ cInt       DECIMAL(13,2),
+ cSmallInt  DECIMAL(13,2),
+ cTinyint   DECIMAL(13,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolsf_n1
+POSTHOOK: Output: default@testaltcolsf_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolsf_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolsf_n1
+#### A masked pattern was here ####
+1	NULL	1234567890.00	12345.00	123.00
+2	1.00	2.00	3.00	4.00
+3	NULL	1234567890.00	12345.00	123.00
+4	NULL	-1234567890.00	-12345.00	-123.00
+PREHOOK: query: alter table testAltColSF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(8,2),
+ cInt       DECIMAL(8,2),
+ cSmallInt  DECIMAL(8,2),
+ cTinyint   DECIMAL(8,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolsf_n1
+PREHOOK: Output: default@testaltcolsf_n1
+POSTHOOK: query: alter table testAltColSF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(8,2),
+ cInt       DECIMAL(8,2),
+ cSmallInt  DECIMAL(8,2),
+ cTinyint   DECIMAL(8,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolsf_n1
+POSTHOOK: Output: default@testaltcolsf_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolsf_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolsf_n1
+#### A masked pattern was here ####
+1	NULL	NULL	12345.00	123.00
+2	1.00	2.00	3.00	4.00
+3	NULL	NULL	12345.00	123.00
+4	NULL	NULL	-12345.00	-123.00
+PREHOOK: query: alter table testAltColSF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(6,2),
+ cInt       DECIMAL(6,2),
+ cSmallInt  DECIMAL(6,2),
+ cTinyint   DECIMAL(6,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolsf_n1
+PREHOOK: Output: default@testaltcolsf_n1
+POSTHOOK: query: alter table testAltColSF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(6,2),
+ cInt       DECIMAL(6,2),
+ cSmallInt  DECIMAL(6,2),
+ cTinyint   DECIMAL(6,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolsf_n1
+POSTHOOK: Output: default@testaltcolsf_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolsf_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolsf_n1
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	123.00
+2	1.00	2.00	3.00	4.00
+3	NULL	NULL	NULL	123.00
+4	NULL	NULL	NULL	-123.00
+PREHOOK: query: alter table testAltColSF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(3,2),
+ cInt       DECIMAL(3,2),
+ cSmallInt  DECIMAL(3,2),
+ cTinyint   DECIMAL(3,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolsf_n1
+PREHOOK: Output: default@testaltcolsf_n1
+POSTHOOK: query: alter table testAltColSF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(3,2),
+ cInt       DECIMAL(3,2),
+ cSmallInt  DECIMAL(3,2),
+ cTinyint   DECIMAL(3,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolsf_n1
+POSTHOOK: Output: default@testaltcolsf_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolsf_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolsf_n1
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	NULL
+2	1.00	2.00	3.00	4.00
+3	NULL	NULL	NULL	NULL
+4	NULL	NULL	NULL	NULL
+PREHOOK: query: drop table if exists testAltColSF_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testaltcolsf_n1
+PREHOOK: Output: default@testaltcolsf_n1
+POSTHOOK: query: drop table if exists testAltColSF_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testaltcolsf_n1
+POSTHOOK: Output: default@testaltcolsf_n1
+PREHOOK: query: drop table if exists testAltColRCF_n1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists testAltColRCF_n1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table testAltColRCF_n1 stored as rcfile as select * from testAltCol_n1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@testaltcol_n1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testAltColRCF_n1
+POSTHOOK: query: create table testAltColRCF_n1 stored as rcfile as select * from testAltCol_n1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@testaltcol_n1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testAltColRCF_n1
+POSTHOOK: Lineage: testaltcolrcf_n1.cbigint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: testaltcolrcf_n1.cid SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cid, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: testaltcolrcf_n1.cint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: testaltcolrcf_n1.csmallint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: testaltcolrcf_n1.ctinyint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolrcf_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolrcf_n1
+#### A masked pattern was here ####
+1	1234567890123456789	1234567890	12345	123
+2	1	2	3	4
+3	1234567890123456789	1234567890	12345	123
+4	-1234567890123456789	-1234567890	-12345	-123
+PREHOOK: query: alter table testAltColRCF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    BIGINT,
+ cInt       BIGINT,
+ cSmallInt  BIGINT,
+ cTinyint   BIGINT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolrcf_n1
+PREHOOK: Output: default@testaltcolrcf_n1
+POSTHOOK: query: alter table testAltColRCF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    BIGINT,
+ cInt       BIGINT,
+ cSmallInt  BIGINT,
+ cTinyint   BIGINT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolrcf_n1
+POSTHOOK: Output: default@testaltcolrcf_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolrcf_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolrcf_n1
+#### A masked pattern was here ####
+1	1234567890123456789	1234567890	12345	123
+2	1	2	3	4
+3	1234567890123456789	1234567890	12345	123
+4	-1234567890123456789	-1234567890	-12345	-123
+PREHOOK: query: alter table testAltColRCF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    INT,
+ cInt       INT,
+ cSmallInt  INT,
+ cTinyint   INT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolrcf_n1
+PREHOOK: Output: default@testaltcolrcf_n1
+POSTHOOK: query: alter table testAltColRCF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    INT,
+ cInt       INT,
+ cSmallInt  INT,
+ cTinyint   INT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolrcf_n1
+POSTHOOK: Output: default@testaltcolrcf_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolrcf_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolrcf_n1
+#### A masked pattern was here ####
+1	NULL	1234567890	12345	123
+2	1	2	3	4
+3	NULL	1234567890	12345	123
+4	NULL	-1234567890	-12345	-123
+PREHOOK: query: alter table testAltColRCF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    SMALLINT,
+ cInt       SMALLINT,
+ cSmallInt  SMALLINT,
+ cTinyint   SMALLINT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolrcf_n1
+PREHOOK: Output: default@testaltcolrcf_n1
+POSTHOOK: query: alter table testAltColRCF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    SMALLINT,
+ cInt       SMALLINT,
+ cSmallInt  SMALLINT,
+ cTinyint   SMALLINT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolrcf_n1
+POSTHOOK: Output: default@testaltcolrcf_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolrcf_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolrcf_n1
+#### A masked pattern was here ####
+1	NULL	NULL	12345	123
+2	1	2	3	4
+3	NULL	NULL	12345	123
+4	NULL	NULL	-12345	-123
+PREHOOK: query: alter table testAltColRCF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    TINYINT,
+ cInt       TINYINT,
+ cSmallInt  TINYINT,
+ cTinyint   TINYINT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolrcf_n1
+PREHOOK: Output: default@testaltcolrcf_n1
+POSTHOOK: query: alter table testAltColRCF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    TINYINT,
+ cInt       TINYINT,
+ cSmallInt  TINYINT,
+ cTinyint   TINYINT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolrcf_n1
+POSTHOOK: Output: default@testaltcolrcf_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolrcf_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolrcf_n1
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	123
+2	1	2	3	4
+3	NULL	NULL	NULL	123
+4	NULL	NULL	NULL	-123
+PREHOOK: query: alter table testAltColRCF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    FLOAT,
+ cInt       FLOAT,
+ cSmallInt  FLOAT,
+ cTinyint   FLOAT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolrcf_n1
+PREHOOK: Output: default@testaltcolrcf_n1
+POSTHOOK: query: alter table testAltColRCF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    FLOAT,
+ cInt       FLOAT,
+ cSmallInt  FLOAT,
+ cTinyint   FLOAT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolrcf_n1
+POSTHOOK: Output: default@testaltcolrcf_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolrcf_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolrcf_n1
+#### A masked pattern was here ####
+1	1.23456794E18	1.23456794E9	12345.0	123.0
+2	1.0	2.0	3.0	4.0
+3	1.23456794E18	1.23456794E9	12345.0	123.0
+4	-1.23456794E18	-1.23456794E9	-12345.0	-123.0
+PREHOOK: query: alter table testAltColRCF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DOUBLE,
+ cInt       DOUBLE,
+ cSmallInt  DOUBLE,
+ cTinyint   DOUBLE)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolrcf_n1
+PREHOOK: Output: default@testaltcolrcf_n1
+POSTHOOK: query: alter table testAltColRCF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DOUBLE,
+ cInt       DOUBLE,
+ cSmallInt  DOUBLE,
+ cTinyint   DOUBLE)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolrcf_n1
+POSTHOOK: Output: default@testaltcolrcf_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolrcf_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolrcf_n1
+#### A masked pattern was here ####
+1	1.23456789012345677E18	1.23456789E9	12345.0	123.0
+2	1.0	2.0	3.0	4.0
+3	1.23456789012345677E18	1.23456789E9	12345.0	123.0
+4	-1.23456789012345677E18	-1.23456789E9	-12345.0	-123.0
+PREHOOK: query: alter table testAltColRCF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(22,2),
+ cInt       DECIMAL(22,2),
+ cSmallInt  DECIMAL(22,2),
+ cTinyint   DECIMAL(22,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolrcf_n1
+PREHOOK: Output: default@testaltcolrcf_n1
+POSTHOOK: query: alter table testAltColRCF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(22,2),
+ cInt       DECIMAL(22,2),
+ cSmallInt  DECIMAL(22,2),
+ cTinyint   DECIMAL(22,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolrcf_n1
+POSTHOOK: Output: default@testaltcolrcf_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolrcf_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolrcf_n1
+#### A masked pattern was here ####
+1	1234567890123456789.00	1234567890.00	12345.00	123.00
+2	1.00	2.00	3.00	4.00
+3	1234567890123456789.00	1234567890.00	12345.00	123.00
+4	-1234567890123456789.00	-1234567890.00	-12345.00	-123.00
+PREHOOK: query: alter table testAltColRCF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(13,2),
+ cInt       DECIMAL(13,2),
+ cSmallInt  DECIMAL(13,2),
+ cTinyint   DECIMAL(13,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolrcf_n1
+PREHOOK: Output: default@testaltcolrcf_n1
+POSTHOOK: query: alter table testAltColRCF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(13,2),
+ cInt       DECIMAL(13,2),
+ cSmallInt  DECIMAL(13,2),
+ cTinyint   DECIMAL(13,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolrcf_n1
+POSTHOOK: Output: default@testaltcolrcf_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolrcf_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolrcf_n1
+#### A masked pattern was here ####
+1	NULL	1234567890.00	12345.00	123.00
+2	1.00	2.00	3.00	4.00
+3	NULL	1234567890.00	12345.00	123.00
+4	NULL	-1234567890.00	-12345.00	-123.00
+PREHOOK: query: alter table testAltColRCF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(8,2),
+ cInt       DECIMAL(8,2),
+ cSmallInt  DECIMAL(8,2),
+ cTinyint   DECIMAL(8,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolrcf_n1
+PREHOOK: Output: default@testaltcolrcf_n1
+POSTHOOK: query: alter table testAltColRCF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(8,2),
+ cInt       DECIMAL(8,2),
+ cSmallInt  DECIMAL(8,2),
+ cTinyint   DECIMAL(8,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolrcf_n1
+POSTHOOK: Output: default@testaltcolrcf_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolrcf_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolrcf_n1
+#### A masked pattern was here ####
+1	NULL	NULL	12345.00	123.00
+2	1.00	2.00	3.00	4.00
+3	NULL	NULL	12345.00	123.00
+4	NULL	NULL	-12345.00	-123.00
+PREHOOK: query: alter table testAltColRCF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(6,2),
+ cInt       DECIMAL(6,2),
+ cSmallInt  DECIMAL(6,2),
+ cTinyint   DECIMAL(6,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolrcf_n1
+PREHOOK: Output: default@testaltcolrcf_n1
+POSTHOOK: query: alter table testAltColRCF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(6,2),
+ cInt       DECIMAL(6,2),
+ cSmallInt  DECIMAL(6,2),
+ cTinyint   DECIMAL(6,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolrcf_n1
+POSTHOOK: Output: default@testaltcolrcf_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolrcf_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolrcf_n1
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	123.00
+2	1.00	2.00	3.00	4.00
+3	NULL	NULL	NULL	123.00
+4	NULL	NULL	NULL	-123.00
+PREHOOK: query: alter table testAltColRCF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(3,2),
+ cInt       DECIMAL(3,2),
+ cSmallInt  DECIMAL(3,2),
+ cTinyint   DECIMAL(3,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolrcf_n1
+PREHOOK: Output: default@testaltcolrcf_n1
+POSTHOOK: query: alter table testAltColRCF_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(3,2),
+ cInt       DECIMAL(3,2),
+ cSmallInt  DECIMAL(3,2),
+ cTinyint   DECIMAL(3,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolrcf_n1
+POSTHOOK: Output: default@testaltcolrcf_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolrcf_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolrcf_n1
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	NULL
+2	1.00	2.00	3.00	4.00
+3	NULL	NULL	NULL	NULL
+4	NULL	NULL	NULL	NULL
+PREHOOK: query: drop table if exists testAltColRCF_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testaltcolrcf_n1
+PREHOOK: Output: default@testaltcolrcf_n1
+POSTHOOK: query: drop table if exists testAltColRCF_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testaltcolrcf_n1
+POSTHOOK: Output: default@testaltcolrcf_n1
+PREHOOK: query: drop table if exists testAltColORC_n1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists testAltColORC_n1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table testAltColORC_n1 stored as orc as select * from testAltCol_n1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@testaltcol_n1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testAltColORC_n1
+POSTHOOK: query: create table testAltColORC_n1 stored as orc as select * from testAltCol_n1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@testaltcol_n1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testAltColORC_n1
+POSTHOOK: Lineage: testaltcolorc_n1.cbigint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: testaltcolorc_n1.cid SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cid, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: testaltcolorc_n1.cint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: testaltcolorc_n1.csmallint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: testaltcolorc_n1.ctinyint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolorc_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolorc_n1
+#### A masked pattern was here ####
+1	1234567890123456789	1234567890	12345	123
+2	1	2	3	4
+3	1234567890123456789	1234567890	12345	123
+4	-1234567890123456789	-1234567890	-12345	-123
+PREHOOK: query: alter table testAltColORC_n1 replace columns
+(cId        TINYINT,
+ cBigInt    BIGINT,
+ cInt       BIGINT,
+ cSmallInt  BIGINT,
+ cTinyint   BIGINT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolorc_n1
+PREHOOK: Output: default@testaltcolorc_n1
+POSTHOOK: query: alter table testAltColORC_n1 replace columns
+(cId        TINYINT,
+ cBigInt    BIGINT,
+ cInt       BIGINT,
+ cSmallInt  BIGINT,
+ cTinyint   BIGINT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolorc_n1
+POSTHOOK: Output: default@testaltcolorc_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolorc_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolorc_n1
+#### A masked pattern was here ####
+1	1234567890123456789	1234567890	12345	123
+2	1	2	3	4
+3	1234567890123456789	1234567890	12345	123
+4	-1234567890123456789	-1234567890	-12345	-123
+PREHOOK: query: alter table testAltColORC_n1 replace columns
+(cId        TINYINT,
+ cBigInt    INT,
+ cInt       INT,
+ cSmallInt  INT,
+ cTinyint   INT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolorc_n1
+PREHOOK: Output: default@testaltcolorc_n1
+POSTHOOK: query: alter table testAltColORC_n1 replace columns
+(cId        TINYINT,
+ cBigInt    INT,
+ cInt       INT,
+ cSmallInt  INT,
+ cTinyint   INT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolorc_n1
+POSTHOOK: Output: default@testaltcolorc_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolorc_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolorc_n1
+#### A masked pattern was here ####
+1	NULL	1234567890	12345	123
+2	1	2	3	4
+3	NULL	1234567890	12345	123
+4	NULL	-1234567890	-12345	-123
+PREHOOK: query: alter table testAltColORC_n1 replace columns
+(cId        TINYINT,
+ cBigInt    SMALLINT,
+ cInt       SMALLINT,
+ cSmallInt  SMALLINT,
+ cTinyint   SMALLINT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolorc_n1
+PREHOOK: Output: default@testaltcolorc_n1
+POSTHOOK: query: alter table testAltColORC_n1 replace columns
+(cId        TINYINT,
+ cBigInt    SMALLINT,
+ cInt       SMALLINT,
+ cSmallInt  SMALLINT,
+ cTinyint   SMALLINT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolorc_n1
+POSTHOOK: Output: default@testaltcolorc_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolorc_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolorc_n1
+#### A masked pattern was here ####
+1	NULL	NULL	12345	123
+2	1	2	3	4
+3	NULL	NULL	12345	123
+4	NULL	NULL	-12345	-123
+PREHOOK: query: alter table testAltColORC_n1 replace columns
+(cId        TINYINT,
+ cBigInt    TINYINT,
+ cInt       TINYINT,
+ cSmallInt  TINYINT,
+ cTinyint   TINYINT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolorc_n1
+PREHOOK: Output: default@testaltcolorc_n1
+POSTHOOK: query: alter table testAltColORC_n1 replace columns
+(cId        TINYINT,
+ cBigInt    TINYINT,
+ cInt       TINYINT,
+ cSmallInt  TINYINT,
+ cTinyint   TINYINT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolorc_n1
+POSTHOOK: Output: default@testaltcolorc_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolorc_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolorc_n1
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	123
+2	1	2	3	4
+3	NULL	NULL	NULL	123
+4	NULL	NULL	NULL	-123
+PREHOOK: query: alter table testAltColORC_n1 replace columns
+(cId        TINYINT,
+ cBigInt    FLOAT,
+ cInt       FLOAT,
+ cSmallInt  FLOAT,
+ cTinyint   FLOAT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolorc_n1
+PREHOOK: Output: default@testaltcolorc_n1
+POSTHOOK: query: alter table testAltColORC_n1 replace columns
+(cId        TINYINT,
+ cBigInt    FLOAT,
+ cInt       FLOAT,
+ cSmallInt  FLOAT,
+ cTinyint   FLOAT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolorc_n1
+POSTHOOK: Output: default@testaltcolorc_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolorc_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolorc_n1
+#### A masked pattern was here ####
+1	1.23456794E18	1.23456794E9	12345.0	123.0
+2	1.0	2.0	3.0	4.0
+3	1.23456794E18	1.23456794E9	12345.0	123.0
+4	-1.23456794E18	-1.23456794E9	-12345.0	-123.0
+PREHOOK: query: alter table testAltColORC_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DOUBLE,
+ cInt       DOUBLE,
+ cSmallInt  DOUBLE,
+ cTinyint   DOUBLE)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolorc_n1
+PREHOOK: Output: default@testaltcolorc_n1
+POSTHOOK: query: alter table testAltColORC_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DOUBLE,
+ cInt       DOUBLE,
+ cSmallInt  DOUBLE,
+ cTinyint   DOUBLE)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolorc_n1
+POSTHOOK: Output: default@testaltcolorc_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolorc_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolorc_n1
+#### A masked pattern was here ####
+1	1.23456789012345677E18	1.23456789E9	12345.0	123.0
+2	1.0	2.0	3.0	4.0
+3	1.23456789012345677E18	1.23456789E9	12345.0	123.0
+4	-1.23456789012345677E18	-1.23456789E9	-12345.0	-123.0
+PREHOOK: query: alter table testAltColORC_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(22,2),
+ cInt       DECIMAL(22,2),
+ cSmallInt  DECIMAL(22,2),
+ cTinyint   DECIMAL(22,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolorc_n1
+PREHOOK: Output: default@testaltcolorc_n1
+POSTHOOK: query: alter table testAltColORC_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(22,2),
+ cInt       DECIMAL(22,2),
+ cSmallInt  DECIMAL(22,2),
+ cTinyint   DECIMAL(22,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolorc_n1
+POSTHOOK: Output: default@testaltcolorc_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolorc_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolorc_n1
+#### A masked pattern was here ####
+1	1234567890123456789.00	1234567890.00	12345.00	123.00
+2	1.00	2.00	3.00	4.00
+3	1234567890123456789.00	1234567890.00	12345.00	123.00
+4	-1234567890123456789.00	-1234567890.00	-12345.00	-123.00
+PREHOOK: query: alter table testAltColORC_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(13,2),
+ cInt       DECIMAL(13,2),
+ cSmallInt  DECIMAL(13,2),
+ cTinyint   DECIMAL(13,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolorc_n1
+PREHOOK: Output: default@testaltcolorc_n1
+POSTHOOK: query: alter table testAltColORC_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(13,2),
+ cInt       DECIMAL(13,2),
+ cSmallInt  DECIMAL(13,2),
+ cTinyint   DECIMAL(13,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolorc_n1
+POSTHOOK: Output: default@testaltcolorc_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolorc_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolorc_n1
+#### A masked pattern was here ####
+1	NULL	1234567890.00	12345.00	123.00
+2	1.00	2.00	3.00	4.00
+3	NULL	1234567890.00	12345.00	123.00
+4	NULL	-1234567890.00	-12345.00	-123.00
+PREHOOK: query: alter table testAltColORC_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(8,2),
+ cInt       DECIMAL(8,2),
+ cSmallInt  DECIMAL(8,2),
+ cTinyint   DECIMAL(8,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolorc_n1
+PREHOOK: Output: default@testaltcolorc_n1
+POSTHOOK: query: alter table testAltColORC_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(8,2),
+ cInt       DECIMAL(8,2),
+ cSmallInt  DECIMAL(8,2),
+ cTinyint   DECIMAL(8,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolorc_n1
+POSTHOOK: Output: default@testaltcolorc_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolorc_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolorc_n1
+#### A masked pattern was here ####
+1	NULL	NULL	12345.00	123.00
+2	1.00	2.00	3.00	4.00
+3	NULL	NULL	12345.00	123.00
+4	NULL	NULL	-12345.00	-123.00
+PREHOOK: query: alter table testAltColORC_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(6,2),
+ cInt       DECIMAL(6,2),
+ cSmallInt  DECIMAL(6,2),
+ cTinyint   DECIMAL(6,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolorc_n1
+PREHOOK: Output: default@testaltcolorc_n1
+POSTHOOK: query: alter table testAltColORC_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(6,2),
+ cInt       DECIMAL(6,2),
+ cSmallInt  DECIMAL(6,2),
+ cTinyint   DECIMAL(6,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolorc_n1
+POSTHOOK: Output: default@testaltcolorc_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolorc_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolorc_n1
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	123.00
+2	1.00	2.00	3.00	4.00
+3	NULL	NULL	NULL	123.00
+4	NULL	NULL	NULL	-123.00
+PREHOOK: query: alter table testAltColORC_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(3,2),
+ cInt       DECIMAL(3,2),
+ cSmallInt  DECIMAL(3,2),
+ cTinyint   DECIMAL(3,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolorc_n1
+PREHOOK: Output: default@testaltcolorc_n1
+POSTHOOK: query: alter table testAltColORC_n1 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(3,2),
+ cInt       DECIMAL(3,2),
+ cSmallInt  DECIMAL(3,2),
+ cTinyint   DECIMAL(3,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolorc_n1
+POSTHOOK: Output: default@testaltcolorc_n1
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC_n1 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolorc_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC_n1 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolorc_n1
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	NULL
+2	1.00	2.00	3.00	4.00
+3	NULL	NULL	NULL	NULL
+4	NULL	NULL	NULL	NULL
+PREHOOK: query: drop table if exists testAltColORC_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testaltcolorc_n1
+PREHOOK: Output: default@testaltcolorc_n1
+POSTHOOK: query: drop table if exists testAltColORC_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testaltcolorc_n1
+POSTHOOK: Output: default@testaltcolorc_n1
+PREHOOK: query: drop table if exists testAltColPDE_n0
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists testAltColPDE_n0
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table testAltColPDE_n0 stored as parquet as select * from testAltCol_n1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@testaltcol_n1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testAltColPDE_n0
+POSTHOOK: query: create table testAltColPDE_n0 stored as parquet as select * from testAltCol_n1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@testaltcol_n1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testAltColPDE_n0
+POSTHOOK: Lineage: testaltcolpde_n0.cbigint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: testaltcolpde_n0.cid SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cid, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: testaltcolpde_n0.cint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: testaltcolpde_n0.csmallint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: testaltcolpde_n0.ctinyint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE_n0 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolpde_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE_n0 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolpde_n0
+#### A masked pattern was here ####
+1	1234567890123456789	1234567890	12345	123
+2	1	2	3	4
+3	1234567890123456789	1234567890	12345	123
+4	-1234567890123456789	-1234567890	-12345	-123
+PREHOOK: query: alter table testAltColPDE_n0 replace columns
+(cId        TINYINT,
+ cBigInt    BIGINT,
+ cInt       BIGINT,
+ cSmallInt  BIGINT,
+ cTinyint   BIGINT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolpde_n0
+PREHOOK: Output: default@testaltcolpde_n0
+POSTHOOK: query: alter table testAltColPDE_n0 replace columns
+(cId        TINYINT,
+ cBigInt    BIGINT,
+ cInt       BIGINT,
+ cSmallInt  BIGINT,
+ cTinyint   BIGINT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolpde_n0
+POSTHOOK: Output: default@testaltcolpde_n0
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE_n0 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolpde_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE_n0 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolpde_n0
+#### A masked pattern was here ####
+1	1234567890123456789	1234567890	12345	123
+2	1	2	3	4
+3	1234567890123456789	1234567890	12345	123
+4	-1234567890123456789	-1234567890	-12345	-123
+PREHOOK: query: alter table testAltColPDE_n0 replace columns
+(cId        TINYINT,
+ cBigInt    INT,
+ cInt       INT,
+ cSmallInt  INT,
+ cTinyint   INT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolpde_n0
+PREHOOK: Output: default@testaltcolpde_n0
+POSTHOOK: query: alter table testAltColPDE_n0 replace columns
+(cId        TINYINT,
+ cBigInt    INT,
+ cInt       INT,
+ cSmallInt  INT,
+ cTinyint   INT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolpde_n0
+POSTHOOK: Output: default@testaltcolpde_n0
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE_n0 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolpde_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE_n0 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolpde_n0
+#### A masked pattern was here ####
+1	NULL	1234567890	12345	123
+2	1	2	3	4
+3	NULL	1234567890	12345	123
+4	NULL	-1234567890	-12345	-123
+PREHOOK: query: alter table testAltColPDE_n0 replace columns
+(cId        TINYINT,
+ cBigInt    SMALLINT,
+ cInt       SMALLINT,
+ cSmallInt  SMALLINT,
+ cTinyint   SMALLINT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolpde_n0
+PREHOOK: Output: default@testaltcolpde_n0
+POSTHOOK: query: alter table testAltColPDE_n0 replace columns
+(cId        TINYINT,
+ cBigInt    SMALLINT,
+ cInt       SMALLINT,
+ cSmallInt  SMALLINT,
+ cTinyint   SMALLINT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolpde_n0
+POSTHOOK: Output: default@testaltcolpde_n0
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE_n0 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolpde_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE_n0 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolpde_n0
+#### A masked pattern was here ####
+1	NULL	NULL	12345	123
+2	1	2	3	4
+3	NULL	NULL	12345	123
+4	NULL	NULL	-12345	-123
+PREHOOK: query: alter table testAltColPDE_n0 replace columns
+(cId        TINYINT,
+ cBigInt    TINYINT,
+ cInt       TINYINT,
+ cSmallInt  TINYINT,
+ cTinyint   TINYINT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolpde_n0
+PREHOOK: Output: default@testaltcolpde_n0
+POSTHOOK: query: alter table testAltColPDE_n0 replace columns
+(cId        TINYINT,
+ cBigInt    TINYINT,
+ cInt       TINYINT,
+ cSmallInt  TINYINT,
+ cTinyint   TINYINT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolpde_n0
+POSTHOOK: Output: default@testaltcolpde_n0
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE_n0 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolpde_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE_n0 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolpde_n0
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	123
+2	1	2	3	4
+3	NULL	NULL	NULL	123
+4	NULL	NULL	NULL	-123
+PREHOOK: query: alter table testAltColPDE_n0 replace columns
+(cId        TINYINT,
+ cBigInt    FLOAT,
+ cInt       FLOAT,
+ cSmallInt  FLOAT,
+ cTinyint   FLOAT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolpde_n0
+PREHOOK: Output: default@testaltcolpde_n0
+POSTHOOK: query: alter table testAltColPDE_n0 replace columns
+(cId        TINYINT,
+ cBigInt    FLOAT,
+ cInt       FLOAT,
+ cSmallInt  FLOAT,
+ cTinyint   FLOAT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolpde_n0
+POSTHOOK: Output: default@testaltcolpde_n0
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE_n0 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolpde_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE_n0 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolpde_n0
+#### A masked pattern was here ####
+1	1.23456794E18	1.23456794E9	12345.0	123.0
+2	1.0	2.0	3.0	4.0
+3	1.23456794E18	1.23456794E9	12345.0	123.0
+4	-1.23456794E18	-1.23456794E9	-12345.0	-123.0
+PREHOOK: query: alter table testAltColPDE_n0 replace columns
+(cId        TINYINT,
+ cBigInt    DOUBLE,
+ cInt       DOUBLE,
+ cSmallInt  DOUBLE,
+ cTinyint   DOUBLE)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolpde_n0
+PREHOOK: Output: default@testaltcolpde_n0
+POSTHOOK: query: alter table testAltColPDE_n0 replace columns
+(cId        TINYINT,
+ cBigInt    DOUBLE,
+ cInt       DOUBLE,
+ cSmallInt  DOUBLE,
+ cTinyint   DOUBLE)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolpde_n0
+POSTHOOK: Output: default@testaltcolpde_n0
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE_n0 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolpde_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE_n0 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolpde_n0
+#### A masked pattern was here ####
+1	1.23456789012345677E18	1.234567936E9	12345.0	123.0
+2	1.0	2.0	3.0	4.0
+3	1.23456789012345677E18	1.234567936E9	12345.0	123.0
+4	-1.23456789012345677E18	-1.234567936E9	-12345.0	-123.0
+PREHOOK: query: alter table testAltColPDE_n0 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(22,2),
+ cInt       DECIMAL(22,2),
+ cSmallInt  DECIMAL(22,2),
+ cTinyint   DECIMAL(22,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolpde_n0
+PREHOOK: Output: default@testaltcolpde_n0
+POSTHOOK: query: alter table testAltColPDE_n0 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(22,2),
+ cInt       DECIMAL(22,2),
+ cSmallInt  DECIMAL(22,2),
+ cTinyint   DECIMAL(22,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolpde_n0
+POSTHOOK: Output: default@testaltcolpde_n0
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE_n0 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolpde_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE_n0 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolpde_n0
+#### A masked pattern was here ####
+1	1234567890123456789.00	1234567890.00	12345.00	123.00
+2	1.00	2.00	3.00	4.00
+3	1234567890123456789.00	1234567890.00	12345.00	123.00
+4	-1234567890123456789.00	-1234567890.00	-12345.00	-123.00
+PREHOOK: query: alter table testAltColPDE_n0 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(13,2),
+ cInt       DECIMAL(13,2),
+ cSmallInt  DECIMAL(13,2),
+ cTinyint   DECIMAL(13,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolpde_n0
+PREHOOK: Output: default@testaltcolpde_n0
+POSTHOOK: query: alter table testAltColPDE_n0 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(13,2),
+ cInt       DECIMAL(13,2),
+ cSmallInt  DECIMAL(13,2),
+ cTinyint   DECIMAL(13,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolpde_n0
+POSTHOOK: Output: default@testaltcolpde_n0
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE_n0 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolpde_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE_n0 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolpde_n0
+#### A masked pattern was here ####
+1	NULL	1234567890.00	12345.00	123.00
+2	1.00	2.00	3.00	4.00
+3	NULL	1234567890.00	12345.00	123.00
+4	NULL	-1234567890.00	-12345.00	-123.00
+PREHOOK: query: alter table testAltColPDE_n0 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(8,2),
+ cInt       DECIMAL(8,2),
+ cSmallInt  DECIMAL(8,2),
+ cTinyint   DECIMAL(8,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolpde_n0
+PREHOOK: Output: default@testaltcolpde_n0
+POSTHOOK: query: alter table testAltColPDE_n0 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(8,2),
+ cInt       DECIMAL(8,2),
+ cSmallInt  DECIMAL(8,2),
+ cTinyint   DECIMAL(8,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolpde_n0
+POSTHOOK: Output: default@testaltcolpde_n0
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE_n0 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolpde_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE_n0 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolpde_n0
+#### A masked pattern was here ####
+1	NULL	NULL	12345.00	123.00
+2	1.00	2.00	3.00	4.00
+3	NULL	NULL	12345.00	123.00
+4	NULL	NULL	-12345.00	-123.00
+PREHOOK: query: alter table testAltColPDE_n0 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(6,2),
+ cInt       DECIMAL(6,2),
+ cSmallInt  DECIMAL(6,2),
+ cTinyint   DECIMAL(6,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolpde_n0
+PREHOOK: Output: default@testaltcolpde_n0
+POSTHOOK: query: alter table testAltColPDE_n0 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(6,2),
+ cInt       DECIMAL(6,2),
+ cSmallInt  DECIMAL(6,2),
+ cTinyint   DECIMAL(6,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolpde_n0
+POSTHOOK: Output: default@testaltcolpde_n0
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE_n0 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolpde_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE_n0 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolpde_n0
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	123.00
+2	1.00	2.00	3.00	4.00
+3	NULL	NULL	NULL	123.00
+4	NULL	NULL	NULL	-123.00
+PREHOOK: query: alter table testAltColPDE_n0 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(3,2),
+ cInt       DECIMAL(3,2),
+ cSmallInt  DECIMAL(3,2),
+ cTinyint   DECIMAL(3,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolpde_n0
+PREHOOK: Output: default@testaltcolpde_n0
+POSTHOOK: query: alter table testAltColPDE_n0 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(3,2),
+ cInt       DECIMAL(3,2),
+ cSmallInt  DECIMAL(3,2),
+ cTinyint   DECIMAL(3,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolpde_n0
+POSTHOOK: Output: default@testaltcolpde_n0
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE_n0 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolpde_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE_n0 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolpde_n0
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	NULL
+2	1.00	2.00	3.00	4.00
+3	NULL	NULL	NULL	NULL
+4	NULL	NULL	NULL	NULL
+PREHOOK: query: drop table if exists testAltColPDE_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testaltcolpde_n0
+PREHOOK: Output: default@testaltcolpde_n0
+POSTHOOK: query: drop table if exists testAltColPDE_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testaltcolpde_n0
+POSTHOOK: Output: default@testaltcolpde_n0
+PREHOOK: query: drop table if exists testAltColPDD_n0
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists testAltColPDD_n0
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table testAltColPDD_n0 stored as parquet tblproperties ("parquet.enable.dictionary"="false") as
+select * from testAltCol_n1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@testaltcol_n1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testAltColPDD_n0
+POSTHOOK: query: create table testAltColPDD_n0 stored as parquet tblproperties ("parquet.enable.dictionary"="false") as
+select * from testAltCol_n1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@testaltcol_n1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testAltColPDD_n0
+POSTHOOK: Lineage: testaltcolpdd_n0.cbigint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: testaltcolpdd_n0.cid SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cid, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: testaltcolpdd_n0.cint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: testaltcolpdd_n0.csmallint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: testaltcolpdd_n0.ctinyint SIMPLE [(testaltcol_n1)testaltcol_n1.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD_n0 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolpdd_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD_n0 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolpdd_n0
+#### A masked pattern was here ####
+1	1234567890123456789	1234567890	12345	123
+2	1	2	3	4
+3	1234567890123456789	1234567890	12345	123
+4	-1234567890123456789	-1234567890	-12345	-123
+PREHOOK: query: alter table testAltColPDD_n0 replace columns
+(cId        TINYINT,
+ cBigInt    BIGINT,
+ cInt       BIGINT,
+ cSmallInt  BIGINT,
+ cTinyint   BIGINT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolpdd_n0
+PREHOOK: Output: default@testaltcolpdd_n0
+POSTHOOK: query: alter table testAltColPDD_n0 replace columns
+(cId        TINYINT,
+ cBigInt    BIGINT,
+ cInt       BIGINT,
+ cSmallInt  BIGINT,
+ cTinyint   BIGINT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolpdd_n0
+POSTHOOK: Output: default@testaltcolpdd_n0
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD_n0 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolpdd_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD_n0 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolpdd_n0
+#### A masked pattern was here ####
+1	1234567890123456789	1234567890	12345	123
+2	1	2	3	4
+3	1234567890123456789	1234567890	12345	123
+4	-1234567890123456789	-1234567890	-12345	-123
+PREHOOK: query: alter table testAltColPDD_n0 replace columns
+(cId        TINYINT,
+ cBigInt    INT,
+ cInt       INT,
+ cSmallInt  INT,
+ cTinyint   INT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolpdd_n0
+PREHOOK: Output: default@testaltcolpdd_n0
+POSTHOOK: query: alter table testAltColPDD_n0 replace columns
+(cId        TINYINT,
+ cBigInt    INT,
+ cInt       INT,
+ cSmallInt  INT,
+ cTinyint   INT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolpdd_n0
+POSTHOOK: Output: default@testaltcolpdd_n0
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD_n0 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolpdd_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD_n0 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolpdd_n0
+#### A masked pattern was here ####
+1	NULL	1234567890	12345	123
+2	1	2	3	4
+3	NULL	1234567890	12345	123
+4	NULL	-1234567890	-12345	-123
+PREHOOK: query: alter table testAltColPDD_n0 replace columns
+(cId        TINYINT,
+ cBigInt    SMALLINT,
+ cInt       SMALLINT,
+ cSmallInt  SMALLINT,
+ cTinyint   SMALLINT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolpdd_n0
+PREHOOK: Output: default@testaltcolpdd_n0
+POSTHOOK: query: alter table testAltColPDD_n0 replace columns
+(cId        TINYINT,
+ cBigInt    SMALLINT,
+ cInt       SMALLINT,
+ cSmallInt  SMALLINT,
+ cTinyint   SMALLINT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolpdd_n0
+POSTHOOK: Output: default@testaltcolpdd_n0
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD_n0 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolpdd_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD_n0 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolpdd_n0
+#### A masked pattern was here ####
+1	NULL	NULL	12345	123
+2	1	2	3	4
+3	NULL	NULL	12345	123
+4	NULL	NULL	-12345	-123
+PREHOOK: query: alter table testAltColPDD_n0 replace columns
+(cId        TINYINT,
+ cBigInt    TINYINT,
+ cInt       TINYINT,
+ cSmallInt  TINYINT,
+ cTinyint   TINYINT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolpdd_n0
+PREHOOK: Output: default@testaltcolpdd_n0
+POSTHOOK: query: alter table testAltColPDD_n0 replace columns
+(cId        TINYINT,
+ cBigInt    TINYINT,
+ cInt       TINYINT,
+ cSmallInt  TINYINT,
+ cTinyint   TINYINT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolpdd_n0
+POSTHOOK: Output: default@testaltcolpdd_n0
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD_n0 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolpdd_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD_n0 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolpdd_n0
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	123
+2	1	2	3	4
+3	NULL	NULL	NULL	123
+4	NULL	NULL	NULL	-123
+PREHOOK: query: alter table testAltColPDD_n0 replace columns
+(cId        TINYINT,
+ cBigInt    FLOAT,
+ cInt       FLOAT,
+ cSmallInt  FLOAT,
+ cTinyint   FLOAT)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolpdd_n0
+PREHOOK: Output: default@testaltcolpdd_n0
+POSTHOOK: query: alter table testAltColPDD_n0 replace columns
+(cId        TINYINT,
+ cBigInt    FLOAT,
+ cInt       FLOAT,
+ cSmallInt  FLOAT,
+ cTinyint   FLOAT)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolpdd_n0
+POSTHOOK: Output: default@testaltcolpdd_n0
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD_n0 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolpdd_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD_n0 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolpdd_n0
+#### A masked pattern was here ####
+1	1.23456794E18	1.23456794E9	12345.0	123.0
+2	1.0	2.0	3.0	4.0
+3	1.23456794E18	1.23456794E9	12345.0	123.0
+4	-1.23456794E18	-1.23456794E9	-12345.0	-123.0
+PREHOOK: query: alter table testAltColPDD_n0 replace columns
+(cId        TINYINT,
+ cBigInt    DOUBLE,
+ cInt       DOUBLE,
+ cSmallInt  DOUBLE,
+ cTinyint   DOUBLE)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolpdd_n0
+PREHOOK: Output: default@testaltcolpdd_n0
+POSTHOOK: query: alter table testAltColPDD_n0 replace columns
+(cId        TINYINT,
+ cBigInt    DOUBLE,
+ cInt       DOUBLE,
+ cSmallInt  DOUBLE,
+ cTinyint   DOUBLE)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolpdd_n0
+POSTHOOK: Output: default@testaltcolpdd_n0
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD_n0 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolpdd_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD_n0 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolpdd_n0
+#### A masked pattern was here ####
+1	1.23456789012345677E18	1.234567936E9	12345.0	123.0
+2	1.0	2.0	3.0	4.0
+3	1.23456789012345677E18	1.234567936E9	12345.0	123.0
+4	-1.23456789012345677E18	-1.234567936E9	-12345.0	-123.0
+PREHOOK: query: alter table testAltColPDD_n0 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(22,2),
+ cInt       DECIMAL(22,2),
+ cSmallInt  DECIMAL(22,2),
+ cTinyint   DECIMAL(22,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolpdd_n0
+PREHOOK: Output: default@testaltcolpdd_n0
+POSTHOOK: query: alter table testAltColPDD_n0 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(22,2),
+ cInt       DECIMAL(22,2),
+ cSmallInt  DECIMAL(22,2),
+ cTinyint   DECIMAL(22,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolpdd_n0
+POSTHOOK: Output: default@testaltcolpdd_n0
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD_n0 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolpdd_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD_n0 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolpdd_n0
+#### A masked pattern was here ####
+1	1234567890123456789.00	1234567890.00	12345.00	123.00
+2	1.00	2.00	3.00	4.00
+3	1234567890123456789.00	1234567890.00	12345.00	123.00
+4	-1234567890123456789.00	-1234567890.00	-12345.00	-123.00
+PREHOOK: query: alter table testAltColPDD_n0 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(13,2),
+ cInt       DECIMAL(13,2),
+ cSmallInt  DECIMAL(13,2),
+ cTinyint   DECIMAL(13,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolpdd_n0
+PREHOOK: Output: default@testaltcolpdd_n0
+POSTHOOK: query: alter table testAltColPDD_n0 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(13,2),
+ cInt       DECIMAL(13,2),
+ cSmallInt  DECIMAL(13,2),
+ cTinyint   DECIMAL(13,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolpdd_n0
+POSTHOOK: Output: default@testaltcolpdd_n0
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD_n0 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolpdd_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD_n0 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolpdd_n0
+#### A masked pattern was here ####
+1	NULL	1234567890.00	12345.00	123.00
+2	1.00	2.00	3.00	4.00
+3	NULL	1234567890.00	12345.00	123.00
+4	NULL	-1234567890.00	-12345.00	-123.00
+PREHOOK: query: alter table testAltColPDD_n0 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(8,2),
+ cInt       DECIMAL(8,2),
+ cSmallInt  DECIMAL(8,2),
+ cTinyint   DECIMAL(8,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolpdd_n0
+PREHOOK: Output: default@testaltcolpdd_n0
+POSTHOOK: query: alter table testAltColPDD_n0 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(8,2),
+ cInt       DECIMAL(8,2),
+ cSmallInt  DECIMAL(8,2),
+ cTinyint   DECIMAL(8,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolpdd_n0
+POSTHOOK: Output: default@testaltcolpdd_n0
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD_n0 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolpdd_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD_n0 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolpdd_n0
+#### A masked pattern was here ####
+1	NULL	NULL	12345.00	123.00
+2	1.00	2.00	3.00	4.00
+3	NULL	NULL	12345.00	123.00
+4	NULL	NULL	-12345.00	-123.00
+PREHOOK: query: alter table testAltColPDD_n0 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(6,2),
+ cInt       DECIMAL(6,2),
+ cSmallInt  DECIMAL(6,2),
+ cTinyint   DECIMAL(6,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolpdd_n0
+PREHOOK: Output: default@testaltcolpdd_n0
+POSTHOOK: query: alter table testAltColPDD_n0 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(6,2),
+ cInt       DECIMAL(6,2),
+ cSmallInt  DECIMAL(6,2),
+ cTinyint   DECIMAL(6,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolpdd_n0
+POSTHOOK: Output: default@testaltcolpdd_n0
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD_n0 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolpdd_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD_n0 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolpdd_n0
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	123.00
+2	1.00	2.00	3.00	4.00
+3	NULL	NULL	NULL	123.00
+4	NULL	NULL	NULL	-123.00
+PREHOOK: query: alter table testAltColPDD_n0 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(3,2),
+ cInt       DECIMAL(3,2),
+ cSmallInt  DECIMAL(3,2),
+ cTinyint   DECIMAL(3,2))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@testaltcolpdd_n0
+PREHOOK: Output: default@testaltcolpdd_n0
+POSTHOOK: query: alter table testAltColPDD_n0 replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(3,2),
+ cInt       DECIMAL(3,2),
+ cSmallInt  DECIMAL(3,2),
+ cTinyint   DECIMAL(3,2))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@testaltcolpdd_n0
+POSTHOOK: Output: default@testaltcolpdd_n0
+PREHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD_n0 order by cId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testaltcolpdd_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD_n0 order by cId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testaltcolpdd_n0
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	NULL
+2	1.00	2.00	3.00	4.00
+3	NULL	NULL	NULL	NULL
+4	NULL	NULL	NULL	NULL
+PREHOOK: query: drop table if exists testAltColPDD_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testaltcolpdd_n0
+PREHOOK: Output: default@testaltcolpdd_n0
+POSTHOOK: query: drop table if exists testAltColPDD_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testaltcolpdd_n0
+POSTHOOK: Output: default@testaltcolpdd_n0

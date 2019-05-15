@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.Driver.DriverState;
 import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -60,6 +59,9 @@ public class TestDummyTxnManager {
   HiveLockManager mockLockManager;
 
   @Mock
+  HiveLockManagerCtx mockLockManagerCtx;
+
+  @Mock
   QueryPlan mockQueryPlan;
 
   @Before
@@ -74,16 +76,24 @@ public class TestDummyTxnManager {
 
     txnMgr = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     Assert.assertTrue(txnMgr instanceof DummyTxnManager);
+
     // Use reflection to set LockManager since creating the object using the
     // relection in DummyTxnManager won't take Mocked object
     Field field = DummyTxnManager.class.getDeclaredField("lockMgr");
     field.setAccessible(true);
     field.set(txnMgr, mockLockManager);
+
+    Field field2 = DummyTxnManager.class.getDeclaredField("lockManagerCtx");
+    field2.setAccessible(true);
+    field2.set(txnMgr, mockLockManagerCtx);
+
   }
 
   @After
   public void tearDown() throws Exception {
-    if (txnMgr != null) txnMgr.closeTxnManager();
+    if (txnMgr != null) {
+      txnMgr.closeTxnManager();
+    }
   }
 
   /**
@@ -100,7 +110,7 @@ public class TestDummyTxnManager {
     expectedLocks.add(new ZooKeeperHiveLock("default.table1", new HiveLockObject(), HiveLockMode.SHARED));
     LockedDriverState lDrvState = new LockedDriverState();
     LockedDriverState lDrvInp = new LockedDriverState();
-    lDrvInp.driverState = DriverState.INTERRUPT;
+    lDrvInp.abort();
     LockException lEx = new LockException(ErrorMsg.LOCK_ACQUIRE_CANCELLED.getMsg());
     when(mockLockManager.lock(anyListOf(HiveLockObj.class), eq(false), eq(lDrvState))).thenReturn(expectedLocks);
     when(mockLockManager.lock(anyListOf(HiveLockObj.class), eq(false), eq(lDrvInp))).thenThrow(lEx);
@@ -147,9 +157,9 @@ public class TestDummyTxnManager {
     String path1 = "path1";
     String path2 = "path2";
     HiveLockObjectData lockData1 = new HiveLockObjectData(
-        "query1", "1", "IMPLICIT", "drop table table1");
+        "query1", "1", "IMPLICIT", "drop table table1", conf);
     HiveLockObjectData lockData2 = new HiveLockObjectData(
-        "query1", "1", "IMPLICIT", "drop table table1");
+        "query1", "1", "IMPLICIT", "drop table table1", conf);
 
     // Start with the following locks:
     // [path1, shared]

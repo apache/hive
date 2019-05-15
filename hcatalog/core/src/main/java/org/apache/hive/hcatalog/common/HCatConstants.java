@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -186,7 +186,7 @@ public final class HCatConstants {
 
   /**
    * {@value} (default: {@value #HCAT_DATA_CONVERT_BOOLEAN_TO_INTEGER_DEFAULT}).
-   * Pig < 0.10.0 does not have boolean support, and scripts written for pre-boolean Pig versions
+   * Pig &lt; 0.10.0 does not have boolean support, and scripts written for pre-boolean Pig versions
    * will not expect boolean values when upgrading Pig. For integration the option is offered to
    * convert boolean fields to integers by setting this Hadoop configuration key.
    */

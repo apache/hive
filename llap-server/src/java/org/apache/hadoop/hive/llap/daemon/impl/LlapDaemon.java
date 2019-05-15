@@ -14,15 +14,16 @@
 
 package org.apache.hadoop.hive.llap.daemon.impl;
 
-import org.apache.hadoop.hive.llap.LlapOutputFormatService;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryType;
 import java.net.InetSocketAddress;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -38,10 +39,13 @@ import org.apache.hadoop.hive.common.UgiFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DaemonId;
+import org.apache.hadoop.hive.llap.LlapDaemonInfo;
+import org.apache.hadoop.hive.llap.LlapOutputFormatService;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.QueryFailedHandler;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
@@ -50,9 +54,12 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWor
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentResponseProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentResponseProto;
 import org.apache.hadoop.hive.llap.daemon.services.impl.LlapWebServices;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
+import org.apache.hadoop.hive.llap.metrics.LlapDaemonJvmMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
@@ -72,6 +79,7 @@ import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.util.ConverterUtils;
+import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.slf4j.Logger;
@@ -85,7 +93,6 @@ import com.google.common.primitives.Ints;
 public class LlapDaemon extends CompositeService implements ContainerRunner, LlapDaemonMXBean {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapDaemon.class);
-
   private final Configuration shuffleHandlerConf;
   private final SecretManager secretManager;
   private final LlapProtocolServerImpl server;
@@ -129,7 +136,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     Preconditions.checkArgument(localDirs != null && localDirs.length > 0,
         "Work dirs must be specified");
     Preconditions.checkArgument(shufflePort == 0 || (shufflePort > 1024 && shufflePort < 65536),
-        "Shuffle Port must be betwee 1024 and 65535, or 0 for automatic selection");
+        "Shuffle Port must be between 1024 and 65535, or 0 for automatic selection");
     int outputFormatServicePort = HiveConf.getIntVar(daemonConf, HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT);
     Preconditions.checkArgument(outputFormatServicePort == 0
         || (outputFormatServicePort > 1024 && outputFormatServicePort < 65536),
@@ -172,28 +179,34 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         daemonConf, ConfVars.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE);
     boolean enablePreemption = HiveConf.getBoolVar(
         daemonConf, ConfVars.LLAP_DAEMON_TASK_SCHEDULER_ENABLE_PREEMPTION);
-    LOG.warn("Attempting to start LlapDaemonConf with the following configuration: " +
-        "maxJvmMemory=" + maxJvmMemory + " ("
-          + LlapUtil.humanReadableByteCount(maxJvmMemory) + ")" +
-        ", requestedExecutorMemory=" + executorMemoryBytes +
-        " (" + LlapUtil.humanReadableByteCount(executorMemoryBytes) + ")" +
-        ", llapIoCacheSize=" + ioMemoryBytes + " ("
-          + LlapUtil.humanReadableByteCount(ioMemoryBytes) + ")" +
-        ", xmxHeadRoomMemory=" + xmxHeadRoomBytes + " ("
-          + LlapUtil.humanReadableByteCount(xmxHeadRoomBytes) + ")" +
-        ", adjustedExecutorMemory=" + executorMemoryPerInstance +
-        " (" + LlapUtil.humanReadableByteCount(executorMemoryPerInstance) + ")" +
-        ", numExecutors=" + numExecutors +
-        ", llapIoEnabled=" + ioEnabled +
-        ", llapIoCacheIsDirect=" + isDirectCache +
-        ", rpcListenerPort=" + srvPort +
-        ", mngListenerPort=" + mngPort +
-        ", webPort=" + webPort +
-        ", outputFormatSvcPort=" + outputFormatServicePort +
-        ", workDirs=" + Arrays.toString(localDirs) +
-        ", shufflePort=" + shufflePort +
-        ", waitQueueSize= " + waitQueueSize +
-        ", enablePreemption= " + enablePreemption);
+    final String logMsg = "Attempting to start LlapDaemon with the following configuration: " +
+      "maxJvmMemory=" + maxJvmMemory + " ("
+      + LlapUtil.humanReadableByteCount(maxJvmMemory) + ")" +
+      ", requestedExecutorMemory=" + executorMemoryBytes +
+      " (" + LlapUtil.humanReadableByteCount(executorMemoryBytes) + ")" +
+      ", llapIoCacheSize=" + ioMemoryBytes + " ("
+      + LlapUtil.humanReadableByteCount(ioMemoryBytes) + ")" +
+      ", xmxHeadRoomMemory=" + xmxHeadRoomBytes + " ("
+      + LlapUtil.humanReadableByteCount(xmxHeadRoomBytes) + ")" +
+      ", adjustedExecutorMemory=" + executorMemoryPerInstance +
+      " (" + LlapUtil.humanReadableByteCount(executorMemoryPerInstance) + ")" +
+      ", numExecutors=" + numExecutors +
+      ", llapIoEnabled=" + ioEnabled +
+      ", llapIoCacheIsDirect=" + isDirectCache +
+      ", rpcListenerPort=" + srvPort +
+      ", mngListenerPort=" + mngPort +
+      ", webPort=" + webPort +
+      ", outputFormatSvcPort=" + outputFormatServicePort +
+      ", workDirs=" + Arrays.toString(localDirs) +
+      ", shufflePort=" + shufflePort +
+      ", waitQueueSize= " + waitQueueSize +
+      ", enablePreemption= " + enablePreemption +
+      ", versionInfo= (" + HiveVersionInfo.getBuildVersion() + ")";
+    LOG.info(logMsg);
+    final String currTSISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date());
+    // Time based log retrieval may not fetch the above log line so logging to stderr for debugging purpose.
+    System.err.println(currTSISO8601 + " " + logMsg);
+
 
     long memRequired =
         executorMemoryBytes + (ioEnabled && isDirectCache == false ? ioMemoryBytes : 0);
@@ -231,8 +244,10 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     LlapMetricsSystem.initialize("LlapDaemon");
     this.pauseMonitor = new JvmPauseMonitor(daemonConf);
     pauseMonitor.start();
-    String displayName = "LlapDaemonExecutorMetrics-" + hostName;
+    String displayNameJvm = "LlapDaemonJvmMetrics-" + hostName;
     String sessionId = MetricsUtils.getUUID();
+    LlapDaemonJvmMetrics.create(displayNameJvm, sessionId, daemonConf);
+    String displayName = "LlapDaemonExecutorMetrics-" + hostName;
     daemonConf.set("llap.daemon.metrics.sessionid", sessionId);
     String[] strIntervals = HiveConf.getTrimmedStringsVar(daemonConf,
         HiveConf.ConfVars.LLAP_DAEMON_TASK_PREEMPTION_METRICS_INTERVALS);
@@ -253,6 +268,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     this.metrics.setCacheMemoryPerInstance(ioMemoryBytes);
     this.metrics.setJvmMaxMemory(maxJvmMemory);
     this.metrics.setWaitQueueSize(waitQueueSize);
+    this.metrics.getJvmMetrics().setPauseMonitor(pauseMonitor);
     this.llapDaemonInfoBean = MBeans.register("LlapDaemon", "LlapDaemonInfo", this);
     LOG.info("Started LlapMetricsSystem with displayName: " + displayName +
         " sessionId: " + sessionId);
@@ -276,15 +292,32 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    this.containerRunner = new ContainerRunnerImpl(daemonConf, numExecutors, waitQueueSize,
-        enablePreemption, localDirs, this.shufflePort, srvAddress, executorMemoryPerInstance, metrics,
-        amReporter, executorClassLoader, daemonId, fsUgiFactory, socketFactory);
+
+    QueryTracker queryTracker = new QueryTracker(daemonConf, localDirs,
+        daemonId.getClusterString());
+
+    String waitQueueSchedulerClassName = HiveConf.getVar(
+        daemonConf, ConfVars.LLAP_DAEMON_WAIT_QUEUE_COMPARATOR_CLASS_NAME);
+
+    Scheduler<TaskRunnerCallable> executorService = new TaskExecutorService(numExecutors, waitQueueSize,
+        waitQueueSchedulerClassName, enablePreemption, executorClassLoader, metrics, null);
+
+    addIfService(queryTracker);
+    addIfService(executorService);
+
+    this.containerRunner = new ContainerRunnerImpl(daemonConf, numExecutors,
+        this.shufflePort, srvAddress, executorMemoryPerInstance, metrics,
+        amReporter, queryTracker, executorService, daemonId, fsUgiFactory, socketFactory);
     addIfService(containerRunner);
 
     // Not adding the registry as a service, since we need to control when it is initialized - conf used to pickup properties.
     this.registry = new LlapRegistryService(true);
 
-    if (HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.HIVE_IN_TEST)) {
+    // disable web UI in test mode until a specific port was configured
+    if (HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.HIVE_IN_TEST)
+        && Integer.parseInt(ConfVars.LLAP_DAEMON_WEB_PORT.getDefaultValue()) == webPort) {
+      LOG.info("Web UI was disabled in test mode because hive.llap.daemon.web.port was not "
+               + "specified or has default value ({})", webPort);
       this.webServices = null;
     } else {
       this.webServices = new LlapWebServices(webPort, this, registry);
@@ -323,15 +356,18 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
   private static void initializeLogging(final Configuration conf) {
     long start = System.currentTimeMillis();
-    URL llap_l4j2 = LlapDaemon.class.getClassLoader().getResource(
-        LlapConstants.LOG4j2_PROPERTIES_FILE);
+    String log4j2FileName = System.getenv(LlapConstants.LLAP_LOG4J2_PROPERTIES_FILE_NAME_ENV);
+    if (log4j2FileName == null || log4j2FileName.isEmpty()) {
+      log4j2FileName = LlapConstants.LOG4j2_PROPERTIES_FILE;
+    }
+    URL llap_l4j2 = LlapDaemon.class.getClassLoader().getResource(log4j2FileName);
     if (llap_l4j2 != null) {
       final boolean async = LogUtils.checkAndSetAsyncLogging(conf);
       // required for MDC based routing appender so that child threads can inherit the MDC context
       System.setProperty("isThreadContextMapInheritable", "true");
       Configurator.initialize("LlapDaemonLog4j2", llap_l4j2.toString());
       long end = System.currentTimeMillis();
-      LOG.warn("LLAP daemon logging initialized from {} in {} ms. Async: {}",
+      LOG.debug("LLAP daemon logging initialized from {} in {} ms. Async: {}",
           llap_l4j2, (end - start), async);
     } else {
       throw new RuntimeException("Log initialization failed." +
@@ -373,7 +409,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         "$$$$$$$$\\ $$$$$$$$\\ $$ |  $$ |$$ |\n" +
         "\\________|\\________|\\__|  \\__|\\__|\n" +
         "\n";
-    LOG.warn("\n\n" + asciiArt);
+    LOG.info("\n\n" + asciiArt);
   }
 
   @Override
@@ -467,6 +503,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       LlapDaemonConfiguration daemonConf = new LlapDaemonConfiguration();
 
       String containerIdStr = System.getenv(ApplicationConstants.Environment.CONTAINER_ID.name());
+
       String appName = null;
       if (containerIdStr != null && !containerIdStr.isEmpty()) {
         daemonConf.set(ConfVars.LLAP_DAEMON_CONTAINER_ID.varname, containerIdStr);
@@ -481,7 +518,18 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         appName = null;
       }
 
-      int numExecutors = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_NUM_EXECUTORS);
+      String nmHost = System.getenv(ApplicationConstants.Environment.NM_HOST.name());
+      String nmPort = System.getenv(ApplicationConstants.Environment.NM_PORT.name());
+      if (!org.apache.commons.lang3.StringUtils.isBlank(nmHost) && !org.apache.commons.lang3.StringUtils.isBlank(nmPort)) {
+        String nmAddress = nmHost + ":" + nmPort;
+        daemonConf.set(ConfVars.LLAP_DAEMON_NM_ADDRESS.varname, nmAddress);
+      } else {
+        daemonConf.unset(ConfVars.LLAP_DAEMON_NM_ADDRESS.varname);
+        // Unlikely, but log the actual values in case one of the two was empty/null
+        LOG.warn(
+            "NodeManager host/port not found in environment. Values retrieved: host={}, port={}",
+            nmHost, nmPort);
+      }
 
       String workDirsString = System.getenv(ApplicationConstants.Environment.LOCAL_DIRS.name());
 
@@ -490,35 +538,44 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
           new String[0] : StringUtils.getTrimmedStrings(localDirList);
       int rpcPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_RPC_PORT);
       int mngPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_MANAGEMENT_RPC_PORT);
-      int shufflePort = daemonConf
-          .getInt(ShuffleHandler.SHUFFLE_PORT_CONFIG_KEY, ShuffleHandler.DEFAULT_SHUFFLE_PORT);
+      int shufflePort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_YARN_SHUFFLE_PORT);
       int webPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_WEB_PORT);
-      long executorMemoryBytes = HiveConf.getIntVar(
-          daemonConf, ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB) * 1024l * 1024l;
-      long ioMemoryBytes = HiveConf.getSizeVar(daemonConf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
-      boolean isDirectCache = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_ALLOCATOR_DIRECT);
-      boolean isLlapIo = HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.LLAP_IO_ENABLED, true);
+
+      LlapDaemonInfo.initialize(appName, daemonConf);
+
+      int numExecutors = LlapDaemonInfo.INSTANCE.getNumExecutors();
+      long executorMemoryBytes = LlapDaemonInfo.INSTANCE.getExecutorMemory();
+      long ioMemoryBytes = LlapDaemonInfo.INSTANCE.getCacheSize();
+      boolean isDirectCache = LlapDaemonInfo.INSTANCE.isDirectCache();
+      boolean isLlapIo = LlapDaemonInfo.INSTANCE.isLlapIo();
 
       LlapDaemon.initializeLogging(daemonConf);
-      llapDaemon = new LlapDaemon(daemonConf, numExecutors, executorMemoryBytes, isLlapIo,
-          isDirectCache, ioMemoryBytes, localDirs, rpcPort, mngPort, shufflePort, webPort,
-          appName);
+      llapDaemon =
+          new LlapDaemon(daemonConf, numExecutors, executorMemoryBytes, isLlapIo, isDirectCache,
+              ioMemoryBytes, localDirs, rpcPort, mngPort, shufflePort, webPort, appName);
 
       LOG.info("Adding shutdown hook for LlapDaemon");
       ShutdownHookManager.addShutdownHook(new CompositeServiceShutdownHook(llapDaemon), 1);
 
       llapDaemon.init(daemonConf);
       llapDaemon.start();
-      LOG.info("Started LlapDaemon");
+      LOG.info("Started LlapDaemon with PID: {}", LlapDaemonInfo.INSTANCE.getPID());
       // Relying on the RPC threads to keep the service alive.
     } catch (Throwable t) {
       // TODO Replace this with a ExceptionHandler / ShutdownHook
-      LOG.warn("Failed to start LLAP Daemon with exception", t);
+      LOG.error("Failed to start LLAP Daemon with exception", t);
       if (llapDaemon != null) {
         llapDaemon.shutdown();
       }
       System.exit(-1);
     }
+  }
+
+  @Override
+  public LlapDaemonProtocolProtos.RegisterDagResponseProto registerDag(
+      LlapDaemonProtocolProtos.RegisterDagRequestProto request)
+      throws IOException {
+    return containerRunner.registerDag(request);
   }
 
   @Override
@@ -544,6 +601,12 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   public TerminateFragmentResponseProto terminateFragment(
       TerminateFragmentRequestProto request) throws IOException {
     return containerRunner.terminateFragment(request);
+  }
+
+  @Override
+  public UpdateFragmentResponseProto updateFragment(
+      UpdateFragmentRequestProto request) throws IOException {
+    return containerRunner.updateFragment(request);
   }
 
   @VisibleForTesting
@@ -579,6 +642,11 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   @Override
   public Set<String> getExecutorsStatus() {
     return containerRunner.getExecutorStatus();
+  }
+
+  @Override
+  public int getNumActive() {
+    return containerRunner.getNumActive();
   }
 
   @Override

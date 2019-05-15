@@ -15,6 +15,8 @@ WITH SERDEPROPERTIES(
   "escapeChar"    = "\\"
 ) stored as textfile
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@serde_opencsv
 POSTHOOK: query: EXPLAIN
 CREATE TABLE serde_opencsv(
                           words STRING,
@@ -32,22 +34,23 @@ WITH SERDEPROPERTIES(
   "escapeChar"    = "\\"
 ) stored as textfile
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@serde_opencsv
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-0
-      Create Table Operator:
-        Create Table
-          columns: words string, int1 int, tinyint1 tinyint, smallint1 smallint, bigint1 bigint, boolean1 boolean, float1 float, double1 double
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.serde2.OpenCSVSerde
-          serde properties:
-            escapeChar \
-            quoteChar '
-            separatorChar ,
-          name: default.serde_opencsv
+    Create Table
+      columns: words string, int1 int, tinyint1 tinyint, smallint1 smallint, bigint1 bigint, boolean1 boolean, float1 float, double1 double
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.OpenCSVSerde
+      serde properties:
+        escapeChar \
+        quoteChar '
+        separatorChar ,
+      name: default.serde_opencsv
 
 PREHOOK: query: CREATE TABLE serde_opencsv(
                           words STRING,

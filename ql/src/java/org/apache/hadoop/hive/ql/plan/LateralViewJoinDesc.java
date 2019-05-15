@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
+import java.util.Objects;
+
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 
@@ -63,4 +65,14 @@ public class LateralViewJoinDesc extends AbstractOperatorDesc {
   public void setNumSelColumns(int numSelColumns) {
     this.numSelColumns = numSelColumns;
   }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (getClass().getName().equals(other.getClass().getName())) {
+      LateralViewJoinDesc otherDesc = (LateralViewJoinDesc) other;
+      return Objects.equals(getOutputInternalColNames(), otherDesc.getOutputInternalColNames());
+    }
+    return false;
+  }
+
 }

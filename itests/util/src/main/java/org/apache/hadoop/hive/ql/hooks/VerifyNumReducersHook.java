@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,10 +19,14 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import java.util.Map;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.MapRedStats;
+import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezProgressMonitor;
 import org.apache.hadoop.hive.ql.session.SessionState;
+
+import org.apache.tez.dag.api.client.Progress;
 
 /**
  *
@@ -42,10 +46,23 @@ public class VerifyNumReducersHook implements ExecuteWithHookContext {
     Assert.assertNotNull("SessionState returned null");
 
     int expectedReducers = hookContext.getConf().getInt(BUCKET_CONFIG, 0);
-    Map<String, MapRedStats> stats = ss.getMapRedStats();
-    Assert.assertEquals("Number of MapReduce jobs is incorrect", 1, stats.size());
+    if (ss.getConf().get(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname).equals("mr")) {
+      Map<String, MapRedStats> stats = ss.getMapRedStats();
+      Assert.assertEquals("Number of MapReduce jobs is incorrect", 1, stats.size());
 
-    MapRedStats stat = stats.values().iterator().next();
-    Assert.assertEquals("NumReducers is incorrect", expectedReducers, stat.getNumReduce());
+      MapRedStats stat = stats.values().iterator().next();
+      Assert.assertEquals("NumReducers is incorrect", expectedReducers, stat.getNumReduce());
+    } else if (ss.getConf().get(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname).equals("tez")) {
+      TezProgressMonitor tezProgressMonitor = (TezProgressMonitor) ss.getProgressMonitor();
+      Map<String, Progress> progressMap = tezProgressMonitor.getStatus().getVertexProgress();
+      int totalReducers = 0;
+      for (Map.Entry<String, Progress> entry : progressMap.entrySet()) {
+        // relying on the name of vertex is fragile, but this will do for now for the tests
+        if (entry.getKey().contains("Reducer")) {
+          totalReducers += entry.getValue().getTotalTaskCount();
+        }
+      }
+      Assert.assertEquals("Number of reducers is incorrect", expectedReducers, totalReducers);
+    }
   }
 }

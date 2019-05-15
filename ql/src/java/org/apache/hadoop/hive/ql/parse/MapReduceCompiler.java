@@ -1,4 +1,4 @@
-/**
+/*
  *  Licensed to the Apache Software Foundation (ASF) under one
  *  or more contributor license agreements.  See the NOTICE file
  *  distributed with this work for additional information
@@ -34,6 +34,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -54,6 +55,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.optimizer.GenMRFileSink1;
 import org.apache.hadoop.hive.ql.optimizer.GenMROperator;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext;
@@ -70,6 +72,7 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.shims.ShimLoader;
 
 public class MapReduceCompiler extends TaskCompiler {
@@ -77,6 +80,16 @@ public class MapReduceCompiler extends TaskCompiler {
   protected final Logger LOG = LoggerFactory.getLogger(MapReduceCompiler.class);
 
   public MapReduceCompiler() {
+  }
+
+  @Override
+  public void init(QueryState queryState, LogHelper console, Hive db) {
+    super.init(queryState, console, db);
+
+    //It is required the use of recursive input dirs when hive.optimize.union.remove = true
+    if(conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_UNION_REMOVE)) {
+      conf.setBoolean("mapred.input.dir.recursive", true);
+    }
   }
 
   // loop over all the tasks recursively
@@ -103,6 +116,12 @@ public class MapReduceCompiler extends TaskCompiler {
         setInputFormat(childTask);
       }
     }
+  }
+
+  @Override
+  protected void optimizeOperatorPlan(ParseContext pCtx, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs) throws SemanticException {
+    this.runDynPartitionSortOptimizations(pCtx, conf);
   }
 
   private void setInputFormat(MapWork work, Operator<? extends OperatorDesc> op) {

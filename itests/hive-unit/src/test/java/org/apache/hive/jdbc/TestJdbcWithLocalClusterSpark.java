@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,6 +22,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -65,11 +68,17 @@ public class TestJdbcWithLocalClusterSpark {
   private Connection hs2Conn = null;
   private Statement stmt;
 
-  private static HiveConf createHiveConf() {
+  private static HiveConf createHiveConf() throws MalformedURLException {
+    String confDir = "../../data/conf/spark/standalone/hive-site.xml";
+    HiveConf.setHiveSiteLocation(new File(confDir).toURI().toURL());
     HiveConf conf = new HiveConf();
-    conf.set("hive.execution.engine", "spark");
-    conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
-    conf.set("spark.master", "local-cluster[2,2,1024]");
+    // FIXME: Hadoop3 made the incompatible change for dfs.client.datanode-restart.timeout
+    // while spark2 is still using Hadoop2.
+    // Spark requires Hive to support Hadoop3 first then Spark can start
+    // working on Hadoop3 support. Remove this after Spark supports Hadoop3.
+    conf.set("dfs.client.datanode-restart.timeout", "30");
+    conf.set("spark.local.dir", Paths.get(System.getProperty("test.tmp.dir"),
+            "TestJdbcWithLocalClusterSpark-local-dir").toString());
     return conf;
   }
 

@@ -1,21 +1,23 @@
-PREHOOK: query: create table test_1 (`id` string, `lineid` string) stored as orc
+PREHOOK: query: create table test_1_n1 (`id` string, `lineid` string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_1
-POSTHOOK: query: create table test_1 (`id` string, `lineid` string) stored as orc
+PREHOOK: Output: default@test_1_n1
+POSTHOOK: query: create table test_1_n1 (`id` string, `lineid` string) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_1
-PREHOOK: query: insert into table test_1 values ('one','1'), ('seven','1')
+POSTHOOK: Output: default@test_1_n1
+PREHOOK: query: insert into table test_1_n1 values ('one','1'), ('seven','1')
 PREHOOK: type: QUERY
-PREHOOK: Output: default@test_1
-POSTHOOK: query: insert into table test_1 values ('one','1'), ('seven','1')
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_1_n1
+POSTHOOK: query: insert into table test_1_n1 values ('one','1'), ('seven','1')
 POSTHOOK: type: QUERY
-POSTHOOK: Output: default@test_1
-POSTHOOK: Lineage: test_1.id SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: test_1.lineid SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_1_n1
+POSTHOOK: Lineage: test_1_n1.id SCRIPT []
+POSTHOOK: Lineage: test_1_n1.lineid SCRIPT []
 PREHOOK: query: explain vectorization expression
-select * from test_1 where struct(`id`, `lineid`)
+select * from test_1_n1 where struct(`id`, `lineid`)
 IN (
 struct('two','3'),
 struct('three','1'),
@@ -28,8 +30,10 @@ struct('nine','1'),
 struct('ten','1')
 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
-select * from test_1 where struct(`id`, `lineid`)
+select * from test_1_n1 where struct(`id`, `lineid`)
 IN (
 struct('two','3'),
 struct('three','1'),
@@ -42,6 +46,8 @@ struct('nine','1'),
 struct('ten','1')
 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -58,32 +64,32 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: test_1
-                  Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: NONE
+                  alias: test_1_n1
+                  filterExpr: (struct(id,lineid)) IN (const struct('two','3'), const struct('three','1'), const struct('one','1'), const struct('five','2'), const struct('six','1'), const struct('eight','1'), const struct('seven','1'), const struct('nine','1'), const struct('ten','1')) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterStructColumnInList(structExpressions [col 0, col 1], fieldVectorColumnTypes [BYTES, BYTES], structColumnMap [0, 1]) -> boolean
+                        predicateExpression: FilterStructColumnInList(structExpressions [col 0:string, col 1:string], fieldVectorColumnTypes [BYTES, BYTES], structColumnMap [0, 1])
                     predicate: (struct(id,lineid)) IN (const struct('two','3'), const struct('three','1'), const struct('one','1'), const struct('five','2'), const struct('six','1'), const struct('eight','1'), const struct('seven','1'), const struct('nine','1'), const struct('ten','1')) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 173 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: id (type: string), lineid (type: string)
                       outputColumnNames: _col0, _col1
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [0, 1]
-                      Statistics: Num rows: 1 Data size: 173 Basic stats: COMPLETE Column stats: NONE
+                          projectedOutputColumnNums: [0, 1]
+                      Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 1 Data size: 173 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -93,7 +99,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -105,7 +112,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from test_1 where struct(`id`, `lineid`)
+PREHOOK: query: select * from test_1_n1 where struct(`id`, `lineid`)
 IN (
 struct('two','3'),
 struct('three','1'),
@@ -118,9 +125,9 @@ struct('nine','1'),
 struct('ten','1')
 )
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_1
+PREHOOK: Input: default@test_1_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from test_1 where struct(`id`, `lineid`)
+POSTHOOK: query: select * from test_1_n1 where struct(`id`, `lineid`)
 IN (
 struct('two','3'),
 struct('three','1'),
@@ -133,7 +140,7 @@ struct('nine','1'),
 struct('ten','1')
 )
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_1
+POSTHOOK: Input: default@test_1_n1
 #### A masked pattern was here ####
 one	1
 seven	1
@@ -149,8 +156,10 @@ struct('eight','1'),
 struct('seven','1'),
 struct('nine','1'),
 struct('ten','1')
-) as b from test_1
+) as b from test_1_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select `id`, `lineid`, struct(`id`, `lineid`)
 IN (
@@ -163,8 +172,10 @@ struct('eight','1'),
 struct('seven','1'),
 struct('nine','1'),
 struct('ten','1')
-) as b from test_1
+) as b from test_1_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -181,26 +192,25 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: test_1
-                  Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: NONE
+                  alias: test_1_n1
+                  Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1]
                   Select Operator
                     expressions: id (type: string), lineid (type: string), (struct(id,lineid)) IN (const struct('two','3'), const struct('three','1'), const struct('one','1'), const struct('five','2'), const struct('six','1'), const struct('eight','1'), const struct('seven','1'), const struct('nine','1'), const struct('ten','1')) (type: boolean)
                     outputColumnNames: _col0, _col1, _col2
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [0, 1, 3]
-                        selectExpressions: StructColumnInList(structExpressions [col 0, col 1], fieldVectorColumnTypes [BYTES, BYTES], structColumnMap [0, 1]) -> 3:boolean
-                    Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: NONE
+                        projectedOutputColumnNums: [0, 1, 4]
+                        selectExpressions: StructColumnInList(structExpressions [col 0:string, col 1:string], fieldVectorColumnTypes [BYTES, BYTES], structColumnMap [0, 1]) -> 4:boolean
+                    Statistics: Num rows: 2 Data size: 354 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 354 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -210,7 +220,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -233,9 +244,9 @@ struct('eight','1'),
 struct('seven','1'),
 struct('nine','1'),
 struct('ten','1')
-) as b from test_1
+) as b from test_1_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_1
+PREHOOK: Input: default@test_1_n1
 #### A masked pattern was here ####
 POSTHOOK: query: select `id`, `lineid`, struct(`id`, `lineid`)
 IN (
@@ -248,30 +259,32 @@ struct('eight','1'),
 struct('seven','1'),
 struct('nine','1'),
 struct('ten','1')
-) as b from test_1
+) as b from test_1_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_1
+POSTHOOK: Input: default@test_1_n1
 #### A masked pattern was here ####
 one	1	true
 seven	1	true
-PREHOOK: query: create table test_2 (`id` int, `lineid` int) stored as orc
+PREHOOK: query: create table test_2_n1 (`id` int, `lineid` int) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_2
-POSTHOOK: query: create table test_2 (`id` int, `lineid` int) stored as orc
+PREHOOK: Output: default@test_2_n1
+POSTHOOK: query: create table test_2_n1 (`id` int, `lineid` int) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_2
-PREHOOK: query: insert into table test_2 values (1,1), (7,1)
+POSTHOOK: Output: default@test_2_n1
+PREHOOK: query: insert into table test_2_n1 values (1,1), (7,1)
 PREHOOK: type: QUERY
-PREHOOK: Output: default@test_2
-POSTHOOK: query: insert into table test_2 values (1,1), (7,1)
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_2_n1
+POSTHOOK: query: insert into table test_2_n1 values (1,1), (7,1)
 POSTHOOK: type: QUERY
-POSTHOOK: Output: default@test_2
-POSTHOOK: Lineage: test_2.id EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: test_2.lineid EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_2_n1
+POSTHOOK: Lineage: test_2_n1.id SCRIPT []
+POSTHOOK: Lineage: test_2_n1.lineid SCRIPT []
 PREHOOK: query: explain vectorization expression
-select * from test_2 where struct(`id`, `lineid`)
+select * from test_2_n1 where struct(`id`, `lineid`)
 IN (
 struct(2,3),
 struct(3,1),
@@ -284,8 +297,10 @@ struct(9,1),
 struct(10,1)
 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_2_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
-select * from test_2 where struct(`id`, `lineid`)
+select * from test_2_n1 where struct(`id`, `lineid`)
 IN (
 struct(2,3),
 struct(3,1),
@@ -298,6 +313,8 @@ struct(9,1),
 struct(10,1)
 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_2_n1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -314,32 +331,32 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: test_2
-                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  alias: test_2_n1
+                  filterExpr: (struct(id,lineid)) IN (const struct(2,3), const struct(3,1), const struct(1,1), const struct(5,2), const struct(6,1), const struct(8,1), const struct(7,1), const struct(9,1), const struct(10,1)) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterStructColumnInList(structExpressions [col 0, col 1], fieldVectorColumnTypes [LONG, LONG], structColumnMap [0, 1]) -> boolean
+                        predicateExpression: FilterStructColumnInList(structExpressions [col 0:int, col 1:int], fieldVectorColumnTypes [LONG, LONG], structColumnMap [0, 1])
                     predicate: (struct(id,lineid)) IN (const struct(2,3), const struct(3,1), const struct(1,1), const struct(5,2), const struct(6,1), const struct(8,1), const struct(7,1), const struct(9,1), const struct(10,1)) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: id (type: int), lineid (type: int)
                       outputColumnNames: _col0, _col1
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [0, 1]
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          projectedOutputColumnNums: [0, 1]
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -349,7 +366,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -361,7 +379,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from test_2 where struct(`id`, `lineid`)
+PREHOOK: query: select * from test_2_n1 where struct(`id`, `lineid`)
 IN (
 struct(2,3),
 struct(3,1),
@@ -374,9 +392,9 @@ struct(9,1),
 struct(10,1)
 )
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_2
+PREHOOK: Input: default@test_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from test_2 where struct(`id`, `lineid`)
+POSTHOOK: query: select * from test_2_n1 where struct(`id`, `lineid`)
 IN (
 struct(2,3),
 struct(3,1),
@@ -389,7 +407,7 @@ struct(9,1),
 struct(10,1)
 )
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_2
+POSTHOOK: Input: default@test_2_n1
 #### A masked pattern was here ####
 1	1
 7	1
@@ -405,8 +423,10 @@ struct(8,1),
 struct(7,1),
 struct(9,1),
 struct(10,1)
-) as b from test_2
+) as b from test_2_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_2_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select `id`, `lineid`, struct(`id`, `lineid`)
 IN (
@@ -419,8 +439,10 @@ struct(8,1),
 struct(7,1),
 struct(9,1),
 struct(10,1)
-) as b from test_2
+) as b from test_2_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_2_n1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -437,26 +459,25 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: test_2
-                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  alias: test_2_n1
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1]
                   Select Operator
                     expressions: id (type: int), lineid (type: int), (struct(id,lineid)) IN (const struct(2,3), const struct(3,1), const struct(1,1), const struct(5,2), const struct(6,1), const struct(8,1), const struct(7,1), const struct(9,1), const struct(10,1)) (type: boolean)
                     outputColumnNames: _col0, _col1, _col2
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [0, 1, 3]
-                        selectExpressions: StructColumnInList(structExpressions [col 0, col 1], fieldVectorColumnTypes [LONG, LONG], structColumnMap [0, 1]) -> 3:boolean
-                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                        projectedOutputColumnNums: [0, 1, 4]
+                        selectExpressions: StructColumnInList(structExpressions [col 0:int, col 1:int], fieldVectorColumnTypes [LONG, LONG], structColumnMap [0, 1]) -> 4:boolean
+                    Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -466,7 +487,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -489,9 +511,9 @@ struct(8,1),
 struct(7,1),
 struct(9,1),
 struct(10,1)
-) as b from test_2
+) as b from test_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_2
+PREHOOK: Input: default@test_2_n1
 #### A masked pattern was here ####
 POSTHOOK: query: select `id`, `lineid`, struct(`id`, `lineid`)
 IN (
@@ -504,9 +526,9 @@ struct(8,1),
 struct(7,1),
 struct(9,1),
 struct(10,1)
-) as b from test_2
+) as b from test_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_2
+POSTHOOK: Input: default@test_2_n1
 #### A masked pattern was here ####
 1	1	true
 7	1	true
@@ -520,12 +542,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_3
 PREHOOK: query: insert into table test_3 values ('one',1), ('seven',1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test_3
 POSTHOOK: query: insert into table test_3 values ('one',1), ('seven',1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_3
-POSTHOOK: Lineage: test_3.id SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: test_3.lineid EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: test_3.id SCRIPT []
+POSTHOOK: Lineage: test_3.lineid SCRIPT []
 PREHOOK: query: explain vectorization expression
 select * from test_3 where struct(`id`, `lineid`)
 IN (
@@ -540,6 +564,8 @@ struct('nine',1),
 struct('ten',1)
 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select * from test_3 where struct(`id`, `lineid`)
 IN (
@@ -554,6 +580,8 @@ struct('nine',1),
 struct('ten',1)
 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_3
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -571,31 +599,31 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_3
-                  Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  filterExpr: (struct(id,lineid)) IN (const struct('two',3), const struct('three',1), const struct('one',1), const struct('five',2), const struct('six',1), const struct('eight',1), const struct('seven',1), const struct('nine',1), const struct('ten',1)) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterStructColumnInList(structExpressions [col 0, col 1], fieldVectorColumnTypes [BYTES, LONG], structColumnMap [0, 1]) -> boolean
+                        predicateExpression: FilterStructColumnInList(structExpressions [col 0:string, col 1:int], fieldVectorColumnTypes [BYTES, LONG], structColumnMap [0, 1])
                     predicate: (struct(id,lineid)) IN (const struct('two',3), const struct('three',1), const struct('one',1), const struct('five',2), const struct('six',1), const struct('eight',1), const struct('seven',1), const struct('nine',1), const struct('ten',1)) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: id (type: string), lineid (type: int)
                       outputColumnNames: _col0, _col1
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [0, 1]
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: NONE
+                          projectedOutputColumnNums: [0, 1]
+                      Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -605,7 +633,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -663,6 +692,8 @@ struct('nine',1),
 struct('ten',1)
 ) as b from test_3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select `id`, `lineid`, struct(`id`, `lineid`)
 IN (
@@ -677,6 +708,8 @@ struct('nine',1),
 struct('ten',1)
 ) as b from test_3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_3
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -694,25 +727,24 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_3
-                  Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1]
                   Select Operator
                     expressions: id (type: string), lineid (type: int), (struct(id,lineid)) IN (const struct('two',3), const struct('three',1), const struct('one',1), const struct('five',2), const struct('six',1), const struct('eight',1), const struct('seven',1), const struct('nine',1), const struct('ten',1)) (type: boolean)
                     outputColumnNames: _col0, _col1, _col2
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [0, 1, 3]
-                        selectExpressions: StructColumnInList(structExpressions [col 0, col 1], fieldVectorColumnTypes [BYTES, LONG], structColumnMap [0, 1]) -> 3:boolean
-                    Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                        projectedOutputColumnNums: [0, 1, 4]
+                        selectExpressions: StructColumnInList(structExpressions [col 0:string, col 1:int], fieldVectorColumnTypes [BYTES, LONG], structColumnMap [0, 1]) -> 4:boolean
+                    Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -722,7 +754,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -776,13 +809,15 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_4
 PREHOOK: query: insert into table test_4 values (1, "b", 1.5), (1, "a", 0.5), (2, "b", 1.5)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test_4
 POSTHOOK: query: insert into table test_4 values (1, "b", 1.5), (1, "a", 0.5), (2, "b", 1.5)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_4
-POSTHOOK: Lineage: test_4.my_bigint EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: test_4.my_double EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: test_4.my_string SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: test_4.my_bigint SCRIPT []
+POSTHOOK: Lineage: test_4.my_double SCRIPT []
+POSTHOOK: Lineage: test_4.my_string SCRIPT []
 PREHOOK: query: explain vectorization expression
 select * from test_4 where struct(`my_bigint`, `my_string`, `my_double`)
 IN (
@@ -798,6 +833,8 @@ struct(1L, "a", 0.5D),
 struct(3L, "b", 1.5D)
 )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select * from test_4 where struct(`my_bigint`, `my_string`, `my_double`)
 IN (
@@ -813,6 +850,8 @@ struct(1L, "a", 0.5D),
 struct(3L, "b", 1.5D)
 )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -830,31 +869,31 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_4
-                  Statistics: Num rows: 3 Data size: 303 Basic stats: COMPLETE Column stats: NONE
+                  filterExpr: (struct(my_bigint,my_string,my_double)) IN (const struct(1L,'a',1.5D), const struct(1L,'b',-0.5D), const struct(3L,'b',1.5D), const struct(1L,'d',1.5D), const struct(1L,'c',1.5D), const struct(1L,'b',2.5D), const struct(1L,'b',0.5D), const struct(5L,'b',1.5D), const struct(1L,'a',0.5D)) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 303 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterStructColumnInList(structExpressions [col 0, col 1, col 2], fieldVectorColumnTypes [LONG, BYTES, DOUBLE], structColumnMap [0, 1, 2]) -> boolean
-                    predicate: (struct(my_bigint,my_string,my_double)) IN (const struct(1,'a',1.5), const struct(1,'b',-0.5), const struct(3,'b',1.5), const struct(1,'d',1.5), const struct(1,'c',1.5), const struct(1,'b',2.5), const struct(1,'b',0.5), const struct(5,'b',1.5), const struct(1,'a',0.5), const struct(3,'b',1.5)) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: NONE
+                        predicateExpression: FilterStructColumnInList(structExpressions [col 0:bigint, col 1:string, col 2:double], fieldVectorColumnTypes [LONG, BYTES, DOUBLE], structColumnMap [0, 1, 2])
+                    predicate: (struct(my_bigint,my_string,my_double)) IN (const struct(1L,'a',1.5D), const struct(1L,'b',-0.5D), const struct(3L,'b',1.5D), const struct(1L,'d',1.5D), const struct(1L,'c',1.5D), const struct(1L,'b',2.5D), const struct(1L,'b',0.5D), const struct(5L,'b',1.5D), const struct(1L,'a',0.5D)) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 303 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: my_bigint (type: bigint), my_string (type: string), my_double (type: double)
                       outputColumnNames: _col0, _col1, _col2
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [0, 1, 2]
-                      Statistics: Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: NONE
+                          projectedOutputColumnNums: [0, 1, 2]
+                      Statistics: Num rows: 3 Data size: 303 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 303 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -864,7 +903,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -924,6 +964,8 @@ struct(1L, "a", 0.5D),
 struct(3L, "b", 1.5D)
 ) as b from test_4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select `my_bigint`, `my_string`, `my_double`, struct(`my_bigint`, `my_string`, `my_double`)
 IN (
@@ -939,6 +981,8 @@ struct(1L, "a", 0.5D),
 struct(3L, "b", 1.5D)
 ) as b from test_4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -956,25 +1000,24 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_4
-                  Statistics: Num rows: 3 Data size: 303 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 303 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2]
                   Select Operator
-                    expressions: my_bigint (type: bigint), my_string (type: string), my_double (type: double), (struct(my_bigint,my_string,my_double)) IN (const struct(1,'a',1.5), const struct(1,'b',-0.5), const struct(3,'b',1.5), const struct(1,'d',1.5), const struct(1,'c',1.5), const struct(1,'b',2.5), const struct(1,'b',0.5), const struct(5,'b',1.5), const struct(1,'a',0.5), const struct(3,'b',1.5)) (type: boolean)
+                    expressions: my_bigint (type: bigint), my_string (type: string), my_double (type: double), (struct(my_bigint,my_string,my_double)) IN (const struct(1L,'a',1.5D), const struct(1L,'b',-0.5D), const struct(3L,'b',1.5D), const struct(1L,'d',1.5D), const struct(1L,'c',1.5D), const struct(1L,'b',2.5D), const struct(1L,'b',0.5D), const struct(5L,'b',1.5D), const struct(1L,'a',0.5D)) (type: boolean)
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [0, 1, 2, 4]
-                        selectExpressions: StructColumnInList(structExpressions [col 0, col 1, col 2], fieldVectorColumnTypes [LONG, BYTES, DOUBLE], structColumnMap [0, 1, 2]) -> 4:boolean
-                    Statistics: Num rows: 3 Data size: 303 Basic stats: COMPLETE Column stats: NONE
+                        projectedOutputColumnNums: [0, 1, 2, 5]
+                        selectExpressions: StructColumnInList(structExpressions [col 0:bigint, col 1:string, col 2:double], fieldVectorColumnTypes [LONG, BYTES, DOUBLE], structColumnMap [0, 1, 2]) -> 5:boolean
+                    Statistics: Num rows: 3 Data size: 315 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 3 Data size: 303 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 315 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -984,7 +1027,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false

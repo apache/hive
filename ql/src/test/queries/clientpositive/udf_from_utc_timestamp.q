@@ -27,3 +27,7 @@ select
 from_utc_timestamp('2012-02-11-04:30:00', 'UTC'),
 from_utc_timestamp('2012-02-11-04:30:00', 'PST');
 
+select
+to_epoch_milli(cast (1536449552291 as timestamp )),
+to_epoch_milli(cast('2012-02-11 04:30:00' as timestamp)),
+cast(to_epoch_milli(cast('2012-02-11 04:30:00' as timestamp)) as timestamp );

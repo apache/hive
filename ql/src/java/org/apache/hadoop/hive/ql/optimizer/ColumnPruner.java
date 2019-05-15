@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -158,14 +158,15 @@ public class ColumnPruner extends Transform {
       boolean walkChildren = true;
       opStack.push(nd);
 
-      // no need to go further down for a select op with a file sink or script
-      // child
-      // since all cols are needed for these ops
+      // no need to go further down for a select op with all file sink or script
+      // child since all cols are needed for these ops
+      // However, if one of the children is not file sink or script, we still go down.
       if (nd instanceof SelectOperator) {
+        walkChildren = false;
         for (Node child : nd.getChildren()) {
-          if ((child instanceof FileSinkOperator)
-              || (child instanceof ScriptOperator)) {
-            walkChildren = false;
+          if (!(child instanceof FileSinkOperator || child instanceof ScriptOperator)) {
+            walkChildren = true;
+            break;
           }
         }
       }

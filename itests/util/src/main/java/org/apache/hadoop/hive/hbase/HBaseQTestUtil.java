@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,13 +17,12 @@
  */
 package org.apache.hadoop.hive.hbase;
 
-import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.client.HConnection;
-import org.apache.hadoop.hbase.protobuf.generated.HBaseProtos;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Admin;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hive.ql.QTestArguments;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.apache.hadoop.hive.ql.QTestUtil;
-
-import java.util.List;
 
 /**
  * HBaseQTestUtil initializes HBase-specific test fixtures.
@@ -37,44 +36,26 @@ public class HBaseQTestUtil extends QTestUtil {
   public static String HBASE_SRC_SNAPSHOT_NAME = "src_hbase_snapshot";
 
   /** A handle to this harness's cluster */
-  private final HConnection conn;
-
-  private HBaseTestSetup hbaseSetup = null;
+  private final Connection conn;
 
   public HBaseQTestUtil(
     String outDir, String logDir, MiniClusterType miniMr, HBaseTestSetup setup,
     String initScript, String cleanupScript)
     throws Exception {
 
-    super(outDir, logDir, miniMr, null, "0.20", initScript, cleanupScript, false, false);
-    hbaseSetup = setup;
-    hbaseSetup.preTest(conf);
+    super(
+        QTestArguments.QTestArgumentsBuilder.instance()
+          .withOutDir(outDir)
+          .withLogDir(logDir)
+          .withClusterType(miniMr)
+          .withConfDir(null)
+          .withInitScript(initScript)
+          .withCleanupScript(cleanupScript)
+          .withLlapIo(false)
+          .withQTestSetup(setup)
+          .build());
+
     this.conn = setup.getConnection();
-    super.init();
-  }
-
-  /** return true when HBase table snapshot exists, false otherwise. */
-  private static boolean hbaseTableSnapshotExists(HBaseAdmin admin, String snapshotName) throws
-      Exception {
-    List<HBaseProtos.SnapshotDescription> snapshots =
-      admin.listSnapshots(".*" + snapshotName + ".*");
-    for (HBaseProtos.SnapshotDescription sn : snapshots) {
-      if (sn.getName().equals(HBASE_SRC_SNAPSHOT_NAME)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  @Override
-  public void init() throws Exception {
-    // defer
-  }
-
-  @Override
-  protected void initConfFromSetup() throws Exception {
-    super.initConfFromSetup();
-    hbaseSetup.preTest(conf);
   }
 
   @Override
@@ -82,25 +63,18 @@ public class HBaseQTestUtil extends QTestUtil {
     super.createSources(tname);
 
     conf.setBoolean("hive.test.init.phase", true);
-
-    // create and load the input data into the hbase table
-    runCreateTableCmd(
-      "CREATE TABLE " + HBASE_SRC_NAME + "(key INT, value STRING)"
-        + "  STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'"
-        + "  WITH SERDEPROPERTIES ('hbase.columns.mapping' = ':key,cf:val')"
-        + "  TBLPROPERTIES ('hbase.table.name' = '" + HBASE_SRC_NAME + "')"
-    );
-    runCmd("INSERT OVERWRITE TABLE " + HBASE_SRC_NAME + " SELECT * FROM src");
+    datasetHandler.initDataset(HBASE_SRC_NAME, getCliDriver());
 
     // create a snapshot
-    HBaseAdmin admin = null;
+    Admin admin = null;
     try {
-      admin = new HBaseAdmin(conn.getConfiguration());
-      admin.snapshot(HBASE_SRC_SNAPSHOT_NAME, HBASE_SRC_NAME);
+      admin = conn.getAdmin();
+      admin.snapshot(HBASE_SRC_SNAPSHOT_NAME, TableName.valueOf(HBASE_SRC_NAME));
     } finally {
-      if (admin != null) admin.close();
+      if (admin != null) {
+        admin.close();
+      }
     }
-
     conf.setBoolean("hive.test.init.phase", false);
   }
 
@@ -108,23 +82,15 @@ public class HBaseQTestUtil extends QTestUtil {
   public void cleanUp(String tname) throws Exception {
     super.cleanUp(tname);
 
-    // drop in case leftover from unsuccessful run
-    db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, HBASE_SRC_NAME);
-
-    HBaseAdmin admin = null;
+    Admin admin = null;
     try {
-      admin = new HBaseAdmin(conn.getConfiguration());
-      if (hbaseTableSnapshotExists(admin, HBASE_SRC_SNAPSHOT_NAME)) {
-        admin.deleteSnapshot(HBASE_SRC_SNAPSHOT_NAME);
-      }
+      admin = conn.getAdmin();
+      admin.deleteSnapshots(HBASE_SRC_SNAPSHOT_NAME);
     } finally {
-      if (admin != null) admin.close();
+      if (admin != null) {
+        admin.close();
+      }
     }
   }
 
-  @Override
-  public void clearTestSideEffects() throws Exception {
-    super.clearTestSideEffects();
-    hbaseSetup.preTest(conf);
-  }
 }

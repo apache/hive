@@ -15,6 +15,8 @@ FROM (
   CLUSTER BY id
 ) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT *
 FROM (
@@ -32,6 +34,8 @@ FROM (
   CLUSTER BY id
 ) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -62,7 +66,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
@@ -78,7 +82,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 7 
             Map Operator Tree:
@@ -94,7 +98,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 9 
             Map Operator Tree:
@@ -110,10 +114,10 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 10 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Limit
                 Number of rows: 1
@@ -128,7 +132,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Limit
                 Number of rows: 1
@@ -143,7 +147,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int)
@@ -157,7 +161,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 6 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Limit
                 Number of rows: 1
@@ -172,7 +176,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 8 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Limit
                 Number of rows: 1
@@ -195,15 +199,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: CREATE TABLE union_out (id int)
+PREHOOK: query: CREATE TABLE union_out_n0 (id int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@union_out
-POSTHOOK: query: CREATE TABLE union_out (id int)
+PREHOOK: Output: default@union_out_n0
+POSTHOOK: query: CREATE TABLE union_out_n0 (id int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@union_out
-PREHOOK: query: insert overwrite table union_out 
+POSTHOOK: Output: default@union_out_n0
+PREHOOK: query: insert overwrite table union_out_n0 
 SELECT *
 FROM (
   SELECT 1 AS id
@@ -221,8 +225,8 @@ FROM (
 ) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@union_out
-POSTHOOK: query: insert overwrite table union_out 
+PREHOOK: Output: default@union_out_n0
+POSTHOOK: query: insert overwrite table union_out_n0 
 SELECT *
 FROM (
   SELECT 1 AS id
@@ -240,15 +244,15 @@ FROM (
 ) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@union_out
-POSTHOOK: Lineage: union_out.id EXPRESSION []
-PREHOOK: query: select * from union_out
+POSTHOOK: Output: default@union_out_n0
+POSTHOOK: Lineage: union_out_n0.id EXPRESSION []
+PREHOOK: query: select * from union_out_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@union_out
+PREHOOK: Input: default@union_out_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from union_out
+POSTHOOK: query: select * from union_out_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@union_out
+POSTHOOK: Input: default@union_out_n0
 #### A masked pattern was here ####
 1
 2

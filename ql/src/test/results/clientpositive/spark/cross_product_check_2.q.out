@@ -1,38 +1,44 @@
-PREHOOK: query: create table A as
+PREHOOK: query: create table A_n2 as
 select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@A
-POSTHOOK: query: create table A as
+PREHOOK: Output: default@A_n2
+POSTHOOK: query: create table A_n2 as
 select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@A
-POSTHOOK: Lineage: a.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: a.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: create table B as
+POSTHOOK: Output: default@A_n2
+POSTHOOK: Lineage: a_n2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: a_n2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table B_n2 as
 select * from src order by key
 limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@B
-POSTHOOK: query: create table B as
+PREHOOK: Output: default@B_n2
+POSTHOOK: query: create table B_n2 as
 select * from src order by key
 limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@B
-POSTHOOK: Lineage: b.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: b.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@B_n2
+POSTHOOK: Lineage: b_n2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: b_n2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: explain select * from A join B
+PREHOOK: query: explain select * from A_n2 join B_n2
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from A join B
+PREHOOK: Input: default@a_n2
+PREHOOK: Input: default@b_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from A_n2 join B_n2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n2
+POSTHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -46,7 +52,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: b_n2
                   Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -56,6 +62,7 @@ STAGE PLANS:
                       keys:
                         0 
                         1 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -66,7 +73,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n2
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -89,6 +96,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -99,10 +107,16 @@ STAGE PLANS:
         ListSink
 
 Warning: Map Join MAPJOIN[18][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: explain select * from B d1 join B d2 on d1.key = d2.key join A
+PREHOOK: query: explain select * from B_n2 d1 join B_n2 d2 on d1.key = d2.key join A_n2
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from B d1 join B d2 on d1.key = d2.key join A
+PREHOOK: Input: default@a_n2
+PREHOOK: Input: default@b_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from B_n2 d1 join B_n2 d2 on d1.key = d2.key join A_n2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n2
+POSTHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3
@@ -118,6 +132,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -130,6 +145,7 @@ STAGE PLANS:
                         keys:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -141,6 +157,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -163,6 +180,7 @@ STAGE PLANS:
                           keys:
                             0 
                             1 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -173,7 +191,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n2
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -196,6 +214,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -206,16 +225,22 @@ STAGE PLANS:
         ListSink
 
 Warning: Map Join MAPJOIN[23][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: explain select * from A join 
+PREHOOK: query: explain select * from A_n2 join 
          (select d1.key 
-          from B d1 join B d2 on d1.key = d2.key 
+          from B_n2 d1 join B_n2 d2 on d1.key = d2.key 
           where 1 = 1 group by d1.key) od1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from A join 
+PREHOOK: Input: default@a_n2
+PREHOOK: Input: default@b_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from A_n2 join 
          (select d1.key 
-          from B d1 join B d2 on d1.key = d2.key 
+          from B_n2 d1 join B_n2 d2 on d1.key = d2.key 
           where 1 = 1 group by d1.key) od1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n2
+POSTHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3
@@ -231,6 +256,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -243,6 +269,7 @@ STAGE PLANS:
                         keys:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -256,6 +283,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -276,6 +304,7 @@ STAGE PLANS:
                         Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: string)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
@@ -284,9 +313,11 @@ STAGE PLANS:
                             sort order: +
                             Map-reduce partition columns: _col0 (type: string)
                             Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Reducer 3 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Reduce Operator Tree:
@@ -307,7 +338,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n2
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -330,6 +361,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -341,10 +373,16 @@ STAGE PLANS:
 
 Warning: Map Join MAPJOIN[19][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 Warning: Map Join MAPJOIN[20][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
-PREHOOK: query: explain select * from A join (select d1.key from B d1 join B d2 where 1 = 1 group by d1.key) od1
+PREHOOK: query: explain select * from A_n2 join (select d1.key from B_n2 d1 join B_n2 d2 where 1 = 1 group by d1.key) od1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from A join (select d1.key from B d1 join B d2 where 1 = 1 group by d1.key) od1
+PREHOOK: Input: default@a_n2
+PREHOOK: Input: default@b_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from A_n2 join (select d1.key from B_n2 d1 join B_n2 d2 where 1 = 1 group by d1.key) od1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n2
+POSTHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3
@@ -367,6 +405,7 @@ STAGE PLANS:
                       keys:
                         0 
                         1 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -397,6 +436,7 @@ STAGE PLANS:
                       Statistics: Num rows: 100 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 100 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
@@ -405,9 +445,11 @@ STAGE PLANS:
                           sort order: +
                           Map-reduce partition columns: _col0 (type: string)
                           Statistics: Num rows: 100 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Reducer 3 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Reduce Operator Tree:
@@ -428,7 +470,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n2
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -451,6 +493,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -462,13 +505,19 @@ STAGE PLANS:
 
 Warning: Map Join MAPJOIN[27][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain select * from 
-(select A.key from A group by key) ss join 
-(select d1.key from B d1 join B d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1
+(select A_n2.key from A_n2 group by key) ss join 
+(select d1.key from B_n2 d1 join B_n2 d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n2
+PREHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from 
-(select A.key from A group by key) ss join 
-(select d1.key from B d1 join B d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1
+(select A_n2.key from A_n2 group by key) ss join 
+(select d1.key from B_n2 d1 join B_n2 d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n2
+POSTHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3
@@ -484,6 +533,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -496,6 +546,7 @@ STAGE PLANS:
                         keys:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -509,6 +560,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -529,6 +581,7 @@ STAGE PLANS:
                         Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: string)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
@@ -537,9 +590,11 @@ STAGE PLANS:
                             sort order: +
                             Map-reduce partition columns: _col0 (type: string)
                             Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Reducer 4 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Reduce Operator Tree:
@@ -562,7 +617,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n2
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
@@ -570,6 +625,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: key (type: string)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -578,7 +634,9 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Reduce Operator Tree:

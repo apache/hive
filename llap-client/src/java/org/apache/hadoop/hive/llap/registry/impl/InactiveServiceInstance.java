@@ -16,10 +16,10 @@ package org.apache.hadoop.hive.llap.registry.impl;
 
 import java.util.Map;
 
-import org.apache.hadoop.hive.llap.registry.ServiceInstance;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.yarn.api.records.Resource;
 
-public class InactiveServiceInstance implements ServiceInstance {
+public class InactiveServiceInstance implements LlapServiceInstance {
   private final String name;
   public InactiveServiceInstance(String name) {
     this.name = name;

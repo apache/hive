@@ -16,4 +16,4 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_tab@part=1
 POSTHOOK: Lineage: test_tab PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-FAILED: SemanticException org.apache.hadoop.hive.ql.metadata.Table$ValidationFailureSemanticException: table is partitioned but partition spec is not specified
+FAILED: SemanticException org.apache.hadoop.hive.ql.metadata.Table$ValidationFailureSemanticException: default.test_tab table is partitioned but partition spec is not specified

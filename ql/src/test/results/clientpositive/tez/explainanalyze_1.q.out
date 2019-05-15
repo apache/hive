@@ -1,15 +1,19 @@
 PREHOOK: query: select * from src a union all select * from src b limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from src a union all select * from src b limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select * from src a union all select * from src b limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze select * from src a union all select * from src b limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -22,34 +26,38 @@ Stage-0
     Stage-1
       Union 2
       <-Map 1 [CONTAINS]
-        File Output Operator [FS_7]
-          Limit [LIM_6] (rows=10/20 width=178)
+        File Output Operator [FS_12]
+          Limit [LIM_11] (rows=10/10 width=178)
             Number of rows:10
-            Select Operator [SEL_1] (rows=500/12 width=178)
+            Select Operator [SEL_9] (rows=500/12 width=178)
               Output:["_col0","_col1"]
-              TableScan [TS_0] (rows=500/13 width=178)
+              TableScan [TS_8] (rows=500/13 width=178)
                 Output:["key","value"]
       <-Map 3 [CONTAINS]
-        File Output Operator [FS_7]
-          Limit [LIM_6] (rows=10/20 width=178)
+        File Output Operator [FS_17]
+          Limit [LIM_16] (rows=10/10 width=178)
             Number of rows:10
-            Select Operator [SEL_3] (rows=500/12 width=178)
+            Select Operator [SEL_14] (rows=500/12 width=178)
               Output:["_col0","_col1"]
-              TableScan [TS_2] (rows=500/13 width=178)
+              TableScan [TS_13] (rows=500/13 width=178)
                 Output:["key","value"]
 
 PREHOOK: query: select key from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select key from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze select key from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Stage-0
@@ -60,94 +68,129 @@ Stage-0
       TableScan [TS_0]
         Output:["key"]
 
-PREHOOK: query: create table t as select key from src
+PREHOOK: query: create table t_n28 as select key from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t as select key from src
+PREHOOK: Output: default@t_n28
+POSTHOOK: query: create table t_n28 as select key from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
-PREHOOK: query: explain analyze create table t as select key from src
+POSTHOOK: Output: default@t_n28
+PREHOOK: query: explain analyze create table t_n28 as select key from src
 PREHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: query: explain analyze create table t as select key from src
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_n28
+POSTHOOK: query: explain analyze create table t_n28 as select key from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_n28
 Plan optimized by CBO.
 
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+
 Stage-3
-  Stats-Aggr Operator
+  Stats Work{}
     Stage-4
-      Create Table Operator:
-        name:default.t
-        Stage-2
-          Dependency Collection{}
-            Stage-1
-              Map 1
-              File Output Operator [FS_2]
-                table:{"name:":"default.t"}
-                Select Operator [SEL_1] (rows=500/500 width=87)
-                  Output:["_col0"]
-                  TableScan [TS_0] (rows=500/500 width=87)
-                    default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+      Create Table{"name:":"default.t_n28"}
         Stage-0
           Move Operator
+            Stage-1
+              Reducer 2
+              File Output Operator [FS_11]
+                Group By Operator [GBY_9] (rows=1/1 width=440)
+                  Output:["_col0"],aggregations:["compute_stats(VALUE._col0, 'hll')"]
+                <-Map 1 [CUSTOM_SIMPLE_EDGE]
+                  File Output Operator [FS_2]
+                    table:{"name:":"default.t_n28"}
+                    Select Operator [SEL_1] (rows=500/500 width=87)
+                      Output:["_col0"]
+                      TableScan [TS_0] (rows=500/500 width=87)
+                        default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+                  PARTITION_ONLY_SHUFFLE [RS_8]
+                    Select Operator [SEL_7] (rows=500/500 width=87)
+                      Output:["col1"]
+                       Please refer to the previous Select Operator [SEL_1]
+        Stage-2
+          Dependency Collection{}
              Please refer to the previous Stage-1
 
-PREHOOK: query: create table t as select key from src
+PREHOOK: query: create table t_n28 as select key from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t as select key from src
+PREHOOK: Output: default@t_n28
+POSTHOOK: query: create table t_n28 as select key from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table t select key from src
+POSTHOOK: Output: default@t_n28
+POSTHOOK: Lineage: t_n28.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table t_n28 select key from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@t
-POSTHOOK: query: insert overwrite table t select key from src
+PREHOOK: Output: default@t_n28
+POSTHOOK: query: insert overwrite table t_n28 select key from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@t
-PREHOOK: query: explain analyze insert overwrite table t select key from src
+POSTHOOK: Output: default@t_n28
+PREHOOK: query: explain analyze insert overwrite table t_n28 select key from src
 PREHOOK: type: QUERY
-POSTHOOK: query: explain analyze insert overwrite table t select key from src
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t_n28
+POSTHOOK: query: explain analyze insert overwrite table t_n28 select key from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t_n28
 Plan optimized by CBO.
 
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+
 Stage-3
-  Stats-Aggr Operator
+  Stats Work{}
     Stage-0
       Move Operator
-        table:{"name:":"default.t"}
+        table:{"name:":"default.t_n28"}
         Stage-2
           Dependency Collection{}
             Stage-1
-              Map 1
-              File Output Operator [FS_2]
-                table:{"name:":"default.t"}
-                Select Operator [SEL_1] (rows=500/500 width=87)
-                  Output:["_col0"]
-                  TableScan [TS_0] (rows=500/500 width=87)
-                    default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+              Reducer 2
+              File Output Operator [FS_8]
+                Group By Operator [GBY_6] (rows=1/1 width=440)
+                  Output:["_col0"],aggregations:["compute_stats(VALUE._col0, 'hll')"]
+                <-Map 1 [CUSTOM_SIMPLE_EDGE]
+                  File Output Operator [FS_2]
+                    table:{"name:":"default.t_n28"}
+                    Select Operator [SEL_1] (rows=500/500 width=87)
+                      Output:["_col0"]
+                      TableScan [TS_0] (rows=500/500 width=87)
+                        default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+                  PARTITION_ONLY_SHUFFLE [RS_5]
+                    Select Operator [SEL_4] (rows=500/500 width=87)
+                      Output:["key"]
+                       Please refer to the previous Select Operator [SEL_1]
 
 PREHOOK: query: select key from src limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key from src limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select key from src limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze select key from src limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Stage-0
@@ -163,15 +206,19 @@ Stage-0
 PREHOOK: query: select key from src where value < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key from src where value < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select key from src where value < 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze select key from src where value < 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Stage-0
@@ -180,22 +227,26 @@ Stage-0
     Select Operator [SEL_2]
       Output:["_col0"]
       Filter Operator [FIL_4]
-        predicate:(UDFToDouble(value) < 10.0)
+        predicate:(UDFToDouble(value) < 10.0D)
         TableScan [TS_0]
           Output:["key","value"]
 
 PREHOOK: query: select key from src where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key from src where key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select key from src where key < 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze select key from src where key < 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Stage-0
@@ -204,31 +255,35 @@ Stage-0
     Select Operator [SEL_2]
       Output:["_col0"]
       Filter Operator [FIL_4]
-        predicate:(UDFToDouble(key) < 10.0)
+        predicate:(UDFToDouble(key) < 10.0D)
         TableScan [TS_0]
           Output:["key"]
 
 PREHOOK: query: select count(*) from (select key from src where key < 10)subq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from (select key from src where key < 10)subq
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 10
 PREHOOK: query: select key, count(key) from src group by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key, count(key) from src group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select key, count(key) from src group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze select key, count(key) from src group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -240,7 +295,7 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_5]
-        Group By Operator [GBY_3] (rows=205/309 width=95)
+        Group By Operator [GBY_3] (rows=316/309 width=95)
           Output:["_col0","_col1"],aggregations:["count(KEY._col0)"],keys:KEY._col0
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
@@ -253,24 +308,28 @@ Stage-0
 PREHOOK: query: select count(*) from (select key, count(key) from src group by key)subq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from (select key, count(key) from src group by key)subq
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 309
 PREHOOK: query: select count(*) from src a join src b on a.key = b.value where a.key > 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from src a join src b on a.key = b.value where a.key > 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select count(*) from src a join src b on a.key = b.value where a.key > 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze select count(*) from src a join src b on a.key = b.value where a.key > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -287,7 +346,7 @@ Stage-0
           Output:["_col0"],aggregations:["count()"]
         <-Reducer 2 [CUSTOM_SIMPLE_EDGE]
           PARTITION_ONLY_SHUFFLE [RS_10]
-            Merge Join Operator [MERGEJOIN_18] (rows=382/0 width=8)
+            Merge Join Operator [MERGEJOIN_28] (rows=166/0 width=8)
               Conds:RS_6._col0=RS_7._col0(Inner)
             <-Map 1 [SIMPLE_EDGE]
               SHUFFLE [RS_6]
@@ -295,7 +354,7 @@ Stage-0
                 Select Operator [SEL_2] (rows=166/497 width=87)
                   Output:["_col0"]
                   Filter Operator [FIL_16] (rows=166/497 width=87)
-                    predicate:(UDFToDouble(key) > 0.0)
+                    predicate:(UDFToDouble(key) > 0.0D)
                     TableScan [TS_0] (rows=500/500 width=87)
                       default@src,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
             <-Map 4 [SIMPLE_EDGE]
@@ -304,22 +363,26 @@ Stage-0
                 Select Operator [SEL_5] (rows=166/0 width=91)
                   Output:["_col0"]
                   Filter Operator [FIL_17] (rows=166/0 width=91)
-                    predicate:(UDFToDouble(value) > 0.0)
+                    predicate:(UDFToDouble(value) > 0.0D)
                     TableScan [TS_3] (rows=500/500 width=91)
                       default@src,b,Tbl:COMPLETE,Col:COMPLETE,Output:["value"]
 
 PREHOOK: query: select count(*) from src a join src b on a.key = b.key where a.key > 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from src a join src b on a.key = b.key where a.key > 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select count(*) from src a join src b on a.key = b.key where a.key > 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze select count(*) from src a join src b on a.key = b.key where a.key > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -336,7 +399,7 @@ Stage-0
           Output:["_col0"],aggregations:["count()"]
         <-Reducer 2 [CUSTOM_SIMPLE_EDGE]
           PARTITION_ONLY_SHUFFLE [RS_10]
-            Merge Join Operator [MERGEJOIN_18] (rows=399/1019 width=8)
+            Merge Join Operator [MERGEJOIN_28] (rows=166/1019 width=8)
               Conds:RS_6._col0=RS_7._col0(Inner)
             <-Map 1 [SIMPLE_EDGE]
               SHUFFLE [RS_6]
@@ -344,7 +407,7 @@ Stage-0
                 Select Operator [SEL_2] (rows=166/497 width=87)
                   Output:["_col0"]
                   Filter Operator [FIL_16] (rows=166/497 width=87)
-                    predicate:(UDFToDouble(key) > 0.0)
+                    predicate:(UDFToDouble(key) > 0.0D)
                     TableScan [TS_0] (rows=500/500 width=87)
                       default@src,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
             <-Map 4 [SIMPLE_EDGE]
@@ -353,31 +416,35 @@ Stage-0
                 Select Operator [SEL_5] (rows=166/497 width=87)
                   Output:["_col0"]
                   Filter Operator [FIL_17] (rows=166/497 width=87)
-                    predicate:(UDFToDouble(key) > 0.0)
+                    predicate:(UDFToDouble(key) > 0.0D)
                     TableScan [TS_3] (rows=500/500 width=87)
                       default@src,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 
 PREHOOK: query: select count(*) from src a join src b on a.key = b.key where a.key > 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from src a join src b on a.key = b.key where a.key > 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1019
 PREHOOK: query: select * from src a union all select * from src b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from src a union all select * from src b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select * from src a union all select * from src b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze select * from src a union all select * from src b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -390,45 +457,49 @@ Stage-0
     Stage-1
       Union 2
       <-Map 1 [CONTAINS]
-        File Output Operator [FS_6]
-          Select Operator [SEL_1] (rows=500/500 width=178)
+        File Output Operator [FS_10]
+          Select Operator [SEL_8] (rows=500/500 width=178)
             Output:["_col0","_col1"]
-            TableScan [TS_0] (rows=500/500 width=178)
+            TableScan [TS_7] (rows=500/500 width=178)
               Output:["key","value"]
       <-Map 3 [CONTAINS]
-        File Output Operator [FS_6]
-          Select Operator [SEL_3] (rows=500/500 width=178)
+        File Output Operator [FS_14]
+          Select Operator [SEL_12] (rows=500/500 width=178)
             Output:["_col0","_col1"]
-            TableScan [TS_2] (rows=500/500 width=178)
+            TableScan [TS_11] (rows=500/500 width=178)
               Output:["key","value"]
 
 PREHOOK: query: select count(*) from (select * from src a union all select * from src b)subq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from (select * from src a union all select * from src b)subq
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
 PREHOOK: query: SELECT x.key, y.value
 FROM src x JOIN src y ON (x.key = y.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT x.key, y.value
 FROM src x JOIN src y ON (x.key = y.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN analyze 
 SELECT x.key, y.value
 FROM src x JOIN src y ON (x.key = y.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN analyze 
 SELECT x.key, y.value
 FROM src x JOIN src y ON (x.key = y.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -440,9 +511,9 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_10]
-        Select Operator [SEL_9] (rows=1219/1028 width=178)
+        Select Operator [SEL_9] (rows=791/1028 width=178)
           Output:["_col0","_col1"]
-          Merge Join Operator [MERGEJOIN_15] (rows=1219/1028 width=178)
+          Merge Join Operator [MERGEJOIN_25] (rows=791/1028 width=178)
             Conds:RS_6._col0=RS_7._col0(Inner),Output:["_col0","_col2"]
           <-Map 1 [SIMPLE_EDGE]
             SHUFFLE [RS_6]
@@ -462,4 +533,68 @@ Stage-0
                   predicate:key is not null
                   TableScan [TS_3] (rows=500/500 width=178)
                     default@src,y,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+
+PREHOOK: query: SELECT
+TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
+FROM src a join src b
+on a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: cat
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT
+TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
+FROM src a join src b
+on a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: cat
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: explain analyze
+SELECT
+TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
+FROM src a join src b
+on a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: cat
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain analyze
+SELECT
+TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
+FROM src a join src b
+on a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: cat
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+Plan not optimized by CBO because the statement uses scripts
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2
+      File Output Operator [FS_9]
+        Transform Operator [SCR_8] (rows=791/1028 width=178)
+          command:cat
+          Merge Join Operator [MERGEJOIN_24] (rows=791/1028 width=178)
+            Conds:RS_3.key=RS_5.key(Inner),Output:["_col0","_col1"]
+          <-Map 1 [SIMPLE_EDGE]
+            SHUFFLE [RS_3]
+              PartitionCols:key
+              Filter Operator [FIL_12] (rows=500/500 width=178)
+                predicate:key is not null
+                TableScan [TS_0] (rows=500/500 width=178)
+                  default@src,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+          <-Map 3 [SIMPLE_EDGE]
+            SHUFFLE [RS_5]
+              PartitionCols:key
+              Filter Operator [FIL_13] (rows=500/500 width=87)
+                predicate:key is not null
+                TableScan [TS_1] (rows=500/500 width=87)
+                  default@src,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 

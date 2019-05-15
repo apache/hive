@@ -19,6 +19,8 @@ package org.apache.hive.service.cli.session;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.List;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -40,7 +42,7 @@ public class TestPluggableHiveSessionImpl {
         SampleHiveSessionImpl.class.getName());
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
 
-    CLIService cliService = new CLIService(null);
+    CLIService cliService = new CLIService(null, true);
     cliService.init(hiveConf);
     ThriftBinaryCLIService service = new ThriftBinaryCLIService(cliService, null);
     service.init(hiveConf);
@@ -66,7 +68,7 @@ public class TestPluggableHiveSessionImpl {
         SampleHiveSessionImplWithUGI.class.getName());
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, true);
 
-    CLIService cliService = new CLIService(null);
+    CLIService cliService = new CLIService(null, true);
     cliService.init(hiveConf);
     ThriftBinaryCLIService service = new ThriftBinaryCLIService(cliService, null);
     service.init(hiveConf);
@@ -87,8 +89,8 @@ public class TestPluggableHiveSessionImpl {
     public static final int MAGIC_RETURN_VALUE = 0xbeef0001;
 
     public SampleHiveSessionImpl(SessionHandle sessionHandle, TProtocolVersion protocol,
-        String username, String password, HiveConf serverhiveConf, String ipAddress) {
-      super(sessionHandle, protocol, username, password, serverhiveConf, ipAddress);
+        String username, String password, HiveConf serverhiveConf, String ipAddress, List<String> forwardAddresses) {
+      super(sessionHandle, protocol, username, password, serverhiveConf, ipAddress, forwardAddresses);
     }
 
     @Override
@@ -103,9 +105,9 @@ public class TestPluggableHiveSessionImpl {
 
     public SampleHiveSessionImplWithUGI(SessionHandle sessionHandle, TProtocolVersion protocol,
         String username, String password, HiveConf serverhiveConf, String ipAddress,
-        String delegationToken) throws HiveSQLException {
+        String delegationToken, List<String> forwardedAddresses) throws HiveSQLException {
       super(sessionHandle, protocol, username, password, serverhiveConf, ipAddress,
-          delegationToken);
+          delegationToken, forwardedAddresses);
     }
 
     @Override

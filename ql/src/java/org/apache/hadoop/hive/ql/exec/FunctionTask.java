@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,10 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import static org.apache.hadoop.util.StringUtils.stringifyException;
-
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -30,7 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
@@ -77,10 +78,30 @@ public class FunctionTask extends Task<FunctionWork> {
         return createTemporaryFunction(createFunctionDesc);
       } else {
         try {
+          if (createFunctionDesc.getReplicationSpec().isInReplicationScope()) {
+            String[] qualifiedNameParts = FunctionUtils.getQualifiedFunctionNameParts(
+                    createFunctionDesc.getFunctionName());
+            String dbName = qualifiedNameParts[0];
+            String funcName = qualifiedNameParts[1];
+            Map<String, String> dbProps = Hive.get().getDatabase(dbName).getParameters();
+            if (!createFunctionDesc.getReplicationSpec().allowEventReplacementInto(dbProps)) {
+              // If the database is newer than the create event, then noop it.
+              LOG.debug("FunctionTask: Create Function {} is skipped as database {} " +
+                        "is newer than update", funcName, dbName);
+              return 0;
+            }
+          }
           return createPermanentFunction(Hive.get(conf), createFunctionDesc);
         } catch (Exception e) {
+          // For repl load flow, function may exist for first incremental phase. So, just return success.
+          if (createFunctionDesc.getReplicationSpec().isInReplicationScope()
+                  && (e.getCause() instanceof AlreadyExistsException)) {
+            LOG.info("Create function is idempotent as function: "
+                    + createFunctionDesc.getFunctionName() + " already exists.");
+            return 0;
+          }
           setException(e);
-          LOG.error(stringifyException(e));
+          LOG.error("Failed to create function", e);
           return 1;
         }
       }
@@ -92,10 +113,23 @@ public class FunctionTask extends Task<FunctionWork> {
         return dropTemporaryFunction(dropFunctionDesc);
       } else {
         try {
+          if (dropFunctionDesc.getReplicationSpec().isInReplicationScope()) {
+            String[] qualifiedNameParts = FunctionUtils.getQualifiedFunctionNameParts(
+                    dropFunctionDesc.getFunctionName());
+            String dbName = qualifiedNameParts[0];
+            String funcName = qualifiedNameParts[1];
+            Map<String, String> dbProps = Hive.get().getDatabase(dbName).getParameters();
+            if (!dropFunctionDesc.getReplicationSpec().allowEventReplacementInto(dbProps)) {
+              // If the database is newer than the drop event, then noop it.
+              LOG.debug("FunctionTask: Drop Function {} is skipped as database {} " +
+                        "is newer than update", funcName, dbName);
+              return 0;
+            }
+          }
           return dropPermanentFunction(Hive.get(conf), dropFunctionDesc);
         } catch (Exception e) {
           setException(e);
-          LOG.error(stringifyException(e));
+          LOG.error("Failed to drop function", e);
           return 1;
         }
       }
@@ -106,7 +140,7 @@ public class FunctionTask extends Task<FunctionWork> {
         Hive.get().reloadFunctions();
       } catch (Exception e) {
         setException(e);
-        LOG.error(stringifyException(e));
+        LOG.error("Failed to reload functions", e);
         return 1;
       }
     }
@@ -139,7 +173,9 @@ public class FunctionTask extends Task<FunctionWork> {
     checkLocalFunctionResources(db, createFunctionDesc.getResources());
 
     FunctionInfo registered = null;
+    HiveConf oldConf = SessionState.get().getConf();
     try {
+      SessionState.get().setConf(conf);
       registered = FunctionRegistry.registerPermanentFunction(
         registeredName, className, true, toFunctionResource(resources));
     } catch (RuntimeException ex) {
@@ -147,7 +183,10 @@ public class FunctionTask extends Task<FunctionWork> {
       while (t.getCause() != null) {
         t = t.getCause();
       }
+    } finally {
+      SessionState.get().setConf(oldConf);
     }
+
     if (registered == null) {
       console.printError("Failed to register " + registeredName
           + " using class " + createFunctionDesc.getClassName());
@@ -159,13 +198,24 @@ public class FunctionTask extends Task<FunctionWork> {
         funcName,
         dbName,
         className,
-        SessionState.get().getUserName(),
+        SessionState.get().getUserName(), // TODO: should this use getUserFromAuthenticator?
         PrincipalType.USER,
         (int) (System.currentTimeMillis() / 1000),
         org.apache.hadoop.hive.metastore.api.FunctionType.JAVA,
         resources
     );
-    db.createFunction(func);
+    try {
+      db.createFunction(func);
+    } catch (Exception e) {
+      // Addition to metastore failed, remove the function from the registry except if already exists.
+      if(!(e.getCause() instanceof AlreadyExistsException)) {
+        FunctionRegistry.unregisterPermanentFunction(registeredName);
+      }
+      setException(e);
+      LOG.error("Failed to add function " + createFunctionDesc.getFunctionName() +
+              " to the metastore.", e);
+      return 1;
+    }
     return 0;
   }
 
@@ -186,12 +236,12 @@ public class FunctionTask extends Task<FunctionWork> {
       return 1;
     } catch (HiveException e) {
       console.printError("FAILED: " + e.toString());
-      LOG.info("create function: " + StringUtils.stringifyException(e));
+      LOG.info("create function: ", e);
       return 1;
     } catch (ClassNotFoundException e) {
 
       console.printError("FAILED: Class " + createFunctionDesc.getClassName() + " not found");
-      LOG.info("create function: " + StringUtils.stringifyException(e));
+      LOG.info("create function: ", e);
       return 1;
     }
   }
@@ -211,7 +261,7 @@ public class FunctionTask extends Task<FunctionWork> {
       FunctionRegistry.unregisterTemporaryUDF(dropMacroDesc.getMacroName());
       return 0;
     } catch (HiveException e) {
-      LOG.info("drop macro: " + StringUtils.stringifyException(e));
+      LOG.info("drop macro: ", e);
       return 1;
     }
   }
@@ -230,7 +280,14 @@ public class FunctionTask extends Task<FunctionWork> {
 
       return 0;
     } catch (Exception e) {
-      LOG.info("drop function: " + StringUtils.stringifyException(e));
+      // For repl load flow, function may not exist for first incremental phase. So, just return success.
+      if (dropFunctionDesc.getReplicationSpec().isInReplicationScope()
+              && (e.getCause() instanceof NoSuchObjectException)) {
+        LOG.info("Drop function is idempotent as function: "
+                + dropFunctionDesc.getFunctionName() + " doesn't exist.");
+        return 0;
+      }
+      LOG.info("drop function: ", e);
       console.printError("FAILED: error during drop function: " + StringUtils.stringifyException(e));
       return 1;
     }
@@ -241,7 +298,7 @@ public class FunctionTask extends Task<FunctionWork> {
       FunctionRegistry.unregisterTemporaryUDF(dropFunctionDesc.getFunctionName());
       return 0;
     } catch (HiveException e) {
-      LOG.info("drop function: " + StringUtils.stringifyException(e));
+      LOG.info("drop function: ", e);
       return 1;
     }
   }
@@ -330,5 +387,13 @@ public class FunctionTask extends Task<FunctionWork> {
   @Override
   public String getName() {
     return "FUNCTION";
+  }
+
+  /**
+   * this needs access to session state resource downloads which in turn uses references to Registry objects.
+   */
+  @Override
+  public boolean canExecuteInParallel() {
+    return false;
   }
 }

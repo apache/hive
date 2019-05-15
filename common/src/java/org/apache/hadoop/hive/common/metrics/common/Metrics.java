@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -92,7 +92,15 @@ public interface Metrics {
    * @param name name of gauge
    * @param variable variable to track.
    */
-  public void addGauge(String name, final MetricsVariable variable);
+  public void addGauge(String name, final MetricsVariable<?> variable);
+
+
+  /**
+   * Removed the gauge added by addGauge.
+   * @param name name of gauge
+   */
+  public void removeGauge(String name);
+
 
   /**
    * Add a ratio metric to track the correlation between two variables

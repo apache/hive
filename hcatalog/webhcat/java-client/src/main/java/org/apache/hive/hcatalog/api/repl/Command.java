@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,6 +19,8 @@
 
 package org.apache.hive.hcatalog.api.repl;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.io.Writable;
 
 import java.util.List;
@@ -42,6 +44,8 @@ import java.util.List;
  * directories that should be cleaned up after the event for which this
  * Command is generated is successfully processed.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface Command extends Writable {
   List<String> get();
   boolean isRetriable();

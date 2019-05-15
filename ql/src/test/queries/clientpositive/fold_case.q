@@ -1,3 +1,4 @@
+--! qt:dataset:src
 explain
 select count(1) from src where (case key when '238' then true else false end);
 explain 
@@ -24,3 +25,5 @@ from src;
 explain
 select (CASE WHEN key = value THEN '1' WHEN true THEN '0' ELSE NULL END)
 from src;
+explain
+select (case when true then key when not true then to_date(key) else null end) from src;

@@ -1,27 +1,33 @@
-PREHOOK: query: drop table test_1
+PREHOOK: query: drop table test_1_n4
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table test_1
+POSTHOOK: query: drop table test_1_n4
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table test_1 (id int, id2 int)
+PREHOOK: query: create table test_1_n4 (id int, id2 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_1
-POSTHOOK: query: create table test_1 (id int, id2 int)
+PREHOOK: Output: default@test_1_n4
+POSTHOOK: query: create table test_1_n4 (id int, id2 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_1
-PREHOOK: query: insert into table test_1 values (123, NULL), (NULL, NULL), (NULL, 123), (123, 123)
+POSTHOOK: Output: default@test_1_n4
+PREHOOK: query: insert into table test_1_n4 values (123, NULL), (NULL, NULL), (NULL, 123), (123, 123)
 PREHOOK: type: QUERY
-PREHOOK: Output: default@test_1
-POSTHOOK: query: insert into table test_1 values (123, NULL), (NULL, NULL), (NULL, 123), (123, 123)
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_1_n4
+POSTHOOK: query: insert into table test_1_n4 values (123, NULL), (NULL, NULL), (NULL, 123), (123, 123)
 POSTHOOK: type: QUERY
-POSTHOOK: Output: default@test_1
-POSTHOOK: Lineage: test_1.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: test_1.id2 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-PREHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_1_n4
+POSTHOOK: Lineage: test_1_n4.id SCRIPT []
+POSTHOOK: Lineage: test_1_n4.id2 SCRIPT []
+PREHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
 PREHOOK: type: QUERY
-POSTHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+POSTHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -31,19 +37,20 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test_1
-            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+            alias: test_1_n4
+            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: (not NVL((id = id2),false)) (type: boolean)
+              expressions: (id = id2) is not true (type: boolean)
               outputColumnNames: _col0
-              Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -51,22 +58,26 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1
+PREHOOK: query: SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_1
+PREHOOK: Input: default@test_1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1
+POSTHOOK: query: SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_1
+POSTHOOK: Input: default@test_1_n4
 #### A masked pattern was here ####
 true
 true
 true
 false
-PREHOOK: query: explain SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1
+PREHOOK: query: explain SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
 PREHOOK: type: QUERY
-POSTHOOK: query: explain SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+POSTHOOK: query: explain SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -76,19 +87,20 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test_1
-            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+            alias: test_1_n4
+            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: (not NVL((id = id2),false)) (type: boolean)
+              expressions: (id = id2) is not true (type: boolean)
               outputColumnNames: _col0
-              Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -96,22 +108,26 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1
+PREHOOK: query: SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_1
+PREHOOK: Input: default@test_1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1
+POSTHOOK: query: SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_1
+POSTHOOK: Input: default@test_1_n4
 #### A masked pattern was here ####
 true
 true
 true
 false
-PREHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1
+PREHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
 PREHOOK: type: QUERY
-POSTHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+POSTHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -121,19 +137,20 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test_1
-            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+            alias: test_1_n4
+            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: NVL((id = id2),false) (type: boolean)
+              expressions: (id = id2) is true (type: boolean)
               outputColumnNames: _col0
-              Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -141,22 +158,26 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1
+PREHOOK: query: SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_1
+PREHOOK: Input: default@test_1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1
+POSTHOOK: query: SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_1
+POSTHOOK: Input: default@test_1_n4
 #### A masked pattern was here ####
 false
 false
 false
 true
-PREHOOK: query: explain SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1
+PREHOOK: query: explain SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
 PREHOOK: type: QUERY
-POSTHOOK: query: explain SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+POSTHOOK: query: explain SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -166,19 +187,20 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test_1
-            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+            alias: test_1_n4
+            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: NVL((id = id2),false) (type: boolean)
+              expressions: (id = id2) is true (type: boolean)
               outputColumnNames: _col0
-              Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -186,22 +208,26 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1
+PREHOOK: query: SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_1
+PREHOOK: Input: default@test_1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1
+POSTHOOK: query: SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_1
+POSTHOOK: Input: default@test_1_n4
 #### A masked pattern was here ####
 false
 false
 false
 true
-PREHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1
+PREHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
 PREHOOK: type: QUERY
-POSTHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+POSTHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -211,19 +237,20 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test_1
-            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+            alias: test_1_n4
+            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: (not NVL((id = id2),false)) (type: boolean)
+              expressions: (not COALESCE((id = id2),false)) (type: boolean)
               outputColumnNames: _col0
-              Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -231,22 +258,26 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1
+PREHOOK: query: SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_1
+PREHOOK: Input: default@test_1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1
+POSTHOOK: query: SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_1
+POSTHOOK: Input: default@test_1_n4
 #### A masked pattern was here ####
 true
 true
 true
 false
-PREHOOK: query: explain SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1
+PREHOOK: query: explain SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
 PREHOOK: type: QUERY
-POSTHOOK: query: explain SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+POSTHOOK: query: explain SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -256,19 +287,20 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test_1
-            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+            alias: test_1_n4
+            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: (not NVL((id = id2),false)) (type: boolean)
+              expressions: (not COALESCE((id = id2),false)) (type: boolean)
               outputColumnNames: _col0
-              Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -276,22 +308,26 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1
+PREHOOK: query: SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_1
+PREHOOK: Input: default@test_1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1
+POSTHOOK: query: SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_1
+POSTHOOK: Input: default@test_1_n4
 #### A masked pattern was here ####
 true
 true
 true
 false
-PREHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1
+PREHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
 PREHOOK: type: QUERY
-POSTHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+POSTHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -301,19 +337,20 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test_1
-            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+            alias: test_1_n4
+            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: NVL((id = id2),false) (type: boolean)
+              expressions: COALESCE((id = id2),false) (type: boolean)
               outputColumnNames: _col0
-              Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -321,22 +358,26 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1
+PREHOOK: query: SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_1
+PREHOOK: Input: default@test_1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1
+POSTHOOK: query: SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_1
+POSTHOOK: Input: default@test_1_n4
 #### A masked pattern was here ####
 false
 false
 false
 true
-PREHOOK: query: explain SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1
+PREHOOK: query: explain SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
 PREHOOK: type: QUERY
-POSTHOOK: query: explain SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+POSTHOOK: query: explain SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -346,19 +387,20 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test_1
-            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+            alias: test_1_n4
+            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: NVL((id = id2),false) (type: boolean)
+              expressions: COALESCE((id = id2),false) (type: boolean)
               outputColumnNames: _col0
-              Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -366,13 +408,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1
+PREHOOK: query: SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_1
+PREHOOK: Input: default@test_1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1
+POSTHOOK: query: SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_1
+POSTHOOK: Input: default@test_1_n4
 #### A masked pattern was here ####
 false
 false

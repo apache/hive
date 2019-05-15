@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,8 +30,8 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -246,9 +246,53 @@ public class TestObjectInspectorConverters extends TestCase {
       textConverter = ObjectInspectorConverters.getConverter(
           PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector,
           PrimitiveObjectInspectorFactory.writableStringObjectInspector);
-      assertEquals("TextConverter", new Text("100.001"), textConverter
+      assertEquals("TextConverter", new Text("100.001000000000000000"), textConverter
 	  .convert(HiveDecimal.create("100.001")));
       assertEquals("TextConverter", null, textConverter.convert(null));
+
+      // Varchar
+      PrimitiveTypeInfo varchar5TI =
+          (PrimitiveTypeInfo) TypeInfoFactory.getPrimitiveTypeInfo("varchar(5)");
+      PrimitiveTypeInfo varchar30TI =
+          (PrimitiveTypeInfo) TypeInfoFactory.getPrimitiveTypeInfo("varchar(30)");
+      PrimitiveObjectInspector varchar5OI =
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(varchar5TI);
+      PrimitiveObjectInspector varchar30OI =
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(varchar30TI);
+      // Value should be truncated to varchar length 5
+      varcharConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector,
+          varchar5OI);
+      assertEquals("VarcharConverter", "100.0",
+          varcharConverter.convert(HiveDecimal.create("100.001")).toString());
+
+      varcharConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector,
+          varchar30OI);
+      assertEquals("VarcharConverter", "100.001000000000000000",
+          varcharConverter.convert(HiveDecimal.create("100.001")).toString());
+
+      // Char
+      PrimitiveTypeInfo char5TI =
+          (PrimitiveTypeInfo) TypeInfoFactory.getPrimitiveTypeInfo("char(5)");
+      PrimitiveTypeInfo char30TI =
+          (PrimitiveTypeInfo) TypeInfoFactory.getPrimitiveTypeInfo("char(30)");
+      PrimitiveObjectInspector char5OI =
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(char5TI);
+      PrimitiveObjectInspector char30OI =
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(char30TI);
+      // Value should be truncated to char length 5
+      charConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector,
+          char5OI);
+      assertEquals("CharConverter", "100.0",
+          charConverter.convert(HiveDecimal.create("100.001")).toString());
+      // Char value should be have space padding to full char length
+      charConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector,
+          char30OI);
+      assertEquals("CharConverter", "100.001000000000000000        ",
+          charConverter.convert(HiveDecimal.create("100.001")).toString());
 
       // Binary
       Converter baConverter = ObjectInspectorConverters.getConverter(
@@ -295,27 +339,30 @@ public class TestObjectInspectorConverters extends TestCase {
       Converter unionConverter0 = ObjectInspectorConverters.getConverter(ObjectInspectorFactory.getStandardUnionObjectInspector(fieldObjectInspectors),
           ObjectInspectorFactory.getStandardUnionObjectInspector(fieldObjectInspectors2));
 
-      Object convertedObject0 = unionConverter0.convert(new StandardUnionObjectInspector.StandardUnion((byte)0, 1));
-      List<String> expectedObject0 = new ArrayList<String>();
-      expectedObject0.add("1");
+      Object convertedObject0 = unionConverter0.convert(new StandardUnion((byte)0, 1));
+      StandardUnion expectedObject0 = new StandardUnion();
+      expectedObject0.setTag((byte) 0);
+      expectedObject0.setObject("1");
 
       assertEquals(expectedObject0, convertedObject0);
 
       Converter unionConverter1 = ObjectInspectorConverters.getConverter(ObjectInspectorFactory.getStandardUnionObjectInspector(fieldObjectInspectors),
 		  ObjectInspectorFactory.getStandardUnionObjectInspector(fieldObjectInspectors2));
 
-      Object convertedObject1 = unionConverter1.convert(new StandardUnionObjectInspector.StandardUnion((byte)1, "1"));
-      List<Integer> expectedObject1 = new ArrayList<Integer>();
-      expectedObject1.add(1);
+      Object convertedObject1 = unionConverter1.convert(new StandardUnion((byte)1, "1"));
+      StandardUnion expectedObject1 = new StandardUnion();
+      expectedObject1.setTag((byte) 1);
+      expectedObject1.setObject(1);
 
       assertEquals(expectedObject1, convertedObject1);
 
       Converter unionConverter2 = ObjectInspectorConverters.getConverter(ObjectInspectorFactory.getStandardUnionObjectInspector(fieldObjectInspectors),
           ObjectInspectorFactory.getStandardUnionObjectInspector(fieldObjectInspectors2));
 
-      Object convertedObject2 = unionConverter2.convert(new StandardUnionObjectInspector.StandardUnion((byte)2, true));
-      List<Boolean> expectedObject2 = new ArrayList<Boolean>();
-      expectedObject2.add(true);
+      Object convertedObject2 = unionConverter2.convert(new StandardUnion((byte)2, true));
+      StandardUnion expectedObject2 = new StandardUnion();
+      expectedObject2.setTag((byte) 2);
+      expectedObject2.setObject(true);
 
       assertEquals(expectedObject2, convertedObject2);
 
@@ -344,9 +391,10 @@ public class TestObjectInspectorConverters extends TestCase {
       Converter unionConverterExtra = ObjectInspectorConverters.getConverter(ObjectInspectorFactory.getStandardUnionObjectInspector(fieldObjectInspectorsExtra),
           ObjectInspectorFactory.getStandardUnionObjectInspector(fieldObjectInspectorsExtra2));
 
-      Object convertedObjectExtra = unionConverterExtra.convert(new StandardUnionObjectInspector.StandardUnion((byte)2, true));
-      List<Object> expectedObjectExtra = new ArrayList<Object>();
-      expectedObjectExtra.add(null);
+      Object convertedObjectExtra = unionConverterExtra.convert(new StandardUnion((byte)2, true));
+      StandardUnion expectedObjectExtra = new StandardUnion();
+      expectedObjectExtra.setTag((byte) -1);
+      expectedObjectExtra.setObject(null);
 
       assertEquals(expectedObjectExtra, convertedObjectExtra); // we should get back null
 

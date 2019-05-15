@@ -2,6 +2,7 @@ Ln:1 CREATE FUNCTION gettype
 Ln:57 EXEC FUNCTION gettype
 Ln:57 SET PARAM tag1 = YHHPD
 Ln:57 SET PARAM srcvalue = a
+Ln:2 DECLARE tmpVar varchar2
 Ln:5 IF
 Ln:9 IF
 Ln:13 IF
@@ -16,6 +17,7 @@ Ln:34 RETURN
 Ln:58 EXEC FUNCTION gettype
 Ln:58 SET PARAM tag1 = YHHPD
 Ln:58 SET PARAM srcvalue = @I
+Ln:2 DECLARE tmpVar varchar2
 Ln:5 IF
 Ln:5 IF TRUE executed
 Ln:6 RETURN

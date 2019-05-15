@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,6 +21,8 @@ import java.util.Comparator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Function;
 
 /**
  * Bounded priority queue that evicts the last element based on priority order specified
@@ -46,6 +48,18 @@ public class EvictingPriorityBlockingQueue<E> {
     this.comparator = comparator;
   }
 
+  public synchronized void apply(Function<E, Boolean> fn) {
+    for (E item : deque) {
+      boolean isOk = fn.apply(item);
+      if (!isOk) return;
+    }
+  }
+
+  public synchronized void forceOffer(E e) {
+    offerToDequeueInternal(e);
+    currentSize++;
+  }
+
   public synchronized E offer(E e, int additionalElementsAllowed) {
     if (currentSize < waitQueueSize + additionalElementsAllowed) {
       // Capacity exists.
@@ -53,6 +67,11 @@ public class EvictingPriorityBlockingQueue<E> {
       currentSize++;
       return null;
     } else {
+      if (isEmpty()) {
+        // Empty queue. But no capacity available, due to waitQueueSize and additionalElementsAllowed
+        // Return the element.
+        return e;
+      }
       // No capacity. Check if an element needs to be evicted.
       E last = deque.peekLast();
       if (comparator.compare(e, last) < 0) {
@@ -84,21 +103,6 @@ public class EvictingPriorityBlockingQueue<E> {
       currentSize--;
     }
     return removed;
-  }
-
-  /**
-   * Re-insert an element if it exists (mainly to force a re-order)
-   * @param e
-   * @return false if the element was not found. true otherwise.
-   */
-  public synchronized boolean reinsertIfExists(E e) {
-    if (remove(e)) {
-      offerToDequeueInternal(e);
-      currentSize++;
-      return true;
-    } else {
-      return false;
-    }
   }
 
   private void offerToDequeueInternal(E e) {

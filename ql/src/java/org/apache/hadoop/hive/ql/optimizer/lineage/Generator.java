@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.optimizer.lineage;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -46,7 +47,8 @@ import org.apache.hadoop.hive.ql.optimizer.Transform;
 import org.apache.hadoop.hive.ql.optimizer.lineage.LineageCtx.Index;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.session.SessionState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class generates the lineage information for the columns
@@ -55,15 +57,39 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  */
 public class Generator extends Transform {
 
+  private static final Logger LOG = LoggerFactory.getLogger(Generator.class);
+
+  private final Set<String> hooks;
+  private static final String ATLAS_HOOK_CLASSNAME = "org.apache.atlas.hive.hook.HiveHook";
+
+  public Generator(Set<String> hooks) {
+    this.hooks = hooks;
+  }
+
   /* (non-Javadoc)
    * @see org.apache.hadoop.hive.ql.optimizer.Transform#transform(org.apache.hadoop.hive.ql.parse.ParseContext)
    */
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
 
-    Index index = SessionState.get() != null ?
-      SessionState.get().getLineageState().getIndex() : new Index();
+    if (hooks != null && hooks.contains(ATLAS_HOOK_CLASSNAME)) {
+      // Atlas would be interested in lineage information for insert,load,create etc.
+      if (!pctx.getQueryProperties().isCTAS()
+          && !pctx.getQueryProperties().isMaterializedView()
+          && pctx.getQueryProperties().isQuery()
+          && pctx.getCreateTable() == null
+          && pctx.getCreateViewDesc() == null
+          && (pctx.getLoadTableWork() == null || pctx.getLoadTableWork().isEmpty())) {
+        LOG.debug("Not evaluating lineage");
+        return pctx;
+      }
+    }
+    Index index = pctx.getQueryState().getLineageState().getIndex();
+    if (index == null) {
+      index = new Index();
+    }
 
+    long sTime = System.currentTimeMillis();
     // Create the lineage context
     LineageCtx lCtx = new LineageCtx(pctx, index);
 
@@ -101,6 +127,7 @@ public class Generator extends Transform {
     topNodes.addAll(pctx.getTopOps().values());
     ogw.startWalking(topNodes, null);
 
+    LOG.debug("Time taken for lineage transform={}", (System.currentTimeMillis() - sTime));
     return pctx;
   }
 

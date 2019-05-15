@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,13 +18,13 @@
 package org.apache.hadoop.hive.shims;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.security.AccessControlException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -43,7 +43,6 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobProfile;
@@ -96,6 +95,22 @@ public interface HadoopShims {
 
   public MiniMrShim getMiniSparkCluster(Configuration conf, int numberOfTaskTrackers,
       String nameNode, int numDir) throws IOException;
+
+
+  /**
+   * Set up the caller context for HDFS and Yarn.
+   */
+  void setHadoopCallerContext(String callerContext);
+
+  /**
+   * Set up context specific caller context with query prefix.
+   */
+  void setHadoopQueryContext(String queryId);
+
+  /**
+   * Set up context specific caller context with session prefix.
+   */
+  void setHadoopSessionContext(String sessionId);
 
   /**
    * Shim for MiniMrCluster
@@ -168,7 +183,6 @@ public interface HadoopShims {
    * All updates to jobtracker/resource manager rpc address
    * in the configuration should be done through this shim
    * @param conf
-   * @return
    */
   public void setJobLauncherRpcAddress(Configuration conf, String val);
 
@@ -252,12 +266,12 @@ public interface HadoopShims {
 
   /**
    * For the block locations returned by getLocations() convert them into a Treemap
-   * <Offset,blockLocation> by iterating over the list of blockLocation.
+   * &lt;Offset,blockLocation&gt; by iterating over the list of blockLocation.
    * Using TreeMap from offset to blockLocation, makes it O(logn) to get a particular
    * block based upon offset.
    * @param fs the file system
    * @param status the file information
-   * @return TreeMap<Long, BlockLocation>
+   * @return TreeMap&lt;Long, BlockLocation&gt;
    * @throws IOException
    */
   TreeMap<Long, BlockLocation> getLocationsWithOffset(FileSystem fs,
@@ -480,14 +494,29 @@ public interface HadoopShims {
   /**
    * Copies a source dir/file to a destination by orchestrating the copy between hdfs nodes.
    * This distributed process is meant to copy huge files that could take some time if a single
+   * copy is done. This is a variation which allows proxying as a different user to perform
+   * the distcp, and requires that the caller have requisite proxy user privileges.
+   *
+   * @param srcPaths List of Path to the source files or directories to copy
+   * @param dst Path to the destination file or directory
+   * @param conf The hadoop configuration object
+   * @param proxyUser The user to perform the distcp as
+   * @return True if it is successfull; False otherwise.
+   */
+  boolean runDistCpAs(List<Path> srcPaths, Path dst, Configuration conf, UserGroupInformation proxyUser)
+          throws IOException;
+
+  /**
+   * Copies a source dir/file to a destination by orchestrating the copy between hdfs nodes.
+   * This distributed process is meant to copy huge files that could take some time if a single
    * copy is done.
    *
-   * @param src Path to the source file or directory to copy
+   * @param srcPaths List of Path to the source files or directories to copy
    * @param dst Path to the destination file or directory
    * @param conf The hadoop configuration object
    * @return True if it is successfull; False otherwise.
    */
-  public boolean runDistCp(Path src, Path dst, Configuration conf) throws IOException;
+  public boolean runDistCp(List<Path> srcPaths, Path dst, Configuration conf) throws IOException;
 
   /**
    * This interface encapsulates methods used to get encryption information from
@@ -621,6 +650,122 @@ public interface HadoopShims {
    * @throws IOException If an error occurred while creating the instance.
    */
   public HdfsEncryptionShim createHdfsEncryptionShim(FileSystem fs, Configuration conf) throws IOException;
+
+  /**
+   * Information about an Erasure Coding Policy.
+   */
+  interface HdfsFileErasureCodingPolicy {
+    String getName();
+    String getStatus();
+  }
+
+  /**
+   * This interface encapsulates methods used to get Erasure Coding information from
+   * HDFS paths in order to to provide commands similar to those provided by the hdfs ec command.
+   * https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/HDFSErasureCoding.html
+   */
+  interface HdfsErasureCodingShim {
+    /**
+     * Lists all (enabled, disabled and removed) erasure coding policies registered in HDFS.
+     * @return a list of erasure coding policies
+     */
+    List<HdfsFileErasureCodingPolicy> getAllErasureCodingPolicies() throws IOException;
+
+    /**
+     * Enable an erasure coding policy.
+     * @param ecPolicyName the name of the erasure coding policy
+     */
+    void enableErasureCodingPolicy(String ecPolicyName)  throws IOException;
+
+    /**
+     * Sets an erasure coding policy on a directory at the specified path.
+     * @param path a directory in HDFS
+     * @param ecPolicyName the name of the erasure coding policy
+     */
+    void setErasureCodingPolicy(Path path, String ecPolicyName) throws IOException;
+
+    /**
+     * Get details of the erasure coding policy of a file or directory at the specified path.
+     * @param path an hdfs file or directory
+     * @return an erasure coding policy
+     */
+    HdfsFileErasureCodingPolicy getErasureCodingPolicy(Path path) throws IOException;
+
+    /**
+     * Unset an erasure coding policy set by a previous call to setPolicy on a directory.
+     * @param path a directory in HDFS
+     */
+    void unsetErasureCodingPolicy(Path path) throws IOException;
+
+    /**
+     * Remove an erasure coding policy.
+     * @param ecPolicyName the name of the erasure coding policy
+     */
+    void removeErasureCodingPolicy(String ecPolicyName) throws IOException;
+
+    /**
+     * Disable an erasure coding policy.
+     * @param ecPolicyName the name of the erasure coding policy
+     */
+    void disableErasureCodingPolicy(String ecPolicyName) throws IOException;
+
+    /**
+     * @return true if if the runtime MR stat for Erasure Coding is available.
+     */
+    boolean isMapReduceStatAvailable();
+  }
+
+  /**
+   * This is a dummy class used when the hadoop version does not support hdfs Erasure Coding.
+   */
+  class NoopHdfsErasureCodingShim implements HadoopShims.HdfsErasureCodingShim {
+
+    @Override
+    public List<HadoopShims.HdfsFileErasureCodingPolicy> getAllErasureCodingPolicies() {
+      return Collections.emptyList();
+    }
+
+    @Override
+    public void enableErasureCodingPolicy(String ecPolicyName) throws IOException {
+    }
+
+    @Override
+    public void setErasureCodingPolicy(Path path, String ecPolicyName) throws IOException {
+    }
+
+    @Override
+    public HdfsFileErasureCodingPolicy getErasureCodingPolicy(Path path) throws IOException {
+      return null;
+    }
+
+    @Override
+    public void unsetErasureCodingPolicy(Path path) throws IOException {
+    }
+
+    @Override
+    public void removeErasureCodingPolicy(String ecPolicyName) throws IOException {
+    }
+
+    @Override
+    public void disableErasureCodingPolicy(String ecPolicyName) throws IOException {
+    }
+
+    @Override
+    public boolean isMapReduceStatAvailable() {
+      return false;
+    }
+
+  }
+
+  /**
+   * Returns a new instance of the HdfsErasureCoding shim.
+   *
+   * @param fs a FileSystem object
+   * @param conf a Configuration object
+   * @return a new instance of the HdfsErasureCoding shim.
+   * @throws IOException If an error occurred while creating the instance.
+   */
+  HadoopShims.HdfsErasureCodingShim createHdfsErasureCodingShim(FileSystem fs, Configuration conf) throws IOException;
 
   public Path getPathWithoutSchemeAndAuthority(Path path);
 

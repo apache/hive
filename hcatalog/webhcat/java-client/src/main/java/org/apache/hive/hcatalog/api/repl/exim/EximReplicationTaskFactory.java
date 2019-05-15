@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,7 +20,7 @@ package org.apache.hive.hcatalog.api.repl.exim;
 
 import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.api.HCatNotificationEvent;
-import org.apache.hive.hcatalog.api.repl.NoopReplicationTask;
+import org.apache.hive.hcatalog.api.repl.ErroredReplicationTask;
 import org.apache.hive.hcatalog.api.repl.ReplicationTask;
 import org.apache.hive.hcatalog.common.HCatConstants;
 
@@ -57,7 +57,8 @@ public class EximReplicationTaskFactory implements ReplicationTask.Factory {
     } else if (event.getEventType().equals(HCatConstants.HCAT_INSERT_EVENT)) {
       return new InsertReplicationTask(event);
     } else {
-      throw new IllegalStateException("Unrecognized Event type, no replication task available");
+      return new ErroredReplicationTask(event, new IllegalStateException(
+          "Unrecognized Event type, no replication task available"));
     }
   }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,27 +18,33 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
 import java.math.BigDecimal;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.util.stream.Collectors;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.util.DateString;
+import org.apache.calcite.util.TimeString;
+import org.apache.calcite.util.TimestampString;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class ASTBuilder {
+  public static final Logger LOGGER  = LoggerFactory.getLogger(ASTBuilder.class);
 
   public static ASTBuilder construct(int tokenType, String text) {
     ASTBuilder b = new ASTBuilder();
@@ -58,14 +64,17 @@ public class ASTBuilder {
                 "TOK_TMP_FILE")).node();
   }
 
-  public static ASTNode table(RelNode scan) {
-    HiveTableScan hts;
-    if (scan instanceof DruidQuery) {
-      hts = (HiveTableScan) ((DruidQuery)scan).getTableScan();
+  public static ASTNode table(final RelNode scan) {
+    HiveTableScan hts = null;
+    if (scan instanceof HiveJdbcConverter) {
+      hts = ((HiveJdbcConverter) scan).getTableScan().getHiveTableScan();
+    } else if (scan instanceof DruidQuery) {
+      hts = (HiveTableScan) ((DruidQuery) scan).getTableScan();
     } else {
       hts = (HiveTableScan) scan;
     }
 
+    assert hts != null;
     RelOptHiveTable hTbl = (RelOptHiveTable) hts.getTable();
     ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_TABREF, "TOK_TABREF").add(
         ASTBuilder.construct(HiveParser.TOK_TABNAME, "TOK_TABNAME")
@@ -74,22 +83,66 @@ public class ASTBuilder {
 
     ASTBuilder propList = ASTBuilder.construct(HiveParser.TOK_TABLEPROPLIST, "TOK_TABLEPROPLIST");
     if (scan instanceof DruidQuery) {
-      // Pass possible query to Druid
+      //Passing query spec, column names and column types to be used as part of Hive Physical execution
       DruidQuery dq = (DruidQuery) scan;
+      //Adding Query specs to be used by org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
       propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
               .add(HiveParser.StringLiteral, "\"" + Constants.DRUID_QUERY_JSON + "\"")
               .add(HiveParser.StringLiteral, "\"" + SemanticAnalyzer.escapeSQLString(
                       dq.getQueryString()) + "\""));
+      // Adding column names used later by org.apache.hadoop.hive.druid.serde.DruidSerDe
+      propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
+          .add(HiveParser.StringLiteral, "\"" + Constants.DRUID_QUERY_FIELD_NAMES + "\"")
+          .add(HiveParser.StringLiteral,
+              "\"" + dq.getRowType().getFieldNames().stream().map(Object::toString)
+                  .collect(Collectors.joining(",")) + "\""
+          ));
+      // Adding column types used later by org.apache.hadoop.hive.druid.serde.DruidSerDe
+      propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
+          .add(HiveParser.StringLiteral, "\"" + Constants.DRUID_QUERY_FIELD_TYPES + "\"")
+          .add(HiveParser.StringLiteral,
+              "\"" + dq.getRowType().getFieldList().stream()
+                  .map(e -> TypeConverter.convert(e.getType()).getTypeName())
+                  .collect(Collectors.joining(",")) + "\""
+          ));
       propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
               .add(HiveParser.StringLiteral, "\"" + Constants.DRUID_QUERY_TYPE + "\"")
               .add(HiveParser.StringLiteral, "\"" + dq.getQueryType().getQueryName() + "\""));
+    } else if (scan instanceof HiveJdbcConverter) {
+      HiveJdbcConverter jdbcConverter = (HiveJdbcConverter) scan;
+      final String query = jdbcConverter.generateSql();
+      LOGGER.debug("Generated SQL query: " + System.lineSeparator() + query);
+      propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
+          .add(HiveParser.StringLiteral, "\"" + Constants.JDBC_QUERY + "\"")
+          .add(HiveParser.StringLiteral, "\"" + SemanticAnalyzer.escapeSQLString(query) + "\""));
+      // Whether we can split the query
+      propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
+          .add(HiveParser.StringLiteral, "\"" + Constants.JDBC_SPLIT_QUERY + "\"")
+          .add(HiveParser.StringLiteral, "\"" + jdbcConverter.splittingAllowed() + "\""));
+      // Adding column names used later by org.apache.hadoop.hive.druid.serde.DruidSerDe
+      propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
+          .add(HiveParser.StringLiteral, "\"" + Constants.JDBC_QUERY_FIELD_NAMES + "\"")
+          .add(HiveParser.StringLiteral,
+              "\"" + scan.getRowType().getFieldNames().stream().map(Object::toString)
+                  .collect(Collectors.joining(",")) + "\""
+          ));
+      // Adding column types used later by org.apache.hadoop.hive.druid.serde.DruidSerDe
+      propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
+          .add(HiveParser.StringLiteral, "\"" + Constants.JDBC_QUERY_FIELD_TYPES + "\"")
+          .add(HiveParser.StringLiteral,
+              "\"" + scan.getRowType().getFieldList().stream()
+                  .map(e -> TypeConverter.convert(e.getType()).getTypeName())
+                  .collect(Collectors.joining(",")) + "\""
+          ));
     }
+
     if (hts.isInsideView()) {
       // We need to carry the insideView information from calcite into the ast.
       propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
               .add(HiveParser.StringLiteral, "\"insideView\"")
               .add(HiveParser.StringLiteral, "\"TRUE\""));
     }
+
     b.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTIES, "TOK_TABLEPROPERTIES").add(propList));
 
     // NOTE: Calcite considers tbls to be equal if their names are the same. Hence
@@ -169,10 +222,6 @@ public class ASTBuilder {
   }
 
   public static ASTNode literal(RexLiteral literal) {
-    return literal(literal, false);
-  }
-
-  public static ASTNode literal(RexLiteral literal, boolean useTypeQualInLiteral) {
     Object val = null;
     int type = 0;
     SqlTypeName sqlType = literal.getType().getSqlTypeName();
@@ -182,6 +231,7 @@ public class ASTBuilder {
     case DATE:
     case TIME:
     case TIMESTAMP:
+    case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
     case INTERVAL_DAY:
     case INTERVAL_DAY_HOUR:
     case INTERVAL_DAY_MINUTE:
@@ -217,30 +267,28 @@ public class ASTBuilder {
 
     switch (sqlType) {
     case TINYINT:
-      if (useTypeQualInLiteral) {
-        val = literal.getValue3() + "Y";
-      } else {
-        val = literal.getValue3();
-      }
-      type = HiveParser.IntegralLiteral;
-      break;
     case SMALLINT:
-      if (useTypeQualInLiteral) {
-        val = literal.getValue3() + "S";
-      } else {
-        val = literal.getValue3();
-      }
-      type = HiveParser.IntegralLiteral;
-      break;
     case INTEGER:
-      val = literal.getValue3();
-      type = HiveParser.IntegralLiteral;
-      break;
     case BIGINT:
-      if (useTypeQualInLiteral) {
-        val = literal.getValue3() + "L";
-      } else {
-        val = literal.getValue3();
+      val = literal.getValue3();
+      // Calcite considers all numeric literals as bigdecimal values
+      // Hive makes a distinction between them most importantly IntegralLiteral
+      if (val instanceof BigDecimal) {
+        val = ((BigDecimal) val).longValue();
+      }
+      switch (sqlType) {
+      case TINYINT:
+        val += "Y";
+        break;
+      case SMALLINT:
+        val += "S";
+        break;
+      case INTEGER:
+        val += "";
+        break;
+      case BIGINT:
+        val += "L";
+        break;
       }
       type = HiveParser.IntegralLiteral;
       break;
@@ -254,7 +302,7 @@ public class ASTBuilder {
       break;
     case FLOAT:
     case REAL:
-      val = literal.getValue3();
+      val = literal.getValue3() + "F";
       type = HiveParser.Number;
       break;
     case VARCHAR:
@@ -268,22 +316,23 @@ public class ASTBuilder {
       val = literal.getValue3();
       type = ((Boolean) val).booleanValue() ? HiveParser.KW_TRUE : HiveParser.KW_FALSE;
       break;
-    case DATE: {
-      val = literal.getValue();
+    case DATE:
+      val = "'" + literal.getValueAs(DateString.class).toString() + "'";
       type = HiveParser.TOK_DATELITERAL;
-      DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-      val = df.format(((Calendar) val).getTime());
-      val = "'" + val + "'";
-    }
       break;
     case TIME:
-    case TIMESTAMP: {
-      val = literal.getValue();
+      val = "'" + literal.getValueAs(TimeString.class).toString() + "'";
       type = HiveParser.TOK_TIMESTAMPLITERAL;
-      DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-      val = df.format(((Calendar) val).getTime());
-      val = "'" + val + "'";
-    }
+      break;
+    case TIMESTAMP:
+      val = "'" + literal.getValueAs(TimestampString.class).toString() + "'";
+      type = HiveParser.TOK_TIMESTAMPLITERAL;
+      break;
+    case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
+      // Calcite stores timestamp with local time-zone in UTC internally, thus
+      // when we bring it back, we need to add the UTC suffix.
+      val = "'" + literal.getValueAs(TimestampString.class).toString() + " UTC'";
+      type = HiveParser.TOK_TIMESTAMPLOCALTZLITERAL;
       break;
     case INTERVAL_YEAR:
     case INTERVAL_MONTH:

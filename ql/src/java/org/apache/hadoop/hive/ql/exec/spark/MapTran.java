@@ -1,4 +1,4 @@
-/**
+/*
  *  Licensed to the Apache Software Foundation (ASF) under one
  *  or more contributor license agreements.  See the NOTICE file
  *  distributed with this work for additional information
@@ -19,19 +19,19 @@
 package org.apache.hadoop.hive.ql.exec.spark;
 
 import org.apache.hadoop.hive.ql.io.HiveKey;
+import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 
 public class MapTran extends CacheTran<BytesWritable, BytesWritable, HiveKey, BytesWritable> {
   private HiveMapFunction mapFunc;
-  private String name = "MapTran";
 
   public MapTran() {
-    this(false);
+    this(false, "MapTran", null);
   }
 
-  public MapTran(boolean cache) {
-    super(cache);
+  public MapTran(boolean cache, String name, BaseWork baseWork) {
+    super(cache, name, baseWork);
   }
 
   @Override
@@ -42,15 +42,5 @@ public class MapTran extends CacheTran<BytesWritable, BytesWritable, HiveKey, By
 
   public void setMapFunction(HiveMapFunction mapFunc) {
     this.mapFunc = mapFunc;
-  }
-
-  @Override
-  public String getName() {
-    return name;
-  }
-
-  @Override
-  public void setName(String name) {
-    this.name = name;
   }
 }

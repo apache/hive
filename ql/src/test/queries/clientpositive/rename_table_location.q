@@ -1,3 +1,5 @@
+--! qt:dataset:src
+--! qt:dataset:part
 -- This test verifies that if the tables location changes, renaming a table will not change
 -- the table location scheme
 

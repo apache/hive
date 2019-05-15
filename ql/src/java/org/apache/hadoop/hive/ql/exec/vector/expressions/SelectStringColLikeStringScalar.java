@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -15,10 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Descriptor;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.AbstractFilterStringColLikeStringScalar.Checker;
@@ -26,29 +27,33 @@ import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 public class SelectStringColLikeStringScalar extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
-  
-  private int colNum;
-  private int outputColumn;
+
+  private final int colNum;
+
   private byte[] pattern;
+
   transient Checker checker = null;
 
   public SelectStringColLikeStringScalar() {
     super();
+
+    // Dummy final assignments.
+    colNum = -1;
   }
 
-  public SelectStringColLikeStringScalar(int colNum, byte[] pattern, int outputColumn) {
-    super();
+  public SelectStringColLikeStringScalar(int colNum, byte[] pattern, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
     this.pattern = pattern;
-    this.outputColumn = outputColumn;
   }
 
   @Override
-	public void evaluate(VectorizedRowBatch batch) {
+	public void evaluate(VectorizedRowBatch batch) throws HiveException {
     if (checker == null) {
       checker = borrowChecker();
     }
@@ -64,53 +69,62 @@ public class SelectStringColLikeStringScalar extends VectorExpression {
     byte[][] vector = inputColVector.vector;
     int[] length = inputColVector.length;
     int[] start = inputColVector.start;
-    
-    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];
+
+    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumnNum];
     long[] outputVector = outV.vector;
-    
+    boolean[] inputIsNull = inputColVector.isNull;
+    boolean[] outputIsNull = outV.isNull;
+
     // return immediately if batch is empty
     if (n == 0) {
       return;
     }
-    
-    outV.noNulls = inputColVector.noNulls;
-    outV.isRepeating = inputColVector.isRepeating;
-    
-    if (inputColVector.noNulls) {
-      if (inputColVector.isRepeating) {
+
+    // We do not need to do a column reset since we are carefully changing the output.
+    outV.isRepeating = false;
+
+    if (inputColVector.isRepeating) {
+      if (inputColVector.noNulls || !inputIsNull[0]) {
+        // Set isNull before call in case it changes it mind.
+        outputIsNull[0] = false;
         outputVector[0] = (checker.check(vector[0], start[0], length[0]) ? 1 : 0);
-        outV.isNull[0] = false;
-      } else if (batch.selectedInUse) {
+      } else {
+        outputIsNull[0] = true;
+        outV.noNulls = false;
+      }
+      outV.isRepeating = true;
+      return;
+    }
+
+    if (inputColVector.noNulls) {
+      if (batch.selectedInUse) {
         for (int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = (checker.check(vector[i], start[i], length[i]) ? 1 : 0);
           outV.isNull[i] = false;
+          outputVector[i] = (checker.check(vector[i], start[i], length[i]) ? 1 : 0);
         }
       } else {
+        Arrays.fill(outV.isNull, 0, n, false);
         for (int i = 0; i != n; i++) {
           outputVector[i] = (checker.check(vector[i], start[i], length[i]) ? 1 : 0);
-          outV.isNull[i] = false;
         }
       }
-    } else {
-      if (inputColVector.isRepeating) {
-        //All must be selected otherwise size would be zero. Repeating property will not change.
-        if (!nullPos[0]) {
-          outputVector[0] = (checker.check(vector[0], start[0], length[0]) ? 1 : 0);
-          outV.isNull[0] = false;
-        } else {
-          outputVector[0] = LongColumnVector.NULL_VALUE;
-          outV.isNull[0] = true;
-        }
-      } else if (batch.selectedInUse) {
+    } else /* there are nulls in the inputColVector */ {
+
+      /*
+       * Do careful maintenance of the outputColVector.noNulls flag.
+       */
+
+      if (batch.selectedInUse) {
         for (int j = 0; j != n; j++) {
           int i = sel[j];
           if (!nullPos[i]) {
             outputVector[i] = (checker.check(vector[i], start[i], length[i]) ? 1 : 0);
             outV.isNull[i] = false;
           } else {
-            outputVector[0] = LongColumnVector.NULL_VALUE;
+            outputVector[i] = LongColumnVector.NULL_VALUE;
             outV.isNull[i] = true;
+            outV.noNulls = false;
           }
         }
       } else {
@@ -119,65 +133,39 @@ public class SelectStringColLikeStringScalar extends VectorExpression {
             outputVector[i] = (checker.check(vector[i], start[i], length[i]) ? 1 : 0);
             outV.isNull[i] = false;
           } else {
-            outputVector[0] = LongColumnVector.NULL_VALUE;
+            outputVector[i] = LongColumnVector.NULL_VALUE;
             outV.isNull[i] = true;
+            outV.noNulls = false;
           }
         }
       }
     }
-	}
-  
+  }
+
   private Checker borrowChecker() {
     FilterStringColLikeStringScalar fil = new FilterStringColLikeStringScalar();
     return fil.createChecker(new String(pattern, StandardCharsets.UTF_8));
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public byte[] getPattern() {
-    return pattern;
   }
 
   public void setPattern(byte[] pattern) {
     this.pattern = pattern;
   }
 
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-  
-  @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-  
-  @Override
-  public String getOutputType() {
-    return "String_Family";
-  }
-
   public String vectorExpressionParameters() {
-    return "col " + colNum;
+    return getColumnParamString(0, colNum);
   }
 
-@Override
-public Descriptor getDescriptor() {
-    return (new VectorExpressionDescriptor.Builder())
-        .setMode(
-            VectorExpressionDescriptor.Mode.PROJECTION)
-        .setNumArguments(2)
-        .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.STRING_FAMILY,
-            VectorExpressionDescriptor.ArgumentType.STRING)
-        .setInputExpressionTypes(
-            VectorExpressionDescriptor.InputExpressionType.COLUMN,
-            VectorExpressionDescriptor.InputExpressionType.SCALAR).build();
-}
-
+  @Override
+  public Descriptor getDescriptor() {
+      return (new VectorExpressionDescriptor.Builder())
+          .setMode(
+              VectorExpressionDescriptor.Mode.PROJECTION)
+          .setNumArguments(2)
+          .setArgumentTypes(
+              VectorExpressionDescriptor.ArgumentType.STRING_FAMILY,
+              VectorExpressionDescriptor.ArgumentType.STRING)
+          .setInputExpressionTypes(
+              VectorExpressionDescriptor.InputExpressionType.COLUMN,
+              VectorExpressionDescriptor.InputExpressionType.SCALAR).build();
+  }
 }

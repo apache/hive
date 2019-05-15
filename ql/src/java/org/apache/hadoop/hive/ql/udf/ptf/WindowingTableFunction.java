@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -143,7 +143,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
   private Object evaluateWindowFunction(WindowFunctionDef wFn, int rowToProcess, PTFPartition partition)
       throws HiveException {
     BasePartitionEvaluator partitionEval = wFn.getWFnEval()
-        .getPartitionWindowingEvaluator(wFn.getWindowFrame(), partition, wFn.getArgs(), wFn.getOI());
+        .getPartitionWindowingEvaluator(wFn.getWindowFrame(), partition, wFn.getArgs(), wFn.getOI(), nullsLast);
     return partitionEval.iterate(rowToProcess, ptfDesc.getLlInfo());
   }
 
@@ -151,7 +151,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
   private Object evaluateFunctionOnPartition(WindowFunctionDef wFn,
       PTFPartition partition) throws HiveException {
     BasePartitionEvaluator partitionEval = wFn.getWFnEval()
-        .getPartitionWindowingEvaluator(wFn.getWindowFrame(), partition, wFn.getArgs(), wFn.getOI());
+        .getPartitionWindowingEvaluator(wFn.getWindowFrame(), partition, wFn.getArgs(), wFn.getOI(), nullsLast);
     return partitionEval.getPartitionAgg();
   }
 
@@ -388,6 +388,8 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     }
 
     streamingState.rollingPart.append(row);
+    //Get back converted row
+    row = streamingState.rollingPart.getAt(streamingState.rollingPart.size() -1);
 
     WindowTableFunctionDef tabDef = (WindowTableFunctionDef) tableDef;
 

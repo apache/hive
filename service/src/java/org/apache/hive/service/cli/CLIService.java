@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -39,9 +39,11 @@ import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.ServiceException;
+import org.apache.hive.service.ServiceUtils;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.cli.operation.Operation;
 import org.apache.hive.service.cli.session.SessionManager;
+import org.apache.hive.service.rpc.thrift.TOperationHandle;
 import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.apache.hive.service.server.HiveServer2;
 import org.slf4j.Logger;
@@ -70,17 +72,20 @@ public class CLIService extends CompositeService implements ICLIService {
   // The HiveServer2 instance running this service
   private final HiveServer2 hiveServer2;
   private int defaultFetchRows;
+  // This is necessary for tests and embedded mode, where HS2 init is not executed.
+  private boolean allowSessionsInitial;
 
-  public CLIService(HiveServer2 hiveServer2) {
+  public CLIService(HiveServer2 hiveServer2, boolean allowSessions) {
     super(CLIService.class.getSimpleName());
     this.hiveServer2 = hiveServer2;
+    this.allowSessionsInitial = allowSessions;
   }
 
   @Override
   public synchronized void init(HiveConf hiveConf) {
-    this.hiveConf = hiveConf;
-    sessionManager = new SessionManager(hiveServer2);
-    defaultFetchRows = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_RESULTSET_DEFAULT_FETCH_SIZE);
+    setHiveConf(hiveConf);
+    sessionManager = new SessionManager(hiveServer2, allowSessionsInitial);
+    defaultFetchRows = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE);
     addService(sessionManager);
     //  If the hadoop cluster is secure, do a kerberos login for the service from the keytab
     if (UserGroupInformation.isSecurityEnabled()) {
@@ -130,6 +135,7 @@ public class CLIService extends CompositeService implements ICLIService {
   }
 
   private void setupBlockedUdfs() {
+    HiveConf hiveConf = getHiveConf();
     FunctionRegistry.setupPermissionsForBuiltinUDFs(
         hiveConf.getVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_WHITELIST),
         hiveConf.getVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_BLACKLIST));
@@ -441,13 +447,13 @@ public class CLIService extends CompositeService implements ICLIService {
      * we block for a duration determined by a step function, before we return
      * However, if the background operation is complete, we return immediately.
      */
+    HiveConf conf = operation.getParentSession().getHiveConf();
     if (operation.shouldRunAsync()) {
-      HiveConf conf = operation.getParentSession().getHiveConf();
       long maxTimeout = HiveConf.getTimeVar(conf,
           HiveConf.ConfVars.HIVE_SERVER2_LONG_POLLING_TIMEOUT, TimeUnit.MILLISECONDS);
 
       final long elapsed = System.currentTimeMillis() - operation.getBeginTime();
-      // A step function to increase the polling timeout by 500 ms every 10 sec, 
+      // A step function to increase the polling timeout by 500 ms every 10 sec,
       // starting from 500 ms up to HIVE_SERVER2_LONG_POLLING_TIMEOUT
       final long timeout = Math.min(maxTimeout, (elapsed / TimeUnit.SECONDS.toMillis(10) + 1) * 500);
 
@@ -471,25 +477,36 @@ public class CLIService extends CompositeService implements ICLIService {
     }
     OperationStatus opStatus = operation.getStatus();
     LOG.debug(opHandle + ": getOperationStatus()");
-    opStatus.setJobProgressUpdate(progressUpdateLog(getProgressUpdate, operation));
+    long numModifiedRows = operation.getNumModifiedRows();
+    opStatus.setNumModifiedRows(numModifiedRows);
+    opStatus.setJobProgressUpdate(progressUpdateLog(getProgressUpdate, operation, conf));
     return opStatus;
   }
 
+  public HiveConf getSessionConf(SessionHandle sessionHandle)
+      throws HiveSQLException {
+	  return sessionManager.getSession(sessionHandle).getSessionConf();
+  }
+
   private static final long PROGRESS_MAX_WAIT_NS = 30 * 1000000000l;
-  private JobProgressUpdate progressUpdateLog(boolean isProgressLogRequested, Operation operation) {
-    if (!isProgressLogRequested || !canProvideProgressLog()
+  private JobProgressUpdate progressUpdateLog(boolean isProgressLogRequested, Operation operation, HiveConf conf) {
+    if (!isProgressLogRequested || !ServiceUtils.canProvideProgressLog(conf)
         || !OperationType.EXECUTE_STATEMENT.equals(operation.getType())) {
       return new JobProgressUpdate(ProgressMonitor.NULL);
     }
-    
+
     SessionState sessionState = operation.getParentSession().getSessionState();
     long startTime = System.nanoTime();
     int timeOutMs = 8;
+    boolean terminated = operation.isDone();
     try {
-      while (sessionState.getProgressMonitor() == null && !operation.isDone()) {
+      while ((sessionState.getProgressMonitor() == null) && !terminated) {
         long remainingMs = (PROGRESS_MAX_WAIT_NS - (System.nanoTime() - startTime)) / 1000000l;
-        if (remainingMs <= 0) return new JobProgressUpdate(ProgressMonitor.NULL);
-        Thread.sleep(Math.min(remainingMs, timeOutMs));
+        if (remainingMs <= 0) {
+          LOG.debug("timed out and hence returning progress log as NULL");
+          return new JobProgressUpdate(ProgressMonitor.NULL);
+        }
+        terminated = operation.waitToTerminate(Math.min(remainingMs, timeOutMs));
         timeOutMs <<= 1;
       }
     } catch (InterruptedException e) {
@@ -497,11 +514,6 @@ public class CLIService extends CompositeService implements ICLIService {
     }
     ProgressMonitor pm = sessionState.getProgressMonitor();
     return new JobProgressUpdate(pm != null ? pm : ProgressMonitor.NULL);
-  }
-
-  private boolean canProvideProgressLog() {
-    return "tez".equals(hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE))
-        && hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_INPLACE_PROGRESS);
   }
 
   /* (non-Javadoc)
@@ -558,8 +570,9 @@ public class CLIService extends CompositeService implements ICLIService {
   }
 
   // obtain delegation token for the give user from metastore
-  public synchronized String getDelegationTokenFromMetaStore(String owner)
+  public String getDelegationTokenFromMetaStore(String owner)
       throws HiveSQLException, UnsupportedOperationException, LoginException, IOException {
+    HiveConf hiveConf = getHiveConf();
     if (!hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL) ||
         !hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
       throw new UnsupportedOperationException(
@@ -588,6 +601,11 @@ public class CLIService extends CompositeService implements ICLIService {
   }
 
   @Override
+  public void setApplicationName(SessionHandle sh, String value) throws HiveSQLException {
+    sessionManager.getSession(sh).setApplicationName(value);
+  }
+
+  @Override
   public void cancelDelegationToken(SessionHandle sessionHandle, HiveAuthFactory authFactory,
       String tokenStr) throws HiveSQLException {
     sessionManager.getSession(sessionHandle).
@@ -600,6 +618,15 @@ public class CLIService extends CompositeService implements ICLIService {
       String tokenStr) throws HiveSQLException {
     sessionManager.getSession(sessionHandle).renewDelegationToken(authFactory, tokenStr);
     LOG.info(sessionHandle  + ": renewDelegationToken()");
+  }
+
+  @Override
+  public String getQueryId(TOperationHandle opHandle) throws HiveSQLException {
+    Operation operation = sessionManager.getOperationManager().getOperation(
+        new OperationHandle(opHandle));
+    final String queryId = operation.getQueryId();
+    LOG.debug(opHandle + ": getQueryId() " + queryId);
+    return queryId;
   }
 
   public SessionManager getSessionManager() {

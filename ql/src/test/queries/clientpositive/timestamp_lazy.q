@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 drop table timestamp_lazy;
 create table timestamp_lazy (t timestamp, key string, value string);

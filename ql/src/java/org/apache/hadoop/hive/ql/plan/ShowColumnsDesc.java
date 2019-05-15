@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 public class ShowColumnsDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
+  String pattern;
   String tableName;
   String resFile;
   /**
@@ -60,6 +61,32 @@ public class ShowColumnsDesc extends DDLDesc implements Serializable {
   public ShowColumnsDesc(Path resFile, String tableName) {
     this.resFile = resFile.toString();
     this.tableName = tableName;
+  }
+
+  /**
+   * @param tableName name of table to show columns of
+   */
+  public ShowColumnsDesc(Path resFile, String tableName, String pattern) {
+    this.resFile = resFile.toString();
+    this.pattern = pattern;
+    this.tableName = tableName;
+  }
+
+
+  /**
+   * @return the pattern
+   */
+  @Explain(displayName = "pattern")
+  public String getPattern() {
+    return pattern;
+  }
+
+  /**
+   * @param pattern
+   *          the pattern to set
+   */
+  public void setPattern(String pattern) {
+    this.pattern = pattern;
   }
 
   /**

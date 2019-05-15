@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 
@@ -51,13 +52,14 @@ public class LimitDesc extends AbstractOperatorDesc {
    */
   @Explain(displayName = "Offset of rows", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Integer getOffset() {
-    return (offset == 0) ? null : new Integer(offset);
+    return (offset == 0) ? null : Integer.valueOf(offset);
   }
 
   public void setOffset(Integer offset) {
     this.offset = offset;
   }
 
+  @Signature
   @Explain(displayName = "Number of rows", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public int getLimit() {
     return limit;
@@ -77,17 +79,28 @@ public class LimitDesc extends AbstractOperatorDesc {
 
   public class LimitOperatorExplainVectorization extends OperatorExplainVectorization {
 
-    public LimitOperatorExplainVectorization(LimitDesc limitDesc, VectorDesc vectorDesc) {
+    public LimitOperatorExplainVectorization(LimitDesc limitDesc, VectorLimitDesc vectorLimitDesc) {
       // Native vectorization supported.
-      super(vectorDesc, true);
+      super(vectorLimitDesc, true);
     }
   }
 
   @Explain(vectorization = Vectorization.OPERATOR, displayName = "Limit Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
   public LimitOperatorExplainVectorization getLimitVectorization() {
-    if (vectorDesc == null) {
+    VectorLimitDesc vectorLimitDesc = (VectorLimitDesc) getVectorDesc();
+    if (vectorLimitDesc == null) {
       return null;
     }
-    return new LimitOperatorExplainVectorization(this, vectorDesc);
+    return new LimitOperatorExplainVectorization(this, vectorLimitDesc);
   }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (getClass().getName().equals(other.getClass().getName())) {
+      LimitDesc otherDesc = (LimitDesc) other;
+      return getLimit() == otherDesc.getLimit();
+    }
+    return false;
+  }
+
 }

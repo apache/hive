@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,33 +18,29 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.exec.DynamicValueRegistry;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
-import org.apache.hadoop.hive.ql.exec.DynamicValueRegistry;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.RuntimeValuesInfo;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.common.NoDynamicValuesException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.tez.runtime.api.Input;
 import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.api.ProcessorContext;
 import org.apache.tez.runtime.library.api.KeyValueReader;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DynamicValueRegistryTez implements DynamicValueRegistry {
   private static final Logger LOG = LoggerFactory.getLogger(DynamicValueRegistryTez.class);
@@ -65,7 +61,12 @@ public class DynamicValueRegistryTez implements DynamicValueRegistry {
     }
   }
 
-  protected Map<String, Object> values = Collections.synchronizedMap(new HashMap<String, Object>());
+  static class NullValue {
+  }
+
+  static final NullValue NULL_VALUE = new NullValue();
+
+  protected Map<String, Object> values = new ConcurrentHashMap<>();
 
   public DynamicValueRegistryTez() {
   }
@@ -73,13 +74,23 @@ public class DynamicValueRegistryTez implements DynamicValueRegistry {
   @Override
   public Object getValue(String key) {
     if (!values.containsKey(key)) {
-      throw new IllegalStateException("Value does not exist in registry: " + key);
+      throw new NoDynamicValuesException("Value does not exist in registry: " + key);
     }
-    return values.get(key);
+    Object val = values.get(key);
+
+    if (val == NULL_VALUE) {
+      return null;
+    }
+    return val;
   }
 
   protected void setValue(String key, Object value) {
-    values.put(key, value);
+    if (value == null) {
+      // ConcurrentHashMap does not allow null - use a substitute value.
+      values.put(key, NULL_VALUE);
+    } else {
+      values.put(key, value);
+    }
   }
 
   @Override

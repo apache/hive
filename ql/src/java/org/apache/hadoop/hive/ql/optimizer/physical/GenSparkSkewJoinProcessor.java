@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -223,7 +223,7 @@ public class GenSparkSkewJoinProcessor {
       HiveConf hiveConf = new HiveConf(parseCtx.getConf(),
           GenSparkSkewJoinProcessor.class);
       SparkWork sparkWork = new SparkWork(parseCtx.getConf().getVar(HiveConf.ConfVars.HIVEQUERYID));
-      Task<? extends Serializable> skewJoinMapJoinTask = TaskFactory.get(sparkWork, hiveConf);
+      Task<? extends Serializable> skewJoinMapJoinTask = TaskFactory.get(sparkWork);
       skewJoinMapJoinTask.setFetchSource(currTask.isFetchSource());
 
       // create N TableScans
@@ -231,7 +231,7 @@ public class GenSparkSkewJoinProcessor {
       for (int k = 0; k < tags.length; k++) {
         Operator<? extends OperatorDesc> ts = GenMapRedUtils.createTemporaryTableScanOperator(
             joinOp.getCompilationOpContext(), rowSchemaList.get((byte) k));
-        ((TableScanOperator) ts).setTableDesc(tableDescList.get((byte) k));
+        ((TableScanOperator) ts).setTableDescSkewJoin(tableDescList.get((byte) k));
         parentOps[k] = ts;
       }
 
@@ -240,10 +240,12 @@ public class GenSparkSkewJoinProcessor {
       MapJoinDesc mapJoinDescriptor = new MapJoinDesc(newJoinKeys, keyTblDesc,
           newJoinValues, newJoinValueTblDesc, newJoinValueTblDesc, joinDescriptor
           .getOutputColumnNames(), i, joinDescriptor.getConds(),
-          joinDescriptor.getFilters(), joinDescriptor.getNoOuterJoin(), dumpFilePrefix);
+          joinDescriptor.getFilters(), joinDescriptor.getNoOuterJoin(), dumpFilePrefix,
+          joinDescriptor.getMemoryMonitorInfo(), joinDescriptor.getInMemoryDataSize());
       mapJoinDescriptor.setTagOrder(tags);
       mapJoinDescriptor.setHandleSkewJoin(false);
       mapJoinDescriptor.setNullSafes(joinDescriptor.getNullSafes());
+      mapJoinDescriptor.setColumnExprMap(joinDescriptor.getColumnExprMap());
       // temporarily, mark it as child of all the TS
       MapJoinOperator mapJoinOp = (MapJoinOperator) OperatorFactory
           .getAndMakeChild(joinOp.getCompilationOpContext(), mapJoinDescriptor, null, parentOps);
@@ -344,7 +346,7 @@ public class GenSparkSkewJoinProcessor {
         new ConditionalResolverSkewJoin.ConditionalResolverSkewJoinCtx(bigKeysDirToTaskMap, children);
 
     ConditionalWork cndWork = new ConditionalWork(listWorks);
-    ConditionalTask cndTsk = (ConditionalTask) TaskFactory.get(cndWork, parseCtx.getConf());
+    ConditionalTask cndTsk = (ConditionalTask) TaskFactory.get(cndWork);
     cndTsk.setListTasks(listTasks);
     cndTsk.setResolver(new ConditionalResolverSkewJoin());
     cndTsk.setResolverCtx(context);
@@ -362,7 +364,7 @@ public class GenSparkSkewJoinProcessor {
     HashTableDummyDesc desc = new HashTableDummyDesc();
     HashTableDummyOperator dummyOp = (HashTableDummyOperator) OperatorFactory.get(
         tableScan.getCompilationOpContext(), desc);
-    dummyOp.getConf().setTbl(tableScan.getTableDesc());
+    dummyOp.getConf().setTbl(tableScan.getTableDescSkewJoin());
     MapJoinOperator mapJoinOp = (MapJoinOperator) tableScan.getChildOperators().get(0);
     mapJoinOp.replaceParent(tableScan, dummyOp);
     List<Operator<? extends OperatorDesc>> mapJoinChildren =

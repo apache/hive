@@ -11,16 +11,18 @@ PREHOOK: query: insert into table acid_ivtt values
     (429496729, 0.14, 'its fleece was white as snow'),
     (-29496729, -0.14, 'negative values test')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acid_ivtt
 POSTHOOK: query: insert into table acid_ivtt values 
     (1, 109.23, 'mary had a little lamb'),
     (429496729, 0.14, 'its fleece was white as snow'),
     (-29496729, -0.14, 'negative values test')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@acid_ivtt
-POSTHOOK: Lineage: acid_ivtt.de EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivtt.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivtt.vc EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: acid_ivtt.de SCRIPT []
+POSTHOOK: Lineage: acid_ivtt.i SCRIPT []
+POSTHOOK: Lineage: acid_ivtt.vc SCRIPT []
 PREHOOK: query: select i, de, vc from acid_ivtt order by i
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_ivtt

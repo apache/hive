@@ -62,11 +62,11 @@ POSTHOOK: Lineage: tmp3.c SIMPLE [(tmp2)l.FieldSchema(name:b, type:string, comme
 PREHOOK: query: select * from tmp3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp3
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from tmp3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp3
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0	val_0
 0	val_0	val_0
 0	val_0	val_0

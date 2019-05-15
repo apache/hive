@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,15 +20,14 @@
 package org.apache.hive.hcatalog.messaging;
 
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hive.hcatalog.messaging.json.JSONMessageFactory;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +35,8 @@ import java.util.Map;
 /**
  * Abstract Factory for the construction of HCatalog message instances.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class MessageFactory {
 
   private static MessageFactory instance = null;
@@ -127,9 +128,10 @@ public abstract class MessageFactory {
    * and some are not yet supported.
    * @param before The table before the alter
    * @param after The table after the alter
+   * @param writeId writeId under which alter is done (for ACID tables)
    * @return
    */
-  public abstract AlterTableMessage buildAlterTableMessage(Table before, Table after);
+  public abstract AlterTableMessage buildAlterTableMessage(Table before, Table after, Long writeId);
 
   /**
    * Factory method for DropTableMessage.
@@ -151,10 +153,11 @@ public abstract class MessageFactory {
    * @param table The table in which the partition is being altered
    * @param before The partition before it was altered
    * @param after The partition after it was altered
+   * @param writeId writeId under which alter is done (for ACID tables)
    * @return a new AlterPartitionMessage
    */
   public abstract AlterPartitionMessage buildAlterPartitionMessage(Table table, Partition before,
-                                                                   Partition after);
+                                                                   Partition after, Long writeId);
 
   /**
    * Factory method for DropPartitionMessage.
@@ -179,28 +182,6 @@ public abstract class MessageFactory {
   public abstract DropFunctionMessage buildDropFunctionMessage(Function fn);
 
   /**
-   * Factory method for CreateIndexMessage.
-   * @param idx The Index being added.
-   * @return CreateIndexMessage instance.
-   */
-  public abstract CreateIndexMessage buildCreateIndexMessage(Index idx);
-
-  /**
-   * Factory method for DropIndexMessage.
-   * @param idx The Index being dropped.
-   * @return DropIndexMessage instance.
-   */
-  public abstract DropIndexMessage buildDropIndexMessage(Index idx);
-
-  /**
-   * Factory method for AlterIndexMessage.
-   * @param before The index before the alter
-   * @param after The index after the alter
-   * @return AlterIndexMessage
-   */
-  public abstract AlterIndexMessage buildAlterIndexMessage(Index before, Index after);
-
-  /**
    * Factory method for building insert message
    * @param db Name of the database the insert occurred in
    * @param table Name of the table the insert occurred in
@@ -211,4 +192,16 @@ public abstract class MessageFactory {
    */
   public abstract InsertMessage buildInsertMessage(String db, String table,
                                                    Map<String,String> partVals, List<String> files);
+
+  /**
+   * Factory method for building insert message
+   * @param db Name of the database the insert occurred in
+   * @param table Table the insert occurred in
+   * @param partVals Partition values for the partition that the insert occurred in, may be null
+   *                 if the insert was done into a non-partitioned table
+   * @param files List of files created as a result of the insert, may be null.
+   * @return instance of InsertMessage
+   */
+  public abstract InsertMessage buildInsertMessage(String db, Table table,
+      Map<String,String> partVals, List<String> files);
 }

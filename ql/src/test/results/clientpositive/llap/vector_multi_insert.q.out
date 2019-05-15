@@ -70,11 +70,19 @@ insert overwrite table orc_rn1 select a.* where a.rn < 100
 insert overwrite table orc_rn2 select a.* where a.rn >= 100 and a.rn < 1000
 insert overwrite table orc_rn3 select a.* where a.rn >= 1000
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc1
+PREHOOK: Output: default@orc_rn1
+PREHOOK: Output: default@orc_rn2
+PREHOOK: Output: default@orc_rn3
 POSTHOOK: query: explain vectorization from orc1 a
 insert overwrite table orc_rn1 select a.* where a.rn < 100
 insert overwrite table orc_rn2 select a.* where a.rn >= 100 and a.rn < 1000
 insert overwrite table orc_rn3 select a.* where a.rn >= 1000
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc1
+POSTHOOK: Output: default@orc_rn1
+POSTHOOK: Output: default@orc_rn2
+POSTHOOK: Output: default@orc_rn3
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -101,21 +109,21 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (rn < 100) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: rn (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.orc_rn1
                   Filter Operator
-                    predicate: ((rn >= 100) and (rn < 1000)) (type: boolean)
+                    predicate: ((rn < 1000) and (rn >= 100)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: rn (type: int)
@@ -149,7 +157,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -169,7 +178,8 @@ STAGE PLANS:
               name: default.orc_rn1
 
   Stage: Stage-5
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -182,7 +192,8 @@ STAGE PLANS:
               name: default.orc_rn2
 
   Stage: Stage-6
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-2
     Move Operator
@@ -195,7 +206,8 @@ STAGE PLANS:
               name: default.orc_rn3
 
   Stage: Stage-7
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from orc1 a
 insert overwrite table orc_rn1 select a.* where a.rn < 100

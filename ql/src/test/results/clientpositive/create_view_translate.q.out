@@ -1,30 +1,29 @@
-PREHOOK: query: drop view if exists v
+PREHOOK: query: drop view if exists v_n7
 PREHOOK: type: DROPVIEW
-POSTHOOK: query: drop view if exists v
+POSTHOOK: query: drop view if exists v_n7
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: drop view if exists w
 PREHOOK: type: DROPVIEW
 POSTHOOK: query: drop view if exists w
 POSTHOOK: type: DROPVIEW
-PREHOOK: query: create view v as select cast(key as string) from src
+PREHOOK: query: create view v_n7 as select cast(key as string) from src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as select cast(key as string) from src
+PREHOOK: Output: default@v_n7
+POSTHOOK: query: create view v_n7 as select cast(key as string) from src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: describe formatted v
+POSTHOOK: Output: default@v_n7
+POSTHOOK: Lineage: v_n7.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: describe formatted v_n7
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: describe formatted v
+PREHOOK: Input: default@v_n7
+POSTHOOK: query: describe formatted v_n7
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n7
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -33,6 +32,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -45,9 +45,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select cast(key as string) from src	 
-View Expanded Text: 	select `src`.`key` from `default`.`src`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select cast(key as string) from src	 
+Expanded Query:     	select `src`.`key` from `default`.`src`	 
 PREHOOK: query: create view w as select key, value from (
   select key, value from src
 ) a
@@ -71,7 +70,6 @@ POSTHOOK: query: describe formatted w
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@w
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -81,6 +79,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -93,21 +92,20 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select key, value from (	 
+Original Query:     	select key, value from (	 
 	                    	  select key, value from src
 	                    	) a                 
-View Expanded Text: 	select `a`.`key`, `a`.`value` from (	 
+Expanded Query:     	select `a`.`key`, `a`.`value` from (	 
 	                    	  select `src`.`key`, `src`.`value` from `default`.`src`
 	                    	) `a`               
-View Rewrite Enabled:	No                  	 
-PREHOOK: query: drop view v
+PREHOOK: query: drop view v_n7
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v
-PREHOOK: Output: default@v
-POSTHOOK: query: drop view v
+PREHOOK: Input: default@v_n7
+PREHOOK: Output: default@v_n7
+POSTHOOK: query: drop view v_n7
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v
-POSTHOOK: Output: default@v
+POSTHOOK: Input: default@v_n7
+POSTHOOK: Output: default@v_n7
 PREHOOK: query: drop view w
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@w
@@ -127,22 +125,25 @@ POSTHOOK: Output: default@items
 PREHOOK: query: explain
 CREATE VIEW priceview AS SELECT items.id, items.info['price'] FROM items
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@items
+PREHOOK: Output: database:default
+PREHOOK: Output: default@priceview
 POSTHOOK: query: explain
 CREATE VIEW priceview AS SELECT items.id, items.info['price'] FROM items
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@items
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@priceview
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
 
 STAGE PLANS:
   Stage: Stage-1
-      Create View Operator:
-        Create View
-          or replace: false
-          columns: id int, _c1 string
-          expanded text: SELECT `items`.`id`, `items`.`info`['price'] FROM `default`.`items`
-          name: default.priceview
-          original text: SELECT items.id, items.info['price'] FROM items
-          rewrite enabled: false
+    Create View
+      columns: id int, _c1 string
+      expanded text: SELECT `items`.`id`, `items`.`info`['price'] FROM `default`.`items`
+      name: default.priceview
+      original text: SELECT items.id, items.info['price'] FROM items
 
 PREHOOK: query: CREATE VIEW priceview AS SELECT items.id, items.info['price'] FROM items
 PREHOOK: type: CREATEVIEW

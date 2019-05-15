@@ -32,7 +32,7 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class TestJobHandle {
 
-  @Mock private SparkClientImpl client;
+  @Mock private SparkClient client;
   @Mock private Promise<Serializable> promise;
   @Mock private JobHandle.Listener<Serializable> listener;
   @Mock private JobHandle.Listener<Serializable> listener2;

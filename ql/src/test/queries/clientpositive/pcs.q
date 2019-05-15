@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 drop table pcs_t1; 
 drop table pcs_t2; 
@@ -16,7 +17,6 @@ set hive.optimize.point.lookup.min = 1;
 explain extended select key, value, ds from pcs_t1 where (ds='2000-04-08' and key=1) or (ds='2000-04-09' and key=2) order by key, value, ds;
 select key, value, ds from pcs_t1 where (ds='2000-04-08' and key=1) or (ds='2000-04-09' and key=2) order by key, value, ds;
 
-set hive.optimize.point.lookup = false;
 set hive.optimize.partition.columns.separate=true;
 set hive.optimize.ppd=true;
 

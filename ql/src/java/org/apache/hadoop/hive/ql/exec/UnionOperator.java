@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -126,7 +126,7 @@ public class UnionOperator extends Operator<UnionDesc> implements Serializable {
       // to
       // create ObjectInspectors.
       needsTransform[p] = (inputObjInspectors[p] != outputObjInspector);
-      if (isLogInfoEnabled && needsTransform[p]) {
+      if (LOG.isInfoEnabled() && needsTransform[p]) {
         LOG.info("Union Operator needs to transform row from parent[" + p
             + "] from " + inputObjInspectors[p] + " to " + outputObjInspector);
       }
@@ -189,5 +189,10 @@ public class UnionOperator extends Operator<UnionDesc> implements Serializable {
     // sort-merge join to a mapjoin. The number of inputs for the union is more than 1 so
     // it would be difficult to figure out the big table for the mapjoin.
     return false;
+  }
+
+  @Override
+  public boolean logicalEquals(Operator other) {
+    return getClass().getName().equals(other.getClass().getName());
   }
 }

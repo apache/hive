@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,6 +23,7 @@ import java.util.Properties;
 import com.google.common.base.Preconditions;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.FieldNode;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -68,30 +69,15 @@ public class ParquetHiveSerDe extends AbstractSerDe {
     }
   }
 
-  private SerDeStats stats;
   private ObjectInspector objInspector;
-
-  private enum LAST_OPERATION {
-    SERIALIZE,
-    DESERIALIZE,
-    UNKNOWN
-  }
-
-  private LAST_OPERATION status;
-  private long serializedSize;
-  private long deserializedSize;
-
   private ParquetHiveRecord parquetRow;
 
   public ParquetHiveSerDe() {
     parquetRow = new ParquetHiveRecord();
-    stats = new SerDeStats();
   }
 
   @Override
   public final void initialize(final Configuration conf, final Properties tbl) throws SerDeException {
-
-    final TypeInfo rowTypeInfo;
     final List<String> columnNames;
     final List<TypeInfo> columnTypes;
     // Get column names and sort order
@@ -127,19 +113,11 @@ public class ParquetHiveSerDe extends AbstractSerDe {
       }
     }
     this.objInspector = new ArrayWritableObjectInspector(completeTypeInfo, prunedTypeInfo);
-
-    // Stats part
-    serializedSize = 0;
-    deserializedSize = 0;
-    status = LAST_OPERATION.UNKNOWN;
   }
 
   @Override
   public Object deserialize(final Writable blob) throws SerDeException {
-    status = LAST_OPERATION.DESERIALIZE;
-    deserializedSize = 0;
     if (blob instanceof ArrayWritable) {
-      deserializedSize = ((ArrayWritable) blob).get().length;
       return blob;
     } else {
       return null;
@@ -162,23 +140,29 @@ public class ParquetHiveSerDe extends AbstractSerDe {
     if (!objInspector.getCategory().equals(Category.STRUCT)) {
       throw new SerDeException("Cannot serialize " + objInspector.getCategory() + ". Can only serialize a struct");
     }
-    serializedSize = ((StructObjectInspector)objInspector).getAllStructFieldRefs().size();
-    status = LAST_OPERATION.SERIALIZE;
+
     parquetRow.value = obj;
     parquetRow.inspector= (StructObjectInspector)objInspector;
     return parquetRow;
   }
 
+  /**
+   * Return null for Parquet format and stats is collected in ParquetRecordWriterWrapper when writer gets
+   * closed.
+   *
+   * @return null
+   */
   @Override
   public SerDeStats getSerDeStats() {
-    // must be different
-    assert (status != LAST_OPERATION.UNKNOWN);
-    if (status == LAST_OPERATION.SERIALIZE) {
-      stats.setRawDataSize(serializedSize);
-    } else {
-      stats.setRawDataSize(deserializedSize);
-    }
-    return stats;
+    return null;
+  }
+
+  /**
+   * @param table
+   * @return true if the table has the parquet serde defined
+   */
+  public static boolean isParquetTable(Table table) {
+    return  table == null ? false : ParquetHiveSerDe.class.getName().equals(table.getSerializationLib());
   }
 
   /**

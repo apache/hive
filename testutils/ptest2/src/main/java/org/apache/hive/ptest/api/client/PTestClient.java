@@ -53,8 +53,8 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
@@ -242,7 +242,7 @@ public class PTestClient {
       request.abort();
     }
   }
-  private static class PTestHttpRequestRetryHandler implements HttpRequestRetryHandler {
+  public static class PTestHttpRequestRetryHandler implements HttpRequestRetryHandler {
     @Override
     public boolean retryRequest(IOException exception, int executionCount,
         HttpContext context) {
@@ -317,6 +317,7 @@ public class PTestClient {
           PROFILE,
           TEST_HANDLE
       });
+
       result = client.testStart(commandLine.getOptionValue(PROFILE), commandLine.getOptionValue(TEST_HANDLE),
           commandLine.getOptionValue(JIRA), commandLine.getOptionValue(PATCH),
           commandLine.hasOption(CLEAR_LIBRARY_CACHE));
@@ -333,4 +334,5 @@ public class PTestClient {
       System.exit(1);
     }
   }
+
 }

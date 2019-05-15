@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -33,38 +33,23 @@ public class HashCodeUtil {
     return key;
   }
 
+  public static int calculateTwoLongHashCode(long l0, long l1) {
+    return Murmur3.hash32(l0, l1);
+  }
+
   public static int calculateLongHashCode(long key) {
-
-    key = (~key) + (key << 21); // key = (key << 21) - key - 1;
-    key = key ^ (key >>> 24);
-    key = (key + (key << 3)) + (key << 8); // key * 265
-    key = key ^ (key >>> 14);
-    key = (key + (key << 2)) + (key << 4); // key * 21
-    key = key ^ (key >>> 28);
-    key = key + (key << 31);
-
-    return (int) key;
+    return Murmur3.hash32(key);
   }
 
   public static void calculateLongArrayHashCodes(long[] longs, int[] hashCodes, final int count) {
-    long key;
     for (int v = 0; v < count; v++) {
-
-      key = longs[v];
-
-      // Hash code logic from calculateLongHashCode.
-      key = (~key) + (key << 21); // key = (key << 21) - key - 1;
-      key = key ^ (key >>> 24);
-      key = (key + (key << 3)) + (key << 8); // key * 265
-      key = key ^ (key >>> 14);
-      key = (key + (key << 2)) + (key << 4); // key * 21
-      key = key ^ (key >>> 28);
-      key = key + (key << 31);
-      hashCodes[v] = (int) key;
+      hashCodes[v] = (int) calculateLongHashCode(longs[v]);
     }
   }
 
+  @Deprecated
   public static int calculateBytesHashCode(byte[] keyBytes, int keyStart, int keyLength) {
+    // Don't use this for ReduceSinkOperators
     return murmurHash(keyBytes, keyStart, keyLength);
   }
 

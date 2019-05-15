@@ -1,1 +1,1 @@
-FAILED: HiveAccessControlException Permission denied: Principal [name=hive_test_user, type=USER] does not have following privileges for operation CREATEFUNCTION [[ADMIN PRIVILEGE] on Object [type=FUNCTION, name=temp_fn]]
+FAILED: HiveAccessControlException Permission denied: Principal [name=hive_test_user, type=USER] does not have following privileges for operation CREATEFUNCTION [ADMIN PRIVILEGE on INPUT, ADMIN PRIVILEGE on OUTPUT]

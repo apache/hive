@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,12 +19,14 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Compute IF(expr1, expr2, expr3) for 3 input column expressions.
@@ -36,34 +38,42 @@ public class IfExprStringScalarStringScalar extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int arg1Column;
-  private byte[] arg2Scalar;
-  private byte[] arg3Scalar;
-  private int outputColumn;
+  private final int arg1Column;
+  private final byte[] arg2Scalar;
+  private final byte[] arg3Scalar;
 
   public IfExprStringScalarStringScalar(
-      int arg1Column, byte[] arg2Scalar, byte[] arg3Scalar, int outputColumn) {
+      int arg1Column, byte[] arg2Scalar, byte[] arg3Scalar, int outputColumnNum) {
+    super(outputColumnNum);
     this.arg1Column = arg1Column;
     this.arg2Scalar = arg2Scalar;
     this.arg3Scalar = arg3Scalar;
-    this.outputColumn = outputColumn;
   }
 
   public IfExprStringScalarStringScalar() {
+    super();
+
+    // Dummy final assignments.
+    arg1Column = -1;
+    arg2Scalar = null;
+    arg3Scalar = null;
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
 
     LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];
-    BytesColumnVector outputColVector = (BytesColumnVector) batch.cols[outputColumn];
+    BytesColumnVector outputColVector = (BytesColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
-    outputColVector.noNulls = true; // output must be a scalar and neither one is null
-    outputColVector.isRepeating = false; // may override later
+    boolean[] outputIsNull = outputColVector.isNull;
+
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
+
     int n = batch.size;
     long[] vector1 = arg1ColVector.vector;
 
@@ -75,11 +85,12 @@ public class IfExprStringScalarStringScalar extends VectorExpression {
     outputColVector.initBuffer();
 
     if (arg1ColVector.isRepeating) {
-      if (vector1[0] == 1) {
-        outputColVector.fill(arg2Scalar);
+      if ((arg1ColVector.noNulls || !arg1ColVector.isNull[0]) && vector1[0] == 1) {
+        outputColVector.setRef(0, arg2Scalar, 0, arg2Scalar.length);
       } else {
-        outputColVector.fill(arg3Scalar);
+        outputColVector.setRef(0, arg3Scalar, 0, arg3Scalar.length);
       }
+      outputColVector.isRepeating = true;
       return;
     }
 
@@ -87,6 +98,7 @@ public class IfExprStringScalarStringScalar extends VectorExpression {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
+          outputIsNull[i] = false;
           if (vector1[i] == 1) {
             outputColVector.setRef(i, arg2Scalar, 0, arg2Scalar.length);
           } else {
@@ -94,6 +106,7 @@ public class IfExprStringScalarStringScalar extends VectorExpression {
           }
         }
       } else {
+        Arrays.fill(outputIsNull, 0, n, false);
         for(int i = 0; i != n; i++) {
           if (vector1[i] == 1) {
             outputColVector.setRef(i, arg2Scalar, 0, arg2Scalar.length);
@@ -106,6 +119,7 @@ public class IfExprStringScalarStringScalar extends VectorExpression {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
+          outputIsNull[i] = false;
           if (!arg1ColVector.isNull[i] && vector1[i] == 1) {
             outputColVector.setRef(i, arg2Scalar, 0, arg2Scalar.length);
           } else {
@@ -113,6 +127,7 @@ public class IfExprStringScalarStringScalar extends VectorExpression {
           }
         }
       } else {
+        Arrays.fill(outputIsNull, 0, n, false);
         for(int i = 0; i != n; i++) {
           if (!arg1ColVector.isNull[i] && vector1[i] == 1) {
             outputColVector.setRef(i, arg2Scalar, 0, arg2Scalar.length);
@@ -125,18 +140,8 @@ public class IfExprStringScalarStringScalar extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "String";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + arg1Column + ", val "+ displayUtf8Bytes(arg2Scalar) + ", val "+ displayUtf8Bytes(arg3Scalar);
+    return getColumnParamString(0, arg1Column) + ", val "+ displayUtf8Bytes(arg2Scalar) + ", val "+ displayUtf8Bytes(arg3Scalar);
   }
 
   @Override
@@ -147,8 +152,8 @@ public class IfExprStringScalarStringScalar extends VectorExpression {
         .setNumArguments(3)
         .setArgumentTypes(
             VectorExpressionDescriptor.ArgumentType.INT_FAMILY,
-            VectorExpressionDescriptor.ArgumentType.STRING,
-            VectorExpressionDescriptor.ArgumentType.STRING)
+            VectorExpressionDescriptor.ArgumentType.STRING_BINARY,
+            VectorExpressionDescriptor.ArgumentType.STRING_BINARY)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.SCALAR,

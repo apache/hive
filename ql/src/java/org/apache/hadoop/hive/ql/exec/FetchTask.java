@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -41,7 +40,6 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.util.StringUtils;
 
 /**
  * FetchTask implementation.
@@ -58,9 +56,10 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
     super();
   }
 
-  public void setValidTxnList(String txnStr) {
-    fetch.setValidTxnList(txnStr);
+  public void setValidWriteIdList(String writeIdStr) {
+    fetch.setValidWriteIdList(writeIdStr);
   }
+
   @Override
   public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext ctx,
       CompilationOpContext opContext) {
@@ -78,10 +77,10 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
         ColumnProjectionUtils.appendReadColumns(
             job, ts.getNeededColumnIDs(), ts.getNeededColumns(), ts.getNeededNestedColumnPaths());
         // push down filters
-        HiveInputFormat.pushFilters(job, ts);
+        HiveInputFormat.pushFilters(job, ts, null);
 
-        AcidUtils.setTransactionalTableScan(job, ts.getConf().isAcidTable());
-        AcidUtils.setAcidOperationalProperties(job, ts.getConf().getAcidOperationalProperties());
+        AcidUtils.setAcidOperationalProperties(job, ts.getConf().isTranscationalTable(),
+            ts.getConf().getAcidOperationalProperties());
       }
       sink = work.getSink();
       fetch = new FetchOperator(work, job, source, getVirtualColumns(source));
@@ -92,7 +91,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
     } catch (Exception e) {
       // Bail out ungracefully - we should never hit
       // this here - but would have hit it in SemanticAnalyzer
-      LOG.error(StringUtils.stringifyException(e));
+      LOG.error("Initialize failed", e);
       throw new RuntimeException(e);
     }
   }
@@ -131,7 +130,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
     this.maxRows = maxRows;
   }
 
-  public boolean fetch(List res) throws IOException, CommandNeedRetryException {
+  public boolean fetch(List res) throws IOException {
     sink.reset(res);
     int rowsRet = work.getLeastNumRows();
     if (rowsRet <= 0) {
@@ -146,7 +145,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
       while (sink.getNumRows() < rowsRet) {
         if (!fetch.pushRow()) {
           if (work.getLeastNumRows() > 0) {
-            throw new CommandNeedRetryException();
+            throw new HiveException("leastNumRows check failed");
           }
 
           // Closing the operator can sometimes yield more rows (HIVE-11892)
@@ -157,8 +156,6 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
         fetched = true;
       }
       return true;
-    } catch (CommandNeedRetryException e) {
-      throw e;
     } catch (IOException e) {
       throw e;
     } catch (Exception e) {
@@ -193,4 +190,8 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
     }
   }
 
+  @Override
+  public boolean canExecuteInParallel() {
+    return false;
+  }
 }

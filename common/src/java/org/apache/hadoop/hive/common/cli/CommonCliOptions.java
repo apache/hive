@@ -35,8 +35,8 @@ import org.apache.logging.log4j.Level;
  * all your own options or processing instructions), parse, and then use
  * the resulting information.
  * <p>
- * See {@link org.apache.hadoop.hive.service.HiveServer} or
- *     {@link org.apache.hadoop.hive.metastore.HiveMetaStore}
+ * See org.apache.hadoop.hive.service.HiveServer or
+ *     org.apache.hadoop.hive.metastore.HiveMetaStore
  *     for examples of use.
  *
  */

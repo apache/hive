@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hive.service.auth.HiveAuthFactory;
+import org.apache.hive.service.rpc.thrift.TOperationHandle;
 
 public interface ICLIService {
 
@@ -78,6 +79,8 @@ public interface ICLIService {
   OperationStatus getOperationStatus(OperationHandle opHandle, boolean getProgressUpdate)
       throws HiveSQLException;
 
+  String getQueryId(TOperationHandle operationHandle) throws HiveSQLException;
+
   void cancelOperation(OperationHandle opHandle)
       throws HiveSQLException;
 
@@ -109,4 +112,6 @@ public interface ICLIService {
     String primaryCatalog, String primarySchema, String primaryTable,
     String foreignCatalog, String foreignSchema, String foreignTable)
     throws HiveSQLException;
+
+  void setApplicationName(SessionHandle sh, String value) throws HiveSQLException;
 }

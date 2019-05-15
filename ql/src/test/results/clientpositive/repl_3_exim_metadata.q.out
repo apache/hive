@@ -75,7 +75,6 @@ emp_state           	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 emp_country         	string              	                    
 emp_state           	string              	                    
 	 	 
@@ -117,6 +116,7 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
+  'bucketing_version'='2', 
   'repl.last.id'='0', 
 #### A masked pattern was here ####
 PREHOOK: query: select * from repldst
@@ -155,7 +155,6 @@ emp_state           	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 emp_country         	string              	                    
 emp_state           	string              	                    
 	 	 
@@ -192,6 +191,7 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
+  'bucketing_version'='2', 
   'repl.last.id'='0', 
 #### A masked pattern was here ####
 PREHOOK: query: select * from repldst_md

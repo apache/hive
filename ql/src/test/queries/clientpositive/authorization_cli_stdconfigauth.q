@@ -6,5 +6,5 @@ set hive.security.authorization.enabled=true;
 -- verify that SQLStdConfOnlyAuthorizerFactory as the authorizer factory with hive cli, with hive.security.authorization.enabled=true
 -- authorization verification would be just no-op
 
-create table t_cli(i int);
-describe t_cli;
+create table t_cli_n0(i int);
+describe t_cli_n0;

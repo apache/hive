@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,8 +19,8 @@
 package org.apache.hive.hcatalog.streaming;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -37,7 +37,9 @@ import java.util.Properties;
 /**
  * Streaming Writer handles utf8 encoded Json (Strict syntax).
  * Uses org.apache.hive.hcatalog.data.JsonSerDe to process Json input
+ * @deprecated as of Hive 3.0.0, replaced by org.apache.hive.streaming.StrictJsonWriter
  */
+@Deprecated
 public class StrictJsonWriter extends AbstractRecordWriter {
   private JsonSerDe serde;
 
@@ -117,15 +119,15 @@ public class StrictJsonWriter extends AbstractRecordWriter {
 
 
   @Override
-  public void write(long transactionId, byte[] record)
+  public void write(long writeId, byte[] record)
           throws StreamingIOFailure, SerializationError {
     try {
       Object encodedRow = encode(record);
       int bucket = getBucket(encodedRow);
-      getRecordUpdater(bucket).insert(transactionId, encodedRow);
+      getRecordUpdater(bucket).insert(writeId, encodedRow);
     } catch (IOException e) {
-      throw new StreamingIOFailure("Error writing record in transaction("
-              + transactionId + ")", e);
+      throw new StreamingIOFailure("Error writing record in transaction write id("
+              + writeId + ")", e);
     }
 
   }

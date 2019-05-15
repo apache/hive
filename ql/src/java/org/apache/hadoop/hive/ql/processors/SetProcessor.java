@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,6 +29,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -56,7 +58,10 @@ public class SetProcessor implements CommandProcessor {
   private static final Set<String> removedConfigs =
       Sets.newHashSet("hive.mapred.supports.subdirectories",
           "hive.enforce.sorting","hive.enforce.bucketing",
-          "hive.outerjoin.supports.filters");
+          "hive.outerjoin.supports.filters",
+          "hive.llap.zk.sm.principal",
+          "hive.llap.zk.sm.keytab.file"
+          );
   // Allow the user to set the ORC properties without getting an error.
   static {
     for(OrcConf var: OrcConf.values()) {
@@ -68,6 +73,9 @@ public class SetProcessor implements CommandProcessor {
   }
 
   private static final String[] PASSWORD_STRINGS = new String[] {"password", "paswd", "pswd"};
+
+  private static final Pattern TIME_ZONE_PATTERN =
+      Pattern.compile("^time(\\s)+zone\\s", Pattern.CASE_INSENSITIVE);
 
   public static boolean getBoolean(String value) {
     if (value.equals("on") || value.equals("true")) {
@@ -138,16 +146,17 @@ public class SetProcessor implements CommandProcessor {
     if (ss.getConf().isHiddenConfig(s)) {
       ss.out.println(s + " is a hidden config");
     } else if (ss.getConf().get(s) != null) {
-      ss.out.println(s + "=" + ss.getConf().get(s));
+      if (ss.getConf().isEncodedPar(s)) {
+        ss.out.println(s + "=" + HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER
+            .decode(ss.getConf().get(s)));
+      } else {
+        ss.out.println(s + "=" + ss.getConf().get(s));
+      }
     } else if (ss.getHiveVariables().containsKey(s)) {
       ss.out.println(s + "=" + ss.getHiveVariables().get(s));
     } else {
       ss.out.println(s + " is undefined");
     }
-  }
-
-  @Override
-  public void init() {
   }
 
   public CommandProcessorResponse executeSetVariable(String varname, String varvalue) {
@@ -209,17 +218,22 @@ public class SetProcessor implements CommandProcessor {
       : new CommandProcessorResponse(0, Lists.newArrayList(nonErrorMessage));
   }
 
+  static String setConf(String varname, String key, String varvalue, boolean register)
+        throws IllegalArgumentException {
+    return setConf(SessionState.get(), varname, key, varvalue, register);
+  }
+
   /**
    * @return A console message that is not strong enough to fail the command (e.g. deprecation).
    */
-  static String setConf(String varname, String key, String varvalue, boolean register)
+  static String setConf(SessionState ss, String varname, String key, String varvalue, boolean register)
         throws IllegalArgumentException {
     String result = null;
-    HiveConf conf = SessionState.get().getConf();
+    HiveConf conf = ss.getConf();
     String value = new VariableSubstitution(new HiveVariableSource() {
       @Override
       public Map<String, String> getHiveVariable() {
-        return SessionState.get().getHiveVariables();
+        return ss.getHiveVariables();
       }
     }).substitute(conf, varvalue);
     if (conf.getBoolVar(HiveConf.ConfVars.HIVECONFVALIDATION)) {
@@ -246,7 +260,7 @@ public class SetProcessor implements CommandProcessor {
     conf.verifyAndSet(key, value);
     if (HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname.equals(key)) {
       if (!"spark".equals(value)) {
-        SessionState.get().closeSparkSession();
+        ss.closeSparkSession();
       }
       if ("mr".equals(value)) {
         result = HiveConf.generateMrDeprecationWarning();
@@ -254,7 +268,7 @@ public class SetProcessor implements CommandProcessor {
       }
     }
     if (register) {
-      SessionState.get().getOverriddenConfigurations().put(key, value);
+      ss.getOverriddenConfigurations().put(key, value);
     }
     return result;
   }
@@ -378,6 +392,12 @@ public class SetProcessor implements CommandProcessor {
       return createProcessorSuccessResponse();
     }
 
+    // Special handling for time-zone
+    Matcher matcher = TIME_ZONE_PATTERN.matcher(nwcmd);
+    if (matcher.find()) {
+      nwcmd = HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE.varname + "=" + nwcmd.substring(matcher.end());
+    }
+
     String[] part = new String[2];
     int eqIndex = nwcmd.indexOf('=');
 
@@ -416,4 +436,7 @@ public class SetProcessor implements CommandProcessor {
     return sch;
   }
 
+  @Override
+  public void close() throws Exception {
+  }
 }

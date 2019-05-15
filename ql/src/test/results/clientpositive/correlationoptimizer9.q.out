@@ -1,41 +1,45 @@
-PREHOOK: query: CREATE TABLE tmp(c1 INT, c2 INT, c3 STRING, c4 STRING)
+PREHOOK: query: CREATE TABLE tmp_n2(c1 INT, c2 INT, c3 STRING, c4 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tmp
-POSTHOOK: query: CREATE TABLE tmp(c1 INT, c2 INT, c3 STRING, c4 STRING)
+PREHOOK: Output: default@tmp_n2
+POSTHOOK: query: CREATE TABLE tmp_n2(c1 INT, c2 INT, c3 STRING, c4 STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tmp
-PREHOOK: query: INSERT OVERWRITE TABLE tmp
+POSTHOOK: Output: default@tmp_n2
+PREHOOK: query: INSERT OVERWRITE TABLE tmp_n2
 SELECT x.key, y.key, x.value, y.value FROM src x JOIN src y ON (x.key = y.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tmp
-POSTHOOK: query: INSERT OVERWRITE TABLE tmp
+PREHOOK: Output: default@tmp_n2
+POSTHOOK: query: INSERT OVERWRITE TABLE tmp_n2
 SELECT x.key, y.key, x.value, y.value FROM src x JOIN src y ON (x.key = y.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tmp
-POSTHOOK: Lineage: tmp.c1 EXPRESSION [(src)x.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp.c2 EXPRESSION [(src)y.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp.c3 SIMPLE [(src)x.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp.c4 SIMPLE [(src)y.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@tmp_n2
+POSTHOOK: Lineage: tmp_n2.c1 EXPRESSION [(src)x.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_n2.c2 EXPRESSION [(src)y.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_n2.c3 SIMPLE [(src)x.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_n2.c4 SIMPLE [(src)y.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN
 SELECT xx.key, yy.key, xx.cnt, yy.cnt
 FROM 
-(SELECT x.c1 AS key, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1) xx
+(SELECT x.c1 AS key, count(1) AS cnt FROM tmp_n2 x WHERE x.c1 < 120 GROUP BY x.c1) xx
 JOIN
-(SELECT x1.c2 AS key, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
+(SELECT x1.c2 AS key, count(1) AS cnt FROM tmp_n2 x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
 ON (xx.key = yy.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT xx.key, yy.key, xx.cnt, yy.cnt
 FROM 
-(SELECT x.c1 AS key, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1) xx
+(SELECT x.c1 AS key, count(1) AS cnt FROM tmp_n2 x WHERE x.c1 < 120 GROUP BY x.c1) xx
 JOIN
-(SELECT x1.c2 AS key, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
+(SELECT x1.c2 AS key, count(1) AS cnt FROM tmp_n2 x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
 ON (xx.key = yy.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -48,33 +52,32 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
-            Statistics: Num rows: 1028 Data size: 22964 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: ((c1 < 120) and (c1 > 100)) (type: boolean)
+            Statistics: Num rows: 1028 Data size: 4112 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((c1 < 120) and (c1 > 100)) (type: boolean)
-              Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: c1 (type: int)
-                outputColumnNames: _col0
-                Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: int)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: bigint)
+              Statistics: Num rows: 114 Data size: 456 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: count()
+                keys: c1 (type: int)
+                minReductionHashAggr: 0.99
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 34 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 34 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col1 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 57 Data size: 1273 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 34 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -90,14 +93,14 @@ STAGE PLANS:
               key expressions: _col0 (type: int)
               sort order: +
               Map-reduce partition columns: _col0 (type: int)
-              Statistics: Num rows: 57 Data size: 1273 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 34 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col1 (type: bigint)
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: int)
               sort order: +
               Map-reduce partition columns: _col0 (type: int)
-              Statistics: Num rows: 57 Data size: 1273 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 34 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Join Operator
@@ -107,14 +110,14 @@ STAGE PLANS:
             0 _col0 (type: int)
             1 _col0 (type: int)
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 62 Data size: 1400 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 34 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col0 (type: int), _col2 (type: int), _col1 (type: bigint), _col3 (type: bigint)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 62 Data size: 1400 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 34 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 62 Data size: 1400 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 34 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -125,33 +128,32 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x1
-            Statistics: Num rows: 1028 Data size: 22964 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: ((c2 > 100) and (c2 < 120)) (type: boolean)
+            Statistics: Num rows: 1028 Data size: 4112 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((c2 > 100) and (c2 < 120)) (type: boolean)
-              Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: c2 (type: int)
-                outputColumnNames: _col0
-                Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: int)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: bigint)
+              predicate: ((c2 < 120) and (c2 > 100)) (type: boolean)
+              Statistics: Num rows: 114 Data size: 456 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: count()
+                keys: c2 (type: int)
+                minReductionHashAggr: 0.99
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 34 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 34 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col1 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 57 Data size: 1273 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 34 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -167,21 +169,21 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT xx.key, yy.key, xx.cnt, yy.cnt
 FROM 
-(SELECT x.c1 AS key, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1) xx
+(SELECT x.c1 AS key, count(1) AS cnt FROM tmp_n2 x WHERE x.c1 < 120 GROUP BY x.c1) xx
 JOIN
-(SELECT x1.c2 AS key, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
+(SELECT x1.c2 AS key, count(1) AS cnt FROM tmp_n2 x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
 ON (xx.key = yy.key)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tmp
+PREHOOK: Input: default@tmp_n2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT xx.key, yy.key, xx.cnt, yy.cnt
 FROM 
-(SELECT x.c1 AS key, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1) xx
+(SELECT x.c1 AS key, count(1) AS cnt FROM tmp_n2 x WHERE x.c1 < 120 GROUP BY x.c1) xx
 JOIN
-(SELECT x1.c2 AS key, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
+(SELECT x1.c2 AS key, count(1) AS cnt FROM tmp_n2 x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
 ON (xx.key = yy.key)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tmp
+POSTHOOK: Input: default@tmp_n2
 #### A masked pattern was here ####
 103	103	4	4
 104	104	4	4
@@ -195,19 +197,23 @@ POSTHOOK: Input: default@tmp
 PREHOOK: query: EXPLAIN
 SELECT xx.key, yy.key, xx.cnt, yy.cnt
 FROM 
-(SELECT x.c1 AS key, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1) xx
+(SELECT x.c1 AS key, count(1) AS cnt FROM tmp_n2 x WHERE x.c1 < 120 GROUP BY x.c1) xx
 JOIN
-(SELECT x1.c2 AS key, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
+(SELECT x1.c2 AS key, count(1) AS cnt FROM tmp_n2 x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
 ON (xx.key = yy.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT xx.key, yy.key, xx.cnt, yy.cnt
 FROM 
-(SELECT x.c1 AS key, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1) xx
+(SELECT x.c1 AS key, count(1) AS cnt FROM tmp_n2 x WHERE x.c1 < 120 GROUP BY x.c1) xx
 JOIN
-(SELECT x1.c2 AS key, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
+(SELECT x1.c2 AS key, count(1) AS cnt FROM tmp_n2 x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
 ON (xx.key = yy.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -218,59 +224,55 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
-            Statistics: Num rows: 1028 Data size: 22964 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: ((c1 < 120) and (c1 > 100)) (type: boolean)
+            Statistics: Num rows: 1028 Data size: 4112 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((c1 < 120) and (c1 > 100)) (type: boolean)
-              Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: c1 (type: int)
-                outputColumnNames: _col0
-                Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: int)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: bigint)
+              Statistics: Num rows: 114 Data size: 456 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: count()
+                keys: c1 (type: int)
+                minReductionHashAggr: 0.99
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 34 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 34 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col1 (type: bigint)
           TableScan
             alias: x1
-            Statistics: Num rows: 1028 Data size: 22964 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: ((c2 > 100) and (c2 < 120)) (type: boolean)
+            Statistics: Num rows: 1028 Data size: 4112 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((c2 > 100) and (c2 < 120)) (type: boolean)
-              Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: c2 (type: int)
-                outputColumnNames: _col0
-                Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: int)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: bigint)
+              predicate: ((c2 < 120) and (c2 > 100)) (type: boolean)
+              Statistics: Num rows: 114 Data size: 456 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: count()
+                keys: c2 (type: int)
+                minReductionHashAggr: 0.99
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 34 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 34 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Demux Operator
-          Statistics: Num rows: 228 Data size: 5092 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 68 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: count(VALUE._col0)
             keys: KEY._col0 (type: int)
             mode: mergepartial
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 34 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
             Mux Operator
-              Statistics: Num rows: 228 Data size: 5092 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 68 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
               Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -278,14 +280,14 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Statistics: Num rows: 74 Data size: 897 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: int), _col2 (type: int), _col1 (type: bigint), _col3 (type: bigint)
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Statistics: Num rows: 74 Data size: 897 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 74 Data size: 897 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -295,9 +297,9 @@ STAGE PLANS:
             keys: KEY._col0 (type: int)
             mode: mergepartial
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 34 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
             Mux Operator
-              Statistics: Num rows: 228 Data size: 5092 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 68 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
               Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -305,14 +307,14 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Statistics: Num rows: 74 Data size: 897 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: int), _col2 (type: int), _col1 (type: bigint), _col3 (type: bigint)
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Statistics: Num rows: 74 Data size: 897 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 74 Data size: 897 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -326,21 +328,21 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT xx.key, yy.key, xx.cnt, yy.cnt
 FROM 
-(SELECT x.c1 AS key, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1) xx
+(SELECT x.c1 AS key, count(1) AS cnt FROM tmp_n2 x WHERE x.c1 < 120 GROUP BY x.c1) xx
 JOIN
-(SELECT x1.c2 AS key, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
+(SELECT x1.c2 AS key, count(1) AS cnt FROM tmp_n2 x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
 ON (xx.key = yy.key)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tmp
+PREHOOK: Input: default@tmp_n2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT xx.key, yy.key, xx.cnt, yy.cnt
 FROM 
-(SELECT x.c1 AS key, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1) xx
+(SELECT x.c1 AS key, count(1) AS cnt FROM tmp_n2 x WHERE x.c1 < 120 GROUP BY x.c1) xx
 JOIN
-(SELECT x1.c2 AS key, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
+(SELECT x1.c2 AS key, count(1) AS cnt FROM tmp_n2 x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
 ON (xx.key = yy.key)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tmp
+POSTHOOK: Input: default@tmp_n2
 #### A masked pattern was here ####
 103	103	4	4
 104	104	4	4
@@ -354,19 +356,23 @@ POSTHOOK: Input: default@tmp
 PREHOOK: query: EXPLAIN
 SELECT xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt
 FROM 
-(SELECT x.c1 AS key1, x.c3 AS key2, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1, x.c3) xx
+(SELECT x.c1 AS key1, x.c3 AS key2, count(1) AS cnt FROM tmp_n2 x WHERE x.c1 < 120 GROUP BY x.c1, x.c3) xx
 JOIN
-(SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
+(SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp_n2 x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
 ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt
 FROM 
-(SELECT x.c1 AS key1, x.c3 AS key2, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1, x.c3) xx
+(SELECT x.c1 AS key1, x.c3 AS key2, count(1) AS cnt FROM tmp_n2 x WHERE x.c1 < 120 GROUP BY x.c1, x.c3) xx
 JOIN
-(SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
+(SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp_n2 x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
 ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -379,33 +385,32 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
-            Statistics: Num rows: 1028 Data size: 22964 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: ((c1 < 120) and c3 is not null) (type: boolean)
+            Statistics: Num rows: 1028 Data size: 97660 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((c1 < 120) and c3 is not null) (type: boolean)
-              Statistics: Num rows: 342 Data size: 7639 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: c1 (type: int), c3 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 342 Data size: 7639 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: int), _col1 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 342 Data size: 7639 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int), _col1 (type: string)
-                    sort order: ++
-                    Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
-                    Statistics: Num rows: 342 Data size: 7639 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col2 (type: bigint)
+              Statistics: Num rows: 342 Data size: 32490 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: count()
+                keys: c1 (type: int), c3 (type: string)
+                minReductionHashAggr: 0.99
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 171 Data size: 17613 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int), _col1 (type: string)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
+                  Statistics: Num rows: 171 Data size: 17613 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col2 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           keys: KEY._col0 (type: int), KEY._col1 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 171 Data size: 3819 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 171 Data size: 17613 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -421,14 +426,14 @@ STAGE PLANS:
               key expressions: _col0 (type: int), _col1 (type: string)
               sort order: ++
               Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
-              Statistics: Num rows: 171 Data size: 3819 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 171 Data size: 17613 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col2 (type: bigint)
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: int), _col1 (type: string)
               sort order: ++
               Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
-              Statistics: Num rows: 57 Data size: 1273 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 57 Data size: 5871 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col2 (type: bigint)
       Reduce Operator Tree:
         Join Operator
@@ -438,14 +443,14 @@ STAGE PLANS:
             0 _col0 (type: int), _col1 (type: string)
             1 _col0 (type: int), _col1 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 188 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 57 Data size: 11742 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col0 (type: int), _col1 (type: string), _col3 (type: int), _col4 (type: string), _col2 (type: bigint), _col5 (type: bigint)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-            Statistics: Num rows: 188 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 57 Data size: 11742 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 188 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 57 Data size: 11742 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -456,33 +461,36 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x1
-            Statistics: Num rows: 1028 Data size: 22964 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: ((c2 > 100) and (c1 < 120) and c3 is not null) (type: boolean)
+            Statistics: Num rows: 1028 Data size: 101772 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((c2 > 100) and (c1 < 120) and c3 is not null) (type: boolean)
-              Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((c1 < 120) and (c2 > 100) and c3 is not null) (type: boolean)
+              Statistics: Num rows: 114 Data size: 11286 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: c1 (type: int), c3 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: c1, c3
+                Statistics: Num rows: 114 Data size: 11286 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: int), _col1 (type: string)
+                  aggregations: count()
+                  keys: c1 (type: int), c3 (type: string)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 57 Data size: 5871 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
-                    Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 57 Data size: 5871 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col2 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           keys: KEY._col0 (type: int), KEY._col1 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 57 Data size: 1273 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 57 Data size: 5871 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -498,21 +506,21 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt
 FROM 
-(SELECT x.c1 AS key1, x.c3 AS key2, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1, x.c3) xx
+(SELECT x.c1 AS key1, x.c3 AS key2, count(1) AS cnt FROM tmp_n2 x WHERE x.c1 < 120 GROUP BY x.c1, x.c3) xx
 JOIN
-(SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
+(SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp_n2 x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
 ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tmp
+PREHOOK: Input: default@tmp_n2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt
 FROM 
-(SELECT x.c1 AS key1, x.c3 AS key2, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1, x.c3) xx
+(SELECT x.c1 AS key1, x.c3 AS key2, count(1) AS cnt FROM tmp_n2 x WHERE x.c1 < 120 GROUP BY x.c1, x.c3) xx
 JOIN
-(SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
+(SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp_n2 x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
 ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tmp
+POSTHOOK: Input: default@tmp_n2
 #### A masked pattern was here ####
 103	val_103	103	val_103	4	4
 104	val_104	104	val_104	4	4
@@ -526,19 +534,23 @@ POSTHOOK: Input: default@tmp
 PREHOOK: query: EXPLAIN
 SELECT xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt
 FROM 
-(SELECT x.c1 AS key1, x.c3 AS key2, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1, x.c3) xx
+(SELECT x.c1 AS key1, x.c3 AS key2, count(1) AS cnt FROM tmp_n2 x WHERE x.c1 < 120 GROUP BY x.c1, x.c3) xx
 JOIN
-(SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
+(SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp_n2 x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
 ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt
 FROM 
-(SELECT x.c1 AS key1, x.c3 AS key2, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1, x.c3) xx
+(SELECT x.c1 AS key1, x.c3 AS key2, count(1) AS cnt FROM tmp_n2 x WHERE x.c1 < 120 GROUP BY x.c1, x.c3) xx
 JOIN
-(SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
+(SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp_n2 x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
 ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -549,59 +561,59 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
-            Statistics: Num rows: 1028 Data size: 22964 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: ((c1 < 120) and c3 is not null) (type: boolean)
+            Statistics: Num rows: 1028 Data size: 97660 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((c1 < 120) and c3 is not null) (type: boolean)
-              Statistics: Num rows: 342 Data size: 7639 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: c1 (type: int), c3 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 342 Data size: 7639 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: int), _col1 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 342 Data size: 7639 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int), _col1 (type: string)
-                    sort order: ++
-                    Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
-                    Statistics: Num rows: 342 Data size: 7639 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col2 (type: bigint)
+              Statistics: Num rows: 342 Data size: 32490 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: count()
+                keys: c1 (type: int), c3 (type: string)
+                minReductionHashAggr: 0.99
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 171 Data size: 17613 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int), _col1 (type: string)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
+                  Statistics: Num rows: 171 Data size: 17613 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col2 (type: bigint)
           TableScan
             alias: x1
-            Statistics: Num rows: 1028 Data size: 22964 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: ((c2 > 100) and (c1 < 120) and c3 is not null) (type: boolean)
+            Statistics: Num rows: 1028 Data size: 101772 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((c2 > 100) and (c1 < 120) and c3 is not null) (type: boolean)
-              Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((c1 < 120) and (c2 > 100) and c3 is not null) (type: boolean)
+              Statistics: Num rows: 114 Data size: 11286 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: c1 (type: int), c3 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: c1, c3
+                Statistics: Num rows: 114 Data size: 11286 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: int), _col1 (type: string)
+                  aggregations: count()
+                  keys: c1 (type: int), c3 (type: string)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 57 Data size: 5871 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
-                    Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 57 Data size: 5871 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col2 (type: bigint)
       Reduce Operator Tree:
         Demux Operator
-          Statistics: Num rows: 456 Data size: 10185 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 228 Data size: 23484 Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: count(VALUE._col0)
             keys: KEY._col0 (type: int), KEY._col1 (type: string)
             mode: mergepartial
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 228 Data size: 5092 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 171 Data size: 17613 Basic stats: COMPLETE Column stats: COMPLETE
             Mux Operator
-              Statistics: Num rows: 456 Data size: 10184 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 342 Data size: 35226 Basic stats: COMPLETE Column stats: COMPLETE
               Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -609,14 +621,14 @@ STAGE PLANS:
                   0 _col0 (type: int), _col1 (type: string)
                   1 _col0 (type: int), _col1 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Statistics: Num rows: 376 Data size: 38748 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col3 (type: int), _col4 (type: string), _col2 (type: bigint), _col5 (type: bigint)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Statistics: Num rows: 376 Data size: 38748 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 376 Data size: 38748 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -626,9 +638,9 @@ STAGE PLANS:
             keys: KEY._col0 (type: int), KEY._col1 (type: string)
             mode: mergepartial
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 228 Data size: 5092 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 171 Data size: 17613 Basic stats: COMPLETE Column stats: COMPLETE
             Mux Operator
-              Statistics: Num rows: 456 Data size: 10184 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 342 Data size: 35226 Basic stats: COMPLETE Column stats: COMPLETE
               Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -636,14 +648,14 @@ STAGE PLANS:
                   0 _col0 (type: int), _col1 (type: string)
                   1 _col0 (type: int), _col1 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Statistics: Num rows: 376 Data size: 38748 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col3 (type: int), _col4 (type: string), _col2 (type: bigint), _col5 (type: bigint)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Statistics: Num rows: 376 Data size: 38748 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 376 Data size: 38748 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -657,21 +669,21 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt
 FROM 
-(SELECT x.c1 AS key1, x.c3 AS key2, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1, x.c3) xx
+(SELECT x.c1 AS key1, x.c3 AS key2, count(1) AS cnt FROM tmp_n2 x WHERE x.c1 < 120 GROUP BY x.c1, x.c3) xx
 JOIN
-(SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
+(SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp_n2 x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
 ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tmp
+PREHOOK: Input: default@tmp_n2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt
 FROM 
-(SELECT x.c1 AS key1, x.c3 AS key2, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1, x.c3) xx
+(SELECT x.c1 AS key1, x.c3 AS key2, count(1) AS cnt FROM tmp_n2 x WHERE x.c1 < 120 GROUP BY x.c1, x.c3) xx
 JOIN
-(SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
+(SELECT x1.c1 AS key1, x1.c3 AS key2, count(1) AS cnt FROM tmp_n2 x1 WHERE x1.c2 > 100 GROUP BY x1.c1, x1.c3) yy
 ON (xx.key1 = yy.key1 AND xx.key2 == yy.key2)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tmp
+POSTHOOK: Input: default@tmp_n2
 #### A masked pattern was here ####
 103	val_103	103	val_103	4	4
 104	val_104	104	val_104	4	4

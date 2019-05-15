@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -258,7 +258,7 @@ public abstract class BitSetCheckedAuthorizationProvider extends
       Privilege[] inputRequiredPriv, Privilege[] outputRequiredPriv,
       boolean[] inputCheck, boolean[] outputCheck) throws HiveException {
 
-    if (authorizeUserAndDBPriv(hive_db.getDatabase(table.getDbName()),
+    if (authorizeUserAndDBPriv(hive_db.getDatabase(table.getCatName(), table.getDbName()),
         inputRequiredPriv, outputRequiredPriv, inputCheck, outputCheck)) {
       return true;
     }
@@ -292,8 +292,8 @@ public abstract class BitSetCheckedAuthorizationProvider extends
       boolean[] inputCheck, boolean[] outputCheck) throws HiveException {
 
     if (authorizeUserAndDBPriv(
-        hive_db.getDatabase(part.getTable().getDbName()), inputRequiredPriv,
-        outputRequiredPriv, inputCheck, outputCheck)) {
+        hive_db.getDatabase(part.getTable().getCatName(), part.getTable().getDbName()),
+        inputRequiredPriv, outputRequiredPriv, inputCheck, outputCheck)) {
       return true;
     }
 
@@ -330,7 +330,6 @@ public abstract class BitSetCheckedAuthorizationProvider extends
   /**
    * try to match an array of privileges from user/groups/roles grants.
    *
-   * @param container
    */
   private boolean matchPrivs(Privilege[] inputPriv,
       PrincipalPrivilegeSet privileges, boolean[] check) {

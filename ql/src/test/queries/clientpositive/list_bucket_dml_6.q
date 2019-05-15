@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 set hive.mapred.mode=nonstrict;
 set hive.exec.dynamic.partition=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
@@ -45,11 +46,10 @@ set hive.merge.mapredfiles=false;
 -- with merge
 -- 118 000002_0 
 
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- SORT_QUERY_RESULTS
 
 -- create a skewed table
-create table list_bucketing_dynamic_part (key String, value String) 
+create table list_bucketing_dynamic_part_n3 (key String, value String) 
     partitioned by (ds String, hr String) 
     skewed by (key, value) on (('484','val_484'),('51','val_14'),('103','val_103'))
     stored as DIRECTORIES
@@ -57,42 +57,42 @@ create table list_bucketing_dynamic_part (key String, value String)
 
 -- list bucketing DML without merge. use bucketize to generate a few small files.
 explain extended
-insert overwrite table list_bucketing_dynamic_part partition (ds = '2008-04-08', hr)
+insert overwrite table list_bucketing_dynamic_part_n3 partition (ds = '2008-04-08', hr)
 select key, value, if(key % 100 == 0, 'a1', 'b1') from srcpart where ds = '2008-04-08';
 
-insert overwrite table list_bucketing_dynamic_part partition (ds = '2008-04-08', hr)
+insert overwrite table list_bucketing_dynamic_part_n3 partition (ds = '2008-04-08', hr)
 select key, value, if(key % 100 == 0, 'a1', 'b1') from srcpart where ds = '2008-04-08';
 
 -- check DML result
-show partitions list_bucketing_dynamic_part;
-desc formatted list_bucketing_dynamic_part partition (ds='2008-04-08', hr='a1');	
-desc formatted list_bucketing_dynamic_part partition (ds='2008-04-08', hr='b1');
+show partitions list_bucketing_dynamic_part_n3;
+desc formatted list_bucketing_dynamic_part_n3 partition (ds='2008-04-08', hr='a1');	
+desc formatted list_bucketing_dynamic_part_n3 partition (ds='2008-04-08', hr='b1');
 
 set hive.merge.mapfiles=true;	
 set hive.merge.mapredfiles=true; 
 -- list bucketing DML with merge. use bucketize to generate a few small files.
 explain extended
-insert overwrite table list_bucketing_dynamic_part partition (ds = '2008-04-08', hr)
+insert overwrite table list_bucketing_dynamic_part_n3 partition (ds = '2008-04-08', hr)
 select key, value, if(key % 100 == 0, 'a1', 'b1') from srcpart where ds = '2008-04-08';
 
-insert overwrite table list_bucketing_dynamic_part partition (ds = '2008-04-08', hr)
+insert overwrite table list_bucketing_dynamic_part_n3 partition (ds = '2008-04-08', hr)
 select key, value, if(key % 100 == 0, 'a1', 'b1') from srcpart where ds = '2008-04-08';
 
 -- check DML result
-show partitions list_bucketing_dynamic_part;
-desc formatted list_bucketing_dynamic_part partition (ds='2008-04-08', hr='a1');	
-desc formatted list_bucketing_dynamic_part partition (ds='2008-04-08', hr='b1');
+show partitions list_bucketing_dynamic_part_n3;
+desc formatted list_bucketing_dynamic_part_n3 partition (ds='2008-04-08', hr='a1');	
+desc formatted list_bucketing_dynamic_part_n3 partition (ds='2008-04-08', hr='b1');
 
 select count(1) from srcpart where ds = '2008-04-08';
-select count(*) from list_bucketing_dynamic_part;
+select count(*) from list_bucketing_dynamic_part_n3;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 set hive.optimize.listbucketing=true;
 explain extended
-select * from list_bucketing_dynamic_part where key = '484' and value = 'val_484';
-select * from list_bucketing_dynamic_part where key = '484' and value = 'val_484';
+select * from list_bucketing_dynamic_part_n3 where key = '484' and value = 'val_484';
+select * from list_bucketing_dynamic_part_n3 where key = '484' and value = 'val_484';
 select * from srcpart where ds = '2008-04-08' and key = '484' and value = 'val_484';
 
 -- clean up
-drop table list_bucketing_dynamic_part;
+drop table list_bucketing_dynamic_part_n3;
 

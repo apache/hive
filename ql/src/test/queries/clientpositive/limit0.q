@@ -1,3 +1,4 @@
+--! qt:dataset:src
 explain select key from src limit 0;
 explain select key from src where key = '238' limit 0;
 explain select * from src where key = '238' limit 0;

@@ -26,7 +26,7 @@ metastore() {
 
   # hadoop 20 or newer - skip the aux_jars option and hiveconf
 
-  export HADOOP_CLIENT_OPTS= " -Dproc_metastore $HADOOP_CLIENT_OPTS "
+  export HADOOP_CLIENT_OPTS=" -Dproc_metastore $HADOOP_CLIENT_OPTS "
   export HADOOP_OPTS="$HIVE_METASTORE_HADOOP_OPTS $HADOOP_OPTS"
   exec $HADOOP jar $JAR $CLASS "$@"
 }

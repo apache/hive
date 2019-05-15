@@ -1,3 +1,4 @@
+--! qt:dataset:src
 -- HIVE-2906 Table properties in SQL
 
 explain extended select key from src;

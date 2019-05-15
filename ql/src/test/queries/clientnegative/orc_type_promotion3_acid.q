@@ -1,3 +1,6 @@
+set hive.support.concurrency=true;
+set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+
 SET hive.exec.schema.evolution=false;
 
 -- Currently, double to smallint conversion is not supported because it isn't in the lossless

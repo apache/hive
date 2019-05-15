@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,7 @@ import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizationOperator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
@@ -75,9 +77,11 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
     this.desc = joinOp.getConf();
     if (desc.getVectorMode() && HiveConf.getBoolVar(
         hconf, HiveConf.ConfVars.HIVE_VECTORIZATION_MAPJOIN_NATIVE_FAST_HASHTABLE_ENABLED)) {
-      VectorMapJoinDesc vectorDesc = (VectorMapJoinDesc) desc.getVectorDesc();
-      useFastContainer = vectorDesc != null && vectorDesc.hashTableImplementationType() ==
-          VectorMapJoinDesc.HashTableImplementationType.FAST;
+      if (joinOp instanceof VectorizationOperator) {
+        VectorMapJoinDesc vectorDesc = (VectorMapJoinDesc) ((VectorizationOperator) joinOp).getVectorDesc();
+        useFastContainer = vectorDesc != null && vectorDesc.getHashTableImplementationType() ==
+            VectorMapJoinDesc.HashTableImplementationType.FAST;
+      }
     }
   }
 
@@ -156,22 +160,20 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
       MapJoinTableContainerSerDe mapJoinTableSerde) throws HiveException {
     LOG.info("\tLoad back all hashtable files from tmp folder uri:" + path);
     if (!SparkUtilities.isDedicatedCluster(hconf)) {
-      return useFastContainer ? mapJoinTableSerde.loadFastContainer(desc, fs, path, hconf) :
-          mapJoinTableSerde.load(fs, path, hconf);
+      return loadMapJoinTableContainer(fs, path, mapJoinTableSerde);
     }
-    MapJoinTableContainer mapJoinTable = SmallTableCache.get(path);
-    if (mapJoinTable == null) {
-      synchronized (path.toString().intern()) {
-        mapJoinTable = SmallTableCache.get(path);
-        if (mapJoinTable == null) {
-          mapJoinTable = useFastContainer ?
-              mapJoinTableSerde.loadFastContainer(desc, fs, path, hconf) :
-              mapJoinTableSerde.load(fs, path, hconf);
-          SmallTableCache.cache(path, mapJoinTable);
-        }
-      }
+
+    try {
+      return SmallTableCache.get(path.toString(), () -> loadMapJoinTableContainer(fs, path, mapJoinTableSerde));
+    } catch (ExecutionException e) {
+      throw new HiveException(e);
     }
-    return mapJoinTable;
+  }
+
+  private MapJoinTableContainer loadMapJoinTableContainer(
+          FileSystem fs, Path path, MapJoinTableContainerSerDe mapJoinTableSerde) throws HiveException {
+    return useFastContainer ? mapJoinTableSerde.loadFastContainer(desc, fs, path, hconf) :
+        mapJoinTableSerde.load(fs, path, hconf);
   }
 
   private void loadDirectly(MapJoinTableContainer[] mapJoinTables, String inputFileName)

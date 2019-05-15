@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,7 +23,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -38,6 +37,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.Parser;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.common.io.SessionStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.permission.FsPermission;
@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.processors.DfsProcessor;
 import org.apache.hadoop.hive.ql.processors.SetProcessor;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -71,8 +70,8 @@ public class HCatCli {
     CliSessionState ss = new CliSessionState(new HiveConf(SessionState.class));
     ss.in = System.in;
     try {
-      ss.out = new PrintStream(System.out, true, "UTF-8");
-      ss.err = new PrintStream(System.err, true, "UTF-8");
+      ss.out = new SessionStream(System.out, true, "UTF-8");
+      ss.err = new SessionStream(System.err, true, "UTF-8");
     } catch (UnsupportedEncodingException e) {
       System.exit(1);
     }
@@ -145,9 +144,6 @@ public class HCatCli {
     // -D : process these first, so that we can instantiate SessionState appropriately.
     setConfProperties(conf, cmdLine.getOptionProperties("D"));
 
-    // Now that the properties are in, we can instantiate SessionState.
-    SessionState.start(ss);
-
     // -h
     if (cmdLine.hasOption('h')) {
       printUsage(options, ss.out);
@@ -176,6 +172,9 @@ public class HCatCli {
     if (grp != null) {
       conf.set(HCatConstants.HCAT_GROUP, grp);
     }
+
+    // Now that the properties are in, we can instantiate SessionState.
+    SessionState.start(ss);
 
     // all done parsing, let's run stuff!
 
@@ -222,8 +221,9 @@ public class HCatCli {
   }
 
   private static void setConfProperties(HiveConf conf, Properties props) {
-    for (java.util.Map.Entry<Object, Object> e : props.entrySet())
+    for (java.util.Map.Entry<Object, Object> e : props.entrySet()) {
       conf.set((String) e.getKey(), (String) e.getValue());
+    }
   }
 
   private static int processLine(String line) {
@@ -286,7 +286,7 @@ public class HCatCli {
       return new DfsProcessor(ss.getConf()).run(cmd.substring(firstToken.length()).trim()).getResponseCode();
     }
 
-    HCatDriver driver = new HCatDriver();
+    HCatDriver driver = new HCatDriver(ss.getConf());
 
     int ret = driver.run(cmd).getResponseCode();
 
@@ -304,10 +304,6 @@ public class HCatCli {
         res.clear();
       }
     } catch (IOException e) {
-      ss.err.println("Failed with exception " + e.getClass().getName() + ":"
-        + e.getMessage() + "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
-      ret = 1;
-    } catch (CommandNeedRetryException e) {
       ss.err.println("Failed with exception " + e.getClass().getName() + ":"
         + e.getMessage() + "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
       ret = 1;

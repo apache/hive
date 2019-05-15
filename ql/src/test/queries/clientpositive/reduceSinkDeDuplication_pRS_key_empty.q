@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.cbo.enable=false;
 
@@ -7,7 +8,7 @@ set hive.groupby.skewindata=false;
 set mapred.reduce.tasks=31;
 
 
-select compute_stats(a,16),compute_stats(b,16),compute_stats(c,16),compute_stats(d,16)
+select compute_stats(a,'fm',16),compute_stats(b,'fm',16),compute_stats(c,'fm',16),compute_stats(d,'fm',16)
 from
 (
 select
@@ -17,7 +18,7 @@ select
   var_samp(substr(src.value,5)) as d
  from src)subq;
 
-explain select compute_stats(a,16),compute_stats(b,16),compute_stats(c,16),compute_stats(d,16)
+explain select compute_stats(a,'fm',16),compute_stats(b,'fm',16),compute_stats(c,'fm',16),compute_stats(d,'fm',16)
 from
 (
 select
@@ -27,7 +28,7 @@ select
   var_samp(substr(src.value,5)) as d
  from src)subq;
 
-select compute_stats(a,16),compute_stats(b,16),compute_stats(c,16),compute_stats(d,16)
+select compute_stats(a,'fm',16),compute_stats(b,'fm',16),compute_stats(c,'fm',16),compute_stats(d,'fm',16)
 from
 (
 select
@@ -39,7 +40,7 @@ select
  
 set hive.optimize.reducededuplication=false;
 
-explain select compute_stats(a,16),compute_stats(b,16),compute_stats(c,16),compute_stats(d,16)
+explain select compute_stats(a,'fm',16),compute_stats(b,'fm',16),compute_stats(c,'fm',16),compute_stats(d,'fm',16)
 from
 (
 select
@@ -49,7 +50,7 @@ select
   var_samp(substr(src.value,5)) as d
  from src)subq;
 
-select compute_stats(a,16),compute_stats(b,16),compute_stats(c,16),compute_stats(d,16)
+select compute_stats(a,'fm',16),compute_stats(b,'fm',16),compute_stats(c,'fm',16),compute_stats(d,'fm',16)
 from
 (
 select

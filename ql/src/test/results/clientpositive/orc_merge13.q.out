@@ -1,0 +1,256 @@
+PREHOOK: query: drop table aa
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table aa
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table aa (a string, b int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@aa
+POSTHOOK: query: create table aa (a string, b int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@aa
+PREHOOK: query: insert into table aa values("b",2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@aa
+POSTHOOK: query: insert into table aa values("b",2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@aa
+POSTHOOK: Lineage: aa.a SCRIPT []
+POSTHOOK: Lineage: aa.b SCRIPT []
+PREHOOK: query: insert into table aa values("c",3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@aa
+POSTHOOK: query: insert into table aa values("c",3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@aa
+POSTHOOK: Lineage: aa.a SCRIPT []
+POSTHOOK: Lineage: aa.b SCRIPT []
+PREHOOK: query: select * from aa
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aa
+#### A masked pattern was here ####
+POSTHOOK: query: select * from aa
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aa
+#### A masked pattern was here ####
+b	2
+c	3
+PREHOOK: query: alter table aa add columns(aa string, bb int)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@aa
+PREHOOK: Output: default@aa
+POSTHOOK: query: alter table aa add columns(aa string, bb int)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@aa
+POSTHOOK: Output: default@aa
+PREHOOK: query: insert into table aa values("b",2,"b",2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@aa
+POSTHOOK: query: insert into table aa values("b",2,"b",2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@aa
+POSTHOOK: Lineage: aa.a SCRIPT []
+POSTHOOK: Lineage: aa.aa SCRIPT []
+POSTHOOK: Lineage: aa.b SCRIPT []
+POSTHOOK: Lineage: aa.bb SCRIPT []
+PREHOOK: query: insert into table aa values("c",3,"c",3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@aa
+POSTHOOK: query: insert into table aa values("c",3,"c",3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@aa
+POSTHOOK: Lineage: aa.a SCRIPT []
+POSTHOOK: Lineage: aa.aa SCRIPT []
+POSTHOOK: Lineage: aa.b SCRIPT []
+POSTHOOK: Lineage: aa.bb SCRIPT []
+PREHOOK: query: select * from aa
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aa
+#### A masked pattern was here ####
+POSTHOOK: query: select * from aa
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aa
+#### A masked pattern was here ####
+b	2	NULL	NULL
+b	2	b	2
+c	3	NULL	NULL
+c	3	c	3
+PREHOOK: query: select count(*) from aa
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aa
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from aa
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aa
+#### A masked pattern was here ####
+4
+PREHOOK: query: select sum(hash(*)) from aa
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aa
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from aa
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aa
+#### A masked pattern was here ####
+11753376
+PREHOOK: query: alter table aa concatenate
+PREHOOK: type: ALTER_TABLE_MERGE
+PREHOOK: Input: default@aa
+PREHOOK: Output: default@aa
+POSTHOOK: query: alter table aa concatenate
+POSTHOOK: type: ALTER_TABLE_MERGE
+POSTHOOK: Input: default@aa
+POSTHOOK: Output: default@aa
+PREHOOK: query: select * from aa
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aa
+#### A masked pattern was here ####
+POSTHOOK: query: select * from aa
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aa
+#### A masked pattern was here ####
+b	2	NULL	NULL
+b	2	b	2
+c	3	NULL	NULL
+c	3	c	3
+PREHOOK: query: select count(*) from aa
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aa
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from aa
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aa
+#### A masked pattern was here ####
+4
+PREHOOK: query: select sum(hash(*)) from aa
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aa
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from aa
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aa
+#### A masked pattern was here ####
+11753376
+PREHOOK: query: alter table aa concatenate
+PREHOOK: type: ALTER_TABLE_MERGE
+PREHOOK: Input: default@aa
+PREHOOK: Output: default@aa
+POSTHOOK: query: alter table aa concatenate
+POSTHOOK: type: ALTER_TABLE_MERGE
+POSTHOOK: Input: default@aa
+POSTHOOK: Output: default@aa
+PREHOOK: query: select * from aa
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aa
+#### A masked pattern was here ####
+POSTHOOK: query: select * from aa
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aa
+#### A masked pattern was here ####
+b	2	NULL	NULL
+b	2	b	2
+c	3	NULL	NULL
+c	3	c	3
+PREHOOK: query: select count(*) from aa
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aa
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from aa
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aa
+#### A masked pattern was here ####
+4
+PREHOOK: query: select sum(hash(*)) from aa
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aa
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from aa
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aa
+#### A masked pattern was here ####
+11753376
+PREHOOK: query: alter table aa concatenate
+PREHOOK: type: ALTER_TABLE_MERGE
+PREHOOK: Input: default@aa
+PREHOOK: Output: default@aa
+POSTHOOK: query: alter table aa concatenate
+POSTHOOK: type: ALTER_TABLE_MERGE
+POSTHOOK: Input: default@aa
+POSTHOOK: Output: default@aa
+PREHOOK: query: select * from aa
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aa
+#### A masked pattern was here ####
+POSTHOOK: query: select * from aa
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aa
+#### A masked pattern was here ####
+b	2	NULL	NULL
+b	2	b	2
+c	3	NULL	NULL
+c	3	c	3
+PREHOOK: query: select count(*) from aa
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aa
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from aa
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aa
+#### A masked pattern was here ####
+4
+PREHOOK: query: select sum(hash(*)) from aa
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aa
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from aa
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aa
+#### A masked pattern was here ####
+11753376
+PREHOOK: query: alter table aa concatenate
+PREHOOK: type: ALTER_TABLE_MERGE
+PREHOOK: Input: default@aa
+PREHOOK: Output: default@aa
+POSTHOOK: query: alter table aa concatenate
+POSTHOOK: type: ALTER_TABLE_MERGE
+POSTHOOK: Input: default@aa
+POSTHOOK: Output: default@aa
+PREHOOK: query: select * from aa
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aa
+#### A masked pattern was here ####
+POSTHOOK: query: select * from aa
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aa
+#### A masked pattern was here ####
+b	2	NULL	NULL
+b	2	b	2
+c	3	NULL	NULL
+c	3	c	3
+PREHOOK: query: select count(*) from aa
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aa
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from aa
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aa
+#### A masked pattern was here ####
+4
+PREHOOK: query: select sum(hash(*)) from aa
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aa
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from aa
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aa
+#### A masked pattern was here ####
+11753376

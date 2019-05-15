@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.hadoop.hive.ql.exec.tez.monitoring;
 
 import org.apache.hadoop.hive.common.log.ProgressMonitor;
@@ -18,14 +35,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import static org.apache.tez.dag.api.client.DAGStatus.State.KILLED;
 
-class TezProgressMonitor implements ProgressMonitor {
+public class TezProgressMonitor implements ProgressMonitor {
   private static final int COLUMN_1_WIDTH = 16;
-  private final Map<String, BaseWork> workMap;
+  private final List<BaseWork> topSortedWork;
   private final SessionState.LogHelper console;
   private final long executionStartTime;
   private final DAGStatus status;
@@ -36,11 +51,11 @@ class TezProgressMonitor implements ProgressMonitor {
    * Try to get most the data required from dagClient in the constructor itself so that even after
    * the tez job has finished this object can be used for later use.s
    */
-  TezProgressMonitor(DAGClient dagClient, DAGStatus status, Map<String, BaseWork> workMap,
+  TezProgressMonitor(DAGClient dagClient, DAGStatus status, List<BaseWork> topSortedWork,
       Map<String, Progress> progressMap, SessionState.LogHelper console, long executionStartTime)
       throws IOException, TezException {
     this.status = status;
-    this.workMap = workMap;
+    this.topSortedWork = topSortedWork;
     this.console = console;
     this.executionStartTime = executionStartTime;
     for (Map.Entry<String, Progress> entry : progressMap.entrySet()) {
@@ -71,25 +86,27 @@ class TezProgressMonitor implements ProgressMonitor {
   public List<List<String>> rows() {
     try {
       List<List<String>> results = new ArrayList<>();
-      SortedSet<String> keys = new TreeSet<>(progressCountsMap.keySet());
-      for (String s : keys) {
-        VertexProgress progress = progressCountsMap.get(s);
+      for (BaseWork baseWork : topSortedWork) {
+        String vertexName = baseWork.getName();
+        VertexProgress progress = progressCountsMap.get(vertexName);
+        if (progress != null) {
+          // Map 1 .......... container  SUCCEEDED      7          7        0        0       0       0
 
-        // Map 1 .......... container  SUCCEEDED      7          7        0        0       0       0
-
-        results.add(
+          // TODO: can we pass custom things thru the progress?
+          results.add(
             Arrays.asList(
-                getNameWithProgress(s, progress.succeededTaskCount, progress.totalTaskCount),
-                getMode(s, workMap),
-                progress.vertexStatus(vertexStatusMap.get(s)),
-                progress.total(),
-                progress.completed(),
-                progress.running(),
-                progress.pending(),
-                progress.failed(),
-                progress.killed()
+              getNameWithProgress(vertexName, progress.succeededTaskCount, progress.totalTaskCount),
+              getMode(baseWork),
+              progress.vertexStatus(vertexStatusMap.get(vertexName)),
+              progress.total(),
+              progress.completed(),
+              progress.running(),
+              progress.pending(),
+              progress.failed(),
+              progress.killed()
             )
-        );
+          );
+        }
       }
       return results;
     } catch (Exception e) {
@@ -177,9 +194,8 @@ class TezProgressMonitor implements ProgressMonitor {
     return result;
   }
 
-  private String getMode(String name, Map<String, BaseWork> workMap) {
+  private String getMode(BaseWork work) {
     String mode = "container";
-    BaseWork work = workMap.get(name);
     if (work != null) {
       // uber > llap > container
       if (work.getUberMode()) {
@@ -193,7 +209,7 @@ class TezProgressMonitor implements ProgressMonitor {
     return mode;
   }
 
-  static class VertexProgress {
+  public static class VertexProgress {
     private final int totalTaskCount;
     private final int succeededTaskCount;
     private final int failedTaskAttemptCount;
@@ -309,5 +325,9 @@ class TezProgressMonitor implements ProgressMonitor {
       result = 31 * result + dagState.hashCode();
       return result;
     }
+  }
+
+  public DAGStatus getStatus() {
+    return status;
   }
 }

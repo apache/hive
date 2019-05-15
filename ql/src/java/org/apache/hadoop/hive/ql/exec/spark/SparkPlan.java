@@ -1,4 +1,4 @@
-/**
+/*
  *  Licensed to the Apache Software Foundation (ASF) under one
  *  or more contributor license agreements.  See the NOTICE file
  *  distributed with this work for additional information
@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +28,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.ExplainTask;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.parse.ExplainConfiguration;
+import org.apache.hadoop.hive.ql.plan.ExplainWork;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.spark.SparkContext;
+import org.apache.spark.util.CallSite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.io.HiveKey;
@@ -48,6 +59,14 @@ public class SparkPlan {
   private final Map<SparkTran, List<SparkTran>> invertedTransGraph = new HashMap<SparkTran, List<SparkTran>>();
   private final Set<Integer> cachedRDDIds = new HashSet<Integer>();
 
+  private final JobConf jobConf;
+  private final SparkContext sc;
+
+  SparkPlan(JobConf jobConf, SparkContext sc) {
+    this.jobConf = jobConf;
+    this.sc = sc;
+  }
+
   @SuppressWarnings("unchecked")
   public JavaPairRDD<HiveKey, BytesWritable> generateGraph() {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_BUILD_RDD_GRAPH);
@@ -60,6 +79,7 @@ public class SparkPlan {
         // Root tran, it must be MapInput
         Preconditions.checkArgument(tran instanceof MapInput,
             "AssertionError: tran must be an instance of MapInput");
+        sc.setCallSite(CallSite.apply(tran.getName(), getLongFormCallSite(tran)));
         rdd = tran.transform(null);
       } else {
         for (SparkTran parent : parents) {
@@ -67,16 +87,18 @@ public class SparkPlan {
           if (rdd == null) {
             rdd = prevRDD;
           } else {
+            sc.setCallSite(CallSite.apply("UnionRDD (" + rdd.name() + ", " +
+                            prevRDD.name() + ")", ""));
             rdd = rdd.union(prevRDD);
+            rdd.setName("UnionRDD (" + rdd.getNumPartitions() + ")");
           }
         }
+        sc.setCallSite(CallSite.apply(tran.getName(), getLongFormCallSite(tran)));
         rdd = tran.transform(rdd);
       }
 
       tranToOutputRDDMap.put(tran, rdd);
     }
-
-    logSparkPlan();
 
     JavaPairRDD<HiveKey, BytesWritable> finalRDD = null;
     for (SparkTran leafTran : leafTrans) {
@@ -84,157 +106,58 @@ public class SparkPlan {
       if (finalRDD == null) {
         finalRDD = rdd;
       } else {
+        sc.setCallSite(CallSite.apply("UnionRDD (" + rdd.name() + ", " + finalRDD.name() + ")",
+                ""));
         finalRDD = finalRDD.union(rdd);
+        finalRDD.setName("UnionRDD (" + finalRDD.getNumPartitions() + ")");
       }
     }
 
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_BUILD_RDD_GRAPH);
-    if (LOG.isDebugEnabled()) {
-      LOG.info("print generated spark rdd graph:\n" + SparkUtilities.rddGraphToString(finalRDD));
-    }
+
+    LOG.info("\n\nSpark RDD Graph:\n\n" + finalRDD.toDebugString() + "\n");
+
     return finalRDD;
   }
 
-  private void addNumberToTrans() {
-    int i = 1;
-    String name = null;
+  /**
+   * Takes a {@link SparkTran} object that creates the longForm for the RDD's {@link CallSite}.
+   * It does this my creating an {@link ExplainTask} and running it over the
+   * {@link SparkTran#getBaseWork()} object. The explain output is serialized to the string,
+   * which is logged and returned. If any errors are encountered while creating the explain plan,
+   * an error message is simply logged, but no {@link Exception} is thrown.
+   *
+   * @param tran the {@link SparkTran} to create the long call site for
+   *
+   * @return a {@link String} containing the explain plan for the given {@link SparkTran}
+   */
+  private String getLongFormCallSite(SparkTran tran) {
+    if (this.jobConf.getBoolean(HiveConf.ConfVars.HIVE_SPARK_LOG_EXPLAIN_WEBUI.varname, HiveConf
+            .ConfVars.HIVE_SPARK_LOG_EXPLAIN_WEBUI.defaultBoolVal)) {
+      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_CREATE_EXPLAIN_PLAN + tran.getName());
 
-    // Traverse leafTran & transGraph add numbers to trans
-    for (SparkTran leaf : leafTrans) {
-      name = leaf.getName() + " " + i++;
-      leaf.setName(name);
-    }
-    Set<SparkTran> sparkTrans = transGraph.keySet();
-    for (SparkTran tran : sparkTrans) {
-      name = tran.getName() + " " + i++;
-      tran.setName(name);
-    }
-  }
+      ExplainWork explainWork = new ExplainWork();
+      explainWork.setConfig(new ExplainConfiguration());
+      ExplainTask explainTask = new ExplainTask();
+      explainTask.setWork(explainWork);
 
-  private void logSparkPlan() {
-    addNumberToTrans();
-    ArrayList<SparkTran> leafTran = new ArrayList<SparkTran>();
-    leafTran.addAll(leafTrans);
-
-    for (SparkTran leaf : leafTrans) {
-      collectLeafTrans(leaf, leafTran);
-    }
-
-    // Start Traverse from the leafTrans and get parents of each leafTrans till
-    // the end
-    StringBuilder sparkPlan = new StringBuilder(
-      "\n\t!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Spark Plan !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n\n");
-    for (SparkTran leaf : leafTran) {
-      sparkPlan.append(leaf.getName());
-      getSparkPlan(leaf, sparkPlan);
-      sparkPlan.append("\n");
-    }
-    sparkPlan
-      .append(" \n\t!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Spark Plan !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ");
-    LOG.info(sparkPlan.toString());
-  }
-
-  private void collectLeafTrans(SparkTran leaf, List<SparkTran> reduceTrans) {
-    List<SparkTran> parents = getParents(leaf);
-    if (parents.size() > 0) {
-      SparkTran nextLeaf = null;
-      for (SparkTran leafTran : parents) {
-        if (leafTran instanceof ReduceTran) {
-          reduceTrans.add(leafTran);
-        } else {
-          if (getParents(leafTran).size() > 0)
-            nextLeaf = leafTran;
-        }
+      String explainOutput = "";
+      try {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        explainTask.outputPlan(tran.getBaseWork(), new PrintStream(outputStream), false, false, 0,
+                null, this.jobConf.getBoolean(HiveConf.ConfVars.HIVE_IN_TEST.varname,
+                        HiveConf.ConfVars.HIVE_IN_TEST.defaultBoolVal));
+        explainOutput = StringUtils.abbreviate(tran.getName() + " Explain Plan:\n\n" + outputStream
+                .toString(), 100000);
+        LOG.debug(explainOutput);
+      } catch (Exception e) {
+        LOG.error("Error while generating explain plan for " + tran.getName(), e);
       }
-      if (nextLeaf != null)
-        collectLeafTrans(nextLeaf, reduceTrans);
-    }
-  }
 
-  private void getSparkPlan(SparkTran tran, StringBuilder sparkPlan) {
-    List<SparkTran> parents = getParents(tran);
-    List<SparkTran> nextLeaf = new ArrayList<SparkTran>();
-    if (parents.size() > 0) {
-      sparkPlan.append(" <-- ");
-      boolean isFirst = true;
-      for (SparkTran leaf : parents) {
-        if (isFirst) {
-          sparkPlan.append("( " + leaf.getName());
-          if (leaf instanceof ShuffleTran) {
-            logShuffleTranStatus((ShuffleTran) leaf, sparkPlan);
-          } else {
-            logCacheStatus(leaf, sparkPlan);
-          }
-          isFirst = false;
-        } else {
-          sparkPlan.append("," + leaf.getName());
-          if (leaf instanceof ShuffleTran) {
-            logShuffleTranStatus((ShuffleTran) leaf, sparkPlan);
-          } else {
-            logCacheStatus(leaf, sparkPlan);
-          }
-        }
-        // Leave reduceTran it will be expanded in the next line
-        if (getParents(leaf).size() > 0 && !(leaf instanceof ReduceTran)) {
-          nextLeaf.add(leaf);
-        }
-      }
-      sparkPlan.append(" ) ");
-      if (nextLeaf.size() > 1) {
-        logLeafTran(nextLeaf, sparkPlan);
-      } else {
-        if (nextLeaf.size() != 0)
-          getSparkPlan(nextLeaf.get(0), sparkPlan);
-      }
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_CREATE_EXPLAIN_PLAN + tran.getName());
+      return explainOutput;
     }
-  }
-
-  private void logLeafTran(List<SparkTran> parent, StringBuilder sparkPlan) {
-    sparkPlan.append(" <-- ");
-    boolean isFirst = true;
-    for (SparkTran sparkTran : parent) {
-      List<SparkTran> parents = getParents(sparkTran);
-      SparkTran leaf = parents.get(0);
-      if (isFirst) {
-        sparkPlan.append("( " + leaf.getName());
-        if (leaf instanceof ShuffleTran) {
-          logShuffleTranStatus((ShuffleTran) leaf, sparkPlan);
-        } else {
-          logCacheStatus(leaf, sparkPlan);
-        }
-        isFirst = false;
-      } else {
-        sparkPlan.append("," + leaf.getName());
-        if (leaf instanceof ShuffleTran) {
-          logShuffleTranStatus((ShuffleTran) leaf, sparkPlan);
-        } else {
-          logCacheStatus(leaf, sparkPlan);
-        }
-      }
-    }
-    sparkPlan.append(" ) ");
-  }
-
-  private void logShuffleTranStatus(ShuffleTran leaf, StringBuilder sparkPlan) {
-    int noOfPartitions = leaf.getNoOfPartitions();
-    sparkPlan.append(" ( Partitions " + noOfPartitions);
-    SparkShuffler shuffler = leaf.getShuffler();
-    sparkPlan.append(", " + shuffler.getName());
-    if (leaf.isCacheEnable()) {
-      sparkPlan.append(", Cache on");
-    } else {
-      sparkPlan.append(", Cache off");
-    }
-  }
-
-  private void logCacheStatus(SparkTran sparkTran, StringBuilder sparkPlan) {
-    if (sparkTran.isCacheEnable() != null) {
-      if (sparkTran.isCacheEnable().booleanValue()) {
-        sparkPlan.append(" (cache on) ");
-      } else {
-        sparkPlan.append(" (cache off) ");
-      }
-    }
+    return "";
   }
 
   public void addTran(SparkTran tran) {

@@ -16,11 +16,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@foo_p
 PREHOOK: query: insert into foo values ("1")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@foo
 POSTHOOK: query: insert into foo values ("1")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@foo
-POSTHOOK: Lineage: foo.d SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: foo.d SCRIPT []
 PREHOOK: query: insert into foo_p partition (p="a ") select foo.d from foo
 PREHOOK: type: QUERY
 PREHOOK: Input: default@foo

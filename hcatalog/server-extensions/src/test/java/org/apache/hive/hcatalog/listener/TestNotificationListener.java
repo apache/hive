@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -42,8 +42,9 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
@@ -113,7 +114,7 @@ public class TestNotificationListener extends HCatBaseTest implements MessageLis
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     SessionState.start(new CliSessionState(hiveConf));
-    driver = new Driver(hiveConf);
+    driver = DriverFactory.newDriver(hiveConf);
     client = new HiveMetaStoreClient(hiveConf);
   }
 
@@ -168,6 +169,7 @@ public class TestNotificationListener extends HCatBaseTest implements MessageLis
         CreateTableMessage message = deserializer.getCreateTableMessage(messageBody);
         Assert.assertEquals("mytbl", message.getTable());
         Assert.assertEquals("mydb", message.getDB());
+        Assert.assertEquals(TableType.MANAGED_TABLE.toString(), message.getTableType());
         HCatEventMessage message2 = MessagingUtils.getMessage(msg);
         Assert.assertTrue("Unexpected message-type.", message2 instanceof CreateTableMessage);
         Assert.assertEquals("mydb", message2.getDB());
@@ -181,6 +183,7 @@ public class TestNotificationListener extends HCatBaseTest implements MessageLis
         Assert.assertEquals("mydb", message.getDB());
         Assert.assertEquals(1, message.getPartitions().size());
         Assert.assertEquals("2011", message.getPartitions().get(0).get("b"));
+        Assert.assertEquals(TableType.MANAGED_TABLE.toString(), message.getTableType());
         HCatEventMessage message2 = MessagingUtils.getMessage(msg);
         Assert.assertTrue("Unexpected message-type.", message2 instanceof AddPartitionMessage);
         Assert.assertEquals("mydb", message2.getDB());
@@ -195,6 +198,7 @@ public class TestNotificationListener extends HCatBaseTest implements MessageLis
         Assert.assertEquals("mydb", message.getDB());
         Assert.assertEquals(1, message.getKeyValues().size());
         Assert.assertTrue(message.getKeyValues().values().contains("2011"));
+        Assert.assertEquals(TableType.MANAGED_TABLE.toString(), message.getTableType());
         HCatEventMessage message2 = MessagingUtils.getMessage(msg);
         Assert.assertTrue("Unexpected message-type.", message2 instanceof AlterPartitionMessage);
         Assert.assertEquals("mydb", message2.getDB());
@@ -210,6 +214,7 @@ public class TestNotificationListener extends HCatBaseTest implements MessageLis
         Assert.assertEquals("mydb", message.getDB());
         Assert.assertEquals(1, message.getPartitions().size());
         Assert.assertEquals("2011", message.getPartitions().get(0).get("b"));
+        Assert.assertEquals(TableType.MANAGED_TABLE.toString(), message.getTableType());
         HCatEventMessage message2 = MessagingUtils.getMessage(msg);
         Assert.assertTrue("Unexpected message-type.", message2 instanceof DropPartitionMessage);
         Assert.assertEquals("mydb", message2.getDB());
@@ -223,6 +228,7 @@ public class TestNotificationListener extends HCatBaseTest implements MessageLis
         DropTableMessage message = deserializer.getDropTableMessage(messageBody);
         Assert.assertEquals("mytbl", message.getTable());
         Assert.assertEquals("mydb", message.getDB());
+        Assert.assertEquals(TableType.MANAGED_TABLE.toString(), message.getTableType());
         HCatEventMessage message2 = MessagingUtils.getMessage(msg);
         Assert.assertTrue("Unexpected message-type.", message2 instanceof DropTableMessage);
         Assert.assertEquals("mydb", message2.getDB());
@@ -241,6 +247,7 @@ public class TestNotificationListener extends HCatBaseTest implements MessageLis
         AlterTableMessage message = deserializer.getAlterTableMessage(messageBody);
         Assert.assertEquals("mytbl", message.getTable());
         Assert.assertEquals("mydb", message.getDB());
+        Assert.assertEquals(TableType.MANAGED_TABLE.toString(), message.getTableType());
         HCatEventMessage message2 = MessagingUtils.getMessage(msg);
         Assert.assertTrue("Unexpected message-type.", message2 instanceof AlterTableMessage);
         Assert.assertEquals("mydb", message2.getDB());

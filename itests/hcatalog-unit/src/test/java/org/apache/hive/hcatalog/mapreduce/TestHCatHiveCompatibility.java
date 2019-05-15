@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,11 +24,10 @@ import java.io.FileWriter;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hive.hcatalog.common.HCatConstants;
-import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 import org.apache.pig.data.Tuple;
 import org.junit.BeforeClass;
@@ -60,7 +59,7 @@ public class TestHCatHiveCompatibility extends HCatBaseTest {
     Table table = client.getTable("default", "junit_unparted_noisd");
     Assert.assertTrue(table.getSd().getInputFormat().equals(HCatConstants.HIVE_RCFILE_IF_CLASS));
 
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = createPigServer(false);
     logAndRegister(server, "A = load '" + INPUT_FILE_NAME + "' as (a:int);");
     logAndRegister(server, "store A into 'default.junit_unparted_noisd' using org.apache.hive.hcatalog.pig.HCatStorer();");
     logAndRegister(server, "B = load 'default.junit_unparted_noisd' using org.apache.hive.hcatalog.pig.HCatLoader();");
@@ -96,7 +95,7 @@ public class TestHCatHiveCompatibility extends HCatBaseTest {
     Table table = client.getTable("default", "junit_parted_noisd");
     Assert.assertTrue(table.getSd().getInputFormat().equals(HCatConstants.HIVE_RCFILE_IF_CLASS));
 
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = createPigServer(false);
     logAndRegister(server, "A = load '" + INPUT_FILE_NAME + "' as (a:int);");
     logAndRegister(server, "store A into 'default.junit_parted_noisd' using org.apache.hive.hcatalog.pig.HCatStorer('b=42');");
     logAndRegister(server, "B = load 'default.junit_parted_noisd' using org.apache.hive.hcatalog.pig.HCatLoader();");

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -47,12 +47,12 @@ import org.apache.hadoop.io.LongWritable;
  * Donald Knuth.
  *
  *  Incremental:
- *   n : <count>
- *   mx_n = mx_(n-1) + [x_n - mx_(n-1)]/n : <xavg>
- *   my_n = my_(n-1) + [y_n - my_(n-1)]/n : <yavg>
- *   c_n = c_(n-1) + (x_n - mx_(n-1))*(y_n - my_n) : <covariance * n>
- *   vx_n = vx_(n-1) + (x_n - mx_n)(x_n - mx_(n-1)): <variance * n>
- *   vy_n = vy_(n-1) + (y_n - my_n)(y_n - my_(n-1)): <variance * n>
+ *   n : &lt;count&gt;
+ *   mx_n = mx_(n-1) + [x_n - mx_(n-1)]/n : &lt;xavg&gt;
+ *   my_n = my_(n-1) + [y_n - my_(n-1)]/n : &lt;yavg&gt;
+ *   c_n = c_(n-1) + (x_n - mx_(n-1))*(y_n - my_n) : &lt;covariance * n&gt;
+ *   vx_n = vx_(n-1) + (x_n - mx_n)(x_n - mx_(n-1)): &lt;variance * n&gt;
+ *   vy_n = vy_(n-1) + (y_n - my_n)(y_n - my_(n-1)): &lt;variance * n&gt;
  *
  *  Merge:
  *   c_(A,B) = c_A + c_B + (mx_A - mx_B)*(my_A - my_B)*n_A*n_B/(n_A+n_B)
@@ -61,11 +61,14 @@ import org.apache.hadoop.io.LongWritable;
  *
  */
 @Description(name = "corr",
-    value = "_FUNC_(x,y) - Returns the Pearson coefficient of correlation\n"
+    value = "_FUNC_(y,x) - Returns the Pearson coefficient of correlation\n"
         + "between a set of number pairs",
     extended = "The function takes as arguments any pair of numeric types and returns a double.\n"
-        + "Any pair with a NULL is ignored. If the function is applied to an empty set or\n"
-        + "a singleton set, NULL will be returned. Otherwise, it computes the following:\n"
+        + "Any pair with a NULL is ignored.\n"
+        + "If applied to an empty set: NULL is returned.\n"
+        + "If N*SUM(x*x) = SUM(x)*SUM(x): NULL is returned.\n"
+        + "If N*SUM(y*y) = SUM(y)*SUM(y): NULL is returned.\n"
+        + "Otherwise, it computes the following:\n"
         + "   COVAR_POP(x,y)/(STDDEV_POP(x)*STDDEV_POP(y))\n"
         + "where neither x nor y is null,\n"
         + "COVAR_POP is the population covariance,\n"
@@ -133,12 +136,12 @@ public class GenericUDAFCorrelation extends AbstractGenericUDAFResolver {
    * algorithm, based on work by Philippe Pébay and Donald Knuth.
    *
    *  Incremental:
-   *   n : <count>
-   *   mx_n = mx_(n-1) + [x_n - mx_(n-1)]/n : <xavg>
-   *   my_n = my_(n-1) + [y_n - my_(n-1)]/n : <yavg>
-   *   c_n = c_(n-1) + (x_n - mx_(n-1))*(y_n - my_n) : <covariance * n>
-   *   vx_n = vx_(n-1) + (x_n - mx_n)(x_n - mx_(n-1)): <variance * n>
-   *   vy_n = vy_(n-1) + (y_n - my_n)(y_n - my_(n-1)): <variance * n>
+   *   n : &lt;count&gt;
+   *   mx_n = mx_(n-1) + [x_n - mx_(n-1)]/n : &lt;xavg&gt;
+   *   my_n = my_(n-1) + [y_n - my_(n-1)]/n : &lt;yavg&gt;
+   *   c_n = c_(n-1) + (x_n - mx_(n-1))*(y_n - my_n) : &lt;covariance * n&gt;
+   *   vx_n = vx_(n-1) + (x_n - mx_n)(x_n - mx_(n-1)): &lt;variance * n&gt;
+   *   vy_n = vy_(n-1) + (y_n - my_n)(y_n - my_(n-1)): &lt;variance * n&gt;
    *
    *  Merge:
    *   c_X = c_A + c_B + (mx_A - mx_B)*(my_A - my_B)*n_A*n_B/n_X
@@ -180,8 +183,8 @@ public class GenericUDAFCorrelation extends AbstractGenericUDAFResolver {
       // init input
       if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {
         assert (parameters.length == 2);
-        xInputOI = (PrimitiveObjectInspector) parameters[0];
-        yInputOI = (PrimitiveObjectInspector) parameters[1];
+        yInputOI = (PrimitiveObjectInspector) parameters[0];
+        xInputOI = (PrimitiveObjectInspector) parameters[1];
       } else {
         assert (parameters.length == 1);
         soi = (StructObjectInspector) parameters[0];
@@ -279,8 +282,8 @@ public class GenericUDAFCorrelation extends AbstractGenericUDAFResolver {
     @Override
     public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
       assert (parameters.length == 2);
-      Object px = parameters[0];
-      Object py = parameters[1];
+      Object py = parameters[0];
+      Object px = parameters[1];
       if (px != null && py != null) {
         StdAgg myagg = (StdAgg) agg;
         double vx = PrimitiveObjectInspectorUtils.getDouble(px, xInputOI);
@@ -360,15 +363,16 @@ public class GenericUDAFCorrelation extends AbstractGenericUDAFResolver {
     public Object terminate(AggregationBuffer agg) throws HiveException {
       StdAgg myagg = (StdAgg) agg;
 
-      if (myagg.count < 2) { // SQL standard - return null for zero or one pair
+      if (myagg.count == 0 || myagg.xvar == 0.0d || myagg.yvar == 0.0d) {
           return null;
       } else {
-          getResult().set(
+          DoubleWritable result = getResult();
+          result.set(
                   myagg.covar
-                  / java.lang.Math.sqrt(myagg.xvar)
                   / java.lang.Math.sqrt(myagg.yvar)
+                  / java.lang.Math.sqrt(myagg.xvar)
                   );
-          return getResult();
+          return result;
       }
     }
 

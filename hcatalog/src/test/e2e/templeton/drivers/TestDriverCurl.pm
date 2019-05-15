@@ -555,12 +555,12 @@ sub execCurlCmd(){
     my %result;
     my $out;
     my $err;
-    IPC::Run::run(\@curl_cmd, \undef, $out, $err)
+    IPC::Run::run(\@curl_cmd, \undef, $log, $log)
         or die "Failed running curl cmd " . join ' ', @curl_cmd;
 
     $result{'rc'} = $? >> 8;
-    $result{'stderr'} = $err;
-    $result{'stdout'} = $out;
+    $result{'stderr'} = $log;
+    $result{'stdout'} = $log;
     $result{'body'} = `cat $res_body`;
 
     my @full_header = `cat $res_header`;
@@ -1035,7 +1035,7 @@ sub wrongExecutionMode($$)
 sub  setLocationPermGroup{
     my ($self, $job_info, $testCmd, $log) = @_;
     my $location = $job_info->{'location'};
-    $location =~ /hdfs.*:\d+(\/.*)\/(.*)/;
+    $location =~ /hdfs:\/\/[^\/]*(\/.*)\/(.*)/;
     my $dir = $1;
     my $file = $2;
 

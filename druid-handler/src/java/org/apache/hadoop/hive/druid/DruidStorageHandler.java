@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,59 +17,90 @@
  */
 package org.apache.hadoop.hive.druid;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
-import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import com.metamx.common.RetryUtils;
-import com.metamx.common.lifecycle.Lifecycle;
-import com.metamx.http.client.HttpClient;
-import com.metamx.http.client.HttpClientConfig;
-import com.metamx.http.client.HttpClientInit;
-import io.druid.indexer.SQLMetadataStorageUpdaterJobHandler;
-import io.druid.metadata.MetadataStorageConnectorConfig;
-import io.druid.metadata.MetadataStorageTablesConfig;
-import io.druid.metadata.SQLMetadataConnector;
-import io.druid.metadata.storage.mysql.MySQLConnector;
-import io.druid.metadata.storage.postgresql.PostgreSQLConnector;
-import io.druid.segment.loading.SegmentLoadingException;
-import io.druid.timeline.DataSegment;
+import org.apache.druid.data.input.impl.DimensionSchema;
+import org.apache.druid.data.input.impl.DimensionsSpec;
+import org.apache.druid.data.input.impl.InputRowParser;
+import org.apache.druid.data.input.impl.TimestampSpec;
+import org.apache.druid.java.util.common.Pair;
+import org.apache.druid.java.util.common.RetryUtils;
+import org.apache.druid.java.util.common.lifecycle.Lifecycle;
+import org.apache.druid.java.util.http.client.HttpClient;
+import org.apache.druid.java.util.http.client.HttpClientConfig;
+import org.apache.druid.java.util.http.client.HttpClientInit;
+import org.apache.druid.java.util.http.client.Request;
+import org.apache.druid.java.util.http.client.response.FullResponseHandler;
+import org.apache.druid.java.util.http.client.response.FullResponseHolder;
+import org.apache.druid.metadata.MetadataStorageConnectorConfig;
+import org.apache.druid.metadata.MetadataStorageTablesConfig;
+import org.apache.druid.metadata.SQLMetadataConnector;
+import org.apache.druid.metadata.storage.derby.DerbyConnector;
+import org.apache.druid.metadata.storage.derby.DerbyMetadataStorage;
+import org.apache.druid.metadata.storage.mysql.MySQLConnector;
+import org.apache.druid.metadata.storage.mysql.MySQLConnectorConfig;
+import org.apache.druid.metadata.storage.postgresql.PostgreSQLConnector;
+import org.apache.druid.metadata.storage.postgresql.PostgreSQLConnectorConfig;
+import org.apache.druid.query.aggregation.AggregatorFactory;
+import org.apache.druid.segment.IndexSpec;
+import org.apache.druid.segment.indexing.DataSchema;
+import org.apache.druid.segment.indexing.granularity.GranularitySpec;
+import org.apache.druid.segment.loading.DataSegmentPusher;
+import org.apache.druid.segment.loading.SegmentLoadingException;
+import org.apache.druid.storage.hdfs.HdfsDataSegmentPusher;
+import org.apache.druid.storage.hdfs.HdfsDataSegmentPusherConfig;
+import org.apache.druid.timeline.DataSegment;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.druid.conf.DruidConstants;
 import org.apache.hadoop.hive.druid.io.DruidOutputFormat;
 import org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat;
 import org.apache.hadoop.hive.druid.io.DruidRecordWriter;
+import org.apache.hadoop.hive.druid.json.KafkaSupervisorReport;
+import org.apache.hadoop.hive.druid.json.KafkaSupervisorSpec;
+import org.apache.hadoop.hive.druid.security.KerberosHttpClient;
 import org.apache.hadoop.hive.druid.serde.DruidSerDe;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hive.common.util.ShutdownHookManager;
+import org.jboss.netty.handler.codec.http.HttpMethod;
+import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
+import org.skife.jdbi.v2.exceptions.CallbackFailedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,30 +108,51 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+
+import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
 
 /**
  * DruidStorageHandler provides a HiveStorageHandler implementation for Druid.
  */
-@SuppressWarnings({ "deprecation", "rawtypes" })
-public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStorageHandler {
+@SuppressWarnings({ "rawtypes" }) public class DruidStorageHandler extends DefaultHiveMetaHook
+    implements HiveStorageHandler {
 
-  protected static final Logger LOG = LoggerFactory.getLogger(DruidStorageHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DruidStorageHandler.class);
 
-  protected static final SessionState.LogHelper console = new SessionState.LogHelper(LOG);
+  private static final SessionState.LogHelper CONSOLE = new SessionState.LogHelper(LOG);
 
   public static final String SEGMENTS_DESCRIPTOR_DIR_NAME = "segmentsDescriptorDir";
 
-  private final SQLMetadataConnector connector;
+  private static final String INTERMEDIATE_SEGMENT_DIR_NAME = "intermediateSegmentDir";
 
-  private final SQLMetadataStorageUpdaterJobHandler druidSqlMetadataStorageUpdaterJobHandler;
+  private static final HttpClient HTTP_CLIENT;
 
-  private final MetadataStorageTablesConfig druidMetadataStorageTablesConfig;
+  private static final List<String> ALLOWED_ALTER_TYPES = ImmutableList.of("ADDPROPS", "DROPPROPS", "ADDCOLS");
 
-  private HttpClient httpClient;
+  static {
+    final Lifecycle lifecycle = new Lifecycle();
+    try {
+      lifecycle.start();
+    } catch (Exception e) {
+      LOG.error("Issues with lifecycle start", e);
+    }
+    HTTP_CLIENT = makeHttpClient(lifecycle);
+    ShutdownHookManager.addShutdownHook(lifecycle::stop);
+  }
+
+  private SQLMetadataConnector connector;
+
+  private MetadataStorageTablesConfig druidMetadataStorageTablesConfig = null;
 
   private String uniqueId = null;
 
@@ -109,102 +161,46 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
   private Configuration conf;
 
   public DruidStorageHandler() {
-    //this is the default value in druid
-    final String base = HiveConf
-            .getVar(SessionState.getSessionConf(), HiveConf.ConfVars.DRUID_METADATA_BASE);
-    final String dbType = HiveConf
-            .getVar(SessionState.getSessionConf(), HiveConf.ConfVars.DRUID_METADATA_DB_TYPE);
-    final String username = HiveConf
-            .getVar(SessionState.getSessionConf(), HiveConf.ConfVars.DRUID_METADATA_DB_USERNAME);
-    final String password = HiveConf
-            .getVar(SessionState.getSessionConf(), HiveConf.ConfVars.DRUID_METADATA_DB_PASSWORD);
-    final String uri = HiveConf
-            .getVar(SessionState.getSessionConf(), HiveConf.ConfVars.DRUID_METADATA_DB_URI);
-    druidMetadataStorageTablesConfig = MetadataStorageTablesConfig.fromBase(base);
-
-    final Supplier<MetadataStorageConnectorConfig> storageConnectorConfigSupplier = Suppliers.<MetadataStorageConnectorConfig>ofInstance(
-            new MetadataStorageConnectorConfig() {
-              @Override
-              public String getConnectURI() {
-                return uri;
-              }
-
-              @Override
-              public String getUser() {
-                return username;
-              }
-
-              @Override
-              public String getPassword() {
-                return password;
-              }
-            });
-
-    if (dbType.equals("mysql")) {
-      connector = new MySQLConnector(storageConnectorConfigSupplier,
-              Suppliers.ofInstance(druidMetadataStorageTablesConfig)
-      );
-    } else if (dbType.equals("postgresql")) {
-      connector = new PostgreSQLConnector(storageConnectorConfigSupplier,
-              Suppliers.ofInstance(druidMetadataStorageTablesConfig)
-      );
-    } else {
-      throw new IllegalStateException(String.format("Unknown metadata storage type [%s]", dbType));
-    }
-    druidSqlMetadataStorageUpdaterJobHandler = new SQLMetadataStorageUpdaterJobHandler(connector);
   }
 
-  @VisibleForTesting
-  public DruidStorageHandler(SQLMetadataConnector connector,
-          SQLMetadataStorageUpdaterJobHandler druidSqlMetadataStorageUpdaterJobHandler,
-          MetadataStorageTablesConfig druidMetadataStorageTablesConfig,
-          HttpClient httpClient
-  ) {
+  @VisibleForTesting public DruidStorageHandler(SQLMetadataConnector connector,
+      MetadataStorageTablesConfig druidMetadataStorageTablesConfig) {
     this.connector = connector;
-    this.druidSqlMetadataStorageUpdaterJobHandler = druidSqlMetadataStorageUpdaterJobHandler;
     this.druidMetadataStorageTablesConfig = druidMetadataStorageTablesConfig;
-    this.httpClient = httpClient;
   }
 
-  @Override
-  public Class<? extends InputFormat> getInputFormatClass() {
+  @Override public Class<? extends InputFormat> getInputFormatClass() {
     return DruidQueryBasedInputFormat.class;
   }
 
-  @Override
-  public Class<? extends OutputFormat> getOutputFormatClass() {
+  @Override public Class<? extends OutputFormat> getOutputFormatClass() {
     return DruidOutputFormat.class;
   }
 
-  @Override
-  public Class<? extends AbstractSerDe> getSerDeClass() {
+  @Override public Class<? extends AbstractSerDe> getSerDeClass() {
     return DruidSerDe.class;
   }
 
-  @Override
-  public HiveMetaHook getMetaHook() {
+  @Override public HiveMetaHook getMetaHook() {
     return this;
   }
 
-  @Override
-  public HiveAuthorizationProvider getAuthorizationProvider() throws HiveException {
+  @Override public HiveAuthorizationProvider getAuthorizationProvider() {
     return new DefaultHiveAuthorizationProvider();
   }
 
-  @Override
-  public void configureInputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties
-  ) {
+  @Override public void configureInputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
 
   }
 
-  @Override
-  public void preCreateTable(Table table) throws MetaException {
-    // Do safety checks
-    if (MetaStoreUtils.isExternalTable(table) && !StringUtils
-            .isEmpty(table.getSd().getLocation())) {
+  @Override public void configureInputJobCredentials(TableDesc tableDesc, Map<String, String> jobSecrets) {
+
+  }
+
+  @Override public void preCreateTable(Table table) throws MetaException {
+    if (!StringUtils.isEmpty(table.getSd().getLocation())) {
       throw new MetaException("LOCATION may not be specified for Druid");
     }
-
     if (table.getPartitionKeysSize() != 0) {
       throw new MetaException("PARTITIONED BY may not be specified for Druid");
     }
@@ -212,180 +208,403 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
       throw new MetaException("CLUSTERED BY may not be specified for Druid");
     }
     String dataSourceName = table.getParameters().get(Constants.DRUID_DATA_SOURCE);
-    if (MetaStoreUtils.isExternalTable(table)) {
+    if (dataSourceName != null) {
+      // Already Existing datasource in Druid.
       return;
     }
-    // If it is not an external table we need to check the metadata
+
+    // create dataSourceName based on Hive Table name
+    dataSourceName = TableName.getDbTable(table.getDbName(), table.getTableName());
     try {
-      connector.createSegmentTable();
+      // NOTE: This just created druid_segments table in Druid metastore.
+      // This is needed for the case when hive is started before any of druid services
+      // and druid_segments table has not been created yet.
+      getConnector().createSegmentTable();
     } catch (Exception e) {
       LOG.error("Exception while trying to create druid segments table", e);
       throw new MetaException(e.getMessage());
     }
-    Collection<String> existingDataSources = DruidStorageHandlerUtils
-            .getAllDataSourceNames(connector, druidMetadataStorageTablesConfig);
-    LOG.debug(String.format("pre-create data source with name [%s]", dataSourceName));
+    Collection<String>
+        existingDataSources =
+        DruidStorageHandlerUtils.getAllDataSourceNames(getConnector(), getDruidMetadataStorageTablesConfig());
+    LOG.debug("pre-create data source with name {}", dataSourceName);
+    // Check for existence of for the datasource we are going to create in druid_segments table.
     if (existingDataSources.contains(dataSourceName)) {
       throw new MetaException(String.format("Data source [%s] already existing", dataSourceName));
     }
+    table.getParameters().put(Constants.DRUID_DATA_SOURCE, dataSourceName);
   }
 
-  @Override
-  public void rollbackCreateTable(Table table) throws MetaException {
-    if (MetaStoreUtils.isExternalTable(table)) {
+  @Override public void rollbackCreateTable(Table table) {
+    cleanWorkingDir();
+  }
+
+  @Override public void commitCreateTable(Table table) throws MetaException {
+    if (DruidKafkaUtils.isKafkaStreamingTable(table)) {
+      updateKafkaIngestion(table);
+    }
+    // For CTAS queries when user has explicitly specified the datasource.
+    // We will append the data to existing druid datasource.
+    this.commitInsertTable(table, false);
+  }
+
+  private void updateKafkaIngestion(Table table) {
+    final String overlordAddress = HiveConf.getVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_OVERLORD_DEFAULT_ADDRESS);
+
+    final String
+        dataSourceName =
+        Preconditions.checkNotNull(DruidStorageHandlerUtils.getTableProperty(table, Constants.DRUID_DATA_SOURCE),
+            "Druid datasource name is null");
+
+    final String
+        kafkaTopic =
+        Preconditions.checkNotNull(DruidStorageHandlerUtils.getTableProperty(table,
+            DruidConstants.KAFKA_TOPIC), "kafka topic is null");
+    final String
+        kafkaServers =
+        Preconditions.checkNotNull(DruidStorageHandlerUtils.getTableProperty(table,
+            DruidConstants.KAFKA_BOOTSTRAP_SERVERS), "kafka connect string is null");
+
+    Properties tableProperties = new Properties();
+    tableProperties.putAll(table.getParameters());
+
+    final GranularitySpec granularitySpec = DruidStorageHandlerUtils.getGranularitySpec(getConf(), tableProperties);
+
+    List<FieldSchema> columns = table.getSd().getCols();
+    List<String> columnNames = new ArrayList<>(columns.size());
+    List<TypeInfo> columnTypes = new ArrayList<>(columns.size());
+
+    for (FieldSchema schema : columns) {
+      columnNames.add(schema.getName());
+      columnTypes.add(TypeInfoUtils.getTypeInfoFromTypeString(schema.getType()));
+    }
+
+    Pair<List<DimensionSchema>, AggregatorFactory[]>
+        dimensionsAndAggregates =
+        DruidStorageHandlerUtils.getDimensionsAndAggregates(columnNames, columnTypes);
+    if (!columnNames.contains(DruidConstants.DEFAULT_TIMESTAMP_COLUMN)) {
+      throw new IllegalStateException("Timestamp column (' "
+          + DruidConstants.DEFAULT_TIMESTAMP_COLUMN
+          + "') not specified in create table; list of columns is : "
+          + columnNames);
+    }
+
+    DimensionsSpec dimensionsSpec = new DimensionsSpec(dimensionsAndAggregates.lhs, null, null);
+    String timestampFormat = DruidStorageHandlerUtils
+            .getTableProperty(table, DruidConstants.DRUID_TIMESTAMP_FORMAT);
+    String timestampColumnName = DruidStorageHandlerUtils
+            .getTableProperty(table, DruidConstants.DRUID_TIMESTAMP_COLUMN);
+    if(timestampColumnName == null) {
+      timestampColumnName = DruidConstants.DEFAULT_TIMESTAMP_COLUMN;
+    }
+    final TimestampSpec timestampSpec = new TimestampSpec(timestampColumnName, timestampFormat,
+            null
+    );
+    final InputRowParser inputRowParser = DruidKafkaUtils
+            .getInputRowParser(table, timestampSpec, dimensionsSpec);
+
+    final Map<String, Object>
+        inputParser =
+        JSON_MAPPER.convertValue(inputRowParser, new TypeReference<Map<String, Object>>() {
+        });
+    final DataSchema
+        dataSchema =
+        new DataSchema(dataSourceName,
+            inputParser,
+            dimensionsAndAggregates.rhs,
+            granularitySpec,
+            null,
+            DruidStorageHandlerUtils.JSON_MAPPER);
+
+    IndexSpec indexSpec = DruidStorageHandlerUtils.getIndexSpec(getConf());
+
+    KafkaSupervisorSpec
+        spec =
+        DruidKafkaUtils.createKafkaSupervisorSpec(table, kafkaTopic, kafkaServers, dataSchema, indexSpec);
+
+    // Fetch existing Ingestion Spec from Druid, if any
+    KafkaSupervisorSpec existingSpec = fetchKafkaIngestionSpec(table);
+    String
+        targetState =
+        DruidStorageHandlerUtils.getTableProperty(table, DruidConstants.DRUID_KAFKA_INGESTION);
+    if (targetState == null) {
+      // Case when user has not specified any ingestion state in the current command
+      // if there is a kafka supervisor running then keep it last known state is START otherwise STOP.
+      targetState = existingSpec == null ? "STOP" : "START";
+    }
+
+    if ("STOP".equalsIgnoreCase(targetState)) {
+      if (existingSpec != null) {
+        stopKafkaIngestion(overlordAddress, dataSourceName);
+      }
+    } else if ("START".equalsIgnoreCase(targetState)) {
+      if (existingSpec == null || !existingSpec.equals(spec)) {
+        DruidKafkaUtils.updateKafkaIngestionSpec(overlordAddress, spec);
+      }
+    } else if ("RESET".equalsIgnoreCase(targetState)) {
+      // Case when there are changes in multiple table properties.
+      if (existingSpec != null && !existingSpec.equals(spec)) {
+        DruidKafkaUtils.updateKafkaIngestionSpec(overlordAddress, spec);
+      }
+      resetKafkaIngestion(overlordAddress, dataSourceName);
+    } else {
+      throw new IllegalArgumentException(String.format(
+          "Invalid value for property [%s], Valid values are [START, STOP, RESET]",
+          DruidConstants.DRUID_KAFKA_INGESTION));
+    }
+    // We do not want to keep state in two separate places so remove from hive table properties.
+    table.getParameters().remove(DruidConstants.DRUID_KAFKA_INGESTION);
+  }
+
+  private void resetKafkaIngestion(String overlordAddress, String dataSourceName) {
+    try {
+      FullResponseHolder
+          response =
+          RetryUtils.retry(() -> DruidStorageHandlerUtils.getResponseFromCurrentLeader(getHttpClient(),
+              new Request(HttpMethod.POST,
+                  new URL(String.format("http://%s/druid/indexer/v1/supervisor/%s/reset",
+                      overlordAddress,
+                      dataSourceName))),
+              new FullResponseHandler(Charset.forName("UTF-8"))),
+              input -> input instanceof IOException,
+              getMaxRetryCount());
+      if (response.getStatus().equals(HttpResponseStatus.OK)) {
+        CONSOLE.printInfo("Druid Kafka Ingestion Reset successful.");
+      } else {
+        throw new IOException(String.format("Unable to reset Kafka Ingestion Druid status [%d] full response [%s]",
+            response.getStatus().getCode(),
+            response.getContent()));
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void stopKafkaIngestion(String overlordAddress, String dataSourceName) {
+    try {
+      FullResponseHolder
+          response =
+          RetryUtils.retry(() -> DruidStorageHandlerUtils.getResponseFromCurrentLeader(getHttpClient(),
+              new Request(HttpMethod.POST,
+                  new URL(String.format("http://%s/druid/indexer/v1/supervisor/%s/shutdown",
+                      overlordAddress,
+                      dataSourceName))),
+              new FullResponseHandler(Charset.forName("UTF-8"))),
+              input -> input instanceof IOException,
+              getMaxRetryCount());
+      if (response.getStatus().equals(HttpResponseStatus.OK)) {
+        CONSOLE.printInfo("Druid Kafka Ingestion shutdown successful.");
+      } else {
+        throw new IOException(String.format("Unable to stop Kafka Ingestion Druid status [%d] full response [%s]",
+            response.getStatus().getCode(),
+            response.getContent()));
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+
+  }
+
+  private KafkaSupervisorSpec fetchKafkaIngestionSpec(Table table) {
+    // Stop Kafka Ingestion first
+    final String
+        overlordAddress =
+        Preconditions.checkNotNull(HiveConf.getVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_OVERLORD_DEFAULT_ADDRESS),
+            "Druid Overlord Address is null");
+    String
+        dataSourceName =
+        Preconditions.checkNotNull(DruidStorageHandlerUtils.getTableProperty(table, Constants.DRUID_DATA_SOURCE),
+            "Druid Datasource name is null");
+    try {
+      FullResponseHolder
+          response =
+          RetryUtils.retry(() -> DruidStorageHandlerUtils.getResponseFromCurrentLeader(getHttpClient(),
+              new Request(HttpMethod.GET,
+                  new URL(String.format("http://%s/druid/indexer/v1/supervisor/%s", overlordAddress, dataSourceName))),
+              new FullResponseHandler(Charset.forName("UTF-8"))),
+              input -> input instanceof IOException,
+              getMaxRetryCount());
+      if (response.getStatus().equals(HttpResponseStatus.OK)) {
+        return JSON_MAPPER.readValue(response.getContent(), KafkaSupervisorSpec.class);
+        // Druid Returns 400 Bad Request when not found.
+      } else if (response.getStatus().equals(HttpResponseStatus.NOT_FOUND) || response.getStatus()
+          .equals(HttpResponseStatus.BAD_REQUEST)) {
+        LOG.debug("No Kafka Supervisor found for datasource[%s]", dataSourceName);
+        return null;
+      } else {
+        throw new IOException(String.format(
+            "Unable to fetch Kafka Ingestion Spec from Druid status [%d] full response [%s]",
+            response.getStatus().getCode(),
+            response.getContent()));
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("Exception while fetching kafka ingestion spec from druid", e);
+    }
+  }
+
+  /**
+   * Fetches kafka supervisor status report from druid overlord. This method will return null if can not fetch report
+   *
+   * @param table object.
+   * @return kafka supervisor report or null when druid overlord is unreachable.
+   */
+  @Nullable private KafkaSupervisorReport fetchKafkaSupervisorReport(Table table) {
+    final String
+        overlordAddress =
+        Preconditions.checkNotNull(HiveConf.getVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_OVERLORD_DEFAULT_ADDRESS),
+            "Druid Overlord Address is null");
+    final String
+        dataSourceName =
+        Preconditions.checkNotNull(DruidStorageHandlerUtils.getTableProperty(table, Constants.DRUID_DATA_SOURCE),
+            "Druid Datasource name is null");
+    try {
+      FullResponseHolder
+          response =
+          RetryUtils.retry(() -> DruidStorageHandlerUtils.getResponseFromCurrentLeader(getHttpClient(),
+              new Request(HttpMethod.GET,
+                  new URL(String.format("http://%s/druid/indexer/v1/supervisor/%s/status",
+                      overlordAddress,
+                      dataSourceName))),
+              new FullResponseHandler(Charset.forName("UTF-8"))),
+              input -> input instanceof IOException,
+              getMaxRetryCount());
+      if (response.getStatus().equals(HttpResponseStatus.OK)) {
+        return DruidStorageHandlerUtils.JSON_MAPPER.readValue(response.getContent(), KafkaSupervisorReport.class);
+        // Druid Returns 400 Bad Request when not found.
+      } else if (response.getStatus().equals(HttpResponseStatus.NOT_FOUND) || response.getStatus()
+          .equals(HttpResponseStatus.BAD_REQUEST)) {
+        LOG.info("No Kafka Supervisor found for datasource[%s]", dataSourceName);
+        return null;
+      } else {
+        LOG.error("Unable to fetch Kafka Supervisor status [%d] full response [%s]",
+            response.getStatus().getCode(),
+            response.getContent());
+        return null;
+      }
+    } catch (Exception e) {
+      LOG.error("Exception while fetching kafka ingestion spec from druid", e);
+      return null;
+    }
+  }
+
+  /**
+   * Creates metadata moves then commit the Segment's metadata to Druid metadata store in one TxN.
+   *
+   * @param table Hive table
+   * @param overwrite true if it is an insert overwrite table.
+   */
+  private List<DataSegment> loadAndCommitDruidSegments(Table table, boolean overwrite, List<DataSegment> segmentsToLoad)
+      throws IOException, CallbackFailedException {
+    final String dataSourceName = table.getParameters().get(Constants.DRUID_DATA_SOURCE);
+    final String
+        segmentDirectory =
+        table.getParameters().get(DruidConstants.DRUID_SEGMENT_DIRECTORY) != null ?
+            table.getParameters().get(DruidConstants.DRUID_SEGMENT_DIRECTORY) :
+            HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY);
+
+    final HdfsDataSegmentPusherConfig hdfsSegmentPusherConfig = new HdfsDataSegmentPusherConfig();
+    List<DataSegment> publishedDataSegmentList;
+
+    LOG.info(String.format("Moving [%s] Druid segments from staging directory [%s] to Deep storage [%s]",
+        segmentsToLoad.size(),
+        getStagingWorkingDir().toString(),
+        segmentDirectory));
+    hdfsSegmentPusherConfig.setStorageDirectory(segmentDirectory);
+    DataSegmentPusher dataSegmentPusher = new HdfsDataSegmentPusher(hdfsSegmentPusherConfig, getConf(), JSON_MAPPER);
+    publishedDataSegmentList =
+        DruidStorageHandlerUtils.publishSegmentsAndCommit(getConnector(),
+            getDruidMetadataStorageTablesConfig(),
+            dataSourceName,
+            segmentsToLoad,
+            overwrite,
+            getConf(),
+            dataSegmentPusher);
+    return publishedDataSegmentList;
+  }
+
+  /**
+   * This function checks the load status of Druid segments by polling druid coordinator.
+   * @param segments List of druid segments to check for
+   */
+  private void checkLoadStatus(List<DataSegment> segments) {
+    final String
+        coordinatorAddress =
+        HiveConf.getVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_COORDINATOR_DEFAULT_ADDRESS);
+    int maxTries = getMaxRetryCount();
+
+    LOG.debug("checking load status from coordinator {}", coordinatorAddress);
+
+    String coordinatorResponse;
+    try {
+      coordinatorResponse =
+          RetryUtils.retry(() -> DruidStorageHandlerUtils.getResponseFromCurrentLeader(getHttpClient(),
+              new Request(HttpMethod.GET, new URL(String.format("http://%s/status", coordinatorAddress))),
+              new FullResponseHandler(Charset.forName("UTF-8"))).getContent(),
+              input -> input instanceof IOException,
+              maxTries);
+    } catch (Exception e) {
+      CONSOLE.printInfo("Will skip waiting for data loading, coordinator unavailable");
       return;
     }
-    final Path segmentDescriptorDir = getSegmentDescriptorDir();
-    try {
-      List<DataSegment> dataSegmentList = DruidStorageHandlerUtils
-              .getPublishedSegments(segmentDescriptorDir, getConf());
-      for (DataSegment dataSegment : dataSegmentList) {
+    if (Strings.isNullOrEmpty(coordinatorResponse)) {
+      CONSOLE.printInfo("Will skip waiting for data loading empty response from coordinator");
+    }
+    CONSOLE.printInfo(String.format("Waiting for the loading of [%s] segments", segments.size()));
+    long passiveWaitTimeMs = HiveConf.getLongVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_PASSIVE_WAIT_TIME);
+    Set<URL> urlsOfUnloadedSegments = segments
+        .stream()
+        .map(dataSegment -> {
+          try {
+            //Need to make sure that we are using segment identifier
+            return new URL(String.format("http://%s/druid/coordinator/v1/datasources/%s/segments/%s",
+                coordinatorAddress,
+                dataSegment.getDataSource(),
+                dataSegment.getId().toString()));
+          } catch (MalformedURLException e) {
+            Throwables.propagate(e);
+          }
+          return null;
+        })
+        .collect(Collectors.toSet());
+
+    int numRetries = 0;
+    while (numRetries++ < maxTries && !urlsOfUnloadedSegments.isEmpty()) {
+      urlsOfUnloadedSegments = ImmutableSet.copyOf(Sets.filter(urlsOfUnloadedSegments, input -> {
         try {
-          deleteSegment(dataSegment);
-        } catch (SegmentLoadingException e) {
-          LOG.error(String.format("Error while trying to clean the segment [%s]", dataSegment), e);
+          String
+              result =
+              DruidStorageHandlerUtils.getResponseFromCurrentLeader(getHttpClient(),
+                  new Request(HttpMethod.GET, input),
+                  new FullResponseHandler(Charset.forName("UTF-8"))).getContent();
+
+          LOG.debug("Checking segment [{}] response is [{}]", input, result);
+          return Strings.isNullOrEmpty(result);
+        } catch (InterruptedException | ExecutionException e) {
+          LOG.error(String.format("Error while checking URL [%s]", input), e);
+          return true;
         }
+      }));
+
+      try {
+        if (!urlsOfUnloadedSegments.isEmpty()) {
+          Thread.sleep(passiveWaitTimeMs);
+        }
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
       }
-    } catch (IOException e) {
-      LOG.error("Exception while rollback", e);
-      throw Throwables.propagate(e);
-    } finally {
-      cleanWorkingDir();
+    }
+    if (!urlsOfUnloadedSegments.isEmpty()) {
+      // We are not Throwing an exception since it might be a transient issue that is blocking loading
+      CONSOLE.printError(String.format("Wait time exhausted and we have [%s] out of [%s] segments not loaded yet",
+          urlsOfUnloadedSegments.size(),
+          segments.size()));
     }
   }
 
-  @Override
-  public void commitCreateTable(Table table) throws MetaException {
-    if (MetaStoreUtils.isExternalTable(table)) {
-      return;
-    }
-    Lifecycle lifecycle = new Lifecycle();
-    LOG.info(String.format("Committing table [%s] to the druid metastore", table.getDbName()));
-    final Path tableDir = getSegmentDescriptorDir();
-    try {
-      List<DataSegment> segmentList = DruidStorageHandlerUtils
-              .getPublishedSegments(tableDir, getConf());
-      LOG.info(String.format("Found [%d] segments under path [%s]", segmentList.size(), tableDir));
-      druidSqlMetadataStorageUpdaterJobHandler.publishSegments(
-              druidMetadataStorageTablesConfig.getSegmentsTable(),
-              segmentList,
-              DruidStorageHandlerUtils.JSON_MAPPER
-      );
-      final String coordinatorAddress = HiveConf
-              .getVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_COORDINATOR_DEFAULT_ADDRESS);
-      int maxTries = HiveConf.getIntVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_MAX_TRIES);
-      final String dataSourceName = table.getParameters().get(Constants.DRUID_DATA_SOURCE);
-      LOG.info(String.format("checking load status from coordinator [%s]", coordinatorAddress));
+  @VisibleForTesting void deleteSegment(DataSegment segment) throws SegmentLoadingException {
 
-      // check if the coordinator is up
-      httpClient = makeHttpClient(lifecycle);
-      try {
-        lifecycle.start();
-      } catch (Exception e) {
-        Throwables.propagate(e);
-      }
-      String coordinatorResponse = null;
-      try {
-        coordinatorResponse = RetryUtils.retry(new Callable<String>() {
-          @Override
-          public String call() throws Exception {
-            return DruidStorageHandlerUtils.getURL(httpClient,
-                    new URL(String.format("http://%s/status", coordinatorAddress))
-            );
-          }
-        }, new Predicate<Throwable>() {
-          @Override
-          public boolean apply(@Nullable Throwable input) {
-            return input instanceof IOException;
-          }
-        }, maxTries);
-      } catch (Exception e) {
-        console.printInfo(
-                "Will skip waiting for data loading");
-        return;
-      }
-      if (Strings.isNullOrEmpty(coordinatorResponse)) {
-        console.printInfo(
-                "Will skip waiting for data loading");
-        return;
-      }
-      console.printInfo(
-              String.format("Waiting for the loading of [%s] segments", segmentList.size()));
-      long passiveWaitTimeMs = HiveConf
-              .getLongVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_PASSIVE_WAIT_TIME);
-      ImmutableSet<URL> setOfUrls = FluentIterable.from(segmentList)
-              .transform(new Function<DataSegment, URL>() {
-                @Override
-                public URL apply(DataSegment dataSegment) {
-                  try {
-                    //Need to make sure that we are using UTC since most of the druid cluster use UTC by default
-                    return new URL(String
-                            .format("http://%s/druid/coordinator/v1/datasources/%s/segments/%s",
-                                    coordinatorAddress, dataSourceName, DataSegment
-                                            .makeDataSegmentIdentifier(dataSegment.getDataSource(),
-                                                    new DateTime(dataSegment.getInterval()
-                                                            .getStartMillis(), DateTimeZone.UTC),
-                                                    new DateTime(dataSegment.getInterval()
-                                                            .getEndMillis(), DateTimeZone.UTC),
-                                                    dataSegment.getVersion(),
-                                                    dataSegment.getShardSpec()
-                                            )
-                            ));
-                  } catch (MalformedURLException e) {
-                    Throwables.propagate(e);
-                  }
-                  return null;
-                }
-              }).toSet();
-
-      int numRetries = 0;
-      while (numRetries++ < maxTries && !setOfUrls.isEmpty()) {
-        setOfUrls = ImmutableSet.copyOf(Sets.filter(setOfUrls, new Predicate<URL>() {
-          @Override
-          public boolean apply(URL input) {
-            try {
-              String result = DruidStorageHandlerUtils.getURL(httpClient, input);
-              LOG.debug(String.format("Checking segment [%s] response is [%s]", input, result));
-              return Strings.isNullOrEmpty(result);
-            } catch (IOException e) {
-              LOG.error(String.format("Error while checking URL [%s]", input), e);
-              return true;
-            }
-          }
-        }));
-
-        try {
-          if (!setOfUrls.isEmpty()) {
-            Thread.sleep(passiveWaitTimeMs);
-          }
-        } catch (InterruptedException e) {
-          Thread.interrupted();
-          Throwables.propagate(e);
-        }
-      }
-      if (!setOfUrls.isEmpty()) {
-        // We are not Throwing an exception since it might be a transient issue that is blocking loading
-        console.printError(String.format(
-                "Wait time exhausted and we have [%s] out of [%s] segments not loaded yet",
-                setOfUrls.size(), segmentList.size()
-        ));
-      }
-    } catch (IOException e) {
-      LOG.error("Exception while commit", e);
-      Throwables.propagate(e);
-    } finally {
-      cleanWorkingDir();
-      lifecycle.stop();
-    }
-  }
-
-  @VisibleForTesting
-  protected void deleteSegment(DataSegment segment) throws SegmentLoadingException {
-
-    final Path path = getPath(segment);
-    LOG.info(String.format("removing segment[%s], located at path[%s]", segment.getIdentifier(),
-            path
-    ));
+    final Path path = DruidStorageHandlerUtils.getPath(segment);
+    LOG.info("removing segment {}, located at path {}", segment.getId().toString(), path);
 
     try {
       if (path.getName().endsWith(".zip")) {
@@ -393,20 +612,15 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
         final FileSystem fs = path.getFileSystem(getConf());
 
         if (!fs.exists(path)) {
-          LOG.warn(String.format(
-                  "Segment Path [%s] does not exist. It appears to have been deleted already.",
-                  path
-          ));
+          LOG.warn("Segment Path {} does not exist. It appears to have been deleted already.", path);
           return;
         }
 
         // path format -- > .../dataSource/interval/version/partitionNum/xxx.zip
         Path partitionNumDir = path.getParent();
         if (!fs.delete(partitionNumDir, true)) {
-          throw new SegmentLoadingException(
-                  "Unable to kill segment, failed to delete dir [%s]",
-                  partitionNumDir.toString()
-          );
+          throw new SegmentLoadingException("Unable to kill segment, failed to delete dir [%s]",
+              partitionNumDir.toString());
         }
 
         //try to delete other directories if possible
@@ -426,10 +640,6 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     }
   }
 
-  private static Path getPath(DataSegment dataSegment) {
-    return new Path(String.valueOf(dataSegment.getLoadSpec().get("path")));
-  }
-
   private static boolean safeNonRecursiveDelete(FileSystem fs, Path path) {
     try {
       return fs.delete(path, false);
@@ -438,89 +648,130 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     }
   }
 
-  @Override
-  public void preDropTable(Table table) throws MetaException {
+  @Override public void preDropTable(Table table) {
     // Nothing to do
   }
 
-  @Override
-  public void rollbackDropTable(Table table) throws MetaException {
+  @Override public void rollbackDropTable(Table table) {
     // Nothing to do
   }
 
-  @Override
-  public void commitDropTable(Table table, boolean deleteData) throws MetaException {
-    if (MetaStoreUtils.isExternalTable(table)) {
-      return;
+  @Override public void commitDropTable(Table table, boolean deleteData) {
+    if (DruidKafkaUtils.isKafkaStreamingTable(table)) {
+      // Stop Kafka Ingestion first
+      final String
+          overlordAddress =
+          Preconditions.checkNotNull(HiveConf.getVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_OVERLORD_DEFAULT_ADDRESS),
+              "Druid Overlord Address is null");
+      String
+          dataSourceName =
+          Preconditions.checkNotNull(DruidStorageHandlerUtils.getTableProperty(table, Constants.DRUID_DATA_SOURCE),
+              "Druid Datasource name is null");
+      stopKafkaIngestion(overlordAddress, dataSourceName);
     }
-    String dataSourceName = Preconditions
-            .checkNotNull(table.getParameters().get(Constants.DRUID_DATA_SOURCE),
-                    "DataSource name is null !"
-            );
 
-    if (deleteData == true) {
-      LOG.info(String.format("Dropping with purge all the data for data source [%s]",
-              dataSourceName
-      ));
-      List<DataSegment> dataSegmentList = DruidStorageHandlerUtils
-              .getDataSegmentList(connector, druidMetadataStorageTablesConfig, dataSourceName);
+    String
+        dataSourceName =
+        Preconditions.checkNotNull(table.getParameters().get(Constants.DRUID_DATA_SOURCE), "DataSource name is null !");
+    // Move MetaStoreUtils.isExternalTablePurge(table) calls to a common place for all StorageHandlers
+    // deleteData flag passed down to StorageHandler should be true only if
+    // MetaStoreUtils.isExternalTablePurge(table) returns true.
+    if (deleteData && MetaStoreUtils.isExternalTablePurge(table)) {
+      LOG.info("Dropping with purge all the data for data source {}", dataSourceName);
+      List<DataSegment>
+          dataSegmentList =
+          DruidStorageHandlerUtils.getDataSegmentList(getConnector(),
+              getDruidMetadataStorageTablesConfig(),
+              dataSourceName);
       if (dataSegmentList.isEmpty()) {
-        LOG.info(String.format("Nothing to delete for data source [%s]", dataSourceName));
+        LOG.info("Nothing to delete for data source {}", dataSourceName);
         return;
       }
       for (DataSegment dataSegment : dataSegmentList) {
         try {
           deleteSegment(dataSegment);
         } catch (SegmentLoadingException e) {
-          LOG.error(String.format("Error while deleting segment [%s]", dataSegment.getIdentifier()),
-                  e
-          );
+          LOG.error(String.format("Error while deleting segment [%s]", dataSegment.getId().toString()), e);
         }
       }
     }
-    if (DruidStorageHandlerUtils
-            .disableDataSource(connector, druidMetadataStorageTablesConfig, dataSourceName)) {
-      LOG.info(String.format("Successfully dropped druid data source [%s]", dataSourceName));
+    if (DruidStorageHandlerUtils.disableDataSource(getConnector(),
+        getDruidMetadataStorageTablesConfig(),
+        dataSourceName)) {
+      LOG.info("Successfully dropped druid data source {}", dataSourceName);
     }
   }
 
-  @Override
-  public void commitInsertTable(Table table, boolean overwrite) throws MetaException {
-    if (overwrite) {
-      LOG.debug(String.format("commit insert overwrite into table [%s]", table.getTableName()));
-      this.commitCreateTable(table);
-    } else {
-      throw new MetaException("Insert into is not supported yet");
+  @Override public void commitInsertTable(Table table, boolean overwrite) throws MetaException {
+    LOG.debug("commit insert into table {} overwrite {}", table.getTableName(), overwrite);
+    try {
+      // Check if there segments to load
+      final Path segmentDescriptorDir = getSegmentDescriptorDir();
+      final List<DataSegment> segmentsToLoad = fetchSegmentsMetadata(segmentDescriptorDir);
+      final String dataSourceName = table.getParameters().get(Constants.DRUID_DATA_SOURCE);
+      //No segments to load still need to honer overwrite
+      if (segmentsToLoad.isEmpty() && overwrite) {
+        //disable datasource
+        //Case it is an insert overwrite we have to disable the existing Druid DataSource
+        DruidStorageHandlerUtils.disableDataSource(getConnector(),
+            getDruidMetadataStorageTablesConfig(),
+            dataSourceName);
+      } else if (!segmentsToLoad.isEmpty()) {
+        // at this point we have Druid segments from reducers but we need to atomically
+        // rename and commit to metadata
+        // Moving Druid segments and committing to druid metadata as one transaction.
+        checkLoadStatus(loadAndCommitDruidSegments(table, overwrite, segmentsToLoad));
+      }
+    } catch (IOException e) {
+      throw new MetaException(e.getMessage());
+    } catch (CallbackFailedException c) {
+      LOG.error("Error while committing transaction to druid metadata storage", c);
+      throw new MetaException(c.getCause().getMessage());
+    } finally {
+      cleanWorkingDir();
     }
   }
 
-  @Override
-  public void preInsertTable(Table table, boolean overwrite) throws MetaException {
-    if (!overwrite) {
-      throw new MetaException("INSERT INTO statement is not allowed by druid storage handler");
+  private List<DataSegment> fetchSegmentsMetadata(Path segmentDescriptorDir) throws IOException {
+    if (!segmentDescriptorDir.getFileSystem(getConf()).exists(segmentDescriptorDir)) {
+      LOG.info("Directory {} does not exist, ignore this if it is create statement or inserts of 0 rows,"
+              + " no Druid segments to move, cleaning working directory {}",
+          segmentDescriptorDir.toString(),
+          getStagingWorkingDir().toString());
+      return Collections.emptyList();
     }
+    return DruidStorageHandlerUtils.getCreatedSegments(segmentDescriptorDir, getConf());
   }
 
-  @Override
-  public void rollbackInsertTable(Table table, boolean overwrite) throws MetaException {
+  @Override public void preInsertTable(Table table, boolean overwrite) {
+
+  }
+
+  @Override public void rollbackInsertTable(Table table, boolean overwrite) {
     // do nothing
   }
 
-  @Override
-  public void configureOutputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties
-  ) {
-    jobProperties.put(Constants.DRUID_SEGMENT_VERSION, new DateTime().toString());
-    jobProperties.put(Constants.DRUID_JOB_WORKING_DIRECTORY, getStagingWorkingDir().toString());
+  @Override public void configureOutputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
+    jobProperties.put(Constants.DRUID_DATA_SOURCE, tableDesc.getTableName());
+    jobProperties.put(DruidConstants.DRUID_SEGMENT_VERSION, new DateTime().toString());
+    jobProperties.put(DruidConstants.DRUID_JOB_WORKING_DIRECTORY, getStagingWorkingDir().toString());
+    // DruidOutputFormat will write segments in an intermediate directory
+    jobProperties.put(DruidConstants.DRUID_SEGMENT_INTERMEDIATE_DIRECTORY,
+        getIntermediateSegmentDir().toString());
   }
 
-  @Override
-  public void configureTableJobProperties(TableDesc tableDesc, Map<String, String> jobProperties
-  ) {
+  @Override public void configureTableJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
 
   }
 
-  @Override
-  public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
+  @Override public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
+    if (UserGroupInformation.isSecurityEnabled()) {
+      // AM can not do Kerberos Auth so will do the input split generation in the HS2
+      LOG.debug("Setting {} to {} to enable split generation on HS2",
+          HiveConf.ConfVars.HIVE_AM_SPLIT_GENERATION.toString(),
+          Boolean.FALSE.toString());
+      jobConf.set(HiveConf.ConfVars.HIVE_AM_SPLIT_GENERATION.toString(), Boolean.FALSE.toString());
+    }
     try {
       DruidStorageHandlerUtils.addDependencyJars(jobConf, DruidRecordWriter.class);
     } catch (IOException e) {
@@ -528,27 +779,30 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     }
   }
 
-  @Override
-  public void setConf(Configuration conf) {
+  @Override public void setConf(Configuration conf) {
     this.conf = conf;
   }
 
-  @Override
-  public Configuration getConf() {
+  @Override public Configuration getConf() {
     return conf;
   }
 
-  @Override
-  public String toString() {
+  @Override public LockType getLockType(WriteEntity writeEntity) {
+    if (writeEntity.getWriteType().equals(WriteEntity.WriteType.INSERT)) {
+      return LockType.SHARED_READ;
+    }
+    return LockType.SHARED_WRITE;
+  }
+
+  @Override public String toString() {
     return Constants.DRUID_HIVE_STORAGE_HANDLER_ID;
   }
 
-  public String getUniqueId() {
+  private String getUniqueId() {
     if (uniqueId == null) {
-      uniqueId = Preconditions.checkNotNull(
-              Strings.emptyToNull(HiveConf.getVar(getConf(), HiveConf.ConfVars.HIVEQUERYID)),
-              "Hive query id is null"
-      );
+      uniqueId =
+          Preconditions.checkNotNull(Strings.emptyToNull(HiveConf.getVar(getConf(), HiveConf.ConfVars.HIVEQUERYID)),
+              "Hive query id is null");
     }
     return uniqueId;
   }
@@ -557,13 +811,82 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     return new Path(getRootWorkingDir(), makeStagingName());
   }
 
-  @VisibleForTesting
-  protected String makeStagingName() {
+  private MetadataStorageTablesConfig getDruidMetadataStorageTablesConfig() {
+    if (druidMetadataStorageTablesConfig != null) {
+      return druidMetadataStorageTablesConfig;
+    }
+    final String base = HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_BASE);
+    druidMetadataStorageTablesConfig = MetadataStorageTablesConfig.fromBase(base);
+    return druidMetadataStorageTablesConfig;
+  }
+
+  private SQLMetadataConnector getConnector() {
+    return Suppliers.memoize(this::buildConnector).get();
+  }
+
+  private SQLMetadataConnector buildConnector() {
+
+    if (connector != null) {
+      return connector;
+    }
+
+    final String dbType = HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_TYPE);
+    final String username = HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_USERNAME);
+    final String password = HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_PASSWORD);
+    final String uri = HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_URI);
+    LOG.debug("Supplying SQL Connector with DB type {}, URI {}, User {}", dbType, uri, username);
+    @SuppressWarnings("Guava") final Supplier<MetadataStorageConnectorConfig>
+        storageConnectorConfigSupplier =
+        Suppliers.ofInstance(new MetadataStorageConnectorConfig() {
+          @Override public String getConnectURI() {
+            return uri;
+          }
+
+          @Override public String getUser() {
+            return Strings.emptyToNull(username);
+          }
+
+          @Override public String getPassword() {
+            return Strings.emptyToNull(password);
+          }
+        });
+    switch (dbType) {
+    case "mysql":
+      connector =
+          new MySQLConnector(storageConnectorConfigSupplier,
+              Suppliers.ofInstance(getDruidMetadataStorageTablesConfig()),
+              new MySQLConnectorConfig());
+      break;
+    case "postgresql":
+      connector =
+          new PostgreSQLConnector(storageConnectorConfigSupplier,
+              Suppliers.ofInstance(getDruidMetadataStorageTablesConfig()),
+                  new PostgreSQLConnectorConfig()
+          );
+
+      break;
+    case "derby":
+      connector =
+          new DerbyConnector(new DerbyMetadataStorage(storageConnectorConfigSupplier.get()),
+              storageConnectorConfigSupplier,
+              Suppliers.ofInstance(getDruidMetadataStorageTablesConfig()));
+      break;
+    default:
+      throw new IllegalStateException(String.format("Unknown metadata storage type [%s]", dbType));
+    }
+    return connector;
+  }
+
+  @VisibleForTesting String makeStagingName() {
     return ".staging-".concat(getUniqueId().replace(":", ""));
   }
 
   private Path getSegmentDescriptorDir() {
     return new Path(getStagingWorkingDir(), SEGMENTS_DESCRIPTOR_DIR_NAME);
+  }
+
+  private Path getIntermediateSegmentDir() {
+    return new Path(getStagingWorkingDir(), INTERMEDIATE_SEGMENT_DIR_NAME);
   }
 
   private void cleanWorkingDir() {
@@ -583,20 +906,61 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     return rootWorkingDir;
   }
 
-  private HttpClient makeHttpClient(Lifecycle lifecycle) {
-    final int numConnection = HiveConf
-            .getIntVar(getConf(),
-                    HiveConf.ConfVars.HIVE_DRUID_NUM_HTTP_CONNECTION
-            );
-    final Period readTimeout = new Period(
-            HiveConf.getVar(getConf(),
-                    HiveConf.ConfVars.HIVE_DRUID_HTTP_READ_TIMEOUT
-            ));
+  private static HttpClient makeHttpClient(Lifecycle lifecycle) {
+    final int
+        numConnection =
+        HiveConf.getIntVar(SessionState.getSessionConf(), HiveConf.ConfVars.HIVE_DRUID_NUM_HTTP_CONNECTION);
+    final Period
+        readTimeout =
+        new Period(HiveConf.getVar(SessionState.getSessionConf(), HiveConf.ConfVars.HIVE_DRUID_HTTP_READ_TIMEOUT));
+    LOG.info("Creating Druid HTTP client with {} max parallel connections and {}ms read timeout",
+        numConnection,
+        readTimeout.toStandardDuration().getMillis());
 
-    return HttpClientInit.createClient(
-            HttpClientConfig.builder().withNumConnections(numConnection)
-                    .withReadTimeout(new Period(readTimeout).toStandardDuration()).build(),
-            lifecycle
-    );
+    final HttpClient
+        httpClient =
+        HttpClientInit.createClient(HttpClientConfig.builder()
+            .withNumConnections(numConnection)
+            .withReadTimeout(new Period(readTimeout).toStandardDuration())
+            .build(), lifecycle);
+    if (UserGroupInformation.isSecurityEnabled()) {
+      LOG.info("building Kerberos Http Client");
+      return new KerberosHttpClient(httpClient);
+    }
+    return httpClient;
+  }
+
+  public static HttpClient getHttpClient() {
+    return HTTP_CLIENT;
+  }
+
+  @Override public void preAlterTable(Table table, EnvironmentContext context) throws MetaException {
+    String alterOpType = context == null ? null : context.getProperties().get(ALTER_TABLE_OPERATION_TYPE);
+    // alterOpType is null in case of stats update
+    if (alterOpType != null && !ALLOWED_ALTER_TYPES.contains(alterOpType)) {
+      throw new MetaException("ALTER TABLE can not be used for " + alterOpType + " to a non-native table ");
+    }
+    if (DruidKafkaUtils.isKafkaStreamingTable(table)) {
+      updateKafkaIngestion(table);
+    }
+  }
+
+  private int getMaxRetryCount() {
+    return HiveConf.getIntVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_MAX_TRIES);
+  }
+
+  @Override public StorageHandlerInfo getStorageHandlerInfo(Table table) throws MetaException {
+    if (DruidKafkaUtils.isKafkaStreamingTable(table)) {
+      KafkaSupervisorReport kafkaSupervisorReport = fetchKafkaSupervisorReport(table);
+      if (kafkaSupervisorReport == null) {
+        return DruidStorageHandlerInfo.UNREACHABLE;
+      }
+      return new DruidStorageHandlerInfo(kafkaSupervisorReport);
+    } else {
+      // Currently we do not expose any runtime info for non-streaming tables.
+      // In future extend this add more information regarding table status.
+      // e.g. Total size of segments in druid, load status of table on historical nodes etc.
+      return null;
+    }
   }
 }

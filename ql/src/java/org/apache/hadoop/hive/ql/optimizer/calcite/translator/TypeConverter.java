@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -36,8 +36,11 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ConversionUtil;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter.HiveToken;
@@ -63,7 +66,6 @@ public class TypeConverter {
 
   private static final Map<String, HiveToken> calciteToHiveTypeNameMap;
 
-  // TODO: Handling of char[], varchar[], string...
   static {
     Builder<String, HiveToken> b = ImmutableMap.<String, HiveToken> builder();
     b.put(SqlTypeName.BOOLEAN.getName(), new HiveToken(HiveParser.TOK_BOOLEAN, "TOK_BOOLEAN"));
@@ -200,6 +202,9 @@ public class TypeConverter {
     case TIMESTAMP:
       convertedType = dtFactory.createSqlType(SqlTypeName.TIMESTAMP);
       break;
+    case TIMESTAMPLOCALTZ:
+      convertedType = dtFactory.createSqlType(SqlTypeName.TIMESTAMP_WITH_LOCAL_TIME_ZONE);
+      break;
     case INTERVAL_YEAR_MONTH:
       convertedType = dtFactory.createSqlIntervalType(
           new SqlIntervalQualifier(TimeUnit.YEAR, TimeUnit.MONTH, new SqlParserPos(1,1)));
@@ -325,6 +330,14 @@ public class TypeConverter {
       return TypeInfoFactory.dateTypeInfo;
     case TIMESTAMP:
       return TypeInfoFactory.timestampTypeInfo;
+    case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
+      HiveConf conf;
+      try {
+        conf = Hive.get().getConf();
+      } catch (HiveException e) {
+        throw new RuntimeException(e);
+      }
+      return TypeInfoFactory.getTimestampTZTypeInfo(conf.getLocalTimeZone());
     case INTERVAL_YEAR:
     case INTERVAL_MONTH:
     case INTERVAL_YEAR_MONTH:
@@ -356,7 +369,6 @@ public class TypeConverter {
         return TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME);
       else
         return TypeInfoFactory.getCharTypeInfo(charLength);
-    case OTHER:
     default:
       return TypeInfoFactory.voidTypeInfo;
     }
@@ -384,6 +396,10 @@ public class TypeConverter {
     case DECIMAL: {
       ht = new HiveToken(HiveParser.TOK_DECIMAL, "TOK_DECIMAL", String.valueOf(calciteType
           .getPrecision()), String.valueOf(calciteType.getScale()));
+    }
+      break;
+    case TIMESTAMP_WITH_LOCAL_TIME_ZONE: {
+      ht = new HiveToken(HiveParser.TOK_TIMESTAMPLOCALTZ, "TOK_TIMESTAMPLOCALTZ");
     }
       break;
     default:

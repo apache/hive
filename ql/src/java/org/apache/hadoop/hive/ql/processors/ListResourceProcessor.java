@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.processors;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.util.Arrays;
@@ -44,11 +43,7 @@ public class ListResourceProcessor implements CommandProcessor {
   }
 
   @Override
-  public void init() {
-  }
-
-  @Override
-  public CommandProcessorResponse run(String command) throws CommandNeedRetryException {
+  public CommandProcessorResponse run(String command) {
     SessionState ss = SessionState.get();
     String[] tokens = command.split("\\s+");
     SessionState.ResourceType t;
@@ -66,5 +61,9 @@ public class ListResourceProcessor implements CommandProcessor {
       ss.out.println(StringUtils.join(s, "\n"));
     }
     return new CommandProcessorResponse(0, null, null, SCHEMA);
+  }
+
+  @Override
+  public void close() throws Exception {
   }
 }

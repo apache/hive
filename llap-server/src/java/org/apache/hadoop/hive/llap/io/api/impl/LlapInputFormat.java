@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,8 +19,9 @@
 
 package org.apache.hadoop.hive.llap.io.api.impl;
 
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
 import org.apache.hadoop.hive.ql.io.BatchToRowInputFormat;
-
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
 import java.io.IOException;
@@ -32,9 +33,7 @@ import java.util.concurrent.ExecutorService;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
-import org.apache.hadoop.hive.llap.io.decode.ReadPipeline;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
@@ -46,7 +45,6 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat.AvoidSplitCombination;
 import org.apache.hadoop.hive.ql.io.LlapAwareSplit;
 import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -63,13 +61,6 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hive.common.util.HiveStringUtils;
-import org.apache.orc.OrcUtils;
-import org.apache.orc.TypeDescription;
-import org.apache.orc.impl.SchemaEvolution;
-import org.apache.tez.common.counters.TezCounters;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowBatch>,
     VectorizedInputFormatInterface, SelfDescribingInputFormatInterface,
@@ -77,20 +68,21 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
   private static final String NONVECTOR_SETTING_MESSAGE = "disable "
       + ConfVars.LLAP_IO_NONVECTOR_WRAPPER_ENABLED.varname + " to work around this error";
 
-  @SuppressWarnings("rawtypes")
-  private final InputFormat sourceInputFormat;
+  private final InputFormat<NullWritable, VectorizedRowBatch> sourceInputFormat;
   private final AvoidSplitCombination sourceASC;
-  @SuppressWarnings("deprecation")
   private final Deserializer sourceSerDe;
   final ColumnVectorProducer cvp;
   final ExecutorService executor;
   private final String hostName;
 
-  @SuppressWarnings("rawtypes")
+  private final Configuration daemonConf;
+
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   LlapInputFormat(InputFormat sourceInputFormat, Deserializer sourceSerDe,
-      ColumnVectorProducer cvp, ExecutorService executor) {
+      ColumnVectorProducer cvp, ExecutorService executor, Configuration daemonConf) {
     this.executor = executor;
     this.cvp = cvp;
+    this.daemonConf = daemonConf;
     this.sourceInputFormat = sourceInputFormat;
     this.sourceASC = (sourceInputFormat instanceof AvoidSplitCombination)
         ? (AvoidSplitCombination)sourceInputFormat : null;
@@ -101,49 +93,62 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
   @Override
   public RecordReader<NullWritable, VectorizedRowBatch> getRecordReader(
       InputSplit split, JobConf job, Reporter reporter) throws IOException {
-    RecordReader<NullWritable, VectorizedRowBatch> noLlap = checkLlapSplit(split, job, reporter);
+    // Check LLAP-aware split (e.g. OrcSplit) to make sure it's compatible.
+    RecordReader<NullWritable, VectorizedRowBatch> noLlap = checkLlapSplit(
+        split, job, reporter);
     if (noLlap != null) return noLlap;
-
-    boolean isVectorized = Utilities.getUseVectorizedInputFileFormat(job);
 
     FileSplit fileSplit = (FileSplit) split;
     reporter.setStatus(fileSplit.toString());
     try {
-      List<Integer> includedCols = ColumnProjectionUtils.isReadAllColumns(job)
+      // At this entry point, we are going to assume that these are logical table columns.
+      // Perhaps we should go thru the code and clean this up to be more explicit; for now, we
+      // will start with this single assumption and maintain clear semantics from here.
+      List<Integer> tableIncludedCols = ColumnProjectionUtils.isReadAllColumns(job)
           ? null : ColumnProjectionUtils.getReadColumnIDs(job);
-      LlapRecordReader rr = new LlapRecordReader(job, fileSplit, includedCols, hostName, cvp,
-          executor, sourceInputFormat, sourceSerDe, reporter);
-      if (!rr.init()) {
+      LlapRecordReader rr = LlapRecordReader.create(job, fileSplit, tableIncludedCols, hostName,
+          cvp, executor, sourceInputFormat, sourceSerDe, reporter, daemonConf);
+      if (rr == null) {
+        // Reader-specific incompatibility like SMB or schema evolution.
         return sourceInputFormat.getRecordReader(split, job, reporter);
       }
-
-      return wrapLlapReader(isVectorized, includedCols, rr, split, job, reporter);
+      // For non-vectorized operator case, wrap the reader if possible.
+      RecordReader<NullWritable, VectorizedRowBatch> result = rr;
+      if (!Utilities.getIsVectorized(job)) {
+        result = null;
+        if (HiveConf.getBoolVar(job, ConfVars.LLAP_IO_ROW_WRAPPER_ENABLED)) {
+          result = wrapLlapReader(tableIncludedCols, rr, split);
+        }
+        if (result == null) {
+          // Cannot wrap a reader for non-vectorized pipeline.
+          return sourceInputFormat.getRecordReader(split, job, reporter);
+        }
+      }
+      // This starts the reader in the background.
+      rr.start();
+      return result;
     } catch (Exception ex) {
       throw new IOException(ex);
     }
   }
 
-  public RecordReader<NullWritable, VectorizedRowBatch> wrapLlapReader(
-      boolean isVectorized, List<Integer> includedCols, LlapRecordReader rr,
-      InputSplit split, JobConf job, Reporter reporter) throws IOException {
+  private RecordReader<NullWritable, VectorizedRowBatch> wrapLlapReader(
+      List<Integer> includedCols, LlapRecordReader rr, InputSplit split) throws IOException {
     // vectorized row batch reader
-    if (isVectorized) {
-      return rr;
-    } else if (sourceInputFormat instanceof BatchToRowInputFormat) {
+    if (sourceInputFormat instanceof BatchToRowInputFormat) {
       LlapIoImpl.LOG.info("Using batch-to-row converter for split: " + split);
       return bogusCast(((BatchToRowInputFormat) sourceInputFormat).getWrapper(
           rr, rr.getVectorizedRowBatchCtx(), includedCols));
-    } else {
-      LlapIoImpl.LOG.warn("Not using LLAP IO for an unsupported split: " + split);
-      return sourceInputFormat.getRecordReader(split, job, reporter);
     }
+    LlapIoImpl.LOG.warn("Not using LLAP IO for an unsupported split: " + split);
+    return null;
   }
 
   public RecordReader<NullWritable, VectorizedRowBatch> checkLlapSplit(
       InputSplit split, JobConf job, Reporter reporter) throws IOException {
     boolean useLlapIo = true;
     if (split instanceof LlapAwareSplit) {
-      useLlapIo = ((LlapAwareSplit) split).canUseLlapIo();
+      useLlapIo = ((LlapAwareSplit) split).canUseLlapIo(job);
     }
     if (useLlapIo) return null;
 
@@ -175,9 +180,14 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
     RowSchema rowSchema = findTsOp(mapWork).getSchema();
     final List<String> colNames = new ArrayList<String>(rowSchema.getSignature().size());
     final List<TypeInfo> colTypes = new ArrayList<TypeInfo>(rowSchema.getSignature().size());
+    boolean hasRowId = false;
     for (ColumnInfo c : rowSchema.getSignature()) {
       String columnName = c.getInternalName();
-      if (VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(columnName)) continue;
+      if (VirtualColumn.ROWID.getName().equals(columnName)) {
+        hasRowId = true;
+      } else {
+        if (VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(columnName)) continue;
+      }
       colNames.add(columnName);
       colTypes.add(TypeInfoUtils.getTypeInfoFromTypeString(c.getTypeName()));
     }
@@ -190,13 +200,20 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       PartitionDesc partDesc = mapWork.getPathToPartitionInfo().get(paths.next());
       if (partDesc != null) {
         LinkedHashMap<String, String> partSpec = partDesc.getPartSpec();
-        if (partSpec != null && partSpec.isEmpty()) {
+        if (partSpec != null && !partSpec.isEmpty()) {
           partitionColumnCount = partSpec.size();
         }
       }
     }
+    final VirtualColumn[] virtualColumns;
+    if (hasRowId) {
+      virtualColumns = new VirtualColumn[] {VirtualColumn.ROWID};
+    } else {
+      virtualColumns = new VirtualColumn[0];
+    }
     return new VectorizedRowBatchCtx(colNames.toArray(new String[colNames.size()]),
-        colTypes.toArray(new TypeInfo[colTypes.size()]), null, partitionColumnCount, new String[0]);
+        colTypes.toArray(new TypeInfo[colTypes.size()]), null, null, partitionColumnCount,
+        virtualColumns.length, virtualColumns, new String[0], null);
   }
 
   static TableScanOperator findTsOp(MapWork mapWork) throws HiveException {
@@ -215,5 +232,10 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       }
     }
     return tableScanOperator;
+  }
+
+  @Override
+  public VectorizedSupport.Support[] getSupportedFeatures() {
+    return new VectorizedSupport.Support[] {VectorizedSupport.Support.DECIMAL_64};
   }
 }

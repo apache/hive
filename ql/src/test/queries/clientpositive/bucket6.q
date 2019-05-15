@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 set hive.mapred.mode=nonstrict;
 CREATE TABLE src_bucket(key STRING, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
 

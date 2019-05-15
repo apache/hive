@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -70,7 +70,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
  * where the first occurrence was LATE, followed by zero or more EARLY flights,
  * followed by a ONTIME or EARLY flight.
  * <li><b>symbols</b> specify a list of name, expression pairs. For e.g.
- * 'LATE', arrival_delay > 0, 'EARLY', arrival_delay < 0 , 'ONTIME', arrival_delay == 0.
+ * 'LATE', arrival_delay &gt; 0, 'EARLY', arrival_delay &lt; 0 , 'ONTIME', arrival_delay == 0.
  * These symbols can be used in the Pattern defined above.
  * <li><b>resultSelectList</b> specified as a select list.
  * The expressions in the selectList are evaluated in the context where all the

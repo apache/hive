@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -34,13 +34,30 @@ public class VectorMapJoinFastStringHashMap extends VectorMapJoinFastBytesHashMa
 
   @Override
   public void putRow(BytesWritable currentKey, BytesWritable currentValue) throws HiveException, IOException {
-    stringCommon.adaptPutRow(this, currentKey, currentValue);
+    if (!stringCommon.adaptPutRow(this, currentKey, currentValue)) {
+
+      // Ignore NULL keys, except for FULL OUTER.
+      if (isFullOuter) {
+        addFullOuterNullKeyValue(currentValue);
+      }
+    }
   }
 
   public VectorMapJoinFastStringHashMap(
-      boolean isOuterJoin,
+      boolean isFullOuter,
       int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
-    super(initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
-    stringCommon = new VectorMapJoinFastStringCommon(isOuterJoin);
+    super(
+        isFullOuter,
+        initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
+    stringCommon = new VectorMapJoinFastStringCommon();
+  }
+
+  @Override
+  public long getEstimatedMemorySize() {
+    long size = 0;
+    // adding 16KB constant memory for stringCommon as the rabit hole is deep to implement
+    // MemoryEstimate interface, also it is constant overhead
+    size += (16 * 1024L);
+    return super.getEstimatedMemorySize() + size;
   }
 }

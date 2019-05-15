@@ -1,28 +1,28 @@
-PREHOOK: query: CREATE TABLE IF NOT EXISTS jsontable (key INT, value STRING) COMMENT 'json table' STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE IF NOT EXISTS jsontable_n0 (key INT, value STRING) COMMENT 'json table' STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@jsontable
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS jsontable (key INT, value STRING) COMMENT 'json table' STORED AS TEXTFILE
+PREHOOK: Output: default@jsontable_n0
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS jsontable_n0 (key INT, value STRING) COMMENT 'json table' STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@jsontable
-PREHOOK: query: ALTER TABLE jsontable ADD COLUMNS (name STRING COMMENT 'a new column')
+POSTHOOK: Output: default@jsontable_n0
+PREHOOK: query: ALTER TABLE jsontable_n0 ADD COLUMNS (name STRING COMMENT 'a new column')
 PREHOOK: type: ALTERTABLE_ADDCOLS
-PREHOOK: Input: default@jsontable
-PREHOOK: Output: default@jsontable
-POSTHOOK: query: ALTER TABLE jsontable ADD COLUMNS (name STRING COMMENT 'a new column')
+PREHOOK: Input: default@jsontable_n0
+PREHOOK: Output: default@jsontable_n0
+POSTHOOK: query: ALTER TABLE jsontable_n0 ADD COLUMNS (name STRING COMMENT 'a new column')
 POSTHOOK: type: ALTERTABLE_ADDCOLS
-POSTHOOK: Input: default@jsontable
-POSTHOOK: Output: default@jsontable
-PREHOOK: query: ALTER TABLE jsontable RENAME TO jsontable2
+POSTHOOK: Input: default@jsontable_n0
+POSTHOOK: Output: default@jsontable_n0
+PREHOOK: query: ALTER TABLE jsontable_n0 RENAME TO jsontable2
 PREHOOK: type: ALTERTABLE_RENAME
-PREHOOK: Input: default@jsontable
-PREHOOK: Output: default@jsontable
-POSTHOOK: query: ALTER TABLE jsontable RENAME TO jsontable2
+PREHOOK: Input: default@jsontable_n0
+PREHOOK: Output: default@jsontable_n0
+POSTHOOK: query: ALTER TABLE jsontable_n0 RENAME TO jsontable2
 POSTHOOK: type: ALTERTABLE_RENAME
-POSTHOOK: Input: default@jsontable
-POSTHOOK: Output: default@jsontable
+POSTHOOK: Input: default@jsontable_n0
 POSTHOOK: Output: default@jsontable2
+POSTHOOK: Output: default@jsontable_n0
 PREHOOK: query: SHOW TABLE EXTENDED LIKE jsontable2
 PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: SHOW TABLE EXTENDED LIKE jsontable2

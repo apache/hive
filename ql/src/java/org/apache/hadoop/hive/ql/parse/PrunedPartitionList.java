@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,6 +30,9 @@ import org.apache.hadoop.hive.ql.metadata.Table;
  */
 public class PrunedPartitionList {
 
+  /** Key to identify this partition list. */
+  private final String ppListKey;
+
   /** Source table. */
   private final Table source;
 
@@ -42,9 +45,19 @@ public class PrunedPartitionList {
   /** Whether there are partitions in the list that may or may not satisfy the criteria. */
   private boolean hasUnknowns;
 
-  public PrunedPartitionList(Table source, Set<Partition> partitions, List<String> referred,
-      boolean hasUnknowns) {
+  public PrunedPartitionList(Table source, Set<Partition> partitions,
+      List<String> referred, boolean hasUnknowns) {
     this.source = source;
+    this.ppListKey = null;
+    this.referred = referred;
+    this.partitions = partitions;
+    this.hasUnknowns = hasUnknowns;
+  }
+
+  public PrunedPartitionList(Table source, String key, Set<Partition> partitions,
+      List<String> referred, boolean hasUnknowns) {
+    this.source = source;
+    this.ppListKey = key;
     this.referred = referred;
     this.partitions = partitions;
     this.hasUnknowns = hasUnknowns;
@@ -52,6 +65,10 @@ public class PrunedPartitionList {
 
   public Table getSourceTable() {
     return source;
+  }
+
+  public String getKey() {
+    return ppListKey;
   }
 
   /**

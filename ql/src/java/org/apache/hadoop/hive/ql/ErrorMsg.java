@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,15 +18,22 @@
 
 package org.apache.hadoop.hive.ql;
 
+import org.antlr.runtime.tree.Tree;
+import org.apache.hadoop.hdfs.protocol.DSQuotaExceededException;
+import org.apache.hadoop.hdfs.protocol.NSQuotaExceededException;
+import org.apache.hadoop.hdfs.protocol.UnresolvedPathException;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.ASTNodeOrigin;
+import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
+import org.apache.hadoop.security.AccessControlException;
+
+import java.io.FileNotFoundException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.antlr.runtime.tree.Tree;
-import org.apache.hadoop.hive.ql.parse.ASTNode;
-import org.apache.hadoop.hive.ql.parse.ASTNodeOrigin;
 
 /**
  * List of all error messages.
@@ -55,7 +62,6 @@ public enum ErrorMsg {
   //========================== 10000 range starts here ========================//
   INVALID_TABLE(10001, "Table not found", "42S02"),
   INVALID_COLUMN(10002, "Invalid column reference"),
-  INVALID_INDEX(10003, "Invalid index"),
   INVALID_TABLE_OR_COLUMN(10004, "Invalid table alias or column reference"),
   AMBIGUOUS_TABLE_OR_COLUMN(10005, "Ambiguous table alias or column reference"),
   INVALID_PARTITION(10006, "Partition not found"),
@@ -87,7 +93,7 @@ public enum ErrorMsg {
   INVALID_MAPINDEX_CONSTANT(10031, "Non-constant expression for map indexes not supported"),
   INVALID_MAPINDEX_TYPE(10032, "MAP key type does not match index expression type"),
   NON_COLLECTION_TYPE(10033, "[] not valid on non-collection types"),
-  SELECT_DISTINCT_WITH_GROUPBY(10034, "SELECT DISTINCT and GROUP BY can not be in the same query"),
+  @Deprecated SELECT_DISTINCT_WITH_GROUPBY(10034, "SELECT DISTINCT and GROUP BY can not be in the same query"),
   COLUMN_REPEATED_IN_PARTITIONING_COLS(10035, "Column repeated in partitioning columns"),
   DUPLICATE_COLUMN_NAMES(10036, "Duplicate column name:"),
   INVALID_BUCKET_NUMBER(10037, "Bucket number should be bigger than zero"),
@@ -107,15 +113,12 @@ public enum ErrorMsg {
   CLUSTERBY_ORDERBY_CONFLICT(10050, "Cannot have both CLUSTER BY and ORDER BY clauses"),
   NO_LIMIT_WITH_ORDERBY(10051, "In strict mode, if ORDER BY is specified, "
       + "LIMIT must also be specified"),
-  NO_CARTESIAN_PRODUCT(10052, "In strict mode, cartesian product is not allowed. "
-      + "If you really want to perform the operation, set hive.mapred.mode=nonstrict"),
   UNION_NOTIN_SUBQ(10053, "Top level UNION is not supported currently; "
       + "use a subquery for the UNION"),
   INVALID_INPUT_FORMAT_TYPE(10054, "Input format must implement InputFormat"),
   INVALID_OUTPUT_FORMAT_TYPE(10055, "Output Format must implement HiveOutputFormat, "
       + "otherwise it should be either IgnoreKeyTextOutputFormat or SequenceFileOutputFormat"),
-  NO_VALID_PARTN(10056, "The query does not reference any valid partition. "
-      + "To run this query, set hive.mapred.mode=nonstrict"),
+  NO_VALID_PARTN(10056, HiveConf.StrictChecks.NO_PARTITIONLESS_MSG),
   NO_OUTER_MAPJOIN(10057, "MAPJOIN cannot be performed with OUTER JOIN"),
   INVALID_MAPJOIN_HINT(10058, "All tables are specified as map-table for join"),
   INVALID_MAPJOIN_TABLE(10059, "Result of a union cannot be a map table"),
@@ -196,15 +199,9 @@ public enum ErrorMsg {
   NEED_TABLE_SPECIFICATION(10117, "Table name could be determined; It should be specified "),
   PARTITION_EXISTS(10118, "Partition already exists"),
   TABLE_DATA_EXISTS(10119, "Table exists and contains data files"),
-  INCOMPATIBLE_SCHEMA(10120, "The existing table is not compatible with the import spec. "),
-  EXIM_FOR_NON_NATIVE(10121, "Export/Import cannot be done for a non-native table. "),
+  INCOMPATIBLE_SCHEMA(10120, "The existing table is not compatible with the Export/Import spec. "),
+  EXIM_FOR_NON_NATIVE(10121, "Export/Import cannot be done for a non-native table."),
   INSERT_INTO_BUCKETIZED_TABLE(10122, "Bucketized tables do not support INSERT INTO:"),
-  NO_COMPARE_BIGINT_STRING(10123, "In strict mode, comparing bigints and strings is not allowed, "
-      + "it may result in a loss of precision. "
-      + "If you really want to perform the operation, set hive.mapred.mode=nonstrict"),
-  NO_COMPARE_BIGINT_DOUBLE(10124, "In strict mode, comparing bigints and doubles is not allowed, "
-      + "it may result in a loss of precision. "
-      + "If you really want to perform the operation, set hive.mapred.mode=nonstrict"),
   PARTSPEC_DIFFER_FROM_SCHEMA(10125, "Partition columns in partition specification are "
       + "not the same as that defined in the table schema. "
       + "The names and orders have to be exactly the same."),
@@ -217,7 +214,7 @@ public enum ErrorMsg {
   ALTER_COMMAND_FOR_VIEWS(10131, "To alter a view you need to use the ALTER VIEW command."),
   ALTER_COMMAND_FOR_TABLES(10132, "To alter a base table you need to use the ALTER TABLE command."),
   ALTER_VIEW_DISALLOWED_OP(10133, "Cannot use this form of ALTER on a view"),
-  ALTER_TABLE_NON_NATIVE(10134, "ALTER TABLE cannot be used for a non-native table"),
+  ALTER_TABLE_NON_NATIVE(10134, "ALTER TABLE can only be used for " + AlterTableTypes.nonNativeTableAllowedTypes + " to a non-native table "),
   SORTMERGE_MAPJOIN_FAILED(10135,
       "Sort merge bucketed join could not be performed. " +
       "If you really want to perform the operation, either set " +
@@ -241,7 +238,6 @@ public enum ErrorMsg {
 
   INVALID_JDO_FILTER_EXPRESSION(10143, "Invalid expression for JDO filter"),
 
-  SHOW_CREATETABLE_INDEX(10144, "SHOW CREATE TABLE does not support tables of type INDEX_TABLE."),
   ALTER_BUCKETNUM_NONBUCKETIZED_TBL(10145, "Table is not bucketized."),
 
   TRUNCATE_FOR_NON_MANAGED_TABLE(10146, "Cannot truncate non-managed table {0}.", true),
@@ -277,8 +273,8 @@ public enum ErrorMsg {
     "Grouping sets aggregations (with rollups or cubes) are not allowed if aggregation function " +
     "parameters overlap with the aggregation functions columns"),
 
-  HIVE_GROUPING_SETS_AGGR_NOFUNC(10211,
-    "Grouping sets aggregations are not allowed if no aggregation function is presented"),
+  HIVE_GROUPING_SETS_EMPTY(10211,
+    "Empty grouping sets not allowed"),
 
   HIVE_UNION_REMOVE_OPTIMIZATION_NEEDS_SUBDIRECTORIES(10212,
     "In order to use hive.optimize.union.remove, the hadoop version that you are using " +
@@ -321,25 +317,15 @@ public enum ErrorMsg {
   OPERATOR_NOT_ALLOWED_WITH_MAPJOIN(10227,
     "Not all clauses are supported with mapjoin hint. Please remove mapjoin hint."),
 
-  ANALYZE_TABLE_NOSCAN_NON_NATIVE(10228, "ANALYZE TABLE NOSCAN cannot be used for "
-      + "a non-native table"),
+  ANALYZE_TABLE_NOSCAN_NON_NATIVE(10228, "ANALYZE TABLE NOSCAN cannot be used for " + "a non-native table"),
 
-  ANALYZE_TABLE_PARTIALSCAN_NON_NATIVE(10229, "ANALYZE TABLE PARTIALSCAN cannot be used for "
-      + "a non-native table"),
-  ANALYZE_TABLE_PARTIALSCAN_NON_RCFILE(10230, "ANALYZE TABLE PARTIALSCAN doesn't "
-      + "support non-RCfile. "),
-  ANALYZE_TABLE_PARTIALSCAN_EXTERNAL_TABLE(10231, "ANALYZE TABLE PARTIALSCAN "
-      + "doesn't support external table: "),
-  ANALYZE_TABLE_PARTIALSCAN_AGGKEY(10232, "Analyze partialscan command "
-            + "fails to construct aggregation for the partition "),
-  ANALYZE_TABLE_PARTIALSCAN_AUTOGATHER(10233, "Analyze partialscan is not allowed " +
-            "if hive.stats.autogather is set to false"),
   PARTITION_VALUE_NOT_CONTINUOUS(10234, "Partition values specified are not continuous." +
             " A subpartition value is specified without specifying the parent partition's value"),
   TABLES_INCOMPATIBLE_SCHEMAS(10235, "Tables have incompatible schemas and their partitions " +
             " cannot be exchanged."),
+  EXCHANGE_PARTITION_NOT_ALLOWED_WITH_TRANSACTIONAL_TABLES(10236, "Exchange partition is not allowed with "
+          + "transactional tables. Alternatively, shall use load data or insert overwrite to move partitions."),
 
-  TRUNCATE_COLUMN_INDEXED_TABLE(10236, "Can not truncate columns from table with indexes"),
   TRUNCATE_COLUMN_NOT_RC(10237, "Only RCFileFormat supports column truncation."),
   TRUNCATE_COLUMN_ARCHIVED(10238, "Column truncation cannot be performed on archived partitions."),
   TRUNCATE_BUCKETED_COLUMN(10239,
@@ -348,7 +334,7 @@ public enum ErrorMsg {
       "A column on which a partition/table is list bucketed cannot be truncated."),
 
   TABLE_NOT_PARTITIONED(10241, "Table {0} is not a partitioned table", true),
-  DATABSAE_ALREADY_EXISTS(10242, "Database {0} already exists", true),
+  DATABASE_ALREADY_EXISTS(10242, "Database {0} already exists", true),
   CANNOT_REPLACE_COLUMNS(10243, "Replace columns is not supported for table {0}. SerDe may be incompatible.", true),
   BAD_LOCATION_VALUE(10244, "{0}  is not absolute.  Please specify a complete absolute uri."),
   UNSUPPORTED_ALTER_TBL_OP(10245, "{0} alter table options is not supported"),
@@ -381,7 +367,6 @@ public enum ErrorMsg {
   DBTXNMGR_REQUIRES_CONCURRENCY(10264,
       "To use DbTxnManager you must set hive.support.concurrency=true"),
   TXNMGR_NOT_ACID(10265, "This command is not allowed on an ACID table {0}.{1} with a non-ACID transaction manager", true),
-
   LOCK_NO_SUCH_LOCK(10270, "No record of lock {0} could be found, " +
       "may have timed out", true),
   LOCK_REQUEST_UNSUPPORTED(10271, "Current transaction manager does not " +
@@ -401,6 +386,9 @@ public enum ErrorMsg {
   MASKING_FILTERING_ON_ACID_NOT_SUPPORTED(10287,
       "Detected {0}.{1} has row masking/column filtering enabled, " +
       "which is not supported for query involving ACID operations", true),
+  MASKING_FILTERING_ON_MATERIALIZED_VIEWS_SOURCES(10288,
+      "Querying directly materialized view contents is not supported since we detected {0}.{1} " +
+          "used by materialized view has row masking/column filtering enabled", true),
 
   UPDATEDELETE_PARSE_ERROR(10290, "Encountered parse error while parsing rewritten merge/update or " +
       "delete query"),
@@ -410,12 +398,10 @@ public enum ErrorMsg {
   INSERT_CANNOT_CREATE_TEMP_FILE(10293, "Unable to create temp file for insert values "),
   ACID_OP_ON_NONACID_TXNMGR(10294, "Attempt to do update or delete using transaction manager that" +
       " does not support these operations."),
-  NO_INSERT_OVERWRITE_WITH_ACID(10295, "INSERT OVERWRITE not allowed on table with OutputFormat " +
-      "that implements AcidOutputFormat while transaction manager that supports ACID is in use"),
   VALUES_TABLE_CONSTRUCTOR_NOT_SUPPORTED(10296,
       "Values clause with table constructor not yet supported"),
-  ACID_OP_ON_NONACID_TABLE(10297, "Attempt to do update or delete on table {0} that does not use " +
-      "an AcidOutputFormat or is not bucketed", true),
+  ACID_OP_ON_NONACID_TABLE(10297, "Attempt to do update or delete on table {0} that is " +
+    "not transactional", true),
   ACID_NO_SORTED_BUCKETS(10298, "ACID insert, update, delete not supported on tables that are " +
       "sorted, table {0}", true),
   ALTER_TABLE_TYPE_PARTIAL_PARTITION_SPEC_NO_SUPPORTED(10299,
@@ -442,7 +428,6 @@ public enum ErrorMsg {
       "Grouping sets aggregations (with rollups or cubes) are not allowed when " +
       "HIVEMULTIGROUPBYSINGLEREDUCER is turned on. Set hive.multigroupby.singlereducer=false if you want to use grouping sets"),
   CANNOT_RETRIEVE_TABLE_METADATA(10316, "Error while retrieving table metadata"),
-  CANNOT_DROP_INDEX(10317, "Error while dropping index"),
   INVALID_AST_TREE(10318, "Internal error : Invalid AST"),
   ERROR_SERIALIZE_METASTORE(10319, "Error while serializing the metastore objects"),
   IO_ERROR(10320, "Error while performing IO operation "),
@@ -451,12 +436,14 @@ public enum ErrorMsg {
   CLASSPATH_ERROR(10323, "Classpath error"),
   IMPORT_SEMANTIC_ERROR(10324, "Import Semantic Analyzer Error"),
   INVALID_FK_SYNTAX(10325, "Invalid Foreign Key syntax"),
-  INVALID_PK_SYNTAX(10326, "Invalid Primary Key syntax"),
+  INVALID_CSTR_SYNTAX(10326, "Invalid Constraint syntax"),
   ACID_NOT_ENOUGH_HISTORY(10327, "Not enough history available for ({0},{1}).  " +
     "Oldest available base: {2}", true),
   INVALID_COLUMN_NAME(10328, "Invalid column name"),
   UNSUPPORTED_SET_OPERATOR(10329, "Unsupported set operator"),
   LOCK_ACQUIRE_CANCELLED(10330, "Query was cancelled while acquiring locks on the underlying objects. "),
+  NOT_RECOGNIZED_CONSTRAINT(10331, "Constraint not recognized"),
+  INVALID_CONSTRAINT(10332, "Invalid constraint definition"),
   REPLACE_VIEW_WITH_MATERIALIZED(10400, "Attempt to replace view {0} with materialized view", true),
   REPLACE_MATERIALIZED_WITH_VIEW(10401, "Attempt to replace materialized view {0} with view", true),
   UPDATE_DELETE_VIEW(10402, "You cannot update or delete records in a view"),
@@ -465,10 +452,28 @@ public enum ErrorMsg {
     "requires \"AND <boolean>\" on the 1st WHEN MATCHED clause of <{0}>", true),
   MERGE_TOO_MANY_DELETE(10405, "MERGE statment can have at most 1 WHEN MATCHED ... DELETE clause: <{0}>", true),
   MERGE_TOO_MANY_UPDATE(10406, "MERGE statment can have at most 1 WHEN MATCHED ... UPDATE clause: <{0}>", true),
-  INVALID_JOIN_CONDITION(10407, "Error parsing condition in outer join"),
+  INVALID_JOIN_CONDITION(10407, "Error parsing condition in join"),
   INVALID_TARGET_COLUMN_IN_SET_CLAUSE(10408, "Target column \"{0}\" of set clause is not found in table \"{1}\".", true),
   HIVE_GROUPING_FUNCTION_EXPR_NOT_IN_GROUPBY(10409, "Expression in GROUPING function not present in GROUP BY"),
+  ALTER_TABLE_NON_PARTITIONED_TABLE_CASCADE_NOT_SUPPORTED(10410,
+      "Alter table with non-partitioned table does not support cascade"),
+  HIVE_GROUPING_SETS_SIZE_LIMIT(10411,
+    "Grouping sets size cannot be greater than 64"),
+  REBUILD_NO_MATERIALIZED_VIEW(10412, "Rebuild command only valid for materialized views"),
+  LOAD_DATA_ACID_FILE(10413,
+      "\"{0}\" was created by Acid write - it cannot be loaded into anther Acid table",
+      true),
+  ACID_OP_ON_INSERTONLYTRAN_TABLE(10414, "Attempt to do update or delete on table {0} that is " +
+    "insert-only transactional", true),
+  LOAD_DATA_LAUNCH_JOB_IO_ERROR(10415, "Encountered I/O error while parsing rewritten load data into insert query"),
+  LOAD_DATA_LAUNCH_JOB_PARSE_ERROR(10416, "Encountered parse error while parsing rewritten load data into insert query"),
+  RESOURCE_PLAN_ALREADY_EXISTS(10417, "Resource plan {0} already exists", true),
+  RESOURCE_PLAN_NOT_EXISTS(10418, "Resource plan {0} does not exist", true),
+  INCOMPATIBLE_STRUCT(10419, "Incompatible structs.", true),
+  OBJECTNAME_CONTAINS_DOT(10420, "Table or database name may not contain dot(.) character", true),
+
   //========================== 20000 range starts here ========================//
+
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "
       + "It may have crashed with an error."),
@@ -479,12 +484,42 @@ public enum ErrorMsg {
   DYNAMIC_PARTITIONS_TOO_MANY_PER_NODE_ERROR(20004, "Fatal error occurred when node " +
       "tried to create too many dynamic partitions. The maximum number of dynamic partitions " +
       "is controlled by hive.exec.max.dynamic.partitions and hive.exec.max.dynamic.partitions.pernode. "),
-  PARTITION_SCAN_LIMIT_EXCEEDED(20005, "Number of partitions scanned (={0}) on table {1} exceeds limit" +
-      " (={2}). This is controlled by hive.limit.query.max.table.partition.", true),
-  OP_NOT_ALLOWED_IN_AUTOCOMMIT(20006, "Operation {0} is not allowed when autoCommit=true.", true),//todo: better SQLState?
-  OP_NOT_ALLOWED_IN_TXN(20007, "Operation {0} is not allowed in a transaction.  TransactionID={1}.", true),
-  OP_NOT_ALLOWED_WITHOUT_TXN(20008, "Operation {0} is not allowed since autoCommit=false and there is no active transaction", true),
+  /**
+   * {1} is the transaction id;
+   * use {@link org.apache.hadoop.hive.common.JavaUtils#txnIdToString(long)} to format
+   */
+  OP_NOT_ALLOWED_IN_IMPLICIT_TXN(20006, "Operation {0} is not allowed in an implicit transaction ({1}).", true),
+  /**
+   * {1} is the transaction id;
+   * use {@link org.apache.hadoop.hive.common.JavaUtils#txnIdToString(long)} to format
+   */
+  OP_NOT_ALLOWED_IN_TXN(20007, "Operation {0} is not allowed in a transaction ({1},queryId={2}).", true),
+  OP_NOT_ALLOWED_WITHOUT_TXN(20008, "Operation {0} is not allowed without an active transaction", true),
+  ACCESS_DENIED(20009, "Access denied: {0}", "42000", true),
+  QUOTA_EXCEEDED(20010, "Quota exceeded: {0}", "64000", true),
+  UNRESOLVED_PATH(20011, "Unresolved path: {0}", "64000", true),
+  FILE_NOT_FOUND(20012, "File not found: {0}", "64000", true),
+  WRONG_FILE_FORMAT(20013, "Wrong file format. Please check the file's format.", "64000", true),
+
+  SPARK_CREATE_CLIENT_INVALID_QUEUE(20014, "Spark app for session {0} was submitted to an invalid" +
+          " queue: {1}. Please fix and try again.", true),
+  SPARK_RUNTIME_OOM(20015, "Spark job failed because of out of memory."),
+
+  //if the error message is changed for REPL_EVENTS_MISSING_IN_METASTORE, then need modification in getNextNotification
+  //method in HiveMetaStoreClient
+  REPL_EVENTS_MISSING_IN_METASTORE(20016, "Notification events are missing in the meta store."),
+  REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID(20017, "Load path {0} not valid as target database is bootstrapped " +
+          "from some other path : {1}."),
+  REPL_FILE_MISSING_FROM_SRC_AND_CM_PATH(20018, "File is missing from both source and cm path."),
+  REPL_LOAD_PATH_NOT_FOUND(20019, "Load path does not exist."),
+  REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION(20020,
+          "Source of replication (repl.source.for) is not set in the database properties."),
+
+  // An exception from runtime that will show the full stack to client
+  UNRESOLVED_RT_EXCEPTION(29999, "Runtime Error: {0}", "58004", true),
+
   //========================== 30000 range starts here ========================//
+
   STATSPUBLISHER_NOT_OBTAINED(30000, "StatsPublisher cannot be obtained. " +
     "There was a error to retrieve the StatsPublisher, and retrying " +
     "might help. If you dont want the query to fail because accurate statistics " +
@@ -516,16 +551,10 @@ public enum ErrorMsg {
   COLUMNSTATSCOLLECTOR_INVALID_COLUMN(30012, "Column statistics are not supported "
       + "for partition columns"),
 
-  STATISTICS_CLONING_FAILED(30013, "Cloning of statistics failed"),
-
   STATSAGGREGATOR_SOURCETASK_NULL(30014, "SourceTask of StatsTask should not be null"),
   STATSAGGREGATOR_CONNECTION_ERROR(30015,
       "Stats aggregator of type {0} cannot be connected to", true),
-  STATSAGGREGATOR_MISSED_SOMESTATS(30016,
-      "Stats type {0} is missing from stats aggregator. If you don't want the query " +
-      "to fail because of this, set hive.stats.atomic=false", true),
   STATS_SKIPPING_BY_ERROR(30017, "Skipping stats aggregation by error {0}", true),
-
 
   INVALID_FILE_FORMAT_IN_LOAD(30019, "The file that you are trying to load does not match the" +
       " file format of the destination table."),
@@ -537,7 +566,53 @@ public enum ErrorMsg {
           "are set.  Table schema information is required to read ACID tables"),
   ACID_TABLES_MUST_BE_READ_WITH_ACID_READER(30021, "An ORC ACID reader required to read ACID tables"),
   ACID_TABLES_MUST_BE_READ_WITH_HIVEINPUTFORMAT(30022, "Must use HiveInputFormat to read ACID tables " +
-          "(set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat)")
+          "(set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat)"),
+  ACID_LOAD_DATA_INVALID_FILE_NAME(30023, "{0} file name is not valid in Load Data into Acid " +
+    "table {1}.  Examples of valid names are: 00000_0, 00000_0_copy_1", true),
+
+  CONCATENATE_UNSUPPORTED_FILE_FORMAT(30030, "Concatenate/Merge only supported for RCFile and ORCFile formats"),
+  CONCATENATE_UNSUPPORTED_TABLE_BUCKETED(30031, "Concatenate/Merge can not be performed on bucketed tables"),
+  CONCATENATE_UNSUPPORTED_PARTITION_ARCHIVED(30032, "Concatenate/Merge can not be performed on archived partitions"),
+  CONCATENATE_UNSUPPORTED_TABLE_NON_NATIVE(30033, "Concatenate/Merge can not be performed on non-native tables"),
+  CONCATENATE_UNSUPPORTED_TABLE_NOT_MANAGED(30034, "Concatenate/Merge can only be performed on managed tables"),
+  CONCATENATE_UNSUPPORTED_TABLE_TRANSACTIONAL(30035,
+      "Concatenate/Merge can not be performed on transactional tables"),
+
+  SPARK_GET_JOB_INFO_TIMEOUT(30036,
+      "Spark job timed out after {0} seconds while getting job info", true),
+  SPARK_JOB_MONITOR_TIMEOUT(30037, "Job hasn''t been submitted after {0}s." +
+      " Aborting it.\nPossible reasons include network issues, " +
+      "errors in remote driver or the cluster has no available resources, etc.\n" +
+      "Please check YARN or Spark driver''s logs for further information.\n" +
+      "The timeout is controlled by " + HiveConf.ConfVars.SPARK_JOB_MONITOR_TIMEOUT + ".", true),
+
+  // Various errors when creating Spark client
+  SPARK_CREATE_CLIENT_TIMEOUT(30038,
+      "Timed out while creating Spark client for session {0}.", true),
+  SPARK_CREATE_CLIENT_QUEUE_FULL(30039,
+      "Failed to create Spark client for session {0} because job queue is full: {1}.", true),
+  SPARK_CREATE_CLIENT_INTERRUPTED(30040,
+      "Interrupted while creating Spark client for session {0}", true),
+  SPARK_CREATE_CLIENT_ERROR(30041,
+      "Failed to create Spark client for Spark session {0}: {1}", true),
+  SPARK_CREATE_CLIENT_INVALID_RESOURCE_REQUEST(30042,
+      "Failed to create Spark client for session {0} due to invalid resource request: {1}", true),
+  SPARK_CREATE_CLIENT_CLOSED_SESSION(30043,
+      "Cannot create Spark client on a closed session {0}", true),
+
+  SPARK_JOB_INTERRUPTED(30044, "Spark job was interrupted while executing"),
+  SPARK_GET_JOB_INFO_INTERRUPTED(30045, "Spark job was interrupted while getting job info"),
+  SPARK_GET_JOB_INFO_EXECUTIONERROR(30046, "Spark job failed in execution while getting job info due to exception {0}"),
+
+  REPL_FILE_SYSTEM_OPERATION_RETRY(30047, "Replication file system operation retry expired."),
+  SPARK_GET_STAGES_INFO_TIMEOUT(30048, "Spark job GetSparkStagesInfoJob timed out after {0} seconds.", true),
+  SPARK_GET_STAGES_INFO_INTERRUPTED(30049, "Spark job GetSparkStagesInfoJob was interrupted."),
+  SPARK_GET_STAGES_INFO_EXECUTIONERROR(30050, "Spark job GetSparkStagesInfoJob failed in execution while getting job info due to exception {0}", true),
+
+  //========================== 40000 range starts here ========================//
+
+  SPARK_JOB_RUNTIME_ERROR(40001, "Spark job failed due to: {0}", true),
+  SPARK_TASK_RUNTIME_ERROR(40002, "Spark job failed due to task failures: {0}", true)
   ;
 
   private int errorCode;
@@ -566,6 +641,30 @@ public enum ErrorMsg {
         }
       }
     }
+  }
+
+  /**
+   * Given a remote runtime exception, returns the ErrorMsg object associated with it.
+   * @param e An exception
+   * @return ErrorMsg
+   */
+  public static ErrorMsg getErrorMsg(Exception e) {
+    if (e instanceof AccessControlException) {
+      return ACCESS_DENIED;
+    }
+    if (e instanceof NSQuotaExceededException) {
+      return QUOTA_EXCEEDED;
+    }
+    if (e instanceof DSQuotaExceededException) {
+      return QUOTA_EXCEEDED;
+    }
+    if (e instanceof UnresolvedPathException) {
+      return UNRESOLVED_PATH;
+    }
+    if (e instanceof FileNotFoundException) {
+      return FILE_NOT_FOUND;
+    }
+    return UNRESOLVED_RT_EXCEPTION;
   }
 
   /**

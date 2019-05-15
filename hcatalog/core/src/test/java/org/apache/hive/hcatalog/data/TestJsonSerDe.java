@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,9 +18,8 @@
  */
 package org.apache.hive.hcatalog.data;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,12 +27,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import junit.framework.TestCase;
-
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -42,26 +41,28 @@ import org.apache.hadoop.io.Writable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import junit.framework.TestCase;
+
 public class TestJsonSerDe extends TestCase {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestJsonSerDe.class);
 
-  public List<Pair<Properties, HCatRecord>> getData() {
+  public List<Pair<Properties, HCatRecord>> getData() throws UnsupportedEncodingException {
     List<Pair<Properties, HCatRecord>> data = new ArrayList<Pair<Properties, HCatRecord>>();
 
     List<Object> rlist = new ArrayList<Object>(13);
-    rlist.add(new Byte("123"));
-    rlist.add(new Short("456"));
-    rlist.add(new Integer(789));
-    rlist.add(new Long(1000L));
-    rlist.add(new Double(5.3D));
-    rlist.add(new Float(2.39F));
-    rlist.add(new String("hcat\nand\nhadoop"));
+    rlist.add(Byte.valueOf("123"));
+    rlist.add(Short.valueOf("456"));
+    rlist.add(Integer.valueOf(789));
+    rlist.add(Long.valueOf(1000L));
+    rlist.add(Double.valueOf(5.3D));
+    rlist.add(Float.valueOf(2.39F));
+    rlist.add("hcat\nand\nhadoop");
     rlist.add(null);
 
     List<Object> innerStruct = new ArrayList<Object>(2);
-    innerStruct.add(new String("abc"));
-    innerStruct.add(new String("def"));
+    innerStruct.add("abc");
+    innerStruct.add("def");
     rlist.add(innerStruct);
 
     List<Integer> innerList = new ArrayList<Integer>();
@@ -70,24 +71,24 @@ public class TestJsonSerDe extends TestCase {
     rlist.add(innerList);
 
     Map<Short, String> map = new HashMap<Short, String>(3);
-    map.put(new Short("2"), "hcat is cool");
-    map.put(new Short("3"), "is it?");
-    map.put(new Short("4"), "or is it not?");
+    map.put(Short.valueOf("2"), "hcat is cool");
+    map.put(Short.valueOf("3"), "is it?");
+    map.put(Short.valueOf("4"), "or is it not?");
     rlist.add(map);
 
-    rlist.add(new Boolean(true));
+    rlist.add(Boolean.TRUE);
 
     List<Object> c1 = new ArrayList<Object>();
     List<Object> c1_1 = new ArrayList<Object>();
-    c1_1.add(new Integer(12));
+    c1_1.add(Integer.valueOf(12));
     List<Object> i2 = new ArrayList<Object>();
     List<Integer> ii1 = new ArrayList<Integer>();
-    ii1.add(new Integer(13));
-    ii1.add(new Integer(14));
+    ii1.add(Integer.valueOf(13));
+    ii1.add(Integer.valueOf(14));
     i2.add(ii1);
     Map<String, List<?>> ii2 = new HashMap<String, List<?>>();
     List<Integer> iii1 = new ArrayList<Integer>();
-    iii1.add(new Integer(15));
+    iii1.add(Integer.valueOf(15));
     ii2.put("phew", iii1);
     i2.add(ii2);
     c1_1.add(i2);
@@ -97,7 +98,8 @@ public class TestJsonSerDe extends TestCase {
     rlist.add(new HiveChar("hive\nchar", 10));
     rlist.add(new HiveVarchar("hive\nvarchar", 20));
     rlist.add(Date.valueOf("2014-01-07"));
-    rlist.add(new Timestamp(System.currentTimeMillis()));
+    rlist.add(Timestamp.ofEpochMilli(System.currentTimeMillis()));
+    rlist.add("hive\nbinary".getBytes("UTF-8"));
 
     List<Object> nlist = new ArrayList<Object>(13);
     nlist.add(null); // tinyint
@@ -118,15 +120,16 @@ public class TestJsonSerDe extends TestCase {
     nlist.add(null); //varchar(20)
     nlist.add(null); //date
     nlist.add(null); //timestamp
+    nlist.add(null); //binary
 
     String typeString =
         "tinyint,smallint,int,bigint,double,float,string,string,"
             + "struct<a:string,b:string>,array<int>,map<smallint,string>,boolean,"
             + "array<struct<i1:int,i2:struct<ii1:array<int>,ii2:map<string,struct<iii1:int>>>>>," +
-                "decimal(5,2),char(10),varchar(20),date,timestamp";
+                "decimal(5,2),char(10),varchar(20),date,timestamp,binary";
     Properties props = new Properties();
 
-    props.put(serdeConstants.LIST_COLUMNS, "ti,si,i,bi,d,f,s,n,r,l,m,b,c1,bd,hc,hvc,dt,ts");
+    props.put(serdeConstants.LIST_COLUMNS, "ti,si,i,bi,d,f,s,n,r,l,m,b,c1,bd,hc,hvc,dt,ts,bin");
     props.put(serdeConstants.LIST_COLUMN_TYPES, typeString);
 //    props.put(Constants.SERIALIZATION_NULL_FORMAT, "\\N");
 //    props.put(Constants.SERIALIZATION_FORMAT, "1");
@@ -155,17 +158,17 @@ public class TestJsonSerDe extends TestCase {
       Writable s = hrsd.serialize(r, hrsd.getObjectInspector());
       LOG.info("ONE:{}", s);
 
-      Object o1 = hrsd.deserialize(s);
+      HCatRecord o1 = (HCatRecord) hrsd.deserialize(s);
       StringBuilder msg = new StringBuilder();
-      boolean isEqual = HCatDataCheckUtil.recordsEqual(r, (HCatRecord) o1); 
+      boolean isEqual = HCatDataCheckUtil.recordsEqual(r, o1);
       assertTrue(msg.toString(), isEqual);
 
       Writable s2 = jsde.serialize(o1, hrsd.getObjectInspector());
       LOG.info("TWO:{}", s2);
-      Object o2 = jsde.deserialize(s2);
+      HCatRecord o2 = (HCatRecord) jsde.deserialize(s2);
       LOG.info("deserialized TWO : {} ", o2);
       msg.setLength(0);
-      isEqual = HCatDataCheckUtil.recordsEqual(r, (HCatRecord) o2, msg);
+      isEqual = HCatDataCheckUtil.recordsEqual(r, o2, msg);
       assertTrue(msg.toString(), isEqual);
     }
 
