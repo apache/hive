@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 
+import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.junit.After;
@@ -114,6 +115,8 @@ public class TestReplicationWithTableMigration {
       put("hive.support.concurrency", "false");
       put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
       put("hive.strict.managed.tables", "false");
+      put("hive.stats.autogather", "true");
+      put("hive.stats.column.autogather", "true");
     }};
     configsForPrimary.putAll(overrideConfigs);
     primary = new WarehouseInstance(LOG, miniDFSCluster, configsForPrimary);
@@ -503,5 +506,57 @@ public class TestReplicationWithTableMigration {
             .run("insert into table t2 partition(country='india') values ('bangalore')")
             .runFailure("alter table t1 set tblproperties('EXTERNAL'='false')")
             .runFailure("alter table t2 set tblproperties('EXTERNAL'='false')");
+  }
+
+  @Test
+  public void testMigrationWithUpgrade() throws Throwable {
+    WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
+            .run("create table tacid (id int) clustered by(id) into 3 buckets stored as orc ")
+            .run("create table texternal (id int) ")
+            .run("insert into texternal values (1)")
+            .dump(primaryDbName, null);
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("select count(*) from tacid")
+            .verifyResult("0")
+            .run("select id from texternal")
+            .verifyResult("1");
+
+    assertTrue(isFullAcidTable(replica.getTable(replicatedDbName, "tacid")));
+    assertFalse(MetaStoreUtils.isExternalTable(replica.getTable(replicatedDbName, "texternal")));
+
+    // forcefully (setting db property) alter the table type. For acid table, set the bootstrap acid table to true. For
+    // external table, the alter event should alter the table type at target cluster and then distcp should copy the
+    // files.
+    primary.enableAcid();
+    primary.run("use " + primaryDbName)
+            .run("alter database " + primaryDbName + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '')")
+            .run("insert into tacid values (1)")
+            .run("insert into texternal values (2)")
+            .run("alter table tacid set tblproperties ('transactional'='true')")
+            .run("alter table texternal SET TBLPROPERTIES('EXTERNAL'='TRUE')")
+            .run("insert into texternal values (3)")
+            .run("alter database " + primaryDbName + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')");
+    primary.disableAcid();
+
+    List<String> withConfigs = new ArrayList();
+    withConfigs.add("'hive.repl.bootstrap.acid.tables'='true'");
+    withConfigs.add("'hive.repl.dump.include.acid.tables'='true'");
+    withConfigs.add("'hive.repl.include.external.tables'='true'");
+    withConfigs.add("'hive.distcp.privileged.doAs' = '" + UserGroupInformation.getCurrentUser().getUserName() + "'");
+    tuple = primary.dump(primaryDbName, tuple.lastReplicationId, withConfigs);
+    replica.load(replicatedDbName, tuple.dumpLocation, withConfigs);
+    replica.run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("select id from tacid")
+            .verifyResult("1")
+            .run("select id from texternal")
+            .verifyResults(new String[] { "1", "2", "3" });
+
+    assertTrue(isFullAcidTable(replica.getTable(replicatedDbName, "tacid")));
+    assertTrue(MetaStoreUtils.isExternalTable(replica.getTable(replicatedDbName, "texternal")));
   }
 }

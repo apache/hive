@@ -101,11 +101,11 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     if (work.isIncrementalLoad()) {
       return executeIncrementalLoad(driverContext);
     } else {
-      return executeBootStrapLoad(driverContext);
+      return executeBootStrapLoad(driverContext, work.isBootstrapDuringIncLoad());
     }
   }
 
-  private int executeBootStrapLoad(DriverContext driverContext) {
+  private int executeBootStrapLoad(DriverContext driverContext, boolean isBootstrapDuringInc) {
     try {
       int maxTasks = conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS);
       Context context = new Context(work.dumpDirectory, conf, getHive(),
@@ -179,7 +179,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           TableEvent tableEvent = (TableEvent) next;
           LoadTable loadTable = new LoadTable(tableEvent, context, iterator.replLogger(),
                                               tableContext, loadTaskTracker);
-          tableTracker = loadTable.tasks();
+          tableTracker = loadTable.tasks(isBootstrapDuringInc);
           setUpDependencies(dbTracker, tableTracker);
           if (!scope.database && tableTracker.hasTasks()) {
             scope.rootTasks.addAll(tableTracker.tasks());
@@ -264,6 +264,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           || work.getPathsToCopyIterator().hasNext();
 
       if (addAnotherLoadTask) {
+        // pass on the bootstrap during incremental flag for next iteration.
+        work.setBootstrapDuringIncLoad(isBootstrapDuringInc);
         createBuilderTask(scope.rootTasks);
       }
 
@@ -471,7 +473,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         if (work.hasBootstrapLoadTasks()) {
           LOG.debug("Current incremental dump have tables to be bootstrapped. Switching to bootstrap "
                   + "mode after applying all events.");
-          return executeBootStrapLoad(driverContext);
+          return executeBootStrapLoad(driverContext, true);
         }
       }
 
