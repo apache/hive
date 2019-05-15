@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
+import org.apache.hadoop.hive.metastore.api.ExtendedTableInfo;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FindSchemasByColsResp;
 import org.apache.hadoop.hive.metastore.api.FindSchemasByColsRqst;
@@ -65,6 +66,7 @@ import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleResponse;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalRequest;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalResponse;
+import org.apache.hadoop.hive.metastore.api.GetTablesExtRequestFields;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
@@ -343,6 +345,22 @@ public interface IMetaStoreClient {
    */
   List<Table> getAllMaterializedViewObjectsForRewriting()
       throws MetaException, TException, UnknownDBException;
+
+  /**
+   * Get the names of all the tables along with extended table metadata
+   * @param catName catalog name.
+   * @param dbName Name of the database to fetch tables from.
+   * @param tablePattern pattern to match the tables names.
+   * @param requestedFields An int bitmask to indicate the depth of the returned objects
+   * @param processorCapabilities A list of "capabilities" possessed by the caller, to be matched with table's params
+   * @param processorId Any string id to identify the caller/client, for logging purposes only.
+   * @param limit Maximum size of the result set. <=0 indicates no limit
+   * @return List of ExtendedTableInfo that match the input arguments.
+   * @throws MetaException Thrown if there is error on fetching from DBMS.
+   * @throws TException Thrown if there is a thrift transport exception.
+   */
+  public List<ExtendedTableInfo> getTablesExt(String catName, String dbName, String tablePattern, int requestedFields,
+      int limit) throws MetaException, TException;
 
   /**
    * Get materialized views that have rewriting enabled.  This will use the default catalog.
