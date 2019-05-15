@@ -237,6 +237,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_table_objects_by_name\n");
   }
 
+  void get_tables_ext(std::vector<ExtendedTableInfo> & _return, const GetTablesExtRequest& req) {
+    // Your implementation goes here
+    printf("get_tables_ext\n");
+  }
+
   void get_table_req(GetTableResult& _return, const GetTableRequest& req) {
     // Your implementation goes here
     printf("get_table_req\n");

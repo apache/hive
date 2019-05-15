@@ -16,6 +16,10 @@ class hive_metastoreConstants {
   hive_metastoreConstants();
 
   std::string DDL_TIME;
+  int8_t ACCESSTYPE_NONE;
+  int8_t ACCESSTYPE_READONLY;
+  int8_t ACCESSTYPE_WRITEONLY;
+  int8_t ACCESSTYPE_READWRITE;
   std::string HIVE_FILTER_FIELD_OWNER;
   std::string HIVE_FILTER_FIELD_PARAMS;
   std::string HIVE_FILTER_FIELD_LAST_ACCESS;

@@ -29,6 +29,10 @@ namespace php metastore
 namespace cpp Apache.Hadoop.Hive
 
 const string DDL_TIME = "transient_lastDdlTime"
+const byte ACCESSTYPE_NONE       = 1;
+const byte ACCESSTYPE_READONLY   = 2;
+const byte ACCESSTYPE_WRITEONLY  = 4;
+const byte ACCESSTYPE_READWRITE  = 8;
 
 struct Version {
   1: string version,
@@ -553,6 +557,7 @@ struct Table {
   19: optional i64 writeId=-1,
   20: optional bool isStatsCompliant,
   21: optional ColumnStatistics colStats // column statistics for table
+  23: optional byte accessType
 }
 
 struct Partition {
@@ -838,7 +843,9 @@ struct GetPartitionsByNamesRequest {
   1: required string db_name,
   2: required string tbl_name,
   3: optional list<string> names,
-  4: optional bool get_col_stats
+  4: optional bool get_col_stats,
+  5: optional list<string> processorCapabilities,
+  6: optional string processorIdentifier
 }
 
 struct GetPartitionsByNamesResult {
@@ -853,6 +860,13 @@ enum ResourceType {
   JAR     = 1,
   FILE    = 2,
   ARCHIVE = 3,
+}
+
+// specifies which info to return with GetTablesExtRequest
+enum GetTablesExtRequestFields {
+  ACCESS_TYPE = 1,      // return accessType
+  PROCESSOR_CAPABILITIES = 2,    // return ALL Capabilities for each Tables
+  ALL = 2147483647
 }
 
 struct ResourceUri {
@@ -1310,7 +1324,6 @@ enum ClientCapability {
   INSERT_ONLY_TABLES = 2
 }
 
-
 struct ClientCapabilities {
   1: required list<ClientCapability> values
 }
@@ -1321,7 +1334,9 @@ struct GetTableRequest {
   3: optional ClientCapabilities capabilities,
   4: optional string catName,
   6: optional string validWriteIdList,
-  7: optional bool getColumnStats
+  7: optional bool getColumnStats,
+  8: optional list<string> processorCapabilities,
+  9: optional string processorIdentifier
 }
 
 struct GetTableResult {
@@ -1333,11 +1348,30 @@ struct GetTablesRequest {
   1: required string dbName,
   2: optional list<string> tblNames,
   3: optional ClientCapabilities capabilities,
-  4: optional string catName
+  4: optional string catName,
+  5: optional list<string> processorCapabilities,
+  6: optional string processorIdentifier
 }
 
 struct GetTablesResult {
   1: required list<Table> tables
+}
+
+struct GetTablesExtRequest {
+ 1: required string catalog,
+ 2: required string database,
+ 3: required string tableNamePattern,            // table name matching pattern
+ 4: required i32 requestedFields,               // ORed GetTablesExtRequestFields
+ 5: optional i32 limit,                          // maximum number of tables returned (0=all)
+ 6: optional list<string> processorCapabilities, // list of capabilities “possessed” by the client
+ 7: optional string processorIdentifier
+}
+
+// response to GetTablesExtRequest call
+struct ExtendedTableInfo {
+ 1: required string tblName,                     // always returned
+ 2: optional i32 accessType,              // if AccessType set
+ 3: optional list<string> processorCapabilities  // if ProcessorCapabilities set
 }
 
 // Request type for cm_recycle
@@ -1849,6 +1883,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   Table get_table(1:string dbname, 2:string tbl_name)
                        throws (1:MetaException o1, 2:NoSuchObjectException o2)
   list<Table> get_table_objects_by_name(1:string dbname, 2:list<string> tbl_names)
+  list<ExtendedTableInfo> get_tables_ext(1: GetTablesExtRequest req) throws (1: MetaException o1)
   GetTableResult get_table_req(1:GetTableRequest req) throws (1:MetaException o1, 2:NoSuchObjectException o2)
   GetTablesResult get_table_objects_by_name_req(1:GetTablesRequest req)
 				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)

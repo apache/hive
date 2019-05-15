@@ -155,6 +155,14 @@ module ResourceType
   VALID_VALUES = Set.new([JAR, FILE, ARCHIVE]).freeze
 end
 
+module GetTablesExtRequestFields
+  ACCESS_TYPE = 1
+  PROCESSOR_CAPABILITIES = 2
+  ALL = 2147483647
+  VALUE_MAP = {1 => "ACCESS_TYPE", 2 => "PROCESSOR_CAPABILITIES", 2147483647 => "ALL"}
+  VALID_VALUES = Set.new([ACCESS_TYPE, PROCESSOR_CAPABILITIES, ALL]).freeze
+end
+
 module FileMetadataExprType
   ORC_SARG = 1
   VALUE_MAP = {1 => "ORC_SARG"}
@@ -1492,6 +1500,7 @@ class Table
   WRITEID = 19
   ISSTATSCOMPLIANT = 20
   COLSTATS = 21
+  ACCESSTYPE = 23
 
   FIELDS = {
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
@@ -1514,7 +1523,8 @@ class Table
     OWNERTYPE => {:type => ::Thrift::Types::I32, :name => 'ownerType', :default =>     1, :optional => true, :enum_class => ::PrincipalType},
     WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId', :default => -1, :optional => true},
     ISSTATSCOMPLIANT => {:type => ::Thrift::Types::BOOL, :name => 'isStatsCompliant', :optional => true},
-    COLSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'colStats', :class => ::ColumnStatistics, :optional => true}
+    COLSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'colStats', :class => ::ColumnStatistics, :optional => true},
+    ACCESSTYPE => {:type => ::Thrift::Types::BYTE, :name => 'accessType', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2487,12 +2497,16 @@ class GetPartitionsByNamesRequest
   TBL_NAME = 2
   NAMES = 3
   GET_COL_STATS = 4
+  PROCESSORCAPABILITIES = 5
+  PROCESSORIDENTIFIER = 6
 
   FIELDS = {
     DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
     TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
     NAMES => {:type => ::Thrift::Types::LIST, :name => 'names', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
-    GET_COL_STATS => {:type => ::Thrift::Types::BOOL, :name => 'get_col_stats', :optional => true}
+    GET_COL_STATS => {:type => ::Thrift::Types::BOOL, :name => 'get_col_stats', :optional => true},
+    PROCESSORCAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'processorCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    PROCESSORIDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'processorIdentifier', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4054,6 +4068,8 @@ class GetTableRequest
   CATNAME = 4
   VALIDWRITEIDLIST = 6
   GETCOLUMNSTATS = 7
+  PROCESSORCAPABILITIES = 8
+  PROCESSORIDENTIFIER = 9
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
@@ -4061,7 +4077,9 @@ class GetTableRequest
     CAPABILITIES => {:type => ::Thrift::Types::STRUCT, :name => 'capabilities', :class => ::ClientCapabilities, :optional => true},
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
-    GETCOLUMNSTATS => {:type => ::Thrift::Types::BOOL, :name => 'getColumnStats', :optional => true}
+    GETCOLUMNSTATS => {:type => ::Thrift::Types::BOOL, :name => 'getColumnStats', :optional => true},
+    PROCESSORCAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'processorCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    PROCESSORIDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'processorIdentifier', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4099,12 +4117,16 @@ class GetTablesRequest
   TBLNAMES = 2
   CAPABILITIES = 3
   CATNAME = 4
+  PROCESSORCAPABILITIES = 5
+  PROCESSORIDENTIFIER = 6
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TBLNAMES => {:type => ::Thrift::Types::LIST, :name => 'tblNames', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     CAPABILITIES => {:type => ::Thrift::Types::STRUCT, :name => 'capabilities', :class => ::ClientCapabilities, :optional => true},
-    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
+    PROCESSORCAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'processorCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    PROCESSORIDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'processorIdentifier', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4128,6 +4150,59 @@ class GetTablesResult
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tables is unset!') unless @tables
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetTablesExtRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CATALOG = 1
+  DATABASE = 2
+  TABLENAMEPATTERN = 3
+  REQUESTEDFIELDS = 4
+  LIMIT = 5
+  PROCESSORCAPABILITIES = 6
+  PROCESSORIDENTIFIER = 7
+
+  FIELDS = {
+    CATALOG => {:type => ::Thrift::Types::STRING, :name => 'catalog'},
+    DATABASE => {:type => ::Thrift::Types::STRING, :name => 'database'},
+    TABLENAMEPATTERN => {:type => ::Thrift::Types::STRING, :name => 'tableNamePattern'},
+    REQUESTEDFIELDS => {:type => ::Thrift::Types::I32, :name => 'requestedFields'},
+    LIMIT => {:type => ::Thrift::Types::I32, :name => 'limit', :optional => true},
+    PROCESSORCAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'processorCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    PROCESSORIDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'processorIdentifier', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field catalog is unset!') unless @catalog
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field database is unset!') unless @database
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableNamePattern is unset!') unless @tableNamePattern
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field requestedFields is unset!') unless @requestedFields
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ExtendedTableInfo
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TBLNAME = 1
+  ACCESSTYPE = 2
+  PROCESSORCAPABILITIES = 3
+
+  FIELDS = {
+    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
+    ACCESSTYPE => {:type => ::Thrift::Types::I32, :name => 'accessType', :optional => true},
+    PROCESSORCAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'processorCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
   end
 
   ::Thrift::Struct.generate_accessors self

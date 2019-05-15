@@ -203,6 +203,16 @@ struct ResourceType {
 
 extern const std::map<int, const char*> _ResourceType_VALUES_TO_NAMES;
 
+struct GetTablesExtRequestFields {
+  enum type {
+    ACCESS_TYPE = 1,
+    PROCESSOR_CAPABILITIES = 2,
+    ALL = 2147483647
+  };
+};
+
+extern const std::map<int, const char*> _GetTablesExtRequestFields_VALUES_TO_NAMES;
+
 struct FileMetadataExprType {
   enum type {
     ORC_SARG = 1
@@ -572,6 +582,10 @@ class GetTableResult;
 class GetTablesRequest;
 
 class GetTablesResult;
+
+class GetTablesExtRequest;
+
+class ExtendedTableInfo;
 
 class CmRecycleRequest;
 
@@ -4180,7 +4194,7 @@ inline std::ostream& operator<<(std::ostream& out, const ColumnStatistics& obj)
 }
 
 typedef struct _Table__isset {
-  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), catName(false), ownerType(true), writeId(true), isStatsCompliant(false), colStats(false) {}
+  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), catName(false), ownerType(true), writeId(true), isStatsCompliant(false), colStats(false), accessType(false) {}
   bool tableName :1;
   bool dbName :1;
   bool owner :1;
@@ -4202,6 +4216,7 @@ typedef struct _Table__isset {
   bool writeId :1;
   bool isStatsCompliant :1;
   bool colStats :1;
+  bool accessType :1;
 } _Table__isset;
 
 class Table {
@@ -4209,7 +4224,7 @@ class Table {
 
   Table(const Table&);
   Table& operator=(const Table&);
-  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false), rewriteEnabled(0), catName(), ownerType((PrincipalType::type)1), writeId(-1LL), isStatsCompliant(0) {
+  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false), rewriteEnabled(0), catName(), ownerType((PrincipalType::type)1), writeId(-1LL), isStatsCompliant(0), accessType(0) {
     ownerType = (PrincipalType::type)1;
 
   }
@@ -4236,6 +4251,7 @@ class Table {
   int64_t writeId;
   bool isStatsCompliant;
   ColumnStatistics colStats;
+  int8_t accessType;
 
   _Table__isset __isset;
 
@@ -4280,6 +4296,8 @@ class Table {
   void __set_isStatsCompliant(const bool val);
 
   void __set_colStats(const ColumnStatistics& val);
+
+  void __set_accessType(const int8_t val);
 
   bool operator == (const Table & rhs) const
   {
@@ -4342,6 +4360,10 @@ class Table {
     if (__isset.colStats != rhs.__isset.colStats)
       return false;
     else if (__isset.colStats && !(colStats == rhs.colStats))
+      return false;
+    if (__isset.accessType != rhs.__isset.accessType)
+      return false;
+    else if (__isset.accessType && !(accessType == rhs.accessType))
       return false;
     return true;
   }
@@ -6856,9 +6878,11 @@ inline std::ostream& operator<<(std::ostream& out, const PartitionValuesResponse
 }
 
 typedef struct _GetPartitionsByNamesRequest__isset {
-  _GetPartitionsByNamesRequest__isset() : names(false), get_col_stats(false) {}
+  _GetPartitionsByNamesRequest__isset() : names(false), get_col_stats(false), processorCapabilities(false), processorIdentifier(false) {}
   bool names :1;
   bool get_col_stats :1;
+  bool processorCapabilities :1;
+  bool processorIdentifier :1;
 } _GetPartitionsByNamesRequest__isset;
 
 class GetPartitionsByNamesRequest {
@@ -6866,7 +6890,7 @@ class GetPartitionsByNamesRequest {
 
   GetPartitionsByNamesRequest(const GetPartitionsByNamesRequest&);
   GetPartitionsByNamesRequest& operator=(const GetPartitionsByNamesRequest&);
-  GetPartitionsByNamesRequest() : db_name(), tbl_name(), get_col_stats(0) {
+  GetPartitionsByNamesRequest() : db_name(), tbl_name(), get_col_stats(0), processorIdentifier() {
   }
 
   virtual ~GetPartitionsByNamesRequest() throw();
@@ -6874,6 +6898,8 @@ class GetPartitionsByNamesRequest {
   std::string tbl_name;
   std::vector<std::string>  names;
   bool get_col_stats;
+  std::vector<std::string>  processorCapabilities;
+  std::string processorIdentifier;
 
   _GetPartitionsByNamesRequest__isset __isset;
 
@@ -6884,6 +6910,10 @@ class GetPartitionsByNamesRequest {
   void __set_names(const std::vector<std::string> & val);
 
   void __set_get_col_stats(const bool val);
+
+  void __set_processorCapabilities(const std::vector<std::string> & val);
+
+  void __set_processorIdentifier(const std::string& val);
 
   bool operator == (const GetPartitionsByNamesRequest & rhs) const
   {
@@ -6898,6 +6928,14 @@ class GetPartitionsByNamesRequest {
     if (__isset.get_col_stats != rhs.__isset.get_col_stats)
       return false;
     else if (__isset.get_col_stats && !(get_col_stats == rhs.get_col_stats))
+      return false;
+    if (__isset.processorCapabilities != rhs.__isset.processorCapabilities)
+      return false;
+    else if (__isset.processorCapabilities && !(processorCapabilities == rhs.processorCapabilities))
+      return false;
+    if (__isset.processorIdentifier != rhs.__isset.processorIdentifier)
+      return false;
+    else if (__isset.processorIdentifier && !(processorIdentifier == rhs.processorIdentifier))
       return false;
     return true;
   }
@@ -10860,11 +10898,13 @@ inline std::ostream& operator<<(std::ostream& out, const ClientCapabilities& obj
 }
 
 typedef struct _GetTableRequest__isset {
-  _GetTableRequest__isset() : capabilities(false), catName(false), validWriteIdList(false), getColumnStats(false) {}
+  _GetTableRequest__isset() : capabilities(false), catName(false), validWriteIdList(false), getColumnStats(false), processorCapabilities(false), processorIdentifier(false) {}
   bool capabilities :1;
   bool catName :1;
   bool validWriteIdList :1;
   bool getColumnStats :1;
+  bool processorCapabilities :1;
+  bool processorIdentifier :1;
 } _GetTableRequest__isset;
 
 class GetTableRequest {
@@ -10872,7 +10912,7 @@ class GetTableRequest {
 
   GetTableRequest(const GetTableRequest&);
   GetTableRequest& operator=(const GetTableRequest&);
-  GetTableRequest() : dbName(), tblName(), catName(), validWriteIdList(), getColumnStats(0) {
+  GetTableRequest() : dbName(), tblName(), catName(), validWriteIdList(), getColumnStats(0), processorIdentifier() {
   }
 
   virtual ~GetTableRequest() throw();
@@ -10882,6 +10922,8 @@ class GetTableRequest {
   std::string catName;
   std::string validWriteIdList;
   bool getColumnStats;
+  std::vector<std::string>  processorCapabilities;
+  std::string processorIdentifier;
 
   _GetTableRequest__isset __isset;
 
@@ -10896,6 +10938,10 @@ class GetTableRequest {
   void __set_validWriteIdList(const std::string& val);
 
   void __set_getColumnStats(const bool val);
+
+  void __set_processorCapabilities(const std::vector<std::string> & val);
+
+  void __set_processorIdentifier(const std::string& val);
 
   bool operator == (const GetTableRequest & rhs) const
   {
@@ -10918,6 +10964,14 @@ class GetTableRequest {
     if (__isset.getColumnStats != rhs.__isset.getColumnStats)
       return false;
     else if (__isset.getColumnStats && !(getColumnStats == rhs.getColumnStats))
+      return false;
+    if (__isset.processorCapabilities != rhs.__isset.processorCapabilities)
+      return false;
+    else if (__isset.processorCapabilities && !(processorCapabilities == rhs.processorCapabilities))
+      return false;
+    if (__isset.processorIdentifier != rhs.__isset.processorIdentifier)
+      return false;
+    else if (__isset.processorIdentifier && !(processorIdentifier == rhs.processorIdentifier))
       return false;
     return true;
   }
@@ -10995,10 +11049,12 @@ inline std::ostream& operator<<(std::ostream& out, const GetTableResult& obj)
 }
 
 typedef struct _GetTablesRequest__isset {
-  _GetTablesRequest__isset() : tblNames(false), capabilities(false), catName(false) {}
+  _GetTablesRequest__isset() : tblNames(false), capabilities(false), catName(false), processorCapabilities(false), processorIdentifier(false) {}
   bool tblNames :1;
   bool capabilities :1;
   bool catName :1;
+  bool processorCapabilities :1;
+  bool processorIdentifier :1;
 } _GetTablesRequest__isset;
 
 class GetTablesRequest {
@@ -11006,7 +11062,7 @@ class GetTablesRequest {
 
   GetTablesRequest(const GetTablesRequest&);
   GetTablesRequest& operator=(const GetTablesRequest&);
-  GetTablesRequest() : dbName(), catName() {
+  GetTablesRequest() : dbName(), catName(), processorIdentifier() {
   }
 
   virtual ~GetTablesRequest() throw();
@@ -11014,6 +11070,8 @@ class GetTablesRequest {
   std::vector<std::string>  tblNames;
   ClientCapabilities capabilities;
   std::string catName;
+  std::vector<std::string>  processorCapabilities;
+  std::string processorIdentifier;
 
   _GetTablesRequest__isset __isset;
 
@@ -11024,6 +11082,10 @@ class GetTablesRequest {
   void __set_capabilities(const ClientCapabilities& val);
 
   void __set_catName(const std::string& val);
+
+  void __set_processorCapabilities(const std::vector<std::string> & val);
+
+  void __set_processorIdentifier(const std::string& val);
 
   bool operator == (const GetTablesRequest & rhs) const
   {
@@ -11040,6 +11102,14 @@ class GetTablesRequest {
     if (__isset.catName != rhs.__isset.catName)
       return false;
     else if (__isset.catName && !(catName == rhs.catName))
+      return false;
+    if (__isset.processorCapabilities != rhs.__isset.processorCapabilities)
+      return false;
+    else if (__isset.processorCapabilities && !(processorCapabilities == rhs.processorCapabilities))
+      return false;
+    if (__isset.processorIdentifier != rhs.__isset.processorIdentifier)
+      return false;
+    else if (__isset.processorIdentifier && !(processorIdentifier == rhs.processorIdentifier))
       return false;
     return true;
   }
@@ -11098,6 +11168,151 @@ class GetTablesResult {
 void swap(GetTablesResult &a, GetTablesResult &b);
 
 inline std::ostream& operator<<(std::ostream& out, const GetTablesResult& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _GetTablesExtRequest__isset {
+  _GetTablesExtRequest__isset() : limit(false), processorCapabilities(false), processorIdentifier(false) {}
+  bool limit :1;
+  bool processorCapabilities :1;
+  bool processorIdentifier :1;
+} _GetTablesExtRequest__isset;
+
+class GetTablesExtRequest {
+ public:
+
+  GetTablesExtRequest(const GetTablesExtRequest&);
+  GetTablesExtRequest& operator=(const GetTablesExtRequest&);
+  GetTablesExtRequest() : catalog(), database(), tableNamePattern(), requestedFields(0), limit(0), processorIdentifier() {
+  }
+
+  virtual ~GetTablesExtRequest() throw();
+  std::string catalog;
+  std::string database;
+  std::string tableNamePattern;
+  int32_t requestedFields;
+  int32_t limit;
+  std::vector<std::string>  processorCapabilities;
+  std::string processorIdentifier;
+
+  _GetTablesExtRequest__isset __isset;
+
+  void __set_catalog(const std::string& val);
+
+  void __set_database(const std::string& val);
+
+  void __set_tableNamePattern(const std::string& val);
+
+  void __set_requestedFields(const int32_t val);
+
+  void __set_limit(const int32_t val);
+
+  void __set_processorCapabilities(const std::vector<std::string> & val);
+
+  void __set_processorIdentifier(const std::string& val);
+
+  bool operator == (const GetTablesExtRequest & rhs) const
+  {
+    if (!(catalog == rhs.catalog))
+      return false;
+    if (!(database == rhs.database))
+      return false;
+    if (!(tableNamePattern == rhs.tableNamePattern))
+      return false;
+    if (!(requestedFields == rhs.requestedFields))
+      return false;
+    if (__isset.limit != rhs.__isset.limit)
+      return false;
+    else if (__isset.limit && !(limit == rhs.limit))
+      return false;
+    if (__isset.processorCapabilities != rhs.__isset.processorCapabilities)
+      return false;
+    else if (__isset.processorCapabilities && !(processorCapabilities == rhs.processorCapabilities))
+      return false;
+    if (__isset.processorIdentifier != rhs.__isset.processorIdentifier)
+      return false;
+    else if (__isset.processorIdentifier && !(processorIdentifier == rhs.processorIdentifier))
+      return false;
+    return true;
+  }
+  bool operator != (const GetTablesExtRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetTablesExtRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetTablesExtRequest &a, GetTablesExtRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetTablesExtRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _ExtendedTableInfo__isset {
+  _ExtendedTableInfo__isset() : accessType(false), processorCapabilities(false) {}
+  bool accessType :1;
+  bool processorCapabilities :1;
+} _ExtendedTableInfo__isset;
+
+class ExtendedTableInfo {
+ public:
+
+  ExtendedTableInfo(const ExtendedTableInfo&);
+  ExtendedTableInfo& operator=(const ExtendedTableInfo&);
+  ExtendedTableInfo() : tblName(), accessType(0) {
+  }
+
+  virtual ~ExtendedTableInfo() throw();
+  std::string tblName;
+  int32_t accessType;
+  std::vector<std::string>  processorCapabilities;
+
+  _ExtendedTableInfo__isset __isset;
+
+  void __set_tblName(const std::string& val);
+
+  void __set_accessType(const int32_t val);
+
+  void __set_processorCapabilities(const std::vector<std::string> & val);
+
+  bool operator == (const ExtendedTableInfo & rhs) const
+  {
+    if (!(tblName == rhs.tblName))
+      return false;
+    if (__isset.accessType != rhs.__isset.accessType)
+      return false;
+    else if (__isset.accessType && !(accessType == rhs.accessType))
+      return false;
+    if (__isset.processorCapabilities != rhs.__isset.processorCapabilities)
+      return false;
+    else if (__isset.processorCapabilities && !(processorCapabilities == rhs.processorCapabilities))
+      return false;
+    return true;
+  }
+  bool operator != (const ExtendedTableInfo &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ExtendedTableInfo & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ExtendedTableInfo &a, ExtendedTableInfo &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ExtendedTableInfo& obj)
 {
   obj.printTo(out);
   return out;

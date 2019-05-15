@@ -13,6 +13,14 @@ const hive_metastoreConstants g_hive_metastore_constants;
 hive_metastoreConstants::hive_metastoreConstants() {
   DDL_TIME = "transient_lastDdlTime";
 
+  ACCESSTYPE_NONE = 1;
+
+  ACCESSTYPE_READONLY = 2;
+
+  ACCESSTYPE_WRITEONLY = 4;
+
+  ACCESSTYPE_READWRITE = 8;
+
   HIVE_FILTER_FIELD_OWNER = "hive_filter_field_owner__";
 
   HIVE_FILTER_FIELD_PARAMS = "hive_filter_field_params__";
