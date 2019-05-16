@@ -165,11 +165,12 @@ public class LoadTable {
       return ReplLoadOpType.LOAD_NEW;
     }
 
-    // In case user has asked for bootstrap of transactional table, we replace the old one if present. This is to
-    // make sure that the transactional info like write id etc for the table is consistent between the
-    // source and target cluster.
-    if (isBootstrapDuringInc && AcidUtils.isTransactionalTable(table)) {
-      LOG.info("Transactional table " + table.getTableName() + " will be replaced");
+    // In case user has asked for bootstrap of table during a incremental load, we replace the old one if present.
+    // This is to make sure that the transactional info like write id etc for the table is consistent between the
+    // source and target cluster. This is also to avoid mismatch between target and source cluster table type in case
+    // migration and upgrade uses different conversion rule.
+    if (isBootstrapDuringInc) {
+      LOG.info("Table " + table.getTableName() + " will be replaced as bootstrap is requested during incremental load");
       return ReplLoadOpType.LOAD_REPLACE;
     }
 

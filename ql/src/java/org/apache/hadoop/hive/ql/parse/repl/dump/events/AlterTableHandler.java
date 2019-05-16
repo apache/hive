@@ -95,7 +95,7 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
     if (withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES)) {
       if (!AcidUtils.isTransactionalTable(before) && AcidUtils.isTransactionalTable(after)) {
         LOG.info("The table " + after.getTableName() + " is converted to ACID table." +
-                " It will be replicated with bootstrap load as REPL_BOOTSTRAP_ACID_TABLES is set to true.");
+                " It will be replicated with bootstrap load as hive.repl.bootstrap.acid.tables is set to true.");
         return;
       }
     }

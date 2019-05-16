@@ -512,6 +512,7 @@ public class TestReplicationWithTableMigration {
   public void testMigrationWithUpgrade() throws Throwable {
     WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
             .run("create table tacid (id int) clustered by(id) into 3 buckets stored as orc ")
+            .run("insert into tacid values (3)")
             .run("create table texternal (id int) ")
             .run("insert into texternal values (1)")
             .dump(primaryDbName, null);
@@ -519,8 +520,8 @@ public class TestReplicationWithTableMigration {
             .run("use " + replicatedDbName)
             .run("repl status " + replicatedDbName)
             .verifyResult(tuple.lastReplicationId)
-            .run("select count(*) from tacid")
-            .verifyResult("0")
+            .run("select id from tacid")
+            .verifyResult("3")
             .run("select id from texternal")
             .verifyResult("1");
 
@@ -529,7 +530,7 @@ public class TestReplicationWithTableMigration {
 
     // forcefully (setting db property) alter the table type. For acid table, set the bootstrap acid table to true. For
     // external table, the alter event should alter the table type at target cluster and then distcp should copy the
-    // files.
+    // files. This is done to mock the upgrade done using HiveStrictManagedMigration.
     primary.enableAcid();
     primary.run("use " + primaryDbName)
             .run("alter database " + primaryDbName + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '')")
@@ -539,6 +540,10 @@ public class TestReplicationWithTableMigration {
             .run("alter table texternal SET TBLPROPERTIES('EXTERNAL'='TRUE')")
             .run("insert into texternal values (3)")
             .run("alter database " + primaryDbName + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')");
+
+    assertTrue(isFullAcidTable(primary.getTable(primaryDbName, "tacid")));
+    assertTrue(MetaStoreUtils.isExternalTable(primary.getTable(primaryDbName, "texternal")));
+
     primary.disableAcid();
 
     List<String> withConfigs = new ArrayList();
@@ -552,7 +557,7 @@ public class TestReplicationWithTableMigration {
             .run("repl status " + replicatedDbName)
             .verifyResult(tuple.lastReplicationId)
             .run("select id from tacid")
-            .verifyResult("1")
+            .verifyResults(new String[] { "1", "3" })
             .run("select id from texternal")
             .verifyResults(new String[] { "1", "2", "3" });
 
