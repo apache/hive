@@ -2116,7 +2116,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
       exec.labels.push(ctx.L_ID().toString());
     }
     else {
-      String label = ctx.L_LABEL().getText();
+      String label = ctx.ident().getText();
       if (label.endsWith(":")) {
         label = label.substring(0, label.length() - 1);
       }

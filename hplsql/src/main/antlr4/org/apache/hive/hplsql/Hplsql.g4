@@ -748,7 +748,7 @@ for_range_stmt :        // FOR (Integer range) statement
      ;
      
 label :
-       L_LABEL
+       ident T_COLON
      | T_LESS T_LESS L_ID T_GREATER T_GREATER
      ;
 
@@ -1920,9 +1920,6 @@ L_S_COMMENT : ('--' | '//')  .*? '\r'? '\n' -> channel(HIDDEN) ;       // Single
 L_FILE      : ([a-zA-Z] ':' '\\'?)? L_ID ('\\' L_ID)*                  // File path (a/b/c Linux path causes conflicts with division operator and handled at parser level)
             ; 
 
-L_LABEL     : ([a-zA-Z] | L_DIGIT | '_')* ':'            
-            ;
-            
 fragment
 L_ID_PART  :
              [a-zA-Z] ([a-zA-Z] | L_DIGIT | '_')*                           // Identifier part
