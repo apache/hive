@@ -15,11 +15,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ext_non_part
 POSTHOOK: Lineage: ext_non_part.col SCRIPT []
-PREHOOK: query: CREATE TABLE b LIKE ext_non_part
+PREHOOK: query: CREATE TABLE b (col string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@b
-POSTHOOK: query: CREATE TABLE b LIKE ext_non_part
+POSTHOOK: query: CREATE TABLE b (col string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@b
@@ -92,6 +92,68 @@ POSTHOOK: query: drop table int_non_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@int_non_part
 POSTHOOK: Output: default@int_non_part
+PREHOOK: query: CREATE TABLE int_buck (col string)
+CLUSTERED BY (col) INTO 4 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@int_buck
+POSTHOOK: query: CREATE TABLE int_buck (col string)
+CLUSTERED BY (col) INTO 4 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@int_buck
+PREHOOK: query: INSERT INTO int_buck VALUES ('first'), ('second'), ('third'), ('fourth')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@int_buck
+POSTHOOK: query: INSERT INTO int_buck VALUES ('first'), ('second'), ('third'), ('fourth')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@int_buck
+POSTHOOK: Lineage: int_buck.col SCRIPT []
+PREHOOK: query: SELECT count(*) FROM int_buck
+PREHOOK: type: QUERY
+PREHOOK: Input: default@int_buck
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM int_buck
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@int_buck
+#### A masked pattern was here ####
+4
+PREHOOK: query: INSERT OVERWRITE TABLE int_buck SELECT col FROM b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@b
+PREHOOK: Output: default@int_buck
+POSTHOOK: query: INSERT OVERWRITE TABLE int_buck SELECT col FROM b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@b
+POSTHOOK: Output: default@int_buck
+POSTHOOK: Lineage: int_buck.col SIMPLE [(b)b.FieldSchema(name:col, type:string, comment:null), ]
+PREHOOK: query: SELECT count(*) FROM int_buck
+PREHOOK: type: QUERY
+PREHOOK: Input: default@int_buck
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM int_buck
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@int_buck
+#### A masked pattern was here ####
+0
+PREHOOK: query: SELECT * FROM int_buck
+PREHOOK: type: QUERY
+PREHOOK: Input: default@int_buck
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM int_buck
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@int_buck
+#### A masked pattern was here ####
+PREHOOK: query: drop table int_buck
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@int_buck
+PREHOOK: Output: default@int_buck
+POSTHOOK: query: drop table int_buck
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@int_buck
+POSTHOOK: Output: default@int_buck
 PREHOOK: query: drop table b
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@b
