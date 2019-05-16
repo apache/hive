@@ -732,7 +732,7 @@ STAGE PLANS:
                     columns.types bigint:bigint:date:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:varchar(1500):varchar(500):varchar(50):varchar(50):varchar(3000):varchar(50):varchar(50):varchar(50):varchar(1):decimal(32,6):timestamp:varchar(30):varchar(50):timestamp:bigint:bigint:varchar(70):varchar(250)
 #### A masked pattern was here ####
                     name default.l3_monthly_dw_dimplan
-                    numFiles 1
+                    numFiles 64
                     numRows 180340
                     rawDataSize 269826156
                     serialization.ddl struct l3_monthly_dw_dimplan { i64 idp_warehouse_id, i64 idp_audit_id, date idp_data_date, i64 l3_snapshot_number, i64 plan_key, i64 project_key, i64 charge_code_key, i64 transclass_key, i64 resource_key, i64 finplan_detail_object_id, i64 project_object_id, i64 txn_class_object_id, i64 charge_code_object_id, i64 resoruce_object_id, varchar(1500) plan_name, varchar(500) plan_code, varchar(50) plan_type, varchar(50) period_type, varchar(3000) plan_description, varchar(50) plan_status, varchar(50) period_start, varchar(50) period_end, varchar(1) plan_of_record, decimal(32,6) percentage, timestamp l3_created_date, varchar(30) bmo_cost_type, varchar(50) bmo_fiscal_year, timestamp clarity_updated_date, i64 is_latest_snapshot, i64 latest_fiscal_budget_plan, varchar(70) plan_category, varchar(250) last_updated_by}
@@ -755,7 +755,7 @@ STAGE PLANS:
                       columns.types bigint:bigint:date:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:varchar(1500):varchar(500):varchar(50):varchar(50):varchar(3000):varchar(50):varchar(50):varchar(50):varchar(1):decimal(32,6):timestamp:varchar(30):varchar(50):timestamp:bigint:bigint:varchar(70):varchar(250)
 #### A masked pattern was here ####
                       name default.l3_monthly_dw_dimplan
-                      numFiles 1
+                      numFiles 64
                       numRows 180340
                       rawDataSize 269826156
                       serialization.ddl struct l3_monthly_dw_dimplan { i64 idp_warehouse_id, i64 idp_audit_id, date idp_data_date, i64 l3_snapshot_number, i64 plan_key, i64 project_key, i64 charge_code_key, i64 transclass_key, i64 resource_key, i64 finplan_detail_object_id, i64 project_object_id, i64 txn_class_object_id, i64 charge_code_object_id, i64 resoruce_object_id, varchar(1500) plan_name, varchar(500) plan_code, varchar(50) plan_type, varchar(50) period_type, varchar(3000) plan_description, varchar(50) plan_status, varchar(50) period_start, varchar(50) period_end, varchar(1) plan_of_record, decimal(32,6) percentage, timestamp l3_created_date, varchar(30) bmo_cost_type, varchar(50) bmo_fiscal_year, timestamp clarity_updated_date, i64 is_latest_snapshot, i64 latest_fiscal_budget_plan, varchar(70) plan_category, varchar(250) last_updated_by}
@@ -1241,7 +1241,7 @@ STAGE PLANS:
                     columns.types bigint:bigint:date:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:varchar(1500):varchar(500):varchar(50):varchar(50):varchar(3000):varchar(50):varchar(50):varchar(50):varchar(1):decimal(32,6):timestamp:varchar(30):varchar(50):timestamp:bigint:bigint:varchar(70):varchar(250)
 #### A masked pattern was here ####
                     name default.l3_monthly_dw_dimplan
-                    numFiles 1
+                    numFiles 64
                     numRows 180340
                     rawDataSize 269826156
                     serialization.ddl struct l3_monthly_dw_dimplan { i64 idp_warehouse_id, i64 idp_audit_id, date idp_data_date, i64 l3_snapshot_number, i64 plan_key, i64 project_key, i64 charge_code_key, i64 transclass_key, i64 resource_key, i64 finplan_detail_object_id, i64 project_object_id, i64 txn_class_object_id, i64 charge_code_object_id, i64 resoruce_object_id, varchar(1500) plan_name, varchar(500) plan_code, varchar(50) plan_type, varchar(50) period_type, varchar(3000) plan_description, varchar(50) plan_status, varchar(50) period_start, varchar(50) period_end, varchar(1) plan_of_record, decimal(32,6) percentage, timestamp l3_created_date, varchar(30) bmo_cost_type, varchar(50) bmo_fiscal_year, timestamp clarity_updated_date, i64 is_latest_snapshot, i64 latest_fiscal_budget_plan, varchar(70) plan_category, varchar(250) last_updated_by}
@@ -1264,7 +1264,7 @@ STAGE PLANS:
                       columns.types bigint:bigint:date:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:varchar(1500):varchar(500):varchar(50):varchar(50):varchar(3000):varchar(50):varchar(50):varchar(50):varchar(1):decimal(32,6):timestamp:varchar(30):varchar(50):timestamp:bigint:bigint:varchar(70):varchar(250)
 #### A masked pattern was here ####
                       name default.l3_monthly_dw_dimplan
-                      numFiles 1
+                      numFiles 64
                       numRows 180340
                       rawDataSize 269826156
                       serialization.ddl struct l3_monthly_dw_dimplan { i64 idp_warehouse_id, i64 idp_audit_id, date idp_data_date, i64 l3_snapshot_number, i64 plan_key, i64 project_key, i64 charge_code_key, i64 transclass_key, i64 resource_key, i64 finplan_detail_object_id, i64 project_object_id, i64 txn_class_object_id, i64 charge_code_object_id, i64 resoruce_object_id, varchar(1500) plan_name, varchar(500) plan_code, varchar(50) plan_type, varchar(50) period_type, varchar(3000) plan_description, varchar(50) plan_status, varchar(50) period_start, varchar(50) period_end, varchar(1) plan_of_record, decimal(32,6) percentage, timestamp l3_created_date, varchar(30) bmo_cost_type, varchar(50) bmo_fiscal_year, timestamp clarity_updated_date, i64 is_latest_snapshot, i64 latest_fiscal_budget_plan, varchar(70) plan_category, varchar(250) last_updated_by}

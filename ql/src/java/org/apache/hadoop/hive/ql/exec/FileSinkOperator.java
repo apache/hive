@@ -98,7 +98,7 @@ import org.slf4j.LoggerFactory;
  **/
 @SuppressWarnings("deprecation")
 public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
-    Serializable {
+    Serializable, IConfigureJobConf {
 
   public static final Logger LOG = LoggerFactory.getLogger(FileSinkOperator.class);
 
@@ -1260,13 +1260,12 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     }
 
     if (!bDynParts && !filesCreated) {
-      boolean skipFiles = "tez".equalsIgnoreCase(
+      boolean isTez = "tez".equalsIgnoreCase(
           HiveConf.getVar(hconf, ConfVars.HIVE_EXECUTION_ENGINE));
-      if (skipFiles) {
-        Class<?> clazz = conf.getTableInfo().getOutputFileFormatClass();
-        skipFiles = !StreamingOutputFormat.class.isAssignableFrom(clazz);
-      }
-      if (!skipFiles) {
+      Class<?> clazz = conf.getTableInfo().getOutputFileFormatClass();
+      boolean isStreaming = StreamingOutputFormat.class.isAssignableFrom(clazz);
+
+      if (!isTez || isStreaming || this.isInsertOverwrite) {
         createBucketFiles(fsp);
       }
     }
@@ -1607,4 +1606,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     return !conf.getTableInfo().isNonNative();
   }
 
+  @Override
+  public void configureJobConf(JobConf job) {
+    if (conf.getInsertOverwrite()) {
+      job.setBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, true);
+    }
+  }
 }
