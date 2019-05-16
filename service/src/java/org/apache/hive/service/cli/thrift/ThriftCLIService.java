@@ -856,7 +856,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       throw new TException(e);
     } catch (Exception e) {
       // If concurrently the query is closed before we fetch queryID.
-      return new TGetQueryIdResp((String)null);
+      return new TGetQueryIdResp("");
     }
   }
 
