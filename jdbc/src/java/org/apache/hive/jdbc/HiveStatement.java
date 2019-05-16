@@ -1026,7 +1026,7 @@ public class HiveStatement implements java.sql.Statement {
     try {
       String queryId = client.GetQueryId(new TGetQueryIdReq(stmtHandleTmp)).getQueryId();
 
-      // Returns empty string if query was already closed.
+      // queryId can be empty string if query was already closed. Need to return null in such case.
       return StringUtils.isBlank(queryId) ? null : queryId;
     } catch (TException e) {
       throw new SQLException(e);
