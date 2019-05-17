@@ -26,16 +26,16 @@ import org.slf4j.LoggerFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Extra load generator service for LLAP.
  */
 public class LlapLoadGeneratorService extends AbstractService {
   private static final Logger LOG = LoggerFactory.getLogger(LlapLoadGeneratorService.class);
-  private static final long INTERVAL = 10;
+  private long interval;
   private float threshold;
-  private String[] hostNames;
-  private int processors;
+  private String[] victimsHostName;
   private Thread[] threads;
 
   public LlapLoadGeneratorService() {
@@ -46,20 +46,21 @@ public class LlapLoadGeneratorService extends AbstractService {
   protected void serviceInit(Configuration conf) throws Exception {
     super.serviceInit(conf);
     threshold = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_UTILIZATION);
-    hostNames = HiveConf.getTrimmedStringsVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_HOSTNAME);
-    LOG.info("LlapLoadGeneratorService init with {} {}", threshold, hostNames);
+    victimsHostName = HiveConf.getTrimmedStringsVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_HOSTNAMES);
+    interval = HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_INTERVAL, TimeUnit.MILLISECONDS);
+    LOG.info("LlapLoadGeneratorService init with {} {} {}", interval, threshold, victimsHostName);
   }
 
+  @Override
   protected void serviceStart() throws UnknownHostException {
     String localHostName = InetAddress.getLocalHost().getHostName();
     LOG.debug("Local hostname is: {}", localHostName);
-    for (String hostName : hostNames) {
+    for (String hostName : victimsHostName) {
       if (hostName.equalsIgnoreCase(localHostName)) {
         LOG.debug("Starting load generator process on: {}", localHostName);
-        processors = Runtime.getRuntime().availableProcessors();
-        threads = new Thread[processors];
+        threads = new Thread[Runtime.getRuntime().availableProcessors()];
         Random random = new Random();
-        for (int i = 0; i < processors; i++) {
+        for (int i = 0; i < threads.length; i++) {
           threads[i] = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -67,15 +68,16 @@ public class LlapLoadGeneratorService extends AbstractService {
                 if (random.nextFloat() <= threshold) {
                   // Keep it busy
                   long startTime = System.currentTimeMillis();
-                  while (System.currentTimeMillis() - startTime < INTERVAL) {
+                  while (System.currentTimeMillis() - startTime < interval) {
                     // active loop, do nothing
                   }
                 } else {
                   // Keep it idle
                   try {
-                    Thread.sleep(INTERVAL);
+                    Thread.sleep(interval);
                   } catch (InterruptedException e) {
-                    // Ignore
+                    // In case of interrupt finish the load generation
+                    break;
                   }
                 }
               }
@@ -89,7 +91,7 @@ public class LlapLoadGeneratorService extends AbstractService {
 
   @Override
   protected void serviceStop() throws Exception {
-    for (int i = 0; i < processors; i++) {
+    for (int i = 0; i < threads.length; i++) {
       threads[i].interrupt();
     }
   }
