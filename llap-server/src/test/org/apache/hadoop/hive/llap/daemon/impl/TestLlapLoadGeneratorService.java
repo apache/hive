@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Test to make sure that the LLAP nodes are able to start with the load generator.
@@ -33,9 +34,10 @@ public class TestLlapLoadGeneratorService {
 
     HiveConf conf = new HiveConf();
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_ENABLED, true);
-    HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_HOSTNAME,
+    HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_HOSTNAMES,
         InetAddress.getLocalHost().getHostName() + ",???");
     HiveConf.setFloatVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_UTILIZATION, 0.2f);
+    HiveConf.setTimeVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_INTERVAL, 5, TimeUnit.MILLISECONDS);
 
     service.init(conf);
     service.start();
