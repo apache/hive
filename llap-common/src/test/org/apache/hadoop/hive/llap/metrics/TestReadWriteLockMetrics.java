@@ -31,22 +31,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.metrics2.AbstractMetric;
-import org.apache.hadoop.metrics2.MetricsCollector;
-import org.apache.hadoop.metrics2.MetricsInfo;
-import org.apache.hadoop.metrics2.MetricsRecordBuilder;
 import org.apache.hadoop.metrics2.MetricsSource;
-import org.apache.hadoop.metrics2.MetricsTag;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -134,150 +126,6 @@ public class TestReadWriteLockMetrics {
           targetLock.unlock();
         }
       }
-    }
-  }
-
-  /**
-   * Mock metrics collector for this test only.
-   * This <code>MetricsCollector</code> implementation is used to get the actual
-   * <code>MetricsSource</code> data, collected by the <code>
-   * ReadWriteLockMetrics</code>.
-   */
-  private static class MockMetricsCollector implements MetricsCollector {
-    private ArrayList<MockRecord> records = new ArrayList<>();
-
-    /**
-     * Single metrics record mock implementation.
-     */
-    public static class MockRecord {
-      private final String recordLabel;                   ///< record tag/label
-      private final HashMap<MetricsInfo,Number> metrics;  ///< metrics within record
-      private String context;                             ///< collector context ID
-
-      /**
-       * @param label metrics record label.
-       */
-      public MockRecord(String label) {
-        recordLabel = label;
-        metrics = new HashMap<>();
-      }
-
-      /**
-       * @return The record's tag/label.
-       */
-      public String getLabel() {
-        return recordLabel;
-      }
-
-      /**
-       * @return The context of the collector.
-       */
-      public String getContext() {
-        return context;
-      }
-
-      /**
-       * @return Map of identifier/metric value pairs.
-       */
-      public Map<MetricsInfo,Number> getMetrics() {
-        return metrics;
-      }
-    }
-
-    /**
-     * Record builder mock implementation.
-     */
-    private class MockMetricsRecordBuilder extends MetricsRecordBuilder {
-      private MockRecord target = null;   ///< the record that is populated
-
-      /**
-       * Used by outer class to provide a new <code>MetricsRecordBuilder</code>
-       * for a single metrics record.
-       *
-       * @param t The record to build.
-       */
-      public MockMetricsRecordBuilder(MockRecord t) {
-        target = t;
-      }
-
-      @Override
-      public MetricsRecordBuilder add(MetricsTag arg0) {
-        throw new AssertionError("Not implemented for test");
-      }
-
-      @Override
-      public MetricsRecordBuilder add(AbstractMetric arg0) {
-        throw new AssertionError("Not implemented for test");
-      }
-
-      @Override
-      public MetricsRecordBuilder addCounter(MetricsInfo arg0, int arg1) {
-        target.getMetrics().put(arg0, arg1);
-        return this;
-      }
-
-      @Override
-      public MetricsRecordBuilder addCounter(MetricsInfo arg0, long arg1) {
-        target.getMetrics().put(arg0, arg1);
-        return this;
-      }
-
-      @Override
-      public MetricsRecordBuilder addGauge(MetricsInfo arg0, int arg1) {
-        throw new AssertionError("Not implemented for test");
-      }
-
-      @Override
-      public MetricsRecordBuilder addGauge(MetricsInfo arg0, long arg1) {
-        throw new AssertionError("Not implemented for test");
-      }
-
-      @Override
-      public MetricsRecordBuilder addGauge(MetricsInfo arg0, float arg1) {
-        throw new AssertionError("Not implemented for test");
-      }
-
-      @Override
-      public MetricsRecordBuilder addGauge(MetricsInfo arg0, double arg1) {
-        throw new AssertionError("Not implemented for test");
-      }
-
-      @Override
-      public MetricsCollector parent() {
-        return MockMetricsCollector.this;
-      }
-
-      @Override
-      public MetricsRecordBuilder setContext(String arg0) {
-        target.context = arg0;
-        return this;
-      }
-
-      @Override
-      public MetricsRecordBuilder tag(MetricsInfo arg0, String arg1) {
-        throw new AssertionError("Not implemented for test");
-      }
-    }
-
-    @Override
-    public MetricsRecordBuilder addRecord(String arg0) {
-      MockRecord tr = new MockRecord(arg0);
-      records.add(tr);
-      return new MockMetricsRecordBuilder(tr);
-    }
-
-    @Override
-    public MetricsRecordBuilder addRecord(MetricsInfo arg0) {
-      MockRecord tr = new MockRecord(arg0.name());
-      records.add(tr);
-      return new MockMetricsRecordBuilder(tr);
-    }
-
-    /**
-     * @return A list of all built metrics records.
-     */
-    public List<MockRecord> getRecords() {
-      return records;
     }
   }
 

@@ -4438,6 +4438,10 @@ public class HiveConf extends Configuration {
     LLAP_COLLECT_LOCK_METRICS("hive.llap.lockmetrics.collect", false,
         "Whether lock metrics (wait times, counts) are collected for LLAP "
         + "related locks"),
+    LLAP_DECAY_METRIC_SIZE("hive.llap.metrics.decay.size", 1028,
+        "The number of samples to keep in the sampling reservoir"),
+    LLAP_DECAY_METRIC_ALPHA("hive.llap.metrics.decay.alpha", 0.015f,
+        "Exponential decay factor; higher is more biased towards newer values"),
 
     HIVE_TRIGGER_VALIDATION_INTERVAL("hive.trigger.validation.interval", "500ms",
       new TimeValidator(TimeUnit.MILLISECONDS),

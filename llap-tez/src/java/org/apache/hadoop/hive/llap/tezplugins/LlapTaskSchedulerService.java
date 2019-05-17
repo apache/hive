@@ -99,6 +99,7 @@ import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.util.Clock;
 import org.apache.hive.common.util.Ref;
 import org.apache.tez.common.TezUtils;
+import org.apache.tez.common.counters.TezCounter;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.common.security.JobTokenSecretManager;
 import org.apache.tez.dag.api.TezUncheckedException;
@@ -106,6 +107,7 @@ import org.apache.tez.dag.app.dag.DAG;
 import org.apache.tez.dag.app.dag.TaskAttempt;
 import org.apache.tez.dag.app.dag.Vertex;
 import org.apache.tez.dag.app.dag.impl.Edge;
+import org.apache.tez.dag.app.dag.impl.TaskAttemptImpl;
 import org.apache.tez.dag.records.TezDAGID;
 import org.apache.tez.dag.records.TezTaskAttemptID;
 import org.apache.tez.dag.records.TezVertexID;
@@ -426,9 +428,12 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       this.pauseMonitor = new JvmPauseMonitor(conf);
       pauseMonitor.start();
       String displayName = "LlapTaskSchedulerMetrics-" + MetricsUtils.getHostName();
+      int decayMetricSampleSize = HiveConf.getIntVar(conf, ConfVars.LLAP_DECAY_METRIC_SIZE);
+      double decayMetricAlphaFactor = (double) HiveConf.getFloatVar(conf, ConfVars.LLAP_DECAY_METRIC_ALPHA);
       String sessionId = conf.get("llap.daemon.metrics.sessionid");
       // TODO: Not sure about the use of this. Should we instead use workerIdentity as sessionId?
-      this.metrics = LlapTaskSchedulerMetrics.create(displayName, sessionId);
+      this.metrics = LlapTaskSchedulerMetrics.create(displayName, sessionId, decayMetricSampleSize,
+          decayMetricAlphaFactor);
     } else {
       this.metrics = null;
       this.pauseMonitor = null;
@@ -1174,6 +1179,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Processing deallocateTask for task={}, taskSucceeded={}, endReason={}", task,
           taskSucceeded, endReason);
+    }
+    if (task instanceof TaskAttemptImpl && metrics != null) {
+      updateMetrics((TaskAttemptImpl)task);
     }
     boolean isEarlyExit = false;
     TaskInfo toUpdate = null, taskInfo;
@@ -2591,6 +2599,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       if (delayTime > blacklistConf.maxDelay) {
         delayTime = blacklistConf.maxDelay;
       }
+      if (metrics != null) {
+        metrics.removeDaemon(shortStringBase);
+      }
       if (LOG.isInfoEnabled()) {
         LOG.info("Disabling instance {} for {} milli-seconds. commFailure={}",
             toShortString(),
@@ -3153,5 +3164,29 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     WM_LOG.info("Sending an update based on inconsistent state from heartbeat for "
         + attemptId + ", " + newState);
     sendUpdateMessageAsync(ti, newState);
+  }
+
+  private void updateMetrics(TaskAttemptImpl taskAttempt) {
+    // Only do it for map tasks
+    if (!isMapTask(taskAttempt)) {
+      return;
+    }
+    // Check if this task was already assigned to a node
+    NodeInfo nodeInfo = knownTasks.get(taskAttempt).assignedNode;
+    if (nodeInfo == null) {
+      return;
+    }
+
+    metrics.addTaskLatency(nodeInfo.shortStringBase, taskAttempt.getFinishTime() - taskAttempt.getLaunchTime());
+  }
+
+  private boolean isMapTask(TaskAttemptImpl taskAttempt) {
+    boolean isMapTask = false;
+    for(TezCounter counter : taskAttempt.getCounters().getGroup("HIVE")) {
+      if(counter.getName().startsWith("RECORDS_IN_Map")) {
+        isMapTask = true;
+      }
+    }
+    return isMapTask;
   }
 }

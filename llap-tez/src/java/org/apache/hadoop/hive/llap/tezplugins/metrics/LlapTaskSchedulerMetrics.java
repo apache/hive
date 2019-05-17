@@ -31,10 +31,13 @@ import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerIn
 import static org.apache.hadoop.metrics2.impl.MsInfo.ProcessName;
 import static org.apache.hadoop.metrics2.impl.MsInfo.SessionId;
 
+import com.codahale.metrics.ExponentiallyDecayingReservoir;
+import com.google.common.base.MoreObjects;
 import org.apache.hadoop.hive.common.JvmMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.hadoop.metrics2.MetricsCollector;
+import org.apache.hadoop.metrics2.MetricsInfo;
 import org.apache.hadoop.metrics2.MetricsRecordBuilder;
 import org.apache.hadoop.metrics2.MetricsSource;
 import org.apache.hadoop.metrics2.MetricsSystem;
@@ -46,6 +49,9 @@ import org.apache.hadoop.metrics2.lib.MutableCounterInt;
 import org.apache.hadoop.metrics2.lib.MutableGaugeInt;
 import org.apache.hadoop.metrics2.lib.MutableGaugeLong;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * Metrics about the llap task scheduler.
  */
@@ -55,6 +61,9 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
   private final JvmMetrics jvmMetrics;
   private final String sessionId;
   private final MetricsRegistry registry;
+  private final int decayMetricSampleSize;
+  private final double decayMetricAlphaFactor;
+  private Map<String, DaemonLatencyMetric> daemonTaskLatency = new ConcurrentHashMap<>();
   private String dagId = null;
   @Metric
   MutableGaugeInt numExecutors;
@@ -93,19 +102,28 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
   @Metric
   MutableCounterInt wmGuaranteedCount;
 
-  private LlapTaskSchedulerMetrics(String displayName, JvmMetrics jm, String sessionId) {
+  private LlapTaskSchedulerMetrics(String displayName, JvmMetrics jm, String sessionId,
+      int decayMetricSampleSize, double decayMetricAlphaFactor) {
     this.name = displayName;
     this.jvmMetrics = jm;
     this.sessionId = sessionId;
     this.registry = new MetricsRegistry("LlapTaskSchedulerMetricsRegistry");
     this.registry.tag(ProcessName, MetricsUtils.METRICS_PROCESS_NAME).tag(SessionId, sessionId);
+    this.decayMetricSampleSize = decayMetricSampleSize;
+    this.decayMetricAlphaFactor = decayMetricAlphaFactor;
   }
 
-  public static LlapTaskSchedulerMetrics create(String displayName, String sessionId) {
+  public static LlapTaskSchedulerMetrics create(String displayName, String sessionId,
+      int decayMetricSampleSize, double decayMetricAlphaFactor) {
     MetricsSystem ms = LlapMetricsSystem.instance();
     JvmMetrics jm = JvmMetrics.create(MetricsUtils.METRICS_PROCESS_NAME, sessionId, ms);
     return ms.register(displayName, "Llap Task Scheduler Metrics",
-        new LlapTaskSchedulerMetrics(displayName, jm, sessionId));
+        new LlapTaskSchedulerMetrics(displayName, jm, sessionId, decayMetricSampleSize,
+            decayMetricAlphaFactor));
+  }
+
+  public void removeDaemon(String identifier) {
+    daemonTaskLatency.remove(identifier);
   }
 
   @Override
@@ -254,6 +272,14 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
     wmUnusedGuaranteedCount.set(unusedGuaranteed);
   }
 
+  public void addTaskLatency(String key, long value) {
+    daemonTaskLatency.compute(key, (k, v) -> {
+      v = (v == null ? new DaemonLatencyMetric(key, decayMetricSampleSize, decayMetricAlphaFactor) : v);
+      v.addValue(value);
+      return v;
+    });
+  }
+
   public void resetWmMetrics() {
     wmTotalGuaranteedCount.set(0);
     wmUnusedGuaranteedCount.set(0);
@@ -276,6 +302,43 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
         .addCounter(SchedulerPendingPreemptionTaskCount, pendingPreemptionTasksCount.value())
         .addCounter(SchedulerPreemptedTaskCount, preemptedTasksCount.value())
         .addCounter(SchedulerCompletedDagCount, completedDagcount.value());
+    daemonTaskLatency.forEach((k, v) -> rb.addGauge(v, v.getMean()));
+  }
+
+  static class DaemonLatencyMetric implements MetricsInfo {
+    private String name;
+    private ExponentiallyDecayingReservoir reservoir;
+    private static final String DESCRIPTION = "Sliding average of task latency / ioMillis";
+
+    DaemonLatencyMetric(String name, int decayMetricSampleSize, double decayMetricAlphaFactor) {
+      this.name = name;
+      reservoir = new ExponentiallyDecayingReservoir(decayMetricSampleSize, decayMetricAlphaFactor);
+    }
+
+    @Override
+    public String name() {
+      return this.name;
+    }
+
+    @Override
+    public String description() {
+      return DESCRIPTION;
+    }
+
+    public void addValue(long value) {
+      reservoir.update(value);
+    }
+
+    public double getMean() {
+      return reservoir.getSnapshot().getMean();
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this)
+          .add("name", name()).add("description", DESCRIPTION)
+          .toString();
+    }
   }
 
   public JvmMetrics getJvmMetrics() {
