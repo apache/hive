@@ -54,7 +54,6 @@ public class ReplLoadWork implements Serializable {
   private transient IncrementalLoadTasksBuilder incrementalLoadTasksBuilder;
   private transient Task<? extends Serializable> rootTask;
   private final transient Iterator<DirCopyWork> pathsToCopyIterator;
-  private boolean isBootstrapDuringIncLoad = false;
 
   /*
   these are sessionState objects that are copied over to work to allow for parallel execution.
@@ -148,13 +147,5 @@ public class ReplLoadWork implements Serializable {
 
   public Iterator<DirCopyWork> getPathsToCopyIterator() {
     return pathsToCopyIterator;
-  }
-
-  public boolean isBootstrapDuringIncLoad() {
-    return isBootstrapDuringIncLoad;
-  }
-
-  public void setBootstrapDuringIncLoad(boolean bootstrapDuringIncLoad) {
-    isBootstrapDuringIncLoad = bootstrapDuringIncLoad;
   }
 }

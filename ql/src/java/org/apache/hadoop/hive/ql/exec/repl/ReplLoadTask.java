@@ -179,7 +179,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           TableEvent tableEvent = (TableEvent) next;
           LoadTable loadTable = new LoadTable(tableEvent, context, iterator.replLogger(),
                                               tableContext, loadTaskTracker);
-          tableTracker = loadTable.tasks(work.isBootstrapDuringIncLoad());
+          tableTracker = loadTable.tasks(work.isIncrementalLoad());
           setUpDependencies(dbTracker, tableTracker);
           if (!scope.database && tableTracker.hasTasks()) {
             scope.rootTasks.addAll(tableTracker.tasks());
@@ -264,7 +264,6 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           || work.getPathsToCopyIterator().hasNext();
 
       if (addAnotherLoadTask) {
-        // pass on the bootstrap during incremental flag for next iteration.
         createBuilderTask(scope.rootTasks);
       }
 
@@ -472,7 +471,6 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         if (work.hasBootstrapLoadTasks()) {
           LOG.debug("Current incremental dump have tables to be bootstrapped. Switching to bootstrap "
                   + "mode after applying all events.");
-          work.setBootstrapDuringIncLoad(true);
           return executeBootStrapLoad(driverContext);
         }
       }
