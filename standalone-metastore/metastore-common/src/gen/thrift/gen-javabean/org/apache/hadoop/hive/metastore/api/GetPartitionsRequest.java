@@ -46,6 +46,8 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField GROUP_NAMES_FIELD_DESC = new org.apache.thrift.protocol.TField("groupNames", org.apache.thrift.protocol.TType.LIST, (short)6);
   private static final org.apache.thrift.protocol.TField PROJECTION_SPEC_FIELD_DESC = new org.apache.thrift.protocol.TField("projectionSpec", org.apache.thrift.protocol.TType.STRUCT, (short)7);
   private static final org.apache.thrift.protocol.TField FILTER_SPEC_FIELD_DESC = new org.apache.thrift.protocol.TField("filterSpec", org.apache.thrift.protocol.TType.STRUCT, (short)8);
+  private static final org.apache.thrift.protocol.TField PROCESSOR_CAPABILITIES_FIELD_DESC = new org.apache.thrift.protocol.TField("processorCapabilities", org.apache.thrift.protocol.TType.LIST, (short)9);
+  private static final org.apache.thrift.protocol.TField PROCESSOR_IDENTIFIER_FIELD_DESC = new org.apache.thrift.protocol.TField("processorIdentifier", org.apache.thrift.protocol.TType.STRING, (short)10);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -61,6 +63,8 @@ import org.slf4j.LoggerFactory;
   private List<String> groupNames; // optional
   private GetPartitionsProjectionSpec projectionSpec; // required
   private GetPartitionsFilterSpec filterSpec; // required
+  private List<String> processorCapabilities; // optional
+  private String processorIdentifier; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -71,7 +75,9 @@ import org.slf4j.LoggerFactory;
     USER((short)5, "user"),
     GROUP_NAMES((short)6, "groupNames"),
     PROJECTION_SPEC((short)7, "projectionSpec"),
-    FILTER_SPEC((short)8, "filterSpec");
+    FILTER_SPEC((short)8, "filterSpec"),
+    PROCESSOR_CAPABILITIES((short)9, "processorCapabilities"),
+    PROCESSOR_IDENTIFIER((short)10, "processorIdentifier");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -102,6 +108,10 @@ import org.slf4j.LoggerFactory;
           return PROJECTION_SPEC;
         case 8: // FILTER_SPEC
           return FILTER_SPEC;
+        case 9: // PROCESSOR_CAPABILITIES
+          return PROCESSOR_CAPABILITIES;
+        case 10: // PROCESSOR_IDENTIFIER
+          return PROCESSOR_IDENTIFIER;
         default:
           return null;
       }
@@ -144,7 +154,7 @@ import org.slf4j.LoggerFactory;
   // isset id assignments
   private static final int __WITHAUTH_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.CAT_NAME,_Fields.WITH_AUTH,_Fields.USER,_Fields.GROUP_NAMES};
+  private static final _Fields optionals[] = {_Fields.CAT_NAME,_Fields.WITH_AUTH,_Fields.USER,_Fields.GROUP_NAMES,_Fields.PROCESSOR_CAPABILITIES,_Fields.PROCESSOR_IDENTIFIER};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -165,6 +175,11 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, GetPartitionsProjectionSpec.class)));
     tmpMap.put(_Fields.FILTER_SPEC, new org.apache.thrift.meta_data.FieldMetaData("filterSpec", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, GetPartitionsFilterSpec.class)));
+    tmpMap.put(_Fields.PROCESSOR_CAPABILITIES, new org.apache.thrift.meta_data.FieldMetaData("processorCapabilities", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.PROCESSOR_IDENTIFIER, new org.apache.thrift.meta_data.FieldMetaData("processorIdentifier", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(GetPartitionsRequest.class, metaDataMap);
   }
@@ -213,6 +228,13 @@ import org.slf4j.LoggerFactory;
     if (other.isSetFilterSpec()) {
       this.filterSpec = new GetPartitionsFilterSpec(other.filterSpec);
     }
+    if (other.isSetProcessorCapabilities()) {
+      List<String> __this__processorCapabilities = new ArrayList<String>(other.processorCapabilities);
+      this.processorCapabilities = __this__processorCapabilities;
+    }
+    if (other.isSetProcessorIdentifier()) {
+      this.processorIdentifier = other.processorIdentifier;
+    }
   }
 
   public GetPartitionsRequest deepCopy() {
@@ -230,6 +252,8 @@ import org.slf4j.LoggerFactory;
     this.groupNames = null;
     this.projectionSpec = null;
     this.filterSpec = null;
+    this.processorCapabilities = null;
+    this.processorIdentifier = null;
   }
 
   public String getCatName() {
@@ -430,6 +454,67 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public int getProcessorCapabilitiesSize() {
+    return (this.processorCapabilities == null) ? 0 : this.processorCapabilities.size();
+  }
+
+  public java.util.Iterator<String> getProcessorCapabilitiesIterator() {
+    return (this.processorCapabilities == null) ? null : this.processorCapabilities.iterator();
+  }
+
+  public void addToProcessorCapabilities(String elem) {
+    if (this.processorCapabilities == null) {
+      this.processorCapabilities = new ArrayList<String>();
+    }
+    this.processorCapabilities.add(elem);
+  }
+
+  public List<String> getProcessorCapabilities() {
+    return this.processorCapabilities;
+  }
+
+  public void setProcessorCapabilities(List<String> processorCapabilities) {
+    this.processorCapabilities = processorCapabilities;
+  }
+
+  public void unsetProcessorCapabilities() {
+    this.processorCapabilities = null;
+  }
+
+  /** Returns true if field processorCapabilities is set (has been assigned a value) and false otherwise */
+  public boolean isSetProcessorCapabilities() {
+    return this.processorCapabilities != null;
+  }
+
+  public void setProcessorCapabilitiesIsSet(boolean value) {
+    if (!value) {
+      this.processorCapabilities = null;
+    }
+  }
+
+  public String getProcessorIdentifier() {
+    return this.processorIdentifier;
+  }
+
+  public void setProcessorIdentifier(String processorIdentifier) {
+    this.processorIdentifier = processorIdentifier;
+  }
+
+  public void unsetProcessorIdentifier() {
+    this.processorIdentifier = null;
+  }
+
+  /** Returns true if field processorIdentifier is set (has been assigned a value) and false otherwise */
+  public boolean isSetProcessorIdentifier() {
+    return this.processorIdentifier != null;
+  }
+
+  public void setProcessorIdentifierIsSet(boolean value) {
+    if (!value) {
+      this.processorIdentifier = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case CAT_NAME:
@@ -496,6 +581,22 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case PROCESSOR_CAPABILITIES:
+      if (value == null) {
+        unsetProcessorCapabilities();
+      } else {
+        setProcessorCapabilities((List<String>)value);
+      }
+      break;
+
+    case PROCESSOR_IDENTIFIER:
+      if (value == null) {
+        unsetProcessorIdentifier();
+      } else {
+        setProcessorIdentifier((String)value);
+      }
+      break;
+
     }
   }
 
@@ -525,6 +626,12 @@ import org.slf4j.LoggerFactory;
     case FILTER_SPEC:
       return getFilterSpec();
 
+    case PROCESSOR_CAPABILITIES:
+      return getProcessorCapabilities();
+
+    case PROCESSOR_IDENTIFIER:
+      return getProcessorIdentifier();
+
     }
     throw new IllegalStateException();
   }
@@ -552,6 +659,10 @@ import org.slf4j.LoggerFactory;
       return isSetProjectionSpec();
     case FILTER_SPEC:
       return isSetFilterSpec();
+    case PROCESSOR_CAPABILITIES:
+      return isSetProcessorCapabilities();
+    case PROCESSOR_IDENTIFIER:
+      return isSetProcessorIdentifier();
     }
     throw new IllegalStateException();
   }
@@ -641,6 +752,24 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_processorCapabilities = true && this.isSetProcessorCapabilities();
+    boolean that_present_processorCapabilities = true && that.isSetProcessorCapabilities();
+    if (this_present_processorCapabilities || that_present_processorCapabilities) {
+      if (!(this_present_processorCapabilities && that_present_processorCapabilities))
+        return false;
+      if (!this.processorCapabilities.equals(that.processorCapabilities))
+        return false;
+    }
+
+    boolean this_present_processorIdentifier = true && this.isSetProcessorIdentifier();
+    boolean that_present_processorIdentifier = true && that.isSetProcessorIdentifier();
+    if (this_present_processorIdentifier || that_present_processorIdentifier) {
+      if (!(this_present_processorIdentifier && that_present_processorIdentifier))
+        return false;
+      if (!this.processorIdentifier.equals(that.processorIdentifier))
+        return false;
+    }
+
     return true;
   }
 
@@ -687,6 +816,16 @@ import org.slf4j.LoggerFactory;
     list.add(present_filterSpec);
     if (present_filterSpec)
       list.add(filterSpec);
+
+    boolean present_processorCapabilities = true && (isSetProcessorCapabilities());
+    list.add(present_processorCapabilities);
+    if (present_processorCapabilities)
+      list.add(processorCapabilities);
+
+    boolean present_processorIdentifier = true && (isSetProcessorIdentifier());
+    list.add(present_processorIdentifier);
+    if (present_processorIdentifier)
+      list.add(processorIdentifier);
 
     return list.hashCode();
   }
@@ -779,6 +918,26 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetProcessorCapabilities()).compareTo(other.isSetProcessorCapabilities());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetProcessorCapabilities()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.processorCapabilities, other.processorCapabilities);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetProcessorIdentifier()).compareTo(other.isSetProcessorIdentifier());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetProcessorIdentifier()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.processorIdentifier, other.processorIdentifier);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -866,6 +1025,26 @@ import org.slf4j.LoggerFactory;
       sb.append(this.filterSpec);
     }
     first = false;
+    if (isSetProcessorCapabilities()) {
+      if (!first) sb.append(", ");
+      sb.append("processorCapabilities:");
+      if (this.processorCapabilities == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.processorCapabilities);
+      }
+      first = false;
+    }
+    if (isSetProcessorIdentifier()) {
+      if (!first) sb.append(", ");
+      sb.append("processorIdentifier:");
+      if (this.processorIdentifier == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.processorIdentifier);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -960,13 +1139,13 @@ import org.slf4j.LoggerFactory;
           case 6: // GROUP_NAMES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1024 = iprot.readListBegin();
-                struct.groupNames = new ArrayList<String>(_list1024.size);
-                String _elem1025;
-                for (int _i1026 = 0; _i1026 < _list1024.size; ++_i1026)
+                org.apache.thrift.protocol.TList _list1064 = iprot.readListBegin();
+                struct.groupNames = new ArrayList<String>(_list1064.size);
+                String _elem1065;
+                for (int _i1066 = 0; _i1066 < _list1064.size; ++_i1066)
                 {
-                  _elem1025 = iprot.readString();
-                  struct.groupNames.add(_elem1025);
+                  _elem1065 = iprot.readString();
+                  struct.groupNames.add(_elem1065);
                 }
                 iprot.readListEnd();
               }
@@ -989,6 +1168,32 @@ import org.slf4j.LoggerFactory;
               struct.filterSpec = new GetPartitionsFilterSpec();
               struct.filterSpec.read(iprot);
               struct.setFilterSpecIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 9: // PROCESSOR_CAPABILITIES
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list1067 = iprot.readListBegin();
+                struct.processorCapabilities = new ArrayList<String>(_list1067.size);
+                String _elem1068;
+                for (int _i1069 = 0; _i1069 < _list1067.size; ++_i1069)
+                {
+                  _elem1068 = iprot.readString();
+                  struct.processorCapabilities.add(_elem1068);
+                }
+                iprot.readListEnd();
+              }
+              struct.setProcessorCapabilitiesIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 10: // PROCESSOR_IDENTIFIER
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.processorIdentifier = iprot.readString();
+              struct.setProcessorIdentifierIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -1040,9 +1245,9 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(GROUP_NAMES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.groupNames.size()));
-            for (String _iter1027 : struct.groupNames)
+            for (String _iter1070 : struct.groupNames)
             {
-              oprot.writeString(_iter1027);
+              oprot.writeString(_iter1070);
             }
             oprot.writeListEnd();
           }
@@ -1058,6 +1263,27 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(FILTER_SPEC_FIELD_DESC);
         struct.filterSpec.write(oprot);
         oprot.writeFieldEnd();
+      }
+      if (struct.processorCapabilities != null) {
+        if (struct.isSetProcessorCapabilities()) {
+          oprot.writeFieldBegin(PROCESSOR_CAPABILITIES_FIELD_DESC);
+          {
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.processorCapabilities.size()));
+            for (String _iter1071 : struct.processorCapabilities)
+            {
+              oprot.writeString(_iter1071);
+            }
+            oprot.writeListEnd();
+          }
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.processorIdentifier != null) {
+        if (struct.isSetProcessorIdentifier()) {
+          oprot.writeFieldBegin(PROCESSOR_IDENTIFIER_FIELD_DESC);
+          oprot.writeString(struct.processorIdentifier);
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -1101,7 +1327,13 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetFilterSpec()) {
         optionals.set(7);
       }
-      oprot.writeBitSet(optionals, 8);
+      if (struct.isSetProcessorCapabilities()) {
+        optionals.set(8);
+      }
+      if (struct.isSetProcessorIdentifier()) {
+        optionals.set(9);
+      }
+      oprot.writeBitSet(optionals, 10);
       if (struct.isSetCatName()) {
         oprot.writeString(struct.catName);
       }
@@ -1120,9 +1352,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetGroupNames()) {
         {
           oprot.writeI32(struct.groupNames.size());
-          for (String _iter1028 : struct.groupNames)
+          for (String _iter1072 : struct.groupNames)
           {
-            oprot.writeString(_iter1028);
+            oprot.writeString(_iter1072);
           }
         }
       }
@@ -1132,12 +1364,24 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetFilterSpec()) {
         struct.filterSpec.write(oprot);
       }
+      if (struct.isSetProcessorCapabilities()) {
+        {
+          oprot.writeI32(struct.processorCapabilities.size());
+          for (String _iter1073 : struct.processorCapabilities)
+          {
+            oprot.writeString(_iter1073);
+          }
+        }
+      }
+      if (struct.isSetProcessorIdentifier()) {
+        oprot.writeString(struct.processorIdentifier);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, GetPartitionsRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(8);
+      BitSet incoming = iprot.readBitSet(10);
       if (incoming.get(0)) {
         struct.catName = iprot.readString();
         struct.setCatNameIsSet(true);
@@ -1160,13 +1404,13 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(5)) {
         {
-          org.apache.thrift.protocol.TList _list1029 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.groupNames = new ArrayList<String>(_list1029.size);
-          String _elem1030;
-          for (int _i1031 = 0; _i1031 < _list1029.size; ++_i1031)
+          org.apache.thrift.protocol.TList _list1074 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.groupNames = new ArrayList<String>(_list1074.size);
+          String _elem1075;
+          for (int _i1076 = 0; _i1076 < _list1074.size; ++_i1076)
           {
-            _elem1030 = iprot.readString();
-            struct.groupNames.add(_elem1030);
+            _elem1075 = iprot.readString();
+            struct.groupNames.add(_elem1075);
           }
         }
         struct.setGroupNamesIsSet(true);
@@ -1180,6 +1424,23 @@ import org.slf4j.LoggerFactory;
         struct.filterSpec = new GetPartitionsFilterSpec();
         struct.filterSpec.read(iprot);
         struct.setFilterSpecIsSet(true);
+      }
+      if (incoming.get(8)) {
+        {
+          org.apache.thrift.protocol.TList _list1077 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.processorCapabilities = new ArrayList<String>(_list1077.size);
+          String _elem1078;
+          for (int _i1079 = 0; _i1079 < _list1077.size; ++_i1079)
+          {
+            _elem1078 = iprot.readString();
+            struct.processorCapabilities.add(_elem1078);
+          }
+        }
+        struct.setProcessorCapabilitiesIsSet(true);
+      }
+      if (incoming.get(9)) {
+        struct.processorIdentifier = iprot.readString();
+        struct.setProcessorIdentifierIsSet(true);
       }
     }
   }

@@ -19,6 +19,7 @@
 package org.apache.hive.jdbc;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hive.jdbc.logs.InPlaceUpdateStream;
 import org.apache.hive.service.cli.RowSet;
@@ -1015,12 +1016,18 @@ public class HiveStatement implements java.sql.Statement {
    */
   @LimitedPrivate(value={"Hive and closely related projects."})
   public String getQueryId() throws SQLException {
-    if (stmtHandle == null) {
+    // Storing it in temp variable as this method is not thread-safe and concurrent thread can
+    // close this handle and set it to null after checking for null.
+    TOperationHandle stmtHandleTmp = stmtHandle;
+    if (stmtHandleTmp == null) {
       // If query is not running or already closed.
       return null;
     }
     try {
-      return client.GetQueryId(new TGetQueryIdReq(stmtHandle)).getQueryId();
+      String queryId = client.GetQueryId(new TGetQueryIdReq(stmtHandleTmp)).getQueryId();
+
+      // queryId can be empty string if query was already closed. Need to return null in such case.
+      return StringUtils.isBlank(queryId) ? null : queryId;
     } catch (TException e) {
       throw new SQLException(e);
     }

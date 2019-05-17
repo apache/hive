@@ -816,8 +816,11 @@ public class Serializer {
     final TimestampColumnVector timestampColumnVector = (TimestampColumnVector) hiveVector;
     // Time = second + sub-second
     final long secondInMillis = timestampColumnVector.getTime(j);
-    final long secondInMicros = (secondInMillis - secondInMillis % MILLIS_PER_SECOND) * MICROS_PER_MILLIS;
-    final long subSecondInMicros = timestampColumnVector.getNanos(j) / NS_PER_MICROS;
+    final long nanos = timestampColumnVector.getNanos(j);
+    // nanos should be subtracted from total time(secondInMillis) to obtain micros
+    // Divide nanos by 1000_000 to bring it to millisecond precision and then perform the subtraction
+    final long secondInMicros = (secondInMillis - nanos / NS_PER_MILLIS) * MICROS_PER_MILLIS;
+    final long subSecondInMicros = nanos / NS_PER_MICROS;
     if ((secondInMillis > 0 && secondInMicros < 0) || (secondInMillis < 0 && secondInMicros > 0)) {
       // If the timestamp cannot be represented in long microsecond, set it as a null value
       timeStampMicroTZVector.setNull(i);

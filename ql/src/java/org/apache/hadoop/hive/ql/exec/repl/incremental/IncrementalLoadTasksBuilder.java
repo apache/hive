@@ -142,7 +142,7 @@ public class IncrementalLoadTasksBuilder {
         ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger,
                 dir.getPath().getName(),
                 eventDmd.getDumpType().toString());
-        Task<? extends Serializable> barrierTask = TaskFactory.get(replStateLogWork);
+        Task<? extends Serializable> barrierTask = TaskFactory.get(replStateLogWork, conf);
         AddDependencyToLeaves function = new AddDependencyToLeaves(barrierTask);
         DAGTraversal.traverse(evTasks, function);
         this.log.debug("Updated taskChainTail from {}:{} to {}:{}",

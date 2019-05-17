@@ -814,15 +814,15 @@ import org.slf4j.LoggerFactory;
           case 6: // PROPERTIES
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map730 = iprot.readMapBegin();
-                struct.properties = new HashMap<String,String>(2*_map730.size);
-                String _key731;
-                String _val732;
-                for (int _i733 = 0; _i733 < _map730.size; ++_i733)
+                org.apache.thrift.protocol.TMap _map738 = iprot.readMapBegin();
+                struct.properties = new HashMap<String,String>(2*_map738.size);
+                String _key739;
+                String _val740;
+                for (int _i741 = 0; _i741 < _map738.size; ++_i741)
                 {
-                  _key731 = iprot.readString();
-                  _val732 = iprot.readString();
-                  struct.properties.put(_key731, _val732);
+                  _key739 = iprot.readString();
+                  _val740 = iprot.readString();
+                  struct.properties.put(_key739, _val740);
                 }
                 iprot.readMapEnd();
               }
@@ -878,10 +878,10 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(PROPERTIES_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.properties.size()));
-            for (Map.Entry<String, String> _iter734 : struct.properties.entrySet())
+            for (Map.Entry<String, String> _iter742 : struct.properties.entrySet())
             {
-              oprot.writeString(_iter734.getKey());
-              oprot.writeString(_iter734.getValue());
+              oprot.writeString(_iter742.getKey());
+              oprot.writeString(_iter742.getValue());
             }
             oprot.writeMapEnd();
           }
@@ -928,10 +928,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetProperties()) {
         {
           oprot.writeI32(struct.properties.size());
-          for (Map.Entry<String, String> _iter735 : struct.properties.entrySet())
+          for (Map.Entry<String, String> _iter743 : struct.properties.entrySet())
           {
-            oprot.writeString(_iter735.getKey());
-            oprot.writeString(_iter735.getValue());
+            oprot.writeString(_iter743.getKey());
+            oprot.writeString(_iter743.getValue());
           }
         }
       }
@@ -957,15 +957,15 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TMap _map736 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.properties = new HashMap<String,String>(2*_map736.size);
-          String _key737;
-          String _val738;
-          for (int _i739 = 0; _i739 < _map736.size; ++_i739)
+          org.apache.thrift.protocol.TMap _map744 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.properties = new HashMap<String,String>(2*_map744.size);
+          String _key745;
+          String _val746;
+          for (int _i747 = 0; _i747 < _map744.size; ++_i747)
           {
-            _key737 = iprot.readString();
-            _val738 = iprot.readString();
-            struct.properties.put(_key737, _val738);
+            _key745 = iprot.readString();
+            _val746 = iprot.readString();
+            struct.properties.put(_key745, _val746);
           }
         }
         struct.setPropertiesIsSet(true);
