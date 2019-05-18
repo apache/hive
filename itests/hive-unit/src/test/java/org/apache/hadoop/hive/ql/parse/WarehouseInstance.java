@@ -570,16 +570,6 @@ public class WarehouseInstance implements Closeable {
     return false;
   }
 
-  public void disableAcid() {
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    hiveConf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
-  }
-
-  public void enableAcid() {
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
-    hiveConf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
-  }
-
   @Override
   public void close() throws IOException {
     if (miniDFSCluster != null && miniDFSCluster.isClusterUp()) {

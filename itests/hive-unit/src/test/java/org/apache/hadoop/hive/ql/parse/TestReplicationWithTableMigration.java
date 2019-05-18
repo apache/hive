@@ -531,20 +531,28 @@ public class TestReplicationWithTableMigration {
     // forcefully (setting db property) alter the table type. For acid table, set the bootstrap acid table to true. For
     // external table, the alter event should alter the table type at target cluster and then distcp should copy the
     // files. This is done to mock the upgrade done using HiveStrictManagedMigration.
-    primary.enableAcid();
-    primary.run("use " + primaryDbName)
-            .run("alter database " + primaryDbName + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '')")
-            .run("insert into tacid values (1)")
-            .run("insert into texternal values (2)")
-            .run("alter table tacid set tblproperties ('transactional'='true')")
-            .run("alter table texternal SET TBLPROPERTIES('EXTERNAL'='TRUE')")
-            .run("insert into texternal values (3)")
-            .run("alter database " + primaryDbName + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')");
+    HiveConf hiveConf = primary.getConf();
+
+    try {
+      //Set the txn config required for this test. This will not enable the full acid functionality in the warehouse.
+      hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
+      hiveConf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+
+      primary.run("use " + primaryDbName)
+              .run("alter database " + primaryDbName + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '')")
+              .run("insert into tacid values (1)")
+              .run("insert into texternal values (2)")
+              .run("alter table tacid set tblproperties ('transactional'='true')")
+              .run("alter table texternal SET TBLPROPERTIES('EXTERNAL'='TRUE')")
+              .run("insert into texternal values (3)")
+              .run("alter database " + primaryDbName + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')");
+    } finally {
+      hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+      hiveConf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
+    }
 
     assertTrue(isFullAcidTable(primary.getTable(primaryDbName, "tacid")));
     assertTrue(MetaStoreUtils.isExternalTable(primary.getTable(primaryDbName, "texternal")));
-
-    primary.disableAcid();
 
     List<String> withConfigs = new ArrayList();
     withConfigs.add("'hive.repl.bootstrap.acid.tables'='true'");
@@ -560,7 +568,6 @@ public class TestReplicationWithTableMigration {
             .verifyResults(new String[] { "1", "3" })
             .run("select id from texternal")
             .verifyResults(new String[] { "1", "2", "3" });
-
     assertTrue(isFullAcidTable(replica.getTable(replicatedDbName, "tacid")));
     assertTrue(MetaStoreUtils.isExternalTable(replica.getTable(replicatedDbName, "texternal")));
   }
