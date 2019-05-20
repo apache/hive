@@ -627,11 +627,9 @@ public class HiveConf extends Configuration {
         "internal usage only, used only in test mode. If set false, the operation logs, and the " +
         "operation log directory will not be removed, so they can be found after the test runs."),
 
-    HIVE_TEST_LOAD_ENABLED("hive.test.load.enabled", false,
-        "Enables a CPU load testing"),
     HIVE_TEST_LOAD_HOSTNAMES("hive.test.load.hostnames", "",
-        "Specify host names for load testing. (e.g., \"host1,host2,host3\"). " +
-        "Only checked if hive.test.load.enabled is set. Leave it empty if no loed generation is needed."),
+        "Specify host names for load testing. (e.g., \"host1,host2,host3\"). Leave it empty if no " +
+        "load generation is needed (eg. for production)."),
     HIVE_TEST_LOAD_INTERVAL("hive.test.load.interval", "10ms", new TimeValidator(TimeUnit.MILLISECONDS),
         "The interval length used for load generation in milliseconds"),
     HIVE_TEST_LOAD_UTILIZATION("hive.test.load.utilization", 0.2f,

@@ -325,7 +325,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       addIfService(webServices);
     }
 
-    if (!HiveConf.getBoolVar(daemonConf, ConfVars.HIVE_TEST_LOAD_ENABLED)) {
+    if (HiveConf.getVar(daemonConf, ConfVars.HIVE_TEST_LOAD_HOSTNAMES).isEmpty()) {
       this.llapLoadGeneratorService = null;
     } else {
       this.llapLoadGeneratorService = new LlapLoadGeneratorService();

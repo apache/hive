@@ -76,8 +76,8 @@ public class LlapLoadGeneratorService extends AbstractService {
                   try {
                     Thread.sleep(interval);
                   } catch (InterruptedException e) {
-                    // In case of interrupt finish the load generation
-                    break;
+                    // Set the interrupt flag so we will stop the thread
+                    Thread.currentThread().interrupt();
                   }
                 }
               }

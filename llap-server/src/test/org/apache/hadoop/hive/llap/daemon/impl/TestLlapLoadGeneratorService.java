@@ -33,7 +33,6 @@ public class TestLlapLoadGeneratorService {
     LlapLoadGeneratorService service = new LlapLoadGeneratorService();
 
     HiveConf conf = new HiveConf();
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_ENABLED, true);
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_HOSTNAMES,
         InetAddress.getLocalHost().getHostName() + ",???");
     HiveConf.setFloatVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_UTILIZATION, 0.2f);
