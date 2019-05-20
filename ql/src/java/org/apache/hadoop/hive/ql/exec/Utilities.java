@@ -3337,6 +3337,7 @@ public final class Utilities {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.INPUT_PATHS);
 
+    FileSystem fileSystem = FileSystem.get(job);
     Set<Path> pathsProcessed = new HashSet<Path>();
     List<Path> pathsToAdd = new LinkedList<Path>();
     LockedDriverState lDrvStat = LockedDriverState.getLockedDriverState();
@@ -3365,6 +3366,7 @@ public final class Utilities {
         }
 
         Path file = e.getKey();
+        if (fileSystem.exists(file)) {
         List<String> aliases = e.getValue();
         if (aliases.contains(alias)) {
           if (file != null) {
@@ -3390,6 +3392,7 @@ public final class Utilities {
           }
 
           pathsToAdd.add(file);
+          }
         }
       }
 
