@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -36,7 +37,6 @@ import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
-import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.util.HiveStrictManagedMigration;
@@ -140,13 +140,13 @@ public class FSTableEvent implements TableEvent {
   }
 
   @Override
-  public List<AddPartitionDesc> partitionDescriptions(ImportTableDesc tblDesc)
+  public List<AlterTableAddPartitionDesc> partitionDescriptions(ImportTableDesc tblDesc)
       throws SemanticException {
-    List<AddPartitionDesc> descs = new ArrayList<>();
+    List<AlterTableAddPartitionDesc> descs = new ArrayList<>();
     //TODO: if partitions are loaded lazily via the iterator then we will have to avoid conversion of everything here as it defeats the purpose.
     for (Partition partition : metadata.getPartitions()) {
       // TODO: this should ideally not create AddPartitionDesc per partition
-      AddPartitionDesc partsDesc = partitionDesc(fromPath, tblDesc, partition);
+      AlterTableAddPartitionDesc partsDesc = partitionDesc(fromPath, tblDesc, partition);
       descs.add(partsDesc);
     }
     return descs;
@@ -167,14 +167,14 @@ public class FSTableEvent implements TableEvent {
     return partitions;
   }
 
-  private AddPartitionDesc partitionDesc(Path fromPath,
+  private AlterTableAddPartitionDesc partitionDesc(Path fromPath,
       ImportTableDesc tblDesc, Partition partition) throws SemanticException {
     try {
-      AddPartitionDesc partsDesc =
-          new AddPartitionDesc(tblDesc.getDatabaseName(), tblDesc.getTableName(),
+      AlterTableAddPartitionDesc partsDesc =
+          new AlterTableAddPartitionDesc(tblDesc.getDatabaseName(), tblDesc.getTableName(),
               EximUtil.makePartSpec(tblDesc.getPartCols(), partition.getValues()),
               partition.getSd().getLocation(), partition.getParameters());
-      AddPartitionDesc.OnePartitionDesc partDesc = partsDesc.getPartition(0);
+      AlterTableAddPartitionDesc.PartitionDesc partDesc = partsDesc.getPartition(0);
       partDesc.setInputFormat(partition.getSd().getInputFormat());
       partDesc.setOutputFormat(partition.getSd().getOutputFormat());
       partDesc.setNumBuckets(partition.getSd().getNumBuckets());

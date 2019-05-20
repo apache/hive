@@ -23,6 +23,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -133,7 +134,18 @@ public final class ReplExternalTables {
           PathBuilder.fullyQualifiedHDFSUri(table.getDataLocation(), FileSystem.get(hiveConf));
       write(lineFor(table.getTableName(), fullyQualifiedDataLocation, hiveConf));
       if (table.isPartitioned()) {
-        List<Partition> partitions = Hive.get(hiveConf).getPartitions(table);
+        List<Partition> partitions;
+        try {
+          partitions = Hive.get(hiveConf).getPartitions(table);
+        } catch (HiveException e) {
+          if (e.getCause() instanceof NoSuchObjectException) {
+            // If table is dropped when dump in progress, just skip partitions data location dump
+            LOG.debug(e.getMessage());
+            return;
+          }
+          throw e;
+        }
+
         for (Partition partition : partitions) {
           boolean partitionLocOutsideTableLoc = !FileUtils.isPathWithinSubtree(
               partition.getDataLocation(), table.getDataLocation()

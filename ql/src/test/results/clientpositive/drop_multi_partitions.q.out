@@ -57,9 +57,8 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Drop Partition Operator:
-        Drop Partition
-          table: dmp.mp_n0
+    Drop Partition
+      table: dmp.mp_n0
 
 PREHOOK: query: alter table dmp.mp_n0 drop partition (b='1')
 PREHOOK: type: ALTERTABLE_DROPPARTS

@@ -84,7 +84,7 @@ public class LoadTable {
     this.tracker = new TaskTracker(limiter);
   }
 
-  public TaskTracker tasks() throws Exception {
+  public TaskTracker tasks(boolean isBootstrapDuringInc) throws Exception {
     // Path being passed to us is a table dump location. We go ahead and load it in as needed.
     // If tblName is null, then we default to the table name specified in _metadata, which is good.
     // or are both specified, in which case, that's what we are intended to create the new table as.
@@ -114,7 +114,7 @@ public class LoadTable {
     }
 
     Task<?> tblRootTask = null;
-    ReplLoadOpType loadTblType = getLoadTableType(table);
+    ReplLoadOpType loadTblType = getLoadTableType(table, isBootstrapDuringInc);
     switch (loadTblType) {
       case LOAD_NEW:
         break;
@@ -159,10 +159,21 @@ public class LoadTable {
     return tracker;
   }
 
-  private ReplLoadOpType getLoadTableType(Table table) throws InvalidOperationException, HiveException {
+  private ReplLoadOpType getLoadTableType(Table table, boolean isBootstrapDuringInc)
+          throws InvalidOperationException, HiveException {
     if (table == null) {
       return ReplLoadOpType.LOAD_NEW;
     }
+
+    // In case user has asked for bootstrap of table during a incremental load, we replace the old one if present.
+    // This is to make sure that the transactional info like write id etc for the table is consistent between the
+    // source and target cluster. This is also to avoid mismatch between target and source cluster table type in case
+    // migration and upgrade uses different conversion rule.
+    if (isBootstrapDuringInc) {
+      LOG.info("Table " + table.getTableName() + " will be replaced as bootstrap is requested during incremental load");
+      return ReplLoadOpType.LOAD_REPLACE;
+    }
+
     if (ReplUtils.replCkptStatus(table.getDbName(), table.getParameters(), context.dumpDirectory)) {
       return ReplLoadOpType.LOAD_SKIP;
     }

@@ -63,6 +63,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import static org.apache.hadoop.hive.metastore.HiveMetaHook.ALTERLOCATION;
+import static org.apache.hadoop.hive.metastore.HiveMetaHook.ALTER_TABLE_OPERATION_TYPE;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
@@ -169,7 +171,7 @@ public class HiveAlterHandler implements AlterHandler {
             TableName.getQualified(catName, dbname, name) + " doesn't exist");
       }
 
-      checkTableTypeConversion(olddb, oldt, newt);
+      validateTableChangesOnReplSource(olddb, oldt, newt, environmentContext);
 
       if (oldt.getPartitionKeysSize() != 0) {
         isPartitionedTable = true;
@@ -745,6 +747,10 @@ public class HiveAlterHandler implements AlterHandler {
         throw new InvalidObjectException(
             "Unable to alter partitions because table or database does not exist.");
       }
+
+      blockPartitionLocationChangesOnReplSource(msdb.getDatabase(catName, dbname), tbl,
+                                                environmentContext);
+
       for (Partition tmpPart: new_parts) {
         // Set DDL time to now if not specified
         if (tmpPart.getParameters() == null ||
@@ -805,21 +811,78 @@ public class HiveAlterHandler implements AlterHandler {
     return oldParts;
   }
 
-  private void checkTableTypeConversion(Database db, Table oldTbl, Table newTbl)
+  // Validate changes to partition's location to protect against errors on migration during
+  // replication
+  private void blockPartitionLocationChangesOnReplSource(Database db, Table tbl,
+                                                         EnvironmentContext ec)
           throws InvalidOperationException {
-    // If the given DB is enabled for replication and strict managed is false, then table type cannot be changed.
-    // This is to avoid migration scenarios which causes Managed ACID table to be converted to external at replica.
-    // As ACID tables cannot be converted to external table and vice versa, we need to restrict this conversion at
-    // primary as well.
-    // Currently, table type conversion is allowed only between managed and external table types.
-    // But, to be future proof, any table type conversion is restricted on a replication enabled DB.
-    if (!conf.getBoolean(MetastoreConf.ConfVars.STRICT_MANAGED_TABLES.getHiveName(), false)
-        && !oldTbl.getTableType().equalsIgnoreCase(newTbl.getTableType())
-        && ReplChangeManager.isSourceOfReplication(db)) {
+    // If the database is not replication source, nothing to do
+    if (!ReplChangeManager.isSourceOfReplication(db)) {
+      return;
+    }
+
+    // Do not allow changing location of a managed table as alter event doesn't capture the
+    // new files list. So, it may cause data inconsistency.
+    if (ec.isSetProperties()) {
+      String alterType = ec.getProperties().get(ALTER_TABLE_OPERATION_TYPE);
+      if (alterType != null && alterType.equalsIgnoreCase(ALTERLOCATION) &&
+              tbl.getTableType().equalsIgnoreCase(TableType.MANAGED_TABLE.name())) {
+        throw new InvalidOperationException("Cannot change location of a managed table " +
+                TableName.getQualified(tbl.getCatName(),
+                        tbl.getDbName(), tbl.getTableName()) + " as it is enabled for replication.");
+      }
+    }
+  }
+
+  // Validate changes to a table to protect against errors on migration during replication.
+  private void validateTableChangesOnReplSource(Database db, Table oldTbl, Table newTbl,
+                                                EnvironmentContext ec)
+          throws InvalidOperationException {
+    // If the database is not replication source, nothing to do
+    if (!ReplChangeManager.isSourceOfReplication(db)) {
+      return;
+    }
+
+    // Do not allow changing location of a managed table as alter event doesn't capture the
+    // new files list. So, it may cause data inconsistency. We do this whether or not strict
+    // managed is true on the source cluster.
+    if (ec.isSetProperties()) {
+        String alterType = ec.getProperties().get(ALTER_TABLE_OPERATION_TYPE);
+        if (alterType != null && alterType.equalsIgnoreCase(ALTERLOCATION) &&
+            oldTbl.getTableType().equalsIgnoreCase(TableType.MANAGED_TABLE.name())) {
+          throw new InvalidOperationException("Cannot change location of a managed table " +
+                  TableName.getQualified(oldTbl.getCatName(),
+                          oldTbl.getDbName(), oldTbl.getTableName()) + " as it is enabled for replication.");
+        }
+    }
+
+    // Rest of the changes need validation only when strict managed tables is false. That's
+    // when there's scope for migration during replication, at least for now.
+    if (conf.getBoolean(MetastoreConf.ConfVars.STRICT_MANAGED_TABLES.getHiveName(), false)) {
+      return;
+    }
+
+    // Do not allow changing the type of table. This is to avoid migration scenarios which causes
+    // Managed ACID table to be converted to external at replica. As ACID tables cannot be
+    // converted to external table and vice versa, we need to restrict this conversion at primary
+    // as well. Currently, table type conversion is allowed only between managed and external
+    // table types. But, to be future proof, any table type conversion is restricted on a
+    // replication enabled DB.
+    if (!oldTbl.getTableType().equalsIgnoreCase(newTbl.getTableType())) {
       throw new InvalidOperationException("Table type cannot be changed from " + oldTbl.getTableType()
               + " to " + newTbl.getTableType() + " for the table " +
               TableName.getQualified(oldTbl.getCatName(), oldTbl.getDbName(), oldTbl.getTableName())
               + " as it is enabled for replication.");
+    }
+
+    // Also we do not allow changing a non-Acid managed table to acid table on source with strict
+    // managed false. After replicating a non-acid managed table to a target with strict managed
+    // true the table will be converted to acid or external table. So changing the transactional
+    // property of table on source can conflict with resultant change in the target.
+    if (!TxnUtils.isTransactionalTable(oldTbl) && TxnUtils.isTransactionalTable(newTbl)) {
+      throw new InvalidOperationException("A non-Acid table cannot be converted to an Acid " +
+              "table for the table " + TableName.getQualified(oldTbl.getCatName(),
+              oldTbl.getDbName(), oldTbl.getTableName()) + " as it is enabled for replication.");
     }
   }
 

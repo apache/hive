@@ -17,10 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.events;
 
-import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
+import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc;
 
 public interface PartitionEvent extends TableEvent {
-  AddPartitionDesc lastPartitionReplicated();
+  AlterTableAddPartitionDesc lastPartitionReplicated();
 
   TableEvent asTableEvent();
 }

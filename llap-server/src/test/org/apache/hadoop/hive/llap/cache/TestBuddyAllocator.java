@@ -62,6 +62,10 @@ public class TestBuddyAllocator {
     public void reserveMemory(long memoryToReserve, AtomicBoolean isStopped) {
     }
 
+    @Override public long evictMemory(long memoryToEvict) {
+      return 0;
+    }
+
     @Override
     public void releaseMemory(long memUsage) {
     }
@@ -93,8 +97,7 @@ public class TestBuddyAllocator {
     }
   }
 
-  @Test
-  public void testMultipleArenas() throws Exception {
+  @Test public void testMultipleArenas() throws Exception {
     int max = 8, maxAlloc = 1 << max, allocLog2 = max - 1, arenaCount = 5;
     BuddyAllocator a = new BuddyAllocator(isDirect, isMapped, 1 << 3, maxAlloc, maxAlloc,
         maxAlloc * arenaCount, 0, tmpDir, new DummyMemoryManager(),

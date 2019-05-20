@@ -20,7 +20,7 @@ package org.apache.hive.beeline;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
-import org.apache.hadoop.hive.ql.QTestUtil;
+import org.apache.hadoop.hive.ql.dataset.QTestDatasetHandler;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.util.StreamPrinter;
 import org.apache.hive.beeline.ConvertedOutputFile.Converter;
@@ -43,7 +43,7 @@ import java.util.regex.Pattern;
  * input and output files, and provides methods for filtering the output of the runs.
  */
 public final class QFile {
-  private static final Set<String> srcTables = QTestUtil.getSrcTables();
+  private static final Set<String> srcTables = QTestDatasetHandler.getSrcTables();
   private static final String DEBUG_HINT =
       "The following files can help you identifying the problem:%n"
       + " - Query file: %1s%n"

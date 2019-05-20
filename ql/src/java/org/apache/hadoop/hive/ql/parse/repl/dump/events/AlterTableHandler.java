@@ -21,6 +21,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 
@@ -89,6 +90,14 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
     if (!Utils
         .shouldReplicate(withinContext.replicationSpec, qlMdTableBefore, true, withinContext.hiveConf)) {
       return;
+    }
+
+    if (withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES)) {
+      if (!AcidUtils.isTransactionalTable(before) && AcidUtils.isTransactionalTable(after)) {
+        LOG.info("The table " + after.getTableName() + " is converted to ACID table." +
+                " It will be replicated with bootstrap load as hive.repl.bootstrap.acid.tables is set to true.");
+        return;
+      }
     }
 
     if (Scenario.ALTER == scenario) {

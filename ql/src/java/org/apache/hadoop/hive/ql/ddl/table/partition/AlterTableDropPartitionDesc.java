@@ -16,34 +16,42 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.table.partition;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * DropPartitionDesc.
+ * DDL task description for ALTER TABLE ... DROP PARTITION ... commands.
  */
 @Explain(displayName = "Drop Partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class DropPartitionDesc extends DDLDesc implements Serializable {
+public class AlterTableDropPartitionDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
+  static {
+    DDLTask2.registerOperation(AlterTableDropPartitionDesc.class, AlterTableDropPartitionOperation.class);
+  }
+
   /**
-   * PartSpec.
+   * Partition description.
    */
-  public static class PartSpec implements Serializable {
+  public static class PartitionDesc implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private ExprNodeGenericFuncDesc partSpec;
+    private final ExprNodeGenericFuncDesc partSpec;
     // TODO: see if we can get rid of this... used in one place to distinguish archived parts
-    private int prefixLength;
+    private final int prefixLength;
 
-    public PartSpec(ExprNodeGenericFuncDesc partSpec, int prefixLength) {
+    public PartitionDesc(ExprNodeGenericFuncDesc partSpec, int prefixLength) {
       this.partSpec = partSpec;
       this.prefixLength = prefixLength;
     }
@@ -58,18 +66,18 @@ public class DropPartitionDesc extends DDLDesc implements Serializable {
   }
 
   private final String tableName;
-  private final ArrayList<PartSpec> partSpecs;
+  private final ArrayList<PartitionDesc> partSpecs;
   private final boolean ifPurge;
   private final ReplicationSpec replicationSpec;
 
-  public DropPartitionDesc(String tableName, Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs, boolean ifPurge,
-      ReplicationSpec replicationSpec) {
+  public AlterTableDropPartitionDesc(String tableName, Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs,
+      boolean ifPurge, ReplicationSpec replicationSpec) {
     this.tableName = tableName;
-    this.partSpecs = new ArrayList<PartSpec>(partSpecs.size());
+    this.partSpecs = new ArrayList<PartitionDesc>(partSpecs.size());
     for (Map.Entry<Integer, List<ExprNodeGenericFuncDesc>> partSpec : partSpecs.entrySet()) {
       int prefixLength = partSpec.getKey();
       for (ExprNodeGenericFuncDesc expr : partSpec.getValue()) {
-        this.partSpecs.add(new PartSpec(expr, prefixLength));
+        this.partSpecs.add(new PartitionDesc(expr, prefixLength));
       }
     }
     this.ifPurge = ifPurge;
@@ -81,12 +89,12 @@ public class DropPartitionDesc extends DDLDesc implements Serializable {
     return tableName;
   }
 
-  public ArrayList<PartSpec> getPartSpecs() {
+  public ArrayList<PartitionDesc> getPartSpecs() {
     return partSpecs;
   }
 
   public boolean getIfPurge() {
-      return ifPurge;
+    return ifPurge;
   }
 
   /**

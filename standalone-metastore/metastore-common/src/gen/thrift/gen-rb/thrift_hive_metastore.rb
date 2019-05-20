@@ -723,6 +723,22 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_table_objects_by_name failed: unknown result')
     end
 
+    def get_tables_ext(req)
+      send_get_tables_ext(req)
+      return recv_get_tables_ext()
+    end
+
+    def send_get_tables_ext(req)
+      send_message('get_tables_ext', Get_tables_ext_args, :req => req)
+    end
+
+    def recv_get_tables_ext()
+      result = receive_message(Get_tables_ext_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_tables_ext failed: unknown result')
+    end
+
     def get_table_req(req)
       send_get_table_req(req)
       return recv_get_table_req()
@@ -4289,6 +4305,17 @@ module ThriftHiveMetastore
       result = Get_table_objects_by_name_result.new()
       result.success = @handler.get_table_objects_by_name(args.dbname, args.tbl_names)
       write_result(result, oprot, 'get_table_objects_by_name', seqid)
+    end
+
+    def process_get_tables_ext(seqid, iprot, oprot)
+      args = read_args(iprot, Get_tables_ext_args)
+      result = Get_tables_ext_result.new()
+      begin
+        result.success = @handler.get_tables_ext(args.req)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_tables_ext', seqid)
     end
 
     def process_get_table_req(seqid, iprot, oprot)
@@ -8077,6 +8104,40 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Table}}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_tables_ext_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::GetTablesExtRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_tables_ext_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ExtendedTableInfo}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end

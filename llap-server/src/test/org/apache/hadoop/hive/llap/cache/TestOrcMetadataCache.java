@@ -27,8 +27,6 @@ import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache.LlapBufferOrBuffers;
@@ -84,6 +82,10 @@ public class TestOrcMetadataCache {
     @Override
     public void reserveMemory(long memoryToReserve, AtomicBoolean isStopped) {
       ++allocs;
+    }
+
+    @Override public long evictMemory(long memoryToEvict) {
+      return 0;
     }
 
     @Override
