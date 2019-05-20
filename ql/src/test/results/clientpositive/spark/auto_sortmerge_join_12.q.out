@@ -192,7 +192,9 @@ STAGE PLANS:
                   Select Operator
                     Statistics: Num rows: 3 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
+                      bucketingVersion: 2
                       null sort order: 
+                      numBuckets: -1
                       sort order: 
                       Statistics: Num rows: 3 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
                       tag: 0
@@ -546,112 +548,13 @@ STAGE PLANS:
                     name: default.bucket_small_n15
                   name: default.bucket_small_n15
             Truncated Path -> Alias:
-<<<<<<< HEAD
-              /bucket_small_n15/ds=2008-04-08 [$hdt$_2:a]
-        Map 7 
-            Map Operator Tree:
-                TableScan
-                  alias: d
-                  Statistics: Num rows: 3 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
-                  GatherStats: false
-                  Select Operator
-                    Statistics: Num rows: 3 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
-                    Reduce Output Operator
-                      bucketingVersion: 2
-                      null sort order: 
-                      numBuckets: -1
-                      sort order: 
-                      Statistics: Num rows: 3 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
-                      tag: 1
-                      auto parallelism: false
-            Execution mode: vectorized
-            Path -> Alias:
-#### A masked pattern was here ####
-            Path -> Partition:
-#### A masked pattern was here ####
-                Partition
-                  base file name: ds=2008-04-08
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  partition values:
-                    ds 2008-04-08
-                  properties:
-                    bucket_count 3
-                    bucket_field_name key
-                    column.name.delimiter ,
-                    columns key,value
-                    columns.comments 
-                    columns.types string:string
-#### A masked pattern was here ####
-                    name default.bucket_medium
-                    numFiles 3
-                    numRows 0
-                    partition_columns ds
-                    partition_columns.types string
-                    rawDataSize 0
-                    serialization.ddl struct bucket_medium { string key, string value}
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 170
-#### A masked pattern was here ####
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      SORTBUCKETCOLSPREFIX TRUE
-                      bucket_count 3
-                      bucket_field_name key
-                      bucketing_version 2
-                      column.name.delimiter ,
-                      columns key,value
-                      columns.comments 
-                      columns.types string:string
-#### A masked pattern was here ####
-                      name default.bucket_medium
-                      partition_columns ds
-                      partition_columns.types string
-                      serialization.ddl struct bucket_medium { string key, string value}
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.bucket_medium
-                  name: default.bucket_medium
-            Truncated Path -> Alias:
-              /bucket_medium/ds=2008-04-08 [$hdt$_3:d]
-=======
               /bucket_small_n15/ds=2008-04-08 [$hdt$_1:$hdt$_1:$hdt$_3:a]
->>>>>>> asf/master
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-<<<<<<< HEAD
-                     Inner Join 1 to 2
-                keys:
-                  0 _col0 (type: string)
-                  1 _col0 (type: string)
-                  2 _col0 (type: string)
-                Statistics: Num rows: 528 Data size: 255728 Basic stats: PARTIAL Column stats: NONE
-                Reduce Output Operator
-                  bucketingVersion: 2
-                  null sort order: 
-                  numBuckets: -1
-                  sort order: 
-                  Statistics: Num rows: 528 Data size: 255728 Basic stats: PARTIAL Column stats: NONE
-                  tag: 0
-                  auto parallelism: false
-        Reducer 3 
-            Needs Tagging: true
-            Reduce Operator Tree:
-              Join Operator
-                condition map:
-                     Inner Join 0 to 1
-=======
->>>>>>> asf/master
                 keys:
                   0 
                   1 
@@ -726,7 +629,9 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 264 Data size: 127864 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
+                        bucketingVersion: 2
                         null sort order: 
+                        numBuckets: -1
                         sort order: 
                         Statistics: Num rows: 264 Data size: 127864 Basic stats: PARTIAL Column stats: NONE
                         tag: 1
