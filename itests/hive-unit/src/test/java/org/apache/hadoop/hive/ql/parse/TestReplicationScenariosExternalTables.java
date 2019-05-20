@@ -663,35 +663,6 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
   }
 
   @Test
-  public void retryIncBootstrapExternalTablesFromDifferentDumpWithoutCleanTablesConfig() throws Throwable {
-    List<String> dumpWithClause = Collections.singletonList(
-            "'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'"
-    );
-    List<String> loadWithClause = externalTableBasePathWithClause();
-
-    WarehouseInstance.Tuple tupleBootstrapWithoutExternal = primary
-            .dump(primaryDbName, null, dumpWithClause);
-
-    replica.load(replicatedDbName, tupleBootstrapWithoutExternal.dumpLocation, loadWithClause);
-
-    dumpWithClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
-            "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'");
-    WarehouseInstance.Tuple tupleIncWithExternalBootstrap = primary.run("use " + primaryDbName)
-            .run("create external table t1 (id int)")
-            .run("insert into table t1 values (1)")
-            .run("create table t2 as select * from t1")
-            .dump(primaryDbName, tupleBootstrapWithoutExternal.lastReplicationId, dumpWithClause);
-    WarehouseInstance.Tuple tupleNewIncWithExternalBootstrap
-            = primary.dump(primaryDbName, tupleBootstrapWithoutExternal.lastReplicationId, dumpWithClause);
-
-    replica.load(replicatedDbName, tupleIncWithExternalBootstrap.dumpLocation, loadWithClause);
-
-    // Re-bootstrapping from different bootstrap dump without clean tables config should fail.
-    replica.loadFailure(replicatedDbName, tupleNewIncWithExternalBootstrap.dumpLocation, loadWithClause,
-            ErrorMsg.REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID.getErrorCode());
-  }
-
-  @Test
   public void testExternalTableDataPath() throws Exception {
     HiveConf conf = primary.getConf();
     Path basePath = new Path("/");
