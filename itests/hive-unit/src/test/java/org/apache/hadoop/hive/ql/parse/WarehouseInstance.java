@@ -563,7 +563,11 @@ public class WarehouseInstance implements Closeable {
   }
 
   public boolean isAcidEnabled() {
-    return hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY) &&
+        hiveConf.getVar(HiveConf.ConfVars.HIVE_TXN_MANAGER).equals("org.apache.hadoop.hive.ql.lockmgr.DbTxnManager")) {
+      return true;
+    }
+    return false;
   }
 
   @Override
