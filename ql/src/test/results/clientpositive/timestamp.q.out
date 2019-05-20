@@ -124,8 +124,10 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
+                      bucketingVersion: 2
                       key expressions: _col0 (type: boolean)
                       null sort order: a
+                      numBuckets: -1
                       sort order: +
                       Map-reduce partition columns: _col0 (type: boolean)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
@@ -150,8 +152,10 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
+                      bucketingVersion: 2
                       key expressions: _col0 (type: boolean)
                       null sort order: a
+                      numBuckets: -1
                       sort order: +
                       Map-reduce partition columns: _col0 (type: boolean)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
