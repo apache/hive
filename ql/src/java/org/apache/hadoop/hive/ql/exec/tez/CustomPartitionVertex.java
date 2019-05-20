@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,20 +20,12 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 import com.google.common.collect.LinkedListMultimap;
 import org.apache.hadoop.mapred.split.SplitLocationProvider;
+import org.apache.tez.runtime.api.events.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -62,10 +54,6 @@ import org.apache.tez.mapreduce.protos.MRRuntimeProtos.MRInputUserPayloadProto;
 import org.apache.tez.mapreduce.protos.MRRuntimeProtos.MRSplitProto;
 import org.apache.tez.runtime.api.Event;
 import org.apache.tez.runtime.api.InputSpecUpdate;
-import org.apache.tez.runtime.api.events.InputConfigureVertexTasksEvent;
-import org.apache.tez.runtime.api.events.InputDataInformationEvent;
-import org.apache.tez.runtime.api.events.InputUpdatePayloadEvent;
-import org.apache.tez.runtime.api.events.VertexManagerEvent;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
@@ -120,14 +108,15 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
   private final Multimap<Integer, Integer> bucketToTaskMap = HashMultimap.<Integer, Integer> create();
 
   private final Map<String, Multimap<Integer, InputSplit>> inputToGroupedSplitMap =
-      new HashMap<String, Multimap<Integer, InputSplit>>();
+      new HashMap<>();
 
   private int numInputsAffectingRootInputSpecUpdate = 1;
   private int numInputsSeenSoFar = 0;
   private final Map<String, EdgeManagerPluginDescriptor> emMap = Maps.newHashMap();
   private final List<InputSplit> finalSplits = Lists.newLinkedList();
   private final Map<String, InputSpecUpdate> inputNameInputSpecMap =
-      new HashMap<String, InputSpecUpdate>();
+      new HashMap<>();
+  private Map<String, Integer> inputToBucketMap;
 
   public CustomPartitionVertex(VertexManagerPluginContext context) {
     super(context);
@@ -149,6 +138,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
     this.mainWorkName = vertexConf.getInputName();
     this.vertexType = vertexConf.getVertexType();
     this.numInputsAffectingRootInputSpecUpdate = vertexConf.getNumInputs();
+    this.inputToBucketMap = vertexConf.getInputToBucketMap();
   }
 
   @Override
@@ -157,7 +147,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
     List<VertexManagerPluginContext.TaskWithLocationHint> scheduledTasks =
       new ArrayList<VertexManagerPluginContext.TaskWithLocationHint>(numTasks);
     for (int i = 0; i < numTasks; ++i) {
-      scheduledTasks.add(new VertexManagerPluginContext.TaskWithLocationHint(new Integer(i), null));
+      scheduledTasks.add(new VertexManagerPluginContext.TaskWithLocationHint(Integer.valueOf(i), null));
     }
     context.scheduleVertexTasks(scheduledTasks);
   }
@@ -249,10 +239,12 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
       }
     }
 
-    LOG.info("Path file splits map for input name: " + inputName + " is " + pathFileSplitsMap);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Path file splits map for input name: " + inputName + " is " + pathFileSplitsMap);
+    }
 
     Multimap<Integer, InputSplit> bucketToInitialSplitMap =
-        getBucketSplitMapForPath(pathFileSplitsMap);
+        getBucketSplitMapForPath(inputName, pathFileSplitsMap);
 
     try {
       int totalResource = context.getTotalAvailableResource().getMemory();
@@ -263,8 +255,10 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
 
       int availableSlots = totalResource / taskResource;
 
-      LOG.info("Grouping splits. " + availableSlots + " available slots, " + waves
-          + " waves. Bucket initial splits map: " + bucketToInitialSplitMap);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Grouping splits. " + availableSlots + " available slots, " + waves
+                + " waves. Bucket initial splits map: " + bucketToInitialSplitMap);
+      }
       JobConf jobConf = new JobConf(conf);
       ShimLoader.getHadoopShims().getMergedCredentials(jobConf);
 
@@ -458,7 +452,8 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
     // Set the actual events for the tasks.
     LOG.info("For input name: " + inputName + " task events size is " + taskEvents.size());
     context.addRootInputEvents(inputName, taskEvents);
-    if (inputToGroupedSplitMap.isEmpty() == false) {
+
+    if (!inputToGroupedSplitMap.isEmpty()) {
       for (Entry<String, Multimap<Integer, InputSplit>> entry : inputToGroupedSplitMap.entrySet()) {
         processAllSideEvents(entry.getKey(), entry.getValue());
       }
@@ -469,6 +464,24 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
     // Only done when it is a bucket map join only no SMB.
     if (numInputsAffectingRootInputSpecUpdate == 1) {
       setVertexParallelismAndRootInputSpec(inputNameInputSpecMap);
+      // Send the bucket IDs associated with the tasks, must happen after parallelism is set.
+      sendBucketIdsToProcessor();
+    }
+  }
+
+  private void sendBucketIdsToProcessor() {
+    for (Entry<Integer, Collection<Integer>> entry : bucketToTaskMap.asMap().entrySet()) {
+      int bucketNum = entry.getKey();
+      for (Integer taskId : entry.getValue()) {
+        // Create payload
+        ByteBuffer buffer = ByteBuffer.allocate(8);
+        buffer.putInt(numBuckets);
+        buffer.putInt(bucketNum);
+        buffer.flip();
+        // Create the event and send it tez. Tez will route it to appropriate processor
+        CustomProcessorEvent cpEvent = CustomProcessorEvent.create(buffer);
+        context.sendEventToProcessor(Collections.singletonList(cpEvent), taskId);
+      }
     }
   }
 
@@ -521,20 +534,50 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
   /*
    * This method generates the map of bucket to file splits.
    */
-  private Multimap<Integer, InputSplit> getBucketSplitMapForPath(
+  private Multimap<Integer, InputSplit> getBucketSplitMapForPath(String inputName,
       Map<String, Set<FileSplit>> pathFileSplitsMap) {
 
-    int bucketNum = 0;
 
     Multimap<Integer, InputSplit> bucketToInitialSplitMap =
-        ArrayListMultimap.<Integer, InputSplit> create();
+        ArrayListMultimap.create();
 
+    boolean fallback = false;
+    Map<Integer, Integer> bucketIds = new HashMap<>();
     for (Map.Entry<String, Set<FileSplit>> entry : pathFileSplitsMap.entrySet()) {
-      int bucketId = bucketNum % numBuckets;
+      // Extract the buckedID from pathFilesMap, this is more accurate method,
+      // however. it may not work in certain cases where buckets are named
+      // after files used while loading data. In such case, fallback to old
+      // potential inaccurate method.
+      // The accepted file names are such as 000000_0, 000001_0_copy_1.
+      String bucketIdStr =
+              Utilities.getBucketFileNameFromPathSubString(entry.getKey());
+      int bucketId = Utilities.getBucketIdFromFile(bucketIdStr);
+      if (bucketId == -1) {
+        fallback = true;
+        LOG.info("Fallback to using older sort based logic to assign " +
+                "buckets to splits.");
+        bucketIds.clear();
+        break;
+      }
+      // Make sure the bucketId is at max the numBuckets
+      bucketId = bucketId % numBuckets;
+      bucketIds.put(bucketId, bucketId);
       for (FileSplit fsplit : entry.getValue()) {
         bucketToInitialSplitMap.put(bucketId, fsplit);
       }
-      bucketNum++;
+    }
+
+    int bucketNum = 0;
+    if (fallback) {
+      // This is the old logic which assumes that the filenames are sorted in
+      // alphanumeric order and mapped to appropriate bucket number.
+      for (Map.Entry<String, Set<FileSplit>> entry : pathFileSplitsMap.entrySet()) {
+        int bucketId = bucketNum % numBuckets;
+        for (FileSplit fsplit : entry.getValue()) {
+          bucketToInitialSplitMap.put(bucketId, fsplit);
+        }
+        bucketNum++;
+      }
     }
 
     // this is just for SMB join use-case. The numBuckets would be equal to that of the big table
@@ -542,16 +585,35 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
     // data from the right buckets to the big table side. For e.g. Big table has 8 buckets and small
     // table has 4 buckets, bucket 0 of small table needs to be sent to bucket 4 of the big table as
     // well.
-    if (bucketNum < numBuckets) {
-      int loopedBucketId = 0;
-      for (; bucketNum < numBuckets; bucketNum++) {
-        for (InputSplit fsplit : bucketToInitialSplitMap.get(loopedBucketId)) {
-          bucketToInitialSplitMap.put(bucketNum, fsplit);
+    if (numInputsAffectingRootInputSpecUpdate != 1) {
+      // small table
+      if (fallback && bucketNum < numBuckets) {
+        // Old logic.
+        int loopedBucketId = 0;
+        for (; bucketNum < numBuckets; bucketNum++) {
+          for (InputSplit fsplit : bucketToInitialSplitMap.get(loopedBucketId)) {
+            bucketToInitialSplitMap.put(bucketNum, fsplit);
+          }
+          loopedBucketId++;
         }
-        loopedBucketId++;
+      } else {
+        // new logic.
+        if (inputToBucketMap.containsKey(inputName)) {
+          int inputNumBuckets = inputToBucketMap.get(inputName);
+          if (inputNumBuckets < numBuckets) {
+            // Need to send the splits to multiple buckets
+            for (int i = 1; i < numBuckets / inputNumBuckets; i++) {
+              int bucketIdBase = i * inputNumBuckets;
+              for (Integer bucketId : bucketIds.keySet()) {
+                for (InputSplit fsplit : bucketToInitialSplitMap.get(bucketId)) {
+                  bucketToInitialSplitMap.put(bucketIdBase + bucketId, fsplit);
+                }
+              }
+            }
+          }
+        }
       }
     }
-
     return bucketToInitialSplitMap;
   }
 }

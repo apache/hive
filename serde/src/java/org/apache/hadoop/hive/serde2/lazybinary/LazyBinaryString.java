@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObj
 import org.apache.hadoop.io.Text;
 
 /**
- * The serialization of LazyBinaryString is very simple: start A end bytes[] ->
+ * The serialization of LazyBinaryString is very simple: start A end bytes[] -&gt;
  * |---------------------------------|
  * 
  * Section A is just an array of bytes which are exactly the Text contained in

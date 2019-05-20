@@ -1,3 +1,4 @@
+--! qt:dataset:lineitem
 set hive.mapred.mode=nonstrict;
 -- where clause
 select
@@ -37,3 +38,26 @@ from
   ) b
   on a.interval1 = b.interval2 and a.l_orderkey = b.l_orderkey
 order by a.l_orderkey;
+
+-- interval literal in join condition
+create table date_dim_d1(
+	d_week_seq int,
+	d_date string);
+
+    EXPLAIN SELECT
+           d1.d_week_seq
+    FROM
+           date_dim_d1 d1
+           JOIN date_dim_d1 d3
+    WHERE
+           Cast(d3.d_date AS date) > Cast(d1.d_date AS date)
+    		+ INTERVAL '1' year
+    		+ INTERVAL '2' month
+    		+ INTERVAL '5' day
+    		+ INTERVAL '4' hour
+    		+ INTERVAL '10' minute
+    		+ INTERVAL '9' second
+    	AND Cast(d3.d_date AS date) < Cast(d1.d_date AS date) + INTERVAL '1-2' YEAR TO MONTH;
+
+    DROP table date_dim_d1;
+

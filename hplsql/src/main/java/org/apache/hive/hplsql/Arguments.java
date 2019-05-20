@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -76,7 +76,7 @@ public class Arguments {
         .hasArgs(2)
         .withArgName("key=value")
         .withLongOpt("define")
-        .withDescription("Variable subsitution e.g. -d A=B or --define A=B")
+        .withDescription("Variable substitution e.g. -d A=B or --define A=B")
         .create('d'));
 
     // Substitution option --hivevar
@@ -85,7 +85,7 @@ public class Arguments {
         .hasArgs(2)
         .withArgName("key=value")
         .withLongOpt("hivevar")
-        .withDescription("Variable subsitution e.g. --hivevar A=B")
+        .withDescription("Variable substitution e.g. --hivevar A=B")
         .create());
     
     // [-version|--version]

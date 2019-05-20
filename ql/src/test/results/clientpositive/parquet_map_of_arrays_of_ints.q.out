@@ -1,16 +1,10 @@
-PREHOOK: query: -- this test reads and writes a parquet file with a map of arrays of ints
--- validates PARQUET-26 is fixed
-
-CREATE TABLE parquet_map_of_arrays_of_ints (
+PREHOOK: query: CREATE TABLE parquet_map_of_arrays_of_ints (
     examples MAP<STRING, ARRAY<INT>>
 ) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_map_of_arrays_of_ints
-POSTHOOK: query: -- this test reads and writes a parquet file with a map of arrays of ints
--- validates PARQUET-26 is fixed
-
-CREATE TABLE parquet_map_of_arrays_of_ints (
+POSTHOOK: query: CREATE TABLE parquet_map_of_arrays_of_ints (
     examples MAP<STRING, ARRAY<INT>>
 ) STORED AS PARQUET
 POSTHOOK: type: CREATETABLE

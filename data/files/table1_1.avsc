@@ -1,0 +1,19 @@
+{
+  "type" : "record",
+  "name" : "table1_1",
+  "doc" : "Sqoop import of table1_1",
+  "fields" : [ {
+    "name" : "col1",
+    "type" : [ "null", "long" ],
+    "default" : null,
+    "columnName" : "col1",
+    "sqlType" : "13"
+  }, {
+    "name" : "col2",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "col2",
+    "sqlType" : "12"
+  }],
+  "tableName" : "table1_1"
+}

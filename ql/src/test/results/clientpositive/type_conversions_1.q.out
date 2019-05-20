@@ -1,5 +1,4 @@
-PREHOOK: query: -- casting from null should yield null
-select
+PREHOOK: query: select
   cast(null as tinyint),
   cast(null as smallint),
   cast(null as int),
@@ -17,8 +16,7 @@ from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- casting from null should yield null
-select
+POSTHOOK: query: select
   cast(null as tinyint),
   cast(null as smallint),
   cast(null as int),
@@ -37,16 +35,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-PREHOOK: query: -- Invalid conversions, should all be null
-select
+PREHOOK: query: select
   cast('abcd' as date),
   cast('abcd' as timestamp)
 from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Invalid conversions, should all be null
-select
+POSTHOOK: query: select
   cast('abcd' as date),
   cast('abcd' as timestamp)
 from src limit 1

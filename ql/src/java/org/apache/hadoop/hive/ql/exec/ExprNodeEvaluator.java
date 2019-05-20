@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -30,9 +31,11 @@ public abstract class ExprNodeEvaluator<T extends ExprNodeDesc> {
 
   protected final T expr;
   protected ObjectInspector outputOI;
+  protected Configuration conf;
 
-  public ExprNodeEvaluator(T expr) {
+  public ExprNodeEvaluator(T expr, Configuration conf) {
     this.expr = expr;
+    this.conf = conf;
   }
 
   /**
@@ -99,6 +102,22 @@ public abstract class ExprNodeEvaluator<T extends ExprNodeDesc> {
   }
 
   /**
+   * Return whether this node (or any children nodes) are runtime constants.
+   */
+  public boolean isRuntimeConstant() {
+    return false;
+  }
+
+  /**
+   * Returns whether the expression, for a single query, returns the same result given
+   * the same arguments. This includes deterministic functions as well as runtime
+   * constants (which may not be deterministic across queries).
+   */
+  public boolean isConsistentWithinQuery() {
+    return (isDeterministic() || isRuntimeConstant()) && !isStateful();
+  }
+
+  /**
    * Return child evaluators if exist
    */
   public ExprNodeEvaluator[] getChildren() {
@@ -108,5 +127,13 @@ public abstract class ExprNodeEvaluator<T extends ExprNodeDesc> {
   @Override
   public String toString() {
     return "ExprNodeEvaluator[" + expr + "]";
+  }
+
+  public Configuration getConf() {
+    return conf;
+  }
+
+  public void setConf(Configuration conf) {
+    this.conf = conf;
   }
 }

@@ -17,7 +17,7 @@ THISSERVICE=llapstatus
 export SERVICE_LIST="${SERVICE_LIST}${THISSERVICE} "
 
 llapstatus () {
-  CLASS=org.apache.hadoop.hive.llap.cli.LlapStatusServiceDriver;
+  CLASS=org.apache.hadoop.hive.llap.cli.status.LlapStatusServiceDriver;
   if [ ! -f ${HIVE_LIB}/hive-cli-*.jar ]; then
     echo "Missing Hive CLI Jar"
     exit 3;
@@ -29,14 +29,14 @@ llapstatus () {
 
   set -e;
 
-  export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.configurationFile=llap-cli-log4j2.properties "
+  export HADOOP_CLIENT_OPTS=" -Dproc_llapstatuscli $HADOOP_CLIENT_OPTS -Dlog4j.configurationFile=llap-cli-log4j2.properties "
   # hadoop 20 or newer - skip the aux_jars option. picked up from hiveconf
   $HADOOP $CLASS $HIVE_OPTS "$@"
   
 }
 
 llapstatus_help () {
-  CLASS=org.apache.hadoop.hive.llap.cli.LlapStatusServiceDriver;
+  CLASS=org.apache.hadoop.hive.llap.cli.status.LlapStatusServiceDriver;
   execHiveCmd $CLASS "--help"
 } 
 

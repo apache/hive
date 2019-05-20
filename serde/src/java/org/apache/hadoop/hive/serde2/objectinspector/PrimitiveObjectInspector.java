@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 
@@ -24,18 +26,20 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
  * PrimitiveObjectInspector.
  *
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface PrimitiveObjectInspector extends ObjectInspector {
 
   /**
    * The primitive types supported by Hive.
    */
-  public static enum PrimitiveCategory {
+  enum PrimitiveCategory {
     VOID, BOOLEAN, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, STRING,
-    DATE, TIMESTAMP, BINARY, DECIMAL, VARCHAR, CHAR, INTERVAL_YEAR_MONTH, INTERVAL_DAY_TIME,
-    UNKNOWN
-  };
+    DATE, TIMESTAMP, TIMESTAMPLOCALTZ, BINARY, DECIMAL, VARCHAR, CHAR,
+    INTERVAL_YEAR_MONTH, INTERVAL_DAY_TIME, UNKNOWN
+  }
 
-  public PrimitiveTypeInfo getTypeInfo();
+  PrimitiveTypeInfo getTypeInfo();
 
   /**
    * Get the primitive category of the PrimitiveObjectInspector.

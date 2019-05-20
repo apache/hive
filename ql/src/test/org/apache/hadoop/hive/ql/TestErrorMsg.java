@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,8 +21,9 @@ package org.apache.hadoop.hive.ql;
 import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import junit.framework.TestCase;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.junit.Test;
 
 public class TestErrorMsg {
@@ -37,8 +38,9 @@ public class TestErrorMsg {
   }
   @Test
   public void testReverseMatch() {
-    testReverseMatch(ErrorMsg.OP_NOT_ALLOWED_IN_AUTOCOMMIT, "COMMIT");
-    testReverseMatch(ErrorMsg.OP_NOT_ALLOWED_IN_TXN, "ALTER TABLE", "1");
+    testReverseMatch(ErrorMsg.OP_NOT_ALLOWED_IN_IMPLICIT_TXN, "COMMIT");
+    testReverseMatch(ErrorMsg.OP_NOT_ALLOWED_IN_TXN, "ALTER TABLE",
+      JavaUtils.txnIdToString(1), "123");
     testReverseMatch(ErrorMsg.OP_NOT_ALLOWED_WITHOUT_TXN, "ROLLBACK");
   }
   private void testReverseMatch(ErrorMsg errorMsg, String... args) {

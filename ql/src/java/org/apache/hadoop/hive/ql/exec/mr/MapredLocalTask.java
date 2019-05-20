@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -43,6 +43,7 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
+import org.apache.hadoop.hive.common.log.LogRedirector;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -60,7 +61,7 @@ import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionException;
+import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -69,9 +70,9 @@ import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
-import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -79,6 +80,7 @@ import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.StreamPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -185,12 +187,12 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
         IOUtils.closeQuietly(out);
       }
 
-
       String isSilent = "true".equalsIgnoreCase(System.getProperty("test.silent")) ? "-nolog" : "";
 
-      String jarCmd;
+      String libJars = ExecDriver.getResource(conf, ResourceType.JAR);
+      String libJarsOption = StringUtils.isEmpty(libJars) ? " " : " -libjars " + libJars + " ";
 
-      jarCmd = hiveJar + " " + ExecDriver.class.getName();
+      String jarCmd = hiveJar + " " + ExecDriver.class.getName() + libJarsOption;
       String hiveConfArgs = ExecDriver.generateCmdLine(conf, ctx);
       String cmdLine = hadoopExec + " jar " + jarCmd + " -localtask -plan " + planPath.toString()
           + " " + isSilent + " " + hiveConfArgs;
@@ -325,20 +327,19 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       // Run ExecDriver in another JVM
       executor = Runtime.getRuntime().exec(cmdLine, env, new File(workDir));
 
+      final LogRedirector.LogSourceCallback callback = () -> {return executor.isAlive();};
+
+      LogRedirector.redirect(
+          Thread.currentThread().getName() + "-LocalTask-" + getName() + "-stdout",
+          new LogRedirector(executor.getInputStream(), LOG, callback));
+      LogRedirector.redirect(
+          Thread.currentThread().getName() + "-LocalTask-" + getName() + "-stderr",
+          new LogRedirector(executor.getErrorStream(), LOG, callback));
+
       CachingPrintStream errPrintStream = new CachingPrintStream(System.err);
 
-      StreamPrinter outPrinter;
-      StreamPrinter errPrinter;
-      OperationLog operationLog = OperationLog.getCurrentOperationLog();
-      if (operationLog != null) {
-        outPrinter = new StreamPrinter(executor.getInputStream(), null, System.out,
-            operationLog.getPrintStream());
-        errPrinter = new StreamPrinter(executor.getErrorStream(), null, errPrintStream,
-            operationLog.getPrintStream());
-      } else {
-        outPrinter = new StreamPrinter(executor.getInputStream(), null, System.out);
-        errPrinter = new StreamPrinter(executor.getErrorStream(), null, errPrintStream);
-      }
+      StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(), null, System.out);
+      StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(), null, errPrintStream);
 
       outPrinter.start();
       errPrinter.start();
@@ -394,14 +395,19 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       console.printInfo(Utilities.now() + "\tEnd of local task; Time Taken: "
           + Utilities.showTime(elapsed) + " sec.");
     } catch (Throwable throwable) {
+      int retVal;
+      String message;
       if (throwable instanceof OutOfMemoryError
-          || (throwable instanceof MapJoinMemoryExhaustionException)) {
-        l4j.error("Hive Runtime Error: Map local work exhausted memory", throwable);
-        return 3;
+          || (throwable instanceof MapJoinMemoryExhaustionError)) {
+        message = "Hive Runtime Error: Map local work exhausted memory";
+        retVal = 3;
       } else {
-        l4j.error("Hive Runtime Error: Map local work failed", throwable);
-        return 2;
+        message = "Hive Runtime Error: Map local work failed";
+        retVal = 2;
       }
+      l4j.error(message, throwable);
+      console.printError(message, HiveStringUtils.stringifyException(throwable));
+      return retVal;
     }
     return 0;
   }
@@ -477,10 +483,11 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       ColumnProjectionUtils.appendReadColumns(
           jobClone, ts.getNeededColumnIDs(), ts.getNeededColumns(), ts.getNeededNestedColumnPaths());
       // push down filters
-      HiveInputFormat.pushFilters(jobClone, ts);
+      HiveInputFormat.pushFilters(jobClone, ts, null);
 
-      AcidUtils.setTransactionalTableScan(jobClone, ts.getConf().isAcidTable());
-      AcidUtils.setAcidOperationalProperties(jobClone, ts.getConf().getAcidOperationalProperties());
+      AcidUtils.setAcidOperationalProperties(jobClone, ts.getConf().isTranscationalTable(),
+          ts.getConf().getAcidOperationalProperties());
+      AcidUtils.setValidWriteIdList(jobClone, ts.getConf());
 
       // create a fetch operator
       FetchOperator fetchOp = new FetchOperator(entry.getValue(), jobClone);

@@ -5,11 +5,9 @@ POSTHOOK: query: SHOW TABLES 'src'
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 src
-PREHOOK: query: -- changes to dummy derby store.. should return empty result
-SHOW TABLES 'src'
+PREHOOK: query: SHOW TABLES 'src'
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
-POSTHOOK: query: -- changes to dummy derby store.. should return empty result
-SHOW TABLES 'src'
+POSTHOOK: query: SHOW TABLES 'src'
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default

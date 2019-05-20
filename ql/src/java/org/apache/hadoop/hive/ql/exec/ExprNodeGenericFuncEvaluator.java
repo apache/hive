@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -91,13 +92,13 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator<ExprNodeGene
     }
   }
 
-  public ExprNodeGenericFuncEvaluator(ExprNodeGenericFuncDesc expr) throws HiveException {
-    super(expr);
+  public ExprNodeGenericFuncEvaluator(ExprNodeGenericFuncDesc expr, Configuration conf) throws HiveException {
+    super(expr, conf);
     children = new ExprNodeEvaluator[expr.getChildren().size()];
     isEager = false;
     for (int i = 0; i < children.length; i++) {
       ExprNodeDesc child = expr.getChildren().get(i);
-      ExprNodeEvaluator nodeEvaluator = ExprNodeEvaluatorFactory.get(child);
+      ExprNodeEvaluator nodeEvaluator = ExprNodeEvaluatorFactory.get(child, conf);
       children[i] = nodeEvaluator;
       // If we have eager evaluators anywhere below us, then we are eager too.
       if (nodeEvaluator instanceof ExprNodeGenericFuncEvaluator) {
@@ -144,7 +145,7 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator<ExprNodeGene
     }
     outputOI = genericUDF.initializeAndFoldConstants(childrenOIs);
     isConstant = ObjectInspectorUtils.isConstantObjectInspector(outputOI)
-        && isDeterministic();
+        && isConsistentWithinQuery();
     return outputOI;
   }
 
@@ -167,6 +168,16 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator<ExprNodeGene
     boolean result = FunctionRegistry.isStateful(genericUDF);
     for (ExprNodeEvaluator child : children) {
       if(result = result || child.isStateful()) {
+        return result;
+      }
+    }
+    return result;
+  }
+
+  public boolean isRuntimeConstant() {
+    boolean result = FunctionRegistry.isRuntimeConstant(genericUDF);
+    for (ExprNodeEvaluator child : children) {
+      if(result = result || child.isRuntimeConstant()) {
         return result;
       }
     }

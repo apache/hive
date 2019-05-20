@@ -34,7 +34,7 @@ then
   export PATH=$JAVA_HOME/bin/:$PATH
 fi
 export ANT_OPTS="-Xmx1g -XX:MaxPermSize=256m -Djava.io.tmpdir=/some/log/dir/tmp -Dhttp.proxyHost=somehost -Dhttp.proxyPort=3128"
-export M2_OPTS="-Xmx1g -XX:MaxPermSize=256m -Djava.io.tmpdir=/some/log/dir/tmp ${mavenEnvOpts}"
+export MAVEN_OPTS="-Xmx256m -Djava.io.tmpdir=/some/log/dir/tmp ${mavenEnvOpts}"
 export HADOOP_ROOT_LOGGER=INFO,console
 export HADOOP_OPTS="-Dhive.log.dir=/some/log/dir -Dhive.query.id=hadoop -Djava.io.tmpdir=/some/log/dir/tmp"
 cd /some/local/dir/instance-1/apache-source || exit 1
@@ -53,8 +53,6 @@ then
 fi
 echo "$$" > batch.pid
 find ./ -name 'TEST-*.xml' -delete
-find ./ -name 'hive.log' -delete
-find ./ -name junit_metastore_db | xargs -r rm -rf
 date +"%Y-%m-%d %T.%3N"
 echo "Pre test cleanup done"
 ret=0

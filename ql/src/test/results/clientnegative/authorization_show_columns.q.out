@@ -10,13 +10,11 @@ PREHOOK: Input: database:db1
 POSTHOOK: query: use db1
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:db1
-PREHOOK: query: -- check query without select privilege fails
-create table t1(i int)
+PREHOOK: query: create table t1(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:db1
 PREHOOK: Output: db1@t1
-POSTHOOK: query: -- check query without select privilege fails
-create table t1(i int)
+POSTHOOK: query: create table t1(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@t1

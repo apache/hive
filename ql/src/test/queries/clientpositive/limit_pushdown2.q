@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.limit.pushdown.memory.usage=0.3f;
@@ -56,6 +57,24 @@ order by key desc limit 20;
 select key, value, avg(key + 1) from src
 group by value, key
 order by key desc limit 20;
+
+explain
+select key, value, count(key + 1) as agg1 from src 
+group by key, value
+order by key, value, agg1 limit 20;
+
+select key, value, count(key + 1) as agg1 from src 
+group by key, value
+order by key, value, agg1 limit 20;
+
+explain
+select key, value, count(key + 1) as agg1 from src 
+group by key, value
+order by key desc, value, agg1 limit 20;
+
+select key, value, count(key + 1) as agg1 from src 
+group by key, value
+order by key desc, value, agg1 limit 20;
 
 -- NOT APPLICABLE
 explain

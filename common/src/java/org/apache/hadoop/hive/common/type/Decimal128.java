@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -1316,15 +1316,13 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
     *   x - IntegerPart(x / p, resultScale) * p
     * </p>
     *
-    * @left
+    * @param left
     *    is x
-    * @right
+    * @param right
     *    is p
-    * @result
+    * @param result
     *    receives the result
-    * @scratch
-    *    scratch space to avoid need to create a new object
-    * @scale
+    * @param scale
     *    scale of result
     */
    public static void modulo(Decimal128 left, Decimal128 right, Decimal128 result,
@@ -1856,7 +1854,7 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
   /**
    * Update the value to a decimal value with the decimal point equal to
    * val but with the decimal point inserted scale
-   * digits from the right. Behavior is undefined if scale is > 38 or < 0.
+   * digits from the right. Behavior is undefined if scale is &gt; 38 or &lt; 0.
    *
    * For example, updateFixedPoint(123456789L, (short) 3) changes the target
    * to the value 123456.789 with scale 3.

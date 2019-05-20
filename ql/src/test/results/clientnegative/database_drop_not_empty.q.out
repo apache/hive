@@ -3,12 +3,10 @@ PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
 default
-PREHOOK: query: -- Try to drop a non-empty database
-CREATE DATABASE test_db
+PREHOOK: query: CREATE DATABASE test_db
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:test_db
-POSTHOOK: query: -- Try to drop a non-empty database
-CREATE DATABASE test_db
+POSTHOOK: query: CREATE DATABASE test_db
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:test_db
 PREHOOK: query: USE test_db
@@ -35,4 +33,4 @@ PREHOOK: query: DROP DATABASE test_db
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:test_db
 PREHOOK: Output: database:test_db
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Database test_db is not empty. One or more tables exist.)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. InvalidOperationException(message:Database test_db is not empty. One or more tables exist.)

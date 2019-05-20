@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -134,7 +134,7 @@ public class GenericUDAFMkCollectionEvaluator extends GenericUDAFEvaluator
   public void merge(AggregationBuffer agg, Object partial)
       throws HiveException {
     MkArrayAggregationBuffer myagg = (MkArrayAggregationBuffer) agg;
-    List<Object> partialResult = (ArrayList<Object>) internalMergeOI.getList(partial);
+    List<Object> partialResult = (List<Object>) internalMergeOI.getList(partial);
     if (partialResult != null) {
       for(Object i : partialResult) {
         putIntoCollection(i, myagg);

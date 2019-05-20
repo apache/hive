@@ -8,10 +8,16 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED explode
 POSTHOOK: type: DESCFUNCTION
 explode(a) - separates the elements of array a into multiple rows, or the elements of a map into multiple rows and columns 
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDTFExplode
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN EXTENDED SELECT explode(array(1,2,3)) AS myCol FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT explode(array(1,2,3)) AS myCol FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -36,8 +42,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN EXTENDED SELECT a.myCol, count(1) FROM (SELECT explode(array(1,2,3)) AS myCol FROM src tablesample (1 rows)) a GROUP BY a.myCol
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT a.myCol, count(1) FROM (SELECT explode(array(1,2,3)) AS myCol FROM src tablesample (1 rows)) a GROUP BY a.myCol
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -61,6 +71,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: count(1)
                   keys: col (type: int)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -84,6 +95,8 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              bucketing_version 2
+              column.name.delimiter ,
               columns key,value
               columns.comments 'default','default'
               columns.types string:string
@@ -104,6 +117,8 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
                 columns.types string:string
@@ -194,8 +209,12 @@ POSTHOOK: Input: default@src
 3	1
 PREHOOK: query: EXPLAIN EXTENDED SELECT explode(map(1,'one',2,'two',3,'three')) AS (key,val) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT explode(map(1,'one',2,'two',3,'three')) AS (key,val) FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -220,8 +239,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN EXTENDED SELECT a.key, a.val, count(1) FROM (SELECT explode(map(1,'one',2,'two',3,'three')) AS (key,val) FROM src tablesample (1 rows)) a GROUP BY a.key, a.val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED SELECT a.key, a.val, count(1) FROM (SELECT explode(map(1,'one',2,'two',3,'three')) AS (key,val) FROM src tablesample (1 rows)) a GROUP BY a.key, a.val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -245,6 +268,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: count(1)
                   keys: key (type: int), value (type: string)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -268,6 +292,8 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              bucketing_version 2
+              column.name.delimiter ,
               columns key,value
               columns.comments 'default','default'
               columns.types string:string
@@ -288,6 +314,8 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
                 columns.types string:string

@@ -80,27 +80,56 @@ fromClause
 @init { gParent.pushMsg("from clause", state); }
 @after { gParent.popMsg(state); }
     :
-    KW_FROM joinSource -> ^(TOK_FROM joinSource)
+    KW_FROM fromSource -> ^(TOK_FROM fromSource)
+    ;
+
+fromSource
+@init { gParent.pushMsg("join source", state); }
+@after { gParent.popMsg(state); }
+    :
+    uniqueJoinToken^ uniqueJoinSource (COMMA! uniqueJoinSource)+
+    |
+    joinSource
+    ;
+
+
+atomjoinSource
+@init { gParent.pushMsg("joinSource", state); }
+@after { gParent.popMsg(state); }
+    :
+    tableSource (lateralView^)*
+    |
+    virtualTableSource (lateralView^)*
+    |
+    (subQuerySource) => subQuerySource (lateralView^)*
+    |
+    partitionedTableFunction (lateralView^)*
+    |
+    LPAREN! joinSource RPAREN!
     ;
 
 joinSource
-@init { gParent.pushMsg("join source", state); }
+    :
+    atomjoinSource (joinToken^ joinSourcePart (KW_ON! expression {$joinToken.start.getType() != COMMA}? | KW_USING! columnParenthesesList {$joinToken.start.getType() != COMMA}?)?)*
+    ;
+
+joinSourcePart
+@init { gParent.pushMsg("joinSourcePart", state); }
 @after { gParent.popMsg(state); }
-    : fromSource ( joinToken^ fromSource ( KW_ON! expression {$joinToken.start.getType() != COMMA}? )? )*
-    | uniqueJoinToken^ uniqueJoinSource (COMMA! uniqueJoinSource)+
+    :
+    (tableSource | virtualTableSource | subQuerySource | partitionedTableFunction) (lateralView^)*
     ;
 
 uniqueJoinSource
 @init { gParent.pushMsg("unique join source", state); }
 @after { gParent.popMsg(state); }
-    : KW_PRESERVE? fromSource uniqueJoinExpr
+    : KW_PRESERVE? uniqueJoinTableSource uniqueJoinExpr
     ;
 
 uniqueJoinExpr
 @init { gParent.pushMsg("unique join expression list", state); }
 @after { gParent.popMsg(state); }
-    : LPAREN e1+=expression (COMMA e1+=expression)* RPAREN
-      -> ^(TOK_EXPLIST $e1*)
+    : LPAREN! expressionList RPAREN!
     ;
 
 uniqueJoinToken
@@ -126,11 +155,14 @@ lateralView
 @init {gParent.pushMsg("lateral view", state); }
 @after {gParent.popMsg(state); }
 	:
-	(KW_LATERAL KW_VIEW KW_OUTER) => KW_LATERAL KW_VIEW KW_OUTER function tableAlias (KW_AS identifier ((COMMA)=> COMMA identifier)*)?
+	(COMMA? KW_LATERAL KW_VIEW KW_OUTER) => KW_LATERAL KW_VIEW KW_OUTER function tableAlias (KW_AS identifier ((COMMA)=> COMMA identifier)*)?
 	-> ^(TOK_LATERAL_VIEW_OUTER ^(TOK_SELECT ^(TOK_SELEXPR function identifier* tableAlias)))
 	|
-	KW_LATERAL KW_VIEW function tableAlias (KW_AS identifier ((COMMA)=> COMMA identifier)*)?
+	COMMA? KW_LATERAL KW_VIEW function tableAlias (KW_AS identifier ((COMMA)=> COMMA identifier)*)?
 	-> ^(TOK_LATERAL_VIEW ^(TOK_SELECT ^(TOK_SELEXPR function identifier* tableAlias)))
+    |
+    COMMA? KW_LATERAL KW_TABLE LPAREN valuesClause RPAREN KW_AS? tableAlias (LPAREN identifier (COMMA identifier)* RPAREN)?
+    -> ^(TOK_LATERAL_VIEW ^(TOK_SELECT ^(TOK_SELEXPR ^(TOK_FUNCTION Identifier["inline"] valuesClause) identifier* tableAlias)))
 	;
 
 tableAlias
@@ -138,23 +170,6 @@ tableAlias
 @after {gParent.popMsg(state); }
     :
     identifier -> ^(TOK_TABALIAS identifier)
-    ;
-
-fromSource
-@init { gParent.pushMsg("from source", state); }
-@after { $fromSource.tree.matchedText = $fromSource.text; gParent.popMsg(state); }
-    :
-    (LPAREN KW_VALUES) => fromSource0
-    | (LPAREN) => LPAREN joinSource RPAREN -> joinSource
-    | fromSource0
-    ;
-
-
-fromSource0
-@init { gParent.pushMsg("from source 0", state); }
-@after { gParent.popMsg(state); }
-    :
-    ((Identifier LPAREN)=> partitionedTableFunction | tableSource | subQuerySource | virtualTableSource) (lateralView^)*
     ;
 
 tableBucketSample
@@ -187,13 +202,15 @@ tableSample
 tableSource
 @init { gParent.pushMsg("table source", state); }
 @after { gParent.popMsg(state); }
-    : tabname=tableName 
-    ((tableProperties) => props=tableProperties)?
-    ((tableSample) => ts=tableSample)? 
-    ((KW_AS) => (KW_AS alias=identifier) 
-    |
-    (identifier) => (alias=identifier))?
+    : tabname=tableName props=tableProperties? ts=tableSample? (KW_AS? alias=identifier)?
     -> ^(TOK_TABREF $tabname $props? $ts? $alias?)
+    ;
+
+uniqueJoinTableSource
+@init { gParent.pushMsg("unique join table source", state); }
+@after { gParent.popMsg(state); }
+    : tabname=tableName ts=tableSample? (KW_AS? alias=identifier)?
+    -> ^(TOK_TABREF $tabname $ts? $alias?)
     ;
 
 tableName
@@ -247,10 +264,10 @@ partitionedTableFunction
 @init { gParent.pushMsg("ptf clause", state); }
 @after { gParent.popMsg(state); } 
    :
-   name=Identifier LPAREN KW_ON 
+   name=identifier LPAREN KW_ON
    ((partitionTableFunctionSource) => (ptfsrc=partitionTableFunctionSource spec=partitioningSpec?))
    ((Identifier LPAREN expression RPAREN ) => Identifier LPAREN expression RPAREN ( COMMA Identifier LPAREN expression RPAREN)*)?
-   ((RPAREN) => (RPAREN)) ((Identifier) => alias=Identifier)?
+   ((RPAREN) => (RPAREN)) ((Identifier) => alias=identifier)?
    ->   ^(TOK_PTBLFUNCTION $name $alias? $ptfsrc $spec? expression*)
    ; 
 
@@ -276,20 +293,6 @@ searchCondition
 //in support of SELECT * FROM (VALUES(1,2,3),(4,5,6),...) as FOO(a,b,c) and
 // INSERT INTO <table> (col1,col2,...) VALUES(...),(...),...
 // INSERT INTO <table> (col1,col2,...) SELECT * FROM (VALUES(1,2,3),(4,5,6),...) as Foo(a,b,c)
-valueRowConstructor
-@init { gParent.pushMsg("value row constructor", state); }
-@after { $valueRowConstructor.tree.matchedText = $valueRowConstructor.text; gParent.popMsg(state); }
-    :
-    LPAREN precedenceUnaryPrefixExpression (COMMA precedenceUnaryPrefixExpression)* RPAREN -> ^(TOK_VALUE_ROW precedenceUnaryPrefixExpression+)
-    ;
-
-valuesTableConstructor
-@init { gParent.pushMsg("values table constructor", state); }
-@after { gParent.popMsg(state); }
-    :
-    valueRowConstructor (COMMA valueRowConstructor)* -> ^(TOK_VALUES_TABLE valueRowConstructor+)
-    ;
-
 /*
 VALUES(1),(2) means 2 rows, 1 column each.
 VALUES(1,2),(3,4) means 2 rows, 2 columns each.
@@ -299,28 +302,45 @@ valuesClause
 @init { gParent.pushMsg("values clause", state); }
 @after { gParent.popMsg(state); }
     :
-    KW_VALUES valuesTableConstructor -> valuesTableConstructor
+    KW_VALUES valuesTableConstructor -> ^(TOK_FUNCTION Identifier["array"] valuesTableConstructor)
+    ;
+
+valuesTableConstructor
+@init { gParent.pushMsg("values table constructor", state); }
+@after { gParent.popMsg(state); }
+    :
+    valueRowConstructor (COMMA! valueRowConstructor)*
+    ;
+
+valueRowConstructor
+@init { gParent.pushMsg("value row constructor", state); }
+@after { gParent.popMsg(state); }
+    :
+    expressionsInParenthesis[true, true]
     ;
 
 /*
 This represents a clause like this:
-(VALUES(1,2),(2,3)) as VirtTable(col1,col2)
+TABLE(VALUES(1,2),(2,3)) as VirtTable(col1,col2)
 */
 virtualTableSource
 @init { gParent.pushMsg("virtual table source", state); }
 @after { gParent.popMsg(state); }
-   :
-   LPAREN valuesClause RPAREN tableNameColList -> ^(TOK_VIRTUAL_TABLE tableNameColList valuesClause)
-   ;
-/*
-e.g. as VirtTable(col1,col2)
-Note that we only want literals as column names
-*/
-tableNameColList
-@init { gParent.pushMsg("from source", state); }
-@after { gParent.popMsg(state); }
     :
-    KW_AS? identifier LPAREN identifier (COMMA identifier)* RPAREN -> ^(TOK_VIRTUAL_TABREF ^(TOK_TABNAME identifier) ^(TOK_COL_NAME identifier+))
+    KW_TABLE LPAREN valuesClause RPAREN KW_AS? tabAlias=tableAlias (LPAREN identifier (COMMA identifier)*)? RPAREN
+    -> ^(TOK_SUBQUERY
+         ^(TOK_QUERY
+           ^(TOK_FROM
+             ^(TOK_SUBQUERY
+               ^(TOK_QUERY
+                 ^(TOK_INSERT
+                   ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
+                   ^(TOK_SELECT ^(TOK_SELEXPR IntegralLiteral["0"]))))
+               {adaptor.create(Identifier, $tabAlias.tree.getChild(0).getText())}))
+           ^(TOK_INSERT
+             ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
+             ^(TOK_SELECT ^(TOK_SELEXPR ^(TOK_FUNCTION Identifier["inline"] valuesClause) identifier*))))
+         {adaptor.create(Identifier, $tabAlias.tree.getChild(0).getText())})
     ;
 
 //-----------------------------------------------------------------------------------

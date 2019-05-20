@@ -1,10 +1,6 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-DROP TABLE parquet_partitioned_staging
+PREHOOK: query: DROP TABLE parquet_partitioned_staging
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-DROP TABLE parquet_partitioned_staging
+POSTHOOK: query: DROP TABLE parquet_partitioned_staging
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: DROP TABLE parquet_partitioned
 PREHOOK: type: DROPTABLE
@@ -51,13 +47,11 @@ POSTHOOK: query: DESCRIBE FORMATTED parquet_partitioned
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@parquet_partitioned
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 str                 	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 part                	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -67,6 +61,13 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

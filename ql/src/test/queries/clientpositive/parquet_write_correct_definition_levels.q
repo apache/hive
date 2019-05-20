@@ -1,3 +1,6 @@
+--! qt:dataset:src
+
+set hive.vectorized.execution.enabled=false;
 CREATE TABLE text_tbl (a STRUCT<b:STRUCT<c:INT>>)
 STORED AS TEXTFILE;
 

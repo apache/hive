@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
@@ -32,7 +33,11 @@ public class ExprNodeConstantEvaluator extends ExprNodeEvaluator<ExprNodeConstan
   transient ConstantObjectInspector writableObjectInspector;
 
   public ExprNodeConstantEvaluator(ExprNodeConstantDesc expr) {
-    super(expr);
+    this(expr, null);
+  }
+
+  public ExprNodeConstantEvaluator(ExprNodeConstantDesc expr, Configuration conf) {
+    super(expr, conf);
     writableObjectInspector = expr.getWritableObjectInspector();
   }
 

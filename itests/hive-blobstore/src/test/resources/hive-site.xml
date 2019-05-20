@@ -24,6 +24,12 @@
     <description>Internal marker for test. Used for masking env-dependent values</description>
   </property>
 
+  <!-- Properties for test folders -->
+  <property>
+    <name>mapreduce.jobtracker.staging.root.dir</name>
+    <value>${test.tmp.dir}/blobstore/mapred/staging</value>
+  </property>
+
   <!-- Hive Configuration can either be stored in this file or in the hadoop configuration files  -->
   <!-- that are implied by Hadoop setup variables.                                                -->
   <!-- Aside from Hadoop setup variables - this file is provided as a convenience so that Hive    -->
@@ -258,6 +264,35 @@
   <property>
     <name>hive.users.in.admin.role</name>
     <value>hive_admin_user</value>
+  </property>
+
+  <!--
+    The following 3 properties are used for testing blobstore changes on the local filesystem.
+    If tests are required to run on an real Blobstore system, then create the blobstore-conf.xml.
+  -->
+  <property>
+    <name>fs.pblob.impl</name>
+    <value>org.apache.hadoop.fs.ProxyLocalFileSystem</value>
+  </property>
+
+  <property>
+    <name>hive.blobstore.supported.schemes</name>
+    <value>pblob,s3a,s3c,s3</value>
+  </property>
+
+  <property>
+    <name>test.blobstore.path</name>
+    <value>pblob:${system:test.tmp.dir}/bucket</value>
+  </property>
+
+  <property>
+    <name>hive.exim.uri.scheme.whitelist</name>
+    <value>hdfs,pfile,file,s3,s3a,pblob</value>
+  </property>
+
+  <property>
+    <name>hive.query.results.cache.enabled</name>
+    <value>false</value>
   </property>
 
   <!--

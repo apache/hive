@@ -35,11 +35,8 @@ import com.google.common.annotations.VisibleForTesting;
 public class CacheChunk extends DiskRangeList {
   protected MemoryBuffer buffer;
 
-  public CacheChunk() {
-    super(-1, -1);
-  }
-
-  public void init(MemoryBuffer buffer, long offset, long end) {
+  public CacheChunk(MemoryBuffer buffer, long offset, long end) {
+    super(offset, end);
     this.buffer = buffer;
     this.offset = offset;
     this.end = end;
@@ -80,7 +77,7 @@ public class CacheChunk extends DiskRangeList {
     throw new UnsupportedOperationException();
   }
 
-  public void reset() {
-    init(null, -1, -1);
+  public void adjustEnd(long l) {
+    this.end += l;
   }
 }

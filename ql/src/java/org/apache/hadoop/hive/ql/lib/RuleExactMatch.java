@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -36,13 +36,13 @@ public class RuleExactMatch implements Rule {
    * The rule specified as operator names separated by % symbols, the left side represents the
    * bottom of the stack.
    *
-   * E.g. TS%FIL%RS -> means
+   * E.g. TS%FIL%RS -&gt; means
    * TableScan Node followed by Filter followed by ReduceSink in the tree, or, in terms of the
    * stack, ReduceSink on top followed by Filter followed by TableScan
    *
    * @param ruleName
    *          name of the rule
-   * @param regExp
+   * @param pattern
    *          string specification of the rule
    **/
   public RuleExactMatch(String ruleName, String[] pattern) {

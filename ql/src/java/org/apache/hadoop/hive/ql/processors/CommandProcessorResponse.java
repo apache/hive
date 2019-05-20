@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,9 +28,9 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
  * <code>CommandProcessor</code> interface. Typically <code>errorMessage</code>
  * and <code>SQLState</code> will only be set if the <code>responseCode</code>
  * is not 0.  Note that often {@code responseCode} ends up the exit value of
- * command shell process so should keep it to < 127.
+ * command shell process so should keep it to &lt; 127.
  */
-public class CommandProcessorResponse {
+public class CommandProcessorResponse extends Exception {
   private final int responseCode;
   private final String errorMessage;
   private final int hiveErrorCode;
@@ -96,13 +96,21 @@ public class CommandProcessorResponse {
   public String getSQLState() { return SQLState; }
   public Schema getSchema() { return resSchema; }
   public Throwable getException() { return exception; }
+
+  public List<String> getConsoleMessages() {
+    return consoleMessages;
+  }
   public int getErrorCode() { return hiveErrorCode; }
-  public List<String> getConsoleMessages() { return consoleMessages; }
+  @Override
   public String toString() {
-    return "(" + responseCode + "," + errorMessage + "," +
-      (hiveErrorCode > 0 ? hiveErrorCode + "," : "" ) +
-      SQLState +
-      (resSchema == null ? "" : ",") +
-      (exception == null ? "" : exception.getMessage()) + ")";
+    return "(responseCode = " + responseCode + ", errorMessage = " + errorMessage + ", " +
+      (hiveErrorCode > 0 ? "hiveErrorCode = " + hiveErrorCode + ", " : "" ) +
+      "SQLState = " + SQLState +
+      (resSchema == null ? "" : ", resSchema = " + resSchema) +
+      (exception == null ? "" : ", exception = " + exception.getMessage()) + ")";
+  }
+
+  public boolean failed() {
+    return responseCode != 0;
   }
 }

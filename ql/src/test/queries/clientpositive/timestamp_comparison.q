@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.fetch.task.conversion=more;
 
 select cast('2011-05-06 07:08:09' as timestamp) >

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -92,7 +92,15 @@ public interface Metrics {
    * @param name name of gauge
    * @param variable variable to track.
    */
-  public void addGauge(String name, final MetricsVariable variable);
+  public void addGauge(String name, final MetricsVariable<?> variable);
+
+
+  /**
+   * Removed the gauge added by addGauge.
+   * @param name name of gauge
+   */
+  public void removeGauge(String name);
+
 
   /**
    * Add a ratio metric to track the correlation between two variables
@@ -103,4 +111,10 @@ public interface Metrics {
   public void addRatio(String name, MetricsVariable<Integer> numerator,
                            MetricsVariable<Integer> denominator);
 
+  /**
+   * Mark an event occurance for a meter. Meters measure the rate of an event and track
+   * 1/5/15 minute moving averages
+   * @param name name of the meter
+   */
+  public void markMeter(String name);
 }

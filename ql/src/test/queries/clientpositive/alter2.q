@@ -21,13 +21,13 @@ show partitions alter2;
 
 -- Cleanup
 DROP TABLE alter2;
-SHOW TABLES;
+SHOW TABLES LIKE "alter*";
 
 -- Using non-default Database
 
 CREATE DATABASE alter2_db;
 USE alter2_db;
-SHOW TABLES;
+SHOW TABLES LIKE "alter*";
 
 CREATE TABLE alter2(a int, b int) PARTITIONED BY (insertdate string);
 DESCRIBE EXTENDED alter2;

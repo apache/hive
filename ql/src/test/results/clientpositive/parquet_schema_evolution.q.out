@@ -1,14 +1,6 @@
-PREHOOK: query: -- Some tables might have extra columns and struct elements on the schema than the on Parquet schema;
--- This is called 'schema evolution' as the Parquet file is not ready yet for such new columns;
--- Hive should support this schema, and return NULL values instead;
-
-DROP TABLE NewStructField
+PREHOOK: query: DROP TABLE NewStructField
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Some tables might have extra columns and struct elements on the schema than the on Parquet schema;
--- This is called 'schema evolution' as the Parquet file is not ready yet for such new columns;
--- Hive should support this schema, and return NULL values instead;
-
-DROP TABLE NewStructField
+POSTHOOK: query: DROP TABLE NewStructField
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: DROP TABLE NewStructFieldTable
 PREHOOK: type: DROPTABLE
@@ -59,13 +51,11 @@ POSTHOOK: Input: default@newstructfield
 {"a1":{"k1":"v1"},"a2":{"e1":5}}
 {"a1":{"k1":"v1"},"a2":{"e1":5}}
 {"a1":{"k1":"v1"},"a2":{"e1":5}}
-PREHOOK: query: -- Adds new fields to the struct types
-ALTER TABLE NewStructField REPLACE COLUMNS (a struct<a1:map<string,string>, a2:struct<e1:int,e2:string>, a3:int>, b int)
+PREHOOK: query: ALTER TABLE NewStructField REPLACE COLUMNS (a struct<a1:map<string,string>, a2:struct<e1:int,e2:string>, a3:int>, b int)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@newstructfield
 PREHOOK: Output: default@newstructfield
-POSTHOOK: query: -- Adds new fields to the struct types
-ALTER TABLE NewStructField REPLACE COLUMNS (a struct<a1:map<string,string>, a2:struct<e1:int,e2:string>, a3:int>, b int)
+POSTHOOK: query: ALTER TABLE NewStructField REPLACE COLUMNS (a struct<a1:map<string,string>, a2:struct<e1:int,e2:string>, a3:int>, b int)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@newstructfield
 POSTHOOK: Output: default@newstructfield
@@ -90,14 +80,12 @@ POSTHOOK: Input: default@newstructfield
 {"a1":{"k1":"v1"},"a2":{"e1":5,"e2":null},"a3":null}	NULL
 {"a1":{"k1":"v1"},"a2":{"e1":5,"e2":null},"a3":null}	NULL
 {"a1":{"k1":"v1"},"a2":{"e1":5,"e2":null},"a3":null}	NULL
-PREHOOK: query: -- Makes sure that new parquet tables contain the new struct field
-CREATE TABLE NewStructFieldTable STORED AS PARQUET AS SELECT * FROM NewStructField
+PREHOOK: query: CREATE TABLE NewStructFieldTable STORED AS PARQUET AS SELECT * FROM NewStructField
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@newstructfield
 PREHOOK: Output: database:default
 PREHOOK: Output: default@NewStructFieldTable
-POSTHOOK: query: -- Makes sure that new parquet tables contain the new struct field
-CREATE TABLE NewStructFieldTable STORED AS PARQUET AS SELECT * FROM NewStructField
+POSTHOOK: query: CREATE TABLE NewStructFieldTable STORED AS PARQUET AS SELECT * FROM NewStructField
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@newstructfield
 POSTHOOK: Output: database:default
@@ -125,13 +113,9 @@ POSTHOOK: Input: default@newstructfieldtable
 {"a1":{"k1":"v1"},"a2":{"e1":5,"e2":null},"a3":null}	NULL
 {"a1":{"k1":"v1"},"a2":{"e1":5,"e2":null},"a3":null}	NULL
 {"a1":{"k1":"v1"},"a2":{"e1":5,"e2":null},"a3":null}	NULL
-PREHOOK: query: -- test if the order of fields in array<struct<>> changes, it works fine
-
-DROP TABLE IF EXISTS schema_test
+PREHOOK: query: DROP TABLE IF EXISTS schema_test
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- test if the order of fields in array<struct<>> changes, it works fine
-
-DROP TABLE IF EXISTS schema_test
+POSTHOOK: query: DROP TABLE IF EXISTS schema_test
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE schema_test (msg array<struct<f1: string, f2: string, a: array<struct<a1: string, a2: string>>, b: array<struct<b1: int, b2: int>>>>) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
@@ -162,13 +146,11 @@ POSTHOOK: Input: default@schema_test
 #### A masked pattern was here ####
 [{"f1":"abc","f2":"abc2","a":[{"a1":"a1","a2":"a2"}],"b":[{"b1":1,"b2":2}]}]
 [{"f1":"abc","f2":"abc2","a":[{"a1":"a1","a2":"a2"}],"b":[{"b1":1,"b2":2}]}]
-PREHOOK: query: -- Order of fields swapped
-ALTER TABLE schema_test CHANGE msg msg array<struct<a: array<struct<a2: string, a1: string>>, b: array<struct<b2: int, b1: int>>, f2: string, f1: string>>
+PREHOOK: query: ALTER TABLE schema_test CHANGE msg msg array<struct<a: array<struct<a2: string, a1: string>>, b: array<struct<b2: int, b1: int>>, f2: string, f1: string>>
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@schema_test
 PREHOOK: Output: default@schema_test
-POSTHOOK: query: -- Order of fields swapped
-ALTER TABLE schema_test CHANGE msg msg array<struct<a: array<struct<a2: string, a1: string>>, b: array<struct<b2: int, b1: int>>, f2: string, f1: string>>
+POSTHOOK: query: ALTER TABLE schema_test CHANGE msg msg array<struct<a: array<struct<a2: string, a1: string>>, b: array<struct<b2: int, b1: int>>, f2: string, f1: string>>
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@schema_test
 POSTHOOK: Output: default@schema_test

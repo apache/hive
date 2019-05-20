@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,6 +21,10 @@ package org.apache.hive.http;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,6 +37,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.common.base.Preconditions;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.math3.util.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
@@ -42,8 +48,12 @@ import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
 import org.apache.hadoop.security.authorize.AccessControlList;
-import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.security.http.CrossOriginFilter;
+import org.apache.hive.http.security.PamAuthenticator;
+import org.apache.hive.http.security.PamConstraint;
+import org.apache.hive.http.security.PamConstraintMapping;
+import org.apache.hive.http.security.PamLoginService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Logger;
@@ -53,18 +63,25 @@ import org.apache.logging.log4j.core.appender.FileManager;
 import org.apache.logging.log4j.core.appender.OutputStreamManager;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
 import org.eclipse.jetty.rewrite.handler.RewriteRegexRule;
+import org.eclipse.jetty.security.ConstraintMapping;
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.LowResourceMonitor;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ContextHandler.Context;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
-import org.eclipse.jetty.server.nio.SelectChannelConnector;
-import org.eclipse.jetty.server.ssl.SslSelectChannelConnector;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.FilterMapping;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -85,9 +102,9 @@ public class HttpServer {
   public static final String ADMINS_ACL = "admins.acl";
 
   private final String name;
-  private final String appDir;
-  private final WebAppContext webAppContext;
-  private final Server webServer;
+  private String appDir;
+  private WebAppContext webAppContext;
+  private Server webServer;
 
   /**
    * Create a status server on the given port.
@@ -95,16 +112,7 @@ public class HttpServer {
   private HttpServer(final Builder b) throws IOException {
     this.name = b.name;
 
-    webServer = new Server();
-    appDir = getWebAppsPath(b.name);
-    webAppContext = createWebAppContext(b);
-
-    if (b.useSPNEGO) {
-      // Secure the web server with kerberos
-      setupSpnegoFilter(b);
-    }
-
-    initializeWebServer(b);
+    createWebServer(b);
   }
 
   public static class Builder {
@@ -120,6 +128,12 @@ public class HttpServer {
     private String spnegoKeytab;
     private boolean useSPNEGO;
     private boolean useSSL;
+    private boolean usePAM;
+    private boolean enableCORS;
+    private String allowedOrigins;
+    private String allowedMethods;
+    private String allowedHeaders;
+    private PamAuthenticator pamAuthenticator;
     private String contextRootRewriteTarget = "/index.html";
     private final List<Pair<String, Class<? extends HttpServlet>>> servlets =
         new LinkedList<Pair<String, Class<? extends HttpServlet>>>();
@@ -178,8 +192,38 @@ public class HttpServer {
       return this;
     }
 
+    public Builder setUsePAM(boolean usePAM) {
+      this.usePAM = usePAM;
+      return this;
+    }
+
+    public Builder setPAMAuthenticator(PamAuthenticator pamAuthenticator){
+      this.pamAuthenticator = pamAuthenticator;
+      return this;
+    }
+
     public Builder setUseSPNEGO(boolean useSPNEGO) {
       this.useSPNEGO = useSPNEGO;
+      return this;
+    }
+
+    public Builder setEnableCORS(boolean enableCORS) {
+      this.enableCORS = enableCORS;
+      return this;
+    }
+
+    public Builder setAllowedOrigins(String allowedOrigins) {
+      this.allowedOrigins = allowedOrigins;
+      return this;
+    }
+
+    public Builder setAllowedMethods(String allowedMethods) {
+      this.allowedMethods = allowedMethods;
+      return this;
+    }
+
+    public Builder setAllowedHeaders(String allowedHeaders) {
+      this.allowedHeaders = allowedHeaders;
       return this;
     }
 
@@ -219,18 +263,20 @@ public class HttpServer {
   }
 
   public int getPort() {
-    return webServer.getConnectors()[0].getLocalPort();
+    return ((ServerConnector)(webServer.getConnectors()[0])).getLocalPort();
   }
 
   /**
    * Checks the user has privileges to access to instrumentation servlets.
-   * <p/>
+   * <p>
    * If <code>hadoop.security.instrumentation.requires.admin</code> is set to FALSE
    * (default value) it always returns TRUE.
-   * <p/>
+   * </p>
+   * <p>
    * If <code>hadoop.security.instrumentation.requires.admin</code> is set to TRUE
    * it will check if the current user is in the admin ACLS. If the user is
    * in the admin ACLs it returns TRUE, otherwise it returns FALSE.
+   * </p>
    *
    * @param servletContext the servlet context.
    * @param request the servlet request.
@@ -255,12 +301,50 @@ public class HttpServer {
   }
 
   /**
+   * Same as {@link HttpServer#isInstrumentationAccessAllowed(ServletContext, HttpServletRequest, HttpServletResponse)}
+   * except that it returns true only if <code>hadoop.security.instrumentation.requires.admin</code> is set to true.
+   */
+  @InterfaceAudience.LimitedPrivate("hive")
+  public static boolean isInstrumentationAccessAllowedStrict(
+    ServletContext servletContext, HttpServletRequest request,
+    HttpServletResponse response) throws IOException {
+    Configuration conf =
+      (Configuration) servletContext.getAttribute(CONF_CONTEXT_ATTRIBUTE);
+
+    boolean access;
+    boolean adminAccess = conf.getBoolean(
+      CommonConfigurationKeys.HADOOP_SECURITY_INSTRUMENTATION_REQUIRES_ADMIN, false);
+    if (adminAccess) {
+      access = hasAdministratorAccess(servletContext, request, response);
+    } else {
+      return false;
+    }
+    return access;
+  }
+
+  /**
+   * Check if the remote user has access to an object (e.g. query history) that belongs to a user
+   *
+   * @param ctx the context containing the admin ACL.
+   * @param request the HTTP request.
+   * @param remoteUser the user that sent out the request.
+   * @param user the user of the object being checked against.
+   * @return true if the remote user is the same as the user or has the admin access
+   * @throws IOException
+   */
+  public static boolean hasAccess(String remoteUser, String user,
+      ServletContext ctx, HttpServletRequest request) throws IOException {
+    return StringUtils.equalsIgnoreCase(remoteUser, user) ||
+        HttpServer.hasAdministratorAccess(ctx, request, null);
+  }
+
+  /**
    * Does the user sending the HttpServletRequest have the administrator ACLs? If
    * it isn't the case, response will be modified to send an error to the user.
    *
    * @param servletContext
    * @param request
-   * @param response used to send the error response if user does not have admin access.
+   * @param response used to send the error response if user does not have admin access (no error if null)
    * @return true if admin-authorized, false otherwise
    * @throws IOException
    */
@@ -274,19 +358,22 @@ public class HttpServer {
         CommonConfigurationKeys.HADOOP_SECURITY_AUTHORIZATION, false)) {
       return true;
     }
-
     String remoteUser = request.getRemoteUser();
     if (remoteUser == null) {
-      response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
-                         "Unauthenticated users are not " +
-                         "authorized to access this page.");
+      if (response != null) {
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+                           "Unauthenticated users are not " +
+                           "authorized to access this page.");
+      }
       return false;
     }
 
     if (servletContext.getAttribute(ADMINS_ACL) != null &&
         !userHasAdministratorAccess(servletContext, remoteUser)) {
-      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "User "
-          + remoteUser + " is unauthorized to access this page.");
+      if (response != null) {
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "User "
+            + remoteUser + " is unauthorized to access this page.");
+      }
       return false;
     }
 
@@ -342,12 +429,34 @@ public class HttpServer {
   }
 
   /**
+   * Setup cross-origin requests (CORS) filter.
+   * @param b - builder
+   */
+  private void setupCORSFilter(Builder b) {
+    FilterHolder holder = new FilterHolder();
+    holder.setClassName(CrossOriginFilter.class.getName());
+    Map<String, String> params = new HashMap<>();
+    params.put(CrossOriginFilter.ALLOWED_ORIGINS, b.allowedOrigins);
+    params.put(CrossOriginFilter.ALLOWED_METHODS, b.allowedMethods);
+    params.put(CrossOriginFilter.ALLOWED_HEADERS, b.allowedHeaders);
+    holder.setInitParameters(params);
+
+    ServletHandler handler = webAppContext.getServletHandler();
+    handler.addFilterWithMapping(holder, "/*", FilterMapping.ALL);
+  }
+
+  /**
    * Create a channel connector for "http/https" requests
    */
   Connector createChannelConnector(int queueSize, Builder b) {
-    SelectChannelConnector connector;
+    ServerConnector connector;
+
+    final HttpConfiguration conf = new HttpConfiguration();
+    conf.setRequestHeaderSize(1024*64);
+    final HttpConnectionFactory http = new HttpConnectionFactory(conf);
+
     if (!b.useSSL) {
-      connector = new SelectChannelConnector();
+      connector = new ServerConnector(webServer, http);
     } else {
       SslContextFactory sslContextFactory = new SslContextFactory();
       sslContextFactory.setKeyStorePath(b.keyStorePath);
@@ -357,16 +466,30 @@ public class HttpServer {
       sslContextFactory.addExcludeProtocols(excludedSSLProtocols.toArray(
           new String[excludedSSLProtocols.size()]));
       sslContextFactory.setKeyStorePassword(b.keyStorePassword);
-      connector = new SslSelectChannelConnector(sslContextFactory);
+      connector = new ServerConnector(webServer, sslContextFactory, http);
     }
 
-    connector.setLowResourcesMaxIdleTime(10000);
     connector.setAcceptQueueSize(queueSize);
-    connector.setResolveNames(false);
-    connector.setUseDirectBuffers(false);
-    connector.setRequestHeaderSize(1024*64);
-    connector.setReuseAddress(!Shell.WINDOWS);
+    connector.setReuseAddress(true);
+    connector.setHost(b.host);
+    connector.setPort(b.port);
     return connector;
+  }
+
+  /**
+   * Secure the web server with PAM.
+   */
+  void setupPam(Builder b, Handler handler) {
+    LoginService loginService = new PamLoginService();
+    webServer.addBean(loginService);
+    ConstraintSecurityHandler security = new ConstraintSecurityHandler();
+    Constraint constraint = new PamConstraint();
+    ConstraintMapping mapping = new PamConstraintMapping(constraint);
+    security.setConstraintMappings(Collections.singletonList(mapping));
+    security.setAuthenticator(b.pamAuthenticator);
+    security.setLoginService(loginService);
+    security.setHandler(handler);
+    webServer.setHandler(security);
   }
 
   /**
@@ -378,7 +501,7 @@ public class HttpServer {
     }
   }
 
-  void initializeWebServer(Builder b) {
+  private void createWebServer(final Builder b) throws IOException {
     // Create the thread pool for the web server to handle HTTP requests
     QueuedThreadPool threadPool = new QueuedThreadPool();
     if (b.maxThreads > 0) {
@@ -386,12 +509,30 @@ public class HttpServer {
     }
     threadPool.setDaemon(true);
     threadPool.setName(b.name + "-web");
-    webServer.setThreadPool(threadPool);
 
-    // Create the channel connector for the web server
-    Connector connector = createChannelConnector(threadPool.getMaxThreads(), b);
-    connector.setHost(b.host);
-    connector.setPort(b.port);
+    this.webServer = new Server(threadPool);
+    this.appDir = getWebAppsPath(b.name);
+    this.webAppContext = createWebAppContext(b);
+
+    if (b.useSPNEGO) {
+      // Secure the web server with kerberos
+      setupSpnegoFilter(b);
+    }
+
+    if (b.enableCORS) {
+      setupCORSFilter(b);
+    }
+
+    initializeWebServer(b, threadPool.getMaxThreads());
+  }
+
+  private void initializeWebServer(final Builder b, int queueSize) throws IOException {
+    // Set handling for low resource conditions.
+    final LowResourceMonitor low = new LowResourceMonitor(webServer);
+    low.setLowResourcesIdleTimeout(10000);
+    webServer.addBean(low);
+
+    Connector connector = createChannelConnector(queueSize, b);
     webServer.addConnector(connector);
 
     RewriteHandler rwHandler = new RewriteHandler();
@@ -411,9 +552,31 @@ public class HttpServer {
     contexts.addHandler(rwHandler);
     webServer.setHandler(contexts);
 
+    if(b.usePAM){
+      setupPam(b, contexts);
+    }
+
+
     addServlet("jmx", "/jmx", JMXJsonServlet.class);
     addServlet("conf", "/conf", ConfServlet.class);
     addServlet("stacks", "/stacks", StackServlet.class);
+    addServlet("conflog", "/conflog", Log4j2ConfiguratorServlet.class);
+    final String asyncProfilerHome = ProfileServlet.getAsyncProfilerHome();
+    if (asyncProfilerHome != null && !asyncProfilerHome.trim().isEmpty()) {
+      addServlet("prof", "/prof", ProfileServlet.class);
+      Path tmpDir = Paths.get(ProfileServlet.OUTPUT_DIR);
+      if (Files.notExists(tmpDir)) {
+        Files.createDirectories(tmpDir);
+      }
+      ServletContextHandler genCtx =
+        new ServletContextHandler(contexts, "/prof-output");
+      setContextAttributes(genCtx.getServletContext(), b.contextAttrs);
+      genCtx.addServlet(ProfileOutputServlet.class, "/*");
+      genCtx.setResourceBase(tmpDir.toAbsolutePath().toString());
+      genCtx.setDisplayName("prof-output");
+    } else {
+      LOG.info("ASYNC_PROFILER_HOME env or -Dasync.profiler.home not specified. Disabling /prof endpoint..");
+    }
 
     for (Pair<String, Class<? extends HttpServlet>> p : b.servlets) {
       addServlet(p.getFirst(), "/" + p.getFirst(), p.getSecond());

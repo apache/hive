@@ -22,13 +22,11 @@ POSTHOOK: query: create table varchar1_1 (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar1_1
-PREHOOK: query: -- load from file
-load data local inpath '../../data/files/srcbucket0.txt' overwrite into table varchar1
+PREHOOK: query: load data local inpath '../../data/files/srcbucket0.txt' overwrite into table varchar1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@varchar1
-POSTHOOK: query: -- load from file
-load data local inpath '../../data/files/srcbucket0.txt' overwrite into table varchar1
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket0.txt' overwrite into table varchar1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@varchar1
@@ -42,14 +40,12 @@ POSTHOOK: Input: default@varchar1
 #### A masked pattern was here ####
 0	val_0
 0	val_0
-PREHOOK: query: -- insert overwrite, from same/different length varchar
-insert overwrite table varchar1
+PREHOOK: query: insert overwrite table varchar1
   select cast(key as varchar(10)), cast(value as varchar(15)) from src order by key, value limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@varchar1
-POSTHOOK: query: -- insert overwrite, from same/different length varchar
-insert overwrite table varchar1
+POSTHOOK: query: insert overwrite table varchar1
   select cast(key as varchar(10)), cast(value as varchar(15)) from src order by key, value limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -66,14 +62,12 @@ POSTHOOK: Input: default@varchar1
 #### A masked pattern was here ####
 0	val_0
 0	val_0
-PREHOOK: query: -- insert overwrite, from string
-insert overwrite table varchar1
+PREHOOK: query: insert overwrite table varchar1
   select key, value from src order by key, value limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@varchar1
-POSTHOOK: query: -- insert overwrite, from string
-insert overwrite table varchar1
+POSTHOOK: query: insert overwrite table varchar1
   select key, value from src order by key, value limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -90,20 +84,18 @@ POSTHOOK: Input: default@varchar1
 #### A masked pattern was here ####
 0	val_0
 0	val_0
-PREHOOK: query: -- insert string from varchar
-insert overwrite table varchar1_1
+PREHOOK: query: insert overwrite table varchar1_1
   select key, value from varchar1 order by key, value limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@varchar1
 PREHOOK: Output: default@varchar1_1
-POSTHOOK: query: -- insert string from varchar
-insert overwrite table varchar1_1
+POSTHOOK: query: insert overwrite table varchar1_1
   select key, value from varchar1 order by key, value limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar1
 POSTHOOK: Output: default@varchar1_1
-POSTHOOK: Lineage: varchar1_1.key SIMPLE [(varchar1)varchar1.FieldSchema(name:key, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: varchar1_1.value SIMPLE [(varchar1)varchar1.FieldSchema(name:value, type:varchar(20), comment:null), ]
+POSTHOOK: Lineage: varchar1_1.key EXPRESSION [(varchar1)varchar1.FieldSchema(name:key, type:varchar(10), comment:null), ]
+POSTHOOK: Lineage: varchar1_1.value EXPRESSION [(varchar1)varchar1.FieldSchema(name:value, type:varchar(20), comment:null), ]
 PREHOOK: query: select key, value from varchar1_1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@varchar1_1
@@ -114,14 +106,12 @@ POSTHOOK: Input: default@varchar1_1
 #### A masked pattern was here ####
 0	val_0
 0	val_0
-PREHOOK: query: -- respect string length
-insert overwrite table varchar1 
+PREHOOK: query: insert overwrite table varchar1 
   select key, cast(value as varchar(3)) from src order by key, value limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@varchar1
-POSTHOOK: query: -- respect string length
-insert overwrite table varchar1 
+POSTHOOK: query: insert overwrite table varchar1 
   select key, cast(value as varchar(3)) from src order by key, value limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src

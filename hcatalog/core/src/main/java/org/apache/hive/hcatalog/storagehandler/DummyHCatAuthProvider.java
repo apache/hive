@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,6 +30,8 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePolicyProvider;
 
 /**
  * This class is a dummy implementation of HiveAuthorizationProvider to provide
@@ -139,6 +141,11 @@ class DummyHCatAuthProvider implements HiveAuthorizationProvider {
   public void authorize(Table table, Partition part, List<String> columns,
               Privilege[] readRequiredPriv, Privilege[] writeRequiredPriv)
     throws HiveException, AuthorizationException {
+  }
+
+  @Override
+  public HivePolicyProvider getHivePolicyProvider() throws HiveAuthzPluginException {
+    return null;
   }
 
 }

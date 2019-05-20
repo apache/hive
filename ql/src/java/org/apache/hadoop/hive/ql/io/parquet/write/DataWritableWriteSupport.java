@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,10 +14,13 @@
 package org.apache.hadoop.hive.ql.io.parquet.write;
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.TimeZone;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 
+import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.parquet.hadoop.api.WriteSupport;
 import org.apache.parquet.io.api.RecordConsumer;
 import org.apache.parquet.schema.MessageType;
@@ -31,6 +34,7 @@ import org.apache.parquet.schema.MessageTypeParser;
 public class DataWritableWriteSupport extends WriteSupport<ParquetHiveRecord> {
 
   public static final String PARQUET_HIVE_SCHEMA = "parquet.hive.schema";
+  public static final String WRITER_TIMEZONE = "writer.time.zone";
 
   private DataWritableWriter writer;
   private MessageType schema;
@@ -46,7 +50,9 @@ public class DataWritableWriteSupport extends WriteSupport<ParquetHiveRecord> {
   @Override
   public WriteContext init(final Configuration configuration) {
     schema = getSchema(configuration);
-    return new WriteContext(schema, new HashMap<String, String>());
+    Map<String, String> metaData = new HashMap<>();
+    metaData.put(WRITER_TIMEZONE, TimeZone.getDefault().toZoneId().toString());
+    return new WriteContext(schema, metaData);
   }
 
   @Override
@@ -57,5 +63,10 @@ public class DataWritableWriteSupport extends WriteSupport<ParquetHiveRecord> {
   @Override
   public void write(final ParquetHiveRecord record) {
     writer.write(record);
+  }
+
+  @Override
+  public String getName() {
+    return HiveVersionInfo.getVersion();
   }
 }

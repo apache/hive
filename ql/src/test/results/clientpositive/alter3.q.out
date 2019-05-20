@@ -76,7 +76,6 @@ pcol2               	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 pcol1               	string              	                    
 pcol2               	string              	                    
 	 	 
@@ -93,7 +92,6 @@ pcol2               	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 pcol1               	string              	                    
 pcol2               	string              	                    
 	 	 
@@ -148,18 +146,15 @@ pcol2               	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 pcol1               	string              	                    
 pcol2               	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: -- Cleanup
-DROP TABLE alter3_src
+PREHOOK: query: DROP TABLE alter3_src
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter3_src
 PREHOOK: Output: default@alter3_src
-POSTHOOK: query: -- Cleanup
-DROP TABLE alter3_src
+POSTHOOK: query: DROP TABLE alter3_src
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter3_src
 POSTHOOK: Output: default@alter3_src
@@ -179,35 +174,16 @@ POSTHOOK: query: DROP TABLE alter3_like_renamed
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter3_like_renamed
 POSTHOOK: Output: default@alter3_like_renamed
-PREHOOK: query: SHOW TABLES
+PREHOOK: query: SHOW TABLES LIKE "alter3_*"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
-POSTHOOK: query: SHOW TABLES
+POSTHOOK: query: SHOW TABLES LIKE "alter3_*"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
-alltypesorc
-cbo_t1
-cbo_t2
-cbo_t3
-lineitem
-part
-src
-src1
-src_cbo
-src_json
-src_sequencefile
-src_thrift
-srcbucket
-srcbucket2
-srcpart
-PREHOOK: query: -- With non-default Database
-
-CREATE DATABASE alter3_db
+PREHOOK: query: CREATE DATABASE alter3_db
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:alter3_db
-POSTHOOK: query: -- With non-default Database
-
-CREATE DATABASE alter3_db
+POSTHOOK: query: CREATE DATABASE alter3_db
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:alter3_db
 PREHOOK: query: USE alter3_db
@@ -300,7 +276,6 @@ pcol2               	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 pcol1               	string              	                    
 pcol2               	string              	                    
 	 	 
@@ -317,7 +292,6 @@ pcol2               	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 pcol1               	string              	                    
 pcol2               	string              	                    
 	 	 
@@ -372,7 +346,6 @@ pcol2               	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 pcol1               	string              	                    
 pcol2               	string              	                    
 	 	 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,11 +23,16 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressionsSupportDecimal64;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDecimalColumnColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDecimalColumnScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDecimalScalarColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDecimalScalarScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprLongColumnLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDoubleColumnDoubleScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDoubleColumnLongScalar;
@@ -41,10 +46,14 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDoubleScalarD
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDoubleScalarLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprLongScalarDoubleScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprDoubleColumnDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprIntervalDayTimeColumnColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprIntervalDayTimeColumnScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprIntervalDayTimeScalarColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprIntervalDayTimeScalarScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprIntervalDayTimeColumnColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprIntervalDayTimeColumnScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprIntervalDayTimeScalarColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprIntervalDayTimeScalarScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprDecimal64ColumnDecimal64Column;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprDecimal64ColumnDecimal64Scalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprDecimal64ScalarDecimal64Column;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprDecimal64ScalarDecimal64Scalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprLongColumnLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringGroupColumnStringGroupColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringGroupColumnStringScalar;
@@ -52,10 +61,10 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringGroupColumn
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringGroupColumnVarCharScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringScalarStringGroupColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprCharScalarStringGroupColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprTimestampColumnColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprTimestampColumnScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprTimestampScalarColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprTimestampScalarScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprTimestampColumnColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprTimestampColumnScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprTimestampScalarColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprTimestampScalarScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprVarCharScalarStringGroupColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringScalarStringScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringScalarCharScalar;
@@ -67,7 +76,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprVarCharScalarStri
 
 /**
  * IF(expr1,expr2,expr3) <br>
- * If expr1 is TRUE (expr1 <> 0 and expr1 <> NULL) then IF() returns expr2;
+ * If expr1 is TRUE (expr1 &lt;&gt; 0 and expr1 &lt;&gt; NULL) then IF() returns expr2;
  * otherwise it returns expr3. IF() returns a numeric or string value, depending
  * on the context in which it is used.
  */
@@ -85,6 +94,9 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprVarCharScalarStri
   IfExprLongScalarLongScalar.class, IfExprDoubleScalarDoubleScalar.class,
   IfExprLongScalarDoubleScalar.class, IfExprDoubleScalarLongScalar.class,
 
+  IfExprDecimal64ColumnDecimal64Column.class, IfExprDecimal64ColumnDecimal64Scalar.class,
+  IfExprDecimal64ScalarDecimal64Column.class, IfExprDecimal64ScalarDecimal64Scalar.class,
+
   IfExprStringGroupColumnStringGroupColumn.class,
   IfExprStringGroupColumnStringScalar.class,
   IfExprStringGroupColumnCharScalar.class, IfExprStringGroupColumnVarCharScalar.class,
@@ -94,11 +106,15 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprVarCharScalarStri
   IfExprStringScalarCharScalar.class, IfExprStringScalarVarCharScalar.class,
   IfExprCharScalarStringScalar.class, IfExprVarCharScalarStringScalar.class,
 
+  IfExprDecimalColumnColumn.class, IfExprDecimalColumnScalar.class,
+  IfExprDecimalScalarColumn.class, IfExprDecimalScalarScalar.class,
+
   IfExprIntervalDayTimeColumnColumn.class, IfExprIntervalDayTimeColumnScalar.class,
   IfExprIntervalDayTimeScalarColumn.class, IfExprIntervalDayTimeScalarScalar.class,
   IfExprTimestampColumnColumn.class, IfExprTimestampColumnScalar.class,
   IfExprTimestampScalarColumn.class, IfExprTimestampScalarScalar.class,
 })
+@VectorizedExpressionsSupportDecimal64()
 public class GenericUDFIf extends GenericUDF {
   private transient ObjectInspector[] argumentOIs;
   private transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;

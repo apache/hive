@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 create table dst_union22(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string);
 create table dst_union22_delta(k0 string, k1 string, k2 string, k3 string, k4 string, k5 string) partitioned by (ds string);
@@ -9,7 +10,7 @@ insert overwrite table dst_union22_delta partition (ds='1')
 select key, key, value, key, value, value from src;
 
 set hive.merge.mapfiles=false;
-
+set hive.cbo.enable=false;
 -- Union followed by Mapjoin is not supported.
 -- The same query would work without the hint
 -- Note that there is a positive test with the same name in clientpositive

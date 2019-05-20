@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -53,9 +53,9 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * plan generation adds filters where they are seen but in some instances some
  * of the filter expressions can be pushed nearer to the operator that sees this
  * particular data for the first time. e.g. select a.*, b.* from a join b on
- * (a.col1 = b.col1) where a.col1 > 20 and b.col2 > 40
+ * (a.col1 = b.col1) where a.col1 &gt; 20 and b.col2 &gt; 40
  *
- * For the above query, the predicates (a.col1 > 20) and (b.col2 > 40), without
+ * For the above query, the predicates (a.col1 &gt; 20) and (b.col2 &gt; 40), without
  * predicate pushdown, would be evaluated after the join processing has been
  * done. Suppose the two predicates filter out most of the rows from a and b,
  * the join is unnecessarily processing these rows. With predicate pushdown,

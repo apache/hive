@@ -18,10 +18,16 @@ package org.apache.hadoop.hive.llap.tezplugins.helpers;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol;
 import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.ipc.Server;
@@ -32,6 +38,7 @@ import org.apache.hadoop.security.authorize.Service;
 import org.apache.hadoop.security.token.Token;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.common.security.JobTokenSecretManager;
+import org.apache.tez.runtime.api.impl.TezEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,17 +49,19 @@ public class LlapTaskUmbilicalServer {
   protected volatile Server server;
   private final InetSocketAddress address;
   private final AtomicBoolean started = new AtomicBoolean(true);
+  private JobTokenSecretManager jobTokenSecretManager;
+  private Map<String, int[]> tokenRefMap = new HashMap<String, int[]>();
 
-  public LlapTaskUmbilicalServer(Configuration conf, LlapTaskUmbilicalProtocol umbilical, int numHandlers, String tokenIdentifier, Token<JobTokenIdentifier> token) throws
-      IOException {
-    JobTokenSecretManager jobTokenSecretManager =
-        new JobTokenSecretManager();
-    jobTokenSecretManager.addTokenForJob(tokenIdentifier, token);
-
+  public LlapTaskUmbilicalServer(Configuration conf, LlapTaskUmbilicalProtocol umbilical, int numHandlers) throws IOException {
+    jobTokenSecretManager = new JobTokenSecretManager();
+    int umbilicalPort = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_TASK_UMBILICAL_SERVER_PORT);
+    if (umbilicalPort <= 0) {
+      umbilicalPort = 0;
+    }
     server = new RPC.Builder(conf)
         .setProtocol(LlapTaskUmbilicalProtocol.class)
         .setBindAddress("0.0.0.0")
-        .setPort(0)
+        .setPort(umbilicalPort)
         .setInstance(umbilical)
         .setNumHandlers(numHandlers)
         .setSecretManager(jobTokenSecretManager).build();
@@ -65,11 +74,42 @@ public class LlapTaskUmbilicalServer {
     this.address = NetUtils.getConnectAddress(server);
     LOG.info(
         "Started TaskUmbilicalServer: " + umbilical.getClass().getName() + " at address: " + address +
-            " with numHandlers=" + numHandlers);
+        " with numHandlers=" + numHandlers);
   }
 
   public InetSocketAddress getAddress() {
     return this.address;
+  }
+
+  public int getNumOpenConnections() {
+    return server.getNumOpenConnections();
+  }
+
+  public synchronized void addTokenForJob(String tokenIdentifier, Token<JobTokenIdentifier> token) {
+    // Maintain count of outstanding requests for tokenIdentifier.
+    int[] refCount = tokenRefMap.get(tokenIdentifier);
+    if (refCount == null) {
+      refCount = new int[] { 0 };
+      tokenRefMap.put(tokenIdentifier, refCount);
+      // Should only need to insert the token the first time.
+      jobTokenSecretManager.addTokenForJob(tokenIdentifier, token);
+    }
+    refCount[0]++;
+  }
+
+  public synchronized void removeTokenForJob(String tokenIdentifier) {
+    // Maintain count of outstanding requests for tokenIdentifier.
+    // If count goes to 0, it is safe to remove the token.
+    int[] refCount = tokenRefMap.get(tokenIdentifier);
+    if (refCount == null) {
+      LOG.warn("No refCount found for tokenIdentifier " + tokenIdentifier);
+    } else {
+      refCount[0]--;
+      if (refCount[0] <= 0) {
+        tokenRefMap.remove(tokenIdentifier);
+        jobTokenSecretManager.removeTokenForJob(tokenIdentifier);
+      }
+    }
   }
 
   public void shutdownServer() {

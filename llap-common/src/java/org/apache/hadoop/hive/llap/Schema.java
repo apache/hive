@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -43,7 +43,7 @@ public class Schema implements Writable {
 
   @Override
   public String toString() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     boolean first = true;
     for (FieldDesc colDesc : getColumns()) {
       if (!first) {

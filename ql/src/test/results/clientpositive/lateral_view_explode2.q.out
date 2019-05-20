@@ -6,8 +6,12 @@ POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: explode2
 PREHOOK: query: EXPLAIN SELECT col1, col2 FROM src LATERAL VIEW explode2(array(1,2,3)) myTable AS col1, col2 group by col1, col2 LIMIT 3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT col1, col2 FROM src LATERAL VIEW explode2(array(1,2,3)) myTable AS col1, col2 group by col1, col2 LIMIT 3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -28,6 +32,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1000 Data size: 200000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     keys: _col5 (type: int), _col6 (type: int)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -49,6 +54,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1000 Data size: 200000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col5 (type: int), _col6 (type: int)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE

@@ -1,3 +1,5 @@
+--! qt:dataset:srcpart
+--! qt:dataset:src
 create database tc;
 
 create table tc.tstsrc like default.src;

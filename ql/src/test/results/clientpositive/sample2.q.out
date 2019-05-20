@@ -1,21 +1,17 @@
-PREHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest1_n29(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest1_n29
+POSTHOOK: query: CREATE TABLE dest1_n29(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
-PREHOOK: query: -- input pruning, no sample filter
--- default table sample columns
-EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE dest1 SELECT s.* 
+POSTHOOK: Output: default@dest1_n29
+PREHOOK: query: EXPLAIN EXTENDED
+INSERT OVERWRITE TABLE dest1_n29 SELECT s.* 
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2) s
 PREHOOK: type: QUERY
-POSTHOOK: query: -- input pruning, no sample filter
--- default table sample columns
-EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE dest1 SELECT s.* 
+POSTHOOK: query: EXPLAIN EXTENDED
+INSERT OVERWRITE TABLE dest1_n29 SELECT s.* 
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2) s
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -56,26 +52,44 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       properties:
-                        COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                        COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                         bucket_count -1
+                        bucketing_version 2
+                        column.name.delimiter ,
                         columns key,value
                         columns.comments 
                         columns.types int:string
 #### A masked pattern was here ####
-                        name default.dest1
+                        name default.dest1_n29
                         numFiles 0
                         numRows 0
                         rawDataSize 0
-                        serialization.ddl struct dest1 { i32 key, string value}
+                        serialization.ddl struct dest1_n29 { i32 key, string value}
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         totalSize 0
 #### A masked pattern was here ####
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.dest1
+                      name: default.dest1_n29
                   TotalFiles: 1
                   GatherStats: true
                   MultiFileSpray: false
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: string)
+                  outputColumnNames: key, value
+                  Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: NONE
+                      tag: -1
+                      value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+                      auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -88,6 +102,8 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count 2
               bucket_field_name key
+              bucketing_version 2
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
@@ -109,6 +125,8 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count 2
                 bucket_field_name key
+                bucketing_version 2
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
@@ -127,6 +145,35 @@ STAGE PLANS:
             name: default.srcbucket
       Truncated Path -> Alias:
         /srcbucket/000000_0 [s]
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+#### A masked pattern was here ####
+            NumFilesPerFileSink: 1
+            Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                properties:
+                  columns _col0,_col1
+                  columns.types struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>:struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>
+                  escape.delim \
+                  hive.serialization.extend.additional.nesting.levels true
+                  serialization.escape.crlf true
+                  serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-7
     Conditional Operator
@@ -146,27 +193,35 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.dest1
+                name default.dest1_n29
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct dest1 { i32 key, string value}
+                serialization.ddl struct dest1_n29 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n29
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
+      Column Stats Desc:
+          Columns: key, value
+          Column Types: int, string
+          Table: default.dest1_n29
+          Is Table Level Stats: true
 
   Stage: Stage-3
     Map Reduce
@@ -182,23 +237,25 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
-                    name default.dest1
+                    name default.dest1_n29
                     numFiles 0
                     numRows 0
                     rawDataSize 0
-                    serialization.ddl struct dest1 { i32 key, string value}
+                    serialization.ddl struct dest1_n29 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+                  name: default.dest1_n29
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -211,17 +268,19 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              bucketing_version 2
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.dest1
+              name default.dest1_n29
               numFiles 0
               numRows 0
               rawDataSize 0
-              serialization.ddl struct dest1 { i32 key, string value}
+              serialization.ddl struct dest1_n29 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 0
@@ -231,24 +290,26 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.dest1
+                name default.dest1_n29
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct dest1 { i32 key, string value}
+                serialization.ddl struct dest1_n29 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
-            name: default.dest1
+              name: default.dest1_n29
+            name: default.dest1_n29
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -266,23 +327,25 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
-                    name default.dest1
+                    name default.dest1_n29
                     numFiles 0
                     numRows 0
                     rawDataSize 0
-                    serialization.ddl struct dest1 { i32 key, string value}
+                    serialization.ddl struct dest1_n29 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+                  name: default.dest1_n29
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -295,17 +358,19 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              bucketing_version 2
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.dest1
+              name default.dest1_n29
               numFiles 0
               numRows 0
               rawDataSize 0
-              serialization.ddl struct dest1 { i32 key, string value}
+              serialization.ddl struct dest1_n29 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 0
@@ -315,24 +380,26 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.dest1
+                name default.dest1_n29
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct dest1 { i32 key, string value}
+                serialization.ddl struct dest1_n29 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
-            name: default.dest1
+              name: default.dest1_n29
+            name: default.dest1_n29
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -342,516 +409,267 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT s.* 
+PREHOOK: query: INSERT OVERWRITE TABLE dest1_n29 SELECT s.* 
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2) s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket
-PREHOOK: Output: default@dest1
-POSTHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT s.* 
+PREHOOK: Output: default@dest1_n29
+POSTHOOK: query: INSERT OVERWRITE TABLE dest1_n29 SELECT s.* 
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.key SIMPLE [(srcbucket)s.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.value SIMPLE [(srcbucket)s.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: Output: default@dest1_n29
+POSTHOOK: Lineage: dest1_n29.key SIMPLE [(srcbucket)s.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1_n29.value SIMPLE [(srcbucket)s.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: SELECT dest1_n29.* FROM dest1_n29
+order by key, value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n29
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: query: SELECT dest1_n29.* FROM dest1_n29
+order by key, value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n29
 #### A masked pattern was here ####
-490	val_491
-356	val_357
-106	val_107
-126	val_127
-428	val_429
-296	val_297
-278	val_279
-440	val_441
-246	val_247
-448	val_449
-272	val_273
-468	val_469
-62	val_63
-474	val_475
-200	val_200
-400	val_400
-90	val_90
-126	val_126
-222	val_222
-414	val_414
-194	val_194
-348	val_348
-152	val_152
-448	val_448
-28	val_28
-84	val_84
-344	val_344
-18	val_18
-348	val_348
-186	val_186
-362	val_362
-458	val_458
-146	val_146
-498	val_498
-298	val_298
-100	val_100
-492	val_492
-462	val_462
-18	val_18
-384	val_384
-134	val_134
-26	val_26
-256	val_256
-384	val_384
-454	val_454
-406	val_406
-462	val_462
-214	val_214
-172	val_172
-136	val_136
-480	val_480
-460	val_460
-310	val_310
-468	val_468
-178	val_178
-478	val_478
-230	val_230
-120	val_120
-444	val_444
-248	val_248
-360	val_360
-200	val_200
-414	val_414
-438	val_438
-70	val_70
-104	val_104
-24	val_24
-480	val_480
-70	val_70
-382	val_382
-424	val_424
-164	val_164
-298	val_298
-478	val_478
-454	val_454
-164	val_164
-396	val_396
-12	val_12
-424	val_424
-348	val_348
-262	val_262
-90	val_90
-258	val_258
-114	val_114
-406	val_406
-190	val_190
-406	val_406
-366	val_366
-466	val_466
-104	val_104
-44	val_44
-80	val_80
 2	val_2
-280	val_280
-316	val_316
-202	val_202
-432	val_432
-128	val_128
-438	val_438
-244	val_244
-288	val_288
-480	val_480
-70	val_70
-256	val_256
-116	val_116
-274	val_274
-344	val_344
-216	val_216
-296	val_296
-368	val_368
-230	val_230
-342	val_342
-74	val_74
-76	val_76
-468	val_468
-64	val_64
+2	val_3
+6	val_7
+6	val_7
+10	val_10
+10	val_11
+20	val_20
+20	val_21
+20	val_21
 30	val_30
-138	val_138
-228	val_228
-218	val_218
-492	val_492
-76	val_76
-78	val_78
-458	val_458
-430	val_430
-42	val_42
-160	val_160
-498	val_498
-322	val_322
-472	val_472
-34	val_34
-168	val_168
-336	val_336
+30	val_31
+40	val_41
+40	val_41
+46	val_47
+48	val_49
+48	val_49
+54	val_54
 58	val_58
+58	val_58
+58	val_59
+58	val_59
+60	val_61
+64	val_64
+68	val_69
+70	val_70
+70	val_70
+70	val_70
+70	val_71
+80	val_80
+80	val_81
+84	val_84
+84	val_84
+86	val_86
+86	val_87
+90	val_90
+90	val_90
+90	val_90
+96	val_96
+98	val_98
+98	val_98
+106	val_107
+110	val_111
+116	val_116
+116	val_117
+126	val_126
+126	val_127
+126	val_127
+132	val_133
+132	val_133
+134	val_134
+134	val_134
+134	val_135
+140	val_141
+146	val_146
+146	val_146
+156	val_156
+156	val_157
+156	val_157
+158	val_158
+162	val_162
+162	val_163
+164	val_164
+164	val_164
+164	val_165
+164	val_165
+178	val_178
+178	val_179
+178	val_179
+182	val_183
+184	val_185
+190	val_190
+202	val_202
+206	val_207
+206	val_207
+206	val_207
+208	val_208
+208	val_208
+208	val_208
+212	val_213
+214	val_214
+216	val_216
+216	val_216
+216	val_217
+226	val_226
+226	val_227
+226	val_227
+226	val_227
+226	val_227
+238	val_238
+238	val_238
+238	val_239
+240	val_241
+244	val_244
+244	val_245
+244	val_245
+244	val_245
+248	val_248
+248	val_249
+252	val_252
+252	val_253
+254	val_255
+256	val_256
+256	val_256
+256	val_257
+260	val_260
+260	val_261
+260	val_261
+266	val_266
+272	val_272
+272	val_272
+272	val_273
+276	val_277
+284	val_284
+284	val_285
+284	val_285
+286	val_286
+286	val_287
+292	val_292
+292	val_293
+292	val_293
+304	val_305
+308	val_308
+308	val_309
+308	val_309
+310	val_310
+310	val_311
+310	val_311
+310	val_311
+316	val_316
+316	val_316
+316	val_316
+324	val_325
+326	val_327
+332	val_332
+334	val_335
+336	val_336
+336	val_337
+338	val_338
+338	val_339
+342	val_342
+342	val_342
+342	val_343
+344	val_344
+344	val_344
+344	val_345
+348	val_348
+348	val_348
+348	val_348
+348	val_348
+348	val_348
+348	val_349
+352	val_353
+352	val_353
+360	val_360
+360	val_361
+362	val_362
+364	val_364
+364	val_365
+368	val_368
+378	val_378
+378	val_379
+384	val_384
+384	val_384
+384	val_384
+384	val_385
+384	val_385
+384	val_385
+386	val_386
+386	val_387
+386	val_387
+388	val_389
+392	val_392
+392	val_393
+392	val_393
+394	val_394
+396	val_396
+396	val_396
 396	val_396
 402	val_402
-226	val_226
-452	val_452
-242	val_242
-272	val_272
-392	val_392
-242	val_242
-224	val_224
-306	val_306
-10	val_10
-90	val_90
-72	val_72
-118	val_118
-238	val_238
-138	val_138
-282	val_282
-134	val_134
-118	val_118
-364	val_364
-490	val_490
-0	val_0
-316	val_316
-470	val_470
-318	val_318
-318	val_318
-282	val_282
-98	val_98
-288	val_288
-196	val_196
-308	val_308
-468	val_468
-156	val_156
-436	val_436
+402	val_403
+402	val_403
+402	val_403
 404	val_404
-120	val_120
-230	val_230
-26	val_26
-96	val_96
-418	val_418
-298	val_298
-100	val_100
-454	val_454
-468	val_468
-322	val_322
-0	val_0
-496	val_496
-158	val_158
-42	val_42
-172	val_172
-24	val_24
-348	val_348
-208	val_208
-230	val_230
-8	val_8
-58	val_58
-466	val_466
-348	val_348
-84	val_84
-138	val_138
-272	val_272
-384	val_384
 404	val_404
-260	val_260
-230	val_230
-12	val_12
-284	val_284
-180	val_180
-332	val_332
-318	val_318
-176	val_176
-278	val_278
-430	val_430
-216	val_216
-138	val_138
-54	val_54
-176	val_176
-286	val_286
-192	val_192
-386	val_386
-498	val_498
-382	val_382
-356	val_356
-208	val_208
-280	val_280
-4	val_4
-72	val_72
-92	val_92
-378	val_378
-20	val_20
-170	val_170
-438	val_438
-302	val_302
-316	val_316
-128	val_128
-0	val_0
-342	val_342
-266	val_266
-162	val_162
-396	val_396
-174	val_174
-208	val_208
-466	val_466
-494	val_494
-174	val_174
-482	val_482
-394	val_394
-446	val_446
-338	val_338
-292	val_292
-252	val_252
-430	val_430
-166	val_166
-82	val_82
-152	val_152
-374	val_374
-406	val_406
-146	val_146
-128	val_128
-66	val_66
-224	val_224
-150	val_150
-484	val_484
-98	val_98
-278	val_278
-86	val_86
-238	val_238
-244	val_245
-242	val_243
-178	val_179
-118	val_119
-478	val_479
-300	val_301
-76	val_77
-138	val_139
-152	val_153
-468	val_469
-430	val_431
-308	val_309
-100	val_101
-440	val_441
-82	val_83
+404	val_405
+404	val_405
+404	val_405
+408	val_409
+408	val_409
 410	val_411
-196	val_197
-134	val_135
-78	val_79
-46	val_47
-276	val_277
-244	val_245
-162	val_163
-62	val_63
-402	val_403
-248	val_249
-22	val_23
-228	val_229
-156	val_157
-100	val_101
-178	val_179
-478	val_479
-40	val_41
-412	val_413
-292	val_293
-256	val_257
+414	val_414
+414	val_414
 414	val_415
-378	val_379
-152	val_153
-486	val_487
-52	val_53
-310	val_311
-474	val_475
-182	val_183
-292	val_293
-122	val_123
-348	val_349
-382	val_383
-152	val_153
-408	val_409
-144	val_145
-496	val_497
-432	val_433
-462	val_463
-136	val_137
-164	val_165
-284	val_285
-6	val_7
-244	val_245
-172	val_173
-118	val_119
-156	val_157
-436	val_437
-104	val_105
-392	val_393
-268	val_269
-0	val_1
-300	val_301
-446	val_447
-404	val_405
-52	val_53
-442	val_443
-60	val_61
-384	val_385
-334	val_335
-398	val_399
-12	val_13
-450	val_451
-302	val_303
-196	val_197
-470	val_471
-216	val_217
-494	val_495
-374	val_375
-274	val_275
-126	val_127
-204	val_205
-16	val_17
-412	val_413
-174	val_175
-76	val_77
-454	val_455
-160	val_161
-138	val_139
-330	val_331
-52	val_53
-352	val_353
-356	val_357
-70	val_71
-58	val_59
-192	val_193
-132	val_133
-32	val_33
-406	val_407
-104	val_105
-42	val_43
-116	val_117
-76	val_77
-384	val_385
-404	val_405
-122	val_123
-322	val_323
-328	val_329
-260	val_261
-262	val_263
-226	val_227
-206	val_207
-404	val_405
-206	val_207
-310	val_311
-324	val_325
-384	val_385
-168	val_169
-8	val_9
-40	val_41
-52	val_53
-20	val_21
-364	val_365
-454	val_455
-386	val_387
-42	val_43
-416	val_417
-358	val_359
-30	val_31
-308	val_309
-212	val_213
-140	val_141
-450	val_451
-326	val_327
-80	val_81
-104	val_105
-310	val_311
-118	val_119
-164	val_165
-170	val_171
-2	val_3
-260	val_261
-6	val_7
-484	val_485
-390	val_391
-340	val_341
-336	val_337
-48	val_49
-264	val_265
-114	val_115
-252	val_253
-174	val_175
-258	val_259
-476	val_477
-392	val_393
-318	val_319
-480	val_481
-102	val_103
-480	val_481
-342	val_343
-382	val_383
-328	val_329
-226	val_227
-352	val_353
-390	val_391
-438	val_439
-122	val_123
-262	val_263
-246	val_247
-284	val_285
-184	val_185
-388	val_389
-386	val_387
-446	val_447
-132	val_133
 426	val_427
-306	val_307
-120	val_121
-376	val_377
-492	val_493
-16	val_17
-68	val_69
-338	val_339
-42	val_43
-222	val_223
-360	val_361
-438	val_439
-86	val_87
-58	val_59
-82	val_83
-492	val_493
-20	val_21
-238	val_239
-196	val_197
-264	val_265
-304	val_305
-390	val_391
-254	val_255
-114	val_115
-56	val_57
-114	val_115
-206	val_207
-4	val_5
-344	val_345
-224	val_225
-314	val_315
-468	val_469
-128	val_129
-402	val_403
-50	val_51
-94	val_95
-488	val_489
-494	val_495
-226	val_227
-424	val_425
-48	val_49
-482	val_483
+428	val_429
+430	val_430
+430	val_430
+430	val_430
+430	val_431
+432	val_432
+432	val_433
+440	val_441
+440	val_441
+444	val_444
+446	val_446
+446	val_447
+446	val_447
+452	val_452
+454	val_454
+454	val_454
+454	val_454
+454	val_455
+454	val_455
+458	val_458
+458	val_458
+466	val_466
+466	val_466
+466	val_466
+472	val_472
+474	val_475
+474	val_475
 476	val_477
-408	val_409
-286	val_287
-240	val_241
-0	val_1
-110	val_111
-226	val_227
-10	val_11
-128	val_129
-402	val_403
+476	val_477
+478	val_478
+478	val_478
+478	val_479
+478	val_479
+480	val_480
+480	val_480
+480	val_480
+480	val_481
+480	val_481
+482	val_482
+482	val_483
+484	val_484
+484	val_485
+488	val_489
+490	val_490
+490	val_491
+498	val_498
+498	val_498
+498	val_498

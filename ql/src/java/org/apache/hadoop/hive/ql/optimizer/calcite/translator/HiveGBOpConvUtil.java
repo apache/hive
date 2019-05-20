@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,6 +29,7 @@ import java.util.TreeMap;
 
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.AggregateCall;
+import org.apache.calcite.rel.core.Aggregate.Group;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -68,7 +69,7 @@ import com.google.common.collect.ImmutableList;
  * 1. Change the output col/ExprNodeColumn names to external names.<br>
  * 2. Verify if we need to use the "KEY."/"VALUE." in RS cols; switch to
  * external names if possible.<br>
- * 3. In ExprNode & in ColumnInfo the tableAlias/VirtualColumn is specified
+ * 3. In ExprNode &amp; in ColumnInfo the tableAlias/VirtualColumn is specified
  * differently for different GB/RS in pipeline. Remove the different treatments.
  * 4. VirtualColMap needs to be maintained
  *
@@ -100,7 +101,7 @@ public class HiveGBOpConvUtil {
     private final List<TypeInfo>      gbKeyTypes           = new ArrayList<TypeInfo>();
     private final List<ExprNodeDesc>  gbKeys               = new ArrayList<ExprNodeDesc>();
 
-    private final List<Integer>       grpSets              = new ArrayList<Integer>();
+    private final List<Long>       grpSets              = new ArrayList<Long>();
     private boolean                   grpSetRqrAdditionalMRJob;
     private boolean                   grpIdFunctionNeeded;
 
@@ -116,6 +117,7 @@ public class HiveGBOpConvUtil {
 
     float                             groupByMemoryUsage;
     float                             memoryThreshold;
+    float                             minReductionHashAggr;
 
     private HIVEGBPHYSICALMODE        gbPhysicalPipelineMode;
   };
@@ -173,10 +175,10 @@ public class HiveGBOpConvUtil {
     }
 
     // 2. Collect Grouping Set info
-    if (aggRel.indicator) {
+    if (aggRel.getGroupType() != Group.SIMPLE) {
       // 2.1 Translate Grouping set col bitset
       ImmutableList<ImmutableBitSet> lstGrpSet = aggRel.getGroupSets();
-      int bitmap = 0;
+      long bitmap = 0;
       for (ImmutableBitSet grpSet : lstGrpSet) {
         bitmap = 0;
         for (Integer bitIdx : grpSet.asList()) {
@@ -276,6 +278,7 @@ public class HiveGBOpConvUtil {
     // 4. Gather GB Memory threshold
     gbInfo.groupByMemoryUsage = HiveConf.getFloatVar(hc, HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
     gbInfo.memoryThreshold = HiveConf.getFloatVar(hc, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
+    gbInfo.minReductionHashAggr = HiveConf.getFloatVar(hc, HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
 
     // 5. Gather GB Physical pipeline (based on user config & Grping Sets size)
     gbInfo.gbPhysicalPipelineMode = getAggOPMode(hc, gbInfo);
@@ -820,7 +823,7 @@ public class HiveGBOpConvUtil {
 
     Operator rsGBOp2 = OperatorFactory.getAndMakeChild(new GroupByDesc(GroupByDesc.Mode.FINAL,
         outputColNames, gbKeys, aggregations, false, gbInfo.groupByMemoryUsage,
-        gbInfo.memoryThreshold, null, false, groupingSetsPosition, gbInfo.containsDistinctAggr),
+        gbInfo.memoryThreshold, gbInfo.minReductionHashAggr, null, false, groupingSetsPosition, gbInfo.containsDistinctAggr),
         new RowSchema(colInfoLst), rs);
 
     rsGBOp2.setColumnExprMap(colExprMap);
@@ -862,7 +865,7 @@ public class HiveGBOpConvUtil {
       groupingSetsColPosition = gbInfo.gbKeys.size();
       if (computeGrpSet) {
         // GrpSet Col needs to be constructed
-        gbKeys.add(new ExprNodeConstantDesc("0"));
+        gbKeys.add(new ExprNodeConstantDesc("0L"));
       } else {
         // GrpSet Col already part of input RS
         // TODO: Can't we just copy the ExprNodeDEsc from input (Do we need to
@@ -958,7 +961,7 @@ public class HiveGBOpConvUtil {
         && !finalGB
         && !(gbInfo.gbPhysicalPipelineMode == HIVEGBPHYSICALMODE.MAP_SIDE_GB_SKEW_GBKEYS_OR_DIST_UDAF_PRESENT);
     Operator rsGBOp = OperatorFactory.getAndMakeChild(new GroupByDesc(gbMode, outputColNames,
-        gbKeys, aggregations, gbInfo.groupByMemoryUsage, gbInfo.memoryThreshold, gbInfo.grpSets,
+        gbKeys, aggregations, gbInfo.groupByMemoryUsage, gbInfo.memoryThreshold, gbInfo.minReductionHashAggr, gbInfo.grpSets,
         includeGrpSetInGBDesc, groupingSetsColPosition, gbInfo.containsDistinctAggr),
         new RowSchema(colInfoLst), rs);
 
@@ -1070,7 +1073,7 @@ public class HiveGBOpConvUtil {
     }
 
     Operator rsGB1 = OperatorFactory.getAndMakeChild(new GroupByDesc(gbMode, outputColNames,
-        gbKeys, aggregations, false, gbInfo.groupByMemoryUsage, gbInfo.memoryThreshold, null,
+        gbKeys, aggregations, false, gbInfo.groupByMemoryUsage, gbInfo.memoryThreshold, gbInfo.minReductionHashAggr, null,
         false, -1, numDistinctUDFs > 0), new RowSchema(colInfoLst), rs);
     rsGB1.setColumnExprMap(colExprMap);
 
@@ -1166,7 +1169,7 @@ public class HiveGBOpConvUtil {
     @SuppressWarnings("rawtypes")
     Operator gbOp = OperatorFactory.getAndMakeChild(new GroupByDesc(GroupByDesc.Mode.HASH,
         outputColNames, gbKeys, aggregations, false, gbAttrs.groupByMemoryUsage,
-        gbAttrs.memoryThreshold, gbAttrs.grpSets, inclGrpID, groupingSetsPosition,
+        gbAttrs.memoryThreshold, gbAttrs.minReductionHashAggr, gbAttrs.grpSets, inclGrpID, groupingSetsPosition,
         gbAttrs.containsDistinctAggr), new RowSchema(colInfoLst), inputOpAf.inputs.get(0));
 
     // 5. Setup Expr Col Map
@@ -1184,7 +1187,7 @@ public class HiveGBOpConvUtil {
     ExprNodeDesc grpSetColExpr = null;
 
     if (createConstantExpr) {
-      grpSetColExpr = new ExprNodeConstantDesc("0");
+      grpSetColExpr = new ExprNodeConstantDesc("0L");
     } else {
       grpSetColExpr = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, grpSetIDExprName,
           null, false);

@@ -1,3 +1,15 @@
+PREHOOK: query: explain abort transactions 1234 5678
+PREHOOK: type: ABORT TRANSACTIONS
+POSTHOOK: query: explain abort transactions 1234 5678
+POSTHOOK: type: ABORT TRANSACTIONS
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Abort Transaction
+      Transaction IDs: 1234, 5678
+
 PREHOOK: query: abort transactions 1234 5678
 PREHOOK: type: ABORT TRANSACTIONS
 POSTHOOK: query: abort transactions 1234 5678

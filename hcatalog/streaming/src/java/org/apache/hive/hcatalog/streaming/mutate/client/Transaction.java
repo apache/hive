@@ -27,6 +27,10 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @deprecated as of Hive 3.0.0
+ */
+@Deprecated
 public class Transaction {
 
   private static final Logger LOG = LoggerFactory.getLogger(Transaction.class);

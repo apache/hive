@@ -11,6 +11,8 @@ space(n) - returns n spaces
 Example:
    > SELECT space(2) FROM src LIMIT 1;
   '  '
+Function class:org.apache.hadoop.hive.ql.udf.UDFSpace
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN SELECT
   space(10),
   space(0),
@@ -19,6 +21,8 @@ PREHOOK: query: EXPLAIN SELECT
   space(-100)
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT
   space(10),
   space(0),
@@ -27,6 +31,8 @@ POSTHOOK: query: EXPLAIN SELECT
   space(-100)
 FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

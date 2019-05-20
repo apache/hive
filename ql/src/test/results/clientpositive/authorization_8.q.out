@@ -20,6 +20,9 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@tbl_j5jbymsx8e
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view_j5jbymsx8e_1
+POSTHOOK: Lineage: view_j5jbymsx8e_1.ds SIMPLE [(tbl_j5jbymsx8e)tbl_j5jbymsx8e.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: view_j5jbymsx8e_1.key SIMPLE [(tbl_j5jbymsx8e)tbl_j5jbymsx8e.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: view_j5jbymsx8e_1.value SIMPLE [(tbl_j5jbymsx8e)tbl_j5jbymsx8e.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: DESCRIBE view_j5jbymsx8e_1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view_j5jbymsx8e_1

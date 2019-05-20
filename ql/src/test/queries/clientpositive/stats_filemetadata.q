@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 
 CREATE TABLE many_files(key string, value string)

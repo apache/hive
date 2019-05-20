@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,10 +23,9 @@ import java.util.Set;
 
 import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelOptCluster;
-import org.apache.calcite.plan.RelOptCost;
-import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.RelShuttle;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
@@ -35,6 +34,7 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 
 import com.google.common.collect.Sets;
@@ -45,27 +45,26 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
 
 
   public HiveAggregate(RelOptCluster cluster, RelTraitSet traitSet, RelNode child,
-      boolean indicator, ImmutableBitSet groupSet, List<ImmutableBitSet> groupSets,
+      ImmutableBitSet groupSet, List<ImmutableBitSet> groupSets,
       List<AggregateCall> aggCalls) {
-    super(cluster, TraitsUtil.getDefaultTraitSet(cluster), child, indicator, groupSet,
-            groupSets, aggCalls);
+    super(cluster, TraitsUtil.getDefaultTraitSet(cluster), child, false,
+            groupSet, groupSets, aggCalls);
   }
 
   @Override
   public Aggregate copy(RelTraitSet traitSet, RelNode input,
           boolean indicator, ImmutableBitSet groupSet,
           List<ImmutableBitSet> groupSets, List<AggregateCall> aggCalls) {
-      return new HiveAggregate(getCluster(), traitSet, input, indicator, groupSet,
-              groupSets, aggCalls);
+      if (indicator) {
+        throw new IllegalStateException("Hive does not support indicator columns but tried "
+                + "to create an Aggregate operator containing them");
+      }
+      return new HiveAggregate(getCluster(), traitSet, input,
+              groupSet, groupSets, aggCalls);
   }
 
   @Override
   public void implement(Implementor implementor) {
-  }
-
-  @Override
-  public RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
-    return mq.getNonCumulativeCost(this);
   }
 
   // getRows will call estimateRowCount
@@ -75,7 +74,8 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
   }
 
   public boolean isBucketedInput() {
-    return RelMetadataQuery.instance().distribution(this.getInput()).getKeys().
+    final RelMetadataQuery mq = this.getInput().getCluster().getMetadataQuery();
+    return mq.distribution(this).getKeys().
             containsAll(groupSet.asList());
   }
 
@@ -135,6 +135,14 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
 
   public LinkedHashSet<Integer> getAggregateColumnsOrder() {
     return this.aggregateColumnsOrder;
+  }
+
+  //required for HiveRelDecorrelator
+  @Override public RelNode accept(RelShuttle shuttle) {
+    if(shuttle instanceof HiveRelShuttle) {
+      return ((HiveRelShuttle)shuttle).visit(this);
+    }
+    return shuttle.visit(this);
   }
 
 }

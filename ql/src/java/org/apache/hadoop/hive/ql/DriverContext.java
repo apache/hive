@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,16 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.NodeUtils;
 import org.apache.hadoop.hive.ql.exec.NodeUtils.Function;
@@ -29,17 +39,6 @@ import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Iterator;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +63,7 @@ public class DriverContext {
   private Context ctx;
   private boolean shutdown;
 
-  final Map<String, StatsTask> statsTasks = new HashMap<String, StatsTask>(1);
+  final Map<String, StatsTask> statsTasks = new HashMap<>(1);
 
   public DriverContext() {
   }
@@ -98,6 +97,11 @@ public class DriverContext {
       return runnable.remove();
     }
     return null;
+  }
+
+  public synchronized void releaseRunnable() {
+    //release the waiting poller.
+    notify();
   }
 
   /**
@@ -160,7 +164,7 @@ public class DriverContext {
   public static boolean isLaunchable(Task<? extends Serializable> tsk) {
     // A launchable task is one that hasn't been queued, hasn't been
     // initialized, and is runnable.
-    return !tsk.getQueued() && !tsk.getInitialized() && tsk.isRunnable();
+    return tsk.isNotInitialized() && tsk.isRunnable();
   }
 
   public synchronized boolean addToRunnable(Task<? extends Serializable> tsk) throws HiveException {
@@ -191,7 +195,9 @@ public class DriverContext {
     NodeUtils.iterateTask(rootTasks, StatsTask.class, new Function<StatsTask>() {
       @Override
       public void apply(StatsTask statsTask) {
-        statsTasks.put(statsTask.getWork().getAggKey(), statsTask);
+        if (statsTask.getWork().isAggregating()) {
+          statsTasks.put(statsTask.getWork().getAggKey(), statsTask);
+        }
       }
     });
   }
@@ -221,7 +227,11 @@ public class DriverContext {
       }
     });
     for (String statKey : statKeys) {
-      statsTasks.get(statKey).getWork().setSourceTask(mapredTask);
+      if (statsTasks.containsKey(statKey)) {
+        statsTasks.get(statKey).getWork().setSourceTask(mapredTask);
+      } else {
+        LOG.debug("There is no correspoing statTask for: " + statKey);
+      }
     }
   }
 }

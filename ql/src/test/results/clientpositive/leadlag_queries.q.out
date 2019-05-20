@@ -1,5 +1,4 @@
-PREHOOK: query: -- 1. testLeadUDAF
-select p_mfgr, p_retailprice,
+PREHOOK: query: select p_mfgr, p_retailprice,
 lead(p_retailprice) over (partition by p_mfgr order by p_name) as l1,
 lead(p_retailprice,1) over (partition by p_mfgr order by p_name) as l2,
 lead(p_retailprice,1,10) over (partition by p_mfgr order by p_name) as l3,
@@ -9,8 +8,7 @@ from part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: -- 1. testLeadUDAF
-select p_mfgr, p_retailprice,
+POSTHOOK: query: select p_mfgr, p_retailprice,
 lead(p_retailprice) over (partition by p_mfgr order by p_name) as l1,
 lead(p_retailprice,1) over (partition by p_mfgr order by p_name) as l2,
 lead(p_retailprice,1,10) over (partition by p_mfgr order by p_name) as l3,
@@ -46,16 +44,14 @@ Manufacturer#5	1611.66	1788.73	1788.73	1788.73	1788.73	-177.06999999999994
 Manufacturer#5	1788.73	1018.1	1018.1	1018.1	1018.1	770.63
 Manufacturer#5	1018.1	1464.48	1464.48	1464.48	1464.48	-446.38
 Manufacturer#5	1464.48	NULL	NULL	10.0	1464.48	0.0
-PREHOOK: query: -- 2.testLeadUDAFPartSz1
-select p_mfgr, p_name, p_retailprice,
+PREHOOK: query: select p_mfgr, p_name, p_retailprice,
 lead(p_retailprice,1) over (partition by p_mfgr, p_name ),
 p_retailprice - lead(p_retailprice,1,p_retailprice) over (partition by p_mfgr, p_name)
 from part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: -- 2.testLeadUDAFPartSz1
-select p_mfgr, p_name, p_retailprice,
+POSTHOOK: query: select p_mfgr, p_name, p_retailprice,
 lead(p_retailprice,1) over (partition by p_mfgr, p_name ),
 p_retailprice - lead(p_retailprice,1,p_retailprice) over (partition by p_mfgr, p_name)
 from part
@@ -88,8 +84,7 @@ Manufacturer#5	almond antique medium spring khaki	1611.66	NULL	0.0
 Manufacturer#5	almond antique sky peru orange	1788.73	NULL	0.0
 Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	NULL	0.0
 Manufacturer#5	almond azure blanched chiffon midnight	1464.48	NULL	0.0
-PREHOOK: query: -- 3.testLagUDAF
-select p_mfgr, p_retailprice,
+PREHOOK: query: select p_mfgr, p_retailprice,
 lag(p_retailprice,1) over (partition by p_mfgr order by p_name) as l1,
 lag(p_retailprice) over (partition by p_mfgr order by p_name) as l2,
 lag(p_retailprice,1, p_retailprice) over (partition by p_mfgr order by p_name) as l3,
@@ -99,8 +94,7 @@ from part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: -- 3.testLagUDAF
-select p_mfgr, p_retailprice,
+POSTHOOK: query: select p_mfgr, p_retailprice,
 lag(p_retailprice,1) over (partition by p_mfgr order by p_name) as l1,
 lag(p_retailprice) over (partition by p_mfgr order by p_name) as l2,
 lag(p_retailprice,1, p_retailprice) over (partition by p_mfgr order by p_name) as l3,
@@ -136,16 +130,14 @@ Manufacturer#5	1611.66	1789.69	1789.69	1789.69	1789.69	-178.02999999999997
 Manufacturer#5	1788.73	1611.66	1611.66	1611.66	1611.66	177.06999999999994
 Manufacturer#5	1018.1	1788.73	1788.73	1788.73	1788.73	-770.63
 Manufacturer#5	1464.48	1018.1	1018.1	1018.1	1018.1	446.38
-PREHOOK: query: -- 4.testLagUDAFPartSz1
-select p_mfgr, p_name, p_retailprice,
+PREHOOK: query: select p_mfgr, p_name, p_retailprice,
 lag(p_retailprice,1) over (partition by p_mfgr, p_name ),
 p_retailprice - lag(p_retailprice,1,p_retailprice) over (partition by p_mfgr, p_name)
 from part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: -- 4.testLagUDAFPartSz1
-select p_mfgr, p_name, p_retailprice,
+POSTHOOK: query: select p_mfgr, p_name, p_retailprice,
 lag(p_retailprice,1) over (partition by p_mfgr, p_name ),
 p_retailprice - lag(p_retailprice,1,p_retailprice) over (partition by p_mfgr, p_name)
 from part
@@ -178,8 +170,7 @@ Manufacturer#5	almond antique medium spring khaki	1611.66	NULL	0.0
 Manufacturer#5	almond antique sky peru orange	1788.73	NULL	0.0
 Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	NULL	0.0
 Manufacturer#5	almond azure blanched chiffon midnight	1464.48	NULL	0.0
-PREHOOK: query: -- 5.testLeadLagUDAF
-select p_mfgr, p_retailprice,
+PREHOOK: query: select p_mfgr, p_retailprice,
 lead(p_retailprice,1) over (partition by p_mfgr order by p_name) as l1,
 lead(p_retailprice,1, p_retailprice) over (partition by p_mfgr order by p_name) as l2,
 p_retailprice - lead(p_retailprice,1,p_retailprice) over (partition by p_mfgr order by p_name),
@@ -189,8 +180,7 @@ from part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: -- 5.testLeadLagUDAF
-select p_mfgr, p_retailprice,
+POSTHOOK: query: select p_mfgr, p_retailprice,
 lead(p_retailprice,1) over (partition by p_mfgr order by p_name) as l1,
 lead(p_retailprice,1, p_retailprice) over (partition by p_mfgr order by p_name) as l2,
 p_retailprice - lead(p_retailprice,1,p_retailprice) over (partition by p_mfgr order by p_name),

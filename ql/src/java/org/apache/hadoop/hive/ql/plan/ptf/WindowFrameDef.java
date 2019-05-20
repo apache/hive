@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,13 +18,22 @@
 
 package org.apache.hadoop.hive.ql.plan.ptf;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class WindowFrameDef {
+  private WindowType windowType;
   private BoundaryDef start;
   private BoundaryDef end;
   private final int windowSize;
+  private OrderDef orderDef;    // Order expressions which will only get set and used for RANGE windowing type
 
-  public WindowFrameDef(BoundaryDef start, BoundaryDef end) {
+  public WindowFrameDef(WindowType windowType, BoundaryDef start, BoundaryDef end) {
+    this.windowType = windowType;
     this.start = start;
     this.end = end;
 
@@ -44,6 +53,21 @@ public class WindowFrameDef {
     return end;
   }
 
+  public WindowType getWindowType() {
+    return windowType;
+  }
+
+  public void setOrderDef(OrderDef orderDef) {
+    this.orderDef = orderDef;
+  }
+
+  public OrderDef getOrderDef() throws HiveException {
+    if (this.windowType != WindowType.RANGE) {
+      throw new HiveException("Order expressions should only be used for RANGE windowing type");
+    }
+    return orderDef;
+  }
+
   public boolean isStartUnbounded() {
     return start.isUnbounded();
   }
@@ -58,6 +82,6 @@ public class WindowFrameDef {
 
   @Override
   public String toString() {
-    return start + "~" + end;
+    return windowType + " " + start + "~" + end;
   }
 }

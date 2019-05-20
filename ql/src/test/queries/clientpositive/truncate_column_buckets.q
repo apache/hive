@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 -- Tests truncating columns from a bucketed table, table should remain bucketed
 
@@ -11,7 +12,7 @@ INSERT OVERWRITE TABLE test_tab SELECT * FROM src;
 SELECT cnt FROM (
 SELECT INPUT__FILE__NAME file_name, count(*) cnt FROM 
 test_tab GROUP BY INPUT__FILE__NAME
-ORDER BY file_name DESC)a;
+)a ORDER BY file_name DESC;
 
 -- Truncate a column on which the table is not bucketed
 TRUNCATE TABLE test_tab COLUMNS (value);
@@ -21,4 +22,4 @@ TRUNCATE TABLE test_tab COLUMNS (value);
 SELECT cnt FROM (
 SELECT INPUT__FILE__NAME file_name, count(*) cnt FROM 
 test_tab GROUP BY INPUT__FILE__NAME
-ORDER BY file_name DESC)a;
+)a ORDER BY file_name DESC;

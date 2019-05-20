@@ -1,33 +1,35 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE DEST1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE DEST1_n117(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE DEST1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@DEST1_n117
+POSTHOOK: query: CREATE TABLE DEST1_n117(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1
-PREHOOK: query: CREATE TABLE DEST2(key INT, val1 STRING, val2 STRING) STORED AS TEXTFILE
+POSTHOOK: Output: default@DEST1_n117
+PREHOOK: query: CREATE TABLE DEST2_n31(key INT, val1 STRING, val2 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST2
-POSTHOOK: query: CREATE TABLE DEST2(key INT, val1 STRING, val2 STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@DEST2_n31
+POSTHOOK: query: CREATE TABLE DEST2_n31(key INT, val1 STRING, val2 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST2
+POSTHOOK: Output: default@DEST2_n31
 PREHOOK: query: EXPLAIN
 FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
-INSERT OVERWRITE TABLE DEST2 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key, SRC.value
+INSERT OVERWRITE TABLE DEST1_n117 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
+INSERT OVERWRITE TABLE DEST2_n31 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key, SRC.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n117
+PREHOOK: Output: default@dest2_n31
 POSTHOOK: query: EXPLAIN
 FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
-INSERT OVERWRITE TABLE DEST2 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key, SRC.value
+INSERT OVERWRITE TABLE DEST1_n117 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
+INSERT OVERWRITE TABLE DEST2_n31 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key, SRC.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n117
+POSTHOOK: Output: default@dest2_n31
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -55,6 +57,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count(DISTINCT substr(value, 5))
                       keys: key (type: string), substr(value, 5) (type: string)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -75,6 +78,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count(DISTINCT substr(value, 5))
                       keys: key (type: string), value (type: string), substr(value, 5) (type: string)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -92,7 +96,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: UDFToInteger(_col0) (type: int), _col1 (type: bigint)
+                  expressions: UDFToInteger(_col0) (type: int), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -102,7 +106,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest1
+                        name: default.dest1_n117
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -112,7 +116,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: UDFToInteger(_col0) (type: int), _col1 (type: string), _col2 (type: bigint)
+                  expressions: UDFToInteger(_col0) (type: int), _col1 (type: string), CAST( _col2 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -122,7 +126,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest2
+                        name: default.dest2_n31
 
   Stage: Stage-0
     Move Operator
@@ -132,10 +136,11 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n117
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -145,37 +150,38 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n31
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
-INSERT OVERWRITE TABLE DEST2 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key, SRC.value
+INSERT OVERWRITE TABLE DEST1_n117 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
+INSERT OVERWRITE TABLE DEST2_n31 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key, SRC.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-PREHOOK: Output: default@dest2
+PREHOOK: Output: default@dest1_n117
+PREHOOK: Output: default@dest2_n31
 POSTHOOK: query: FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
-INSERT OVERWRITE TABLE DEST2 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key, SRC.value
+INSERT OVERWRITE TABLE DEST1_n117 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
+INSERT OVERWRITE TABLE DEST2_n31 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key, SRC.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT DEST1.* FROM DEST1
+POSTHOOK: Output: default@dest1_n117
+POSTHOOK: Output: default@dest2_n31
+POSTHOOK: Lineage: dest1_n117.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n117.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n31.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n31.val1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n31.val2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT DEST1_n117.* FROM DEST1_n117
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n117
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT DEST1.* FROM DEST1
+POSTHOOK: query: SELECT DEST1_n117.* FROM DEST1_n117
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n117
 #### A masked pattern was here ####
 0	1
 10	1
@@ -486,13 +492,13 @@ POSTHOOK: Input: default@dest1
 96	1
 97	1
 98	1
-PREHOOK: query: SELECT DEST2.* FROM DEST2
+PREHOOK: query: SELECT DEST2_n31.* FROM DEST2_n31
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n31
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT DEST2.* FROM DEST2
+POSTHOOK: query: SELECT DEST2_n31.* FROM DEST2_n31
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n31
 #### A masked pattern was here ####
 0	val_0	1
 10	val_10	1
@@ -805,14 +811,20 @@ POSTHOOK: Input: default@dest2
 98	val_98	1
 PREHOOK: query: EXPLAIN
 FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
-INSERT OVERWRITE TABLE DEST2 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.value, SRC.key
+INSERT OVERWRITE TABLE DEST1_n117 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
+INSERT OVERWRITE TABLE DEST2_n31 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.value, SRC.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n117
+PREHOOK: Output: default@dest2_n31
 POSTHOOK: query: EXPLAIN
 FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
-INSERT OVERWRITE TABLE DEST2 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.value, SRC.key
+INSERT OVERWRITE TABLE DEST1_n117 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
+INSERT OVERWRITE TABLE DEST2_n31 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.value, SRC.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n117
+POSTHOOK: Output: default@dest2_n31
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -840,6 +852,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count(DISTINCT substr(value, 5))
                       keys: key (type: string), substr(value, 5) (type: string)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -854,12 +867,13 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: value (type: string), key (type: string)
-                    outputColumnNames: value, key
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: key, value
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(DISTINCT substr(value, 5))
                       keys: value (type: string), key (type: string), substr(value, 5) (type: string)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -877,7 +891,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: UDFToInteger(_col0) (type: int), _col1 (type: bigint)
+                  expressions: UDFToInteger(_col0) (type: int), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -887,7 +901,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest1
+                        name: default.dest1_n117
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -897,7 +911,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: UDFToInteger(_col1) (type: int), _col0 (type: string), _col2 (type: bigint)
+                  expressions: UDFToInteger(_col1) (type: int), _col0 (type: string), CAST( _col2 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -907,7 +921,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest2
+                        name: default.dest2_n31
 
   Stage: Stage-0
     Move Operator
@@ -917,10 +931,11 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n117
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -930,37 +945,38 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n31
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
-INSERT OVERWRITE TABLE DEST2 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.value, SRC.key
+INSERT OVERWRITE TABLE DEST1_n117 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
+INSERT OVERWRITE TABLE DEST2_n31 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.value, SRC.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-PREHOOK: Output: default@dest2
+PREHOOK: Output: default@dest1_n117
+PREHOOK: Output: default@dest2_n31
 POSTHOOK: query: FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
-INSERT OVERWRITE TABLE DEST2 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.value, SRC.key
+INSERT OVERWRITE TABLE DEST1_n117 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
+INSERT OVERWRITE TABLE DEST2_n31 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.value, SRC.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT DEST1.* FROM DEST1
+POSTHOOK: Output: default@dest1_n117
+POSTHOOK: Output: default@dest2_n31
+POSTHOOK: Lineage: dest1_n117.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n117.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n31.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n31.val1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n31.val2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT DEST1_n117.* FROM DEST1_n117
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n117
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT DEST1.* FROM DEST1
+POSTHOOK: query: SELECT DEST1_n117.* FROM DEST1_n117
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n117
 #### A masked pattern was here ####
 0	1
 10	1
@@ -1271,13 +1287,13 @@ POSTHOOK: Input: default@dest1
 96	1
 97	1
 98	1
-PREHOOK: query: SELECT DEST2.* FROM DEST2
+PREHOOK: query: SELECT DEST2_n31.* FROM DEST2_n31
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n31
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT DEST2.* FROM DEST2
+POSTHOOK: query: SELECT DEST2_n31.* FROM DEST2_n31
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n31
 #### A masked pattern was here ####
 0	val_0	1
 10	val_10	1
@@ -1590,14 +1606,20 @@ POSTHOOK: Input: default@dest2
 98	val_98	1
 PREHOOK: query: EXPLAIN
 FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
-INSERT OVERWRITE TABLE DEST2 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key, SRC.value
+INSERT OVERWRITE TABLE DEST1_n117 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
+INSERT OVERWRITE TABLE DEST2_n31 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key, SRC.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n117
+PREHOOK: Output: default@dest2_n31
 POSTHOOK: query: EXPLAIN
 FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
-INSERT OVERWRITE TABLE DEST2 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key, SRC.value
+INSERT OVERWRITE TABLE DEST1_n117 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
+INSERT OVERWRITE TABLE DEST2_n31 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key, SRC.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n117
+POSTHOOK: Output: default@dest2_n31
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -1625,6 +1647,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count(DISTINCT substr(value, 5))
                       keys: key (type: string), substr(value, 5) (type: string)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -1645,6 +1668,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count(DISTINCT substr(value, 5))
                       keys: key (type: string), value (type: string), substr(value, 5) (type: string)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -1662,7 +1686,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: UDFToInteger(_col0) (type: int), _col1 (type: bigint)
+                  expressions: UDFToInteger(_col0) (type: int), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -1672,7 +1696,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest1
+                        name: default.dest1_n117
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -1682,7 +1706,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: UDFToInteger(_col0) (type: int), _col1 (type: string), _col2 (type: bigint)
+                  expressions: UDFToInteger(_col0) (type: int), _col1 (type: string), CAST( _col2 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -1692,7 +1716,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest2
+                        name: default.dest2_n31
 
   Stage: Stage-0
     Move Operator
@@ -1702,10 +1726,11 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n117
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -1715,37 +1740,38 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n31
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
-INSERT OVERWRITE TABLE DEST2 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key, SRC.value
+INSERT OVERWRITE TABLE DEST1_n117 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
+INSERT OVERWRITE TABLE DEST2_n31 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key, SRC.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-PREHOOK: Output: default@dest2
+PREHOOK: Output: default@dest1_n117
+PREHOOK: Output: default@dest2_n31
 POSTHOOK: query: FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
-INSERT OVERWRITE TABLE DEST2 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key, SRC.value
+INSERT OVERWRITE TABLE DEST1_n117 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
+INSERT OVERWRITE TABLE DEST2_n31 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key, SRC.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT DEST1.* FROM DEST1
+POSTHOOK: Output: default@dest1_n117
+POSTHOOK: Output: default@dest2_n31
+POSTHOOK: Lineage: dest1_n117.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n117.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n31.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n31.val1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n31.val2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT DEST1_n117.* FROM DEST1_n117
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n117
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT DEST1.* FROM DEST1
+POSTHOOK: query: SELECT DEST1_n117.* FROM DEST1_n117
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n117
 #### A masked pattern was here ####
 0	1
 10	1
@@ -2056,13 +2082,13 @@ POSTHOOK: Input: default@dest1
 96	1
 97	1
 98	1
-PREHOOK: query: SELECT DEST2.* FROM DEST2
+PREHOOK: query: SELECT DEST2_n31.* FROM DEST2_n31
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n31
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT DEST2.* FROM DEST2
+POSTHOOK: query: SELECT DEST2_n31.* FROM DEST2_n31
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n31
 #### A masked pattern was here ####
 0	val_0	1
 10	val_10	1
@@ -2375,14 +2401,20 @@ POSTHOOK: Input: default@dest2
 98	val_98	1
 PREHOOK: query: EXPLAIN
 FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(SUBSTR(SRC.value,5)) GROUP BY SRC.key
-INSERT OVERWRITE TABLE DEST2 SELECT SRC.key, SRC.value, COUNT(SUBSTR(SRC.value,5)) GROUP BY SRC.key, SRC.value
+INSERT OVERWRITE TABLE DEST1_n117 SELECT SRC.key, COUNT(SUBSTR(SRC.value,5)) GROUP BY SRC.key
+INSERT OVERWRITE TABLE DEST2_n31 SELECT SRC.key, SRC.value, COUNT(SUBSTR(SRC.value,5)) GROUP BY SRC.key, SRC.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n117
+PREHOOK: Output: default@dest2_n31
 POSTHOOK: query: EXPLAIN
 FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(SUBSTR(SRC.value,5)) GROUP BY SRC.key
-INSERT OVERWRITE TABLE DEST2 SELECT SRC.key, SRC.value, COUNT(SUBSTR(SRC.value,5)) GROUP BY SRC.key, SRC.value
+INSERT OVERWRITE TABLE DEST1_n117 SELECT SRC.key, COUNT(SUBSTR(SRC.value,5)) GROUP BY SRC.key
+INSERT OVERWRITE TABLE DEST2_n31 SELECT SRC.key, SRC.value, COUNT(SUBSTR(SRC.value,5)) GROUP BY SRC.key, SRC.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n117
+POSTHOOK: Output: default@dest2_n31
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -2410,6 +2442,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count(substr(value, 5))
                       keys: key (type: string)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -2419,6 +2452,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: bigint)
+            Execution mode: vectorized
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -2431,6 +2465,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count(substr(value, 5))
                       keys: key (type: string), value (type: string)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -2440,7 +2475,9 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -2449,7 +2486,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: UDFToInteger(_col0) (type: int), _col1 (type: bigint)
+                  expressions: UDFToInteger(_col0) (type: int), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -2459,8 +2496,9 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest1
+                        name: default.dest1_n117
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -2469,7 +2507,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: UDFToInteger(_col0) (type: int), _col1 (type: string), _col2 (type: bigint)
+                  expressions: UDFToInteger(_col0) (type: int), _col1 (type: string), CAST( _col2 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -2479,7 +2517,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest2
+                        name: default.dest2_n31
 
   Stage: Stage-0
     Move Operator
@@ -2489,10 +2527,11 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n117
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -2502,37 +2541,38 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n31
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(SUBSTR(SRC.value,5)) GROUP BY SRC.key
-INSERT OVERWRITE TABLE DEST2 SELECT SRC.key, SRC.value, COUNT(SUBSTR(SRC.value,5)) GROUP BY SRC.key, SRC.value
+INSERT OVERWRITE TABLE DEST1_n117 SELECT SRC.key, COUNT(SUBSTR(SRC.value,5)) GROUP BY SRC.key
+INSERT OVERWRITE TABLE DEST2_n31 SELECT SRC.key, SRC.value, COUNT(SUBSTR(SRC.value,5)) GROUP BY SRC.key, SRC.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-PREHOOK: Output: default@dest2
+PREHOOK: Output: default@dest1_n117
+PREHOOK: Output: default@dest2_n31
 POSTHOOK: query: FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(SUBSTR(SRC.value,5)) GROUP BY SRC.key
-INSERT OVERWRITE TABLE DEST2 SELECT SRC.key, SRC.value, COUNT(SUBSTR(SRC.value,5)) GROUP BY SRC.key, SRC.value
+INSERT OVERWRITE TABLE DEST1_n117 SELECT SRC.key, COUNT(SUBSTR(SRC.value,5)) GROUP BY SRC.key
+INSERT OVERWRITE TABLE DEST2_n31 SELECT SRC.key, SRC.value, COUNT(SUBSTR(SRC.value,5)) GROUP BY SRC.key, SRC.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT DEST1.* FROM DEST1
+POSTHOOK: Output: default@dest1_n117
+POSTHOOK: Output: default@dest2_n31
+POSTHOOK: Lineage: dest1_n117.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n117.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n31.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n31.val1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n31.val2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT DEST1_n117.* FROM DEST1_n117
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n117
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT DEST1.* FROM DEST1
+POSTHOOK: query: SELECT DEST1_n117.* FROM DEST1_n117
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n117
 #### A masked pattern was here ####
 0	3
 10	1
@@ -2843,13 +2883,13 @@ POSTHOOK: Input: default@dest1
 96	1
 97	2
 98	2
-PREHOOK: query: SELECT DEST2.* FROM DEST2
+PREHOOK: query: SELECT DEST2_n31.* FROM DEST2_n31
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n31
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT DEST2.* FROM DEST2
+POSTHOOK: query: SELECT DEST2_n31.* FROM DEST2_n31
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n31
 #### A masked pattern was here ####
 0	val_0	3
 10	val_10	1
@@ -3162,14 +3202,20 @@ POSTHOOK: Input: default@dest2
 98	val_98	2
 PREHOOK: query: EXPLAIN
 FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
-INSERT OVERWRITE TABLE DEST2 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.value, SRC.key
+INSERT OVERWRITE TABLE DEST1_n117 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
+INSERT OVERWRITE TABLE DEST2_n31 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.value, SRC.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n117
+PREHOOK: Output: default@dest2_n31
 POSTHOOK: query: EXPLAIN
 FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
-INSERT OVERWRITE TABLE DEST2 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.value, SRC.key
+INSERT OVERWRITE TABLE DEST1_n117 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
+INSERT OVERWRITE TABLE DEST2_n31 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.value, SRC.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n117
+POSTHOOK: Output: default@dest2_n31
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -3197,6 +3243,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count(DISTINCT substr(value, 5))
                       keys: key (type: string), substr(value, 5) (type: string)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -3211,12 +3258,13 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: value (type: string), key (type: string)
-                    outputColumnNames: value, key
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: key, value
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(DISTINCT substr(value, 5))
                       keys: value (type: string), key (type: string), substr(value, 5) (type: string)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -3234,7 +3282,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: UDFToInteger(_col0) (type: int), _col1 (type: bigint)
+                  expressions: UDFToInteger(_col0) (type: int), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -3244,7 +3292,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest1
+                        name: default.dest1_n117
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -3254,7 +3302,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: UDFToInteger(_col1) (type: int), _col0 (type: string), _col2 (type: bigint)
+                  expressions: UDFToInteger(_col1) (type: int), _col0 (type: string), CAST( _col2 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -3264,7 +3312,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest2
+                        name: default.dest2_n31
 
   Stage: Stage-0
     Move Operator
@@ -3274,10 +3322,11 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n117
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -3287,37 +3336,38 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n31
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
-INSERT OVERWRITE TABLE DEST2 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.value, SRC.key
+INSERT OVERWRITE TABLE DEST1_n117 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
+INSERT OVERWRITE TABLE DEST2_n31 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.value, SRC.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-PREHOOK: Output: default@dest2
+PREHOOK: Output: default@dest1_n117
+PREHOOK: Output: default@dest2_n31
 POSTHOOK: query: FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
-INSERT OVERWRITE TABLE DEST2 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.value, SRC.key
+INSERT OVERWRITE TABLE DEST1_n117 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
+INSERT OVERWRITE TABLE DEST2_n31 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.value, SRC.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT DEST1.* FROM DEST1
+POSTHOOK: Output: default@dest1_n117
+POSTHOOK: Output: default@dest2_n31
+POSTHOOK: Lineage: dest1_n117.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n117.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n31.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n31.val1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n31.val2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT DEST1_n117.* FROM DEST1_n117
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n117
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT DEST1.* FROM DEST1
+POSTHOOK: query: SELECT DEST1_n117.* FROM DEST1_n117
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n117
 #### A masked pattern was here ####
 0	1
 10	1
@@ -3628,13 +3678,13 @@ POSTHOOK: Input: default@dest1
 96	1
 97	1
 98	1
-PREHOOK: query: SELECT DEST2.* FROM DEST2
+PREHOOK: query: SELECT DEST2_n31.* FROM DEST2_n31
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n31
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT DEST2.* FROM DEST2
+POSTHOOK: query: SELECT DEST2_n31.* FROM DEST2_n31
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n31
 #### A masked pattern was here ####
 0	val_0	1
 10	val_10	1

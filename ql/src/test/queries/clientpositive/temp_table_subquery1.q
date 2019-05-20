@@ -1,3 +1,4 @@
+--! qt:dataset:src
 
 create temporary table src_temp as select * from src;
 

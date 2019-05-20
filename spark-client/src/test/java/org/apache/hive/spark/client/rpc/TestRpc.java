@@ -19,11 +19,17 @@ package org.apache.hive.spark.client.rpc;
 
 import java.io.Closeable;
 import java.net.InetAddress;
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -39,6 +45,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.concurrent.Future;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,12 +60,15 @@ public class TestRpc {
   private static final Logger LOG = LoggerFactory.getLogger(TestRpc.class);
 
   private Collection<Closeable> closeables;
-  private Map<String, String> emptyConfig =
+  private static final Map<String, String> emptyConfig =
       ImmutableMap.of(HiveConf.ConfVars.SPARK_RPC_CHANNEL_LOG_LEVEL.varname, "DEBUG");
+  private static final int RETRY_ACQUIRE_PORT_COUNT = 10;
+  private HiveConf hiveConf;
 
   @Before
   public void setUp() {
     closeables = Lists.newArrayList();
+    hiveConf = new HiveConf();
   }
 
   @After
@@ -90,7 +100,7 @@ public class TestRpc {
 
   @Test
   public void testClientServer() throws Exception {
-    RpcServer server = autoClose(new RpcServer(emptyConfig));
+    RpcServer server = autoClose(new RpcServer(emptyConfig, hiveConf));
     Rpc[] rpcs = createRpcConnection(server);
     Rpc serverRpc = rpcs[0];
     Rpc client = rpcs[1];
@@ -127,25 +137,25 @@ public class TestRpc {
 
     // Test if rpc_server_address is configured
     config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_ADDRESS.varname, hostAddress);
-    RpcServer server1 = autoClose(new RpcServer(config));
+    RpcServer server1 = autoClose(new RpcServer(config, hiveConf));
     assertTrue("Host address should match the expected one", server1.getAddress() == hostAddress);
 
     // Test if rpc_server_address is not configured but HS2 server host is configured
     config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_ADDRESS.varname, "");
     config.put(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST.varname, hostAddress);
-    RpcServer server2 = autoClose(new RpcServer(config));
+    RpcServer server2 = autoClose(new RpcServer(config, hiveConf));
     assertTrue("Host address should match the expected one", server2.getAddress() == hostAddress);
 
     // Test if both are not configured
     config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_ADDRESS.varname, "");
     config.put(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST.varname, "");
-    RpcServer server3 = autoClose(new RpcServer(config));
+    RpcServer server3 = autoClose(new RpcServer(config, hiveConf));
     assertTrue("Host address should match the expected one", server3.getAddress() == InetAddress.getLocalHost().getHostName());
   }
 
   @Test
   public void testBadHello() throws Exception {
-    RpcServer server = autoClose(new RpcServer(emptyConfig));
+    RpcServer server = autoClose(new RpcServer(emptyConfig, hiveConf));
 
     Future<Rpc> serverRpcFuture = server.registerClient("client", "newClient",
         new TestDispatcher());
@@ -161,7 +171,7 @@ public class TestRpc {
       // On failure, the SASL handler will throw an exception indicating that the SASL
       // negotiation failed.
       assertTrue("Unexpected exception: " + ee.getCause(),
-        ee.getCause() instanceof SaslException);
+          ee.getCause() instanceof SaslException);
     }
 
     serverRpcFuture.cancel(true);
@@ -171,40 +181,63 @@ public class TestRpc {
   public void testServerPort() throws Exception {
     Map<String, String> config = new HashMap<String, String>();
 
-    RpcServer server0 = new RpcServer(config);
+    RpcServer server0 = new RpcServer(config, hiveConf);
     assertTrue("Empty port range should return a random valid port: " + server0.getPort(), server0.getPort() >= 0);
     IOUtils.closeQuietly(server0);
 
     config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname, "49152-49222,49223,49224-49333");
-    RpcServer server1 = new RpcServer(config);
+    RpcServer server1 = new RpcServer(config, hiveConf);
     assertTrue("Port should be within configured port range:" + server1.getPort(), server1.getPort() >= 49152 && server1.getPort() <= 49333);
     IOUtils.closeQuietly(server1);
 
-    int expectedPort = 65535;
-    config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname, String.valueOf(expectedPort));
-    RpcServer server2 = new RpcServer(config);
-    assertTrue("Port should match configured one: " + server2.getPort(), server2.getPort() == expectedPort);
+    int expectedPort = ServerUtils.findFreePort();
+    RpcServer server2 = null;
+    for (int i = 0; i < RETRY_ACQUIRE_PORT_COUNT; i++) {
+      try {
+        config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname, String.valueOf(expectedPort));
+        server2 = new RpcServer(config, hiveConf);
+        break;
+      } catch (Exception e) {
+        LOG.debug("Error while connecting to port " + expectedPort + " retrying: " + e.getMessage());
+        expectedPort = ServerUtils.findFreePort();
+      }
+    }
+
+    assertNotNull("Unable to create RpcServer with any attempted port", server2);
+    assertEquals("Port should match configured one: " + server2.getPort(), expectedPort, server2.getPort());
     IOUtils.closeQuietly(server2);
 
     config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname, "49552-49222,49223,49224-49333");
     try {
-      autoClose(new RpcServer(config));
+      autoClose(new RpcServer(config, hiveConf));
       assertTrue("Invalid port range should throw an exception", false); // Should not reach here
-    } catch(IOException e) {
-      assertEquals("Incorrect RPC server port configuration for HiveServer2", e.getMessage());
+    } catch(IllegalArgumentException e) {
+      assertEquals(
+              "Malformed configuration value for " + HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname,
+              e.getMessage());
     }
 
     // Retry logic
-    expectedPort = 65535;
-    config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname, String.valueOf(expectedPort) + ",21-23");
-    RpcServer server3 = new RpcServer(config);
-    assertTrue("Port should match configured one:" + server3.getPort(), server3.getPort() == expectedPort);
+    expectedPort = ServerUtils.findFreePort();
+    RpcServer server3 = null;
+    for (int i = 0; i < RETRY_ACQUIRE_PORT_COUNT; i++) {
+      try {
+        config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname, String.valueOf(expectedPort) + ",21-23");
+        server3 = new RpcServer(config, hiveConf);
+        break;
+      } catch (Exception e) {
+        LOG.debug("Error while connecting to port " + expectedPort + " retrying");
+        expectedPort = ServerUtils.findFreePort();
+      }
+    }
+    assertNotNull("Unable to create RpcServer with any attempted port", server3);
+    assertEquals("Port should match configured one:" + server3.getPort(), expectedPort, server3.getPort());
     IOUtils.closeQuietly(server3);
   }
 
   @Test
   public void testCloseListener() throws Exception {
-    RpcServer server = autoClose(new RpcServer(emptyConfig));
+    RpcServer server = autoClose(new RpcServer(emptyConfig, hiveConf));
     Rpc[] rpcs = createRpcConnection(server);
     Rpc client = rpcs[1];
 
@@ -223,7 +256,7 @@ public class TestRpc {
 
   @Test
   public void testNotDeserializableRpc() throws Exception {
-    RpcServer server = autoClose(new RpcServer(emptyConfig));
+    RpcServer server = autoClose(new RpcServer(emptyConfig, hiveConf));
     Rpc[] rpcs = createRpcConnection(server);
     Rpc client = rpcs[1];
 
@@ -238,11 +271,11 @@ public class TestRpc {
   @Test
   public void testEncryption() throws Exception {
     Map<String, String> eConf = ImmutableMap.<String,String>builder()
-      .putAll(emptyConfig)
-      .put(RpcConfiguration.RPC_SASL_OPT_PREFIX + "qop", Rpc.SASL_AUTH_CONF)
-      .build();
-    RpcServer server = autoClose(new RpcServer(eConf));
-    Rpc[] rpcs = createRpcConnection(server, eConf);
+        .putAll(emptyConfig)
+        .put(RpcConfiguration.RPC_SASL_OPT_PREFIX + "qop", Rpc.SASL_AUTH_CONF)
+        .build();
+    RpcServer server = autoClose(new RpcServer(eConf, hiveConf));
+    Rpc[] rpcs = createRpcConnection(server, eConf, null);
     Rpc client = rpcs[1];
 
     TestMessage outbound = new TestMessage("Hello World!");
@@ -256,7 +289,7 @@ public class TestRpc {
     Map<String, String> conf = ImmutableMap.<String,String>builder()
       .putAll(emptyConfig)
       .build();
-    RpcServer server = autoClose(new RpcServer(conf));
+    RpcServer server = autoClose(new RpcServer(conf, hiveConf));
     String secret = server.createSecret();
 
     try {
@@ -278,13 +311,90 @@ public class TestRpc {
     }
   }
 
+  static class MockYarnApplicationStateFinder extends RpcServer.YarnApplicationStateFinder {
+    private int count = 0;
+    public boolean isApplicationAccepted(HiveConf conf, String applicationId) {
+      return count++ < 10;
+    }
+  }
+
+
+  /**
+   * Tests that we don't timeout with a short timeout but the spark application isn't running.
+   */
+  @Test
+  public void testExtendClientTimeout() throws Exception {
+    Map<String, String> conf = ImmutableMap.<String, String>builder()
+        .putAll(emptyConfig)
+        .build();
+    RpcServer server = autoClose(new RpcServer(conf, hiveConf));
+    String secret = server.createSecret();
+    MockYarnApplicationStateFinder yarnApplicationStateFinder = new MockYarnApplicationStateFinder();
+    Future<Rpc> promise = server.registerClient("client", secret, new TestDispatcher(), 2L,
+        yarnApplicationStateFinder);
+    assertFalse(promise.isDone());
+    Thread.sleep(50);
+    try {
+      promise.get();
+      fail("Server should have timed out client.");
+    } catch (ExecutionException ee) {
+      assertTrue(ee.getCause() instanceof TimeoutException);
+    }
+
+    NioEventLoopGroup eloop = new NioEventLoopGroup();
+    Future<Rpc> clientRpcFuture = Rpc.createClient(conf, eloop,
+        "localhost", server.getPort(), "client", secret, new TestDispatcher());
+    try {
+      autoClose(clientRpcFuture.get());
+      fail("Client should have failed to connect to server.");
+    } catch (ExecutionException ee) {
+      // Error should not be a timeout.
+      assertFalse(ee.getCause() instanceof TimeoutException);
+    }
+  }
+
+
+
+  @Test
+  public void testRpcServerMultiThread() throws Exception {
+    final RpcServer server = autoClose(new RpcServer(emptyConfig, hiveConf));
+    final String msg = "Hello World!";
+    Callable<String> callable = () -> {
+      Rpc[] rpcs = createRpcConnection(server, emptyConfig, UUID.randomUUID().toString());
+      Rpc rpc;
+      if (ThreadLocalRandom.current().nextBoolean()) {
+        rpc = rpcs[0];
+      } else {
+        rpc = rpcs[1];
+      }
+      TestMessage outbound = new TestMessage("Hello World!");
+      Future<TestMessage> call = rpc.call(outbound, TestMessage.class);
+      TestMessage reply = call.get(10, TimeUnit.SECONDS);
+      return reply.message;
+    };
+    final int numThreads = ThreadLocalRandom.current().nextInt(5) + 5;
+    ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+    List<java.util.concurrent.Future<String>> futures = new ArrayList<>(numThreads);
+    for (int i = 0; i < numThreads; i++) {
+      futures.add(executor.submit(callable));
+    }
+    executor.shutdown();
+    for (java.util.concurrent.Future<String> future : futures) {
+      assertEquals(msg, future.get());
+    }
+  }
+
   private void transfer(Rpc serverRpc, Rpc clientRpc) {
     EmbeddedChannel client = (EmbeddedChannel) clientRpc.getChannel();
     EmbeddedChannel server = (EmbeddedChannel) serverRpc.getChannel();
 
+    server.runPendingTasks();
+    client.runPendingTasks();
+
     int count = 0;
     while (!client.outboundMessages().isEmpty()) {
-      server.writeInbound(client.readOutbound());
+      Object readOutboundResult = client.readOutbound();
+      server.writeInbound(readOutboundResult);
       count++;
     }
     server.flush();
@@ -292,7 +402,8 @@ public class TestRpc {
 
     count = 0;
     while (!server.outboundMessages().isEmpty()) {
-      client.writeInbound(server.readOutbound());
+      Object readOutboundResult = server.readOutbound();
+      client.writeInbound(readOutboundResult);
       count++;
     }
     client.flush();
@@ -305,20 +416,23 @@ public class TestRpc {
    * @return two-tuple (server rpc, client rpc)
    */
   private Rpc[] createRpcConnection(RpcServer server) throws Exception {
-    return createRpcConnection(server, emptyConfig);
+    return createRpcConnection(server, emptyConfig, null);
   }
 
-  private Rpc[] createRpcConnection(RpcServer server, Map<String, String> clientConf)
-      throws Exception {
+  private Rpc[] createRpcConnection(RpcServer server, Map<String, String> clientConf,
+      String clientId) throws Exception {
+    if (clientId == null) {
+      clientId = "client";
+    }
     String secret = server.createSecret();
-    Future<Rpc> serverRpcFuture = server.registerClient("client", secret, new TestDispatcher());
+    Future<Rpc> serverRpcFuture = server.registerClient(clientId, secret, new TestDispatcher());
     NioEventLoopGroup eloop = new NioEventLoopGroup();
     Future<Rpc> clientRpcFuture = Rpc.createClient(clientConf, eloop,
-        "localhost", server.getPort(), "client", secret, new TestDispatcher());
+        "localhost", server.getPort(), clientId, secret, new TestDispatcher());
 
     Rpc serverRpc = autoClose(serverRpcFuture.get(10, TimeUnit.SECONDS));
     Rpc clientRpc = autoClose(clientRpcFuture.get(10, TimeUnit.SECONDS));
-    return new Rpc[] { serverRpc, clientRpc };
+    return new Rpc[]{serverRpc, clientRpc};
   }
 
   private static class TestMessage {

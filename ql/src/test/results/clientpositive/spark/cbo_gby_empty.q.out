@@ -1,10 +1,8 @@
-PREHOOK: query: -- 21. Test groupby is empty and there is no other cols in aggr
-select unionsrc.key FROM (select 'tst1' as key, count(1) as value from src) unionsrc
+PREHOOK: query: select unionsrc.key FROM (select 'tst1' as key, count(1) as value from src) unionsrc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- 21. Test groupby is empty and there is no other cols in aggr
-select unionsrc.key FROM (select 'tst1' as key, count(1) as value from src) unionsrc
+POSTHOOK: query: select unionsrc.key FROM (select 'tst1' as key, count(1) as value from src) unionsrc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

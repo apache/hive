@@ -4,7 +4,7 @@ USE default;
   host STRING,
   identity STRING,
   `user` STRING,
-  time STRING,
+  `time` STRING,
   request STRING,
   status STRING,
   size STRING,

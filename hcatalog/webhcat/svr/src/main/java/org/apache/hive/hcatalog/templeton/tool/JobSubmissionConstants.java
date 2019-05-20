@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -54,8 +54,11 @@ public interface JobSubmissionConstants {
   // previously running child jobs can be killed before the child job is launched
   // again.
   public static final String MAPREDUCE_JOB_TAGS = "mapreduce.job.tags";
+  public static final String HIVE_QUERY_TAG = "hive.query.tag";
   public static final String MAPREDUCE_JOB_TAGS_ARG_PLACEHOLDER =
     "__MR_JOB_TAGS_OPTION=MR_JOB_TAGS_JOBID__";
+  public static final String HIVE_QUERY_TAG_ARG_PLACEHOLDER =
+          "__HIVE_QUERY_TAG_OPTION=HIVE_QUERY_TAG_JOBID__";
 
   public static final String HADOOP_CLASSPATH = "HADOOP_CLASSPATH";
   /**

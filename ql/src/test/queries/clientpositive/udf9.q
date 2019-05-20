@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 EXPLAIN
 SELECT DATEDIFF('2008-12-31', '2009-01-01'), DATEDIFF('2008-03-01', '2008-02-28'),

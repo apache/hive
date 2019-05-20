@@ -1,13 +1,7 @@
-PREHOOK: query: -- HIVE-5279
--- GenericUDAFSumList has Converter which does not have default constructor
--- After
-create temporary function sum_list as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSumList'
+PREHOOK: query: create temporary function sum_list as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSumList'
 PREHOOK: type: CREATEFUNCTION
 PREHOOK: Output: sum_list
-POSTHOOK: query: -- HIVE-5279
--- GenericUDAFSumList has Converter which does not have default constructor
--- After
-create temporary function sum_list as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSumList'
+POSTHOOK: query: create temporary function sum_list as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSumList'
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: sum_list
 PREHOOK: query: select sum_list(array(key, key)) from src

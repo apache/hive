@@ -1,3 +1,4 @@
+--! qt:dataset:src
 drop table varchar_udf_1;
 
 create table varchar_udf_1 (c1 string, c2 string, c3 varchar(10), c4 varchar(20));
@@ -139,8 +140,8 @@ from varchar_udf_1 limit 1;
 
 -- Aggregate Functions
 select
-  compute_stats(c2, 16),
-  compute_stats(c4, 16)
+  compute_stats(c2, 'fm', 16),
+  compute_stats(c4, 'fm', 16)
 from varchar_udf_1;
 
 select

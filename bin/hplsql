@@ -18,8 +18,4 @@
 bin=`dirname "$0"`
 bin=`cd "$bin"; pwd`
 
-# Set Hadoop User classpath to true so that httpclient jars are taken from
-# hive lib instead of hadoop lib.
-export HADOOP_USER_CLASSPATH_FIRST=true
-
 . "$bin"/hive --service hplsql "$@"

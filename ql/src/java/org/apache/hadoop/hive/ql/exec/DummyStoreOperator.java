@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -36,9 +36,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.Object
  * Consider a query like:
  *
  * select * from
- *   (subq1 --> has a filter)
+ *   (subq1 --&gt; has a filter)
  *   join
- *   (subq2 --> has a filter)
+ *   (subq2 --&gt; has a filter)
  * on some key
  *
  * Let us assume that subq1 is the small table (either specified by the user or inferred
@@ -50,12 +50,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.Object
  *
  * Therefore the following operator tree is created:
  *
- * TableScan (subq1) --> Select --> Filter --> DummyStore
+ * TableScan (subq1) --&gt; Select --&gt; Filter --&gt; DummyStore
  *                                                         \
  *                                                          \     SMBJoin
  *                                                          /
  *                                                         /
- * TableScan (subq2) --> Select --> Filter
+ * TableScan (subq2) --&gt; Select --&gt; Filter
  *
  * In order to fetch the row with the least join key from the small table, the row from subq1
  * is partially processed, and stored in DummyStore. For the actual processing of the join,

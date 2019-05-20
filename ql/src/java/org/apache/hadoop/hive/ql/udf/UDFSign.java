@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -75,16 +75,16 @@ public class UDFSign extends UDF {
   /**
    * Get the sign of the decimal input
    *
-   * @param dec decimal input
+   * @param decWritable decimal input
    *
    * @return -1, 0, or 1 representing the sign of the input decimal
    */
-  public IntWritable evaluate(HiveDecimalWritable dec) {
-    if (dec == null || dec.getHiveDecimal() == null) {
+  public IntWritable evaluate(HiveDecimalWritable decWritable) {
+    if (decWritable == null || !decWritable.isSet()) {
       return null;
     }
 
-    intWritable.set(dec.getHiveDecimal().signum());
+    intWritable.set(decWritable.signum());
     return intWritable;
   }
 

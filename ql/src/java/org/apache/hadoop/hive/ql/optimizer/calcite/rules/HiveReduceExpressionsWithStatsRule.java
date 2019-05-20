@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -41,7 +41,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
-import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,12 +52,14 @@ import com.google.common.collect.Lists;
  * column statistics (if available).
  *
  * For instance, given the following predicate:
- *   a > 5
+ *   a &gt; 5
  * we can infer that the predicate will evaluate to false if the max
  * value for column a is 4.
  *
- * Currently we support the simplification of =, >=, <=, >, <, and
- * IN operations.
+ * Currently we support the simplification of:
+ *  - =, &gt;=, &lt;=, &gt;, &lt;
+ *  - IN
+ *  - IS_NULL / IS_NOT_NULL
  */
 public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
 
@@ -82,7 +84,7 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
     final Filter filter = call.rel(0);
 
     final RexBuilder rexBuilder = filter.getCluster().getRexBuilder();
-    final RelMetadataQuery metadataProvider = RelMetadataQuery.instance();
+    final RelMetadataQuery metadataProvider = call.getMetadataQuery();
 
     // 1. Recompose filter possibly by pulling out common elements from DNF
     // expressions
@@ -212,7 +214,7 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
             RexCall constStruct = (RexCall) call.getOperands().get(i);
             boolean allTrue = true;
             boolean addOperand = true;
-            for (int j = 0; i < constStruct.getOperands().size(); j++) {
+            for (int j = 0; j < constStruct.getOperands().size(); j++) {
               RexNode operand = constStruct.getOperands().get(j);
               if (operand instanceof RexLiteral) {
                 RexLiteral literal = (RexLiteral) operand;
@@ -243,9 +245,28 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
           }
           return rexBuilder.makeCall(HiveIn.INSTANCE, newOperands);
         }
-
         // We cannot apply the reduction
         return call;
+      } else if (call.getOperator().getKind() == SqlKind.IS_NULL || call.getOperator().getKind() == SqlKind.IS_NOT_NULL) {
+        SqlKind kind = call.getOperator().getKind();
+
+        if (call.operands.get(0) instanceof RexInputRef) {
+          RexInputRef ref = (RexInputRef) call.operands.get(0);
+
+          ColStatistics stat = extractColStats(ref);
+          Long rowCount = extractRowCount(ref);
+          if (stat != null && rowCount != null) {
+            if (stat.getNumNulls() == 0 || stat.getNumNulls() == rowCount) {
+              boolean allNulls = (stat.getNumNulls() == rowCount);
+
+              if (kind == SqlKind.IS_NULL) {
+                return rexBuilder.makeLiteral(allNulls);
+              } else {
+                return rexBuilder.makeLiteral(!allNulls);
+              }
+            }
+          }
+        }
       }
 
       // If we did not reduce, check the children nodes
@@ -257,25 +278,45 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
     }
 
     private Pair<Number,Number> extractMaxMin(RexInputRef ref) {
+
+      ColStatistics cs = extractColStats(ref);
       Number max = null;
       Number min = null;
+      if (cs != null && cs.getRange()!=null) {
+        max = cs.getRange().maxValue;
+        min = cs.getRange().minValue;
+      }
+      return Pair.<Number, Number> of(max, min);
+    }
+
+    private ColStatistics extractColStats(RexInputRef ref) {
       RelColumnOrigin columnOrigin = this.metadataProvider.getColumnOrigin(filterOp, ref.getIndex());
       if (columnOrigin != null) {
         RelOptHiveTable table = (RelOptHiveTable) columnOrigin.getOriginTable();
         if (table != null) {
           ColStatistics colStats =
-                  table.getColStat(Lists.newArrayList(columnOrigin.getOriginColumnOrdinal())).get(0);
-          if (colStats != null && StatsSetupConst.areColumnStatsUptoDate(
-                  table.getHiveTableMD().getParameters(), colStats.getColumnName())) {
-            Range range = colStats.getRange();
-            if (range != null) {
-              max = range.maxValue;
-              min = range.minValue;
-            }
+              table.getColStat(Lists.newArrayList(columnOrigin.getOriginColumnOrdinal()), false).get(0);
+          if (colStats != null && StatsUtils.areColumnStatsUptoDateForQueryAnswering(
+              table.getHiveTableMD(), table.getHiveTableMD().getParameters(), colStats.getColumnName())) {
+            return colStats;
           }
         }
       }
-      return Pair.<Number,Number>of(max, min);
+      return null;
+    }
+
+    private Long extractRowCount(RexInputRef ref) {
+      RelColumnOrigin columnOrigin = this.metadataProvider.getColumnOrigin(filterOp, ref.getIndex());
+      if (columnOrigin != null) {
+        RelOptHiveTable table = (RelOptHiveTable) columnOrigin.getOriginTable();
+        if (table != null) {
+          if (StatsUtils.areBasicStatsUptoDateForQueryAnswering(table.getHiveTableMD(),
+              table.getHiveTableMD().getParameters())) {
+            return StatsUtils.getNumRows(table.getHiveTableMD());
+          }
+        }
+      }
+      return null;
     }
 
     @SuppressWarnings("unchecked")

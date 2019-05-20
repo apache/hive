@@ -1,0 +1,105 @@
+PREHOOK: query: DROP TABLE flights_tiny
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE flights_tiny
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE flights_tiny (
+  origin_city_name string,
+  dest_city_name string,
+  year int,
+  month int,
+  day_of_month int,
+  arr_delay float,
+  fl_num string
+)
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/ptf_matchpath/flights_tiny
+PREHOOK: Output: database:default
+PREHOOK: Output: default@flights_tiny
+POSTHOOK: query: CREATE TABLE flights_tiny (
+  origin_city_name string,
+  dest_city_name string,
+  year int,
+  month int,
+  day_of_month int,
+  arr_delay float,
+  fl_num string
+)
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/ptf_matchpath/flights_tiny
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@flights_tiny
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt' INTO TABLE flights_tiny
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@flights_tiny
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt' INTO TABLE flights_tiny
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@flights_tiny
+PREHOOK: query: SELECT origin_city_name, fl_num, year, month, day_of_month, sz, tpath
+FROM MATCHPATH(
+  ON flights_tiny 
+  DISTRIBUTE BY fl_num
+  SORT BY year, month, day_of_month
+  ARG1('LATE.LATE+'), ARG2('LATE'), ARG3(arr_delay > 15),
+  ARG4('origin_city_name, fl_num, year, month, day_of_month, SIZE(tpath) AS sz, tpath[0].day_of_month AS tpath')
+)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT origin_city_name, fl_num, year, month, day_of_month, sz, tpath
+FROM MATCHPATH(
+  ON flights_tiny 
+  DISTRIBUTE BY fl_num
+  SORT BY year, month, day_of_month
+  ARG1('LATE.LATE+'), ARG2('LATE'), ARG3(arr_delay > 15),
+  ARG4('origin_city_name, fl_num, year, month, day_of_month, SIZE(tpath) AS sz, tpath[0].day_of_month AS tpath')
+)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny
+#### A masked pattern was here ####
+Baltimore	1142	2010	10	20	6	20
+Baltimore	1142	2010	10	21	5	21
+Baltimore	1142	2010	10	22	4	22
+Baltimore	1142	2010	10	25	3	25
+Baltimore	1142	2010	10	26	2	26
+Chicago	1531	2010	10	21	2	21
+Chicago	1531	2010	10	25	3	25
+Chicago	1531	2010	10	26	2	26
+Baltimore	1599	2010	10	21	2	21
+Baltimore	1599	2010	10	25	3	25
+Baltimore	1599	2010	10	26	2	26
+Chicago	361	2010	10	20	2	20
+Washington	7291	2010	10	27	2	27
+Chicago	897	2010	10	20	4	20
+Chicago	897	2010	10	21	3	21
+Chicago	897	2010	10	22	2	22
+PREHOOK: query: SELECT origin_city_name, fl_num, year, month, day_of_month, sz, tpath
+FROM MATCHPATH(
+  ON flights_tiny 
+  SORT BY year, month, day_of_month, fl_num, origin_city_name
+  ARG1('LATE.LATE+'), ARG2('LATE'), ARG3(arr_delay > 15),
+  ARG4('origin_city_name, fl_num, year, month, day_of_month, SIZE(tpath) AS sz, tpath[0].day_of_month AS tpath')
+)
+WHERE fl_num = 1142
+PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT origin_city_name, fl_num, year, month, day_of_month, sz, tpath
+FROM MATCHPATH(
+  ON flights_tiny 
+  SORT BY year, month, day_of_month, fl_num, origin_city_name
+  ARG1('LATE.LATE+'), ARG2('LATE'), ARG3(arr_delay > 15),
+  ARG4('origin_city_name, fl_num, year, month, day_of_month, SIZE(tpath) AS sz, tpath[0].day_of_month AS tpath')
+)
+WHERE fl_num = 1142
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny
+#### A masked pattern was here ####
+Baltimore	1142	2010	10	21	3	21
+Baltimore	1142	2010	10	22	3	22
+Baltimore	1142	2010	10	25	3	25
+Baltimore	1142	2010	10	26	3	26
+Baltimore	1142	2010	10	27	3	27

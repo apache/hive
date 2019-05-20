@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,16 +17,32 @@
  */
 package org.apache.hadoop.hive.ql.exec.mr;
 
+import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod.PROXY;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.Arrays;
 
+import javax.security.auth.login.LoginException;
+
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
+import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.shims.Utils;
+
+import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 public class TestMapRedTask {
@@ -42,6 +58,39 @@ public class TestMapRedTask {
     verify(mockMetrics, times(1)).incrementCounter(MetricsConstant.HIVE_MR_TASKS);
     verify(mockMetrics, never()).incrementCounter(MetricsConstant.HIVE_TEZ_TASKS);
     verify(mockMetrics, never()).incrementCounter(MetricsConstant.HIVE_SPARK_TASKS);
+  }
+
+  @Test
+  public void mrTaskSumbitViaChildWithImpersonation() throws IOException, LoginException {
+    Utils.getUGI().setAuthenticationMethod(PROXY);
+
+    Context ctx = Mockito.mock(Context.class);
+    when(ctx.getLocalTmpPath()).thenReturn(new Path(System.getProperty("java.io.tmpdir")));
+
+    DriverContext dctx = new DriverContext(ctx);
+
+    QueryState queryState = new QueryState.Builder().build();
+    HiveConf conf= queryState.getConf();
+    conf.setBoolVar(HiveConf.ConfVars.SUBMITVIACHILD, true);
+
+    MapredWork mrWork = new MapredWork();
+    mrWork.setMapWork(Mockito.mock(MapWork.class));
+
+    MapRedTask mrTask = Mockito.spy(new MapRedTask());
+    mrTask.setWork(mrWork);
+
+    mrTask.initialize(queryState, null, dctx, null);
+
+    mrTask.jobExecHelper = Mockito.mock(HadoopJobExecHelper.class);
+    when(mrTask.jobExecHelper.progressLocal(Mockito.any(Process.class), Mockito.anyString())).thenReturn(0);
+
+    mrTask.execute(dctx);
+
+    ArgumentCaptor<String[]> captor = ArgumentCaptor.forClass(String[].class);
+    verify(mrTask).spawn(Mockito.anyString(), Mockito.anyString(), captor.capture());
+
+    String expected = "HADOOP_PROXY_USER=" + Utils.getUGI().getUserName();
+    Assert.assertTrue(Arrays.asList(captor.getValue()).contains(expected));
   }
 
 }

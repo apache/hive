@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,16 +18,23 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-import java.util.Map;
-
 import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
+
+import java.util.Map;
 
 /**
  * HiveStorageHandler defines a pluggable interface for adding
@@ -47,6 +54,8 @@ import org.apache.hadoop.mapred.OutputFormat;
  * Storage handler classes are plugged in using the STORED BY 'classname'
  * clause in CREATE TABLE.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface HiveStorageHandler extends Configurable {
   /**
    * @return Class providing an implementation of {@link InputFormat}
@@ -99,6 +108,12 @@ public interface HiveStorageHandler extends Configurable {
     Map<String, String> jobProperties);
 
   /**
+   * This method is called to allow the StorageHandlers the chance to
+   * populate secret keys into the job's credentials.
+   */
+  public abstract void configureInputJobCredentials(TableDesc tableDesc, Map<String, String> secrets);
+
+  /**
    * This method is called to allow the StorageHandlers the chance
    * to populate the JobContext.getConfiguration() with properties that
    * maybe be needed by the handler's bundled artifacts (ie InputFormat, SerDe, etc).
@@ -139,7 +154,34 @@ public interface HiveStorageHandler extends Configurable {
    * Called just before submitting MapReduce job.
    *
    * @param tableDesc descriptor for the table being accessed
-   * @param JobConf jobConf for MapReduce job
+   * @param jobConf jobConf for MapReduce job
    */
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf);
+
+  /**
+   * Used to fetch runtime information about storage handler during DESCRIBE EXTENDED statement
+   *
+   * @param table table definition
+   * @return StorageHandlerInfo containing runtime information about storage handler
+   * OR `null` if the storage handler choose to not provide any runtime information.
+   */
+  public default StorageHandlerInfo getStorageHandlerInfo(Table table) throws MetaException
+  {
+    return null;
+  }
+
+  default LockType getLockType(WriteEntity writeEntity){
+    return LockType.EXCLUSIVE;
+  }
+
+  /**
+   * Test if the storage handler allows the push-down of join filter predicate to prune further the splits.
+   *
+   * @param syntheticFilterPredicate Join filter predicate.
+   * @return true if supports dynamic split pruning for the given predicate.
+   */
+
+  default boolean addDynamicSplitPruningEdge(ExprNodeDesc syntheticFilterPredicate) {
+    return false;
+  }
 }

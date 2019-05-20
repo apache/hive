@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE dest1(key STRING, c1 INT, c2 STRING, c3 INT, c4 INT) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest1(key STRING, c1 INT, c2 STRING, c3 INT, c4 INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dest1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE dest1(key STRING, c1 INT, c2 STRING, c3 INT, c4 INT) STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE dest1(key STRING, c1 INT, c2 STRING, c3 INT, c4 INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1
@@ -17,6 +13,10 @@ SELECT substr(src.key,1,1), count(DISTINCT substr(src.value,5)), concat(substr(s
 WHERE src.ds = '2008-04-08'
 GROUP BY substr(src.key,1,1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@dest1
 POSTHOOK: query: EXPLAIN EXTENDED
 FROM srcpart src
 INSERT OVERWRITE TABLE dest1 
@@ -24,6 +24,14 @@ SELECT substr(src.key,1,1), count(DISTINCT substr(src.value,5)), concat(substr(s
 WHERE src.ds = '2008-04-08'
 GROUP BY substr(src.key,1,1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@dest1
+OPTIMIZED SQL: SELECT SUBSTR(`key`, 1, 1) AS `_o__c0`, COUNT(DISTINCT SUBSTR(`value`, 5)) AS `_o__c1`, SUBSTR(`key`, 1, 1) || SUM(SUBSTR(`value`, 5)) AS `_o__c2`, SUM(DISTINCT SUBSTR(`value`, 5)) AS `_o__c3`, COUNT(DISTINCT `value`) AS `_o__c4`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08'
+GROUP BY SUBSTR(`key`, 1, 1)
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -40,6 +48,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (ds = '2008-04-08') (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Select Operator
@@ -54,6 +63,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -68,6 +78,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -89,6 +100,8 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
@@ -114,6 +127,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -135,6 +149,8 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
@@ -150,8 +166,8 @@ STAGE PLANS:
                     name: default.srcpart
                   name: default.srcpart
             Truncated Path -> Alias:
-              /srcpart/ds=2008-04-08/hr=11 [src]
-              /srcpart/ds=2008-04-08/hr=12 [src]
+              /srcpart/ds=2008-04-08/hr=11 [$hdt$_0:src]
+              /srcpart/ds=2008-04-08/hr=12 [$hdt$_0:src]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -176,8 +192,10 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         properties:
-                          COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                          COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"c1":"true","c2":"true","c3":"true","c4":"true","key":"true"}}
                           bucket_count -1
+                          bucketing_version 2
+                          column.name.delimiter ,
                           columns key,c1,c2,c3,c4
                           columns.comments 
                           columns.types string:int:string:int:int
@@ -206,8 +224,10 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"c1":"true","c2":"true","c3":"true","c4":"true","key":"true"}}
                 bucket_count -1
+                bucketing_version 2
+                column.name.delimiter ,
                 columns key,c1,c2,c3,c4
                 columns.comments 
                 columns.types string:int:string:int:int
@@ -225,7 +245,8 @@ STAGE PLANS:
               name: default.dest1
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
 PREHOOK: query: FROM srcpart src
@@ -278,6 +299,10 @@ SELECT substr(src.key,1,1), count(DISTINCT substr(src.value,5)), concat(substr(s
 WHERE src.ds = '2008-04-08'
 GROUP BY substr(src.key,1,1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@dest1
 POSTHOOK: query: EXPLAIN EXTENDED
 FROM srcpart src
 INSERT OVERWRITE TABLE dest1
@@ -285,6 +310,10 @@ SELECT substr(src.key,1,1), count(DISTINCT substr(src.value,5)), concat(substr(s
 WHERE src.ds = '2008-04-08'
 GROUP BY substr(src.key,1,1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@dest1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -301,6 +330,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (ds = '2008-04-08') (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Select Operator
@@ -315,6 +345,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -329,6 +360,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -350,6 +382,8 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
@@ -375,6 +409,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -396,6 +431,8 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
@@ -439,6 +476,8 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                           bucket_count -1
+                          bucketing_version 2
+                          column.name.delimiter ,
                           columns key,c1,c2,c3,c4
                           columns.comments 
                           columns.types string:int:string:int:int
@@ -469,6 +508,8 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                bucketing_version 2
+                column.name.delimiter ,
                 columns key,c1,c2,c3,c4
                 columns.comments 
                 columns.types string:int:string:int:int
@@ -486,7 +527,8 @@ STAGE PLANS:
               name: default.dest1
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
 PREHOOK: query: FROM srcpart src

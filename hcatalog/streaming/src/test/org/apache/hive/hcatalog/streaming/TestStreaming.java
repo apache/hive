@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,6 +20,7 @@ package org.apache.hive.hcatalog.streaming;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -27,11 +28,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -42,9 +46,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.Validator;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -56,18 +63,21 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
+import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.TxnState;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
+import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.IOConstants;
-import org.apache.hadoop.hive.shims.Utils;
-import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.orc.impl.OrcAcidUtils;
-import org.apache.orc.tools.FileDump;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcStruct;
@@ -75,27 +85,34 @@ import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.io.orc.RecordReader;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.txn.AcidHouseKeeperService;
+import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableIntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableLongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.orc.impl.OrcAcidUtils;
+import org.apache.orc.tools.FileDump;
 import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.BUCKET_COUNT;
 
 
 public class TestStreaming {
@@ -116,6 +133,10 @@ public class TestStreaming {
       return NAME;
     }
 
+    @Override
+    public String getScheme() {
+      return "raw";
+    }
 
     @Override
     public FileStatus getFileStatus(Path path) throws IOException {
@@ -144,7 +165,7 @@ public class TestStreaming {
   private static final String COL2 = "msg";
 
   private final HiveConf conf;
-  private Driver driver;
+  private IDriver driver;
   private final IMetaStoreClient msClient;
 
   final String metaStoreURI = null;
@@ -189,7 +210,6 @@ public class TestStreaming {
 
     conf = new HiveConf(this.getClass());
     conf.set("fs.raw.impl", RawFileSystem.class.getName());
-    conf.set("hive.enforce.bucketing", "true");
     conf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
@@ -203,8 +223,8 @@ public class TestStreaming {
 
 
     //1) Start from a clean slate (metastore)
-    TxnDbUtil.cleanDb();
-    TxnDbUtil.prepDb();
+    TxnDbUtil.cleanDb(conf);
+    TxnDbUtil.prepDb(conf);
 
     //2) obtain metastore clients
     msClient = new HiveMetaStoreClient(conf);
@@ -213,7 +233,7 @@ public class TestStreaming {
   @Before
   public void setup() throws Exception {
     SessionState.start(new CliSessionState(conf));
-    driver = new Driver(conf);
+    driver = DriverFactory.newDriver(conf);
     driver.setMaxRows(200002);//make sure Driver returns all results
     // drop and recreate the necessary databases and tables
     dropDB(msClient, dbName);
@@ -335,10 +355,93 @@ public class TestStreaming {
     }
   }
 
+  /**
+   * Test that streaming can write to unbucketed table.
+   */
+  @Test
+  public void testNoBuckets() throws Exception {
+    queryTable(driver, "drop table if exists default.streamingnobuckets");
+    //todo: why does it need transactional_properties?
+    queryTable(driver, "create table default.streamingnobuckets (a string, b string) stored as orc TBLPROPERTIES('transactional'='true', 'transactional_properties'='default')");
+    queryTable(driver, "insert into default.streamingnobuckets values('foo','bar')");
+    List<String> rs = queryTable(driver, "select * from default.streamingNoBuckets");
+    Assert.assertEquals(1, rs.size());
+    Assert.assertEquals("foo\tbar", rs.get(0));
+    HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, "Default", "StreamingNoBuckets", null);
+    String[] colNames1 = new String[] { "a", "b" };
+    StreamingConnection connection = endPt.newConnection(false, "UT_" + Thread.currentThread().getName());
+    DelimitedInputWriter wr = new DelimitedInputWriter(colNames1,",",  endPt, connection);
+
+    TransactionBatch txnBatch =  connection.fetchTransactionBatch(2, wr);
+    txnBatch.beginNextTransaction();
+    txnBatch.write("a1,b2".getBytes());
+    txnBatch.write("a3,b4".getBytes());
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    ShowLocksResponse resp = txnHandler.showLocks(new ShowLocksRequest());
+    Assert.assertEquals(resp.getLocksSize(), 1);
+    Assert.assertEquals("streamingnobuckets", resp.getLocks().get(0).getTablename());
+    Assert.assertEquals("default", resp.getLocks().get(0).getDbname());
+    txnBatch.commit();
+    txnBatch.beginNextTransaction();
+    txnBatch.write("a5,b6".getBytes());
+    txnBatch.write("a7,b8".getBytes());
+    txnBatch.commit();
+    txnBatch.close();
+
+    Assert.assertEquals("", 0, BucketCodec.determineVersion(536870912).decodeWriterId(536870912));
+    rs = queryTable(driver,"select ROW__ID, a, b, INPUT__FILE__NAME from default.streamingnobuckets order by ROW__ID");
+
+    Assert.assertTrue(rs.get(0), rs.get(0).startsWith("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\tfoo\tbar"));
+    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("streamingnobuckets/delta_0000001_0000001_0000/bucket_00000"));
+    Assert.assertTrue(rs.get(1), rs.get(1).startsWith("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\ta1\tb2"));
+    Assert.assertTrue(rs.get(1), rs.get(1).endsWith("streamingnobuckets/delta_0000002_0000003/bucket_00000"));
+    Assert.assertTrue(rs.get(2), rs.get(2).startsWith("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\ta3\tb4"));
+    Assert.assertTrue(rs.get(2), rs.get(2).endsWith("streamingnobuckets/delta_0000002_0000003/bucket_00000"));
+    Assert.assertTrue(rs.get(3), rs.get(3).startsWith("{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\ta5\tb6"));
+    Assert.assertTrue(rs.get(3), rs.get(3).endsWith("streamingnobuckets/delta_0000002_0000003/bucket_00000"));
+    Assert.assertTrue(rs.get(4), rs.get(4).startsWith("{\"writeid\":3,\"bucketid\":536870912,\"rowid\":1}\ta7\tb8"));
+    Assert.assertTrue(rs.get(4), rs.get(4).endsWith("streamingnobuckets/delta_0000002_0000003/bucket_00000"));
+
+    queryTable(driver, "update default.streamingnobuckets set a=0, b=0 where a='a7'");
+    queryTable(driver, "delete from default.streamingnobuckets where a='a1'");
+    rs = queryTable(driver, "select a, b from default.streamingnobuckets order by a, b");
+    int row = 0;
+    Assert.assertEquals("at row=" + row, "0\t0", rs.get(row++));
+    Assert.assertEquals("at row=" + row, "a3\tb4", rs.get(row++));
+    Assert.assertEquals("at row=" + row, "a5\tb6", rs.get(row++));
+    Assert.assertEquals("at row=" + row, "foo\tbar", rs.get(row++));
+
+    queryTable(driver, "alter table default.streamingnobuckets compact 'major'");
+    runWorker(conf);
+    rs = queryTable(driver,"select ROW__ID, a, b, INPUT__FILE__NAME from default.streamingnobuckets order by ROW__ID");
+
+    Assert.assertTrue(rs.get(0), rs.get(0).startsWith("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\tfoo\tbar"));
+    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("streamingnobuckets/base_0000005_v0000025/bucket_00000"));
+    Assert.assertTrue(rs.get(1), rs.get(1).startsWith("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\ta3\tb4"));
+    Assert.assertTrue(rs.get(1), rs.get(1).endsWith("streamingnobuckets/base_0000005_v0000025/bucket_00000"));
+    Assert.assertTrue(rs.get(2), rs.get(2).startsWith("{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\ta5\tb6"));
+    Assert.assertTrue(rs.get(2), rs.get(2).endsWith("streamingnobuckets/base_0000005_v0000025/bucket_00000"));
+    Assert.assertTrue(rs.get(3), rs.get(3).startsWith("{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t0\t0"));
+    Assert.assertTrue(rs.get(3), rs.get(3).endsWith("streamingnobuckets/base_0000005_v0000025/bucket_00000"));
+  }
+
+  /**
+   * this is a clone from TestTxnStatement2....
+   */
+  public static void runWorker(HiveConf hiveConf) throws Exception {
+    AtomicBoolean stop = new AtomicBoolean(true);
+    Worker t = new Worker();
+    t.setThreadId((int) t.getId());
+    t.setConf(hiveConf);
+    AtomicBoolean looped = new AtomicBoolean();
+    t.init(stop, looped);
+    t.run();
+  }
 
   // stream data into streaming table with N buckets, then copy the data into another bucketed table
   // check if bucketing in both was done in the same way
   @Test
+  @Ignore
   public void testStreamBucketingMatchesRegularBucketing() throws Exception {
     int bucketCount = 100;
 
@@ -346,68 +449,73 @@ public class TestStreaming {
     String tableLoc  = "'" + dbUri + Path.SEPARATOR + "streamedtable" + "'";
     String tableLoc2 = "'" + dbUri + Path.SEPARATOR + "finaltable" + "'";
     String tableLoc3 = "'" + dbUri + Path.SEPARATOR + "nobucket" + "'";
+    try (IDriver driver = DriverFactory.newDriver(conf)) {
+      runDDL(driver, "create database testBucketing3");
+      runDDL(driver, "use testBucketing3");
+      runDDL(driver, "create table streamedtable ( key1 string,key2 int,data string ) clustered by ( key1,key2 ) into "
+        + bucketCount + " buckets  stored as orc  location " + tableLoc + " TBLPROPERTIES ('transactional'='true')");
+      //  In 'nobucket' table we capture bucketid from streamedtable to workaround a hive bug that prevents joins two identically bucketed tables
+      runDDL(driver, "create table nobucket ( bucketid int, key1 string,key2 int,data string ) location " + tableLoc3);
+      runDDL(driver,
+        "create table finaltable ( bucketid int, key1 string,key2 int,data string ) clustered by ( key1,key2 ) into "
+          + bucketCount + " buckets  stored as orc location " + tableLoc2 + " TBLPROPERTIES ('transactional'='true')");
 
-    runDDL(driver, "create database testBucketing3");
-    runDDL(driver, "use testBucketing3");
-    runDDL(driver, "create table streamedtable ( key1 string,key2 int,data string ) clustered by ( key1,key2 ) into "
-            + bucketCount + " buckets  stored as orc  location " + tableLoc + " TBLPROPERTIES ('transactional'='true')") ;
-//  In 'nobucket' table we capture bucketid from streamedtable to workaround a hive bug that prevents joins two identically bucketed tables
-    runDDL(driver, "create table nobucket ( bucketid int, key1 string,key2 int,data string ) location " + tableLoc3) ;
-    runDDL(driver, "create table finaltable ( bucketid int, key1 string,key2 int,data string ) clustered by ( key1,key2 ) into "
-            + bucketCount + " buckets  stored as orc location " + tableLoc2 + " TBLPROPERTIES ('transactional'='true')");
 
+      String[] records = new String[]{
+        "PSFAHYLZVC,29,EPNMA",
+        "PPPRKWAYAU,96,VUTEE",
+        "MIAOFERCHI,3,WBDSI",
+        "CEGQAZOWVN,0,WCUZL",
+        "XWAKMNSVQF,28,YJVHU",
+        "XBWTSAJWME,2,KDQFO",
+        "FUVLQTAXAY,5,LDSDG",
+        "QTQMDJMGJH,6,QBOMA",
+        "EFLOTLWJWN,71,GHWPS",
+        "PEQNAOJHCM,82,CAAFI",
+        "MOEKQLGZCP,41,RUACR",
+        "QZXMCOPTID,37,LFLWE",
+        "EYALVWICRD,13,JEZLC",
+        "VYWLZAYTXX,16,DMVZX",
+        "OSALYSQIXR,47,HNZVE",
+        "JGKVHKCEGQ,25,KSCJB",
+        "WQFMMYDHET,12,DTRWA",
+        "AJOVAYZKZQ,15,YBKFO",
+        "YAQONWCUAU,31,QJNHZ",
+        "DJBXUEUOEB,35,IYCBL"
+      };
 
-    String[] records = new String[] {
-    "PSFAHYLZVC,29,EPNMA",
-    "PPPRKWAYAU,96,VUTEE",
-    "MIAOFERCHI,3,WBDSI",
-    "CEGQAZOWVN,0,WCUZL",
-    "XWAKMNSVQF,28,YJVHU",
-    "XBWTSAJWME,2,KDQFO",
-    "FUVLQTAXAY,5,LDSDG",
-    "QTQMDJMGJH,6,QBOMA",
-    "EFLOTLWJWN,71,GHWPS",
-    "PEQNAOJHCM,82,CAAFI",
-    "MOEKQLGZCP,41,RUACR",
-    "QZXMCOPTID,37,LFLWE",
-    "EYALVWICRD,13,JEZLC",
-    "VYWLZAYTXX,16,DMVZX",
-    "OSALYSQIXR,47,HNZVE",
-    "JGKVHKCEGQ,25,KSCJB",
-    "WQFMMYDHET,12,DTRWA",
-    "AJOVAYZKZQ,15,YBKFO",
-    "YAQONWCUAU,31,QJNHZ",
-    "DJBXUEUOEB,35,IYCBL"
-    };
+      HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, "testBucketing3", "streamedtable", null);
+      String[] colNames1 = new String[]{"key1", "key2", "data"};
+      DelimitedInputWriter wr = new DelimitedInputWriter(colNames1, ",", endPt);
+      StreamingConnection connection = endPt.newConnection(false, "UT_" + Thread.currentThread().getName());
 
-    HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, "testBucketing3", "streamedtable", null);
-    String[] colNames1 = new String[] { "key1", "key2", "data" };
-    DelimitedInputWriter wr = new DelimitedInputWriter(colNames1,",",  endPt);
-    StreamingConnection connection = endPt.newConnection(false, "UT_" + Thread.currentThread().getName());
+      TransactionBatch txnBatch = connection.fetchTransactionBatch(2, wr);
+      txnBatch.beginNextTransaction();
 
-    TransactionBatch txnBatch =  connection.fetchTransactionBatch(2, wr);
-    txnBatch.beginNextTransaction();
+      for (String record : records) {
+        txnBatch.write(record.toString().getBytes());
+      }
 
-    for (String record : records) {
-      txnBatch.write(record.toString().getBytes());
+      txnBatch.commit();
+      txnBatch.close();
+      connection.close();
+
+      ArrayList<String> res1 = queryTable(driver, "select row__id.bucketid, * from streamedtable order by key2");
+      for (String re : res1) {
+        System.out.println(re);
+      }
+
+      driver.run("insert into nobucket select row__id.bucketid,* from streamedtable");
+      runDDL(driver, " insert into finaltable select * from nobucket");
+      ArrayList<String> res2 = queryTable(driver,
+        "select row__id.bucketid,* from finaltable where row__id.bucketid<>bucketid");
+      for (String s : res2) {
+        LOG.error(s);
+      }
+      Assert.assertTrue(res2.isEmpty());
+    } finally {
+      conf.unset(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname);
     }
-
-    txnBatch.commit();
-    txnBatch.close();
-    connection.close();
-
-    ArrayList<String> res1 = queryTable(driver, "select row__id.bucketid, * from streamedtable order by key2");
-    for (String re : res1) {
-      System.out.println(re);
-    }
-
-    driver.run("insert into nobucket select row__id.bucketid,* from streamedtable");
-    runDDL(driver, " insert into finaltable select * from nobucket");
-    ArrayList<String> res2 = queryTable(driver, "select row__id.bucketid,* from finaltable where row__id.bucketid<>bucketid");
-    for (String s : res2) {
-      LOG.error(s);
-    }
-    Assert.assertTrue(res2.isEmpty());
   }
 
 
@@ -426,7 +534,7 @@ public class TestStreaming {
     runDDL(driver, "use testBucketing3");
 
     runDDL(driver, "create table " + tbl1 + " ( key1 string, data string ) clustered by ( key1 ) into "
-            + bucketCount + " buckets  stored as orc  location " + tableLoc) ;
+            + bucketCount + " buckets  stored as orc  location " + tableLoc + " TBLPROPERTIES ('transactional'='false')") ;
 
     runDDL(driver, "create table " + tbl2 + " ( key1 string, data string ) clustered by ( key1 ) into "
             + bucketCount + " buckets  stored as orc  location " + tableLoc2 + " TBLPROPERTIES ('transactional'='false')") ;
@@ -448,24 +556,34 @@ public class TestStreaming {
     }
   }
 
-
+  /**
+   * @deprecated use {@link #checkDataWritten2(Path, long, long, int, String, boolean, String...)} -
+   * there is little value in using InputFormat directly
+   */
+  @Deprecated
   private void checkDataWritten(Path partitionPath, long minTxn, long maxTxn, int buckets, int numExpectedFiles,
                                 String... records) throws Exception {
-    ValidTxnList txns = msClient.getValidTxns();
-    AcidUtils.Directory dir = AcidUtils.getAcidState(partitionPath, conf, txns);
+    ValidWriteIdList writeIds = getTransactionContext(conf);
+    AcidUtils.Directory dir = AcidUtils.getAcidState(partitionPath, conf, writeIds);
     Assert.assertEquals(0, dir.getObsolete().size());
     Assert.assertEquals(0, dir.getOriginalFiles().size());
     List<AcidUtils.ParsedDelta> current = dir.getCurrentDirectories();
     System.out.println("Files found: ");
-    for (AcidUtils.ParsedDelta pd : current) System.out.println(pd.getPath().toString());
+    for (AcidUtils.ParsedDelta pd : current) {
+      System.out.println(pd.getPath().toString());
+    }
     Assert.assertEquals(numExpectedFiles, current.size());
 
     // find the absolute minimum transaction
     long min = Long.MAX_VALUE;
     long max = Long.MIN_VALUE;
     for (AcidUtils.ParsedDelta pd : current) {
-      if (pd.getMaxTransaction() > max) max = pd.getMaxTransaction();
-      if (pd.getMinTransaction() < min) min = pd.getMinTransaction();
+      if (pd.getMaxWriteId() > max) {
+        max = pd.getMaxWriteId();
+      }
+      if (pd.getMinWriteId() < min) {
+        min = pd.getMinWriteId();
+      }
     }
     Assert.assertEquals(minTxn, min);
     Assert.assertEquals(maxTxn, max);
@@ -473,28 +591,83 @@ public class TestStreaming {
     InputFormat inf = new OrcInputFormat();
     JobConf job = new JobConf();
     job.set("mapred.input.dir", partitionPath.toString());
-    job.set("bucket_count", Integer.toString(buckets));
+    job.set(BUCKET_COUNT, Integer.toString(buckets));
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, "id,msg");
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, "bigint:string");
-    job.set(ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN.varname, "true");
-    job.set(ValidTxnList.VALID_TXNS_KEY, txns.toString());
+    AcidUtils.setAcidOperationalProperties(job, true, null);
+    job.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
+    job.set(ValidWriteIdList.VALID_WRITEIDS_KEY, writeIds.toString());
+    job.set(ValidTxnList.VALID_TXNS_KEY, conf.get(ValidTxnList.VALID_TXNS_KEY));
     InputSplit[] splits = inf.getSplits(job, buckets);
-    Assert.assertEquals(buckets, splits.length);
+    Assert.assertEquals(numExpectedFiles, splits.length);
     org.apache.hadoop.mapred.RecordReader<NullWritable, OrcStruct> rr =
             inf.getRecordReader(splits[0], job, Reporter.NULL);
 
     NullWritable key = rr.createKey();
     OrcStruct value = rr.createValue();
-    for (int i = 0; i < records.length; i++) {
+    for (String record : records) {
       Assert.assertEquals(true, rr.next(key, value));
-      Assert.assertEquals(records[i], value.toString());
+      Assert.assertEquals(record, value.toString());
     }
     Assert.assertEquals(false, rr.next(key, value));
   }
+  /**
+   * @param validationQuery query to read from table to compare data against {@code records}
+   * @param records expected data.  each row is CVS list of values
+   */
+  private void checkDataWritten2(Path partitionPath, long minTxn, long maxTxn, int numExpectedFiles,
+                                String validationQuery, boolean vectorize, String... records) throws Exception {
+    AcidUtils.Directory dir = AcidUtils.getAcidState(partitionPath, conf, getTransactionContext(conf));
+    Assert.assertEquals(0, dir.getObsolete().size());
+    Assert.assertEquals(0, dir.getOriginalFiles().size());
+    List<AcidUtils.ParsedDelta> current = dir.getCurrentDirectories();
+    System.out.println("Files found: ");
+    for (AcidUtils.ParsedDelta pd : current) {
+      System.out.println(pd.getPath().toString());
+    }
+    Assert.assertEquals(numExpectedFiles, current.size());
 
+    // find the absolute minimum transaction
+    long min = Long.MAX_VALUE;
+    long max = Long.MIN_VALUE;
+    for (AcidUtils.ParsedDelta pd : current) {
+      if (pd.getMaxWriteId() > max) {
+        max = pd.getMaxWriteId();
+      }
+      if (pd.getMinWriteId() < min) {
+        min = pd.getMinWriteId();
+      }
+    }
+    Assert.assertEquals(minTxn, min);
+    Assert.assertEquals(maxTxn, max);
+    boolean isVectorizationEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
+    if(vectorize) {
+      conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
+    }
+
+    String currStrategy = conf.getVar(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY);
+    for(String strategy : ((Validator.StringSet)HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY.getValidator()).getExpected()) {
+      //run it with each split strategy - make sure there are differences
+      conf.setVar(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY, strategy.toUpperCase());
+      List<String> actualResult = queryTable(driver, validationQuery);
+      for (int i = 0; i < actualResult.size(); i++) {
+        Assert.assertEquals("diff at [" + i + "].  actual=" + actualResult + " expected=" +
+          Arrays.toString(records), records[i], actualResult.get(i));
+      }
+    }
+    conf.setVar(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY, currStrategy);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorizationEnabled);
+  }
+
+  private ValidWriteIdList getTransactionContext(Configuration conf) throws Exception {
+    ValidTxnList validTxnList = msClient.getValidTxns();
+    conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
+    List<TableValidWriteIds> v = msClient.getValidWriteIds(Collections
+        .singletonList(TableName.getDbTable(dbName, tblName)), validTxnList.writeToString());
+    return TxnCommonUtils.createValidReaderWriteIdList(v.get(0));
+  }
   private void checkNothingWritten(Path partitionPath) throws Exception {
-    ValidTxnList txns = msClient.getValidTxns();
-    AcidUtils.Directory dir = AcidUtils.getAcidState(partitionPath, conf, txns);
+    AcidUtils.Directory dir = AcidUtils.getAcidState(partitionPath, conf, getTransactionContext(conf));
     Assert.assertEquals(0, dir.getObsolete().size());
     Assert.assertEquals(0, dir.getOriginalFiles().size());
     List<AcidUtils.ParsedDelta> current = dir.getCurrentDirectories();
@@ -609,11 +782,8 @@ public class TestStreaming {
     //ensure txn timesout
     conf.setTimeVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 1, TimeUnit.MILLISECONDS);
     AcidHouseKeeperService houseKeeperService = new AcidHouseKeeperService();
-    houseKeeperService.start(conf);
-    while(houseKeeperService.getIsAliveCounter() <= Integer.MIN_VALUE) {
-      Thread.sleep(100);//make sure it has run at least once
-    }
-    houseKeeperService.stop();
+    houseKeeperService.setConf(conf);
+    houseKeeperService.run();
     try {
       //should fail because the TransactionBatch timed out
       txnBatch.commit();
@@ -626,12 +796,7 @@ public class TestStreaming {
     txnBatch.beginNextTransaction();
     txnBatch.commit();
     txnBatch.beginNextTransaction();
-    int lastCount = houseKeeperService.getIsAliveCounter();
-    houseKeeperService.start(conf);
-    while(houseKeeperService.getIsAliveCounter() <= lastCount) {
-      Thread.sleep(100);//make sure it has run at least once
-    }
-    houseKeeperService.stop();
+    houseKeeperService.run();
     try {
       //should fail because the TransactionBatch timed out
       txnBatch.commit();
@@ -669,6 +834,25 @@ public class TestStreaming {
     Assert.assertEquals("Acquired timestamp didn't match", acquiredAt, lock.getAcquiredat());
     Assert.assertTrue("Expected new heartbeat (" + lock.getLastheartbeat() +
       ") == old heartbeat(" + heartbeatAt +")", lock.getLastheartbeat() == heartbeatAt);
+    txnBatch.close();
+    int txnBatchSize = 200;
+    txnBatch = connection.fetchTransactionBatch(txnBatchSize, writer);
+    for(int i = 0; i < txnBatchSize; i++) {
+      txnBatch.beginNextTransaction();
+      if(i % 47 == 0) {
+        txnBatch.heartbeat();
+      }
+      if(i % 10 == 0) {
+        txnBatch.abort();
+      }
+      else {
+        txnBatch.commit();
+      }
+      if(i % 37 == 0) {
+        txnBatch.heartbeat();
+      }
+    }
+
   }
   @Test
   public void testTransactionBatchEmptyAbort() throws Exception {
@@ -760,6 +944,75 @@ public class TestStreaming {
     Assert.assertEquals(TransactionBatch.TxnState.OPEN
       , txnBatch.getCurrentTransactionState());
     txnBatch.write("1,Hello streaming".getBytes());
+    txnBatch.commit();
+
+    Assert.assertEquals(TransactionBatch.TxnState.COMMITTED
+      , txnBatch.getCurrentTransactionState());
+    connection.close();
+  }
+
+  @Test
+  public void testTransactionBatchCommit_Regex() throws Exception {
+    testTransactionBatchCommit_Regex(null);
+  }
+  @Test
+  public void testTransactionBatchCommit_RegexUGI() throws Exception {
+    testTransactionBatchCommit_Regex(Utils.getUGI());
+  }
+  private void testTransactionBatchCommit_Regex(UserGroupInformation ugi) throws Exception {
+    HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, dbName, tblName,
+      partitionVals);
+    StreamingConnection connection = endPt.newConnection(true, conf, ugi, "UT_" + Thread.currentThread().getName());
+    String regex = "([^,]*),(.*)";
+    StrictRegexWriter writer = new StrictRegexWriter(regex, endPt, conf, connection);
+
+    // 1st Txn
+    TransactionBatch txnBatch =  connection.fetchTransactionBatch(10, writer);
+    txnBatch.beginNextTransaction();
+    Assert.assertEquals(TransactionBatch.TxnState.OPEN
+      , txnBatch.getCurrentTransactionState());
+    txnBatch.write("1,Hello streaming".getBytes());
+    txnBatch.commit();
+
+    checkDataWritten(partLoc, 1, 10, 1, 1, "{1, Hello streaming}");
+
+    Assert.assertEquals(TransactionBatch.TxnState.COMMITTED
+      , txnBatch.getCurrentTransactionState());
+
+    // 2nd Txn
+    txnBatch.beginNextTransaction();
+    Assert.assertEquals(TransactionBatch.TxnState.OPEN
+      , txnBatch.getCurrentTransactionState());
+    txnBatch.write("2,Welcome to streaming".getBytes());
+
+    // data should not be visible
+    checkDataWritten(partLoc, 1, 10, 1, 1, "{1, Hello streaming}");
+
+    txnBatch.commit();
+
+    checkDataWritten(partLoc, 1, 10, 1, 1, "{1, Hello streaming}",
+      "{2, Welcome to streaming}");
+
+    txnBatch.close();
+    Assert.assertEquals(TransactionBatch.TxnState.INACTIVE
+      , txnBatch.getCurrentTransactionState());
+
+
+    connection.close();
+
+
+    // To Unpartitioned table
+    endPt = new HiveEndPoint(metaStoreURI, dbName2, tblName2, null);
+    connection = endPt.newConnection(true, conf, ugi, "UT_" + Thread.currentThread().getName());
+    regex = "([^:]*):(.*)";
+    writer = new StrictRegexWriter(regex, endPt, conf, connection);
+
+    // 1st Txn
+    txnBatch =  connection.fetchTransactionBatch(10, writer);
+    txnBatch.beginNextTransaction();
+    Assert.assertEquals(TransactionBatch.TxnState.OPEN
+      , txnBatch.getCurrentTransactionState());
+    txnBatch.write("1:Hello streaming".getBytes());
     txnBatch.commit();
 
     Assert.assertEquals(TransactionBatch.TxnState.COMMITTED
@@ -928,15 +1181,15 @@ public class TestStreaming {
     txnBatch.beginNextTransaction();
     txnBatch.write("1,Hello streaming".getBytes());
     txnBatch.commit();
-
-    checkDataWritten(partLoc, 1, 10, 1, 1, "{1, Hello streaming}");
+    String validationQuery = "select id, msg from " + dbName + "." + tblName + " order by id, msg";
+    checkDataWritten2(partLoc, 1, 10, 1, validationQuery, false, "1\tHello streaming");
 
     txnBatch.beginNextTransaction();
     txnBatch.write("2,Welcome to streaming".getBytes());
     txnBatch.commit();
 
-    checkDataWritten(partLoc, 1, 10, 1, 1, "{1, Hello streaming}",
-            "{2, Welcome to streaming}");
+    checkDataWritten2(partLoc, 1, 10,  1, validationQuery, true, "1\tHello streaming",
+            "2\tWelcome to streaming");
 
     txnBatch.close();
 
@@ -946,16 +1199,16 @@ public class TestStreaming {
     txnBatch.write("3,Hello streaming - once again".getBytes());
     txnBatch.commit();
 
-    checkDataWritten(partLoc, 1, 20, 1, 2, "{1, Hello streaming}",
-            "{2, Welcome to streaming}", "{3, Hello streaming - once again}");
+    checkDataWritten2(partLoc, 1, 20,  2, validationQuery, false, "1\tHello streaming",
+            "2\tWelcome to streaming", "3\tHello streaming - once again");
 
     txnBatch.beginNextTransaction();
     txnBatch.write("4,Welcome to streaming - once again".getBytes());
     txnBatch.commit();
 
-    checkDataWritten(partLoc, 1, 20, 1, 2, "{1, Hello streaming}",
-            "{2, Welcome to streaming}", "{3, Hello streaming - once again}",
-            "{4, Welcome to streaming - once again}");
+    checkDataWritten2(partLoc, 1, 20,  2, validationQuery, true, "1\tHello streaming",
+            "2\tWelcome to streaming", "3\tHello streaming - once again",
+            "4\tWelcome to streaming - once again");
 
     Assert.assertEquals(TransactionBatch.TxnState.COMMITTED
             , txnBatch.getCurrentTransactionState());
@@ -964,7 +1217,6 @@ public class TestStreaming {
 
     connection.close();
   }
-
 
   @Test
   public void testInterleavedTransactionBatchCommits() throws Exception {
@@ -990,32 +1242,69 @@ public class TestStreaming {
 
     txnBatch2.commit();
 
-    checkDataWritten(partLoc, 11, 20, 1, 1, "{3, Hello streaming - once again}");
+    String validationQuery = "select id, msg from " + dbName + "." + tblName + " order by id, msg";
+    checkDataWritten2(partLoc, 11, 20, 1,
+      validationQuery, true, "3\tHello streaming - once again");
 
     txnBatch1.commit();
-
-    checkDataWritten(partLoc, 1, 20, 1, 2, "{1, Hello streaming}", "{3, Hello streaming - once again}");
+    /*now both batches have committed (but not closed) so we for each primary file we expect a side
+    file to exist and indicate the true length of primary file*/
+    FileSystem fs = partLoc.getFileSystem(conf);
+    AcidUtils.Directory dir = AcidUtils.getAcidState(partLoc, conf, getTransactionContext(conf));
+    for(AcidUtils.ParsedDelta pd : dir.getCurrentDirectories()) {
+      for(FileStatus stat : fs.listStatus(pd.getPath(), AcidUtils.bucketFileFilter)) {
+        Path lengthFile = OrcAcidUtils.getSideFile(stat.getPath());
+        Assert.assertTrue(lengthFile + " missing", fs.exists(lengthFile));
+        long lengthFileSize = fs.getFileStatus(lengthFile).getLen();
+        Assert.assertTrue("Expected " + lengthFile + " to be non empty. lengh=" +
+          lengthFileSize, lengthFileSize > 0);
+        long logicalLength = AcidUtils.getLogicalLength(fs, stat);
+        long actualLength = stat.getLen();
+        Assert.assertTrue("", logicalLength == actualLength);
+      }
+    }
+    checkDataWritten2(partLoc, 1, 20, 2,
+      validationQuery, false,"1\tHello streaming", "3\tHello streaming - once again");
 
     txnBatch1.beginNextTransaction();
     txnBatch1.write("2,Welcome to streaming".getBytes());
 
     txnBatch2.beginNextTransaction();
     txnBatch2.write("4,Welcome to streaming - once again".getBytes());
-
-    checkDataWritten(partLoc, 1, 20, 1, 2, "{1, Hello streaming}", "{3, Hello streaming - once again}");
+    //here each batch has written data and committed (to bucket0 since table only has 1 bucket)
+    //so each of 2 deltas has 1 bucket0 and 1 bucket0_flush_length.  Furthermore, each bucket0
+    //has now received more data(logically - it's buffered) but it is not yet committed.
+    //lets check that side files exist, etc
+    dir = AcidUtils.getAcidState(partLoc, conf, getTransactionContext(conf));
+    for(AcidUtils.ParsedDelta pd : dir.getCurrentDirectories()) {
+      for(FileStatus stat : fs.listStatus(pd.getPath(), AcidUtils.bucketFileFilter)) {
+        Path lengthFile = OrcAcidUtils.getSideFile(stat.getPath());
+        Assert.assertTrue(lengthFile + " missing", fs.exists(lengthFile));
+        long lengthFileSize = fs.getFileStatus(lengthFile).getLen();
+        Assert.assertTrue("Expected " + lengthFile + " to be non empty. lengh=" +
+          lengthFileSize, lengthFileSize > 0);
+        long logicalLength = AcidUtils.getLogicalLength(fs, stat);
+        long actualLength = stat.getLen();
+        Assert.assertTrue("", logicalLength <= actualLength);
+      }
+    }
+    checkDataWritten2(partLoc, 1, 20, 2,
+      validationQuery, true,"1\tHello streaming", "3\tHello streaming - once again");
 
     txnBatch1.commit();
 
-    checkDataWritten(partLoc, 1, 20, 1, 2, "{1, Hello streaming}",
-        "{2, Welcome to streaming}",
-        "{3, Hello streaming - once again}");
+    checkDataWritten2(partLoc, 1, 20, 2,
+      validationQuery, false, "1\tHello streaming",
+        "2\tWelcome to streaming",
+        "3\tHello streaming - once again");
 
     txnBatch2.commit();
 
-    checkDataWritten(partLoc, 1, 20, 1, 2, "{1, Hello streaming}",
-        "{2, Welcome to streaming}",
-        "{3, Hello streaming - once again}",
-        "{4, Welcome to streaming - once again}");
+    checkDataWritten2(partLoc, 1, 20, 2,
+      validationQuery, true, "1\tHello streaming",
+        "2\tWelcome to streaming",
+        "3\tHello streaming - once again",
+        "4\tWelcome to streaming - once again");
 
     Assert.assertEquals(TransactionBatch.TxnState.COMMITTED
             , txnBatch1.getCurrentTransactionState());
@@ -1081,6 +1370,18 @@ public class TestStreaming {
     }
   }
 
+  /**
+   * Make sure that creating an already existing partion is handled gracefully
+   * @throws Exception
+   */
+  @Test
+  public void testCreatePartition() throws Exception {
+    final HiveEndPoint ep = new HiveEndPoint(metaStoreURI, dbName, tblName, partitionVals);
+    StreamingConnection conn = ep.newConnection(true);
+    conn.close();
+    conn = ep.newConnection(true);
+    conn.close();
+  }
   @Test
   public void testConcurrentTransactionBatchCommits() throws Exception {
     final HiveEndPoint ep = new HiveEndPoint(metaStoreURI, dbName, tblName, partitionVals);
@@ -1222,9 +1523,9 @@ public class TestStreaming {
 
     // assert bucket listing is as expected
     Assert.assertEquals("number of buckets does not match expectation", actual1.values().size(), 3);
-    Assert.assertEquals("records in bucket does not match expectation", actual1.get(0).size(), 2);
+    Assert.assertTrue("bucket 0 shouldn't have been created", actual1.get(0) == null);
     Assert.assertEquals("records in bucket does not match expectation", actual1.get(1).size(), 1);
-    Assert.assertTrue("bucket 2 shouldn't have been created", actual1.get(2) == null);
+    Assert.assertEquals("records in bucket does not match expectation", actual1.get(2).size(), 2);
     Assert.assertEquals("records in bucket does not match expectation", actual1.get(3).size(), 1);
   }
   private void runCmdOnDriver(String cmd) throws QueryFailedException {
@@ -1355,7 +1656,7 @@ public class TestStreaming {
       } else if (file.contains("bucket_00001")) {
         corruptDataFile(file, conf, -1);
       } else if (file.contains("bucket_00002")) {
-        Assert.assertFalse("bucket 2 shouldn't have been created", true);
+        corruptDataFile(file, conf, 100);
       } else if (file.contains("bucket_00003")) {
         corruptDataFile(file, conf, 100);
       }
@@ -1385,9 +1686,9 @@ public class TestStreaming {
     System.setErr(origErr);
 
     errDump = new String(myErr.toByteArray());
-    Assert.assertEquals(true, errDump.contains("bucket_00000 recovered successfully!"));
-    Assert.assertEquals(true, errDump.contains("No readable footers found. Creating empty orc file."));
     Assert.assertEquals(true, errDump.contains("bucket_00001 recovered successfully!"));
+    Assert.assertEquals(true, errDump.contains("No readable footers found. Creating empty orc file."));
+    Assert.assertEquals(true, errDump.contains("bucket_00002 recovered successfully!"));
     Assert.assertEquals(true, errDump.contains("bucket_00003 recovered successfully!"));
     Assert.assertEquals(false, errDump.contains("Exception"));
     Assert.assertEquals(false, errDump.contains("is still open for writes."));
@@ -1681,7 +1982,7 @@ public class TestStreaming {
     txnBatch.heartbeat();//this is no-op on closed batch
     txnBatch.abort();//ditto
     GetOpenTxnsInfoResponse r = msClient.showTxns();
-    Assert.assertEquals("HWM didn't match", 2, r.getTxn_high_water_mark());
+    Assert.assertEquals("HWM didn't match", 17, r.getTxn_high_water_mark());
     List<TxnInfo> ti = r.getOpen_txns();
     Assert.assertEquals("wrong status ti(0)", TxnState.ABORTED, ti.get(0).getState());
     Assert.assertEquals("wrong status ti(1)", TxnState.ABORTED, ti.get(1).getState());
@@ -1720,7 +2021,12 @@ public class TestStreaming {
     txnBatch.write("name4,2,more Streaming unlimited".getBytes());
     txnBatch.write("name5,2,even more Streaming unlimited".getBytes());
     txnBatch.commit();
-    
+
+    //test toString()
+    String s = txnBatch.toString();
+    Assert.assertTrue("Actual: " + s, s.contains("LastUsed " + JavaUtils.txnIdToString(txnBatch.getCurrentTxnId())));
+    Assert.assertTrue("Actual: " + s, s.contains("TxnStatus[CO]"));
+
     expectedEx = null;
     txnBatch.beginNextTransaction();
     writer.enableErrors();
@@ -1744,8 +2050,13 @@ public class TestStreaming {
     Assert.assertTrue("commit() should have failed",
       expectedEx != null && expectedEx.getMessage().contains("has been closed()"));
 
+    //test toString()
+    s = txnBatch.toString();
+    Assert.assertTrue("Actual: " + s, s.contains("LastUsed " + JavaUtils.txnIdToString(txnBatch.getCurrentTxnId())));
+    Assert.assertTrue("Actual: " + s, s.contains("TxnStatus[CA]"));
+
     r = msClient.showTxns();
-    Assert.assertEquals("HWM didn't match", 4, r.getTxn_high_water_mark());
+    Assert.assertEquals("HWM didn't match", 19, r.getTxn_high_water_mark());
     ti = r.getOpen_txns();
     Assert.assertEquals("wrong status ti(0)", TxnState.ABORTED, ti.get(0).getState());
     Assert.assertEquals("wrong status ti(1)", TxnState.ABORTED, ti.get(1).getState());
@@ -1766,9 +2077,9 @@ public class TestStreaming {
     }
     Assert.assertTrue("Wrong exception: " + (expectedEx != null ? expectedEx.getMessage() : "?"),
       expectedEx != null && expectedEx.getMessage().contains("Simulated fault occurred"));
-    
+
     r = msClient.showTxns();
-    Assert.assertEquals("HWM didn't match", 6, r.getTxn_high_water_mark());
+    Assert.assertEquals("HWM didn't match", 21, r.getTxn_high_water_mark());
     ti = r.getOpen_txns();
     Assert.assertEquals("wrong status ti(3)", TxnState.ABORTED, ti.get(3).getState());
     Assert.assertEquals("wrong status ti(4)", TxnState.ABORTED, ti.get(4).getState());
@@ -1783,12 +2094,20 @@ public class TestStreaming {
     HashMap<Integer, ArrayList<SampleRec>> result = new HashMap<Integer, ArrayList<SampleRec>>();
 
     for (File deltaDir : new File(dbLocation + "/" + tableName).listFiles()) {
-      if(!deltaDir.getName().startsWith("delta"))
+      if(!deltaDir.getName().startsWith("delta")) {
         continue;
-      File[] bucketFiles = deltaDir.listFiles();
+      }
+      File[] bucketFiles = deltaDir.listFiles(new FileFilter() {
+        @Override
+        public boolean accept(File pathname) {
+          String name = pathname.getName();
+          return !name.startsWith("_") && !name.startsWith(".");
+        }
+      });
       for (File bucketFile : bucketFiles) {
-        if(bucketFile.toString().endsWith("length"))
+        if(bucketFile.toString().endsWith("length")) {
           continue;
+        }
         Integer bucketNum = getBucketNumber(bucketFile);
         ArrayList<SampleRec>  recs = dumpBucket(new Path(bucketFile.toString()));
         result.put(bucketNum, recs);
@@ -1821,7 +2140,7 @@ public class TestStreaming {
 
   ///////// -------- UTILS ------- /////////
   // returns Path of the partition created (if any) else Path of table
-  public static Path createDbAndTable(Driver driver, String databaseName,
+  private static Path createDbAndTable(IDriver driver, String databaseName,
                                       String tableName, List<String> partVals,
                                       String[] colNames, String[] colTypes,
                                       String[] bucketCols,
@@ -1848,14 +2167,15 @@ public class TestStreaming {
     return new Path(tableLoc);
   }
 
-  private static Path addPartition(Driver driver, String tableName, List<String> partVals, String[] partNames) throws QueryFailedException, CommandNeedRetryException, IOException {
+  private static Path addPartition(IDriver driver, String tableName, List<String> partVals, String[] partNames)
+      throws Exception {
     String partSpec = getPartsSpec(partNames, partVals);
     String addPart = "alter table " + tableName + " add partition ( " + partSpec  + " )";
     runDDL(driver, addPart);
     return getPartitionPath(driver, tableName, partSpec);
   }
 
-  private static Path getPartitionPath(Driver driver, String tableName, String partSpec) throws CommandNeedRetryException, IOException {
+  private static Path getPartitionPath(IDriver driver, String tableName, String partSpec) throws Exception {
     ArrayList<String> res = queryTable(driver, "describe extended " + tableName + " PARTITION (" + partSpec + ")");
     String partInfo = res.get(res.size() - 1);
     int start = partInfo.indexOf("location:") + "location:".length();
@@ -1864,9 +2184,9 @@ public class TestStreaming {
   }
 
   private static String getTableColumnsStr(String[] colNames, String[] colTypes) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for (int i=0; i < colNames.length; ++i) {
-      sb.append(colNames[i] + " " + colTypes[i]);
+      sb.append(colNames[i]).append(" ").append(colTypes[i]);
       if (i<colNames.length-1) {
         sb.append(",");
       }
@@ -1879,9 +2199,9 @@ public class TestStreaming {
     if (partNames==null || partNames.length==0) {
       return "";
     }
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for (int i=0; i < partNames.length; ++i) {
-      sb.append(partNames[i] + " string");
+      sb.append(partNames[i]).append(" string");
       if (i < partNames.length-1) {
         sb.append(",");
       }
@@ -1891,9 +2211,9 @@ public class TestStreaming {
 
   // converts partNames,partVals into "partName1=val1, partName2=val2"
   private static String getPartsSpec(String[] partNames, List<String> partVals) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for (int i=0; i < partVals.size(); ++i) {
-      sb.append(partNames[i] + " = '" + partVals.get(i) + "'");
+      sb.append(partNames[i]).append(" = '").append(partVals.get(i)).append("'");
       if(i < partVals.size()-1) {
         sb.append(",");
       }
@@ -1902,9 +2222,10 @@ public class TestStreaming {
   }
 
   private static String join(String[] values, String delimiter) {
-    if(values==null)
+    if(values==null) {
       return null;
-    StringBuffer strbuf = new StringBuffer();
+    }
+    StringBuilder strbuf = new StringBuilder();
 
     boolean first = true;
 
@@ -1922,36 +2243,26 @@ public class TestStreaming {
     return " partitioned by (" + getTablePartsStr(partNames) + " )";
   }
 
-  private static boolean runDDL(Driver driver, String sql) throws QueryFailedException {
+  private static boolean runDDL(IDriver driver, String sql) throws QueryFailedException {
     LOG.debug(sql);
     System.out.println(sql);
-    int retryCount = 1; // # of times to retry if first attempt fails
-    for (int attempt=0; attempt <= retryCount; ++attempt) {
-      try {
-        //LOG.debug("Running Hive Query: "+ sql);
-        CommandProcessorResponse cpr = driver.run(sql);
-        if(cpr.getResponseCode() == 0) {
-          return true;
-        }
-        LOG.error("Statement: " + sql + " failed: " + cpr);
-      } catch (CommandNeedRetryException e) {
-        if (attempt == retryCount) {
-          throw new QueryFailedException(sql, e);
-        }
-        continue;
-      }
-    } // for
+    //LOG.debug("Running Hive Query: "+ sql);
+    CommandProcessorResponse cpr = driver.run(sql);
+    if (cpr.getResponseCode() == 0) {
+      return true;
+    }
+    LOG.error("Statement: " + sql + " failed: " + cpr);
     return false;
   }
 
 
-  public static ArrayList<String> queryTable(Driver driver, String query)
-          throws CommandNeedRetryException, IOException {
-    driver.run(query);
+  private static ArrayList<String> queryTable(IDriver driver, String query) throws IOException {
+    CommandProcessorResponse cpr = driver.run(query);
+    if(cpr.getResponseCode() != 0) {
+      throw new RuntimeException(query + " failed: " + cpr);
+    }
     ArrayList<String> res = new ArrayList<String>();
     driver.getResults(res);
-    if(res.isEmpty())
-      System.err.println(driver.getErrorMsg());
     return res;
   }
 
@@ -1968,13 +2279,21 @@ public class TestStreaming {
 
     @Override
     public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
 
       SampleRec that = (SampleRec) o;
 
-      if (field2 != that.field2) return false;
-      if (field1 != null ? !field1.equals(that.field1) : that.field1 != null) return false;
+      if (field2 != that.field2) {
+        return false;
+      }
+      if (field1 != null ? !field1.equals(that.field1) : that.field1 != null) {
+        return false;
+      }
       return !(field3 != null ? !field3.equals(that.field3) : that.field3 != null);
 
     }
@@ -2009,8 +2328,8 @@ public class TestStreaming {
       this.delegate = delegate;
     }
     @Override
-    public void write(long transactionId, byte[] record) throws StreamingException {
-      delegate.write(transactionId, record);
+    public void write(long writeId, byte[] record) throws StreamingException {
+      delegate.write(writeId, record);
       produceFault();
     }
     @Override

@@ -1,1 +1,1 @@
-FAILED: SemanticException [Error 10015]: Line 2:7 Arguments length mismatch ''-'': The function CONCAT_WS(separator,[string | array(string)]+) needs at least two arguments.
+FAILED: SemanticException [Error 10015]: Line 3:7 Arguments length mismatch ''-'': The function CONCAT_WS(separator,[string | array(string)]+) needs at least two arguments.

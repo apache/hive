@@ -13,6 +13,8 @@ Example:
   0
   > SELECT acos(2) FROM src LIMIT 1;
   NULL
+Function class:org.apache.hadoop.hive.ql.udf.UDFAcos
+Function type:BUILTIN
 PREHOOK: query: SELECT acos(null)
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
@@ -56,4 +58,4 @@ FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-NaN
+NULL

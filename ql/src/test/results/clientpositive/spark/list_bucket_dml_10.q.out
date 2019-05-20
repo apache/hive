@@ -1,18 +1,4 @@
-PREHOOK: query: -- run this test case in minimr to ensure it works in cluster
-
--- list bucketing DML: static partition. multiple skewed columns.
--- ds=2008-04-08/hr=11/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME:
---  5263 000000_0
---  5263 000001_0
--- ds=2008-04-08/hr=11/key=103/value=val_103:
--- 99 000000_0
--- 99 000001_0
--- ds=2008-04-08/hr=11/key=484/value=val_484:
--- 87 000000_0
--- 87 000001_0
-
--- create a skewed table
-create table list_bucketing_static_part (key String, value String) 
+PREHOOK: query: create table list_bucketing_static_part (key String, value String) 
     partitioned by (ds String, hr String) 
     skewed by (key) on ('484','51','103')
     stored as DIRECTORIES
@@ -20,21 +6,7 @@ create table list_bucketing_static_part (key String, value String)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@list_bucketing_static_part
-POSTHOOK: query: -- run this test case in minimr to ensure it works in cluster
-
--- list bucketing DML: static partition. multiple skewed columns.
--- ds=2008-04-08/hr=11/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME:
---  5263 000000_0
---  5263 000001_0
--- ds=2008-04-08/hr=11/key=103/value=val_103:
--- 99 000000_0
--- 99 000001_0
--- ds=2008-04-08/hr=11/key=484/value=val_484:
--- 87 000000_0
--- 87 000001_0
-
--- create a skewed table
-create table list_bucketing_static_part (key String, value String) 
+POSTHOOK: query: create table list_bucketing_static_part (key String, value String) 
     partitioned by (ds String, hr String) 
     skewed by (key) on ('484','51','103')
     stored as DIRECTORIES
@@ -42,16 +14,20 @@ create table list_bucketing_static_part (key String, value String)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@list_bucketing_static_part
-PREHOOK: query: -- list bucketing DML without merge. use bucketize to generate a few small files.
-explain extended
+PREHOOK: query: explain extended
 insert overwrite table list_bucketing_static_part partition (ds = '2008-04-08',  hr = '11')
 select key, value from src
 PREHOOK: type: QUERY
-POSTHOOK: query: -- list bucketing DML without merge. use bucketize to generate a few small files.
-explain extended
+PREHOOK: Input: default@src
+PREHOOK: Output: default@list_bucketing_static_part@ds=2008-04-08/hr=11
+POSTHOOK: query: explain extended
 insert overwrite table list_bucketing_static_part partition (ds = '2008-04-08',  hr = '11')
 select key, value from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@list_bucketing_static_part@ds=2008-04-08/hr=11
+OPTIMIZED SQL: SELECT `key`, `value`
+FROM `default`.`src`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -75,20 +51,23 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       GlobalTableId: 1
-#### A masked pattern was here ####
+                      directory: hdfs://### HDFS PATH ###
                       NumFilesPerFileSink: 1
                       Static Partition Specification: ds=2008-04-08/hr=11/
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
+                      Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                       table:
                           input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                           properties:
                             bucket_count -1
+                            bucketing_version 2
+                            column.name.delimiter ,
                             columns key,value
                             columns.comments 
                             columns.types string:string
 #### A masked pattern was here ####
+                            location hdfs://### HDFS PATH ###
                             name default.list_bucketing_static_part
                             partition_columns ds/hr
                             partition_columns.types string:string
@@ -101,10 +80,11 @@ STAGE PLANS:
                       TotalFiles: 1
                       GatherStats: true
                       MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [src]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: src
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -112,10 +92,13 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.src
                     numFiles 1
                     numRows 500
@@ -132,10 +115,13 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      bucketing_version 2
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.src
                       numFiles 1
                       numRows 500
@@ -158,16 +144,19 @@ STAGE PLANS:
             ds 2008-04-08
             hr 11
           replace: true
-#### A masked pattern was here ####
+          source: hdfs://### HDFS PATH ###
           table:
               input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
+                location hdfs://### HDFS PATH ###
                 name default.list_bucketing_static_part
                 partition_columns ds/hr
                 partition_columns.types string:string
@@ -179,8 +168,9 @@ STAGE PLANS:
               name: default.list_bucketing_static_part
 
   Stage: Stage-2
-    Stats-Aggr Operator
-#### A masked pattern was here ####
+    Stats Work
+      Basic Stats Work:
+          Stats Aggregation Key Prefix: hdfs://### HDFS PATH ###
 
 PREHOOK: query: insert overwrite table list_bucketing_static_part partition (ds = '2008-04-08', hr = '11')
 select key, value from src
@@ -194,12 +184,10 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- check DML result
-show partitions list_bucketing_static_part
+PREHOOK: query: show partitions list_bucketing_static_part
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@list_bucketing_static_part
-POSTHOOK: query: -- check DML result
-show partitions list_bucketing_static_part
+POSTHOOK: query: show partitions list_bucketing_static_part
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@list_bucketing_static_part
 ds=2008-04-08/hr=11
@@ -210,13 +198,11 @@ POSTHOOK: query: desc formatted list_bucketing_static_part partition (ds='2008-0
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@list_bucketing_static_part
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -244,7 +230,7 @@ Sort Columns:       	[]
 Stored As SubDirectories:	Yes                 	 
 Skewed Columns:     	[key]               	 
 Skewed Values:      	[[103], [484], [51]]	 
-#### A masked pattern was here ####
+Skewed Value to Path:	{[103]=hdfs://### HDFS PATH ###, [484]=hdfs://### HDFS PATH ###, [51]=hdfs://### HDFS PATH ###}	 
 Skewed Value to Truncated Path:	{[103]=/list_bucketing_static_part/ds=2008-04-08/hr=11/key=103, [484]=/list_bucketing_static_part/ds=2008-04-08/hr=11/key=484, [51]=/list_bucketing_static_part/ds=2008-04-08/hr=11/key=51}	 
 Storage Desc Params:	 	 
 	serialization.format	1                   

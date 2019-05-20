@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,14 +24,18 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
+import java.security.AccessController;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.ql.exec.AddToClassPathAction;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
+import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,12 +66,12 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
-import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormatImpl;
 import org.apache.hadoop.hive.ql.io.IOPrepareCache;
+import org.apache.hadoop.hive.ql.log.LogDivertAppender;
 import org.apache.hadoop.hive.ql.log.NullAppender;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
@@ -116,6 +120,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   protected transient JobConf job;
   public static MemoryMXBean memoryMXBean;
   protected HadoopJobExecHelper jobExecHelper;
+  private transient boolean isShutdown = false;
+  private transient boolean jobKilled = false;
 
   protected static transient final Logger LOG = LoggerFactory.getLogger(ExecDriver.class);
 
@@ -204,7 +210,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   public boolean checkFatalErrors(Counters ctrs, StringBuilder errMsg) {
      Counters.Counter cntr = ctrs.findCounter(
         HiveConf.getVar(job, HiveConf.ConfVars.HIVECOUNTERGROUP),
-        Operator.HIVECOUNTERFATAL);
+        Operator.HIVE_COUNTER_FATAL);
     return cntr != null && cntr.getValue() > 0;
   }
 
@@ -224,6 +230,11 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     boolean ctxCreated = false;
     Path emptyScratchDir;
     JobClient jc = null;
+
+    if (driverContext.isShutdown()) {
+      LOG.warn("Task was cancelled");
+      return 5;
+    }
 
     MapWork mWork = work.getMapWork();
     ReduceWork rWork = work.getReduceWork();
@@ -248,6 +259,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     //See the javadoc on HiveOutputFormatImpl and HadoopShims.prepareJobOutput()
     job.setOutputFormat(HiveOutputFormatImpl.class);
 
+    job.setMapRunnerClass(ExecMapRunner.class);
     job.setMapperClass(ExecMapper.class);
 
     job.setMapOutputKeyClass(HiveKey.class);
@@ -390,15 +402,27 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       Utilities.createTmpDirs(job, rWork);
 
       SessionState ss = SessionState.get();
-      if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")
-          && ss != null) {
-        TezSessionState session = ss.getTezSession();
-        TezSessionPoolManager.getInstance().closeIfNotDefault(session, true);
+      // TODO: why is there a TezSession in MR ExecDriver?
+      if (ss != null && HiveConf.getVar(job, ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+        // TODO: this is the only place that uses keepTmpDir. Why?
+        TezSessionPoolManager.closeIfNotDefault(ss.getTezSession(), true);
       }
 
       HiveConfUtil.updateJobCredentialProviders(job);
       // Finally SUBMIT the JOB!
+      if (driverContext.isShutdown()) {
+        LOG.warn("Task was cancelled");
+        return 5;
+      }
+
       rj = jc.submitJob(job);
+
+      if (driverContext.isShutdown()) {
+        LOG.warn("Task was cancelled");
+        killJob();
+        return 5;
+      }
+
       this.jobID = rj.getJobID();
       updateStatusInQueryDisplay();
       returnVal = jobExecHelper.progress(rj, jc, ctx);
@@ -428,7 +452,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
         if (rj != null) {
           if (returnVal != 0) {
-            rj.killJob();
+            killJob();
           }
           jobID = rj.getID().toString();
         }
@@ -436,9 +460,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
           jc.close();
         }
       } catch (Exception e) {
-	LOG.warn("Failed while cleaning up ", e);
+        LOG.warn("Failed while cleaning up ", e);
       } finally {
-	HadoopJobExecHelper.runningJobs.remove(rj);
+        HadoopJobExecHelper.runningJobs.remove(rj);
       }
     }
 
@@ -553,11 +577,6 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     if (mWork.getInputformat() != null) {
       HiveConf.setVar(conf, ConfVars.HIVEINPUTFORMAT, mWork.getInputformat());
     }
-    if (mWork.getIndexIntermediateFile() != null) {
-      conf.set(ConfVars.HIVE_INDEX_COMPACT_FILE.varname, mWork.getIndexIntermediateFile());
-      conf.set(ConfVars.HIVE_INDEX_BLOCKFILTER_FILE.varname, mWork.getIndexIntermediateFile());
-    }
-
     // Intentionally overwrites anything the user may have put here
     conf.setBoolean("hive.input.format.sorted", mWork.isInputFormatSorted());
 
@@ -612,6 +631,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   private static void setupChildLog4j(Configuration conf) {
     try {
       LogUtils.initHiveExecLog4j();
+      LogDivertAppender.registerRoutingAppender(conf);
+      LogDivertAppenderForTest.registerRoutingAppenderIfInTest(conf);
     } catch (LogInitializationException e) {
       System.err.println(e.getMessage());
     }
@@ -683,6 +704,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     }
     System.setProperty(HiveConf.ConfVars.HIVEQUERYID.toString(), queryId);
 
+    LogUtils.registerLoggingContext(conf);
+
     if (noLog) {
       // If started from main(), and noLog is on, we should not output
       // any logs. To turn the log on, please set -Dtest.silent=false
@@ -724,7 +747,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       // see also - code in CliDriver.java
       ClassLoader loader = conf.getClassLoader();
       if (StringUtils.isNotBlank(libjars)) {
-        loader = Utilities.addToClassPath(loader, StringUtils.split(libjars, ","));
+        AddToClassPathAction addAction = new AddToClassPathAction(
+            loader, Arrays.asList(StringUtils.split(libjars, ",")));
+        loader = AccessController.doPrivileged(addAction);
       }
       conf.setClassLoader(loader);
       // Also set this to the Thread ContextClassLoader, so new threads will
@@ -833,22 +858,37 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     ss.getHiveHistory().logPlanProgress(queryPlan);
   }
 
+  public boolean isTaskShutdown() {
+    return isShutdown;
+  }
+
   @Override
   public void shutdown() {
     super.shutdown();
-    if (rj != null) {
-      try {
-        rj.killJob();
-      } catch (Exception e) {
-        LOG.warn("failed to kill job " + rj.getID(), e);
-      }
-      rj = null;
-    }
+    killJob();
+    isShutdown = true;
   }
 
   @Override
   public String getExternalHandle() {
     return this.jobID;
+  }
+
+  private void killJob() {
+    boolean needToKillJob = false;
+    synchronized(this) {
+      if (rj != null && !jobKilled) {
+        jobKilled = true;
+        needToKillJob = true;
+      }
+    }
+    if (needToKillJob) {
+      try {
+        rj.killJob();
+      } catch (Exception e) {
+        LOG.warn("failed to kill job " + rj.getID(), e);
+      }
+    }
   }
 }
 

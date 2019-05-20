@@ -3,7 +3,7 @@ CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
   `user` STRING,
-  time STRING,
+  `time` STRING,
   request STRING,
   status STRING,
   size STRING,
@@ -16,12 +16,14 @@ WITH SERDEPROPERTIES (
 )
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@serde_regex
 POSTHOOK: query: EXPLAIN
 CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
   `user` STRING,
-  time STRING,
+  `time` STRING,
   request STRING,
   status STRING,
   size STRING,
@@ -34,27 +36,28 @@ WITH SERDEPROPERTIES (
 )
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@serde_regex
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-0
-      Create Table Operator:
-        Create Table
-          columns: host string, identity string, user string, time string, request string, status string, size string, referer string, agent string
-          input format: org.apache.hadoop.mapred.TextInputFormat
-          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          serde name: org.apache.hadoop.hive.contrib.serde2.RegexSerDe
-          serde properties:
-            input.regex ([^ ]*) ([^ ]*) ([^ ]*) (-|\[[^\]]*\]) ([^ "]*|"[^"]*") (-|[0-9]*) (-|[0-9]*)(?: ([^ "]*|"[^"]*") ([^ "]*|"[^"]*"))?
-            output.format.string %1$s %2$s %3$s %4$s %5$s %6$s %7$s %8$s %9$s
-          name: default.serde_regex
+    Create Table
+      columns: host string, identity string, user string, time string, request string, status string, size string, referer string, agent string
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.contrib.serde2.RegexSerDe
+      serde properties:
+        input.regex ([^ ]*) ([^ ]*) ([^ ]*) (-|\[[^\]]*\]) ([^ "]*|"[^"]*") (-|[0-9]*) (-|[0-9]*)(?: ([^ "]*|"[^"]*") ([^ "]*|"[^"]*"))?
+        output.format.string %1$s %2$s %3$s %4$s %5$s %6$s %7$s %8$s %9$s
+      name: default.serde_regex
 
 PREHOOK: query: CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
   `user` STRING,
-  time STRING,
+  `time` STRING,
   request STRING,
   status STRING,
   size STRING,
@@ -73,7 +76,7 @@ POSTHOOK: query: CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
   `user` STRING,
-  time STRING,
+  `time` STRING,
   request STRING,
   status STRING,
   size STRING,
@@ -104,11 +107,11 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/apache.access.2.log" I
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@serde_regex
-PREHOOK: query: SELECT * FROM serde_regex ORDER BY time
+PREHOOK: query: SELECT * FROM serde_regex ORDER BY `time`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@serde_regex
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM serde_regex ORDER BY time
+POSTHOOK: query: SELECT * FROM serde_regex ORDER BY `time`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@serde_regex
 #### A masked pattern was here ####

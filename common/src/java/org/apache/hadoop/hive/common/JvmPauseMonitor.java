@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -37,6 +37,7 @@ import java.lang.management.ManagementFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Based on the JvmPauseMonitor from Hadoop.
@@ -172,7 +173,7 @@ public class JvmPauseMonitor {
   private class Monitor implements Runnable {
     @Override
     public void run() {
-      Stopwatch sw = new Stopwatch();
+      Stopwatch sw = Stopwatch.createUnstarted();
       Map<String, GcTimes> gcTimesBeforeSleep = getGcTimes();
       while (shouldRun) {
         sw.reset().start();
@@ -181,7 +182,7 @@ public class JvmPauseMonitor {
         } catch (InterruptedException ie) {
           return;
         }
-        long extraSleepTime = sw.elapsedMillis() - SLEEP_INTERVAL_MS;
+        long extraSleepTime = sw.elapsed(TimeUnit.MILLISECONDS) - SLEEP_INTERVAL_MS;
         Map<String, GcTimes> gcTimesAfterSleep = getGcTimes();
 
         if (extraSleepTime > warnThresholdMs) {

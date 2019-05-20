@@ -1,12 +1,8 @@
-PREHOOK: query: -- HIVE-5056 RS has expression list for values, but it's ignored in MapJoinProcessor
-
-create table testsrc ( `key` int,`val` string)
+PREHOOK: query: create table testsrc ( `key` int,`val` string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@testsrc
-POSTHOOK: query: -- HIVE-5056 RS has expression list for values, but it's ignored in MapJoinProcessor
-
-create table testsrc ( `key` int,`val` string)
+POSTHOOK: query: create table testsrc ( `key` int,`val` string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testsrc
@@ -74,6 +70,9 @@ JOIN `orderpayment_small` `order_city` ON `order_city`.`cityid` = `orderpayment`
 JOIN `user_small` `user` ON `user`.`userid` = `orderpayment`.`userid`
 limit 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orderpayment_small
+PREHOOK: Input: default@user_small
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended SELECT
      `dim_pay_date`.`date`
     , `deal`.`dealid`
@@ -84,6 +83,26 @@ JOIN `orderpayment_small` `order_city` ON `order_city`.`cityid` = `orderpayment`
 JOIN `user_small` `user` ON `user`.`userid` = `orderpayment`.`userid`
 limit 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orderpayment_small
+POSTHOOK: Input: default@user_small
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t4`.`date`, `t6`.`dealid`
+FROM (SELECT `userid`
+FROM `default`.`user_small`
+WHERE `userid` IS NOT NULL) AS `t0`
+INNER JOIN ((SELECT `dealid`, `date`, `cityid`, `userid`
+FROM `default`.`orderpayment_small`
+WHERE `date` IS NOT NULL AND `dealid` IS NOT NULL AND `cityid` IS NOT NULL AND `userid` IS NOT NULL) AS `t2`
+INNER JOIN (SELECT `date`
+FROM `default`.`orderpayment_small`
+WHERE `date` IS NOT NULL) AS `t4` ON `t2`.`date` = `t4`.`date`
+INNER JOIN (SELECT `dealid`
+FROM `default`.`orderpayment_small`
+WHERE `dealid` IS NOT NULL) AS `t6` ON `t2`.`dealid` = `t6`.`dealid`
+INNER JOIN (SELECT `cityid`
+FROM `default`.`orderpayment_small`
+WHERE `cityid` IS NOT NULL) AS `t8` ON `t2`.`cityid` = `t8`.`cityid`) ON `t0`.`userid` = `t2`.`userid`
+LIMIT 5
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -102,11 +121,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: orderpayment
+                  filterExpr: (date is not null and dealid is not null and cityid is not null and userid is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (date is not null and dealid is not null and cityid is not null and userid is not null) (type: boolean)
+                    predicate: (cityid is not null and date is not null and dealid is not null and userid is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: dealid (type: int), date (type: string), cityid (type: int), userid (type: int)
@@ -121,6 +141,7 @@ STAGE PLANS:
                         tag: 0
                         value expressions: _col0 (type: int), _col2 (type: int), _col3 (type: int)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -132,6 +153,8 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
                     columns dealid,date,time,cityid,userid
                     columns.comments 
                     columns.types int:string:string:int:int
@@ -152,6 +175,8 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
+                      column.name.delimiter ,
                       columns dealid,date,time,cityid,userid
                       columns.comments 
                       columns.types int:string:string:int:int
@@ -169,11 +194,12 @@ STAGE PLANS:
                     name: default.orderpayment_small
                   name: default.orderpayment_small
             Truncated Path -> Alias:
-              /orderpayment_small [orderpayment]
+              /orderpayment_small [$hdt$_1:orderpayment]
         Map 6 
             Map Operator Tree:
                 TableScan
                   alias: dim_pay_date
+                  filterExpr: date is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -192,6 +218,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                         tag: 1
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -203,6 +230,8 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
                     columns dealid,date,time,cityid,userid
                     columns.comments 
                     columns.types int:string:string:int:int
@@ -223,6 +252,8 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
+                      column.name.delimiter ,
                       columns dealid,date,time,cityid,userid
                       columns.comments 
                       columns.types int:string:string:int:int
@@ -240,11 +271,12 @@ STAGE PLANS:
                     name: default.orderpayment_small
                   name: default.orderpayment_small
             Truncated Path -> Alias:
-              /orderpayment_small [dim_pay_date]
+              /orderpayment_small [$hdt$_2:dim_pay_date]
         Map 7 
             Map Operator Tree:
                 TableScan
                   alias: deal
+                  filterExpr: dealid is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -263,6 +295,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                         tag: 1
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -274,6 +307,8 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
                     columns dealid,date,time,cityid,userid
                     columns.comments 
                     columns.types int:string:string:int:int
@@ -294,6 +329,8 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
+                      column.name.delimiter ,
                       columns dealid,date,time,cityid,userid
                       columns.comments 
                       columns.types int:string:string:int:int
@@ -311,11 +348,12 @@ STAGE PLANS:
                     name: default.orderpayment_small
                   name: default.orderpayment_small
             Truncated Path -> Alias:
-              /orderpayment_small [deal]
+              /orderpayment_small [$hdt$_3:deal]
         Map 8 
             Map Operator Tree:
                 TableScan
                   alias: order_city
+                  filterExpr: cityid is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -334,6 +372,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                         tag: 1
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -345,6 +384,8 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
                     columns dealid,date,time,cityid,userid
                     columns.comments 
                     columns.types int:string:string:int:int
@@ -365,6 +406,8 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
+                      column.name.delimiter ,
                       columns dealid,date,time,cityid,userid
                       columns.comments 
                       columns.types int:string:string:int:int
@@ -382,11 +425,12 @@ STAGE PLANS:
                     name: default.orderpayment_small
                   name: default.orderpayment_small
             Truncated Path -> Alias:
-              /orderpayment_small [order_city]
+              /orderpayment_small [$hdt$_4:order_city]
         Map 9 
             Map Operator Tree:
                 TableScan
                   alias: user
+                  filterExpr: userid is not null (type: boolean)
                   Statistics: Num rows: 100 Data size: 288 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -405,6 +449,7 @@ STAGE PLANS:
                         Statistics: Num rows: 100 Data size: 288 Basic stats: COMPLETE Column stats: NONE
                         tag: 1
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -416,6 +461,8 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
                     columns userid
                     columns.comments 
                     columns.types int
@@ -436,6 +483,8 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
+                      column.name.delimiter ,
                       columns userid
                       columns.comments 
                       columns.types int
@@ -453,7 +502,7 @@ STAGE PLANS:
                     name: default.user_small
                   name: default.user_small
             Truncated Path -> Alias:
-              /user_small [user]
+              /user_small [$hdt$_0:user]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:

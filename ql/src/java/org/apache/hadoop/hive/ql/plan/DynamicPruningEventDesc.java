@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,8 +19,11 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.IOException;
+import java.util.Objects;
 
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -38,6 +41,9 @@ public class DynamicPruningEventDesc extends AppMasterEventDesc {
   // tableScan is only available during compile
   private transient TableScanOperator tableScan;
 
+  // reduceSink is only available during compile
+  private transient ReduceSinkOperator generator;
+
   // the partition column we're interested in
   private ExprNodeDesc partKey;
 
@@ -49,11 +55,20 @@ public class DynamicPruningEventDesc extends AppMasterEventDesc {
     this.tableScan = tableScan;
   }
 
+  public ReduceSinkOperator getGenerator() {
+    return generator;
+  }
+
+  public void setGenerator(ReduceSinkOperator generator) {
+    this.generator = generator;
+  }
+
   @Explain(displayName = "Target column")
   public String displayTargetColumn() {
     return targetColumnName + " (" + targetColumnType + ")";
   }
 
+  @Signature
   public String getTargetColumnName() {
     return targetColumnName;
   }
@@ -62,6 +77,7 @@ public class DynamicPruningEventDesc extends AppMasterEventDesc {
     this.targetColumnName = columnName;
   }
 
+  @Signature
   public String getTargetColumnType() {
     return targetColumnType;
   }
@@ -81,6 +97,7 @@ public class DynamicPruningEventDesc extends AppMasterEventDesc {
   }
 
   @Explain(displayName = "Partition key expr")
+  @Signature
   public String getPartKeyString() {
     return this.partKey.getExprString();
   }
@@ -88,4 +105,16 @@ public class DynamicPruningEventDesc extends AppMasterEventDesc {
   public ExprNodeDesc getPartKey() {
     return this.partKey;
   }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (super.isSame(other)) {
+      DynamicPruningEventDesc otherDesc = (DynamicPruningEventDesc) other;
+      return Objects.equals(getTargetColumnName(), otherDesc.getTargetColumnName()) &&
+          Objects.equals(getTargetColumnType(), otherDesc.getTargetColumnType()) &&
+          Objects.equals(getPartKeyString(), otherDesc.getPartKeyString());
+    }
+    return false;
+  }
+
 }

@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 
 CREATE table rcfileTableLazyDecompress (key STRING, value STRING) STORED AS RCFile;

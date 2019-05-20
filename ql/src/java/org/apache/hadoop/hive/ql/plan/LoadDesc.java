@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
@@ -30,17 +31,34 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class LoadDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private Path sourcePath;
+  /**
+   * Need to remember whether this is an acid compliant operation, and if so whether it is an
+   * insert, update, or delete.
+   */
+  private final AcidUtils.Operation writeType;
 
-  public LoadDesc() {
-  }
 
-  public LoadDesc(final Path sourcePath) {
+  LoadDesc(final Path sourcePath, AcidUtils.Operation writeType) {
     this.sourcePath = sourcePath;
+    this.writeType = writeType;
   }
 
   @Explain(displayName = "source", explainLevels = { Level.EXTENDED })
   public Path getSourcePath() {
     return sourcePath;
   }
-  
+
+  public void setSourcePath(Path sourcePath) {
+    this.sourcePath = sourcePath;
+  }
+
+  public AcidUtils.Operation getWriteType() {
+    return writeType;
+  }
+
+  @Explain(displayName = "Write Type")
+  public String getWriteTypeString() {
+    //if acid write, add to plan output, else don't bother
+    return getWriteType() == AcidUtils.Operation.NOT_ACID ? null : getWriteType().toString();
+  }
 }

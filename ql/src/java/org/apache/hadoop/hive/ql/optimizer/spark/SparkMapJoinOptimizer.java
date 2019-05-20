@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,14 +19,22 @@
 package org.apache.hadoop.hive.ql.optimizer.spark;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import com.google.common.collect.Sets;
+import org.apache.hadoop.hive.ql.exec.LateralViewForwardOperator;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.TerminalOperator;
+import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -78,7 +86,7 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
       return null;
     }
 
-    LOG.info("Check if it can be converted to map join");
+    LOG.info("Check if operator " + joinOp + " can be converted to map join");
     long[] mapJoinInfo = getMapJoinConversionInfo(joinOp, context);
     int mapJoinConversionPos = (int) mapJoinInfo[0];
 
@@ -113,7 +121,8 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
     }
 
     // we can set the traits for this join operator
-    OpTraits opTraits = new OpTraits(bucketColNames, numBuckets, null);
+    OpTraits opTraits = new OpTraits(bucketColNames, numBuckets, null,
+            joinOp.getOpTraits().getNumReduceSinks(), joinOp.getOpTraits().getBucketingVersion());
     mapJoinOp.setOpTraits(opTraits);
     mapJoinOp.setStatistics(joinOp.getStatistics());
     setNumberOfBucketsOnChildren(mapJoinOp);
@@ -191,12 +200,58 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
     int pos = 0;
 
     // bigTableFound means we've encountered a table that's bigger than the
-    // max. This table is either the the big table or we cannot convert.
+    // max. This table is either the big table or we cannot convert.
     boolean bigTableFound = false;
+    boolean useTsStats = context.getConf().getBoolean(HiveConf.ConfVars.SPARK_USE_TS_STATS_FOR_MAPJOIN.varname, false);
+
+    // If we're using TS's stats for mapjoin optimization, check each branch and see if there's any
+    // upstream operator (e.g., JOIN, LATERAL_VIEW) that can increase output data size.
+    // If so, mark that branch as the big table branch.
+    if (useTsStats) {
+      LOG.debug("Checking map join optimization for operator {} using TS stats", joinOp);
+      for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
+        if (isBigTableBranch(parentOp)) {
+          if (bigTablePosition < 0 && bigTableCandidateSet.contains(pos)
+              && !containUnionWithoutRS(parentOp.getParentOperators().get(0))) {
+            LOG.debug("Found a big table branch with parent operator {} and position {}", parentOp, pos);
+            bigTablePosition = pos;
+            bigTableFound = true;
+            bigInputStat = new Statistics(0, Long.MAX_VALUE, 0);
+          } else {
+            // Either we've found multiple big table branches, or the current branch cannot
+            // be a big table branch. Disable mapjoin for these cases.
+            LOG.debug("Cannot enable map join optimization for operator {}", joinOp);
+            return new long[]{-1, 0, 0};
+          }
+        }
+        pos++;
+      }
+    }
+
+    pos = 0;
 
     for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
+      // Skip the potential big table identified above
+      if (pos == bigTablePosition) {
+        pos++;
+        continue;
+      }
 
-      Statistics currInputStat = parentOp.getStatistics();
+      Statistics currInputStat = null;
+      if (useTsStats) {
+        // Find all root TSs and add up all data sizes
+        // Not adding other stats (e.g., # of rows, col stats) since only data size is used here
+        for (TableScanOperator root : OperatorUtils.findOperatorsUpstream(parentOp, TableScanOperator.class)) {
+          if (currInputStat == null) {
+              currInputStat = root.getStatistics().clone();
+          } else {
+            currInputStat.addBasicStats(root.getStatistics());
+          }
+        }
+      } else {
+         currInputStat = parentOp.getStatistics();
+      }
+
       if (currInputStat == null) {
         LOG.warn("Couldn't get statistics from: " + parentOp);
         return new long[]{-1, 0, 0};
@@ -225,9 +280,8 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
       }
 
       long inputSize = currInputStat.getDataSize();
-      if ((bigInputStat == null)
-          || ((bigInputStat != null)
-          && (inputSize > bigInputStat.getDataSize()))) {
+
+      if (bigInputStat == null || inputSize > bigInputStat.getDataSize()) {
 
         if (bigTableFound) {
           // cannot convert to map join; we've already chosen a big table
@@ -285,6 +339,25 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
     }
 
     return new long[]{bigTablePosition, connectedMapJoinSize, totalSize};
+  }
+
+  /**
+   * Check whether the branch starting from 'op' is a potential big table branch.
+   * This is true if the branch contains any operator that could potentially increase
+   * output data size, such as JOIN and LATERAL_VIEW. If this is the case, we assume
+   * the worst and mark the branch as big table branch in the MapJoin optimization.
+   *
+   * @return True if the branch starting at 'op' is a big table branch. False otherwise.
+   */
+  private boolean isBigTableBranch(Operator<? extends OperatorDesc> op) {
+    for (Class<? extends Operator<? extends OperatorDesc>> clazz :
+        Sets.newHashSet(JoinOperator.class, LateralViewForwardOperator.class)) {
+      Set<? extends Operator<? extends OperatorDesc>> parentSinks = OperatorUtils.findOperatorsUpstream(op, clazz);
+      if (!parentSinks.isEmpty()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -386,10 +459,34 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
         MapJoinProcessor.convertJoinOpMapJoinOp(context.getConf(), joinOp,
             joinOp.getConf().isLeftInputJoin(), joinOp.getConf().getBaseSrc(),
             joinOp.getConf().getMapAliases(), bigTablePosition, true);
+    if (mapJoinOp == null) {
+      return null;
+    }
 
     Operator<? extends OperatorDesc> parentBigTableOp =
         mapJoinOp.getParentOperators().get(bigTablePosition);
     if (parentBigTableOp instanceof ReduceSinkOperator) {
+
+      for (Operator<?> parentOp : parentBigTableOp.getParentOperators()) {
+        // we might have generated a dynamic partition operator chain. Since
+        // we're removing the reduce sink we need do remove that too.
+        Set<SparkPartitionPruningSinkOperator> partitionPruningSinkOps = new HashSet<>();
+        for (Operator<?> childOp : parentOp.getChildOperators()) {
+          SparkPartitionPruningSinkOperator partitionPruningSinkOp = findPartitionPruningSinkOperator(childOp);
+          if (partitionPruningSinkOp != null) {
+            partitionPruningSinkOps.add(partitionPruningSinkOp);
+          }
+        }
+
+        for (SparkPartitionPruningSinkOperator partitionPruningSinkOp : partitionPruningSinkOps) {
+            OperatorUtils.removeBranch(partitionPruningSinkOp);
+            // at this point we've found the fork in the op pipeline that has the pruning as a child plan.
+            LOG.info("Disabling dynamic pruning for: "
+                    + (partitionPruningSinkOp.getConf()).getTableScanNames()
+                    + ". Need to be removed together with reduce sink");
+        }
+      }
+
       mapJoinOp.getParentOperators().remove(bigTablePosition);
       if (!(mapJoinOp.getParentOperators().contains(parentBigTableOp.getParentOperators().get(0)))) {
         mapJoinOp.getParentOperators().add(bigTablePosition,
@@ -409,6 +506,32 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
 
     return mapJoinOp;
   }
+
+  private SparkPartitionPruningSinkOperator findPartitionPruningSinkOperator(Operator<?> parent) {
+
+    for (Operator<?> op : parent.getChildOperators()) {
+      while (op != null) {
+        if (op instanceof SparkPartitionPruningSinkOperator && op.getConf() instanceof SparkPartitionPruningSinkDesc) {
+          // found dynamic partition pruning operator
+          return (SparkPartitionPruningSinkOperator) op;
+        }
+        if (op instanceof TerminalOperator) {
+          // crossing reduce sink or file sink means the pruning isn't for this parent.
+          break;
+        }
+
+        if (op.getChildOperators().size() != 1) {
+          // dynamic partition pruning pipeline doesn't have multiple children
+          break;
+        }
+
+        op = op.getChildOperators().get(0);
+      }
+    }
+
+    return null;
+  }
+
 
   private boolean containUnionWithoutRS(Operator<? extends OperatorDesc> op) {
     boolean result = false;

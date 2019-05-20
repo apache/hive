@@ -17,19 +17,19 @@
 package org.apache.hadoop.hive.accumulo;
 
 import java.io.File;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.io.IOException;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
+import org.apache.accumulo.core.client.ClientConfiguration;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.ZooKeeperInstance;
 import org.apache.accumulo.core.client.mock.MockInstance;
 import org.apache.accumulo.core.client.security.tokens.AuthenticationToken;
+import org.apache.accumulo.core.client.security.tokens.KerberosToken;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.JavaUtils;
 
 import com.google.common.base.Preconditions;
 
@@ -37,8 +37,6 @@ import com.google.common.base.Preconditions;
  *
  */
 public class AccumuloConnectionParameters {
-  private static final String KERBEROS_TOKEN_CLASS = "org.apache.accumulo.core.client.security.tokens.KerberosToken";
-
   public static final String USER_NAME = "accumulo.user.name";
   public static final String USER_PASS = "accumulo.user.pass";
   public static final String ZOOKEEPERS = "accumulo.zookeepers";
@@ -124,8 +122,9 @@ public class AccumuloConnectionParameters {
     if (null == zookeepers) {
       throw new IllegalArgumentException("ZooKeeper quorum string must be provided in hiveconf using " + ZOOKEEPERS);
     }
+    ClientConfiguration clientConf = ClientConfiguration.loadDefault().withInstance(instanceName).withZkHosts(zookeepers).withSasl(useSasl());
 
-    return new ZooKeeperInstance(instanceName, zookeepers);
+    return new ZooKeeperInstance(clientConf);
   }
 
   public Connector getConnector() throws AccumuloException, AccumuloSecurityException {
@@ -142,7 +141,7 @@ public class AccumuloConnectionParameters {
     }
 
     if (useSasl()) {
-      return inst.getConnector(username, getKerberosToken());
+      return inst.getConnector(username, getKerberosToken(username));
     } else {
       // Not using SASL/Kerberos -- use the password
       String password = getAccumuloPassword();
@@ -175,17 +174,10 @@ public class AccumuloConnectionParameters {
    * Instantiate a KerberosToken in a backwards compatible manner.
    * @param username Kerberos principal
    */
-  AuthenticationToken getKerberosToken(String username) {
-    // Get the Class
-    Class<? extends AuthenticationToken> krbTokenClz = getKerberosTokenClass();
-
+  KerberosToken getKerberosToken(String username) {
     try {
-      // Invoke the `new KerberosToken(String)` constructor
-      // Expects that the user is already logged-in
-      Constructor<? extends AuthenticationToken> constructor = krbTokenClz.getConstructor(String.class);
-      return constructor.newInstance(username);
-    } catch (NoSuchMethodException | SecurityException | InstantiationException |
-        IllegalArgumentException | InvocationTargetException | IllegalAccessException e) {
+      return new KerberosToken(username);
+    } catch (IOException e) {
       throw new IllegalArgumentException("Failed to instantiate KerberosToken.", e);
     }
   }
@@ -195,36 +187,11 @@ public class AccumuloConnectionParameters {
    * @param username Kerberos principal
    * @param keytab Keytab on local filesystem
    */
-  AuthenticationToken getKerberosToken(String username, String keytab) {
-    Class<? extends AuthenticationToken> krbTokenClz = getKerberosTokenClass();
-
-    File keytabFile = new File(keytab);
-    if (!keytabFile.isFile() || !keytabFile.canRead()) {
-      throw new IllegalArgumentException("Keytab must be a readable file: " + keytab);
-    }
-
+  KerberosToken getKerberosToken(String username, String keytab) {
     try {
-      // Invoke the `new KerberosToken(String, File, boolean)` constructor
-      // Tries to log in as the provided user with the given keytab, overriding an already logged-in user if present
-      Constructor<? extends AuthenticationToken> constructor = krbTokenClz.getConstructor(String.class, File.class, boolean.class);
-      return constructor.newInstance(username, keytabFile, true);
-    } catch (NoSuchMethodException | SecurityException | InstantiationException |
-        IllegalArgumentException | InvocationTargetException | IllegalAccessException e) {
+      return new KerberosToken(username, new File(keytab), true);
+    } catch (IOException e) {
       throw new IllegalArgumentException("Failed to instantiate KerberosToken.", e);
-    }
-  }
-
-  /**
-   * Attempt to instantiate the KerberosToken class
-   */
-  Class<? extends AuthenticationToken> getKerberosTokenClass() {
-    try {
-      // Instantiate the class
-      Class<?> clz = JavaUtils.loadClass(KERBEROS_TOKEN_CLASS);
-      // Cast it to an AuthenticationToken since Connector will need that
-      return clz.asSubclass(AuthenticationToken.class);
-    } catch (ClassNotFoundException e) {
-      throw new IllegalArgumentException("Could not load KerberosToken class. >=Accumulo 1.7.0 required", e);
     }
   }
 }

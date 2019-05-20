@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.ql.security.authorization.MetaStoreAuthzAPIAuthorizerEmbedOnly;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener;
-import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.thrift.TException;
 import org.junit.Test;
 
 /**
@@ -57,9 +57,7 @@ public abstract class AbstractTestAuthorizationApiAuthorizer {
 
     hiveConf = new HiveConf();
     if (isRemoteMetastoreMode) {
-      int port = MetaStoreUtils.findFreePort();
-      MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
-      hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
+      MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf);
     }
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
@@ -92,15 +90,27 @@ public abstract class AbstractTestAuthorizationApiAuthorizer {
         // authorization checks passed.
         String exStackString = ExceptionUtils.getStackTrace(e);
         assertTrue("Verifying this exception came after authorization check",
-            exStackString.contains("org.apache.hadoop.hive.metastore.ObjectStore"));
+                exStackString.contains("org.apache.hadoop.hive.metastore.ObjectStore"));
         // If its not an exception caused by auth check, ignore it
       }
       assertFalse("Authz Exception should have been thrown in remote mode", isRemoteMetastoreMode);
       System.err.println("No auth exception thrown");
     } catch (MetaException e) {
       System.err.println("Caught exception");
-      caughtEx = true;
-      assertTrue(e.getMessage().contains(MetaStoreAuthzAPIAuthorizerEmbedOnly.errMsg));
+      String exStackString = ExceptionUtils.getStackTrace(e);
+      // Check if MetaException has one of InvalidObjectException or NoSuchObjectExcetion or any exception thrown from ObjectStore , which means that the
+      // authorization checks passed.
+      if(exStackString.contains("org.apache.hadoop.hive.metastore.api.NoSuchObjectException") ||
+              exStackString.contains("org.apache.hadoop.hive.metastore.api.InvalidObjectException")) {
+        assertFalse("No Authz exception thrown in embedded mode", isRemoteMetastoreMode);
+      } else {
+        caughtEx = true;
+        assertTrue(e.getMessage().contains(MetaStoreAuthzAPIAuthorizerEmbedOnly.errMsg));
+      }
+    } catch (TException e) {
+      String exStackString = ExceptionUtils.getStackTrace(e);
+      assertTrue("Verifying this exception came after authorization check",
+              exStackString.contains("org.apache.hadoop.hive.metastore.ObjectStore"));
     }
     if (!isRemoteMetastoreMode) {
       assertFalse("No exception should be thrown in embedded mode", caughtEx);

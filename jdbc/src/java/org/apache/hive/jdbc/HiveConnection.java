@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,13 +18,24 @@
 
 package org.apache.hive.jdbc;
 
+import org.apache.hadoop.hive.metastore.security.DelegationTokenIdentifier;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.security.Credentials;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.security.token.TokenIdentifier;
+import org.apache.hive.service.rpc.thrift.TSetClientInfoResp;
+
+import org.apache.hive.service.rpc.thrift.TSetClientInfoReq;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
-import org.apache.hive.service.auth.HiveAuthFactory;
+import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.auth.KerberosSaslHelper;
 import org.apache.hive.service.auth.PlainSaslHelper;
 import org.apache.hive.service.auth.SaslQOP;
+import org.apache.hive.service.cli.session.SessionUtils;
 import org.apache.hive.service.cli.thrift.EmbeddedThriftBinaryCLIService;
 import org.apache.hive.service.rpc.thrift.TCLIService;
 import org.apache.hive.service.rpc.thrift.TCancelDelegationTokenReq;
@@ -41,6 +52,7 @@ import org.apache.hive.service.rpc.thrift.TSessionHandle;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.CookieStore;
+import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.ServiceUnavailableRetryStrategy;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
@@ -61,14 +73,14 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
+import javax.security.auth.Subject;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
-
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -77,6 +89,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.security.AccessControlContext;
+import java.security.AccessController;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.sql.Array;
@@ -91,12 +105,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLClientInfoException;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.SQLXML;
 import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -105,6 +121,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * HiveConnection.
@@ -131,6 +148,99 @@ public class HiveConnection implements java.sql.Connection {
   private TProtocolVersion protocol;
   private int fetchSize = HiveStatement.DEFAULT_FETCH_SIZE;
   private String initFile = null;
+  private String wmPool = null, wmApp = null;
+  private Properties clientInfo;
+  private Subject loggedInSubject;
+
+  /**
+   * Get all direct HiveServer2 URLs from a ZooKeeper based HiveServer2 URL
+   * @param zookeeperBasedHS2Url
+   * @return
+   * @throws Exception
+   */
+  public static List<JdbcConnectionParams> getAllUrls(String zookeeperBasedHS2Url) throws Exception {
+    JdbcConnectionParams params = Utils.parseURL(zookeeperBasedHS2Url, new Properties());
+    // if zk is disabled or if HA service discovery is enabled we return the already populated params.
+    // in HA mode, params is already populated with Active server host info.
+    if (params.getZooKeeperEnsemble() == null ||
+      ZooKeeperHiveClientHelper.isZkHADynamicDiscoveryMode(params.getSessionVars())) {
+      return Collections.singletonList(params);
+    }
+    return ZooKeeperHiveClientHelper.getDirectParamsList(params);
+  }
+  
+  public static List<String> getAllUrlStrings(String zookeeperBasedHS2Url) throws Exception {
+    List<String> jdbcUrls = new ArrayList<>();
+    List<JdbcConnectionParams> allConnectionParams = getAllUrls(zookeeperBasedHS2Url);
+    for (JdbcConnectionParams cp : allConnectionParams) {
+      String jdbcUrl = makeDirectJDBCUrlFromConnectionParams(cp);
+      if ((jdbcUrl != null) && (!jdbcUrl.isEmpty())) {
+        jdbcUrls.add(jdbcUrl);
+      }
+    }
+    return jdbcUrls;
+  }
+
+  private static String makeDirectJDBCUrlFromConnectionParams(JdbcConnectionParams cp) {
+    // Direct JDBC Url format: 
+    // jdbc:hive2://<host1>:<port1>/dbName;sess_var_list?hive_conf_list#hive_var_list
+    StringBuilder url = new StringBuilder("");
+    if (cp != null) {
+      if (cp.getHost() != null) {
+        url.append(cp.getHost());
+        url.append(":");
+        url.append(cp.getPort());
+        url.append("/");
+        url.append(cp.getDbName());
+        // Add session vars
+        if ((cp.getSessionVars() != null) && (!cp.getSessionVars().isEmpty())) {
+          for (Entry<String, String> sessVar : cp.getSessionVars().entrySet()) {
+            if ((sessVar.getKey().equalsIgnoreCase(JdbcConnectionParams.SERVICE_DISCOVERY_MODE))
+                || (sessVar.getKey().equalsIgnoreCase(JdbcConnectionParams.ZOOKEEPER_NAMESPACE))) {
+              continue;
+            }
+            url.append(";");
+            url.append(sessVar.getKey());
+            url.append("=");
+            url.append(sessVar.getValue());
+          }
+        }
+        // Add hive confs
+        if ((cp.getHiveConfs() != null) && (!cp.getHiveConfs().isEmpty())) {
+          url.append("?");
+          boolean firstKV = true;
+          for (Entry<String, String> hiveConf : cp.getHiveConfs().entrySet()) {
+            if (!firstKV) {
+              url.append(";");
+            } else {
+              firstKV = false;
+            }
+            url.append(hiveConf.getKey());
+            url.append("=");
+            url.append(hiveConf.getValue());
+          }
+        }
+        // Add hive vars
+        if ((cp.getHiveVars() != null) && (!cp.getHiveVars().isEmpty())) {
+          url.append("#");
+          boolean firstKV = true;
+          for (Entry<String, String> hiveVar : cp.getHiveVars().entrySet()) {
+            if (!firstKV) {
+              url.append(";");
+            } else {
+              firstKV = false;
+            }
+            url.append(hiveVar.getKey());
+            url.append("=");
+            url.append(hiveVar.getValue());
+          }
+        }
+      } else {
+        return url.toString();
+      }
+    }
+    return url.toString();
+  }
 
   public HiveConnection(String uri, Properties info) throws SQLException {
     setupLoginTimeout();
@@ -145,9 +255,13 @@ public class HiveConnection implements java.sql.Connection {
     // sess_var_list -> sessConfMap
     // hive_conf_list -> hiveConfMap
     // hive_var_list -> hiveVarMap
-    host = connParams.getHost();
-    port = connParams.getPort();
     sessConfMap = connParams.getSessionVars();
+    if (isKerberosAuthMode()) {
+      host = Utils.getCanonicalHostName(connParams.getHost());
+    } else {
+      host = connParams.getHost();
+    }
+    port = connParams.getPort();
     isEmbeddedMode = connParams.isEmbeddedMode();
 
     if (sessConfMap.containsKey(JdbcConnectionParams.FETCH_SIZE)) {
@@ -155,6 +269,11 @@ public class HiveConnection implements java.sql.Connection {
     }
     if (sessConfMap.containsKey(JdbcConnectionParams.INIT_FILE)) {
       initFile = sessConfMap.get(JdbcConnectionParams.INIT_FILE);
+    }
+    wmPool = sessConfMap.get(JdbcConnectionParams.WM_POOL);
+    for (String application : JdbcConnectionParams.APPLICATION) {
+      wmApp = sessConfMap.get(application);
+      if (wmApp != null) break;
     }
 
     // add supported protocols
@@ -167,12 +286,13 @@ public class HiveConnection implements java.sql.Connection {
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V7);
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V8);
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9);
+    supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V10);
 
     if (isEmbeddedMode) {
       EmbeddedThriftBinaryCLIService embeddedClient = new EmbeddedThriftBinaryCLIService();
-      embeddedClient.init(null);
+      embeddedClient.init(null, connParams.getHiveConfs());
       client = embeddedClient;
-
+      connParams.getHiveConfs().clear();
       // open client session
       openSession();
       executeInitSql();
@@ -201,7 +321,7 @@ public class HiveConnection implements java.sql.Connection {
           LOG.warn("Failed to connect to " + connParams.getHost() + ":" + connParams.getPort());
           String errMsg = null;
           String warnMsg = "Could not open client transport with JDBC Uri: " + jdbcUriString + ": ";
-          if (isZkDynamicDiscoveryMode()) {
+          if (ZooKeeperHiveClientHelper.isZkDynamicDiscoveryMode(sessConfMap)) {
             errMsg = "Could not open client transport for any of the Server URI's in ZooKeeper: ";
             // Try next available server in zookeeper, or retry all the servers again if retry is enabled
             while(!Utils.updateConnParamsFromZooKeeper(connParams) && ++numRetries < maxRetries) {
@@ -209,7 +329,11 @@ public class HiveConnection implements java.sql.Connection {
             }
             // Update with new values
             jdbcUriString = connParams.getJdbcUriString();
-            host = connParams.getHost();
+            if (isKerberosAuthMode()) {
+              host = Utils.getCanonicalHostName(connParams.getHost());
+            } else {
+              host = connParams.getHost();
+            }
             port = connParams.getPort();
           } else {
             errMsg = warnMsg;
@@ -299,14 +423,14 @@ public class HiveConnection implements java.sql.Connection {
 
 
   private void openTransport() throws Exception {
-      assumeSubject =
-          JdbcConnectionParams.AUTH_KERBEROS_AUTH_TYPE_FROM_SUBJECT.equals(sessConfMap
-              .get(JdbcConnectionParams.AUTH_KERBEROS_AUTH_TYPE));
-      transport = isHttpTransportMode() ? createHttpTransport() : createBinaryTransport();
-      if (!transport.isOpen()) {
-        transport.open();
-        logZkDiscoveryMessage("Connected to " + connParams.getHost() + ":" + connParams.getPort());
-      }
+    assumeSubject =
+        JdbcConnectionParams.AUTH_KERBEROS_AUTH_TYPE_FROM_SUBJECT.equals(sessConfMap
+            .get(JdbcConnectionParams.AUTH_KERBEROS_AUTH_TYPE));
+    transport = isHttpTransportMode() ? createHttpTransport() : createBinaryTransport();
+    if (!transport.isOpen()) {
+      transport.open();
+    }
+    logZkDiscoveryMessage("Connected to " + connParams.getHost() + ":" + connParams.getPort());
   }
 
   public String getConnectedUrl() {
@@ -349,43 +473,53 @@ public class HiveConnection implements java.sql.Connection {
     // Request interceptor for any request pre-processing logic
     HttpRequestInterceptor requestInterceptor;
     Map<String, String> additionalHttpHeaders = new HashMap<String, String>();
+    Map<String, String> customCookies = new HashMap<String, String>();
 
     // Retrieve the additional HttpHeaders
     for (Map.Entry<String, String> entry : sessConfMap.entrySet()) {
       String key = entry.getKey();
-
       if (key.startsWith(JdbcConnectionParams.HTTP_HEADER_PREFIX)) {
         additionalHttpHeaders.put(key.substring(JdbcConnectionParams.HTTP_HEADER_PREFIX.length()),
+          entry.getValue());
+      }
+      if (key.startsWith(JdbcConnectionParams.HTTP_COOKIE_PREFIX)) {
+        customCookies.put(key.substring(JdbcConnectionParams.HTTP_COOKIE_PREFIX.length()),
           entry.getValue());
       }
     }
     // Configure http client for kerberos/password based authentication
     if (isKerberosAuthMode()) {
+      if (assumeSubject) {
+        // With this option, we're assuming that the external application,
+        // using the JDBC driver has done a JAAS kerberos login already
+        AccessControlContext context = AccessController.getContext();
+        loggedInSubject = Subject.getSubject(context);
+        if (loggedInSubject == null) {
+          throw new SQLException("The Subject is not set");
+        }
+      }
       /**
        * Add an interceptor which sets the appropriate header in the request.
        * It does the kerberos authentication and get the final service ticket,
        * for sending to the server before every request.
        * In https mode, the entire information is encrypted
        */
-      requestInterceptor =
-          new HttpKerberosRequestInterceptor(sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL),
-              host, getServerHttpUrl(useSsl), assumeSubject, cookieStore, cookieName, useSsl,
-              additionalHttpHeaders);
+      requestInterceptor = new HttpKerberosRequestInterceptor(sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL),
+          host, getServerHttpUrl(useSsl), loggedInSubject, cookieStore, cookieName, useSsl, additionalHttpHeaders,
+          customCookies);
     } else {
       // Check for delegation token, if present add it in the header
       String tokenStr = getClientDelegationToken(sessConfMap);
       if (tokenStr != null) {
-        requestInterceptor =
-            new HttpTokenAuthInterceptor(tokenStr, cookieStore, cookieName, useSsl,
-                additionalHttpHeaders);
+        requestInterceptor = new HttpTokenAuthInterceptor(tokenStr, cookieStore, cookieName, useSsl,
+            additionalHttpHeaders, customCookies);
       } else {
       /**
        * Add an interceptor to pass username/password in the header.
        * In https mode, the entire information is encrypted
        */
-      requestInterceptor = new HttpBasicAuthInterceptor(getUserName(), getPassword(),
-                                                        cookieStore, cookieName, useSsl,
-                                                        additionalHttpHeaders);
+        requestInterceptor = new HttpBasicAuthInterceptor(getUserName(), getPassword(), cookieStore,
+            cookieName, useSsl, additionalHttpHeaders, customCookies);
       }
     }
     // Configure http client for cookie based authentication
@@ -418,6 +552,23 @@ public class HiveConnection implements java.sql.Connection {
     } else {
       httpClientBuilder = HttpClientBuilder.create();
     }
+    // In case the server's idletimeout is set to a lower value, it might close it's side of
+    // connection. However we retry one more time on NoHttpResponseException
+    httpClientBuilder.setRetryHandler(new HttpRequestRetryHandler() {
+      @Override
+      public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
+        if (executionCount > 1) {
+          LOG.info("Retry attempts to connect to server exceeded.");
+          return false;
+        }
+        if (exception instanceof org.apache.http.NoHttpResponseException) {
+          LOG.info("Could not connect to the server. Retrying one more time.");
+          return true;
+        }
+        return false;
+      }
+    });
+
     // Add the request interceptor to the client builder
     httpClientBuilder.addInterceptorFirst(requestInterceptor);
 
@@ -534,23 +685,24 @@ public class HiveConnection implements java.sql.Connection {
           saslProps.put(Sasl.QOP, "auth-conf,auth-int,auth");
         }
         saslProps.put(Sasl.SERVER_AUTH, "true");
-        if (sessConfMap.containsKey(JdbcConnectionParams.AUTH_PRINCIPAL)) {
-          transport = KerberosSaslHelper.getKerberosTransport(
-              sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL), host,
-              socketTransport, saslProps, assumeSubject);
-        } else {
+        String tokenStr = null;
+        if (JdbcConnectionParams.AUTH_TOKEN.equals(sessConfMap.get(JdbcConnectionParams.AUTH_TYPE))) {
           // If there's a delegation token available then use token based connection
-          String tokenStr = getClientDelegationToken(sessConfMap);
-          if (tokenStr != null) {
-            transport = KerberosSaslHelper.getTokenTransport(tokenStr,
-                host, socketTransport, saslProps);
-          } else {
-            // we are using PLAIN Sasl connection with user/password
-            String userName = getUserName();
-            String passwd = getPassword();
-            // Overlay the SASL transport on top of the base socket transport (SSL or non-SSL)
-            transport = PlainSaslHelper.getPlainTransport(userName, passwd, socketTransport);
-          }
+          tokenStr = getClientDelegationToken(sessConfMap);
+        }
+        if (tokenStr != null) {
+          transport = KerberosSaslHelper.getTokenTransport(tokenStr,
+                  host, socketTransport, saslProps);
+        } else if(sessConfMap.containsKey(JdbcConnectionParams.AUTH_PRINCIPAL)){
+          transport = KerberosSaslHelper.getKerberosTransport(
+                  sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL), host,
+                  socketTransport, saslProps, assumeSubject);
+        } else {
+          // we are using PLAIN Sasl connection with user/password
+          String userName = getUserName();
+          String passwd = getPassword();
+          // Overlay the SASL transport on top of the base socket transport (SSL or non-SSL)
+          transport = PlainSaslHelper.getPlainTransport(userName, passwd, socketTransport);
         }
       } else {
         // Raw socket connection (non-sasl)
@@ -609,18 +761,54 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   // Lookup the delegation token. First in the connection URL, then Configuration
-  private String getClientDelegationToken(Map<String, String> jdbcConnConf)
-      throws SQLException {
+  private String getClientDelegationToken(Map<String, String> jdbcConnConf) throws SQLException {
     String tokenStr = null;
-    if (JdbcConnectionParams.AUTH_TOKEN.equalsIgnoreCase(jdbcConnConf.get(JdbcConnectionParams.AUTH_TYPE))) {
-      // check delegation token in job conf if any
+    if (!JdbcConnectionParams.AUTH_TOKEN.equalsIgnoreCase(jdbcConnConf.get(JdbcConnectionParams.AUTH_TYPE))) {
+      return null;
+    }
+    DelegationTokenFetcher fetcher = new DelegationTokenFetcher();
+    try {
+      tokenStr = fetcher.getTokenStringFromFile();
+    } catch (IOException e) {
+      LOG.warn("Cannot get token from environment variable $HADOOP_TOKEN_FILE_LOCATION=" +
+              System.getenv(UserGroupInformation.HADOOP_TOKEN_FILE_LOCATION));
+    }
+    if (tokenStr == null) {
       try {
-        tokenStr = org.apache.hadoop.hive.shims.Utils.getTokenStrForm(HiveAuthFactory.HS2_CLIENT_TOKEN);
+        return fetcher.getTokenFromSession();
       } catch (IOException e) {
         throw new SQLException("Error reading token ", e);
       }
     }
     return tokenStr;
+  }
+
+  static class DelegationTokenFetcher {
+    String getTokenStringFromFile() throws IOException {
+      if (System.getenv(UserGroupInformation.HADOOP_TOKEN_FILE_LOCATION) == null) {
+        return null;
+      }
+      Credentials cred = new Credentials();
+      try (DataInputStream dis = new DataInputStream(new FileInputStream(System.getenv(UserGroupInformation
+              .HADOOP_TOKEN_FILE_LOCATION)))) {
+        cred.readTokenStorageStream(dis);
+      }
+      return getTokenFromCredential(cred, "hive");
+    }
+
+    String getTokenFromCredential(Credentials cred, String key) throws IOException {
+      Token<? extends TokenIdentifier> token = cred.getToken(new Text(key));
+      if (token == null) {
+        LOG.warn("Delegation token with key: [hive] cannot be found.");
+        return null;
+      }
+      return token.encodeToUrlString();
+    }
+
+    String getTokenFromSession() throws IOException {
+      LOG.debug("Fetching delegation token from session.");
+      return SessionUtils.getTokenStrForm(HiveAuthConstants.HS2_CLIENT_TOKEN);
+    }
   }
 
   private void openSession() throws SQLException {
@@ -637,12 +825,21 @@ public class HiveConnection implements java.sql.Connection {
     }
     // switch the database
     openConf.put("use:database", connParams.getDbName());
+    // set the fetchSize
+    openConf.put("set:hiveconf:hive.server2.thrift.resultset.default.fetch.size",
+      Integer.toString(fetchSize));
+    if (wmPool != null) {
+      openConf.put("set:hivevar:wmpool", wmPool);
+    }
+    if (wmApp != null) {
+      openConf.put("set:hivevar:wmapp", wmApp);
+    }
 
     // set the session configuration
     Map<String, String> sessVars = connParams.getSessionVars();
-    if (sessVars.containsKey(HiveAuthFactory.HS2_PROXY_USER)) {
-      openConf.put(HiveAuthFactory.HS2_PROXY_USER,
-          sessVars.get(HiveAuthFactory.HS2_PROXY_USER));
+    if (sessVars.containsKey(HiveAuthConstants.HS2_PROXY_USER)) {
+      openConf.put(HiveAuthConstants.HS2_PROXY_USER,
+          sessVars.get(HiveAuthConstants.HS2_PROXY_USER));
     }
     openReq.setConfiguration(openConf);
 
@@ -662,6 +859,13 @@ public class HiveConnection implements java.sql.Connection {
       }
       protocol = openResp.getServerProtocolVersion();
       sessHandle = openResp.getSessionHandle();
+
+      // Update fetchSize if modified by server
+      String serverFetchSize =
+        openResp.getConfiguration().get("hive.server2.thrift.resultset.default.fetch.size");
+      if (serverFetchSize != null) {
+        fetchSize = Integer.parseInt(serverFetchSize);
+      }
     } catch (TException e) {
       LOG.error("Error opening session", e);
       throw new SQLException("Could not establish connection to "
@@ -690,6 +894,7 @@ public class HiveConnection implements java.sql.Connection {
 
   private boolean isKerberosAuthMode() {
     return !JdbcConnectionParams.AUTH_SIMPLE.equals(sessConfMap.get(JdbcConnectionParams.AUTH_TYPE))
+        && !JdbcConnectionParams.AUTH_TOKEN.equals(sessConfMap.get(JdbcConnectionParams.AUTH_TYPE))
         && sessConfMap.containsKey(JdbcConnectionParams.AUTH_PRINCIPAL);
   }
 
@@ -701,14 +906,8 @@ public class HiveConnection implements java.sql.Connection {
     return false;
   }
 
-  private boolean isZkDynamicDiscoveryMode() {
-    return (sessConfMap.get(JdbcConnectionParams.SERVICE_DISCOVERY_MODE) != null)
-      && (JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER.equalsIgnoreCase(sessConfMap
-      .get(JdbcConnectionParams.SERVICE_DISCOVERY_MODE)));
-  }
-
   private void logZkDiscoveryMessage(String message) {
-    if (isZkDynamicDiscoveryMode()) {
+    if (ZooKeeperHiveClientHelper.isZkDynamicDiscoveryMode(sessConfMap)) {
       LOG.info(message);
     }
   }
@@ -740,7 +939,7 @@ public class HiveConnection implements java.sql.Connection {
 
   public void abort(Executor executor) throws SQLException {
     // JDK 1.7
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   public String getDelegationToken(String owner, String renewer) throws SQLException {
@@ -824,7 +1023,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public void commit() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -837,7 +1036,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public Array createArrayOf(String arg0, Object[] arg1) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -849,7 +1048,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public Blob createBlob() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -861,7 +1060,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public Clob createClob() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -873,7 +1072,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public NClob createNClob() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -885,7 +1084,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public SQLXML createSQLXML() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /**
@@ -935,7 +1134,7 @@ public class HiveConnection implements java.sql.Connection {
   public Statement createStatement(int resultSetType, int resultSetConcurrency,
       int resultSetHoldability) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -948,7 +1147,7 @@ public class HiveConnection implements java.sql.Connection {
   public Struct createStruct(String typeName, Object[] attributes)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -981,8 +1180,7 @@ public class HiveConnection implements java.sql.Connection {
 
   @Override
   public Properties getClientInfo() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return clientInfo == null ? new Properties() : clientInfo;
   }
 
   /*
@@ -993,8 +1191,8 @@ public class HiveConnection implements java.sql.Connection {
 
   @Override
   public String getClientInfo(String name) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    if (clientInfo == null) return null;
+    return clientInfo.getProperty(name);
   }
 
   /*
@@ -1006,7 +1204,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public int getHoldability() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1025,7 +1223,7 @@ public class HiveConnection implements java.sql.Connection {
 
   public int getNetworkTimeout() throws SQLException {
     // JDK 1.7
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   public String getSchema() throws SQLException {
@@ -1061,7 +1259,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public Map<String, Class<?>> getTypeMap() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1128,7 +1326,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public String nativeSQL(String sql) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1140,7 +1338,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public CallableStatement prepareCall(String sql) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1153,7 +1351,7 @@ public class HiveConnection implements java.sql.Connection {
   public CallableStatement prepareCall(String sql, int resultSetType,
       int resultSetConcurrency) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1166,7 +1364,7 @@ public class HiveConnection implements java.sql.Connection {
   public CallableStatement prepareCall(String sql, int resultSetType,
       int resultSetConcurrency, int resultSetHoldability) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1202,7 +1400,7 @@ public class HiveConnection implements java.sql.Connection {
   public PreparedStatement prepareStatement(String sql, int[] columnIndexes)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1216,7 +1414,7 @@ public class HiveConnection implements java.sql.Connection {
   public PreparedStatement prepareStatement(String sql, String[] columnNames)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1241,7 +1439,7 @@ public class HiveConnection implements java.sql.Connection {
   public PreparedStatement prepareStatement(String sql, int resultSetType,
       int resultSetConcurrency, int resultSetHoldability) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1253,7 +1451,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public void releaseSavepoint(Savepoint savepoint) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1265,7 +1463,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public void rollback() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1277,7 +1475,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public void rollback(Savepoint savepoint) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1325,10 +1523,9 @@ public class HiveConnection implements java.sql.Connection {
    */
 
   @Override
-  public void setClientInfo(Properties properties)
-      throws SQLClientInfoException {
-    // TODO Auto-generated method stub
-    throw new SQLClientInfoException("Method not supported", null);
+  public void setClientInfo(Properties properties) throws SQLClientInfoException {
+    clientInfo = properties;
+    sendClientInfo();
   }
 
   /*
@@ -1338,10 +1535,32 @@ public class HiveConnection implements java.sql.Connection {
    */
 
   @Override
-  public void setClientInfo(String name, String value)
-      throws SQLClientInfoException {
-    // TODO Auto-generated method stub
-    throw new SQLClientInfoException("Method not supported", null);
+  public void setClientInfo(String name, String value) throws SQLClientInfoException {
+    if (clientInfo == null) {
+      clientInfo = new Properties();
+    }
+    clientInfo.put(name, value);
+    sendClientInfo();
+  }
+
+
+  private void sendClientInfo() throws SQLClientInfoException {
+    TSetClientInfoReq req = new TSetClientInfoReq(sessHandle);
+    Map<String, String> map = new HashMap<>();
+    if (clientInfo != null) {
+      for (Entry<Object, Object> e : clientInfo.entrySet()) {
+        if (e.getKey() == null || e.getValue() == null) continue;
+        map.put(e.getKey().toString(), e.getValue().toString());
+      }
+    }
+    req.setConfiguration(map);
+    try {
+      TSetClientInfoResp openResp = client.SetClientInfo(req);
+      Utils.verifySuccess(openResp.getStatus());
+    } catch (TException | SQLException e) {
+      LOG.error("Error sending client info", e);
+      throw new SQLClientInfoException("Error sending client info", null, e);
+    }
   }
 
   /*
@@ -1349,16 +1568,15 @@ public class HiveConnection implements java.sql.Connection {
    *
    * @see java.sql.Connection#setHoldability(int)
    */
-
   @Override
   public void setHoldability(int holdability) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
     // JDK 1.7
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1390,7 +1608,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public Savepoint setSavepoint() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1402,7 +1620,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public Savepoint setSavepoint(String name) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   public void setSchema(String schema) throws SQLException {
@@ -1412,6 +1630,9 @@ public class HiveConnection implements java.sql.Connection {
     }
     if (schema == null || schema.isEmpty()) {
       throw new SQLException("Schema name is null or empty");
+    }
+    if (schema.contains(";")) {
+      throw new SQLException("invalid schema name");
     }
     Statement stmt = createStatement();
     stmt.execute("use " + schema);
@@ -1438,7 +1659,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public void setTypeMap(Map<String, Class<?>> map) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1450,7 +1671,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public boolean isWrapperFor(Class<?> iface) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1462,7 +1683,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public <T> T unwrap(Class<T> iface) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   public TProtocolVersion getProtocol() {
@@ -1479,6 +1700,7 @@ public class HiveConnection implements java.sql.Connection {
 
   private static class SynchronizedHandler implements InvocationHandler {
     private final TCLIService.Iface client;
+    private final ReentrantLock lock = new ReentrantLock(true);
 
     SynchronizedHandler(TCLIService.Iface client) {
       this.client = client;
@@ -1488,9 +1710,8 @@ public class HiveConnection implements java.sql.Connection {
     public Object invoke(Object proxy, Method method, Object [] args)
         throws Throwable {
       try {
-        synchronized (client) {
-          return method.invoke(client, args);
-        }
+        lock.lock();
+        return method.invoke(client, args);
       } catch (InvocationTargetException e) {
         // all IFace APIs throw TException
         if (e.getTargetException() instanceof TException) {
@@ -1502,6 +1723,8 @@ public class HiveConnection implements java.sql.Connection {
         }
       } catch (Exception e) {
         throw new TException("Error in calling method " + method.getName(), e);
+      } finally {
+        lock.unlock();
       }
     }
   }

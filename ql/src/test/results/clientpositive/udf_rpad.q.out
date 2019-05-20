@@ -9,22 +9,32 @@ POSTHOOK: query: DESCRIBE FUNCTION EXTENDED rpad
 POSTHOOK: type: DESCFUNCTION
 rpad(str, len, pad) - Returns str, right-padded with pad to a length of len
 If str is longer than len, the return value is shortened to len characters.
+In case of empty pad string, the return value is null.
 Example:
   > SELECT rpad('hi', 5, '??') FROM src LIMIT 1;
-  'hi???'  > SELECT rpad('hi', 1, '??') FROM src LIMIT 1;
+  'hi???'
+  > SELECT rpad('hi', 1, '??') FROM src LIMIT 1;
   'h'
+  > SELECT rpad('hi', 5, '') FROM src LIMIT 1;
+  null
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFRpad
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN SELECT
   rpad('hi', 1, '?'),
   rpad('hi', 5, '.'),
   rpad('hi', 6, '123')
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT
   rpad('hi', 1, '?'),
   rpad('hi', 5, '.'),
   rpad('hi', 6, '123')
 FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

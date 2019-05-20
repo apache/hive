@@ -59,7 +59,8 @@ int _kOperatorTypeValues[] = {
   OperatorType::ORCFILEMERGE,
   OperatorType::RCFILEMERGE,
   OperatorType::MERGEJOIN,
-  OperatorType::SPARKPRUNINGSINK
+  OperatorType::SPARKPRUNINGSINK,
+  OperatorType::TOPNKEY
 };
 const char* _kOperatorTypeNames[] = {
   "JOIN",
@@ -87,9 +88,10 @@ const char* _kOperatorTypeNames[] = {
   "ORCFILEMERGE",
   "RCFILEMERGE",
   "MERGEJOIN",
-  "SPARKPRUNINGSINK"
+  "SPARKPRUNINGSINK",
+  "TOPNKEY"
 };
-const std::map<int, const char*> _OperatorType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(26, _kOperatorTypeValues, _kOperatorTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+const std::map<int, const char*> _OperatorType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(27, _kOperatorTypeValues, _kOperatorTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
 int _kTaskTypeValues[] = {
   TaskType::MAP,
@@ -115,7 +117,12 @@ int _kStageTypeValues[] = {
   StageType::MOVE,
   StageType::STATS,
   StageType::DEPENDENCY_COLLECTION,
-  StageType::COLUMNSTATS
+  StageType::COLUMNSTATS,
+  StageType::REPL_DUMP,
+  StageType::REPL_BOOTSTRAP_LOAD,
+  StageType::REPL_STATE_LOG,
+  StageType::REPL_TXN,
+  StageType::REPL_INCREMENTAL_LOAD
 };
 const char* _kStageTypeNames[] = {
   "CONDITIONAL",
@@ -129,9 +136,14 @@ const char* _kStageTypeNames[] = {
   "MOVE",
   "STATS",
   "DEPENDENCY_COLLECTION",
-  "COLUMNSTATS"
+  "COLUMNSTATS",
+  "REPL_DUMP",
+  "REPL_BOOTSTRAP_LOAD",
+  "REPL_STATE_LOG",
+  "REPL_TXN",
+  "REPL_INCREMENTAL_LOAD"
 };
-const std::map<int, const char*> _StageType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(12, _kStageTypeValues, _kStageTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+const std::map<int, const char*> _StageType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(17, _kStageTypeValues, _kStageTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
 
 Adjacency::~Adjacency() throw() {

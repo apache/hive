@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,12 +19,17 @@
 
 package org.apache.hive.hcatalog.messaging;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 import java.util.List;
 import java.util.Map;
 
 /**
  * HCat message sent when a partition is dropped in HCatalog.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class DropPartitionMessage extends HCatEventMessage {
 
   protected DropPartitionMessage() {
@@ -32,6 +37,7 @@ public abstract class DropPartitionMessage extends HCatEventMessage {
   }
 
   public abstract String getTable();
+  public abstract String getTableType();
   public abstract List<Map<String, String>> getPartitions ();
 
   @Override

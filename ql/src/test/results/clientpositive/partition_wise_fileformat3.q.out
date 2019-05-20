@@ -1,34 +1,34 @@
-PREHOOK: query: create table partition_test_partitioned(key string, value string) partitioned by (dt string)
+PREHOOK: query: create table partition_test_partitioned_n8(key string, value string) partitioned by (dt string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@partition_test_partitioned
-POSTHOOK: query: create table partition_test_partitioned(key string, value string) partitioned by (dt string)
+PREHOOK: Output: default@partition_test_partitioned_n8
+POSTHOOK: query: create table partition_test_partitioned_n8(key string, value string) partitioned by (dt string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@partition_test_partitioned
-PREHOOK: query: alter table partition_test_partitioned set fileformat rcfile
+POSTHOOK: Output: default@partition_test_partitioned_n8
+PREHOOK: query: alter table partition_test_partitioned_n8 set fileformat rcfile
 PREHOOK: type: ALTERTABLE_FILEFORMAT
-PREHOOK: Input: default@partition_test_partitioned
-PREHOOK: Output: default@partition_test_partitioned
-POSTHOOK: query: alter table partition_test_partitioned set fileformat rcfile
+PREHOOK: Input: default@partition_test_partitioned_n8
+PREHOOK: Output: default@partition_test_partitioned_n8
+POSTHOOK: query: alter table partition_test_partitioned_n8 set fileformat rcfile
 POSTHOOK: type: ALTERTABLE_FILEFORMAT
-POSTHOOK: Input: default@partition_test_partitioned
-POSTHOOK: Output: default@partition_test_partitioned
-PREHOOK: query: insert overwrite table partition_test_partitioned partition(dt=101) select * from src1
+POSTHOOK: Input: default@partition_test_partitioned_n8
+POSTHOOK: Output: default@partition_test_partitioned_n8
+PREHOOK: query: insert overwrite table partition_test_partitioned_n8 partition(dt=101) select * from src1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Output: default@partition_test_partitioned@dt=101
-POSTHOOK: query: insert overwrite table partition_test_partitioned partition(dt=101) select * from src1
+PREHOOK: Output: default@partition_test_partitioned_n8@dt=101
+POSTHOOK: query: insert overwrite table partition_test_partitioned_n8 partition(dt=101) select * from src1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: default@partition_test_partitioned@dt=101
-POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: show table extended like partition_test_partitioned partition(dt=101)
+POSTHOOK: Output: default@partition_test_partitioned_n8@dt=101
+POSTHOOK: Lineage: partition_test_partitioned_n8 PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned_n8 PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show table extended like partition_test_partitioned_n8 partition(dt=101)
 PREHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: query: show table extended like partition_test_partitioned partition(dt=101)
+POSTHOOK: query: show table extended like partition_test_partitioned_n8 partition(dt=101)
 POSTHOOK: type: SHOW_TABLESTATUS
-tableName:partition_test_partitioned
+tableName:partition_test_partitioned_n8
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
@@ -41,29 +41,29 @@ maxFileSize:275
 minFileSize:275
 #### A masked pattern was here ####
 
-PREHOOK: query: alter table partition_test_partitioned set fileformat Sequencefile
+PREHOOK: query: alter table partition_test_partitioned_n8 set fileformat Sequencefile
 PREHOOK: type: ALTERTABLE_FILEFORMAT
-PREHOOK: Input: default@partition_test_partitioned
-PREHOOK: Output: default@partition_test_partitioned
-POSTHOOK: query: alter table partition_test_partitioned set fileformat Sequencefile
+PREHOOK: Input: default@partition_test_partitioned_n8
+PREHOOK: Output: default@partition_test_partitioned_n8
+POSTHOOK: query: alter table partition_test_partitioned_n8 set fileformat Sequencefile
 POSTHOOK: type: ALTERTABLE_FILEFORMAT
-POSTHOOK: Input: default@partition_test_partitioned
-POSTHOOK: Output: default@partition_test_partitioned
-PREHOOK: query: insert overwrite table partition_test_partitioned partition(dt=102) select * from src1
+POSTHOOK: Input: default@partition_test_partitioned_n8
+POSTHOOK: Output: default@partition_test_partitioned_n8
+PREHOOK: query: insert overwrite table partition_test_partitioned_n8 partition(dt=102) select * from src1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Output: default@partition_test_partitioned@dt=102
-POSTHOOK: query: insert overwrite table partition_test_partitioned partition(dt=102) select * from src1
+PREHOOK: Output: default@partition_test_partitioned_n8@dt=102
+POSTHOOK: query: insert overwrite table partition_test_partitioned_n8 partition(dt=102) select * from src1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: default@partition_test_partitioned@dt=102
-POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: show table extended like partition_test_partitioned partition(dt=102)
+POSTHOOK: Output: default@partition_test_partitioned_n8@dt=102
+POSTHOOK: Lineage: partition_test_partitioned_n8 PARTITION(dt=102).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned_n8 PARTITION(dt=102).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show table extended like partition_test_partitioned_n8 partition(dt=102)
 PREHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: query: show table extended like partition_test_partitioned partition(dt=102)
+POSTHOOK: query: show table extended like partition_test_partitioned_n8 partition(dt=102)
 POSTHOOK: type: SHOW_TABLESTATUS
-tableName:partition_test_partitioned
+tableName:partition_test_partitioned_n8
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -76,15 +76,15 @@ maxFileSize:603
 minFileSize:603
 #### A masked pattern was here ####
 
-PREHOOK: query: select key from partition_test_partitioned where dt=102
+PREHOOK: query: select key from partition_test_partitioned_n8 where dt=102
 PREHOOK: type: QUERY
-PREHOOK: Input: default@partition_test_partitioned
-PREHOOK: Input: default@partition_test_partitioned@dt=102
+PREHOOK: Input: default@partition_test_partitioned_n8
+PREHOOK: Input: default@partition_test_partitioned_n8@dt=102
 #### A masked pattern was here ####
-POSTHOOK: query: select key from partition_test_partitioned where dt=102
+POSTHOOK: query: select key from partition_test_partitioned_n8 where dt=102
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@partition_test_partitioned
-POSTHOOK: Input: default@partition_test_partitioned@dt=102
+POSTHOOK: Input: default@partition_test_partitioned_n8
+POSTHOOK: Input: default@partition_test_partitioned_n8@dt=102
 #### A masked pattern was here ####
 238
 
@@ -111,21 +111,21 @@ POSTHOOK: Input: default@partition_test_partitioned@dt=102
 
 
 
-PREHOOK: query: insert overwrite table partition_test_partitioned partition(dt=101) select * from src1
+PREHOOK: query: insert overwrite table partition_test_partitioned_n8 partition(dt=101) select * from src1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Output: default@partition_test_partitioned@dt=101
-POSTHOOK: query: insert overwrite table partition_test_partitioned partition(dt=101) select * from src1
+PREHOOK: Output: default@partition_test_partitioned_n8@dt=101
+POSTHOOK: query: insert overwrite table partition_test_partitioned_n8 partition(dt=101) select * from src1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: default@partition_test_partitioned@dt=101
-POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: show table extended like partition_test_partitioned partition(dt=101)
+POSTHOOK: Output: default@partition_test_partitioned_n8@dt=101
+POSTHOOK: Lineage: partition_test_partitioned_n8 PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned_n8 PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show table extended like partition_test_partitioned_n8 partition(dt=101)
 PREHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: query: show table extended like partition_test_partitioned partition(dt=101)
+POSTHOOK: query: show table extended like partition_test_partitioned_n8 partition(dt=101)
 POSTHOOK: type: SHOW_TABLESTATUS
-tableName:partition_test_partitioned
+tableName:partition_test_partitioned_n8
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -138,15 +138,15 @@ maxFileSize:603
 minFileSize:603
 #### A masked pattern was here ####
 
-PREHOOK: query: select key from partition_test_partitioned where dt=101
+PREHOOK: query: select key from partition_test_partitioned_n8 where dt=101
 PREHOOK: type: QUERY
-PREHOOK: Input: default@partition_test_partitioned
-PREHOOK: Input: default@partition_test_partitioned@dt=101
+PREHOOK: Input: default@partition_test_partitioned_n8
+PREHOOK: Input: default@partition_test_partitioned_n8@dt=101
 #### A masked pattern was here ####
-POSTHOOK: query: select key from partition_test_partitioned where dt=101
+POSTHOOK: query: select key from partition_test_partitioned_n8 where dt=101
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@partition_test_partitioned
-POSTHOOK: Input: default@partition_test_partitioned@dt=101
+POSTHOOK: Input: default@partition_test_partitioned_n8
+POSTHOOK: Input: default@partition_test_partitioned_n8@dt=101
 #### A masked pattern was here ####
 238
 

@@ -4,10 +4,18 @@ PREHOOK: Output: rot13
 POSTHOOK: query: CREATE TEMPORARY FUNCTION rot13 as 'hive.it.custom.udfs.GenericUDFRot13'
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: rot13
-PREHOOK: query: EXPLAIN SELECT rot13(cstring1) from alltypesorc
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT rot13(cstring1) from alltypesorc
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT rot13(cstring1) from alltypesorc
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT rot13(cstring1) from alltypesorc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -18,19 +26,38 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
+            TableScan Vectorization:
+                native: true
             Select Operator
               expressions: Rot13(cstring1) (type: string)
               outputColumnNames: _col0
-              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+              Select Vectorization:
+                  className: VectorSelectOperator
+                  native: true
+                  projectedOutputColumnNums: [13]
+                  selectExpressions: VectorStringRot13(col 6:string) -> 13:string
+              Statistics: Num rows: 12288 Data size: 2260992 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                File Sink Vectorization:
+                    className: VectorFileSinkOperator
+                    native: false
+                Statistics: Num rows: 12288 Data size: 2260992 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
 
   Stage: Stage-0
     Fetch Operator

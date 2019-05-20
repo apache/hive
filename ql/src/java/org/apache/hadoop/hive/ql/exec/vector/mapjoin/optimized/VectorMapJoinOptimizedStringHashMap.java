@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,12 +22,18 @@ import java.io.IOException;
 
 import org.apache.hadoop.hive.ql.exec.JoinUtil.JoinResult;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
+import org.apache.hadoop.hive.ql.exec.persistence.MatchTracker;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.ReusableGetAdaptor;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinBytesHashMap;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMapResult;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinNonMatchedIterator;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableDeserializeRead;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /*
- * An multi-key hash map based on the BytesBytesMultiHashMap.
+ * An string hash map based on the BytesBytesMultiHashMap.
  */
 public class VectorMapJoinOptimizedStringHashMap
              extends VectorMapJoinOptimizedHashMap
@@ -35,14 +41,59 @@ public class VectorMapJoinOptimizedStringHashMap
 
   private VectorMapJoinOptimizedStringCommon stringCommon;
 
-  /*
-  @Override
-  public void putRow(BytesWritable currentKey, BytesWritable currentValue)
-      throws SerDeException, HiveException, IOException {
+  private static class NonMatchedStringHashMapIterator extends NonMatchedBytesHashMapIterator {
 
-    stringCommon.adaptPutRow((VectorMapJoinOptimizedHashTable) this, currentKey, currentValue);
+    private BinarySortableDeserializeRead keyBinarySortableDeserializeRead;
+
+    NonMatchedStringHashMapIterator(MatchTracker matchTracker,
+        VectorMapJoinOptimizedStringHashMap hashMap) {
+      super(matchTracker, hashMap);
+    }
+
+    @Override
+    public void init() {
+      super.init();
+
+      TypeInfo[] typeInfos = new TypeInfo[] {TypeInfoFactory.stringTypeInfo};
+      keyBinarySortableDeserializeRead =
+          new BinarySortableDeserializeRead(typeInfos, /* useExternalBuffer */ false);
+    }
+
+    @Override
+    public boolean readNonMatchedBytesKey() throws HiveException {
+      super.doReadNonMatchedBytesKey();
+
+      byte[] bytes = keyRef.getBytes();
+      final int keyOffset = (int) keyRef.getOffset();
+      final int keyLength = keyRef.getLength();
+      try {
+        keyBinarySortableDeserializeRead.set(bytes, keyOffset, keyLength);
+        return keyBinarySortableDeserializeRead.readNextField();
+      } catch (IOException e) {
+        throw new HiveException(e);
+      }
+    }
+
+    @Override
+    public byte[] getNonMatchedBytes() {
+      return keyBinarySortableDeserializeRead.currentBytes;
+    }
+
+    @Override
+    public int getNonMatchedBytesOffset() {
+      return keyBinarySortableDeserializeRead.currentBytesStart;
+    }
+
+    @Override
+    public int getNonMatchedBytesLength() {
+      return keyBinarySortableDeserializeRead.currentBytesLength;
+    }
   }
-  */
+
+  @Override
+  public VectorMapJoinNonMatchedIterator createNonMatchedIterator(MatchTracker matchTracker) {
+    return new NonMatchedStringHashMapIterator(matchTracker, this);
+  }
 
   @Override
   public JoinResult lookup(byte[] keyBytes, int keyStart, int keyLength,
@@ -52,6 +103,17 @@ public class VectorMapJoinOptimizedStringHashMap
 
     return super.lookup(serializedBytes.bytes, serializedBytes.offset, serializedBytes.length,
             hashMapResult);
+
+  }
+
+  @Override
+  public JoinResult lookup(byte[] keyBytes, int keyStart, int keyLength,
+      VectorMapJoinHashMapResult hashMapResult, MatchTracker matchTracker) throws IOException {
+
+    SerializedBytes serializedBytes = stringCommon.serialize(keyBytes, keyStart, keyLength);
+
+    return super.lookup(serializedBytes.bytes, serializedBytes.offset, serializedBytes.length,
+            hashMapResult, matchTracker);
 
   }
 

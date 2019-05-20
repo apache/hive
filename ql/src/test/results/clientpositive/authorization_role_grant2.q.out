@@ -2,19 +2,9 @@ PREHOOK: query: set role ADMIN
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role ADMIN
 POSTHOOK: type: SHOW_ROLES
-PREHOOK: query: ----------------------------------------
--- role granting with admin option
-----------------------------------------
--- Also test case sensitivity of role name
-
-create role srC_role_wadmin
+PREHOOK: query: create role srC_role_wadmin
 PREHOOK: type: CREATEROLE
-POSTHOOK: query: ----------------------------------------
--- role granting with admin option
-----------------------------------------
--- Also test case sensitivity of role name
-
-create role srC_role_wadmin
+POSTHOOK: query: create role srC_role_wadmin
 POSTHOOK: type: CREATEROLE
 PREHOOK: query: create role src_roLe2
 PREHOOK: type: CREATEROLE
@@ -47,11 +37,9 @@ POSTHOOK: query: show principals src_role_wadmin
 POSTHOOK: type: SHOW_ROLE_PRINCIPALS
 principal_name	principal_type	grant_option	grantor	grantor_type	grant_time
 user2	USER	true	hive_admin_user	USER	-1
-PREHOOK: query: -- grant role to another user
-grant src_Role_wadmin to user user3
+PREHOOK: query: grant src_Role_wadmin to user user3
 PREHOOK: type: GRANT_ROLE
-POSTHOOK: query: -- grant role to another user
-grant src_Role_wadmin to user user3
+POSTHOOK: query: grant src_Role_wadmin to user user3
 POSTHOOK: type: GRANT_ROLE
 PREHOOK: query: show role grant user user3
 PREHOOK: type: SHOW_ROLE_GRANT
@@ -60,11 +48,9 @@ POSTHOOK: type: SHOW_ROLE_GRANT
 role	grant_option	grant_time	grantor
 public	false	-1	
 src_role_wadmin	false	-1	user2
-PREHOOK: query: -- grant role to another role
-grant src_role_wadmin to role sRc_role2
+PREHOOK: query: grant src_role_wadmin to role sRc_role2
 PREHOOK: type: GRANT_ROLE
-POSTHOOK: query: -- grant role to another role
-grant src_role_wadmin to role sRc_role2
+POSTHOOK: query: grant src_role_wadmin to role sRc_role2
 POSTHOOK: type: GRANT_ROLE
 PREHOOK: query: set role ADMIn
 PREHOOK: type: SHOW_ROLES
@@ -74,11 +60,9 @@ PREHOOK: query: grant src_role2 to user user3
 PREHOOK: type: GRANT_ROLE
 POSTHOOK: query: grant src_role2 to user user3
 POSTHOOK: type: GRANT_ROLE
-PREHOOK: query: -- as user3 belings to src_role2 hierarchy, its should be able to run show grant on it
-show role grant role src_Role2
+PREHOOK: query: show role grant role src_Role2
 PREHOOK: type: SHOW_ROLE_GRANT
-POSTHOOK: query: -- as user3 belings to src_role2 hierarchy, its should be able to run show grant on it
-show role grant role src_Role2
+POSTHOOK: query: show role grant role src_Role2
 POSTHOOK: type: SHOW_ROLE_GRANT
 role	grant_option	grant_time	grantor
 src_role_wadmin	false	-1	user2
@@ -98,11 +82,9 @@ PREHOOK: query: set role src_role_wadmin
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role src_role_wadmin
 POSTHOOK: type: SHOW_ROLES
-PREHOOK: query: -- revoke user from role
-revoke src_rolE_wadmin from user user3
+PREHOOK: query: revoke src_rolE_wadmin from user user3
 PREHOOK: type: REVOKE_ROLE
-POSTHOOK: query: -- revoke user from role
-revoke src_rolE_wadmin from user user3
+POSTHOOK: query: revoke src_rolE_wadmin from user user3
 POSTHOOK: type: REVOKE_ROLE
 PREHOOK: query: show role grant user user3
 PREHOOK: type: SHOW_ROLE_GRANT
@@ -111,11 +93,9 @@ POSTHOOK: type: SHOW_ROLE_GRANT
 role	grant_option	grant_time	grantor
 public	false	-1	
 src_role2	false	-1	hive_admin_user
-PREHOOK: query: -- revoke role from role
-revoke src_rolE_wadmin from role sRc_role2
+PREHOOK: query: revoke src_rolE_wadmin from role sRc_role2
 PREHOOK: type: REVOKE_ROLE
-POSTHOOK: query: -- revoke role from role
-revoke src_rolE_wadmin from role sRc_role2
+POSTHOOK: query: revoke src_rolE_wadmin from role sRc_role2
 POSTHOOK: type: REVOKE_ROLE
 PREHOOK: query: set role ADMIN
 PREHOOK: type: SHOW_ROLES

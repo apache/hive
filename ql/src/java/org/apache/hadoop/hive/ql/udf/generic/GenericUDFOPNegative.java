@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,8 +24,10 @@ import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColUnaryMinus;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColUnaryMinusChecked;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncNegateDecimalToDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColUnaryMinus;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColUnaryMinusChecked;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -38,7 +40,8 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 
 @Description(name = "-", value = "_FUNC_ a - Returns -a")
-@VectorizedExpressions({LongColUnaryMinus.class, DoubleColUnaryMinus.class, FuncNegateDecimalToDecimal.class})
+@VectorizedExpressions({LongColUnaryMinus.class, DoubleColUnaryMinus.class, FuncNegateDecimalToDecimal.class,
+    LongColUnaryMinusChecked.class, DoubleColUnaryMinusChecked.class})
 public class GenericUDFOPNegative extends GenericUDFBaseUnary {
 
   public GenericUDFOPNegative() {
@@ -82,8 +85,8 @@ public class GenericUDFOPNegative extends GenericUDFBaseUnary {
       doubleWritable.set(-(((DoubleWritable)input).get()));
       return doubleWritable;
     case DECIMAL:
-      HiveDecimal dec = ((HiveDecimalWritable)input).getHiveDecimal();
-      decimalWritable.set(dec.negate());
+      decimalWritable.set((HiveDecimalWritable)input);
+      decimalWritable.mutateNegate();
       return decimalWritable;
     case INTERVAL_YEAR_MONTH:
       HiveIntervalYearMonth intervalYearMonth =

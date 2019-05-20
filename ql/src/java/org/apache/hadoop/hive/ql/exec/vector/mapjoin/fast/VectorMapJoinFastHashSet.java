@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -37,8 +37,10 @@ public abstract class VectorMapJoinFastHashSet
   }
 
   public VectorMapJoinFastHashSet(
-        boolean isOuterJoin,
-        int initialCapacity, float loadFactor, int writeBuffersSize) {
-    super(initialCapacity, loadFactor, writeBuffersSize);
+        boolean isFullOuter,
+        int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
+    super(
+        isFullOuter,
+        initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
   }
 }

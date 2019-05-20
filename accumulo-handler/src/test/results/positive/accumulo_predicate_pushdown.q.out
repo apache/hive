@@ -1,12 +1,14 @@
-PREHOOK: query: CREATE TABLE accumulo_pushdown(key string, value string) 
+PREHOOK: query: CREATE EXTERNAL TABLE accumulo_pushdown(key string, value string) 
 STORED BY 'org.apache.hadoop.hive.accumulo.AccumuloStorageHandler'
 WITH SERDEPROPERTIES ("accumulo.columns.mapping" = ":rowid,cf:string")
+TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@accumulo_pushdown
-POSTHOOK: query: CREATE TABLE accumulo_pushdown(key string, value string) 
+POSTHOOK: query: CREATE EXTERNAL TABLE accumulo_pushdown(key string, value string) 
 STORED BY 'org.apache.hadoop.hive.accumulo.AccumuloStorageHandler'
 WITH SERDEPROPERTIES ("accumulo.columns.mapping" = ":rowid,cf:string")
+TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@accumulo_pushdown
@@ -22,12 +24,14 @@ FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@accumulo_pushdown
-PREHOOK: query: -- with full pushdown
-explain select * from accumulo_pushdown where key>'90'
+PREHOOK: query: explain select * from accumulo_pushdown where key>'90'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- with full pushdown
-explain select * from accumulo_pushdown where key>'90'
+PREHOOK: Input: default@accumulo_pushdown
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from accumulo_pushdown where key>'90'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@accumulo_pushdown
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -39,11 +43,11 @@ STAGE PLANS:
         TableScan
           alias: accumulo_pushdown
           filterExpr: (key > '90') (type: boolean)
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: select * from accumulo_pushdown where key>'90'
@@ -163,12 +167,14 @@ POSTHOOK: Input: default@accumulo_pushdown
 96	val_96
 97	val_97
 98	val_98
-PREHOOK: query: -- with constant expression
-explain select * from accumulo_pushdown where key>=cast(40 + 50 as string)
+PREHOOK: query: explain select * from accumulo_pushdown where key>=cast(40 + 50 as string)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- with constant expression
-explain select * from accumulo_pushdown where key>=cast(40 + 50 as string)
+PREHOOK: Input: default@accumulo_pushdown
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from accumulo_pushdown where key>=cast(40 + 50 as string)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@accumulo_pushdown
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -180,11 +186,11 @@ STAGE PLANS:
         TableScan
           alias: accumulo_pushdown
           filterExpr: (key >= '90') (type: boolean)
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: select * from accumulo_pushdown where key>=cast(40 + 50 as string)
@@ -201,14 +207,14 @@ POSTHOOK: Input: default@accumulo_pushdown
 96	val_96
 97	val_97
 98	val_98
-PREHOOK: query: -- with partial pushdown
-
-explain select * from accumulo_pushdown where key>'90' and value like '%9%'
+PREHOOK: query: explain select * from accumulo_pushdown where key>'90' and value like '%9%'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- with partial pushdown
-
-explain select * from accumulo_pushdown where key>'90' and value like '%9%'
+PREHOOK: Input: default@accumulo_pushdown
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from accumulo_pushdown where key>'90' and value like '%9%'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@accumulo_pushdown
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -220,21 +226,22 @@ STAGE PLANS:
           TableScan
             alias: accumulo_pushdown
             filterExpr: (key > '90') (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (value like '%9%') (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -255,16 +262,16 @@ POSTHOOK: Input: default@accumulo_pushdown
 96	val_96
 97	val_97
 98	val_98
-PREHOOK: query: -- with two residuals
-
-explain select * from accumulo_pushdown
+PREHOOK: query: explain select * from accumulo_pushdown
 where key>='90' and value like '%9%' and key=cast(value as int)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- with two residuals
-
-explain select * from accumulo_pushdown
+PREHOOK: Input: default@accumulo_pushdown
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from accumulo_pushdown
 where key>='90' and value like '%9%' and key=cast(value as int)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@accumulo_pushdown
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -276,21 +283,22 @@ STAGE PLANS:
           TableScan
             alias: accumulo_pushdown
             filterExpr: (key >= '90') (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((value like '%9%') and (UDFToDouble(key) = UDFToDouble(UDFToInteger(value)))) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              predicate: ((UDFToDouble(key) = UDFToDouble(UDFToInteger(value))) and (value like '%9%')) (type: boolean)
+              Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -308,16 +316,16 @@ where key>='90' and value like '%9%' and key=cast(value as int)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@accumulo_pushdown
 #### A masked pattern was here ####
-PREHOOK: query: -- with contradictory pushdowns
-
-explain select * from accumulo_pushdown
+PREHOOK: query: explain select * from accumulo_pushdown
 where key<'80' and key>'90' and value like '%90%'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- with contradictory pushdowns
-
-explain select * from accumulo_pushdown
+PREHOOK: Input: default@accumulo_pushdown
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from accumulo_pushdown
 where key<'80' and key>'90' and value like '%90%'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@accumulo_pushdown
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -328,22 +336,22 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: accumulo_pushdown
-            filterExpr: ((key < '80') and (key > '90')) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (value like '%90%') (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              predicate: false (type: boolean)
+              Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -361,14 +369,14 @@ where key<'80' and key>'90' and value like '%90%'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@accumulo_pushdown
 #### A masked pattern was here ####
-PREHOOK: query: -- with nothing to push down
-
-explain select * from accumulo_pushdown
+PREHOOK: query: explain select * from accumulo_pushdown
 PREHOOK: type: QUERY
-POSTHOOK: query: -- with nothing to push down
-
-explain select * from accumulo_pushdown
+PREHOOK: Input: default@accumulo_pushdown
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from accumulo_pushdown
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@accumulo_pushdown
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -379,25 +387,23 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: accumulo_pushdown
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: -- with a predicate which is not actually part of the filter, so
--- it should be ignored by pushdown
-
-explain select * from accumulo_pushdown
+PREHOOK: query: explain select * from accumulo_pushdown
 where (case when key<'90' then 2 else 4 end) > 3
 PREHOOK: type: QUERY
-POSTHOOK: query: -- with a predicate which is not actually part of the filter, so
--- it should be ignored by pushdown
-
-explain select * from accumulo_pushdown
+PREHOOK: Input: default@accumulo_pushdown
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from accumulo_pushdown
 where (case when key<'90' then 2 else 4 end) > 3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@accumulo_pushdown
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -408,21 +414,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: accumulo_pushdown
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: (key < '90') is not true (type: boolean)
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (not NVL((key < '90'),false)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              predicate: (key < '90') is not true (type: boolean)
+              Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -430,18 +438,16 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- with a predicate which is under an OR, so it should
--- be ignored by pushdown
-
-explain select * from accumulo_pushdown
+PREHOOK: query: explain select * from accumulo_pushdown
 where key<='80' or value like '%90%'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- with a predicate which is under an OR, so it should
--- be ignored by pushdown
-
-explain select * from accumulo_pushdown
+PREHOOK: Input: default@accumulo_pushdown
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from accumulo_pushdown
 where key<='80' or value like '%90%'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@accumulo_pushdown
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -452,21 +458,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: accumulo_pushdown
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: ((key <= '80') or (value like '%90%')) (type: boolean)
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key <= '80') or (value like '%90%')) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -477,9 +485,13 @@ STAGE PLANS:
 PREHOOK: query: explain select * from accumulo_pushdown where key > '281' 
 and key < '287'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@accumulo_pushdown
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from accumulo_pushdown where key > '281' 
 and key < '287'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@accumulo_pushdown
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -491,11 +503,11 @@ STAGE PLANS:
         TableScan
           alias: accumulo_pushdown
           filterExpr: ((key > '281') and (key < '287')) (type: boolean)
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: select * from accumulo_pushdown where key > '281' 
@@ -513,14 +525,14 @@ POSTHOOK: Input: default@accumulo_pushdown
 284	val_284
 285	val_285
 286	val_286
-PREHOOK: query: -- with pushdown disabled
-
-explain select * from accumulo_pushdown where key<='90'
+PREHOOK: query: explain select * from accumulo_pushdown where key<='90'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- with pushdown disabled
-
-explain select * from accumulo_pushdown where key<='90'
+PREHOOK: Input: default@accumulo_pushdown
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from accumulo_pushdown where key<='90'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@accumulo_pushdown
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -531,21 +543,22 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: accumulo_pushdown
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key <= '90') (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator

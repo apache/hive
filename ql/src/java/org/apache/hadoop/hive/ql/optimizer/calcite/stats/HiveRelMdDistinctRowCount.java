@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -81,7 +81,7 @@ public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
       noDistinctRows *= cStat.getCountDistint();
     }
 
-    return Math.min(noDistinctRows, htRel.getRows());
+    return Math.min(noDistinctRows, mq.getRowCount(htRel));
   }
 
   public static Double getDistinctRowCount(RelNode r, RelMetadataQuery mq, int indx) {

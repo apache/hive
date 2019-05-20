@@ -1,16 +1,10 @@
-PREHOOK: query: -- this test creates a Parquet table with an array of single-field structs
--- as written by parquet-thrift
-
-CREATE TABLE parquet_thrift_array_of_single_field_structs (
+PREHOOK: query: CREATE TABLE parquet_thrift_array_of_single_field_structs (
     single_element_groups ARRAY<STRUCT<count: BIGINT>>
 ) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_thrift_array_of_single_field_structs
-POSTHOOK: query: -- this test creates a Parquet table with an array of single-field structs
--- as written by parquet-thrift
-
-CREATE TABLE parquet_thrift_array_of_single_field_structs (
+POSTHOOK: query: CREATE TABLE parquet_thrift_array_of_single_field_structs (
     single_element_groups ARRAY<STRUCT<count: BIGINT>>
 ) STORED AS PARQUET
 POSTHOOK: type: CREATETABLE

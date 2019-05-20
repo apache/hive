@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -92,6 +92,7 @@ public class GenericUDFToChar extends GenericUDF implements SettableUDF, Seriali
     sb.append(children[0]);
     sb.append(" AS CHAR(");
     sb.append("" + typeInfo.getLength());
+    sb.append(")");
     sb.append(")");
     return sb.toString();
   }

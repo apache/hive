@@ -45,7 +45,7 @@ public class TestAcidTableSerializer {
 
     AcidTable acidTable = new AcidTable("db_1", "table_1", true, TableType.SINK);
     acidTable.setTable(table);
-    acidTable.setTransactionId(42L);
+    acidTable.setWriteId(42L);
 
     String encoded = AcidTableSerializer.encode(acidTable);
     System.out.println(encoded);
@@ -57,7 +57,7 @@ public class TestAcidTableSerializer {
     assertThat(decoded.getOutputFormatName(), is("org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat"));
     assertThat(decoded.getTotalBuckets(), is(10));
     assertThat(decoded.getQualifiedName(), is("DB_1.TABLE_1"));
-    assertThat(decoded.getTransactionId(), is(42L));
+    assertThat(decoded.getWriteId(), is(42L));
     assertThat(decoded.getTableType(), is(TableType.SINK));
     assertThat(decoded.getTable(), is(table));
   }
@@ -75,7 +75,7 @@ public class TestAcidTableSerializer {
     assertThat(decoded.getOutputFormatName(), is(nullValue()));
     assertThat(decoded.getTotalBuckets(), is(0));
     assertThat(decoded.getQualifiedName(), is("DB_1.TABLE_1"));
-    assertThat(decoded.getTransactionId(), is(0L));
+    assertThat(decoded.getWriteId(), is(0L));
     assertThat(decoded.getTableType(), is(TableType.SINK));
     assertThat(decoded.getTable(), is(nullValue()));
   }

@@ -1,9 +1,5 @@
-PREHOOK: query: -- Duplicate column name: key
-
-drop view if exists v
+PREHOOK: query: drop view if exists v
 PREHOOK: type: DROPVIEW
-POSTHOOK: query: -- Duplicate column name: key
-
-drop view if exists v
+POSTHOOK: query: drop view if exists v
 POSTHOOK: type: DROPVIEW
-FAILED: SemanticException [Error 10036]: Duplicate column name: key
+FAILED: SemanticException org.apache.hadoop.hive.ql.optimizer.calcite.CalciteViewSemanticException: Duplicate column name: key

@@ -1,12 +1,8 @@
-PREHOOK: query: -- This is to test the union remove optimization with stats optimization
-
-create table inputSrcTbl1(key string, val int) stored as textfile
+PREHOOK: query: create table inputSrcTbl1(key string, val int) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@inputSrcTbl1
-POSTHOOK: query: -- This is to test the union remove optimization with stats optimization
-
-create table inputSrcTbl1(key string, val int) stored as textfile
+POSTHOOK: query: create table inputSrcTbl1(key string, val int) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@inputSrcTbl1
@@ -50,14 +46,14 @@ POSTHOOK: query: load data local inpath '../../data/files/T3.txt' into table inp
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@inputsrctbl3
-PREHOOK: query: create table inputTbl1(key string, val int) stored as textfile
+PREHOOK: query: create table inputTbl1_n6(key string, val int) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@inputTbl1
-POSTHOOK: query: create table inputTbl1(key string, val int) stored as textfile
+PREHOOK: Output: default@inputTbl1_n6
+POSTHOOK: query: create table inputTbl1_n6(key string, val int) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@inputTbl1
+POSTHOOK: Output: default@inputTbl1_n6
 PREHOOK: query: create table inputTbl2(key string, val int) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -74,16 +70,16 @@ POSTHOOK: query: create table inputTbl3(key string, val int) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@inputTbl3
-PREHOOK: query: insert into inputTbl1 select * from inputSrcTbl1
+PREHOOK: query: insert into inputTbl1_n6 select * from inputSrcTbl1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@inputsrctbl1
-PREHOOK: Output: default@inputtbl1
-POSTHOOK: query: insert into inputTbl1 select * from inputSrcTbl1
+PREHOOK: Output: default@inputtbl1_n6
+POSTHOOK: query: insert into inputTbl1_n6 select * from inputSrcTbl1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputsrctbl1
-POSTHOOK: Output: default@inputtbl1
-POSTHOOK: Lineage: inputtbl1.key SIMPLE [(inputsrctbl1)inputsrctbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: inputtbl1.val SIMPLE [(inputsrctbl1)inputsrctbl1.FieldSchema(name:val, type:int, comment:null), ]
+POSTHOOK: Output: default@inputtbl1_n6
+POSTHOOK: Lineage: inputtbl1_n6.key SIMPLE [(inputsrctbl1)inputsrctbl1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: inputtbl1_n6.val SIMPLE [(inputsrctbl1)inputsrctbl1.FieldSchema(name:val, type:int, comment:null), ]
 PREHOOK: query: insert into inputTbl2 select * from inputSrcTbl2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@inputsrctbl2
@@ -104,38 +100,48 @@ POSTHOOK: Input: default@inputsrctbl3
 POSTHOOK: Output: default@inputtbl3
 POSTHOOK: Lineage: inputtbl3.key SIMPLE [(inputsrctbl3)inputsrctbl3.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: inputtbl3.val SIMPLE [(inputsrctbl3)inputsrctbl3.FieldSchema(name:val, type:int, comment:null), ]
-PREHOOK: query: --- union remove optimization effects, stats optimization does not though it is on since inputTbl2 column stats is not available
-analyze table inputTbl1 compute statistics for columns
-PREHOOK: type: QUERY
-PREHOOK: Input: default@inputtbl1
+PREHOOK: query: analyze table inputTbl1_n6 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@inputtbl1_n6
+PREHOOK: Output: default@inputtbl1_n6
 #### A masked pattern was here ####
-POSTHOOK: query: --- union remove optimization effects, stats optimization does not though it is on since inputTbl2 column stats is not available
-analyze table inputTbl1 compute statistics for columns
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@inputtbl1
+POSTHOOK: query: analyze table inputTbl1_n6 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@inputtbl1_n6
+POSTHOOK: Output: default@inputtbl1_n6
 #### A masked pattern was here ####
 PREHOOK: query: analyze table inputTbl3 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@inputtbl3
+PREHOOK: Output: default@inputtbl3
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table inputTbl3 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@inputtbl3
+POSTHOOK: Output: default@inputtbl3
 #### A masked pattern was here ####
 PREHOOK: query: explain
-  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1
+  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n6
+PREHOOK: Input: default@inputtbl2
+PREHOOK: Input: default@inputtbl3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
-  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1
+  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n6
+POSTHOOK: Input: default@inputtbl2
+POSTHOOK: Input: default@inputtbl3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -145,22 +151,23 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-        Reducer 4 <- Map 3 (SIMPLE_EDGE)
-        Reducer 6 <- Map 5 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 4 <- Map 3 (CUSTOM_SIMPLE_EDGE)
+        Reducer 6 <- Map 5 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: inputtbl1
+                  alias: inputtbl1_n6
                   Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: val (type: int)
-                    outputColumnNames: _col1
+                    outputColumnNames: val
                     Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1), min(_col1), max(_col1)
+                      aggregations: count(), min(val), max(val)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
@@ -168,7 +175,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
@@ -177,18 +184,19 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: val (type: int)
-                    outputColumnNames: _col1
+                    outputColumnNames: val
                     Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1), min(_col1), max(_col1)
+                      aggregations: count(), min(val), max(val)
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
@@ -197,10 +205,11 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: val (type: int)
-                    outputColumnNames: _col1
+                    outputColumnNames: val
                     Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1), min(_col1), max(_col1)
+                      aggregations: count(), min(val), max(val)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
@@ -208,10 +217,10 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), min(VALUE._col1), max(VALUE._col2)
@@ -226,22 +235,22 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), min(VALUE._col1), max(VALUE._col2)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 6 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), min(VALUE._col1), max(VALUE._col2)
@@ -263,52 +272,60 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select count(*) from (
-  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1
+  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3) t
 PREHOOK: type: QUERY
-PREHOOK: Input: default@inputtbl1
+PREHOOK: Input: default@inputtbl1_n6
 PREHOOK: Input: default@inputtbl2
 PREHOOK: Input: default@inputtbl3
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from (
-  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1
+  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3) t
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@inputtbl1
+POSTHOOK: Input: default@inputtbl1_n6
 POSTHOOK: Input: default@inputtbl2
 POSTHOOK: Input: default@inputtbl3
 #### A masked pattern was here ####
 3
-PREHOOK: query: --- union remove optimization and stats optimization are effective after inputTbl2 column stats is calculated
-analyze table inputTbl2 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: query: analyze table inputTbl2 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@inputtbl2
+PREHOOK: Output: default@inputtbl2
 #### A masked pattern was here ####
-POSTHOOK: query: --- union remove optimization and stats optimization are effective after inputTbl2 column stats is calculated
-analyze table inputTbl2 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: query: analyze table inputTbl2 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@inputtbl2
+POSTHOOK: Output: default@inputtbl2
 #### A masked pattern was here ####
 PREHOOK: query: explain
-  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1
+  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n6
+PREHOOK: Input: default@inputtbl2
+PREHOOK: Input: default@inputtbl3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
-  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1
+  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n6
+POSTHOOK: Input: default@inputtbl2
+POSTHOOK: Input: default@inputtbl3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -320,44 +337,50 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select count(*) from (
-  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1
+  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3) t
 PREHOOK: type: QUERY
-PREHOOK: Input: default@inputtbl1
+PREHOOK: Input: default@inputtbl1_n6
 PREHOOK: Input: default@inputtbl2
 PREHOOK: Input: default@inputtbl3
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from (
-  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1
+  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3) t
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@inputtbl1
+POSTHOOK: Input: default@inputtbl1_n6
 POSTHOOK: Input: default@inputtbl2
 POSTHOOK: Input: default@inputtbl3
 #### A masked pattern was here ####
 3
-PREHOOK: query: --- union remove optimization effects but stats optimization does not (with group by) though it is on
-explain
-  SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1 group by key
+PREHOOK: query: explain
+  SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6 group by key
   UNION ALL
   SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2 group by key
   UNION ALL
   SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3 group by key
 PREHOOK: type: QUERY
-POSTHOOK: query: --- union remove optimization effects but stats optimization does not (with group by) though it is on
-explain
-  SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1 group by key
+PREHOOK: Input: default@inputtbl1_n6
+PREHOOK: Input: default@inputtbl2
+PREHOOK: Input: default@inputtbl3
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+  SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6 group by key
   UNION ALL
   SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2 group by key
   UNION ALL
   SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3 group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n6
+POSTHOOK: Input: default@inputtbl2
+POSTHOOK: Input: default@inputtbl3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -375,15 +398,16 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: inputtbl1
+                  alias: inputtbl1_n6
                   Statistics: Num rows: 6 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: string), val (type: int)
-                    outputColumnNames: _col0, _col2
+                    outputColumnNames: key, val
                     Statistics: Num rows: 6 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1), min(_col2), max(_col2)
-                      keys: _col0 (type: string)
+                      aggregations: count(), min(val), max(val)
+                      keys: key (type: string)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 3 Data size: 303 Basic stats: COMPLETE Column stats: COMPLETE
@@ -393,7 +417,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 3 Data size: 303 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint), _col2 (type: int), _col3 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
@@ -402,11 +426,12 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: string), val (type: int)
-                    outputColumnNames: _col0, _col2
+                    outputColumnNames: key, val
                     Statistics: Num rows: 6 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1), min(_col2), max(_col2)
-                      keys: _col0 (type: string)
+                      aggregations: count(), min(val), max(val)
+                      keys: key (type: string)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 3 Data size: 303 Basic stats: COMPLETE Column stats: COMPLETE
@@ -416,7 +441,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 3 Data size: 303 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint), _col2 (type: int), _col3 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
@@ -425,11 +450,12 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: string), val (type: int)
-                    outputColumnNames: _col0, _col2
+                    outputColumnNames: key, val
                     Statistics: Num rows: 4 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1), min(_col2), max(_col2)
-                      keys: _col0 (type: string)
+                      aggregations: count(), min(val), max(val)
+                      keys: key (type: string)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 2 Data size: 202 Basic stats: COMPLETE Column stats: COMPLETE
@@ -439,10 +465,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 2 Data size: 202 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint), _col2 (type: int), _col3 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), min(VALUE._col1), max(VALUE._col2)
@@ -458,7 +484,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), min(VALUE._col1), max(VALUE._col2)
@@ -474,7 +500,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 6 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), min(VALUE._col1), max(VALUE._col2)
@@ -497,42 +523,50 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select count(*) from (
-  SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1 group by key
+  SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6 group by key
   UNION ALL
   SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2 group by key
   UNION ALL
   SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3 group by key) t
 PREHOOK: type: QUERY
-PREHOOK: Input: default@inputtbl1
+PREHOOK: Input: default@inputtbl1_n6
 PREHOOK: Input: default@inputtbl2
 PREHOOK: Input: default@inputtbl3
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from (
-  SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1 group by key
+  SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6 group by key
   UNION ALL
   SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2 group by key
   UNION ALL
   SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3 group by key) t
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@inputtbl1
+POSTHOOK: Input: default@inputtbl1_n6
 POSTHOOK: Input: default@inputtbl2
 POSTHOOK: Input: default@inputtbl3
 #### A masked pattern was here ####
 14
 PREHOOK: query: explain
-  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1
+  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n6
+PREHOOK: Input: default@inputtbl2
+PREHOOK: Input: default@inputtbl3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
-  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1
+  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n6
+POSTHOOK: Input: default@inputtbl2
+POSTHOOK: Input: default@inputtbl3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -542,22 +576,23 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-        Reducer 4 <- Map 3 (SIMPLE_EDGE)
-        Reducer 6 <- Map 5 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 4 <- Map 3 (CUSTOM_SIMPLE_EDGE)
+        Reducer 6 <- Map 5 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: inputtbl1
+                  alias: inputtbl1_n6
                   Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: val (type: int)
-                    outputColumnNames: _col1
+                    outputColumnNames: val
                     Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1), min(_col1), max(_col1)
+                      aggregations: count(), min(val), max(val)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
@@ -565,7 +600,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
@@ -574,10 +609,11 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: val (type: int)
-                    outputColumnNames: _col1
+                    outputColumnNames: val
                     Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1), min(_col1), max(_col1)
+                      aggregations: count(), min(val), max(val)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
@@ -585,7 +621,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
@@ -594,10 +630,11 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: val (type: int)
-                    outputColumnNames: _col1
+                    outputColumnNames: val
                     Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1), min(_col1), max(_col1)
+                      aggregations: count(), min(val), max(val)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
@@ -605,10 +642,10 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), min(VALUE._col1), max(VALUE._col2)
@@ -623,7 +660,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), min(VALUE._col1), max(VALUE._col2)
@@ -638,7 +675,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 6 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), min(VALUE._col1), max(VALUE._col2)
@@ -660,42 +697,50 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select count(*) from (
-  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1
+  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3) t
 PREHOOK: type: QUERY
-PREHOOK: Input: default@inputtbl1
+PREHOOK: Input: default@inputtbl1_n6
 PREHOOK: Input: default@inputtbl2
 PREHOOK: Input: default@inputtbl3
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from (
-  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1
+  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3) t
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@inputtbl1
+POSTHOOK: Input: default@inputtbl1_n6
 POSTHOOK: Input: default@inputtbl2
 POSTHOOK: Input: default@inputtbl3
 #### A masked pattern was here ####
 3
 PREHOOK: query: explain
-  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1
+  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n6
+PREHOOK: Input: default@inputtbl2
+PREHOOK: Input: default@inputtbl3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
-  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1
+  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n6
+POSTHOOK: Input: default@inputtbl2
+POSTHOOK: Input: default@inputtbl3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -705,22 +750,23 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 5 <- Map 4 (SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 7 <- Map 6 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 5 <- Map 4 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 7 <- Map 6 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: inputtbl1
+                  alias: inputtbl1_n6
                   Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: val (type: int)
-                    outputColumnNames: _col1
+                    outputColumnNames: val
                     Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1), min(_col1), max(_col1)
+                      aggregations: count(), min(val), max(val)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
@@ -728,7 +774,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -737,10 +783,11 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: val (type: int)
-                    outputColumnNames: _col1
+                    outputColumnNames: val
                     Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1), min(_col1), max(_col1)
+                      aggregations: count(), min(val), max(val)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
@@ -748,7 +795,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 6 
             Map Operator Tree:
@@ -757,10 +804,11 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: val (type: int)
-                    outputColumnNames: _col1
+                    outputColumnNames: val
                     Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1), min(_col1), max(_col1)
+                      aggregations: count(), min(val), max(val)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
@@ -768,10 +816,10 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), min(VALUE._col1), max(VALUE._col2)
@@ -786,7 +834,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), min(VALUE._col1), max(VALUE._col2)
@@ -801,7 +849,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 7 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), min(VALUE._col1), max(VALUE._col2)
@@ -825,24 +873,24 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select count(*) from (
-  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1
+  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3) t
 PREHOOK: type: QUERY
-PREHOOK: Input: default@inputtbl1
+PREHOOK: Input: default@inputtbl1_n6
 PREHOOK: Input: default@inputtbl2
 PREHOOK: Input: default@inputtbl3
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from (
-  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1
+  SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3) t
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@inputtbl1
+POSTHOOK: Input: default@inputtbl1_n6
 POSTHOOK: Input: default@inputtbl2
 POSTHOOK: Input: default@inputtbl3
 #### A masked pattern was here ####

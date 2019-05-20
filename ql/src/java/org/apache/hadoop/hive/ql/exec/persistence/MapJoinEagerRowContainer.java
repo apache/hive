@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -161,7 +161,7 @@ public class MapJoinEagerRowContainer
       ++numRowsWritten;      
     }
     if(numRows != rowCount()) {
-      throw new ConcurrentModificationException("Values was modifified while persisting");
+      throw new ConcurrentModificationException("Values was modified while persisting");
     }
     if(numRowsWritten != numRows) {
       throw new IllegalStateException("Expected to write " + numRows + " but wrote " + numRowsWritten);

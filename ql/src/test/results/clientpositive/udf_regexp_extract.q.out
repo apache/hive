@@ -11,3 +11,5 @@ regexp_extract(str, regexp[, idx]) - extracts a group that matches regexp
 Example:
   > SELECT regexp_extract('100-200', '(\d+)-(\d+)', 1) FROM src LIMIT 1;
   '100'
+Function class:org.apache.hadoop.hive.ql.udf.UDFRegExpExtract
+Function type:BUILTIN

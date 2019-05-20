@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive-it</artifactId>
-    <version>2.2.0-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -42,6 +42,11 @@
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-jdbc</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-jdbc-handler</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -82,8 +87,29 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
+      <artifactId>hive-streaming</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive.hcatalog</groupId>
+      <artifactId>hive-hcatalog-server-extensions</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive.hcatalog</groupId>
+      <artifactId>hive-webhcat-java-client</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
       <artifactId>hive-it-util</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.hive</groupId>
+          <artifactId>hive-it-druid</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <!-- inter-project -->
     <dependency>
@@ -96,7 +122,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
@@ -112,8 +138,20 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mapreduce-client-common</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-yarn-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-yarn-common</artifactId>
           </exclusion>
       </exclusions>
     </dependency>
@@ -125,7 +163,13 @@
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
+      <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-distcp</artifactId>
+          <version>${hadoop.version}</version>
+          <scope>test</scope>
+      </dependency>
+      <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-cli</artifactId>
       <version>${project.version}</version>
@@ -133,13 +177,13 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-jdbc</artifactId>
+      <artifactId>hive-standalone-metastore-common</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
-      </dependency>
+      <classifier>tests</classifier>
+    </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-metastore</artifactId>
+      <artifactId>hive-standalone-metastore-server</artifactId>
       <version>${project.version}</version>
       <classifier>tests</classifier>
     </dependency>
@@ -168,6 +212,13 @@
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
+    <dependency>
+        <groupId>org.apache.hive.hcatalog</groupId>
+        <artifactId>hive-webhcat-java-client</artifactId>
+        <version>${project.version}</version>
+        <type>test-jar</type>
+        <scope>test</scope>
+    </dependency>
     <!-- test inter-project -->
     <dependency>
       <groupId>junit</groupId>
@@ -176,17 +227,17 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <version>${mockito-all.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-hdfs</artifactId>
       <version>${hadoop.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
+      <exclusions>
+       <exclusion>
+         <groupId>io.netty</groupId>
+         <artifactId>netty-all</artifactId>
+       </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
@@ -200,11 +251,11 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
-   </dependency>
+    </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-mapreduce-client-core</artifactId>
@@ -221,12 +272,31 @@
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-server</artifactId>
       <version>${hbase.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.glassfish.web</groupId>
+            <artifactId>javax.servlet.jsp</artifactId>
+          </exclusion>
+        </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-server</artifactId>
       <version>${hbase.version}</version>
       <type>test-jar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-common</artifactId>
+      <version>${hbase.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-procedure</artifactId>
+      <version>${hbase.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
@@ -252,7 +322,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
@@ -280,7 +350,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
@@ -296,7 +366,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
@@ -313,12 +383,28 @@
       <version>${tez.version}</version>
       <scope>test</scope>
         <exclusions>
-             <exclusion>
+          <exclusion>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-runtime-internals</artifactId>
+      <version>${tez.version}</version>
+      <scope>test</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
@@ -340,8 +426,12 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-yarn-server-web-proxy</artifactId>
           </exclusion>
       </exclusions>
     </dependency>
@@ -377,15 +467,27 @@
       <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-yarn-api</artifactId>
-      <version>${hadoop.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.apache.curator</groupId>
       <artifactId>curator-test</artifactId>
       <version>${curator.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-library</artifactId>
+      <version>${hamcrest.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
+      <version>${plexus.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>commons-dbcp</groupId>
+      <artifactId>commons-dbcp</artifactId>
+      <version>${commons-dbcp.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -410,7 +512,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
             <exclusion>
@@ -435,7 +537,7 @@
                 <configuration>
                   <target>
                     <exec executable="bash" dir="${basedir}" failonerror="true">
-                      <arg line="../target/download.sh"/>
+                      <arg line="../bin/download-spark.sh ${spark.version}"/>
                     </exec>
                   </target>
                 </configuration>
@@ -464,6 +566,9 @@
                 <mkdir dir="${test.tmp.dir}/scripts/metastore" />
                 <copy todir="${test.tmp.dir}/scripts/metastore">
                   <fileset dir="${basedir}/${hive.path.to.root}/metastore/scripts/"/>
+                </copy>
+                <copy todir="${test.tmp.dir}/scripts/metastore/upgrade" overwrite="true">
+                  <fileset dir="${basedir}/${hive.path.to.root}/standalone-metastore/metastore-server/src/main/sql/"/>
                 </copy>
               </target>
             </configuration>

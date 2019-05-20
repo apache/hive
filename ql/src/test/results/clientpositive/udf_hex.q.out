@@ -15,9 +15,9 @@ Example:
   'H1'
   > SELECT hex('Facebook') FROM src LIMIT 1;
   '46616365626F6F6B'
-PREHOOK: query: -- If the argument is a string, hex should return a string containing two hex
--- digits for every character in the input.
-SELECT
+Function class:org.apache.hadoop.hive.ql.udf.UDFHex
+Function type:BUILTIN
+PREHOOK: query: SELECT
   hex('Facebook'),
   hex('\0'),
   hex('qwertyuiopasdfghjkl')
@@ -25,9 +25,7 @@ FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- If the argument is a string, hex should return a string containing two hex
--- digits for every character in the input.
-SELECT
+POSTHOOK: query: SELECT
   hex('Facebook'),
   hex('\0'),
   hex('qwertyuiopasdfghjkl')
@@ -36,8 +34,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 46616365626F6F6B	00	71776572747975696F706173646667686A6B6C
-PREHOOK: query: -- If the argument is a number, hex should convert it to hexadecimal.
-SELECT
+PREHOOK: query: SELECT
   hex(1),
   hex(0),
   hex(4207849477)
@@ -45,8 +42,7 @@ FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- If the argument is a number, hex should convert it to hexadecimal.
-SELECT
+POSTHOOK: query: SELECT
   hex(1),
   hex(0),
   hex(4207849477)
@@ -55,13 +51,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 1	0	FACEB005
-PREHOOK: query: -- Negative numbers should be treated as two's complement (64 bit).
-SELECT hex(-5) FROM src tablesample (1 rows)
+PREHOOK: query: SELECT hex(-5) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Negative numbers should be treated as two's complement (64 bit).
-SELECT hex(-5) FROM src tablesample (1 rows)
+POSTHOOK: query: SELECT hex(-5) FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

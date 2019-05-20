@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,11 +29,11 @@ public class CastDecimalToDouble extends FuncDecimalToDouble {
     super();
   }
 
-  public CastDecimalToDouble(int inputCol, int outputCol) {
-    super(inputCol, outputCol);
+  public CastDecimalToDouble(int inputCol, int outputColumnNum) {
+    super(inputCol, outputColumnNum);
   }
 
   protected void func(DoubleColumnVector outV, DecimalColumnVector inV, int i) {
-    outV.vector[i] = inV.vector[i].getHiveDecimal().doubleValue();
+    outV.vector[i] = inV.vector[i].doubleValue();
   }
 }

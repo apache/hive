@@ -1,61 +1,58 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-DROP TABLE orcfile_merge1
+PREHOOK: query: DROP TABLE orcfile_merge1_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-DROP TABLE orcfile_merge1
+POSTHOOK: query: DROP TABLE orcfile_merge1_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE orcfile_merge1b
+PREHOOK: query: DROP TABLE orcfile_merge1b_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE orcfile_merge1b
+POSTHOOK: query: DROP TABLE orcfile_merge1b_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE orcfile_merge1c
+PREHOOK: query: DROP TABLE orcfile_merge1c_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE orcfile_merge1c
+POSTHOOK: query: DROP TABLE orcfile_merge1c_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE orcfile_merge1 (key INT, value STRING) 
+PREHOOK: query: CREATE TABLE orcfile_merge1_n1 (key INT, value STRING) 
     PARTITIONED BY (ds STRING, part STRING) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orcfile_merge1
-POSTHOOK: query: CREATE TABLE orcfile_merge1 (key INT, value STRING) 
+PREHOOK: Output: default@orcfile_merge1_n1
+POSTHOOK: query: CREATE TABLE orcfile_merge1_n1 (key INT, value STRING) 
     PARTITIONED BY (ds STRING, part STRING) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orcfile_merge1
-PREHOOK: query: CREATE TABLE orcfile_merge1b (key INT, value STRING) 
+POSTHOOK: Output: default@orcfile_merge1_n1
+PREHOOK: query: CREATE TABLE orcfile_merge1b_n1 (key INT, value STRING) 
     PARTITIONED BY (ds STRING, part STRING) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orcfile_merge1b
-POSTHOOK: query: CREATE TABLE orcfile_merge1b (key INT, value STRING) 
+PREHOOK: Output: default@orcfile_merge1b_n1
+POSTHOOK: query: CREATE TABLE orcfile_merge1b_n1 (key INT, value STRING) 
     PARTITIONED BY (ds STRING, part STRING) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orcfile_merge1b
-PREHOOK: query: CREATE TABLE orcfile_merge1c (key INT, value STRING) 
+POSTHOOK: Output: default@orcfile_merge1b_n1
+PREHOOK: query: CREATE TABLE orcfile_merge1c_n1 (key INT, value STRING) 
     PARTITIONED BY (ds STRING, part STRING) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orcfile_merge1c
-POSTHOOK: query: CREATE TABLE orcfile_merge1c (key INT, value STRING) 
+PREHOOK: Output: default@orcfile_merge1c_n1
+POSTHOOK: query: CREATE TABLE orcfile_merge1c_n1 (key INT, value STRING) 
     PARTITIONED BY (ds STRING, part STRING) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orcfile_merge1c
-PREHOOK: query: -- merge disabled
-EXPLAIN
-    INSERT OVERWRITE TABLE orcfile_merge1 PARTITION (ds='1', part)
+POSTHOOK: Output: default@orcfile_merge1c_n1
+PREHOOK: query: EXPLAIN
+    INSERT OVERWRITE TABLE orcfile_merge1_n1 PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src
 PREHOOK: type: QUERY
-POSTHOOK: query: -- merge disabled
-EXPLAIN
-    INSERT OVERWRITE TABLE orcfile_merge1 PARTITION (ds='1', part)
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orcfile_merge1_n1@ds=1
+POSTHOOK: query: EXPLAIN
+    INSERT OVERWRITE TABLE orcfile_merge1_n1 PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -82,7 +79,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                           output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                           serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                          name: default.orcfile_merge1
+                          name: default.orcfile_merge1_n1
 
   Stage: Stage-0
     Move Operator
@@ -95,42 +92,45 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.orcfile_merge1
+              name: default.orcfile_merge1_n1
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
-PREHOOK: query: INSERT OVERWRITE TABLE orcfile_merge1 PARTITION (ds='1', part)
+PREHOOK: query: INSERT OVERWRITE TABLE orcfile_merge1_n1 PARTITION (ds='1', part)
     SELECT key, value, PMOD(HASH(key), 2) as part
     FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@orcfile_merge1@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE orcfile_merge1 PARTITION (ds='1', part)
+PREHOOK: Output: default@orcfile_merge1_n1@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE orcfile_merge1_n1 PARTITION (ds='1', part)
     SELECT key, value, PMOD(HASH(key), 2) as part
     FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@orcfile_merge1@ds=1/part=0
-POSTHOOK: Output: default@orcfile_merge1@ds=1/part=1
-POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=0).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@orcfile_merge1_n1@ds=1/part=0
+POSTHOOK: Output: default@orcfile_merge1_n1@ds=1/part=1
+POSTHOOK: Lineage: orcfile_merge1_n1 PARTITION(ds=1,part=0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: orcfile_merge1_n1 PARTITION(ds=1,part=0).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: orcfile_merge1_n1 PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: orcfile_merge1_n1 PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Found 2 items
-#### A masked pattern was here ####
-PREHOOK: query: -- auto-merge slow way
-EXPLAIN
-    INSERT OVERWRITE TABLE orcfile_merge1b PARTITION (ds='1', part)
+-rw-r--r--   3 ### USER ### ### GROUP ###        752 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###       1056 ### HDFS DATE ### hdfs://### HDFS PATH ###
+PREHOOK: query: EXPLAIN
+    INSERT OVERWRITE TABLE orcfile_merge1b_n1 PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src
 PREHOOK: type: QUERY
-POSTHOOK: query: -- auto-merge slow way
-EXPLAIN
-    INSERT OVERWRITE TABLE orcfile_merge1b PARTITION (ds='1', part)
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orcfile_merge1b_n1@ds=1
+POSTHOOK: query: EXPLAIN
+    INSERT OVERWRITE TABLE orcfile_merge1b_n1 PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -162,7 +162,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                           output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                           serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                          name: default.orcfile_merge1b
+                          name: default.orcfile_merge1b_n1
 
   Stage: Stage-7
     Conditional Operator
@@ -171,7 +171,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-#### A masked pattern was here ####
+          destination: hdfs://### HDFS PATH ###
 
   Stage: Stage-0
     Move Operator
@@ -184,10 +184,11 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.orcfile_merge1b
+              name: default.orcfile_merge1b_n1
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-3
     Spark
@@ -202,7 +203,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                         output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                         serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                        name: default.orcfile_merge1b
+                        name: default.orcfile_merge1b_n1
 
   Stage: Stage-5
     Spark
@@ -217,45 +218,46 @@ STAGE PLANS:
                         input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                         output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                         serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                        name: default.orcfile_merge1b
+                        name: default.orcfile_merge1b_n1
 
   Stage: Stage-6
     Move Operator
       files:
           hdfs directory: true
-#### A masked pattern was here ####
+          destination: hdfs://### HDFS PATH ###
 
-PREHOOK: query: INSERT OVERWRITE TABLE orcfile_merge1b PARTITION (ds='1', part)
+PREHOOK: query: INSERT OVERWRITE TABLE orcfile_merge1b_n1 PARTITION (ds='1', part)
     SELECT key, value, PMOD(HASH(key), 2) as part
     FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@orcfile_merge1b@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE orcfile_merge1b PARTITION (ds='1', part)
+PREHOOK: Output: default@orcfile_merge1b_n1@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE orcfile_merge1b_n1 PARTITION (ds='1', part)
     SELECT key, value, PMOD(HASH(key), 2) as part
     FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@orcfile_merge1b@ds=1/part=0
-POSTHOOK: Output: default@orcfile_merge1b@ds=1/part=1
-POSTHOOK: Lineage: orcfile_merge1b PARTITION(ds=1,part=0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: orcfile_merge1b PARTITION(ds=1,part=0).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: orcfile_merge1b PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: orcfile_merge1b PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@orcfile_merge1b_n1@ds=1/part=0
+POSTHOOK: Output: default@orcfile_merge1b_n1@ds=1/part=1
+POSTHOOK: Lineage: orcfile_merge1b_n1 PARTITION(ds=1,part=0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: orcfile_merge1b_n1 PARTITION(ds=1,part=0).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: orcfile_merge1b_n1 PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: orcfile_merge1b_n1 PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Found 1 items
-#### A masked pattern was here ####
-PREHOOK: query: -- auto-merge fast way
-EXPLAIN
-    INSERT OVERWRITE TABLE orcfile_merge1c PARTITION (ds='1', part)
+-rw-r--r--   3 ### USER ### ### GROUP ###       1360 ### HDFS DATE ### hdfs://### HDFS PATH ###
+PREHOOK: query: EXPLAIN
+    INSERT OVERWRITE TABLE orcfile_merge1c_n1 PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src
 PREHOOK: type: QUERY
-POSTHOOK: query: -- auto-merge fast way
-EXPLAIN
-    INSERT OVERWRITE TABLE orcfile_merge1c PARTITION (ds='1', part)
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orcfile_merge1c_n1@ds=1
+POSTHOOK: query: EXPLAIN
+    INSERT OVERWRITE TABLE orcfile_merge1c_n1 PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -287,7 +289,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                           output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                           serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                          name: default.orcfile_merge1c
+                          name: default.orcfile_merge1c_n1
 
   Stage: Stage-7
     Conditional Operator
@@ -296,7 +298,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-#### A masked pattern was here ####
+          destination: hdfs://### HDFS PATH ###
 
   Stage: Stage-0
     Move Operator
@@ -309,10 +311,11 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.orcfile_merge1c
+              name: default.orcfile_merge1c_n1
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-3
     Spark
@@ -340,146 +343,144 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-#### A masked pattern was here ####
+          destination: hdfs://### HDFS PATH ###
 
-PREHOOK: query: INSERT OVERWRITE TABLE orcfile_merge1c PARTITION (ds='1', part)
+PREHOOK: query: INSERT OVERWRITE TABLE orcfile_merge1c_n1 PARTITION (ds='1', part)
     SELECT key, value, PMOD(HASH(key), 2) as part
     FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@orcfile_merge1c@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE orcfile_merge1c PARTITION (ds='1', part)
+PREHOOK: Output: default@orcfile_merge1c_n1@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE orcfile_merge1c_n1 PARTITION (ds='1', part)
     SELECT key, value, PMOD(HASH(key), 2) as part
     FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@orcfile_merge1c@ds=1/part=0
-POSTHOOK: Output: default@orcfile_merge1c@ds=1/part=1
-POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=0).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@orcfile_merge1c_n1@ds=1/part=0
+POSTHOOK: Output: default@orcfile_merge1c_n1@ds=1/part=1
+POSTHOOK: Lineage: orcfile_merge1c_n1 PARTITION(ds=1,part=0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: orcfile_merge1c_n1 PARTITION(ds=1,part=0).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: orcfile_merge1c_n1 PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: orcfile_merge1c_n1 PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Found 1 items
-#### A masked pattern was here ####
-PREHOOK: query: -- Verify
-SELECT SUM(HASH(c)) FROM (
+-rw-r--r--   3 ### USER ### ### GROUP ###       1669 ### HDFS DATE ### hdfs://### HDFS PATH ###
+PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
-    FROM orcfile_merge1 WHERE ds='1'
+    FROM orcfile_merge1_n1 WHERE ds='1'
 ) t
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orcfile_merge1
-PREHOOK: Input: default@orcfile_merge1@ds=1/part=0
-PREHOOK: Input: default@orcfile_merge1@ds=1/part=1
-#### A masked pattern was here ####
-POSTHOOK: query: -- Verify
-SELECT SUM(HASH(c)) FROM (
+PREHOOK: Input: default@orcfile_merge1_n1
+PREHOOK: Input: default@orcfile_merge1_n1@ds=1/part=0
+PREHOOK: Input: default@orcfile_merge1_n1@ds=1/part=1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
-    FROM orcfile_merge1 WHERE ds='1'
+    FROM orcfile_merge1_n1 WHERE ds='1'
 ) t
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orcfile_merge1
-POSTHOOK: Input: default@orcfile_merge1@ds=1/part=0
-POSTHOOK: Input: default@orcfile_merge1@ds=1/part=1
-#### A masked pattern was here ####
+POSTHOOK: Input: default@orcfile_merge1_n1
+POSTHOOK: Input: default@orcfile_merge1_n1@ds=1/part=0
+POSTHOOK: Input: default@orcfile_merge1_n1@ds=1/part=1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -21975308766
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
-    FROM orcfile_merge1b WHERE ds='1'
+    FROM orcfile_merge1b_n1 WHERE ds='1'
 ) t
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orcfile_merge1b
-PREHOOK: Input: default@orcfile_merge1b@ds=1/part=0
-PREHOOK: Input: default@orcfile_merge1b@ds=1/part=1
-#### A masked pattern was here ####
+PREHOOK: Input: default@orcfile_merge1b_n1
+PREHOOK: Input: default@orcfile_merge1b_n1@ds=1/part=0
+PREHOOK: Input: default@orcfile_merge1b_n1@ds=1/part=1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
-    FROM orcfile_merge1b WHERE ds='1'
+    FROM orcfile_merge1b_n1 WHERE ds='1'
 ) t
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orcfile_merge1b
-POSTHOOK: Input: default@orcfile_merge1b@ds=1/part=0
-POSTHOOK: Input: default@orcfile_merge1b@ds=1/part=1
-#### A masked pattern was here ####
+POSTHOOK: Input: default@orcfile_merge1b_n1
+POSTHOOK: Input: default@orcfile_merge1b_n1@ds=1/part=0
+POSTHOOK: Input: default@orcfile_merge1b_n1@ds=1/part=1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -21975308766
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
-    FROM orcfile_merge1c WHERE ds='1'
+    FROM orcfile_merge1c_n1 WHERE ds='1'
 ) t
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orcfile_merge1c
-PREHOOK: Input: default@orcfile_merge1c@ds=1/part=0
-PREHOOK: Input: default@orcfile_merge1c@ds=1/part=1
-#### A masked pattern was here ####
+PREHOOK: Input: default@orcfile_merge1c_n1
+PREHOOK: Input: default@orcfile_merge1c_n1@ds=1/part=0
+PREHOOK: Input: default@orcfile_merge1c_n1@ds=1/part=1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
-    FROM orcfile_merge1c WHERE ds='1'
+    FROM orcfile_merge1c_n1 WHERE ds='1'
 ) t
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orcfile_merge1c
-POSTHOOK: Input: default@orcfile_merge1c@ds=1/part=0
-POSTHOOK: Input: default@orcfile_merge1c@ds=1/part=1
-#### A masked pattern was here ####
+POSTHOOK: Input: default@orcfile_merge1c_n1
+POSTHOOK: Input: default@orcfile_merge1c_n1@ds=1/part=0
+POSTHOOK: Input: default@orcfile_merge1c_n1@ds=1/part=1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -21975308766
-PREHOOK: query: select count(*) from orcfile_merge1
+PREHOOK: query: select count(*) from orcfile_merge1_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orcfile_merge1
-PREHOOK: Input: default@orcfile_merge1@ds=1/part=0
-PREHOOK: Input: default@orcfile_merge1@ds=1/part=1
-#### A masked pattern was here ####
-POSTHOOK: query: select count(*) from orcfile_merge1
+PREHOOK: Input: default@orcfile_merge1_n1
+PREHOOK: Input: default@orcfile_merge1_n1@ds=1/part=0
+PREHOOK: Input: default@orcfile_merge1_n1@ds=1/part=1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from orcfile_merge1_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orcfile_merge1
-POSTHOOK: Input: default@orcfile_merge1@ds=1/part=0
-POSTHOOK: Input: default@orcfile_merge1@ds=1/part=1
-#### A masked pattern was here ####
+POSTHOOK: Input: default@orcfile_merge1_n1
+POSTHOOK: Input: default@orcfile_merge1_n1@ds=1/part=0
+POSTHOOK: Input: default@orcfile_merge1_n1@ds=1/part=1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
-PREHOOK: query: select count(*) from orcfile_merge1b
+PREHOOK: query: select count(*) from orcfile_merge1b_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orcfile_merge1b
-PREHOOK: Input: default@orcfile_merge1b@ds=1/part=0
-PREHOOK: Input: default@orcfile_merge1b@ds=1/part=1
-#### A masked pattern was here ####
-POSTHOOK: query: select count(*) from orcfile_merge1b
+PREHOOK: Input: default@orcfile_merge1b_n1
+PREHOOK: Input: default@orcfile_merge1b_n1@ds=1/part=0
+PREHOOK: Input: default@orcfile_merge1b_n1@ds=1/part=1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from orcfile_merge1b_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orcfile_merge1b
-POSTHOOK: Input: default@orcfile_merge1b@ds=1/part=0
-POSTHOOK: Input: default@orcfile_merge1b@ds=1/part=1
-#### A masked pattern was here ####
+POSTHOOK: Input: default@orcfile_merge1b_n1
+POSTHOOK: Input: default@orcfile_merge1b_n1@ds=1/part=0
+POSTHOOK: Input: default@orcfile_merge1b_n1@ds=1/part=1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
-PREHOOK: query: select count(*) from orcfile_merge1c
+PREHOOK: query: select count(*) from orcfile_merge1c_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orcfile_merge1c
-PREHOOK: Input: default@orcfile_merge1c@ds=1/part=0
-PREHOOK: Input: default@orcfile_merge1c@ds=1/part=1
-#### A masked pattern was here ####
-POSTHOOK: query: select count(*) from orcfile_merge1c
+PREHOOK: Input: default@orcfile_merge1c_n1
+PREHOOK: Input: default@orcfile_merge1c_n1@ds=1/part=0
+PREHOOK: Input: default@orcfile_merge1c_n1@ds=1/part=1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from orcfile_merge1c_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orcfile_merge1c
-POSTHOOK: Input: default@orcfile_merge1c@ds=1/part=0
-POSTHOOK: Input: default@orcfile_merge1c@ds=1/part=1
-#### A masked pattern was here ####
+POSTHOOK: Input: default@orcfile_merge1c_n1
+POSTHOOK: Input: default@orcfile_merge1c_n1@ds=1/part=0
+POSTHOOK: Input: default@orcfile_merge1c_n1@ds=1/part=1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
-PREHOOK: query: DROP TABLE orcfile_merge1
+PREHOOK: query: DROP TABLE orcfile_merge1_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@orcfile_merge1
-PREHOOK: Output: default@orcfile_merge1
-POSTHOOK: query: DROP TABLE orcfile_merge1
+PREHOOK: Input: default@orcfile_merge1_n1
+PREHOOK: Output: default@orcfile_merge1_n1
+POSTHOOK: query: DROP TABLE orcfile_merge1_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@orcfile_merge1
-POSTHOOK: Output: default@orcfile_merge1
-PREHOOK: query: DROP TABLE orcfile_merge1b
+POSTHOOK: Input: default@orcfile_merge1_n1
+POSTHOOK: Output: default@orcfile_merge1_n1
+PREHOOK: query: DROP TABLE orcfile_merge1b_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@orcfile_merge1b
-PREHOOK: Output: default@orcfile_merge1b
-POSTHOOK: query: DROP TABLE orcfile_merge1b
+PREHOOK: Input: default@orcfile_merge1b_n1
+PREHOOK: Output: default@orcfile_merge1b_n1
+POSTHOOK: query: DROP TABLE orcfile_merge1b_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@orcfile_merge1b
-POSTHOOK: Output: default@orcfile_merge1b
-PREHOOK: query: DROP TABLE orcfile_merge1c
+POSTHOOK: Input: default@orcfile_merge1b_n1
+POSTHOOK: Output: default@orcfile_merge1b_n1
+PREHOOK: query: DROP TABLE orcfile_merge1c_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@orcfile_merge1c
-PREHOOK: Output: default@orcfile_merge1c
-POSTHOOK: query: DROP TABLE orcfile_merge1c
+PREHOOK: Input: default@orcfile_merge1c_n1
+PREHOOK: Output: default@orcfile_merge1c_n1
+POSTHOOK: query: DROP TABLE orcfile_merge1c_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@orcfile_merge1c
-POSTHOOK: Output: default@orcfile_merge1c
+POSTHOOK: Input: default@orcfile_merge1c_n1
+POSTHOOK: Output: default@orcfile_merge1c_n1

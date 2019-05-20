@@ -11,6 +11,8 @@ atan(x) - returns the atan (arctan) of x (x is in radians)
 Example:
    > SELECT atan(0) FROM src LIMIT 1;
   0
+Function class:org.apache.hadoop.hive.ql.udf.UDFAtan
+Function type:BUILTIN
 PREHOOK: query: SELECT atan(null)
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
@@ -46,6 +48,8 @@ atan(x) - returns the atan (arctan) of x (x is in radians)
 Example:
    > SELECT atan(0) FROM src LIMIT 1;
   0
+Function class:org.apache.hadoop.hive.ql.udf.UDFAtan
+Function type:BUILTIN
 PREHOOK: query: SELECT atan(null)
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY

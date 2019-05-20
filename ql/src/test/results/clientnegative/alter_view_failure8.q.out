@@ -1,10 +1,8 @@
-PREHOOK: query: -- should fail:  can't use ALTER VIEW on a table
-CREATE TABLE invites (foo INT, bar STRING) PARTITIONED BY (ds STRING)
+PREHOOK: query: CREATE TABLE invites (foo INT, bar STRING) PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@invites
-POSTHOOK: query: -- should fail:  can't use ALTER VIEW on a table
-CREATE TABLE invites (foo INT, bar STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: query: CREATE TABLE invites (foo INT, bar STRING) PARTITIONED BY (ds STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@invites

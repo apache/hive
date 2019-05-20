@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -47,7 +47,6 @@ public class PartExprEvalUtils {
    * Evaluate expression with partition columns
    *
    * @param expr
-   * @param partSpec
    * @param rowObjectInspector
    * @return value returned by the expression
    * @throws HiveException
@@ -61,7 +60,7 @@ public class PartExprEvalUtils {
     String[] partKeyTypes = pcolTypes.trim().split(":");
 
     if (partSpec.size() != partKeyTypes.length) {
-        throw new HiveException("Internal error : Partition Spec size, " + partProps.size() +
+        throw new HiveException("Internal error : Partition Spec size, " + partSpec.size() +
                 " doesn't match partition key definition size, " + partKeyTypes.length);
     }
     boolean hasVC = vcs != null && !vcs.isEmpty();

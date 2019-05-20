@@ -1,17 +1,13 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- HIVE-3562 Some limit can be pushed down to map stage
-
-explain
+PREHOOK: query: explain
 select key,value from src order by key limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- HIVE-3562 Some limit can be pushed down to map stage
-
-explain
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
 select key,value from src order by key limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -39,10 +35,10 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                       TopN Hash Memory Usage: 0.3
                       value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
@@ -96,9 +92,13 @@ POSTHOOK: Input: default@src
 PREHOOK: query: explain
 select key,value from src order by key desc limit 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key,value from src order by key desc limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -126,10 +126,10 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                       TopN Hash Memory Usage: 0.3
                       value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
@@ -183,9 +183,13 @@ POSTHOOK: Input: default@src
 PREHOOK: query: explain
 select value, sum(key + 1) as sum from src group by value order by value limit 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select value, sum(key + 1) as sum from src group by value order by value limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -204,33 +208,39 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: value (type: string), (UDFToDouble(key) + 1.0) (type: double)
+                    expressions: value (type: string), (UDFToDouble(key) + 1.0D) (type: double)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: sum(_col1)
+                    Top N Key Operator
+                      sort order: +
                       keys: _col0 (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 214 Data size: 21186 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 214 Data size: 21186 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.3
-                        value expressions: _col1 (type: double)
-            Execution mode: llap
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 20
+                      Group By Operator
+                        aggregations: sum(_col1)
+                        keys: _col0 (type: string)
+                        minReductionHashAggr: 0.0
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.3
+                          value expressions: _col1 (type: double)
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 214 Data size: 21186 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 20
                   Statistics: Num rows: 20 Data size: 1980 Basic stats: COMPLETE Column stats: COMPLETE
@@ -276,14 +286,16 @@ val_126	127.0
 val_128	387.0
 val_129	260.0
 val_131	132.0
-PREHOOK: query: -- deduped RS
-explain
+PREHOOK: query: explain
 select value,avg(key + 1) from src group by value order by value limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- deduped RS
-explain
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
 select value,avg(key + 1) from src group by value order by value limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -302,43 +314,53 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: value (type: string), (UDFToDouble(key) + 1.0) (type: double)
+                    expressions: value (type: string), (UDFToDouble(key) + 1.0D) (type: double)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: avg(_col1)
+                    Top N Key Operator
+                      sort order: +
                       keys: _col0 (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 214 Data size: 36594 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 214 Data size: 36594 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.3
-                        value expressions: _col1 (type: struct<count:bigint,sum:double,input:double>)
-            Execution mode: llap
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 20
+                      Group By Operator
+                        aggregations: sum(_col1), count(_col1)
+                        keys: _col0 (type: string)
+                        minReductionHashAggr: 0.0
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 250 Data size: 26750 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 250 Data size: 26750 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.3
+                          value expressions: _col1 (type: double), _col2 (type: bigint)
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: avg(VALUE._col0)
+                aggregations: sum(VALUE._col0), count(VALUE._col1)
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 214 Data size: 21186 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 20
-                  Statistics: Num rows: 20 Data size: 1980 Basic stats: COMPLETE Column stats: COMPLETE
-                  File Output Operator
-                    compressed: false
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 250 Data size: 26750 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string), (_col1 / _col2) (type: double)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
+                  Limit
+                    Number of rows: 20
                     Statistics: Num rows: 20 Data size: 1980 Basic stats: COMPLETE Column stats: COMPLETE
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 20 Data size: 1980 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -374,14 +396,16 @@ val_126	127.0
 val_128	129.0
 val_129	130.0
 val_131	132.0
-PREHOOK: query: -- distincts
-explain
+PREHOOK: query: explain
 select distinct(cdouble) as dis from alltypesorc order by dis limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- distincts
-explain
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: explain
 select distinct(cdouble) as dis from alltypesorc order by dis limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -403,33 +427,39 @@ STAGE PLANS:
                     expressions: cdouble (type: double)
                     outputColumnNames: cdouble
                     Statistics: Num rows: 12288 Data size: 73400 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
+                    Top N Key Operator
+                      sort order: +
                       keys: cdouble (type: double)
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 4265 Data size: 25480 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: double)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: double)
-                        Statistics: Num rows: 4265 Data size: 25480 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.3
-            Execution mode: llap
+                      Statistics: Num rows: 12288 Data size: 73400 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 20
+                      Group By Operator
+                        keys: cdouble (type: double)
+                        minReductionHashAggr: 0.0
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 5528 Data size: 21816 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: double)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: double)
+                          Statistics: Num rows: 5528 Data size: 21816 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.3
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: double)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 4265 Data size: 25480 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 5528 Data size: 21816 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 20
-                  Statistics: Num rows: 20 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 20 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 20 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 20 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -449,6 +479,7 @@ POSTHOOK: query: select distinct(cdouble) as dis from alltypesorc order by dis l
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
+-16243.0
 -16269.0
 -16274.0
 -16277.0
@@ -468,13 +499,16 @@ POSTHOOK: Input: default@alltypesorc
 -16372.0
 -16373.0
 -16379.0
-NULL
 PREHOOK: query: explain
 select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -498,6 +532,7 @@ STAGE PLANS:
                     Statistics: Num rows: 12288 Data size: 110096 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: ctinyint (type: tinyint), cdouble (type: double)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 6144 Data size: 55052 Basic stats: COMPLETE Column stats: COMPLETE
@@ -506,10 +541,10 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: tinyint)
                         Statistics: Num rows: 6144 Data size: 55052 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: tinyint), KEY._col1 (type: double)
@@ -521,7 +556,7 @@ STAGE PLANS:
                   keys: _col0 (type: tinyint)
                   mode: complete
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 95 Data size: 1048 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
                     Number of rows: 20
                     Statistics: Num rows: 20 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
@@ -547,6 +582,7 @@ POSTHOOK: query: select ctinyint, count(distinct(cdouble)) from alltypesorc grou
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
+-45	24
 -46	24
 -47	22
 -48	29
@@ -566,13 +602,16 @@ POSTHOOK: Input: default@alltypesorc
 -62	27
 -63	19
 -64	24
-NULL	2932
 PREHOOK: query: explain 
 select ctinyint, count(cdouble) from (select ctinyint, cdouble from alltypesorc group by ctinyint, cdouble) t1 group by ctinyint order by ctinyint limit 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select ctinyint, count(cdouble) from (select ctinyint, cdouble from alltypesorc group by ctinyint, cdouble) t1 group by ctinyint order by ctinyint limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -596,6 +635,7 @@ STAGE PLANS:
                     Statistics: Num rows: 12288 Data size: 110096 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: ctinyint (type: tinyint), cdouble (type: double)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 6144 Data size: 55052 Basic stats: COMPLETE Column stats: COMPLETE
@@ -604,10 +644,10 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: tinyint)
                         Statistics: Num rows: 6144 Data size: 55052 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: tinyint), KEY._col1 (type: double)
@@ -619,7 +659,7 @@ STAGE PLANS:
                   keys: _col0 (type: tinyint)
                   mode: complete
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 95 Data size: 1048 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 131 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
                     Number of rows: 20
                     Statistics: Num rows: 20 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
@@ -645,6 +685,7 @@ POSTHOOK: query: select ctinyint, count(cdouble) from (select ctinyint, cdouble 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
+-45	24
 -46	24
 -47	22
 -48	29
@@ -664,15 +705,16 @@ POSTHOOK: Input: default@alltypesorc
 -62	27
 -63	19
 -64	24
-NULL	2932
-PREHOOK: query: -- multi distinct
-explain
+PREHOOK: query: explain
 select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint order by ctinyint limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- multi distinct
-explain
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: explain
 select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint order by ctinyint limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -697,6 +739,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count(DISTINCT cstring1), count(DISTINCT cstring2)
                       keys: ctinyint (type: tinyint), cstring1 (type: string), cstring2 (type: string)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4
                       Statistics: Num rows: 12288 Data size: 1976458 Basic stats: COMPLETE Column stats: COMPLETE
@@ -716,7 +759,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: tinyint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 95 Data size: 1808 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 131 Data size: 2492 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 20
                   Statistics: Num rows: 20 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
@@ -742,6 +785,7 @@ POSTHOOK: query: select ctinyint, count(distinct(cstring1)), count(distinct(cstr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
+-45	3	24
 -46	3	19
 -47	3	23
 -48	3	27
@@ -761,15 +805,16 @@ POSTHOOK: Input: default@alltypesorc
 -62	3	23
 -63	3	16
 -64	3	13
-NULL	3065	3
-PREHOOK: query: -- limit zero
-explain
+PREHOOK: query: explain
 select key,value from src order by key limit 0
 PREHOOK: type: QUERY
-POSTHOOK: query: -- limit zero
-explain
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
 select key,value from src order by key limit 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -788,14 +833,16 @@ POSTHOOK: query: select key,value from src order by key limit 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-PREHOOK: query: -- 2MR (applied to last RS)
-explain
+PREHOOK: query: explain
 select value, sum(key) as sum from src group by value order by sum limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 2MR (applied to last RS)
-explain
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
 select value, sum(key) as sum from src group by value order by sum limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -815,45 +862,46 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: value (type: string), key (type: string)
-                    outputColumnNames: value, key
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: key, value
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(key)
                       keys: value (type: string)
+                      minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 214 Data size: 21186 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 214 Data size: 21186 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: double)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 214 Data size: 21186 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: double)
                   sort order: +
-                  Statistics: Num rows: 214 Data size: 21186 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
                   TopN Hash Memory Usage: 0.3
                   value expressions: _col0 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: double)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 214 Data size: 21186 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 20
                   Statistics: Num rows: 20 Data size: 1980 Basic stats: COMPLETE Column stats: COMPLETE
@@ -899,22 +947,24 @@ val_41	41.0
 val_5	15.0
 val_8	8.0
 val_9	9.0
-PREHOOK: query: -- subqueries
-explain
+PREHOOK: query: explain
 select * from
 (select key, count(1) from src group by key order by key limit 2) subq
 join
 (select key, count(1) from src group by key limit 3) subq2
 on subq.key=subq2.key limit 4
 PREHOOK: type: QUERY
-POSTHOOK: query: -- subqueries
-explain
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
 select * from
 (select key, count(1) from src group by key order by key limit 2) subq
 join
 (select key, count(1) from src group by key limit 3) subq2
 on subq.key=subq2.key limit 4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -925,9 +975,9 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
-        Reducer 5 <- Map 4 (SIMPLE_EDGE)
-        Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
+        Reducer 4 <- Map 1 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 4 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -937,56 +987,57 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: string)
-                    outputColumnNames: _col0
+                    outputColumnNames: key
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 205 Data size: 19475 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 205 Data size: 19475 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.3
-                        value expressions: _col1 (type: bigint)
-            Execution mode: llap
-            LLAP IO: no inputs
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: key (type: string)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 205 Data size: 19475 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 205 Data size: 19475 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.3
-                        value expressions: _col1 (type: bigint)
-            Execution mode: llap
+                    Top N Key Operator
+                      sort order: +
+                      keys: key (type: string)
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 2
+                      Group By Operator
+                        aggregations: count()
+                        keys: key (type: string)
+                        minReductionHashAggr: 0.0
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.3
+                          value expressions: _col1 (type: bigint)
+                    Top N Key Operator
+                      sort order: +
+                      keys: key (type: string)
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 3
+                      Group By Operator
+                        aggregations: count()
+                        keys: key (type: string)
+                        minReductionHashAggr: 0.0
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.3
+                          value expressions: _col1 (type: bigint)
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 205 Data size: 19475 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 2
                   Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1020,15 +1071,15 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
-            Execution mode: llap
+        Reducer 4 
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 205 Data size: 19475 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 3
                   Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1037,8 +1088,8 @@ STAGE PLANS:
                     Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
                     TopN Hash Memory Usage: 0.3
                     value expressions: _col0 (type: string), _col1 (type: bigint)
-        Reducer 6 
-            Execution mode: llap
+        Reducer 5 
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: bigint)
@@ -1063,14 +1114,16 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- map aggregation disabled
-explain
+PREHOOK: query: explain
 select value, sum(key) as sum from src group by value order by value limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- map aggregation disabled
-explain
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
 select value, sum(key) as sum from src group by value order by value limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1099,7 +1152,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                       TopN Hash Memory Usage: 0.3
                       value expressions: key (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -1109,7 +1162,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: complete
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 214 Data size: 21186 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 307 Data size: 30393 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 20
                   Statistics: Num rows: 20 Data size: 1980 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1155,14 +1208,16 @@ val_126	126.0
 val_128	384.0
 val_129	258.0
 val_131	131.0
-PREHOOK: query: -- flush for order-by
-explain
+PREHOOK: query: explain
 select key,value,value,value,value,value,value,value,value from src order by key limit 100
 PREHOOK: type: QUERY
-POSTHOOK: query: -- flush for order-by
-explain
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
 select key,value,value,value,value,value,value,value,value from src order by key limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1190,10 +1245,10 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 407500 Basic stats: COMPLETE Column stats: COMPLETE
                       TopN Hash Memory Usage: 2.0E-5
                       value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string)
@@ -1324,14 +1379,16 @@ POSTHOOK: Input: default@src
 187	val_187	val_187	val_187	val_187	val_187	val_187	val_187	val_187
 187	val_187	val_187	val_187	val_187	val_187	val_187	val_187	val_187
 187	val_187	val_187	val_187	val_187	val_187	val_187	val_187	val_187
-PREHOOK: query: -- flush for group-by
-explain
+PREHOOK: query: explain
 select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) order by sum limit 100
 PREHOOK: type: QUERY
-POSTHOOK: query: -- flush for group-by
-explain
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
 select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) order by sum limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1360,7 +1417,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -1381,7 +1438,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                     TopN Hash Memory Usage: 2.0E-5
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: double)

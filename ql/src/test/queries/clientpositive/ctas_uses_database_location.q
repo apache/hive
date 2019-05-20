@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.metastore.warehouse.dir=invalid_scheme://${system:test.tmp.dir};
 
 -- Tests that CTAS queries in non-default databases use the location of the database

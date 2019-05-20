@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,6 +17,9 @@
  */
 
 package org.apache.hadoop.hive.ql.plan;
+
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 
 /**
  * Map Join operator Descriptor implementation.
@@ -43,4 +46,28 @@ public class SparkHashTableSinkDesc extends HashTableSinkDesc {
   public void setTag(byte tag) {
     this.tag = tag;
   }
+
+  public class SparkHashTableSinkOperatorExplainVectorization extends OperatorExplainVectorization {
+
+    private final HashTableSinkDesc filterDesc;
+    private final VectorSparkHashTableSinkDesc vectorHashTableSinkDesc;
+
+    public SparkHashTableSinkOperatorExplainVectorization(HashTableSinkDesc filterDesc,
+        VectorSparkHashTableSinkDesc vectorSparkHashTableSinkDesc) {
+      // Native vectorization supported.
+      super(vectorSparkHashTableSinkDesc, true);
+      this.filterDesc = filterDesc;
+      this.vectorHashTableSinkDesc = vectorSparkHashTableSinkDesc;
+    }
+  }
+
+  @Explain(vectorization = Vectorization.OPERATOR, displayName = "Spark Hash Table Sink Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+  public SparkHashTableSinkOperatorExplainVectorization getHashTableSinkVectorization() {
+    VectorSparkHashTableSinkDesc vectorHashTableSinkDesc = (VectorSparkHashTableSinkDesc) getVectorDesc();
+    if (vectorHashTableSinkDesc == null) {
+      return null;
+    }
+    return new SparkHashTableSinkOperatorExplainVectorization(this, vectorHashTableSinkDesc);
+  }
+
 }

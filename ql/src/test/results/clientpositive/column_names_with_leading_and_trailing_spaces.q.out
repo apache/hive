@@ -13,7 +13,6 @@ POSTHOOK: query: desc formatted space
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@space
 # col_name            	data_type           	comment             
-	 	 
  left               	string              	                    
  middle             	string              	                    
 right               	string              	                    
@@ -25,7 +24,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\" left\":\"true\",\" middle \":\"true\",\"right \":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -42,17 +42,55 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
+PREHOOK: query: desc formatted space ` left`
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@space
+POSTHOOK: query: desc formatted space ` left`
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@space
+col_name            	 left               	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	                    	 	 	 	 	 	 	 	 	 	 
+distinct_count      	                    	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	                    	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\" left\":\"true\",\" middle \":\"true\",\"right \":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: insert into space values ("1", "2", "3")
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@space
 POSTHOOK: query: insert into space values ("1", "2", "3")
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@space
-POSTHOOK: Lineage: space. left SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: space. middle  SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: space.right  SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: space. left SCRIPT []
+POSTHOOK: Lineage: space. middle  SCRIPT []
+POSTHOOK: Lineage: space.right  SCRIPT []
+PREHOOK: query: desc formatted space ` left`
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@space
+POSTHOOK: query: desc formatted space ` left`
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@space
+col_name            	 left               	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	1.0                 	 	 	 	 	 	 	 	 	 	 
+max_col_len         	1                   	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\" left\":\"true\",\" middle \":\"true\",\"right \":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: select * from space
 PREHOOK: type: QUERY
 PREHOOK: Input: default@space
@@ -64,14 +102,14 @@ POSTHOOK: Input: default@space
 1	2	3
 PREHOOK: query: insert into space (` middle `) values("2")
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@space
 POSTHOOK: query: insert into space (` middle `) values("2")
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@space
 POSTHOOK: Lineage: space. left SIMPLE []
-POSTHOOK: Lineage: space. middle  SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: space. middle  SCRIPT []
 POSTHOOK: Lineage: space.right  SIMPLE []
 PREHOOK: query: select * from space order by ` left`
 PREHOOK: type: QUERY
@@ -81,5 +119,5 @@ POSTHOOK: query: select * from space order by ` left`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@space
 #### A masked pattern was here ####
-NULL	2	NULL
 1	2	3
+NULL	2	NULL

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,10 +18,7 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
 import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -43,13 +40,25 @@ import org.apache.calcite.rex.RexWindow;
 import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeUtil;
+import org.apache.calcite.util.DateString;
+import org.apache.calcite.util.TimeString;
+import org.apache.calcite.util.TimestampString;
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.RexVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.Schema;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter.HiveNlsString;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.NullOrder;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order;
@@ -59,13 +68,11 @@ import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionExpression;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionSpec;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitioningSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
-import org.apache.hadoop.hive.ql.parse.WindowingSpec.CurrentRowSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction;
-import org.apache.hadoop.hive.ql.parse.WindowingSpec.RangeBoundarySpec;
-import org.apache.hadoop.hive.ql.parse.WindowingSpec.ValueBoundarySpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFrameSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowSpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -73,10 +80,12 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -242,6 +251,15 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       case TIME:
       case TIMESTAMP:
         return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo, null);
+      case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
+        HiveConf conf;
+        try {
+          conf = Hive.get().getConf();
+        } catch (HiveException e) {
+          throw new RuntimeException(e);
+        }
+        return new ExprNodeConstantDesc(
+                TypeInfoFactory.getTimestampTZTypeInfo(conf.getLocalTimeZone()), null);
       case BINARY:
         return new ExprNodeConstantDesc(TypeInfoFactory.binaryTypeInfo, null);
       case DECIMAL:
@@ -265,7 +283,6 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       case INTERVAL_MINUTE_SECOND:
       case INTERVAL_SECOND:
         return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo, null);
-      case OTHER:
       default:
         return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, null);
       }
@@ -295,15 +312,24 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
             Double.valueOf(((Number) literal.getValue3()).doubleValue()));
       case DATE:
         return new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo,
-          new Date(((Calendar)literal.getValue()).getTimeInMillis()));
+            Date.valueOf(literal.getValueAs(DateString.class).toString()));
       case TIME:
-      case TIMESTAMP: {
-        Object value = literal.getValue3();
-        if (value instanceof Long) {
-          value = new Timestamp((Long)value);
+        return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo,
+            Timestamp.valueOf(literal.getValueAs(TimeString.class).toString()));
+      case TIMESTAMP:
+        return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo,
+            Timestamp.valueOf(literal.getValueAs(TimestampString.class).toString()));
+      case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
+        HiveConf conf;
+        try {
+          conf = Hive.get().getConf();
+        } catch (HiveException e) {
+          throw new RuntimeException(e);
         }
-        return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo, value);
-      }
+        // Calcite stores timestamp with local time-zone in UTC internally, thus
+        // when we bring it back, we need to add the UTC suffix.
+        return new ExprNodeConstantDesc(TypeInfoFactory.getTimestampTZTypeInfo(conf.getLocalTimeZone()),
+            TimestampTZUtil.parse(literal.getValueAs(TimestampString.class).toString() + " UTC"));
       case BINARY:
         return new ExprNodeConstantDesc(TypeInfoFactory.binaryTypeInfo, literal.getValue3());
       case DECIMAL:
@@ -311,7 +337,24 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
             lType.getScale()), HiveDecimal.create((BigDecimal)literal.getValue3()));
       case VARCHAR:
       case CHAR: {
-        return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
+        if (literal.getValue() instanceof HiveNlsString) {
+          HiveNlsString mxNlsString = (HiveNlsString) literal.getValue();
+          switch (mxNlsString.interpretation) {
+          case STRING:
+            return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
+          case CHAR: {
+            int precision = lType.getPrecision();
+            HiveChar value = new HiveChar((String) literal.getValue3(), precision);
+            return new ExprNodeConstantDesc(new CharTypeInfo(precision), value);
+          }
+          case VARCHAR: {
+            int precision = lType.getPrecision();
+            HiveVarchar value = new HiveVarchar((String) literal.getValue3(), precision);
+            return new ExprNodeConstantDesc(new VarcharTypeInfo(precision), value);
+          }
+          }
+        }
+        throw new RuntimeException("varchar/string/char values must use HiveNlsString for correctness");
       }
       case INTERVAL_YEAR:
       case INTERVAL_MONTH:
@@ -336,7 +379,6 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
         return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
                 new HiveIntervalDayTime(secsBd));
       }
-      case OTHER:
       default:
         return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, literal.getValue3());
       }
@@ -426,38 +468,26 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
 
   private WindowFrameSpec getWindowRange(RexWindow window) {
     // NOTE: in Hive AST Rows->Range(Physical) & Range -> Values (logical)
-
-    WindowFrameSpec windowFrame = new WindowFrameSpec();
-
     BoundarySpec start = null;
     RexWindowBound ub = window.getUpperBound();
     if (ub != null) {
-      start = getWindowBound(ub, window.isRows());
+      start = getWindowBound(ub);
     }
 
     BoundarySpec end = null;
     RexWindowBound lb = window.getLowerBound();
     if (lb != null) {
-      end = getWindowBound(lb, window.isRows());
+      end = getWindowBound(lb);
     }
 
-    if (start != null || end != null) {
-      if (start != null) {
-        windowFrame.setStart(start);
-      }
-      if (end != null) {
-        windowFrame.setEnd(end);
-      }
-    }
-
-    return windowFrame;
+    return new WindowFrameSpec(window.isRows() ? WindowType.ROWS : WindowType.RANGE, start, end);
   }
 
-  private BoundarySpec getWindowBound(RexWindowBound wb, boolean isRows) {
+  private BoundarySpec getWindowBound(RexWindowBound wb) {
     BoundarySpec boundarySpec;
 
     if (wb.isCurrentRow()) {
-      boundarySpec = new CurrentRowSpec();
+      boundarySpec = new BoundarySpec(Direction.CURRENT);
     } else {
       final Direction direction;
       final int amt;
@@ -471,11 +501,8 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       } else {
         amt = RexLiteral.intValue(wb.getOffset());
       }
-      if (isRows) {
-        boundarySpec = new RangeBoundarySpec(direction, amt);
-      } else {
-        boundarySpec = new ValueBoundarySpec(direction, amt);
-      }
+
+      boundarySpec = new BoundarySpec(direction, amt);
     }
 
     return boundarySpec;

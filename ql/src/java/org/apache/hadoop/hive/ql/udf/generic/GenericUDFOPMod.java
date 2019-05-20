@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -34,11 +34,17 @@ import org.apache.hadoop.io.LongWritable;
 
 @Description(name = "%", value = "a _FUNC_ b - Returns the remainder when dividing a by b")
 @VectorizedExpressions({LongColModuloLongColumn.class, LongColModuloDoubleColumn.class,
+    LongColModuloLongColumnChecked.class, LongColModuloDoubleColumnChecked.class,
   DoubleColModuloLongColumn.class, DoubleColModuloDoubleColumn.class,
+    DoubleColModuloLongColumnChecked.class, DoubleColModuloDoubleColumnChecked.class,
   LongColModuloLongScalar.class, LongColModuloDoubleScalar.class,
+    LongColModuloLongScalarChecked.class, LongColModuloDoubleScalarChecked.class,
   DoubleColModuloLongScalar.class, DoubleColModuloDoubleScalar.class,
+    DoubleColModuloLongScalarChecked.class, DoubleColModuloDoubleScalarChecked.class,
   LongScalarModuloLongColumn.class, LongScalarModuloDoubleColumn.class,
+    LongScalarModuloLongColumnChecked.class, LongScalarModuloDoubleColumnChecked.class,
   DoubleScalarModuloLongColumn.class, DoubleScalarModuloDoubleColumn.class,
+    DoubleScalarModuloLongColumnChecked.class, DoubleScalarModuloDoubleColumnChecked.class,
   DecimalColModuloDecimalColumn.class, DecimalColModuloDecimalScalar.class,
   DecimalScalarModuloDecimalColumn.class})
 public class GenericUDFOPMod extends GenericUDFBaseNumeric {
@@ -119,9 +125,13 @@ public class GenericUDFOPMod extends GenericUDFBaseNumeric {
 
   @Override
   protected DecimalTypeInfo deriveResultDecimalTypeInfo(int prec1, int scale1, int prec2, int scale2) {
+    // From https://msdn.microsoft.com/en-us/library/ms190476.aspx
+    // e1 % e2
+    // Precision: min(p1-s1, p2 -s2) + max( s1,s2 )
+    // Scale: max(s1, s2)
+    int prec = Math.min(prec1 - scale1, prec2 - scale2) + Math.max(scale1, scale2);
     int scale = Math.max(scale1, scale2);
-    int prec = Math.min(HiveDecimal.MAX_PRECISION, Math.min(prec1 - scale1, prec2 - scale2) + scale);
-    return TypeInfoFactory.getDecimalTypeInfo(prec, scale);
+    return adjustPrecScale(prec, scale);
   }
 
 }

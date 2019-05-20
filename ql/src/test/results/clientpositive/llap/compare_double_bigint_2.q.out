@@ -1,0 +1,19 @@
+WARNING: Comparing a bigint and a double may result in a loss of precision.
+PREHOOK: query: select * from src where cast(1 as bigint) = cast(1.0 as double) limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select * from src where cast(1 as bigint) = cast(1.0 as double) limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+238	val_238
+86	val_86
+311	val_311
+27	val_27
+165	val_165
+409	val_409
+255	val_255
+278	val_278
+98	val_98
+484	val_484

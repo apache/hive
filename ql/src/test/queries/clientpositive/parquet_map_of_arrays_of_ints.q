@@ -1,3 +1,7 @@
+-- Suppress vectorization due to known bug.  See HIVE-19015.
+set hive.vectorized.execution.enabled=false;
+set hive.test.vectorized.execution.enabled.override=none;
+
 -- this test reads and writes a parquet file with a map of arrays of ints
 -- validates PARQUET-26 is fixed
 

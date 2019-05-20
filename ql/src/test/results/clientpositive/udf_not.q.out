@@ -9,11 +9,11 @@ POSTHOOK: query: DESCRIBE FUNCTION EXTENDED not
 POSTHOOK: type: DESCFUNCTION
 not a - Logical not
 Synonyms: !
-PREHOOK: query: -- synonym
-DESCRIBE FUNCTION !
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot
+Function type:BUILTIN
+PREHOOK: query: DESCRIBE FUNCTION !
 PREHOOK: type: DESCFUNCTION
-POSTHOOK: query: -- synonym
-DESCRIBE FUNCTION !
+POSTHOOK: query: DESCRIBE FUNCTION !
 POSTHOOK: type: DESCFUNCTION
 ! a - Logical not
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED !
@@ -22,3 +22,5 @@ POSTHOOK: query: DESCRIBE FUNCTION EXTENDED !
 POSTHOOK: type: DESCFUNCTION
 ! a - Logical not
 Synonyms: not
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot
+Function type:BUILTIN

@@ -10,10 +10,16 @@ POSTHOOK: type: DESCFUNCTION
 nullif(a1, a2) - shorthand for: case when a1 = a2 then null else a1
 Example:
  SELECT nullif(1,1),nullif(1,2)
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFNullif
+Function type:BUILTIN
 PREHOOK: query: explain select nullif(1,2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
 POSTHOOK: query: explain select nullif(1,2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -25,7 +31,7 @@ STAGE PLANS:
         TableScan
           alias: _dummy_table
           Row Limit Per Split: 1
-          Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: 1 (type: int)
             outputColumnNames: _col0
@@ -34,8 +40,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select nullif(1.0,2.0)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
 POSTHOOK: query: explain select nullif(1.0,2.0)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -47,7 +57,7 @@ STAGE PLANS:
         TableScan
           alias: _dummy_table
           Row Limit Per Split: 1
-          Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: 1 (type: decimal(1,0))
             outputColumnNames: _col0
@@ -56,8 +66,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select nullif('y','x')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
 POSTHOOK: query: explain select nullif('y','x')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -69,7 +83,7 @@ STAGE PLANS:
         TableScan
           alias: _dummy_table
           Row Limit Per Split: 1
-          Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: 'y' (type: string)
             outputColumnNames: _col0
@@ -166,3 +180,42 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 NULL
+PREHOOK: query: drop table if exists t0
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists t0
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table t0(a int,b int,c float,d double precision)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t0
+POSTHOOK: query: create table t0(a int,b int,c float,d double precision)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t0
+PREHOOK: query: insert into t0 values(1,2,3.1,4.1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t0
+POSTHOOK: query: insert into t0 values(1,2,3.1,4.1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t0
+POSTHOOK: Lineage: t0.a SCRIPT []
+POSTHOOK: Lineage: t0.b SCRIPT []
+POSTHOOK: Lineage: t0.c SCRIPT []
+POSTHOOK: Lineage: t0.d SCRIPT []
+PREHOOK: query: select	nullif(a,b),
+	nullif(b,c),
+	nullif(c,d),
+	nullif(d,a) from t0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t0
+#### A masked pattern was here ####
+POSTHOOK: query: select	nullif(a,b),
+	nullif(b,c),
+	nullif(c,d),
+	nullif(d,a) from t0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t0
+#### A masked pattern was here ####
+1	2	3.1	4.1

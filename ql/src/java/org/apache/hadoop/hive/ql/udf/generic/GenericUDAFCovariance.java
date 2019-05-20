@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -44,10 +44,10 @@ import org.apache.hadoop.io.LongWritable;
  *  Arbitrary-Order Statistical Moments", Philippe Pebay, Sandia Labs):
  *
  *  Incremental:
- *   n : <count>
- *   mx_n = mx_(n-1) + [x_n - mx_(n-1)]/n : <xavg>
- *   my_n = my_(n-1) + [y_n - my_(n-1)]/n : <yavg>
- *   c_n = c_(n-1) + (x_n - mx_(n-1))*(y_n - my_n) : <covariance * n>
+ *   n : &lt;count&gt;
+ *   mx_n = mx_(n-1) + [x_n - mx_(n-1)]/n : &lt;xavg&gt;
+ *   my_n = my_(n-1) + [y_n - my_(n-1)]/n : &lt;yavg&gt;
+ *   c_n = c_(n-1) + (x_n - mx_(n-1))*(y_n - my_n) : &lt;covariance * n&gt;
  *
  *  Merge:
  *   c_X = c_A + c_B + (mx_A - mx_B)*(my_A - my_B)*n_A*n_B/n_X
@@ -128,10 +128,10 @@ public class GenericUDAFCovariance extends AbstractGenericUDAFResolver {
    * http://infoserve.sandia.gov/sand_doc/2008/086212.pdf
    *
    *  Incremental:
-   *   n : <count>
-   *   mx_n = mx_(n-1) + [x_n - mx_(n-1)]/n : <xavg>
-   *   my_n = my_(n-1) + [y_n - my_(n-1)]/n : <yavg>
-   *   c_n = c_(n-1) + (x_n - mx_(n-1))*(y_n - my_n) : <covariance * n>
+   *   n : &lt;count&gt;
+   *   mx_n = mx_(n-1) + [x_n - mx_(n-1)]/n : &lt;xavg&gt;
+   *   my_n = my_(n-1) + [y_n - my_(n-1)]/n : &lt;yavg&gt;
+   *   c_n = c_(n-1) + (x_n - mx_(n-1))*(y_n - my_n) : &lt;covariance * n&gt;
    *
    *  Merge:
    *   c_X = c_A + c_B + (mx_A - mx_B)*(my_A - my_B)*n_A*n_B/n_X

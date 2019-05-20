@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,6 +26,8 @@ import java.util.Set;
 import org.apache.hadoop.fs.FileSystem;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is just a wrapper around hadoop's ShutdownHookManager but also manages delete on exit hook for temp files.
@@ -35,6 +37,8 @@ public class ShutdownHookManager {
   private static final org.apache.hadoop.util.ShutdownHookManager MGR = org.apache.hadoop.util.ShutdownHookManager.get();
 
   private static final DeleteOnExitHook DELETE_ON_EXIT_HOOK = new DeleteOnExitHook();
+
+  static final private Logger LOG = LoggerFactory.getLogger(ShutdownHookManager.class.getName());
 
   static {
     MGR.addShutdownHook(DELETE_ON_EXIT_HOOK, -1);
@@ -89,11 +93,11 @@ public class ShutdownHookManager {
   /**
    * register file to delete-on-exit hook
    *
-   * @see {@link org.apache.hadoop.hive.common.FileUtils#createTempFile}
+   * {@link org.apache.hadoop.hive.common.FileUtils#createTempFile}
    */
   public static void deleteOnExit(File file) {
     if (MGR.isShutdownInProgress()) {
-      throw new IllegalStateException("Shutdown in progress, cannot add a deleteOnExit");
+      LOG.warn("Shutdown in progress, cannot add a deleteOnExit");
     }
     DELETE_ON_EXIT_HOOK.deleteTargets.add(file);
   }
@@ -103,7 +107,7 @@ public class ShutdownHookManager {
    */
   public static void cancelDeleteOnExit(File file) {
     if (MGR.isShutdownInProgress()) {
-      throw new IllegalStateException("Shutdown in progress, cannot cancel a deleteOnExit");
+      LOG.warn("Shutdown in progress, cannot cancel a deleteOnExit");
     }
     DELETE_ON_EXIT_HOOK.deleteTargets.remove(file);
   }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -37,7 +37,7 @@ import org.apache.hadoop.io.Text;
 
 /**
  * Generic UDF for string function
- * <code>CONCAT_WS(sep, [string | array(string)]+)<code>.
+ * <code>CONCAT_WS(sep, [string | array(string)]+)</code>.
  * This mimics the function from
  * MySQL http://dev.mysql.com/doc/refman/5.0/en/string-functions.html#
  * function_concat-ws

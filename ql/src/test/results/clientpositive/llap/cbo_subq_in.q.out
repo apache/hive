@@ -1,14 +1,10 @@
-PREHOOK: query: -- 17. SubQueries In
--- non agg, non corr
-select * 
+PREHOOK: query: select * 
 from src_cbo 
 where src_cbo.key in (select key from src_cbo s1 where s1.key > '9') order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
-POSTHOOK: query: -- 17. SubQueries In
--- non agg, non corr
-select * 
+POSTHOOK: query: select * 
 from src_cbo 
 where src_cbo.key in (select key from src_cbo s1 where s1.key > '9') order by key
 POSTHOOK: type: QUERY
@@ -25,11 +21,7 @@ POSTHOOK: Input: default@src_cbo
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: -- agg, corr
--- add back once rank issue fixed for cbo
-
--- distinct, corr
-select * 
+PREHOOK: query: select * 
 from src_cbo b 
 where b.key in
         (select distinct a.key 
@@ -39,11 +31,7 @@ where b.key in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
-POSTHOOK: query: -- agg, corr
--- add back once rank issue fixed for cbo
-
--- distinct, corr
-select * 
+POSTHOOK: query: select * 
 from src_cbo b 
 where b.key in
         (select distinct a.key 
@@ -64,8 +52,7 @@ POSTHOOK: Input: default@src_cbo
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: -- non agg, corr, with join in Parent Query
-select p.p_partkey, li.l_suppkey 
+PREHOOK: query: select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
  li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
@@ -73,8 +60,7 @@ where li.l_linenumber = 1 and
 PREHOOK: type: QUERY
 PREHOOK: Input: default@lineitem
 #### A masked pattern was here ####
-POSTHOOK: query: -- non agg, corr, with join in Parent Query
-select p.p_partkey, li.l_suppkey 
+POSTHOOK: query: select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
  li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
@@ -84,13 +70,7 @@ POSTHOOK: Input: default@lineitem
 #### A masked pattern was here ####
 4297	1798
 108570	8571
-PREHOOK: query: -- where and having
--- Plan is:
--- Stage 1: b semijoin sq1:src_cbo (subquery in where)
--- Stage 2: group by Stage 1 o/p
--- Stage 5: group by on sq2:src_cbo (subquery in having)
--- Stage 6: Stage 2 o/p semijoin Stage 5
-select key, value, count(*) 
+PREHOOK: query: select key, value, count(*) 
 from src_cbo b
 where b.key in (select key from src_cbo where src_cbo.key > '8')
 group by key, value
@@ -98,13 +78,7 @@ having count(*) in (select count(*) from src_cbo s1 where s1.key > '9' group by 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
-POSTHOOK: query: -- where and having
--- Plan is:
--- Stage 1: b semijoin sq1:src_cbo (subquery in where)
--- Stage 2: group by Stage 1 o/p
--- Stage 5: group by on sq2:src_cbo (subquery in having)
--- Stage 6: Stage 2 o/p semijoin Stage 5
-select key, value, count(*) 
+POSTHOOK: query: select key, value, count(*) 
 from src_cbo b
 where b.key in (select key from src_cbo where src_cbo.key > '8')
 group by key, value
@@ -126,8 +100,7 @@ POSTHOOK: Input: default@src_cbo
 96	val_96	1
 97	val_97	2
 98	val_98	2
-PREHOOK: query: -- non agg, non corr, windowing
-select p_mfgr, p_name, avg(p_size) 
+PREHOOK: query: select p_mfgr, p_name, avg(p_size) 
 from part 
 group by p_mfgr, p_name
 having p_name in 
@@ -135,8 +108,7 @@ having p_name in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: -- non agg, non corr, windowing
-select p_mfgr, p_name, avg(p_size) 
+POSTHOOK: query: select p_mfgr, p_name, avg(p_size) 
 from part 
 group by p_mfgr, p_name
 having p_name in 

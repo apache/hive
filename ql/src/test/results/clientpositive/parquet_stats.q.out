@@ -1,0 +1,63 @@
+PREHOOK: query: DROP TABLE if exists parquet_stats
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE if exists parquet_stats
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE parquet_stats (
+    id int,
+    str string
+) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_stats
+POSTHOOK: query: CREATE TABLE parquet_stats (
+    id int,
+    str string
+) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_stats
+PREHOOK: query: INSERT INTO parquet_stats values(0, 'this is string 0'), (1, 'string 1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@parquet_stats
+POSTHOOK: query: INSERT INTO parquet_stats values(0, 'this is string 0'), (1, 'string 1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@parquet_stats
+POSTHOOK: Lineage: parquet_stats.id SCRIPT []
+POSTHOOK: Lineage: parquet_stats.str SCRIPT []
+PREHOOK: query: DESC FORMATTED parquet_stats
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@parquet_stats
+POSTHOOK: query: DESC FORMATTED parquet_stats
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@parquet_stats
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+str                 	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"str\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	2                   
+	rawDataSize         	146                 
+	totalSize           	500                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

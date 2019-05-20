@@ -1,3 +1,25 @@
+PREHOOK: query: DESCRIBE FUNCTION mod
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION mod
+POSTHOOK: type: DESCFUNCTION
+a mod b - Returns the remainder when dividing a by b
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED mod
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED mod
+POSTHOOK: type: DESCFUNCTION
+a mod b - Returns the remainder when dividing a by b
+Synonyms: %
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMod
+Function type:BUILTIN
+PREHOOK: query: SELECT mod(3, 2) FROM SRC tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT mod(3, 2) FROM SRC tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1
 PREHOOK: query: DESCRIBE FUNCTION %
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION %
@@ -8,3 +30,6 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED %
 POSTHOOK: type: DESCFUNCTION
 a % b - Returns the remainder when dividing a by b
+Synonyms: mod
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMod
+Function type:BUILTIN

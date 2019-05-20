@@ -1,11 +1,11 @@
-PREHOOK: query: create table t (c int)
+PREHOOK: query: create table t_n2 (c int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t (c int)
+PREHOOK: Output: default@t_n2
+POSTHOOK: query: create table t_n2 (c int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
+POSTHOOK: Output: default@t_n2
 PREHOOK: query: create table o (c int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -18,22 +18,22 @@ POSTHOOK: Output: default@o
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
-PREHOOK: Output: default@e
+PREHOOK: Output: default@e_n1
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@e
+POSTHOOK: Output: default@e_n1
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
-PREHOOK: Output: default@i
+PREHOOK: Output: default@i_n0
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@i
+POSTHOOK: Output: default@i_n0
 PREHOOK: query: create table io (c int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -42,14 +42,23 @@ POSTHOOK: query: create table io (c int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@io
-PREHOOK: query: describe formatted t
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@e2
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@e2
+PREHOOK: query: describe formatted t_n2
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@t
-POSTHOOK: query: describe formatted t
+PREHOOK: Input: default@t_n2
+POSTHOOK: query: describe formatted t_n2
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n2
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -59,7 +68,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -83,7 +93,6 @@ POSTHOOK: query: describe formatted o
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@o
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -93,7 +102,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -117,7 +127,6 @@ POSTHOOK: query: describe formatted io
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@io
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -127,7 +136,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -144,14 +154,13 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted e
+PREHOOK: query: describe formatted e_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@e
-POSTHOOK: query: describe formatted e
+PREHOOK: Input: default@e_n1
+POSTHOOK: query: describe formatted e_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@e
+POSTHOOK: Input: default@e_n1
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -162,6 +171,7 @@ Retention:          	0
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -174,14 +184,13 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted i
+PREHOOK: query: describe formatted i_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@i
-POSTHOOK: query: describe formatted i
+PREHOOK: Input: default@i_n0
+POSTHOOK: query: describe formatted i_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@i
+POSTHOOK: Input: default@i_n0
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -191,6 +200,12 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -203,14 +218,46 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: drop table t
+PREHOOK: query: describe formatted e2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@e2
+POSTHOOK: query: describe formatted e2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@e2
+# col_name            	data_type           	comment             
+c                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table t_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t
-PREHOOK: Output: default@t
-POSTHOOK: query: drop table t
+PREHOOK: Input: default@t_n2
+PREHOOK: Output: default@t_n2
+POSTHOOK: query: drop table t_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t
-POSTHOOK: Output: default@t
+POSTHOOK: Input: default@t_n2
+POSTHOOK: Output: default@t_n2
 PREHOOK: query: drop table o
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@o
@@ -227,19 +274,329 @@ POSTHOOK: query: drop table io
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@io
 POSTHOOK: Output: default@io
-PREHOOK: query: drop table e
+PREHOOK: query: drop table e_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@e
-PREHOOK: Output: default@e
-POSTHOOK: query: drop table e
+PREHOOK: Input: default@e_n1
+PREHOOK: Output: default@e_n1
+POSTHOOK: query: drop table e_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@e
-POSTHOOK: Output: default@e
-PREHOOK: query: drop table i
+POSTHOOK: Input: default@e_n1
+POSTHOOK: Output: default@e_n1
+PREHOOK: query: drop table i_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@i
-PREHOOK: Output: default@i
-POSTHOOK: query: drop table i
+PREHOOK: Input: default@i_n0
+PREHOOK: Output: default@i_n0
+POSTHOOK: query: drop table i_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@i
-POSTHOOK: Output: default@i
+POSTHOOK: Input: default@i_n0
+POSTHOOK: Output: default@i_n0
+PREHOOK: query: drop table e2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@e2
+PREHOOK: Output: default@e2
+POSTHOOK: query: drop table e2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@e2
+POSTHOOK: Output: default@e2
+PREHOOK: query: create table t_n2 (c int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_n2
+POSTHOOK: query: create table t_n2 (c int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_n2
+PREHOOK: query: create table o (c int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@o
+POSTHOOK: query: create table o (c int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@o
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@e_n1
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@e_n1
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@i_n0
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@i_n0
+PREHOOK: query: create table io (c int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@io
+POSTHOOK: query: create table io (c int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@io
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@e2
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@e2
+PREHOOK: query: describe formatted t_n2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t_n2
+POSTHOOK: query: describe formatted t_n2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t_n2
+# col_name            	data_type           	comment             
+c                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted o
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@o
+POSTHOOK: query: describe formatted o
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@o
+# col_name            	data_type           	comment             
+c                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted io
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@io
+POSTHOOK: query: describe formatted io
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@io
+# col_name            	data_type           	comment             
+c                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted e_n1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@e_n1
+POSTHOOK: query: describe formatted e_n1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@e_n1
+# col_name            	data_type           	comment             
+c                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted i_n0
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@i_n0
+POSTHOOK: query: describe formatted i_n0
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@i_n0
+# col_name            	data_type           	comment             
+c                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted e2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@e2
+POSTHOOK: query: describe formatted e2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@e2
+# col_name            	data_type           	comment             
+c                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table t_n2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t_n2
+PREHOOK: Output: default@t_n2
+POSTHOOK: query: drop table t_n2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t_n2
+POSTHOOK: Output: default@t_n2
+PREHOOK: query: drop table o
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@o
+PREHOOK: Output: default@o
+POSTHOOK: query: drop table o
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@o
+POSTHOOK: Output: default@o
+PREHOOK: query: drop table io
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@io
+PREHOOK: Output: default@io
+POSTHOOK: query: drop table io
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@io
+POSTHOOK: Output: default@io
+PREHOOK: query: drop table e_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@e_n1
+PREHOOK: Output: default@e_n1
+POSTHOOK: query: drop table e_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@e_n1
+POSTHOOK: Output: default@e_n1
+PREHOOK: query: drop table i_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@i_n0
+PREHOOK: Output: default@i_n0
+POSTHOOK: query: drop table i_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@i_n0
+POSTHOOK: Output: default@i_n0
+PREHOOK: query: drop table e2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@e2
+PREHOOK: Output: default@e2
+POSTHOOK: query: drop table e2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@e2
+POSTHOOK: Output: default@e2

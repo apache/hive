@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,10 +19,10 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
+import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
+import org.apache.hadoop.hive.ql.ddl.privilege.PrivilegeDesc;
+import org.apache.hadoop.hive.ql.ddl.privilege.PrivilegeObjectDesc;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
-import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
-import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
 
 /**
  * This interface has functions that provide the ability to customize the translation

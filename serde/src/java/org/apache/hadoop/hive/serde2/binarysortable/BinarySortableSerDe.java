@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,12 +23,13 @@ import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.HiveDecimalV1;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
@@ -40,8 +41,9 @@ import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -49,7 +51,8 @@ import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -74,11 +77,13 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -151,10 +156,12 @@ public class BinarySortableSerDe extends AbstractSerDe {
     // Get column names and sort order
     String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
     String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
+    final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
+        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
     if (columnNameProperty.length() == 0) {
       columnNames = new ArrayList<String>();
     } else {
-      columnNames = Arrays.asList(columnNameProperty.split(","));
+      columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
     }
     if (columnTypeProperty.length() == 0) {
       columnTypes = new ArrayList<TypeInfo>();
@@ -400,23 +407,33 @@ public class BinarySortableSerDe extends AbstractSerDe {
       }
 
       case DATE: {
-        DateWritable d = reuse == null ? new DateWritable()
-            : (DateWritable) reuse;
+        DateWritableV2 d = reuse == null ? new DateWritableV2()
+            : (DateWritableV2) reuse;
         d.set(deserializeInt(buffer, invert));
         return d;
       }
 
       case TIMESTAMP:
-        TimestampWritable t = (reuse == null ? new TimestampWritable() :
-            (TimestampWritable) reuse);
-        byte[] bytes = new byte[TimestampWritable.BINARY_SORTABLE_LENGTH];
+        TimestampWritableV2 t = (reuse == null ? new TimestampWritableV2() :
+            (TimestampWritableV2) reuse);
+        byte[] bytes = new byte[TimestampWritableV2.BINARY_SORTABLE_LENGTH];
 
         for (int i = 0; i < bytes.length; i++) {
           bytes[i] = buffer.read(invert);
         }
         t.setBinarySortable(bytes, 0);
         return t;
-
+      case TIMESTAMPLOCALTZ:
+        TimestampLocalTZWritable tstz = (reuse == null ? new TimestampLocalTZWritable() :
+            (TimestampLocalTZWritable) reuse);
+        byte[] data = new byte[TimestampLocalTZWritable.BINARY_SORTABLE_LENGTH];
+        for (int i = 0; i < data.length; i++) {
+          data[i] = buffer.read(invert);
+        }
+        // Across MR process boundary tz is normalized and stored in type
+        // and is not carried in data for each row.
+        tstz.fromBinarySortable(data, 0, ((TimestampLocalTZTypeInfo) type).timeZone());
+        return tstz;
       case INTERVAL_YEAR_MONTH: {
         HiveIntervalYearMonthWritable i = reuse == null ? new HiveIntervalYearMonthWritable()
             : (HiveIntervalYearMonthWritable) reuse;
@@ -533,10 +550,10 @@ public class BinarySortableSerDe extends AbstractSerDe {
 
       // Create the map if needed
       Map<Object, Object> r;
-      if (reuse == null) {
-        r = new HashMap<Object, Object>();
+      if (reuse == null || reuse.getClass() != LinkedHashMap.class) {
+        r = new LinkedHashMap<Object, Object>();
       } else {
-        r = (HashMap<Object, Object>) reuse;
+        r = (Map<Object, Object>) reuse;
         r.clear();
       }
 
@@ -780,8 +797,14 @@ public class BinarySortableSerDe extends AbstractSerDe {
       }
       case TIMESTAMP: {
         TimestampObjectInspector toi = (TimestampObjectInspector) poi;
-        TimestampWritable t = toi.getPrimitiveWritableObject(o);
+        TimestampWritableV2 t = toi.getPrimitiveWritableObject(o);
         serializeTimestampWritable(buffer, t, invert);
+        return;
+      }
+      case TIMESTAMPLOCALTZ: {
+        TimestampLocalTZObjectInspector toi = (TimestampLocalTZObjectInspector) poi;
+        TimestampLocalTZWritable t = toi.getPrimitiveWritableObject(o);
+        serializeTimestampTZWritable(buffer, t, invert);
         return;
       }
       case INTERVAL_YEAR_MONTH: {
@@ -797,18 +820,6 @@ public class BinarySortableSerDe extends AbstractSerDe {
         return;
       }
       case DECIMAL: {
-        // decimals are encoded in three pieces:
-        // sign: 1, 2 or 3 for smaller, equal or larger than 0 respectively
-        // factor: Number that indicates the amount of digits you have to move
-        // the decimal point left or right until the resulting number is smaller
-        // than zero but has something other than 0 as the first digit.
-        // digits: which is a string of all the digits in the decimal. If the number
-        // is negative the binary string will be inverted to get the correct ordering.
-        // Example: 0.00123
-        // Sign is 3 (bigger than 0)
-        // Factor is -2 (move decimal point 2 positions right)
-        // Digits are: 123
-
         HiveDecimalObjectInspector boi = (HiveDecimalObjectInspector) poi;
         HiveDecimal dec = boi.getPrimitiveJavaObject(o);
         serializeHiveDecimal(buffer, dec, invert);
@@ -959,10 +970,18 @@ public class BinarySortableSerDe extends AbstractSerDe {
     writeByte(buffer, (byte) v, invert);
   }
 
-  public static void serializeTimestampWritable(ByteStream.Output buffer, TimestampWritable t, boolean invert) {
+  public static void serializeTimestampWritable(ByteStream.Output buffer, TimestampWritableV2 t, boolean invert) {
     byte[] data = t.getBinarySortable();
     for (int i = 0; i < data.length; i++) {
       writeByte(buffer, data[i], invert);
+    }
+  }
+
+  public static void serializeTimestampTZWritable(
+      ByteStream.Output buffer, TimestampLocalTZWritable t, boolean invert) {
+    byte[] data = t.toBinarySortable();
+    for (byte b : data) {
+      writeByte(buffer, b, invert);
     }
   }
 
@@ -980,22 +999,22 @@ public class BinarySortableSerDe extends AbstractSerDe {
     serializeInt(buffer, nanos, invert);
   }
 
-  public static void serializeHiveDecimal(ByteStream.Output buffer, HiveDecimal dec, boolean invert) {
+  public static void serializeOldHiveDecimal(ByteStream.Output buffer, HiveDecimalV1 oldDec, boolean invert) {
     // get the sign of the big decimal
-    int sign = dec.compareTo(HiveDecimal.ZERO);
+    int sign = oldDec.compareTo(HiveDecimalV1.ZERO);
 
     // we'll encode the absolute value (sign is separate)
-    dec = dec.abs();
+    oldDec = oldDec.abs();
 
     // get the scale factor to turn big decimal into a decimal < 1
     // This relies on the BigDecimal precision value, which as of HIVE-10270
     // is now different from HiveDecimal.precision()
-    int factor = dec.bigDecimalValue().precision() - dec.bigDecimalValue().scale();
+    int factor = oldDec.bigDecimalValue().precision() - oldDec.bigDecimalValue().scale();
     factor = sign == 1 ? factor : -factor;
 
     // convert the absolute big decimal to string
-    dec.scaleByPowerOfTen(Math.abs(dec.scale()));
-    String digits = dec.unscaledValue().toString();
+    oldDec.scaleByPowerOfTen(Math.abs(oldDec.scale()));
+    String digits = oldDec.unscaledValue().toString();
 
     // finally write out the pieces (sign, scale, digits)
     writeByte(buffer, (byte) ( sign + 1), invert);
@@ -1005,6 +1024,119 @@ public class BinarySortableSerDe extends AbstractSerDe {
     writeByte(buffer, (byte)   factor, invert);
     serializeBytes(buffer, digits.getBytes(decimalCharSet),
         digits.length(), sign == -1 ? !invert : invert);
+  }
+
+  // See comments for next method.
+  public static void serializeHiveDecimal(ByteStream.Output buffer, HiveDecimal dec, boolean invert) {
+
+    byte[] scratchBuffer = new byte[HiveDecimal.SCRATCH_BUFFER_LEN_TO_BYTES];
+    serializeHiveDecimal(buffer, dec, invert, scratchBuffer);
+  }
+
+  /**
+   * Decimals are encoded in three pieces:Decimals are encoded in three pieces:
+   *
+   * Sign:   1, 2 or 3 for smaller, equal or larger than 0 respectively
+   * Factor: Number that indicates the amount of digits you have to move
+   *         the decimal point left or right until the resulting number is smaller
+   *         than zero but has something other than 0 as the first digit.
+   * Digits: which is a string of all the digits in the decimal. If the number
+   *         is negative the binary string will be inverted to get the correct ordering.
+   *
+   * UNDONE: Is this example correct?
+   *   Example: 0.00123
+   *   Sign is 3 (bigger than 0)
+   *   Factor is -2 (move decimal point 2 positions right)
+   *   Digits are: 123
+   *
+   * @param buffer
+   * @param dec
+   * @param invert
+   * @param scratchBuffer
+   */
+  public static void serializeHiveDecimal(
+    ByteStream.Output buffer, HiveDecimal dec, boolean invert,
+    byte[] scratchBuffer) {
+
+    // Get the sign of the decimal.
+    int signum = dec.signum();
+
+    // Get the 10^N power to turn digits into the desired decimal with a possible
+    // fractional part.
+    // To be compatible with the OldHiveDecimal version, zero has factor 1.
+    int factor;
+    if (signum == 0) {
+      factor = 1;
+    } else {
+      factor = dec.rawPrecision() - dec.scale();
+    }
+
+    // To make comparisons work properly, the "factor" gets the decimal's sign, too.
+    factor = signum == 1 ? factor : -factor;
+
+    // Convert just the decimal digits (no dot, sign, etc) into bytes.
+    //
+    // This is much faster than converting the BigInteger value from unscaledValue() which is no
+    // longer part of the HiveDecimal representation anymore to string, then bytes.
+    int index = dec.toDigitsOnlyBytes(scratchBuffer);
+
+    /*
+     * Finally write out the pieces (sign, power, digits)
+     */
+    writeByte(buffer, (byte) ( signum + 1), invert);
+    writeByte(buffer, (byte) ((factor >> 24) ^ 0x80), invert);
+    writeByte(buffer, (byte) ( factor >> 16), invert);
+    writeByte(buffer, (byte) ( factor >> 8), invert);
+    writeByte(buffer, (byte)   factor, invert);
+
+    // The toDigitsOnlyBytes stores digits at the end of the scratch buffer.
+    serializeBytes(
+        buffer,
+        scratchBuffer, index, scratchBuffer.length - index,
+        signum == -1 ? !invert : invert);
+  }
+
+  // A HiveDecimalWritable version.
+  public static void serializeHiveDecimal(
+      ByteStream.Output buffer, HiveDecimalWritable decWritable, boolean invert,
+      byte[] scratchBuffer) {
+
+      // Get the sign of the decimal.
+      int signum = decWritable.signum();
+
+      // Get the 10^N power to turn digits into the desired decimal with a possible
+      // fractional part.
+      // To be compatible with the OldHiveDecimal version, zero has factor 1.
+      int factor;
+      if (signum == 0) {
+        factor = 1;
+      } else {
+        factor = decWritable.rawPrecision() - decWritable.scale();
+      }
+
+      // To make comparisons work properly, the "factor" gets the decimal's sign, too.
+      factor = signum == 1 ? factor : -factor;
+
+      // Convert just the decimal digits (no dot, sign, etc) into bytes.
+      //
+      // This is much faster than converting the BigInteger value from unscaledValue() which is no
+      // longer part of the HiveDecimal representation anymore to string, then bytes.
+      int index = decWritable.toDigitsOnlyBytes(scratchBuffer);
+
+      /*
+       * Finally write out the pieces (sign, power, digits)
+       */
+      writeByte(buffer, (byte) ( signum + 1), invert);
+      writeByte(buffer, (byte) ((factor >> 24) ^ 0x80), invert);
+      writeByte(buffer, (byte) ( factor >> 16), invert);
+      writeByte(buffer, (byte) ( factor >> 8), invert);
+      writeByte(buffer, (byte)   factor, invert);
+
+      // The toDigitsOnlyBytes stores digits at the end of the scratch buffer.
+      serializeBytes(
+          buffer,
+          scratchBuffer, index, scratchBuffer.length - index,
+          signum == -1 ? !invert : invert);
   }
 
   @Override

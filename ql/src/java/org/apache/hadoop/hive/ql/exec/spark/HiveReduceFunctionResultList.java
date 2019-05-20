@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -25,8 +25,8 @@ import org.apache.hadoop.io.BytesWritable;
 
 import scala.Tuple2;
 
-public class HiveReduceFunctionResultList extends
-    HiveBaseFunctionResultList<Tuple2<HiveKey, Iterable<BytesWritable>>> {
+public class HiveReduceFunctionResultList<V> extends
+    HiveBaseFunctionResultList<Tuple2<HiveKey, V>> {
   private static final long serialVersionUID = 1L;
   private final SparkReduceRecordHandler reduceRecordHandler;
 
@@ -37,16 +37,24 @@ public class HiveReduceFunctionResultList extends
    * @param reducer Initialized {@link org.apache.hadoop.hive.ql.exec.mr.ExecReducer} instance.
    */
   public HiveReduceFunctionResultList(
-      Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>> inputIterator,
+      Iterator<Tuple2<HiveKey, V>> inputIterator,
       SparkReduceRecordHandler reducer) {
     super(inputIterator);
     this.reduceRecordHandler = reducer;
   }
 
   @Override
-  protected void processNextRecord(Tuple2<HiveKey, Iterable<BytesWritable>> inputRecord)
+  protected void processNextRecord(Tuple2<HiveKey, V> inputRecord)
       throws IOException {
-    reduceRecordHandler.processRow(inputRecord._1(), inputRecord._2().iterator());
+    HiveKey key = inputRecord._1();
+    V value = inputRecord._2();
+    if (value instanceof Iterable) {
+      @SuppressWarnings("unchecked")
+      Iterable<BytesWritable> values = (Iterable<BytesWritable>)value;
+      reduceRecordHandler.<BytesWritable>processRow(key, values.iterator());
+    } else {
+      reduceRecordHandler.processRow(key, value);
+    }
   }
 
   @Override

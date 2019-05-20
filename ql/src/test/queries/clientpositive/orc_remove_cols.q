@@ -1,3 +1,6 @@
+--! qt:dataset:alltypesorc
+
+set hive.vectorized.execution.enabled=false;
 SET hive.exec.schema.evolution=false;
 set hive.fetch.task.conversion=more;
 set hive.mapred.mode=nonstrict;
@@ -9,7 +12,7 @@ insert into table orc_partitioned partition (ds = 'tomorrow') select cint, cstri
 
 -- Use the old change the SERDE trick to avoid ORC DDL checks... and remove a column on the end.
 ALTER TABLE orc_partitioned SET SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe';
-ALTER TABLE orc_partitioned REPLACE COLUMNS (cint int);
+ALTER TABLE orc_partitioned REPLACE COLUMNS (a int);
 ALTER TABLE orc_partitioned SET SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde';
 
 SELECT * FROM orc_partitioned WHERE ds = 'today';

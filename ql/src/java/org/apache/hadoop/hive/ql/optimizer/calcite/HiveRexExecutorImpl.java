@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,13 +22,12 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.apache.calcite.plan.RelOptCluster;
-import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexExecutorImpl;
 import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ExprNodeConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.slf4j.Logger;
@@ -36,15 +35,15 @@ import org.slf4j.LoggerFactory;
 
 
 
-public class HiveRexExecutorImpl implements RelOptPlanner.Executor {
+public class HiveRexExecutorImpl extends RexExecutorImpl {
+
+  private static final Logger LOG = LoggerFactory.getLogger(HiveRexExecutorImpl.class);
 
   private final RelOptCluster cluster;
 
-  protected final Logger LOG;
-
   public HiveRexExecutorImpl(RelOptCluster cluster) {
+    super(null);
     this.cluster = cluster;
-    LOG = LoggerFactory.getLogger(this.getClass().getName());
   }
 
   @Override
@@ -63,7 +62,7 @@ public class HiveRexExecutorImpl implements RelOptPlanner.Executor {
         if (constant != null) {
           try {
             // convert constant back to RexNode
-            reducedValues.add(rexNodeConverter.convert((ExprNodeConstantDesc) constant));
+            reducedValues.add(rexNodeConverter.convert(constant));
           } catch (Exception e) {
             LOG.warn(e.getMessage());
             reducedValues.add(rexNode);

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,6 +29,7 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
@@ -76,7 +77,7 @@ public abstract class HiveReduceExpressionsRule extends ReduceExpressionsRule {
    * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin}.
    */
   public static final ReduceExpressionsRule JOIN_INSTANCE =
-      new JoinReduceExpressionsRule(HiveJoin.class, HiveRelFactories.HIVE_BUILDER);
+      new JoinReduceExpressionsRule(HiveJoin.class, false, HiveRelFactories.HIVE_BUILDER);
 
   //~ Constructors -----------------------------------------------------------
 
@@ -108,10 +109,10 @@ public abstract class HiveReduceExpressionsRule extends ReduceExpressionsRule {
           Lists.newArrayList(filter.getCondition());
       RexNode newConditionExp;
       boolean reduced;
-      final RelMetadataQuery mq = RelMetadataQuery.instance();
+      final RelMetadataQuery mq = call.getMetadataQuery();
       final RelOptPredicateList predicates =
           mq.getPulledUpPredicates(filter.getInput());
-      if (reduceExpressions(filter, expList, predicates, true)) {
+      if (reduceExpressions(filter, expList, predicates, true, false)) {
         assert expList.size() == 1;
         newConditionExp = expList.get(0);
         reduced = true;
@@ -135,6 +136,13 @@ public abstract class HiveReduceExpressionsRule extends ReduceExpressionsRule {
         if (RexUtil.isNullabilityCast(filter.getCluster().getTypeFactory(),
             newConditionExp)) {
           newConditionExp = ((RexCall) newConditionExp).getOperands().get(0);
+        }
+        // reduce might end up creating an expression with null type
+        // e.g condition(null = null) is reduced to condition (null) with null type
+        // since this is a condition which will always be boolean type we cast it to
+        // boolean type
+        if(newConditionExp.getType().getSqlTypeName() == SqlTypeName.NULL) {
+          newConditionExp = call.builder().cast(newConditionExp, SqlTypeName.BOOLEAN);
         }
         call.transformTo(call.builder().
             push(filter.getInput()).filter(newConditionExp).build());

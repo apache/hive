@@ -1,6 +1,4 @@
--- EXCLUDE_OS_WINDOWS
--- excluded on windows because of difference in file name encoding logic
-
+--! qt:dataset:src
 CREATE TABLE part_special (
   a STRING,
   b STRING

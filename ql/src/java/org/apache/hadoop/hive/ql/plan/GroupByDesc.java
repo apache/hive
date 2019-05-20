@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,13 +19,18 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
-import org.apache.hadoop.hive.ql.exec.GroupByOperator;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationDesc;
+import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hive.common.util.AnnotationUtils;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 
 
 /**
@@ -45,7 +50,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
    * MERGEPARTIAL: FINAL for non-distinct aggregations, COMPLETE for distinct
    * aggregations.
    */
-  private static long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
   /**
    * Mode.
@@ -61,21 +66,18 @@ public class GroupByDesc extends AbstractOperatorDesc {
   private boolean bucketGroup;
 
   private ArrayList<ExprNodeDesc> keys;
-  private List<Integer> listGroupingSets;
+  private List<Long> listGroupingSets;
   private boolean groupingSetsPresent;
-  private int groupingSetPosition = -1;
+  private int groupingSetPosition = -1; //  /* in case of grouping sets; groupby1 will output values for every setgroup; this is the index of the column that information will be sent */
   private ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators;
   private ArrayList<java.lang.String> outputColumnNames;
   private float groupByMemoryUsage;
   private float memoryThreshold;
+  private float minReductionHashAggr;
   transient private boolean isDistinct;
   private boolean dontResetAggrsDistinct;
 
-  // Extra parameters only for vectorization.
-  private VectorGroupByDesc vectorDesc;
-
   public GroupByDesc() {
-    vectorDesc = new VectorGroupByDesc();
   }
 
   public GroupByDesc(
@@ -85,12 +87,13 @@ public class GroupByDesc extends AbstractOperatorDesc {
       final ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators,
       final float groupByMemoryUsage,
       final float memoryThreshold,
-      final List<Integer> listGroupingSets,
+      final float minReductionHashAggr,
+      final List<Long> listGroupingSets,
       final boolean groupingSetsPresent,
       final int groupingSetsPosition,
       final boolean isDistinct) {
     this(mode, outputColumnNames, keys, aggregators,
-        false, groupByMemoryUsage, memoryThreshold, listGroupingSets,
+        false, groupByMemoryUsage, memoryThreshold, minReductionHashAggr, listGroupingSets,
         groupingSetsPresent, groupingSetsPosition, isDistinct);
   }
 
@@ -102,11 +105,11 @@ public class GroupByDesc extends AbstractOperatorDesc {
       final boolean bucketGroup,
       final float groupByMemoryUsage,
       final float memoryThreshold,
-      final List<Integer> listGroupingSets,
+      final float minReductionHashAggr,
+      final List<Long> listGroupingSets,
       final boolean groupingSetsPresent,
       final int groupingSetsPosition,
       final boolean isDistinct) {
-    vectorDesc = new VectorGroupByDesc();
     this.mode = mode;
     this.outputColumnNames = outputColumnNames;
     this.keys = keys;
@@ -114,18 +117,11 @@ public class GroupByDesc extends AbstractOperatorDesc {
     this.bucketGroup = bucketGroup;
     this.groupByMemoryUsage = groupByMemoryUsage;
     this.memoryThreshold = memoryThreshold;
+    this.minReductionHashAggr = minReductionHashAggr;
     this.listGroupingSets = listGroupingSets;
     this.groupingSetsPresent = groupingSetsPresent;
     this.groupingSetPosition = groupingSetsPosition;
     this.isDistinct = isDistinct;
-  }
-
-  public void setVectorDesc(VectorGroupByDesc vectorDesc) {
-    this.vectorDesc = vectorDesc;
-  }
-
-  public VectorGroupByDesc getVectorDesc() {
-    return vectorDesc;
   }
 
   public Mode getMode() {
@@ -133,6 +129,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "mode")
+  @Signature
   public String getModeString() {
     switch (mode) {
     case COMPLETE:
@@ -159,6 +156,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "keys")
+  @Signature
   public String getKeyString() {
     return PlanUtils.getExprListString(keys);
   }
@@ -177,6 +175,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "outputColumnNames")
+  @Signature
   public ArrayList<java.lang.String> getOutputColumnNames() {
     return outputColumnNames;
   }
@@ -187,6 +186,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "pruneGroupingSetId", displayOnlyOnTrue = true)
+  @Signature
   public boolean pruneGroupingSetId() {
     return groupingSetPosition >= 0 &&
         outputColumnNames.size() != keys.size() + aggregators.size();
@@ -213,7 +213,21 @@ public class GroupByDesc extends AbstractOperatorDesc {
     this.memoryThreshold = memoryThreshold;
   }
 
+  public float getMinReductionHashAggr() {
+    return minReductionHashAggr;
+  }
+
+  public void setMinReductionHashAggr(float minReductionHashAggr) {
+    this.minReductionHashAggr = minReductionHashAggr;
+  }
+
+  @Explain(displayName = "minReductionHashAggr")
+  public String getMinReductionHashAggrString() {
+    return mode == Mode.HASH ? Float.toString(minReductionHashAggr) : null;
+  }
+
   @Explain(displayName = "aggregations", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Signature
   public List<String> getAggregatorStrings() {
     List<String> res = new ArrayList<String>();
     for (AggregationDesc agg: aggregators) {
@@ -237,8 +251,9 @@ public class GroupByDesc extends AbstractOperatorDesc {
     }
     return false;
   }
-  
+
   @Explain(displayName = "bucketGroup", displayOnlyOnTrue = true)
+  @Signature
   public boolean getBucketGroup() {
     return bucketGroup;
   }
@@ -271,11 +286,11 @@ public class GroupByDesc extends AbstractOperatorDesc {
   // in which case the group by would execute as a single map-reduce job.
   // For the group-by, the group by keys should be: a,b,groupingSet(for rollup), c
   // So, the starting position of grouping set need to be known
-  public List<Integer> getListGroupingSets() {
+  public List<Long> getListGroupingSets() {
     return listGroupingSets;
   }
 
-  public void setListGroupingSets(final List<Integer> listGroupingSets) {
+  public void setListGroupingSets(final List<Long> listGroupingSets) {
     this.listGroupingSets = listGroupingSets;
   }
 
@@ -310,5 +325,124 @@ public class GroupByDesc extends AbstractOperatorDesc {
   public void setDistinct(boolean isDistinct) {
     this.isDistinct = isDistinct;
   }
+
+  @Override
+  public Object clone() {
+    ArrayList<java.lang.String> outputColumnNames = new ArrayList<>();
+    outputColumnNames.addAll(this.outputColumnNames);
+    ArrayList<ExprNodeDesc> keys = new ArrayList<>();
+    keys.addAll(this.keys);
+    ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators = new ArrayList<>();
+    aggregators.addAll(this.aggregators);
+    List<Long> listGroupingSets = new ArrayList<>();
+    listGroupingSets.addAll(this.listGroupingSets);
+    return new GroupByDesc(this.mode, outputColumnNames, keys, aggregators,
+        this.groupByMemoryUsage, this.memoryThreshold, this.minReductionHashAggr,
+        listGroupingSets, this.groupingSetsPresent,
+        this.groupingSetPosition, this.isDistinct);
+  }
+
+  public class GroupByOperatorExplainVectorization extends OperatorExplainVectorization {
+
+    private final GroupByDesc groupByDesc;
+    private final VectorGroupByDesc vectorGroupByDesc;
+
+    public GroupByOperatorExplainVectorization(GroupByDesc groupByDesc,
+        VectorGroupByDesc vectorGroupByDesc) {
+      // Native vectorization not supported.
+      super(vectorGroupByDesc, false);
+      this.groupByDesc = groupByDesc;
+      this.vectorGroupByDesc = vectorGroupByDesc;
+    }
+
+    @Explain(vectorization = Vectorization.EXPRESSION, displayName = "keyExpressions", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public List<String> getKeysExpression() {
+      return vectorExpressionsToStringList(vectorGroupByDesc.getKeyExpressions());
+    }
+
+    @Explain(vectorization = Vectorization.EXPRESSION, displayName = "aggregators", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public List<String> getAggregators() {
+      VectorAggregationDesc[] vecAggrDescs = vectorGroupByDesc.getVecAggrDescs();
+      List<String> vecAggrList = new ArrayList<String>(vecAggrDescs.length);
+      for (VectorAggregationDesc vecAggrDesc : vecAggrDescs) {
+        vecAggrList.add(vecAggrDesc.toString());
+      }
+      return vecAggrList;
+    }
+
+    @Explain(vectorization = Vectorization.OPERATOR, displayName = "vectorProcessingMode", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getProcessingMode() {
+      return vectorGroupByDesc.getProcessingMode().name();
+    }
+
+    @Explain(vectorization = Vectorization.OPERATOR, displayName = "groupByMode", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getGroupByMode() {
+      return groupByDesc.getMode().name();
+    }
+
+    @Explain(vectorization = Vectorization.OPERATOR, displayName = "vectorOutputConditionsNotMet", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public List<String> getVectorOutputConditionsNotMet() {
+      List<String> results = new ArrayList<String>();
+
+      boolean isVectorizationComplexTypesEnabled = vectorGroupByDesc.getIsVectorizationComplexTypesEnabled();
+      boolean isVectorizationGroupByComplexTypesEnabled = vectorGroupByDesc.getIsVectorizationGroupByComplexTypesEnabled();
+
+      if (isVectorizationComplexTypesEnabled && isVectorizationGroupByComplexTypesEnabled) {
+        return null;
+      }
+
+      results.add(
+          getComplexTypeWithGroupByEnabledCondition(
+              isVectorizationComplexTypesEnabled, isVectorizationGroupByComplexTypesEnabled));
+      return results;
+    }
+
+    @Explain(vectorization = Vectorization.EXPRESSION, displayName = "projectedOutputColumnNums", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getProjectedOutputColumnNums() {
+      return Arrays.toString(vectorGroupByDesc.getProjectedOutputColumns());
+    }
+  }
+
+  @Explain(vectorization = Vectorization.OPERATOR, displayName = "Group By Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+  public GroupByOperatorExplainVectorization getGroupByVectorization() {
+    VectorGroupByDesc vectorGroupByDesc = (VectorGroupByDesc) getVectorDesc();
+    if (vectorGroupByDesc == null) {
+      return null;
+    }
+    return new GroupByOperatorExplainVectorization(this, vectorGroupByDesc);
+  }
+
+  public static String getComplexTypeEnabledCondition(
+      boolean isVectorizationComplexTypesEnabled) {
+    return
+        HiveConf.ConfVars.HIVE_VECTORIZATION_COMPLEX_TYPES_ENABLED.varname +
+        " IS " + isVectorizationComplexTypesEnabled;
+  }
+
+  public static String getComplexTypeWithGroupByEnabledCondition(
+      boolean isVectorizationComplexTypesEnabled,
+      boolean isVectorizationGroupByComplexTypesEnabled) {
+    final boolean enabled = (isVectorizationComplexTypesEnabled && isVectorizationGroupByComplexTypesEnabled);
+    return "(" +
+        HiveConf.ConfVars.HIVE_VECTORIZATION_COMPLEX_TYPES_ENABLED.varname + " " + isVectorizationComplexTypesEnabled +
+        " AND " +
+        HiveConf.ConfVars.HIVE_VECTORIZATION_GROUPBY_COMPLEX_TYPES_ENABLED.varname + " " + isVectorizationGroupByComplexTypesEnabled +
+        ") IS " + enabled;
+  }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (getClass().getName().equals(other.getClass().getName())) {
+      GroupByDesc otherDesc = (GroupByDesc) other;
+      return Objects.equals(getModeString(), otherDesc.getModeString()) &&
+          Objects.equals(getKeyString(), otherDesc.getKeyString()) &&
+          Objects.equals(getOutputColumnNames(), otherDesc.getOutputColumnNames()) &&
+          pruneGroupingSetId() == otherDesc.pruneGroupingSetId() &&
+          Objects.equals(getAggregatorStrings(), otherDesc.getAggregatorStrings()) &&
+          getBucketGroup() == otherDesc.getBucketGroup();
+    }
+    return false;
+  }
+
 
 }

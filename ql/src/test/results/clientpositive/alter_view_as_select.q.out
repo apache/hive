@@ -14,6 +14,10 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: database:tv
 POSTHOOK: Output: tv@testView
+POSTHOOK: Lineage: testView.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: testView.hr SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: testView.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testView.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED tv.testView
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: tv@testview
@@ -21,7 +25,6 @@ POSTHOOK: query: DESCRIBE FORMATTED tv.testView
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: tv@testview
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 ds                  	string              	                    
@@ -33,6 +36,7 @@ Database:           	tv
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -45,8 +49,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT * FROM srcpart	 
-View Expanded Text: 	SELECT `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` FROM `default`.`srcpart`	 
+Original Query:     	SELECT * FROM srcpart	 
+Expanded Query:     	SELECT `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` FROM `default`.`srcpart`	 
 PREHOOK: query: ALTER VIEW tv.testView AS SELECT value FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
@@ -64,7 +68,6 @@ POSTHOOK: query: DESCRIBE FORMATTED tv.testView
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: tv@testview
 # col_name            	data_type           	comment             
-	 	 
 value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -73,6 +76,7 @@ Database:           	tv
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -85,8 +89,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT value FROM src WHERE key=86	 
-View Expanded Text: 	SELECT `src`.`value` FROM `default`.`src` WHERE `src`.`key`=86	 
+Original Query:     	SELECT value FROM src WHERE key=86	 
+Expanded Query:     	SELECT `src`.`value` FROM `default`.`src` WHERE `src`.`key`=86	 
 PREHOOK: query: ALTER VIEW tv.testView AS
 SELECT * FROM src
 WHERE key > 80 AND key < 100
@@ -112,7 +116,6 @@ POSTHOOK: query: DESCRIBE FORMATTED tv.testView
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: tv@testview
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -122,6 +125,7 @@ Database:           	tv
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -134,11 +138,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT * FROM src   	 
+Original Query:     	SELECT * FROM src   	 
 	                    	WHERE key > 80 AND key < 100
 	                    	ORDER BY key, value 
 	                    	LIMIT 10            
-View Expanded Text: 	SELECT `src`.`key`, `src`.`value` FROM `default`.`src`	 
+Expanded Query:     	SELECT `src`.`key`, `src`.`value` FROM `default`.`src`	 
 	                    	WHERE `src`.`key` > 80 AND `src`.`key` < 100
 	                    	ORDER BY `src`.`key`, `src`.`value`
 	                    	LIMIT 10            

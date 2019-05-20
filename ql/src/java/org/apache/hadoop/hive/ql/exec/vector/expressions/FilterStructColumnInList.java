@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
@@ -60,7 +61,7 @@ public class FilterStructColumnInList extends FilterStringColumnInList implement
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     final int logicalSize = batch.size;
     if (logicalSize == 0) {
@@ -112,7 +113,7 @@ public class FilterStructColumnInList extends FilterStringColumnInList implement
           case DECIMAL:
             DecimalColumnVector decColVector = ((DecimalColumnVector) colVec);
             binarySortableSerializeWrite.writeHiveDecimal(
-                decColVector.vector[adjustedIndex].getHiveDecimal(), decColVector.scale);
+                decColVector.vector[adjustedIndex], decColVector.scale);
             break;
 
           default:
@@ -133,18 +134,7 @@ public class FilterStructColumnInList extends FilterStringColumnInList implement
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
- 
-  }
 
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
-  @Override
-  public int getOutputColumn() {
-    return -1;
   }
 
   @Override
@@ -172,8 +162,16 @@ public class FilterStructColumnInList extends FilterStringColumnInList implement
     structColumnMap = new int[structExpressions.length];
     for (int i = 0; i < structColumnMap.length; i++) {
       VectorExpression ve = structExpressions[i];
-      structColumnMap[i] = ve.getOutputColumn();
+      structColumnMap[i] = ve.getOutputColumnNum();
     }
     this.fieldVectorColumnTypes = fieldVectorColumnTypes;
   }
+
+  @Override
+  public String vectorExpressionParameters() {
+    return "structExpressions " + Arrays.toString(structExpressions) +
+        ", fieldVectorColumnTypes " + Arrays.toString(fieldVectorColumnTypes) +
+        ", structColumnMap " + Arrays.toString(structColumnMap);
+  }
+
 }

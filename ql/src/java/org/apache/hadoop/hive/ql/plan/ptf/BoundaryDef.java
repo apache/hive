@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,8 +21,27 @@ package org.apache.hadoop.hive.ql.plan.ptf;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction;
 
-public abstract class BoundaryDef {
+public class BoundaryDef {
   Direction direction;
+  private int amt;
+  private final int relativeOffset;
+
+  public BoundaryDef(Direction direction, int amt) {
+    this.direction = direction;
+    this.amt = amt;
+
+    // Calculate relative offset
+    switch(this.direction) {
+    case PRECEDING:
+      relativeOffset = -amt;
+      break;
+    case FOLLOWING:
+      relativeOffset = amt;
+      break;
+    default:
+      relativeOffset = 0;
+    }
+  }
 
   public Direction getDirection() {
     return direction;
@@ -33,7 +52,7 @@ public abstract class BoundaryDef {
    * @return if the bound is PRECEDING
    */
   public boolean isPreceding() {
-    return false;
+    return this.direction == Direction.PRECEDING;
   }
 
   /**
@@ -41,7 +60,7 @@ public abstract class BoundaryDef {
    * @return if the bound is FOLLOWING
    */
   public boolean isFollowing() {
-    return false;
+    return this.direction == Direction.FOLLOWING;
   }
 
   /**
@@ -49,7 +68,7 @@ public abstract class BoundaryDef {
    * @return if the bound is CURRENT ROW
    */
   public boolean isCurrentRow() {
-    return false;
+    return this.direction == Direction.CURRENT;
   }
 
   /**
@@ -57,21 +76,40 @@ public abstract class BoundaryDef {
    *
    * @return offset from XX PRECEDING/FOLLOWING
    */
-  public abstract int getAmt();
+  public int getAmt() {
+    return amt;
+  }
+
   /**
-   * Returns signed offset from XX PRECEDING/FOLLOWING. Nagative for preceding.
+   * Returns signed offset from XX PRECEDING/FOLLOWING. Negative for preceding.
    *
    * @return signed offset from XX PRECEDING/FOLLOWING
    */
-  public abstract int getRelativeOffset();
+  public int getRelativeOffset() {
+    return relativeOffset;
+  }
+
 
   public boolean isUnbounded() {
     return this.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT;
   }
 
+  public int compareTo(BoundaryDef other) {
+    int c = getDirection().compareTo(other.getDirection());
+    if (c != 0) {
+      return c;
+    }
+
+    return this.direction == Direction.PRECEDING ? other.amt - this.amt : this.amt - other.amt;
+  }
+
   @Override
   public String toString() {
-    return direction == null ? "" :
-        direction + "(" + (getAmt() == Integer.MAX_VALUE ? "MAX" : getAmt()) + ")";
+    if (direction == null) return "";
+    if (direction == Direction.CURRENT) {
+      return Direction.CURRENT.toString();
+    }
+
+    return direction + "(" + (getAmt() == Integer.MAX_VALUE ? "MAX" : getAmt()) + ")";
   }
 }

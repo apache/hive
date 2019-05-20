@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,7 +30,6 @@ public interface SettableUDF {
   /**
    * Add data to UDF prior to initialization.
    * An exception may be thrown if the UDF doesn't know what to do with this data.
-   * @param params UDF-specific data to add to the UDF
    */
   void setTypeInfo(TypeInfo typeInfo) throws UDFArgumentException;
 

@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.hadoop.hive.ql.parse;
 
 import org.antlr.runtime.tree.RewriteEmptyStreamException;
@@ -70,7 +87,7 @@ public class TestMergeStatement {
             "(tok_update " +
               "(tok_set_columns_clause " +
                 "(= (tok_table_or_col a) (. (tok_table_or_col source) b)) " +
-                "(= (tok_table_or_col b) (tok_function when (tok_function tok_isnull (tok_table_or_col c1)) (tok_table_or_col c1) (tok_table_or_col c1)))" +
+                "(= (tok_table_or_col b) (tok_function when (tok_function isnull (tok_table_or_col c1)) (tok_table_or_col c1) (tok_table_or_col c1)))" +
               ")" +
             ") " +
           "(< (. (tok_table_or_col source) c2) (tok_function current_time)))" +
@@ -109,10 +126,10 @@ public class TestMergeStatement {
         "(tok_tabref (tok_tabname target)) (tok_tabref (tok_tabname source)) (= (. (tok_table_or_col target) pk) (. (tok_table_or_col source) pk)) " +
         "(tok_not_matched " +
           "(tok_insert " +
-            "(tok_value_row " +
+            "(tok_function struct " +
               "(. (tok_table_or_col source) a) " +
                 "(tok_function when " +
-                  "(tok_function tok_isnull (. (tok_table_or_col source) b)) (. (tok_table_or_col target) b) " +
+                  "(tok_function isnull (. (tok_table_or_col source) b)) (. (tok_table_or_col target) b) " +
                   "(. (tok_table_or_col source) b)" +
                 ")" +
               ")" +
@@ -140,7 +157,7 @@ public class TestMergeStatement {
         ") " +
         "(tok_not_matched " +
           "(tok_insert " +
-            "(tok_value_row " +
+            "(tok_function struct " +
               "(. (tok_table_or_col source) a) " +
               "2 " +
               "(tok_function current_date)" +
@@ -202,15 +219,8 @@ public class TestMergeStatement {
       "MERGE INTO target USING source ON target.pk = source.pk WHEN NOT MATCHED THEN INSERT VALUES(a,source.b) WHEN MATCHED THEN DELETE");
   }
 
-  /**
-   * why does this fail but next one passes
-   * @throws ParseException
-   */
   @Test
-  public void testNegative5() throws ParseException {
-    expectedException.expect(ParseException.class);
-    expectedException.expectMessage("line 1:103 mismatched input '+' expecting ) near 'b' in value row constructor");
-    //todo: why does this fail but next one passes?
+  public void test5_1() throws ParseException {
     ASTNode ast = parse(
       "MERGE INTO target USING source ON target.pk = source.pk WHEN NOT MATCHED THEN INSERT VALUES(a,source.b + 1)");
   }
@@ -241,6 +251,6 @@ public class TestMergeStatement {
             "(tok_set_columns_clause (= (tok_table_or_col b) (. (tok_table_or_col source) b2))))) " +
         "(tok_not_matched " +
           "(tok_insert " +
-            "(tok_value_row (. (tok_table_or_col source) a2) (. (tok_table_or_col source) b2)))))");
+            "(tok_function struct (. (tok_table_or_col source) a2) (. (tok_table_or_col source) b2)))))");
   }
 }

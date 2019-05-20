@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,11 +13,16 @@
  */
 package org.apache.hive.benchmark.vectorization;
 
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -29,13 +34,10 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
-
 @BenchmarkMode(Mode.AverageTime)
 @Fork(1)
 @State(Scope.Thread)
-@OutputTimeUnit(TimeUnit.NANOSECONDS)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
 public abstract class AbstractExpression {
   private static final int DEFAULT_ITER_TIME = 1000000;
   protected VectorExpression expression;
@@ -57,8 +59,11 @@ public abstract class AbstractExpression {
   @Benchmark
   @Warmup(iterations = 2, time = 2, timeUnit = TimeUnit.MILLISECONDS)
   @Measurement(iterations = 2, time = 2, timeUnit = TimeUnit.MILLISECONDS)
-  public void bench() {
+  public void bench() throws HiveException {
     for (int i = 0; i < DEFAULT_ITER_TIME; i++) {
+      rowBatch.selectedInUse = false;
+      rowBatch.size = VectorizedRowBatch.DEFAULT_SIZE;
+
       expression.evaluate(rowBatch);
     }
   }
@@ -147,4 +152,18 @@ public abstract class AbstractExpression {
     return columnVector;
   }
 
+  protected BytesColumnVector getBytesColumnVector() {
+    BytesColumnVector columnVector = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+    Random random = new Random();
+    int length = 16;
+    for (int i = 0; i != VectorizedRowBatch.DEFAULT_SIZE; i++) {
+      columnVector.vector[i] = new byte[length];
+      columnVector.start[i] = 0;
+      columnVector.length[i] = length;
+      for (int j = 0; j < length; j++) {
+        columnVector.vector[i][j] = (byte)(random.nextInt(+ 'c' - 'a' + 1) + 'a');
+      }
+    }
+    return columnVector;
+  }
 }

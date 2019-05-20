@@ -1,0 +1,78 @@
+Found 1 items
+-rw-r--r--   3 ### USER ### ### GROUP ###       4316 ### HDFS DATE ### hdfs://### HDFS PATH ###
+PREHOOK: query: drop table if exists students
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists students
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create external table students(
+            name string,
+            age int,
+            gpa double)
+  row format delimited
+  fields terminated by '\t'
+  stored as textfile
+  location 'hdfs://### HDFS PATH ###'
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@students
+POSTHOOK: query: create external table students(
+            name string,
+            age int,
+            gpa double)
+  row format delimited
+  fields terminated by '\t'
+  stored as textfile
+  location 'hdfs://### HDFS PATH ###'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@students
+PREHOOK: query: create temporary table temp1 like students
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@temp1
+POSTHOOK: query: create temporary table temp1 like students
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@temp1
+PREHOOK: query: insert into table temp1 select * from students
+PREHOOK: type: QUERY
+PREHOOK: Input: default@students
+PREHOOK: Output: default@temp1
+POSTHOOK: query: insert into table temp1 select * from students
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@students
+POSTHOOK: Output: default@temp1
+POSTHOOK: Lineage: temp1.age SIMPLE [(students)students.FieldSchema(name:age, type:int, comment:null), ]
+POSTHOOK: Lineage: temp1.gpa SIMPLE [(students)students.FieldSchema(name:gpa, type:double, comment:null), ]
+POSTHOOK: Lineage: temp1.name SIMPLE [(students)students.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: select * from temp1 order by name, age limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@temp1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from temp1 order by name, age limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@temp1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+alice falkner	28	3.72
+alice garcia	42	2.03
+alice ichabod	65	2.25
+alice robinson	37	3.69
+alice young	69	0.25
+alice young	75	0.31
+bob ichabod	56	2.81
+bob johnson	53	3.31
+bob laertes	60	3.33
+bob nixon	34	3.34
+PREHOOK: query: drop table students
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@students
+PREHOOK: Output: default@students
+POSTHOOK: query: drop table students
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@students
+POSTHOOK: Output: default@students
+Found 1 items
+-rw-r--r--   3 ### USER ### ### GROUP ###       4316 ### HDFS DATE ### hdfs://### HDFS PATH ###
+#### A masked pattern was here ####

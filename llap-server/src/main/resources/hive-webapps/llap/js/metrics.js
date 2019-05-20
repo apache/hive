@@ -103,8 +103,8 @@ llap.model.LlapDaemonInfo = new function() {
    this.push = function(jmx) {
       var bean = jmxbean(jmx, this.name); 
       this.executors = bean["NumExecutors"];
-      this.active = bean["ExecutorsStatus"];
-      this.active_rate.add(this.active.length);
+      this.active = bean["NumActive"];
+      this.active_rate.add(this.active);
    }
 }
 
@@ -175,7 +175,7 @@ llap.view.Cache = new function () {
 llap.view.Executors = new function () {
    this.refresh = function() {
       var model = llap.model.LlapDaemonInfo;
-      $("#executors-used").text(model.active.length);
+      $("#executors-used").text(model.active);
       $("#executors-max").text(model.executors);
       $("#executors-rate").text(((model.active_rate.peek() * 100.0)/model.executors).toFixed(0));
       $("#executors-trend").sparkline(model.active_rate);
@@ -227,7 +227,7 @@ $(function() {
   var views = [llap.view.Hostname, llap.view.Heap, llap.view.Cache, llap.view.Executors, llap.view.Tasks, llap.view.System]
 
   setInterval(function() {
-    $.getJSON("/jmx", function(jmx){
+    $.getJSON("jmx", function(jmx){
       models.forEach(function (m) { m.push(jmx); });
       views.forEach(function (v) { v.refresh(); });
     });

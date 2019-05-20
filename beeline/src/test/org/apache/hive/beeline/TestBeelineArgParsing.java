@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,7 +22,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
@@ -92,10 +97,13 @@ public class TestBeelineArgParsing {
     }
   }
 
-  @Parameters public static Collection<Object[]> data() throws IOException, InterruptedException {
+  @Parameters(name="{1}")
+  public static Collection<Object[]> data() throws IOException, InterruptedException {
     // generate the dummy driver by using txt file
     String u = HiveTestUtils.getFileFromClasspath("DummyDriver.txt");
-    File jarFile = HiveTestUtils.genLocalJarForTest(u, dummyDriverClazzName);
+    Map<File, String> extraContent=new HashMap<>();
+    extraContent.put(new File("META-INF/services/java.sql.Driver"), dummyDriverClazzName);
+    File jarFile = HiveTestUtils.genLocalJarForTest(u, dummyDriverClazzName, extraContent);
     String pathToDummyDriver = jarFile.getAbsolutePath();
     return Arrays.asList(new Object[][] {
         { "jdbc:postgresql://host:5432/testdb", "org.postgresql.Driver",
@@ -247,6 +255,19 @@ public class TestBeelineArgParsing {
   }
 
   /**
+   * Test beeline with multiple initfiles in -i.
+   */
+  @Test
+  public void testMultipleInitFiles() {
+    TestBeeline bl = new TestBeeline();
+    String[] args = new String[] {"-i", "/url/to/file1", "-i", "/url/to/file2"};
+    Assert.assertEquals(0, bl.initArgs(args));
+    String[] files = bl.getOpts().getInitFiles();
+    Assert.assertEquals("/url/to/file1", files[0]);
+    Assert.assertEquals("/url/to/file2", files[1]);
+  }
+
+  /**
    * Displays the usage.
    */
   @Test
@@ -284,6 +305,7 @@ public class TestBeelineArgParsing {
     TestBeeline bl = new TestBeeline();
 
     LOG.info("Add " + driverJarFileName + " for the driver class " + driverClazzName);
+    assertTrue("expected to exists: "+driverJarFileName,new File(driverJarFileName).exists());
     bl.addLocalJar(driverJarFileName);
     if (!defaultSupported) {
       Assert.assertNull(bl.findLocalDriver(connectionString));
@@ -319,4 +341,31 @@ public class TestBeelineArgParsing {
     Assert.assertTrue(bl.properties.get(0).equals("props"));
     bl.close();
   }
+
+  /**
+   * Test maxHistoryRows parameter option.
+   */
+  @Test
+  public void testMaxHistoryRows() throws Exception {
+    TestBeeline bl = new TestBeeline();
+    String args[] = new String[] {"--maxHistoryRows=100"};
+    Assert.assertEquals(0, bl.initArgs(args));
+    Assert.assertTrue(bl.getOpts().getMaxHistoryRows() == 100);
+    bl.close();
+  }
+
+  /**
+   * Test the file parameter option
+   * @throws Exception
+   */
+  @Test
+  public void testFileParam() throws Exception {
+    TestBeeline bl = new TestBeeline();
+    String args[] = new String[] {"-u", "url", "-n", "name",
+        "-p", "password", "-d", "driver", "-f", "hdfs://myscript"};
+    Assert.assertEquals(0, bl.initArgs(args));
+    Assert.assertTrue(bl.connectArgs.equals("url name password driver"));
+    Assert.assertTrue(bl.getOpts().getScriptFile().equals("hdfs://myscript"));
+  }
+
 }

@@ -1,7 +1,6 @@
 
 CREATE DATABASE hbaseDB;
 
--- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
 -- Hadoop 0.23 changes the behavior FsShell on Exit Codes
 -- In Hadoop 0.20
 -- Exit Code == 0 on success
@@ -11,19 +10,13 @@ CREATE DATABASE hbaseDB;
 -- Exit Code < 0 on syntax/usage error
 -- Exit Code > 0 operation failed
 
-CREATE TABLE hbaseDB.hbase_table_0(key int, value string)
+CREATE EXTERNAL TABLE hbaseDB.hbase_table_0(key int, value string)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string")
-TBLPROPERTIES ("hbase.table.name" = "hbase_table_0");
+TBLPROPERTIES ("hbase.table.name" = "hbase_table_0", "external.table.purge" = "true");
 
-dfs -ls target/tmp/hbase/data/default/hbase_table_0;
+dfs -ls ${hiveconf:hbase.rootdir}/data/default/hbase_table_0;
 
 DROP DATABASE IF EXISTS hbaseDB CASCADE;
 
-dfs -ls target/tmp/hbase/data/default/hbase_table_0;
-
-
-
-
-
-
+dfs -ls ${hiveconf:hbase.rootdir}/data/default/hbase_table_0;

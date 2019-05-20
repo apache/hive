@@ -8,3 +8,5 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED avg
 POSTHOOK: type: DESCFUNCTION
 avg(x) - Returns the mean of a set of numbers
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage
+Function type:BUILTIN

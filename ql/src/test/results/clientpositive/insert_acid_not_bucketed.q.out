@@ -1,28 +1,28 @@
-PREHOOK: query: create table acid_notbucketed(a int, b varchar(128)) stored as orc
+PREHOOK: query: create table acid_notbucketed_n0(a int, b varchar(128)) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@acid_notbucketed
-POSTHOOK: query: create table acid_notbucketed(a int, b varchar(128)) stored as orc
+PREHOOK: Output: default@acid_notbucketed_n0
+POSTHOOK: query: create table acid_notbucketed_n0(a int, b varchar(128)) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@acid_notbucketed
-PREHOOK: query: insert into table acid_notbucketed select cint, cast(cstring1 as varchar(128)) from alltypesorc where cint is not null order by cint limit 10
+POSTHOOK: Output: default@acid_notbucketed_n0
+PREHOOK: query: insert into table acid_notbucketed_n0 select cint, cast(cstring1 as varchar(128)) from alltypesorc where cint is not null order by cint limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-PREHOOK: Output: default@acid_notbucketed
-POSTHOOK: query: insert into table acid_notbucketed select cint, cast(cstring1 as varchar(128)) from alltypesorc where cint is not null order by cint limit 10
+PREHOOK: Output: default@acid_notbucketed_n0
+POSTHOOK: query: insert into table acid_notbucketed_n0 select cint, cast(cstring1 as varchar(128)) from alltypesorc where cint is not null order by cint limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-POSTHOOK: Output: default@acid_notbucketed
-POSTHOOK: Lineage: acid_notbucketed.a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: acid_notbucketed.b EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-PREHOOK: query: select * from acid_notbucketed
+POSTHOOK: Output: default@acid_notbucketed_n0
+POSTHOOK: Lineage: acid_notbucketed_n0.a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_notbucketed_n0.b EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+PREHOOK: query: select * from acid_notbucketed_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@acid_notbucketed
+PREHOOK: Input: default@acid_notbucketed_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from acid_notbucketed
+POSTHOOK: query: select * from acid_notbucketed_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@acid_notbucketed
+POSTHOOK: Input: default@acid_notbucketed_n0
 #### A masked pattern was here ####
 -1073279343	oj1YrV5Wa
 -1073051226	A34p7oRr2WvUJNf

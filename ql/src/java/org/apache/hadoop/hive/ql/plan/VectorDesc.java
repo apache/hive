@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,5 +21,11 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 public interface VectorDesc extends Serializable, Cloneable {
-  public Object clone() throws CloneNotSupportedException;
+
+  public Object clone();
+
+  public void setVectorOp(Class<?> vectorOpClass);
+
+  public Class<?> getVectorOpClass();
+
 }

@@ -97,8 +97,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_1
 #### A masked pattern was here ####
 2011-01-01	1
-PREHOOK: query: -- Valid casts
-select 
+PREHOOK: query: select 
   cast('2012-01-01' as string), 
   cast(d as string), 
   cast(d as timestamp), 
@@ -108,8 +107,7 @@ from date_1 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@date_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- Valid casts
-select 
+POSTHOOK: query: select 
   cast('2012-01-01' as string), 
   cast(d as string), 
   cast(d as timestamp), 
@@ -120,8 +118,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_1
 #### A masked pattern was here ####
 2012-01-01	2011-01-01	2011-01-01 00:00:00	2011-01-01	2011-01-01
-PREHOOK: query: -- Invalid casts. 
-select 
+PREHOOK: query: select 
   cast(d as boolean), 
   cast(d as tinyint),
   cast(d as smallint),
@@ -133,8 +130,7 @@ from date_1 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@date_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- Invalid casts. 
-select 
+POSTHOOK: query: select 
   cast(d as boolean), 
   cast(d as tinyint),
   cast(d as smallint),
@@ -147,8 +143,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_1
 #### A masked pattern was here ####
 NULL	NULL	NULL	NULL	NULL	NULL	NULL
-PREHOOK: query: -- These comparisons should all be true
-select 
+PREHOOK: query: select 
   date '2011-01-01' = date '2011-01-01',
   unix_timestamp(date '2011-01-01') = unix_timestamp(date '2011-01-01'),
   unix_timestamp(date '2011-01-01') = unix_timestamp(cast(date '2011-01-01' as timestamp)),
@@ -163,8 +158,7 @@ from date_1 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@date_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- These comparisons should all be true
-select 
+POSTHOOK: query: select 
   date '2011-01-01' = date '2011-01-01',
   unix_timestamp(date '2011-01-01') = unix_timestamp(date '2011-01-01'),
   unix_timestamp(date '2011-01-01') = unix_timestamp(cast(date '2011-01-01' as timestamp)),

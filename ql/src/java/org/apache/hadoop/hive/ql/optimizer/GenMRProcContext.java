@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -176,8 +176,6 @@ public class GenMRProcContext implements NodeProcessorCtx {
    *          hive configuration
    * @param opTaskMap
    *          reducer to task mapping
-   * @param seenOps
-   *          operator already visited
    * @param parseCtx
    *          current parse context
    * @param rootTasks
@@ -216,6 +214,17 @@ public class GenMRProcContext implements NodeProcessorCtx {
         List<Operator<? extends OperatorDesc>>>();
     dependencyTaskForMultiInsert = null;
     linkedFileDescTasks = null;
+  }
+
+  /**
+   * The context is reused across the rules. Reset so the following info is not
+   * incorrectly carried over to the following optimizations starting with the new TS.
+   */
+  public void reset() {
+    currTask = null;
+    currTopOp = null;
+    currUnionOp = null;
+    currAliasId = null;
   }
 
   /**
@@ -439,7 +448,7 @@ public class GenMRProcContext implements NodeProcessorCtx {
     if (dependencyTaskForMultiInsert == null) {
       if (conf.getBoolVar(ConfVars.HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES)) {
         dependencyTaskForMultiInsert =
-            (DependencyCollectionTask) TaskFactory.get(new DependencyCollectionWork(), conf);
+            (DependencyCollectionTask) TaskFactory.get(new DependencyCollectionWork());
       }
     }
     return dependencyTaskForMultiInsert;

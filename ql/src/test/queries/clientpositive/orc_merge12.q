@@ -1,3 +1,5 @@
+set hive.vectorized.execution.enabled=false;
+
 CREATE TABLE `alltypesorc3xcols`(
   `atinyint` tinyint,
   `asmallint` smallint,

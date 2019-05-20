@@ -11,25 +11,23 @@ array_contains(array, value) - Returns TRUE if the array contains value.
 Example:
   > SELECT array_contains(array(1, 2, 3), 2) FROM src LIMIT 1;
   true
-PREHOOK: query: -- evalutes function for array of primitives
-SELECT array_contains(array(1, 2, 3), 1) FROM src tablesample (1 rows)
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFArrayContains
+Function type:BUILTIN
+PREHOOK: query: SELECT array_contains(array(1, 2, 3), 1) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- evalutes function for array of primitives
-SELECT array_contains(array(1, 2, 3), 1) FROM src tablesample (1 rows)
+POSTHOOK: query: SELECT array_contains(array(1, 2, 3), 1) FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 true
-PREHOOK: query: -- evaluates function for nested arrays
-SELECT array_contains(array(array(1,2), array(2,3), array(3,4)), array(1,2))
+PREHOOK: query: SELECT array_contains(array(array(1,2), array(2,3), array(3,4)), array(1,2))
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- evaluates function for nested arrays
-SELECT array_contains(array(array(1,2), array(2,3), array(3,4)), array(1,2))
+POSTHOOK: query: SELECT array_contains(array(array(1,2), array(2,3), array(3,4)), array(1,2))
 FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,28 +18,40 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.util.ReflectionUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 
 public class ExprNodeDescUtils {
 
@@ -68,8 +80,7 @@ public class ExprNodeDescUtils {
     // for ExprNodeGenericFuncDesc, it should be deterministic and stateless
     if (origin instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc func = (ExprNodeGenericFuncDesc) origin;
-      if (!FunctionRegistry.isDeterministic(func.getGenericUDF())
-          || FunctionRegistry.isStateful(func.getGenericUDF())) {
+      if (!FunctionRegistry.isConsistentWithinQuery(func.getGenericUDF())) {
         return null;
       }
       List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
@@ -87,6 +98,87 @@ public class ExprNodeDescUtils {
     }
     // constant or null, just return it
     return origin;
+  }
+
+  private static boolean isDefaultPartition(ExprNodeDesc origin, String defaultPartitionName) {
+    if (origin instanceof ExprNodeConstantDesc && ((ExprNodeConstantDesc)origin).getValue() != null &&
+        ((ExprNodeConstantDesc)origin).getValue() instanceof String && ((ExprNodeConstantDesc)origin).getValue()
+            .equals(defaultPartitionName)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public static void replaceEqualDefaultPartition(ExprNodeDesc origin,
+      String defaultPartitionName) throws SemanticException {
+    ExprNodeColumnDesc column = null;
+    ExprNodeConstantDesc defaultPartition = null;
+    if (origin instanceof ExprNodeGenericFuncDesc
+        && (((ExprNodeGenericFuncDesc) origin)
+            .getGenericUDF() instanceof GenericUDFOPEqual
+            || ((ExprNodeGenericFuncDesc) origin)
+                .getGenericUDF() instanceof GenericUDFOPNotEqual)) {
+      if (isDefaultPartition(origin.getChildren().get(0),
+          defaultPartitionName)) {
+        defaultPartition = (ExprNodeConstantDesc) origin.getChildren().get(0);
+        column = (ExprNodeColumnDesc) origin.getChildren().get(1);
+      } else if (isDefaultPartition(origin.getChildren().get(1),
+          defaultPartitionName)) {
+        column = (ExprNodeColumnDesc) origin.getChildren().get(0);
+        defaultPartition = (ExprNodeConstantDesc) origin.getChildren().get(1);
+      }
+    }
+    // Found
+    if (column != null) {
+      origin.getChildren().remove(defaultPartition);
+      String fnName;
+      if (((ExprNodeGenericFuncDesc) origin)
+          .getGenericUDF() instanceof GenericUDFOPEqual) {
+        fnName = "isnull";
+      } else {
+        fnName = "isnotnull";
+      }
+      ((ExprNodeGenericFuncDesc) origin).setGenericUDF(
+          FunctionRegistry.getFunctionInfo(fnName).getGenericUDF());
+    } else {
+      if (origin.getChildren() != null) {
+        for (ExprNodeDesc child : origin.getChildren()) {
+          replaceEqualDefaultPartition(child, defaultPartitionName);
+        }
+      }
+    }
+  }
+
+  public static void replaceNullFiltersWithDefaultPartition(ExprNodeDesc origin,
+                                            String defaultPartitionName) throws SemanticException {
+    // Convert "ptn_col isnull" to "ptn_col = default_partition" and
+    // "ptn_col isnotnull" to "ptn_col <> default_partition"
+    String fnName = null;
+    if (origin instanceof ExprNodeGenericFuncDesc) {
+      if (((ExprNodeGenericFuncDesc) origin).getGenericUDF() instanceof GenericUDFOPNull) {
+        fnName = "=";
+      } else if (((ExprNodeGenericFuncDesc) origin).getGenericUDF() instanceof GenericUDFOPNotNull) {
+        fnName = "<>";
+      }
+    }
+    // Found an expression for function "isnull" or "isnotnull"
+    if (fnName != null) {
+      List<ExprNodeDesc> children = origin.getChildren();
+      assert(children.size() == 1);
+      ExprNodeConstantDesc defaultPartition = new ExprNodeConstantDesc(defaultPartitionName);
+      children.add(defaultPartition);
+      ((ExprNodeGenericFuncDesc) origin).setChildren(children);
+
+      ((ExprNodeGenericFuncDesc) origin).setGenericUDF(
+              FunctionRegistry.getFunctionInfo(fnName).getGenericUDF());
+    } else {
+      if (origin.getChildren() != null) {
+        for (ExprNodeDesc child : origin.getChildren()) {
+          replaceNullFiltersWithDefaultPartition(child, defaultPartitionName);
+        }
+      }
+    }
   }
 
   /**
@@ -324,7 +416,7 @@ public class ExprNodeDescUtils {
   /**
    * Join keys are expressions based on the select operator. Resolve the expressions so they
    * are based on the ReduceSink operator
-   *   SEL -> RS -> JOIN
+   *   SEL -&gt; RS -&gt; JOIN
    * @param source
    * @param reduceSinkOp
    * @return
@@ -342,8 +434,12 @@ public class ExprNodeDescUtils {
     // Find the key/value where the ExprNodeDesc value matches the column we are searching for.
     // The key portion of the entry will be the internal column name for the join key expression.
     for (Map.Entry<String, ExprNodeDesc> mapEntry : reduceSinkOp.getColumnExprMap().entrySet()) {
-      if (mapEntry.getValue().isSame(source)) {
+      if (mapEntry.getValue().equals(source)) {
         String columnInternalName = mapEntry.getKey();
+        // Joins always use KEY columns for the keys, so avoid resolving to VALUE columns
+        if(columnInternalName.startsWith(Utilities.ReduceField.VALUE.toString())) {
+          continue;
+        }
         if (source instanceof ExprNodeColumnDesc) {
           // The join key is a table column. Create the ExprNodeDesc based on this column.
           ColumnInfo columnInfo = reduceSinkOp.getSchema().getColumnInfo(columnInternalName);
@@ -432,7 +528,7 @@ public class ExprNodeDescUtils {
 
   private static ExprNodeConstantDesc foldConstant(ExprNodeGenericFuncDesc func) {
     GenericUDF udf = func.getGenericUDF();
-    if (!FunctionRegistry.isDeterministic(udf) || FunctionRegistry.isStateful(udf)) {
+    if (!FunctionRegistry.isConsistentWithinQuery(udf)) {
       return null;
     }
     try {
@@ -483,7 +579,7 @@ public class ExprNodeDescUtils {
 
 	/**
 	 * Get Map of ExprNodeColumnDesc HashCode to ExprNodeColumnDesc.
-	 * 
+	 *
 	 * @param exprDesc
 	 * @param hashCodeToColumnDescMap
 	 *            Assumption: If two ExprNodeColumnDesc have same hash code then
@@ -504,7 +600,11 @@ public class ExprNodeDescUtils {
 		} else if (exprDesc instanceof ExprNodeFieldDesc) {
 			getExprNodeColumnDesc(((ExprNodeFieldDesc) exprDesc).getDesc(),
 					hashCodeToColumnDescMap);
-		}
+		} else if( exprDesc instanceof  ExprNodeSubQueryDesc) {
+		    getExprNodeColumnDesc(((ExprNodeSubQueryDesc) exprDesc).getSubQueryLhs(),
+                    hashCodeToColumnDescMap);
+        }
+
 	}
 
   public static boolean isConstant(ExprNodeDesc value) {
@@ -513,7 +613,7 @@ public class ExprNodeDescUtils {
     }
     if (value instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc func = (ExprNodeGenericFuncDesc) value;
-      if (!FunctionRegistry.isDeterministic(func.getGenericUDF())) {
+      if (!FunctionRegistry.isConsistentWithinQuery(func.getGenericUDF())) {
         return false;
       }
       for (ExprNodeDesc child : func.getChildren()) {
@@ -550,7 +650,9 @@ public class ExprNodeDescUtils {
     // We only do the minimum cast for decimals. Other types are assumed safe; fix if needed.
     // We also don't do anything for non-primitive children (maybe we should assert).
     if ((pti.getPrimitiveCategory() != PrimitiveCategory.DECIMAL)
-        || (!(childExpr.getTypeInfo() instanceof PrimitiveTypeInfo))) return pti;
+        || (!(childExpr.getTypeInfo() instanceof PrimitiveTypeInfo))) {
+      return pti;
+    }
     PrimitiveTypeInfo childTi = (PrimitiveTypeInfo)childExpr.getTypeInfo();
     // If the child is also decimal, no cast is needed (we hope - can target type be narrower?).
     return HiveDecimalUtils.getDecimalTypeForPrimitiveCategory(childTi);
@@ -560,14 +662,14 @@ public class ExprNodeDescUtils {
    * Build ExprNodeColumnDesc for the projections in the input operator from
    * sartpos to endpos(both included). Operator must have an associated
    * colExprMap.
-   * 
+   *
    * @param inputOp
    *          Input Hive Operator
    * @param startPos
-   *          starting position in the input operator schema; must be >=0 and <=
+   *          starting position in the input operator schema; must be &gt;=0 and &lt;=
    *          endPos
    * @param endPos
-   *          end position in the input operator schema; must be >=0.
+   *          end position in the input operator schema; must be &gt;=0.
    * @return List of ExprNodeDesc
    */
   public static ArrayList<ExprNodeDesc> genExprNodeDesc(Operator inputOp, int startPos, int endPos,
@@ -592,7 +694,7 @@ public class ExprNodeDescUtils {
     }
 
     return exprColLst;
-  }  
+  }
 
   public static List<ExprNodeDesc> flattenExprList(List<ExprNodeDesc> sourceList) {
     ArrayList<ExprNodeDesc> result = new ArrayList<ExprNodeDesc>(sourceList.size());
@@ -713,4 +815,210 @@ public class ExprNodeDescUtils {
     // Otherwise, we return the expression
     return foldedExpr;
   }
+
+  /**
+   * Checks whether the keys of a parent operator are a prefix of the keys of a
+   * child operator.
+   * @param childKeys keys of the child operator
+   * @param parentKeys keys of the parent operator
+   * @param childOp child operator
+   * @param parentOp parent operator
+   * @return true if the keys are a prefix, false otherwise
+   * @throws SemanticException
+   */
+  public static boolean checkPrefixKeys(List<ExprNodeDesc> childKeys, List<ExprNodeDesc> parentKeys,
+      Operator<? extends OperatorDesc> childOp, Operator<? extends OperatorDesc> parentOp)
+          throws SemanticException {
+    return checkPrefixKeys(childKeys, parentKeys, childOp, parentOp, false);
+  }
+
+  /**
+   * Checks whether the keys of a child operator are a prefix of the keys of a
+   * parent operator.
+   * @param childKeys keys of the child operator
+   * @param parentKeys keys of the parent operator
+   * @param childOp child operator
+   * @param parentOp parent operator
+   * @return true if the keys are a prefix, false otherwise
+   * @throws SemanticException
+   */
+  public static boolean checkPrefixKeysUpstream(List<ExprNodeDesc> childKeys, List<ExprNodeDesc> parentKeys,
+      Operator<? extends OperatorDesc> childOp, Operator<? extends OperatorDesc> parentOp)
+          throws SemanticException {
+    return checkPrefixKeys(childKeys, parentKeys, childOp, parentOp, true);
+  }
+
+  private static boolean checkPrefixKeys(List<ExprNodeDesc> childKeys, List<ExprNodeDesc> parentKeys,
+      Operator<? extends OperatorDesc> childOp, Operator<? extends OperatorDesc> parentOp,
+      boolean upstream) throws SemanticException {
+    if (childKeys == null || childKeys.isEmpty()) {
+      if (parentKeys != null && !parentKeys.isEmpty()) {
+        return false;
+      }
+      return true;
+    }
+    if (parentKeys == null || parentKeys.isEmpty()) {
+      return false;
+    }
+    int size;
+    if (upstream) {
+      if (childKeys.size() > parentKeys.size()) {
+        return false;
+      }
+      size = childKeys.size();
+    } else {
+      if (parentKeys.size() > childKeys.size()) {
+        return false;
+      }
+      size = parentKeys.size();
+    }
+    for (int i = 0; i < size; i++) {
+      ExprNodeDesc expr = ExprNodeDescUtils.backtrack(childKeys.get(i), childOp, parentOp);
+      if (expr == null) {
+        // cKey is not present in parent
+        return false;
+      }
+      if (!expr.isSame(parentKeys.get(i))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public static class ColumnOrigin {
+    public ExprNodeColumnDesc col;
+    public Operator<?> op;
+
+    public ColumnOrigin(ExprNodeColumnDesc col, Operator<?> op) {
+      super();
+      this.col = col;
+      this.op = op;
+    }
+  }
+
+  private static ExprNodeDesc findParentExpr(ExprNodeColumnDesc col, Operator<?> op) {
+    ExprNodeDesc parentExpr = col;
+    Map<String, ExprNodeDesc> mapping = op.getColumnExprMap();
+    if (mapping != null) {
+      parentExpr = mapping.get(col.getColumn());
+      if (parentExpr == null && op instanceof ReduceSinkOperator) {
+        return col;
+      }
+    }
+    return parentExpr;
+  }
+
+  public static ColumnOrigin findColumnOrigin(ExprNodeDesc expr, Operator<?> op) {
+    if (expr == null || op == null) {
+      // bad input
+      return null;
+    }
+
+    ExprNodeColumnDesc col = ExprNodeDescUtils.getColumnExpr(expr);
+    if (col == null) {
+      // not a column
+      return null;
+    }
+
+    Operator<?> parentOp = null;
+    int numParents = op.getNumParent();
+    if (numParents == 0) {
+      return new ColumnOrigin(col, op);
+    }
+
+    ExprNodeDesc parentExpr = findParentExpr(col, op);
+    if (parentExpr == null) {
+      // couldn't find proper parent column expr
+      return null;
+    }
+
+    if (numParents == 1) {
+      parentOp = op.getParentOperators().get(0);
+    } else {
+      // Multiple parents - find the right one based on the table alias in the parentExpr
+      ExprNodeColumnDesc parentCol = ExprNodeDescUtils.getColumnExpr(parentExpr);
+      if (parentCol != null) {
+        for (Operator<?> currParent : op.getParentOperators()) {
+          RowSchema schema = currParent.getSchema();
+          if (schema == null) {
+            // Happens in case of TezDummyStoreOperator
+            return null;
+          }
+          if (schema.getTableNames().contains(parentCol.getTabAlias())) {
+            parentOp = currParent;
+            break;
+          }
+        }
+      }
+    }
+
+    if (parentOp == null) {
+      return null;
+    }
+
+    return findColumnOrigin(parentExpr, parentOp);
+  }
+
+  // Null-safe isSame
+  public static boolean isSame(ExprNodeDesc desc1, ExprNodeDesc desc2) {
+    return (desc1 == desc2) || (desc1 != null && desc1.isSame(desc2));
+  }
+
+  // Null-safe isSame for lists of ExprNodeDesc
+  public static boolean isSame(List<ExprNodeDesc> first, List<ExprNodeDesc> second) {
+    if (first == second) {
+      return true;
+    }
+    if (first == null || second == null || first.size() != second.size()) {
+      return false;
+    }
+    for (int i = 0; i < first.size(); i++) {
+      if (!first.get(i).isSame(second.get(i))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // Given an expression this method figures out if the type for the expression belongs to string group
+  // e.g. (String, Char, Varchar etc)
+  public static boolean isStringType(ExprNodeDesc expr) {
+    TypeInfo typeInfo = expr.getTypeInfo();
+    if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+      PrimitiveObjectInspector.PrimitiveCategory primitiveCategory = ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
+      if (PrimitiveObjectInspectorUtils.getPrimitiveGrouping(primitiveCategory) ==
+          PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP) {
+        return true;
+      }
+    }
+    return false;
+  }
+    // Given an expression this method figures out if the type for the expression is integer
+  // i.e. INT, SHORT, TINYINT (BYTE) or LONG
+  public static boolean isIntegerType(ExprNodeDesc expr) {
+    TypeInfo typeInfo = expr.getTypeInfo();
+    if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+      PrimitiveObjectInspector.PrimitiveCategory primitiveCategory = ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
+      if(primitiveCategory == PrimitiveCategory.INT
+        || primitiveCategory == PrimitiveCategory.SHORT
+          || primitiveCategory == PrimitiveCategory.BYTE
+        || primitiveCategory == PrimitiveCategory.LONG){
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public static boolean isConstantStruct(ExprNodeDesc valueDesc) {
+    return valueDesc instanceof ExprNodeConstantDesc && valueDesc.getTypeInfo() instanceof StructTypeInfo;
+  }
+
+  public static boolean isStructUDF(ExprNodeDesc columnDesc) {
+    if (columnDesc instanceof ExprNodeGenericFuncDesc) {
+      ExprNodeGenericFuncDesc exprNodeGenericFuncDesc = (ExprNodeGenericFuncDesc) columnDesc;
+      return (exprNodeGenericFuncDesc.getGenericUDF() instanceof GenericUDFStruct);
+    }
+    return false;
+  }
+
 }

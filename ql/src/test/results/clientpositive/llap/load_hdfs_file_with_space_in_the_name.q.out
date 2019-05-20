@@ -6,20 +6,20 @@ POSTHOOK: query: CREATE TABLE load_file_with_space_in_the_name(name STRING, age 
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@load_file_with_space_in_the_name
-#### A masked pattern was here ####
+PREHOOK: query: LOAD DATA INPATH 'hdfs://### HDFS PATH ### age.txt' INTO TABLE load_file_with_space_in_the_name
 PREHOOK: type: LOAD
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ### age.txt
 PREHOOK: Output: default@load_file_with_space_in_the_name
-#### A masked pattern was here ####
+POSTHOOK: query: LOAD DATA INPATH 'hdfs://### HDFS PATH ### age.txt' INTO TABLE load_file_with_space_in_the_name
 POSTHOOK: type: LOAD
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ### age.txt
 POSTHOOK: Output: default@load_file_with_space_in_the_name
-#### A masked pattern was here ####
+PREHOOK: query: LOAD DATA INPATH 'hdfs://### HDFS PATH ###+age.txt' INTO TABLE load_file_with_space_in_the_name
 PREHOOK: type: LOAD
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###+age.txt
 PREHOOK: Output: default@load_file_with_space_in_the_name
-#### A masked pattern was here ####
+POSTHOOK: query: LOAD DATA INPATH 'hdfs://### HDFS PATH ###+age.txt' INTO TABLE load_file_with_space_in_the_name
 POSTHOOK: type: LOAD
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###+age.txt
 POSTHOOK: Output: default@load_file_with_space_in_the_name
 #### A masked pattern was here ####

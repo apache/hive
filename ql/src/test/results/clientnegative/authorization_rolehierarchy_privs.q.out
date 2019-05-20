@@ -7,19 +7,9 @@ PREHOOK: query: set role ADMIN
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role ADMIN
 POSTHOOK: type: SHOW_ROLES
-PREHOOK: query: ----------
--- create the following user, role mapping
--- user1 -> role1 -> role2 -> role3
-----------
-
-create role role1
+PREHOOK: query: create role role1
 PREHOOK: type: CREATEROLE
-POSTHOOK: query: ----------
--- create the following user, role mapping
--- user1 -> role1 -> role2 -> role3
-----------
-
-create role role1
+POSTHOOK: query: create role role1
 POSTHOOK: type: CREATEROLE
 PREHOOK: query: grant role1 to user user1
 PREHOOK: type: GRANT_ROLE
@@ -151,13 +141,9 @@ PREHOOK: query: set role ADMIN
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role ADMIN
 POSTHOOK: type: SHOW_ROLES
-PREHOOK: query: -- Revoke role3 from hierarchy one at a time and check permissions
--- after revoking from both, select should fail
-revoke role3 from role role2
+PREHOOK: query: revoke role3 from role role2
 PREHOOK: type: REVOKE_ROLE
-POSTHOOK: query: -- Revoke role3 from hierarchy one at a time and check permissions
--- after revoking from both, select should fail
-revoke role3 from role role2
+POSTHOOK: query: revoke role3 from role role2
 POSTHOOK: type: REVOKE_ROLE
 PREHOOK: query: show current roles
 PREHOOK: type: SHOW_ROLES

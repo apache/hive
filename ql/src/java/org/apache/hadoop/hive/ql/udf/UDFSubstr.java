@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -33,7 +33,7 @@ import org.apache.hadoop.io.Text;
  * UDFSubstr.
  *
  */
-@Description(name = "substr,substring",
+@Description(name = "substr,substring,mid",
     value = "_FUNC_(str, pos[, len]) - returns the substring of str that"
     + " starts at pos and is of length len or" +
     "_FUNC_(bin, pos[, len]) - returns the slice of byte array that"

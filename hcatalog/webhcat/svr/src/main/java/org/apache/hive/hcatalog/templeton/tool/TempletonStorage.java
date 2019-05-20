@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -93,7 +93,7 @@ public interface TempletonStorage {
    * Get the id of each data grouping of a given type in the storage
    * system.
    * @param type The data type (as listed above)
-   * @return An ArrayList<String> of ids.
+   * @return A list of ids.
    */
   public List<String> getAllForType(Type type);
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,12 +19,16 @@
 
 package org.apache.hive.hcatalog.messaging;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hive.hcatalog.common.HCatConstants;
 
 /**
  * Class representing messages emitted when Metastore operations are done.
  * (E.g. Creation and deletion of databases, tables and partitions.)
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class HCatEventMessage {
 
   /**
@@ -42,10 +46,7 @@ public abstract class HCatEventMessage {
     ALTER_PARTITION(HCatConstants.HCAT_ALTER_PARTITION_EVENT),
     INSERT(HCatConstants.HCAT_INSERT_EVENT),
     CREATE_FUNCTION(HCatConstants.HCAT_CREATE_FUNCTION_EVENT),
-    DROP_FUNCTION(HCatConstants.HCAT_DROP_FUNCTION_EVENT),
-    CREATE_INDEX(HCatConstants.HCAT_CREATE_INDEX_EVENT),
-    DROP_INDEX(HCatConstants.HCAT_DROP_INDEX_EVENT),
-    ALTER_INDEX(HCatConstants.HCAT_ALTER_INDEX_EVENT);
+    DROP_FUNCTION(HCatConstants.HCAT_DROP_FUNCTION_EVENT);
 
     private String typeString;
 
@@ -96,12 +97,15 @@ public abstract class HCatEventMessage {
    * Class invariant. Checked after construction or deserialization.
    */
   public HCatEventMessage checkValid() {
-    if (getServer() == null || getServicePrincipal() == null)
+    if (getServer() == null || getServicePrincipal() == null) {
       throw new IllegalStateException("Server-URL/Service-Principal shouldn't be null.");
-    if (getEventType() == null)
+    }
+    if (getEventType() == null) {
       throw new IllegalStateException("Event-type unset.");
-    if (getDB() == null)
+    }
+    if (getDB() == null) {
       throw new IllegalArgumentException("DB-name unset.");
+    }
     return this;
   }
 }

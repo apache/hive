@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -43,17 +43,16 @@ implements ConstantObjectInspector {
 
   @Override
   public HiveDecimalWritable getWritableConstantValue() {
+
     // We need to enforce precision/scale here.
-    // A little inefficiency here as we need to create a HiveDecimal instance from the writable and
-    // recreate a HiveDecimalWritable instance on the HiveDecimal instance. However, we don't know
-    // the precision/scale of the original writable until we get a HiveDecimal instance from it.
-    DecimalTypeInfo decTypeInfo = (DecimalTypeInfo)typeInfo;
-    HiveDecimal dec = value == null ? null :
-      value.getHiveDecimal(decTypeInfo.precision(), decTypeInfo.scale());
-    if (dec == null) {
+
+    DecimalTypeInfo decTypeInfo = (DecimalTypeInfo) typeInfo;
+    HiveDecimalWritable result = new HiveDecimalWritable(value);
+    result.mutateEnforcePrecisionScale(decTypeInfo.precision(), decTypeInfo.scale());
+    if (!result.isSet()) {
       return null;
     }
-    return new HiveDecimalWritable(dec);
+    return result;
   }
 
   @Override
@@ -61,7 +60,7 @@ implements ConstantObjectInspector {
     if (value == null) {
       return super.precision();
     }
-    return value.getHiveDecimal().precision();
+    return value.precision();
   }
 
   @Override

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,15 +19,22 @@
 package org.apache.hadoop.hive.serde2.fast;
 
 import java.io.IOException;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import java.util.Arrays;
+
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 
 /*
  * Directly deserialize with the caller reading field-by-field a serialization format.
@@ -45,12 +52,77 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  */
 public abstract class DeserializeRead {
 
-  protected TypeInfo[] typeInfos;
+  protected final TypeInfo[] typeInfos;
 
-  protected boolean useExternalBuffer;
+  // NOTE: Currently, read variations only apply to top level data types...
+  protected DataTypePhysicalVariation[] dataTypePhysicalVariations;
 
-  protected Category[] categories;
-  protected PrimitiveCategory[] primitiveCategories;
+  protected final boolean useExternalBuffer;
+
+  protected final Category[] categories;
+  protected final PrimitiveCategory[] primitiveCategories;
+
+  /*
+   * This class is used to read one field at a time.  Simple fields like long, double, int are read
+   * into to primitive current* members; the non-simple field types like Date, Timestamp, etc, are
+   * read into a current object that this method will allocate.
+   *
+   * This method handles complex type fields by recursively calling this method.
+   */
+  private void allocateCurrentWritable(TypeInfo typeInfo) {
+    switch (typeInfo.getCategory()) {
+    case PRIMITIVE:
+      switch (((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory()) {
+      case DATE:
+        if (currentDateWritable == null) {
+          currentDateWritable = new DateWritableV2();
+        }
+        break;
+      case TIMESTAMP:
+        if (currentTimestampWritable == null) {
+          currentTimestampWritable = new TimestampWritableV2();
+        }
+        break;
+      case INTERVAL_YEAR_MONTH:
+        if (currentHiveIntervalYearMonthWritable == null) {
+          currentHiveIntervalYearMonthWritable = new HiveIntervalYearMonthWritable();
+        }
+        break;
+      case INTERVAL_DAY_TIME:
+        if (currentHiveIntervalDayTimeWritable == null) {
+          currentHiveIntervalDayTimeWritable = new HiveIntervalDayTimeWritable();
+        }
+        break;
+      case DECIMAL:
+        if (currentHiveDecimalWritable == null) {
+          currentHiveDecimalWritable = new HiveDecimalWritable();
+        }
+        break;
+      default:
+        // No writable needed for this data type.
+      }
+      break;
+    case LIST:
+      allocateCurrentWritable(((ListTypeInfo) typeInfo).getListElementTypeInfo());
+      break;
+    case MAP:
+      allocateCurrentWritable(((MapTypeInfo) typeInfo).getMapKeyTypeInfo());
+      allocateCurrentWritable(((MapTypeInfo) typeInfo).getMapValueTypeInfo());
+      break;
+    case STRUCT:
+      for (TypeInfo fieldTypeInfo : ((StructTypeInfo) typeInfo).getAllStructFieldTypeInfos()) {
+        allocateCurrentWritable(fieldTypeInfo);
+      }
+      break;
+    case UNION:
+      for (TypeInfo fieldTypeInfo : ((UnionTypeInfo) typeInfo).getAllUnionObjectTypeInfos()) {
+        allocateCurrentWritable(fieldTypeInfo);
+      }
+      break;
+    default:
+      throw new RuntimeException("Unexpected category " + typeInfo.getCategory());
+    }
+  }
 
   /**
    * Constructor.
@@ -60,21 +132,31 @@ public abstract class DeserializeRead {
    *
    * if (deserializeRead.readNextField()) {
    *   if (deserializeRead.currentExternalBufferNeeded) {
-   *     <Ensure external buffer is as least deserializeRead.currentExternalBufferNeededLen bytes>
+   *     &lt;Ensure external buffer is as least deserializeRead.currentExternalBufferNeededLen bytes&gt;
    *     deserializeRead.copyToExternalBuffer(externalBuffer, externalBufferStart);
    *   } else {
-   *     <Otherwise, field data is available in the currentBytes, currentBytesStart, and
-   *      currentBytesLength of deserializeRead>
+   *     &lt;Otherwise, field data is available in the currentBytes, currentBytesStart, and
+   *      currentBytesLength of deserializeRead&gt;
    *   }
    *
    * @param typeInfos
+   * @param dataTypePhysicalVariations
+   *                            Specify for each corresponding TypeInfo a read variation. Can be
+   *                            null.  dataTypePhysicalVariation.NONE is then assumed.
    * @param useExternalBuffer   Specify true when the caller is prepared to provide a bytes buffer
    *                            to receive a string/char/varchar/binary field that needs format
    *                            conversion.
    */
-  public DeserializeRead(TypeInfo[] typeInfos, boolean useExternalBuffer) {
+  public DeserializeRead(TypeInfo[] typeInfos, DataTypePhysicalVariation[] dataTypePhysicalVariations,
+      boolean useExternalBuffer) {
     this.typeInfos = typeInfos;
     final int count = typeInfos.length;
+    if (dataTypePhysicalVariations != null) {
+      this.dataTypePhysicalVariations = dataTypePhysicalVariations;
+    } else {
+      this.dataTypePhysicalVariations = new DataTypePhysicalVariation[count];
+      Arrays.fill(this.dataTypePhysicalVariations, DataTypePhysicalVariation.NONE);
+    }
     categories = new Category[count];
     primitiveCategories = new PrimitiveCategory[count];
     for (int i = 0; i < count; i++) {
@@ -85,44 +167,23 @@ public abstract class DeserializeRead {
         PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
         PrimitiveCategory primitiveCategory = primitiveTypeInfo.getPrimitiveCategory();
         primitiveCategories[i] = primitiveCategory;
-
-        switch (primitiveCategory) {
-        case DATE:
-          if (currentDateWritable == null) {
-            currentDateWritable = new DateWritable();
-          }
-          break;
-        case TIMESTAMP:
-          if (currentTimestampWritable == null) {
-            currentTimestampWritable = new TimestampWritable();
-          }
-          break;
-        case INTERVAL_YEAR_MONTH:
-          if (currentHiveIntervalYearMonthWritable == null) {
-            currentHiveIntervalYearMonthWritable = new HiveIntervalYearMonthWritable();
-          }
-          break;
-        case INTERVAL_DAY_TIME:
-          if (currentHiveIntervalDayTimeWritable == null) {
-            currentHiveIntervalDayTimeWritable = new HiveIntervalDayTimeWritable();
-          }
-          break;
-        case DECIMAL:
-          if (currentHiveDecimalWritable == null) {
-            currentHiveDecimalWritable = new HiveDecimalWritable();
-          }
-          break;
-        default:
-          // No writable needed for this data type.
-        }
       }
-
-      this.useExternalBuffer = useExternalBuffer;
+      allocateCurrentWritable(typeInfo);
     }
+    this.useExternalBuffer = useExternalBuffer;
+  }
+
+  public DeserializeRead(TypeInfo[] typeInfos, boolean useExternalBuffer) {
+    this(typeInfos, null, useExternalBuffer);
   }
 
   // Don't allow for public.
   protected DeserializeRead() {
+    // Initialize to satisfy compiler finals.
+    typeInfos = null;
+    useExternalBuffer = false;
+    categories = null;
+    primitiveCategories = null;
   }
 
   /*
@@ -130,6 +191,13 @@ public abstract class DeserializeRead {
    */
   public TypeInfo[] typeInfos() {
     return typeInfos;
+  }
+
+  /*
+   * Get optional read variations for fields.
+   */
+  public DataTypePhysicalVariation[] getDataTypePhysicalVariations() {
+    return dataTypePhysicalVariations;
   }
 
   /*
@@ -176,6 +244,22 @@ public abstract class DeserializeRead {
   public boolean readField(int fieldIndex) throws IOException {
     throw new RuntimeException("Not supported");
   }
+
+  /*
+   * Tests whether there is another List element or another Map key/value pair.
+   */
+  public abstract boolean isNextComplexMultiValue() throws IOException;
+
+  /*
+   * Read a field that is under a complex type.  It may be a primitive type or deeper complex type.
+   */
+  public abstract boolean readComplexField() throws IOException;
+
+  /*
+   * Used by Struct and Union complex type readers to indicate the (final) field has been fully
+   * read and the current complex type is finished.
+   */
+  public abstract void finishComplexVariableFieldsType();
 
   /*
    * Call this method may be called after all the all fields have been read to check
@@ -259,12 +343,12 @@ public abstract class DeserializeRead {
   /*
    * DATE.
    */
-  public DateWritable currentDateWritable;
+  public DateWritableV2 currentDateWritable;
 
   /*
    * TIMESTAMP.
    */
-  public TimestampWritable currentTimestampWritable;
+  public TimestampWritableV2 currentTimestampWritable;
 
   /*
    * INTERVAL_YEAR_MONTH.
@@ -280,4 +364,9 @@ public abstract class DeserializeRead {
    * DECIMAL.
    */
   public HiveDecimalWritable currentHiveDecimalWritable;
+
+  /*
+   * DECIMAL_64.
+   */
+  public long currentDecimal64;
 }

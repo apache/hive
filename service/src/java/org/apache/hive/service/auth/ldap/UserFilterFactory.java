@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
  * <br>
  * The produced filter object filters out all users that are not on the provided in
  * Hive configuration list.
- * @see HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERFILTER
+ * @see HiveConf.ConfVars#HIVE_SERVER2_PLAIN_LDAP_USERFILTER
  */
 public final class UserFilterFactory implements FilterFactory {
 

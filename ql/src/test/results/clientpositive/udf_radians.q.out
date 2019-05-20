@@ -1,9 +1,13 @@
 PREHOOK: query: explain
 select radians(57.2958) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select radians(57.2958) FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -17,7 +21,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: 1.000000357564167 (type: double)
+            expressions: 1.000000357564167D (type: double)
             outputColumnNames: _col0
             Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
@@ -54,12 +58,18 @@ Example:
   > SELECT radians(90) FROM src LIMIT 1;
   1.5707963267949mo
 
+Function class:org.apache.hadoop.hive.ql.udf.UDFRadians
+Function type:BUILTIN
 PREHOOK: query: explain 
 select radians(57.2958) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select radians(57.2958) FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -73,7 +83,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: 1.000000357564167 (type: double)
+            expressions: 1.000000357564167D (type: double)
             outputColumnNames: _col0
             Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
@@ -110,3 +120,5 @@ Example:
   > SELECT radians(90) FROM src LIMIT 1;
   1.5707963267949mo
 
+Function class:org.apache.hadoop.hive.ql.udf.UDFRadians
+Function type:BUILTIN

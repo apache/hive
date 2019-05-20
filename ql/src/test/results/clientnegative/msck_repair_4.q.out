@@ -1,0 +1,22 @@
+PREHOOK: query: DROP TABLE IF EXISTS repairtable
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS repairtable
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE repairtable(col STRING) PARTITIONED BY (p1 STRING, p2 STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable
+POSTHOOK: query: CREATE TABLE repairtable(col STRING) PARTITIONED BY (p1 STRING, p2 STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable
+PREHOOK: query: MSCK TABLE repairtable
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable
+POSTHOOK: query: MSCK TABLE repairtable
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

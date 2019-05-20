@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,18 +19,23 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedUDAFs;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AbstractAggregationBuffer;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationType;
+import org.apache.hadoop.hive.ql.udf.ptf.BasePartitionEvaluator;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -51,6 +56,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.util.StringUtils;
 
@@ -114,12 +120,17 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
     return eval;
   }
 
+  @VectorizedUDAFs({
+    VectorUDAFAvgLong.class, VectorUDAFAvgLongComplete.class,
+    VectorUDAFAvgDouble.class, VectorUDAFAvgDoubleComplete.class,
+    VectorUDAFAvgTimestamp.class, VectorUDAFAvgTimestampComplete.class,
+    VectorUDAFAvgPartial2.class, VectorUDAFAvgFinal.class})
   public static class GenericUDAFAverageEvaluatorDouble extends AbstractGenericUDAFAverageEvaluator<Double> {
 
     @Override
     public void doReset(AverageAggregationBuffer<Double> aggregation) throws HiveException {
       aggregation.count = 0;
-      aggregation.sum = new Double(0);
+      aggregation.sum = Double.valueOf(0);
       aggregation.uniqueObjects = new HashSet<ObjectInspectorObject>();
     }
 
@@ -214,14 +225,52 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
             throws HiveException {
           AverageAggregationBuffer<Double> myagg = (AverageAggregationBuffer<Double>) ss.wrappedBuf;
           return myagg.count == 0 ? null : new Object[] {
-              new Double(myagg.sum), myagg.count };
+              myagg.sum, myagg.count};
         }
 
       };
     }
+
+    @Override
+    protected BasePartitionEvaluator createPartitionEvaluator(
+        WindowFrameDef winFrame,
+        PTFPartition partition,
+        List<PTFExpressionDef> parameters,
+        ObjectInspector outputOI,
+        boolean nullsLast) {
+      try {
+        return new BasePartitionEvaluator.AvgPartitionDoubleEvaluator(this, winFrame, partition,
+            parameters, inputOI, outputOI, nullsLast);
+      } catch(HiveException e) {
+        return super.createPartitionEvaluator(winFrame, partition, parameters, outputOI, nullsLast);
+      }
+    }
   }
 
+  @VectorizedUDAFs({
+    VectorUDAFAvgDecimal.class, VectorUDAFAvgDecimalComplete.class,
+    VectorUDAFAvgDecimal64ToDecimal.class, VectorUDAFAvgDecimal64ToDecimalComplete.class,
+    VectorUDAFAvgDecimalPartial2.class, VectorUDAFAvgDecimalFinal.class})
   public static class GenericUDAFAverageEvaluatorDecimal extends AbstractGenericUDAFAverageEvaluator<HiveDecimal> {
+
+    private int resultPrecision = -1;
+    private int resultScale = -1;
+
+    @Override
+    public ObjectInspector init(Mode m, ObjectInspector[] parameters)
+        throws HiveException {
+
+      // Intercept result ObjectInspector so we can extract the DECIMAL precision and scale.
+      ObjectInspector resultOI = super.init(m, parameters);
+      if (m == Mode.COMPLETE || m == Mode.FINAL) {
+        DecimalTypeInfo decimalTypeInfo =
+            (DecimalTypeInfo)
+                TypeInfoUtils.getTypeInfoFromObjectInspector(resultOI);
+        resultPrecision = decimalTypeInfo.getPrecision();
+        resultScale = decimalTypeInfo.getScale();
+      }
+      return resultOI;
+    }
 
     @Override
     public void doReset(AverageAggregationBuffer<HiveDecimal> aggregation) throws HiveException {
@@ -243,16 +292,18 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
     }
 
     private DecimalTypeInfo deriveResultDecimalTypeInfo() {
-      int prec = inputOI.precision();
-      int scale = inputOI.scale();
+      return deriveResultDecimalTypeInfo(inputOI.precision(), inputOI.scale(), mode);
+    }
+
+    public static DecimalTypeInfo deriveResultDecimalTypeInfo(int precision, int scale, Mode mode) {
       if (mode == Mode.FINAL || mode == Mode.COMPLETE) {
-        int intPart = prec - scale;
+        int intPart = precision - scale;
         // The avg() result type has the same number of integer digits and 4 more decimal digits.
         scale = Math.min(scale + 4, HiveDecimal.MAX_SCALE - intPart);
         return TypeInfoFactory.getDecimalTypeInfo(intPart + scale, scale);
       } else {
         // For intermediate sum field
-        return GenericUDAFAverage.deriveSumFieldTypeInfo(prec, scale);
+        return GenericUDAFAverage.deriveSumFieldTypeInfo(precision, scale);
       }
     }
 
@@ -307,6 +358,7 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
       } else {
         HiveDecimalWritable result = new HiveDecimalWritable(HiveDecimal.ZERO);
         result.set(aggregation.sum.divide(HiveDecimal.create(aggregation.count)));
+        result.mutateEnforcePrecisionScale(resultPrecision, resultScale);
         return result;
       }
     }
@@ -357,6 +409,21 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
         }
 
       };
+    }
+
+    @Override
+    protected BasePartitionEvaluator createPartitionEvaluator(
+        WindowFrameDef winFrame,
+        PTFPartition partition,
+        List<PTFExpressionDef> parameters,
+        ObjectInspector outputOI,
+        boolean nullsLast) {
+      try {
+        return new BasePartitionEvaluator.AvgPartitionHiveDecimalEvaluator(this, winFrame,
+            partition, parameters, inputOI, outputOI, nullsLast);
+      } catch(HiveException e) {
+        return super.createPartitionEvaluator(winFrame, partition, parameters, outputOI, nullsLast);
+      }
     }
   }
 
@@ -409,6 +476,8 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
       super.init(m, parameters);
 
       // init input
+      partialResult = new Object[2];
+      partialResult[0] = new LongWritable(0);
       if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {
         inputOI = (PrimitiveObjectInspector) parameters[0];
         copiedOI = (PrimitiveObjectInspector)ObjectInspectorUtils.getStandardObjectInspector(inputOI,
@@ -436,8 +505,6 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
         fname.add("count");
         fname.add("sum");
         fname.add("input");
-        partialResult = new Object[2];
-        partialResult[0] = new LongWritable(0);
         // index 1 set by child
         return ObjectInspectorFactory.getStandardStructObjectInspector(fname, foi);
       } else {
@@ -445,7 +512,7 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
       }
     }
 
-    protected boolean isWindowingDistinct() {
+    public boolean isWindowingDistinct() {
       return isWindowing && avgDistinct;
     }
 

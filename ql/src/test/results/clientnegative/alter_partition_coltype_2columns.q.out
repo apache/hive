@@ -1,20 +1,16 @@
-PREHOOK: query: -- create testing table
-create table alter_coltype(key string, value string) partitioned by (dt string, ts string)
+PREHOOK: query: create table alter_coltype(key string, value string) partitioned by (dt string, ts string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@alter_coltype
-POSTHOOK: query: -- create testing table
-create table alter_coltype(key string, value string) partitioned by (dt string, ts string)
+POSTHOOK: query: create table alter_coltype(key string, value string) partitioned by (dt string, ts string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter_coltype
-PREHOOK: query: -- insert and create a partition
-insert overwrite table alter_coltype partition(dt='100x', ts='6:30pm') select * from src1
+PREHOOK: query: insert overwrite table alter_coltype partition(dt='100x', ts='6:30pm') select * from src1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
 PREHOOK: Output: default@alter_coltype@dt=100x/ts=6%3A30pm
-POSTHOOK: query: -- insert and create a partition
-insert overwrite table alter_coltype partition(dt='100x', ts='6:30pm') select * from src1
+POSTHOOK: query: insert overwrite table alter_coltype partition(dt='100x', ts='6:30pm') select * from src1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@alter_coltype@dt=100x/ts=6%3A30pm
@@ -33,7 +29,6 @@ ts                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 ts                  	string              	                    
 FAILED: ParseException line 4:50 mismatched input ',' expecting ) near 'int' in alter partition key type

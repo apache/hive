@@ -29,7 +29,6 @@ b                   	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 b                   	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -53,7 +52,6 @@ b                   	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 b                   	string              	                    
 	 	 
 #### A masked pattern was here ####

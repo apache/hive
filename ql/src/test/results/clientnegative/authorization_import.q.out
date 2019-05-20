@@ -45,4 +45,4 @@ PREHOOK: query: set role public
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role public
 POSTHOOK: type: SHOW_ROLES
-FAILED: HiveAccessControlException Permission denied: Principal [name=hive_test_user, type=USER] does not have following privileges for operation IMPORT [[OBJECT OWNERSHIP] on Object [type=DATABASE, name=importer]]
+#### A masked pattern was here ####

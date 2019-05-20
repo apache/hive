@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table acid_uot(
+PREHOOK: query: create table acid_uot(
     ctinyint TINYINT,
     csmallint SMALLINT,
     cint INT,
@@ -14,12 +12,10 @@ create table acid_uot(
     cboolean1 BOOLEAN,
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:default
 PREHOOK: Output: default@acid_uot
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table acid_uot(
+POSTHOOK: query: create table acid_uot(
     ctinyint TINYINT,
     csmallint SMALLINT,
     cint INT,
@@ -33,7 +29,7 @@ create table acid_uot(
     cboolean1 BOOLEAN,
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_uot
 PREHOOK: query: update acid_uot set cstring1 = 'fred' where cint < -1070551679
@@ -47,11 +43,11 @@ POSTHOOK: Output: default@acid_uot
 PREHOOK: query: select * from acid_uot where cstring1 = 'fred'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uot
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from acid_uot where cstring1 = 'fred'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_uot
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -51	NULL	-1071480828	-1401575336	-51.0	NULL	fred	4uE7l74tESBiKfu7c8wM7GA	1969-12-31 16:00:08.451	NULL	true	true
 11	NULL	-1072910839	2048385991	11.0	NULL	fred	KbaDXiN85adbHRx58v	1969-12-31 16:00:02.351	NULL	false	false
 11	NULL	-1073279343	-1595604468	11.0	NULL	fred	P76636jJ6qM17d7DIy	1969-12-31 16:00:02.351	NULL	true	true

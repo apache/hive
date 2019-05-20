@@ -22,7 +22,10 @@ import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 
-/** Implementations are responsible for creating and obtaining path information about partitions. */
+/** Implementations are responsible for creating and obtaining path information about partitions.
+ * @deprecated as of Hive 3.0.0
+ */
+@Deprecated
 interface PartitionHelper extends Closeable {
 
   /** Return the location of the partition described by the provided values. */

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -50,6 +50,7 @@ import org.apache.thrift.TException;
 public class SecureProxySupport {
   private Path tokenPath;
   public static final String HCAT_SERVICE = "hcat";
+  public static final String HIVE_SERVICE = "hive";
   private final boolean isEnabled;
   private String user;
 
@@ -170,6 +171,7 @@ public class SecureProxySupport {
         return null;
       }
     });
+    FileSystem.closeAllForUGI(ugi);
     return twrapper.tokens;
   }
   private static void collectTokens(FileSystem fs, TokenWrapper twrapper, Credentials creds, String userName) throws IOException {
@@ -204,6 +206,7 @@ public class SecureProxySupport {
         return null;
       }
     });
+    FileSystem.closeAllForUGI(ugi);
 
   }
 
@@ -220,6 +223,7 @@ public class SecureProxySupport {
         return client.getDelegationToken(c.getUser(), u);
       }
     });
+    FileSystem.closeAllForUGI(ugi);
     return s;
   }
 }

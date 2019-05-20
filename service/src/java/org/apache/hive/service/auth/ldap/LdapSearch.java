@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -115,6 +115,23 @@ public final class LdapSearch implements DirSearch {
       }
     }
     return Collections.emptyList();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public String findGroupDn(String group) throws NamingException {
+    return execute(groupBases, queries.findGroupDnById(group)).getSingleLdapName();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isUserMemberOfGroup(String user, String groupDn) throws NamingException {
+    String userId = LdapUtils.extractUserName(user);
+    return execute(userBases, queries.isUserMemberOfGroup(userId, groupDn)).hasSingleResult();
   }
 
   /**

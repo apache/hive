@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,8 +19,13 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+
+import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 
 
 /**
@@ -68,6 +73,7 @@ public class SelectDesc extends AbstractOperatorDesc {
     return ret;
   }
 
+  @Signature
   @Explain(displayName = "expressions")
   public String getColListString() {
     return PlanUtils.getExprListString(colList);
@@ -82,6 +88,7 @@ public class SelectDesc extends AbstractOperatorDesc {
     this.colList = colList;
   }
 
+  @Signature
   @Explain(displayName = "outputColumnNames")
   public List<java.lang.String> getOutputColumnNames() {
     return outputColumnNames;
@@ -97,6 +104,7 @@ public class SelectDesc extends AbstractOperatorDesc {
     this.outputColumnNames = outputColumnNames;
   }
 
+  @Signature
   @Explain(displayName = "SELECT * ")
   public String explainNoCompute() {
     if (isSelStarNoCompute()) {
@@ -135,4 +143,50 @@ public class SelectDesc extends AbstractOperatorDesc {
   public void setSelStarNoCompute(boolean selStarNoCompute) {
     this.selStarNoCompute = selStarNoCompute;
   }
+
+
+  public class SelectOperatorExplainVectorization extends OperatorExplainVectorization {
+
+    private final SelectDesc selectDesc;
+    private final VectorSelectDesc vectorSelectDesc;
+
+    public SelectOperatorExplainVectorization(SelectDesc selectDesc,
+        VectorSelectDesc vectorSelectDesc) {
+      // Native vectorization supported.
+      super(vectorSelectDesc, true);
+      this.selectDesc = selectDesc;
+      this.vectorSelectDesc = vectorSelectDesc;
+    }
+
+    @Explain(vectorization = Vectorization.OPERATOR, displayName = "selectExpressions", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public List<String> getSelectExpressions() {
+      return vectorExpressionsToStringList(vectorSelectDesc.getSelectExpressions());
+    }
+
+    @Explain(vectorization = Vectorization.EXPRESSION, displayName = "projectedOutputColumnNums", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getProjectedOutputColumnNums() {
+      return Arrays.toString(vectorSelectDesc.getProjectedOutputColumns());
+    }
+  }
+
+  @Explain(vectorization = Vectorization.OPERATOR, displayName = "Select Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+  public SelectOperatorExplainVectorization getSelectVectorization() {
+    VectorSelectDesc vectorSelectDesc = (VectorSelectDesc) getVectorDesc();
+    if (vectorSelectDesc == null) {
+      return null;
+    }
+    return new SelectOperatorExplainVectorization(this, vectorSelectDesc);
+  }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (getClass().getName().equals(other.getClass().getName())) {
+      SelectDesc otherDesc = (SelectDesc) other;
+      return Objects.equals(getColListString(), otherDesc.getColListString()) &&
+          Objects.equals(getOutputColumnNames(), otherDesc.getOutputColumnNames()) &&
+          Objects.equals(explainNoCompute(), otherDesc.explainNoCompute());
+    }
+    return false;
+  }
+
 }

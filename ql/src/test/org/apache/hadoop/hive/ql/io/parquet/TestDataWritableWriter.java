@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -44,7 +44,7 @@ import org.apache.parquet.io.api.RecordConsumer;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.MessageTypeParser;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -136,8 +136,8 @@ public class TestDataWritableWriter {
     return new BooleanWritable(value);
   }
 
-  private BytesWritable createString(String value) throws UnsupportedEncodingException {
-    return new BytesWritable(value.getBytes("UTF-8"));
+  private BytesWritable createString(String value) {
+    return new BytesWritable(value.getBytes(StandardCharsets.UTF_8));
   }
 
   private ArrayWritable createGroup(Writable...values) {

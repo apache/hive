@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,9 +20,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColLessLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColLessLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarLessLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressionsSupportDecimal64;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -38,6 +36,11 @@ import org.apache.hadoop.io.Text;
     DoubleColLessLongScalar.class, DoubleColLessDoubleScalar.class,
     LongScalarLessLongColumn.class, LongScalarLessDoubleColumn.class,
     DoubleScalarLessLongColumn.class, DoubleScalarLessDoubleColumn.class,
+
+    DecimalColLessDecimalColumn.class, DecimalColLessDecimalScalar.class,
+    DecimalScalarLessDecimalColumn.class,
+    Decimal64ColLessDecimal64Column.class, Decimal64ColLessDecimal64Scalar.class,
+    Decimal64ScalarLessDecimal64Column.class,
 
     StringGroupColLessStringGroupColumn.class, FilterStringGroupColLessStringGroupColumn.class,
     StringGroupColLessStringScalar.class,
@@ -57,6 +60,9 @@ import org.apache.hadoop.io.Text;
 
     FilterDecimalColLessDecimalColumn.class, FilterDecimalColLessDecimalScalar.class,
     FilterDecimalScalarLessDecimalColumn.class,
+
+    FilterDecimal64ColLessDecimal64Column.class, FilterDecimal64ColLessDecimal64Scalar.class,
+    FilterDecimal64ScalarLessDecimal64Column.class,
 
     TimestampColLessTimestampColumn.class,
     TimestampColLessTimestampScalar.class, TimestampScalarLessTimestampColumn.class,
@@ -90,6 +96,7 @@ import org.apache.hadoop.io.Text;
     DateColLessDateScalar.class,FilterDateColLessDateScalar.class,
     DateScalarLessDateColumn.class,FilterDateScalarLessDateColumn.class,
     })
+@VectorizedExpressionsSupportDecimal64()
 @NDV(maxNdv = 2)
 public class GenericUDFOPLessThan extends GenericUDFBaseCompare {
   public GenericUDFOPLessThan(){

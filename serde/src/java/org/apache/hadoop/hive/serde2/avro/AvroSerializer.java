@@ -17,27 +17,27 @@
  */
 package org.apache.hadoop.hive.serde2.avro;
 
-import java.sql.Date;
-import java.sql.Timestamp;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
 import org.apache.avro.Schema.Type;
-import org.apache.avro.generic.GenericArray;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericData.Fixed;
 import org.apache.avro.generic.GenericEnumSymbol;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -210,11 +210,13 @@ class AvroSerializer {
       return vc.getValue();
     case DATE:
       Date date = ((DateObjectInspector)fieldOI).getPrimitiveJavaObject(structFieldData);
-      return DateWritable.dateToDays(date);
+      return DateWritableV2.dateToDays(date);
     case TIMESTAMP:
       Timestamp timestamp =
         ((TimestampObjectInspector) fieldOI).getPrimitiveJavaObject(structFieldData);
-      return timestamp.getTime();
+      timestamp = TimestampTZUtil.convertTimestampToZone(
+          timestamp, TimeZone.getDefault().toZoneId(), ZoneOffset.UTC);
+      return timestamp.toEpochMilli();
     case UNKNOWN:
       throw new AvroSerdeException("Received UNKNOWN primitive category.");
     case VOID:
@@ -262,7 +264,7 @@ class AvroSerializer {
     Map<?,?> map = fieldOI.getMap(structFieldData);
     Schema valueType = schema.getValueType();
 
-    Map<Object, Object> deserialized = new HashMap<Object, Object>(fieldOI.getMapSize(structFieldData));
+    Map<Object, Object> deserialized = new LinkedHashMap<Object, Object>(fieldOI.getMapSize(structFieldData));
 
     for (Map.Entry<?, ?> entry : map.entrySet()) {
       deserialized.put(serialize(mapKeyTypeInfo, mapKeyObjectInspector, entry.getKey(), STRING_SCHEMA),

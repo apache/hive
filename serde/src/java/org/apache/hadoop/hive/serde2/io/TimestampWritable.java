@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,10 +20,8 @@ package org.apache.hadoop.hive.serde2.io;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -47,9 +45,9 @@ import org.apache.hadoop.io.WritableUtils;
  * The fractional portion is reversed, and encoded as a VInt
  * so timestamps with less precision use fewer bytes.
  *
- *      0.1    -> 1
- *      0.01   -> 10
- *      0.001  -> 100
+ *      0.1    -&gt; 1
+ *      0.01   -&gt; 10
+ *      0.001  -&gt; 100
  *
  */
 public class TimestampWritable implements WritableComparable<TimestampWritable> {
@@ -67,13 +65,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
 
   public static final int BINARY_SORTABLE_LENGTH = 11;
 
-  private static final ThreadLocal<DateFormat> threadLocalDateFormat =
-      new ThreadLocal<DateFormat>() {
-        @Override
-        protected DateFormat initialValue() {
-          return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        }
-      };
+  public static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
   private Timestamp timestamp = new Timestamp(0);
 
@@ -133,7 +125,8 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
       timestamp.setNanos(0);
       return;
     }
-    this.timestamp = t;
+    timestamp.setTime(t.getTime());
+    timestamp.setNanos(t.getNanos());
     bytesEmpty = true;
     timestampEmpty = false;
   }
@@ -389,17 +382,11 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
       populateTimestamp();
     }
 
-    String timestampString = timestamp.toString();
-    if (timestampString.length() > 19) {
-      if (timestampString.length() == 21) {
-        if (timestampString.substring(19).compareTo(".0") == 0) {
-          return threadLocalDateFormat.get().format(timestamp);
-        }
-      }
-      return threadLocalDateFormat.get().format(timestamp) + timestampString.substring(19);
+    if (timestamp.getNanos() > 0) {
+      return timestamp.toString();
     }
 
-    return threadLocalDateFormat.get().format(timestamp);
+    return timestamp.toLocalDateTime().format(DATE_TIME_FORMAT);
   }
 
   @Override

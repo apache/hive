@@ -1,6 +1,6 @@
+--! qt:dataset:srcpart
 set hive.archive.enabled = true;
 -- Tests trying to unarchive a non-archived partition group
--- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
 
 drop table tstsrcpart;
 create table tstsrcpart like srcpart;

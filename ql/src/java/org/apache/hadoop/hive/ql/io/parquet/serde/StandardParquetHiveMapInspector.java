@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,7 +20,7 @@ import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Writable;
 
 /**
- * The StandardParquetHiveMapInspector will inspect an ArrayWritable, considering it as a Hive map.<br />
+ * The StandardParquetHiveMapInspector will inspect an ArrayWritable, considering it as a Hive map.<br>
  * It can also inspect a Map if Hive decides to inspect the result of an inspection.
  *
  */

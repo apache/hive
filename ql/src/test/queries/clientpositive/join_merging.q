@@ -1,3 +1,4 @@
+--! qt:dataset:part
 set hive.mapred.mode=nonstrict;
 
 explain select p1.p_size, p2.p_size 

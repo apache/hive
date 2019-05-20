@@ -1,20 +1,16 @@
-PREHOOK: query: -- create testing table.
-create table alter_coltype(key string, value string) partitioned by (dt string, ts string)
+PREHOOK: query: create table alter_coltype(key string, value string) partitioned by (dt string, ts string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@alter_coltype
-POSTHOOK: query: -- create testing table.
-create table alter_coltype(key string, value string) partitioned by (dt string, ts string)
+POSTHOOK: query: create table alter_coltype(key string, value string) partitioned by (dt string, ts string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter_coltype
-PREHOOK: query: -- insert and create a partition.
-insert overwrite table alter_coltype partition(dt='100', ts='6.30') select * from src1
+PREHOOK: query: insert overwrite table alter_coltype partition(dt='100', ts='6.30') select * from src1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
 PREHOOK: Output: default@alter_coltype@dt=100/ts=6.30
-POSTHOOK: query: -- insert and create a partition.
-insert overwrite table alter_coltype partition(dt='100', ts='6.30') select * from src1
+POSTHOOK: query: insert overwrite table alter_coltype partition(dt='100', ts='6.30') select * from src1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@alter_coltype@dt=100/ts=6.30
@@ -33,56 +29,54 @@ ts                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 ts                  	string              	                    
-PREHOOK: query: -- select with paritition predicate.
-select count(*) from alter_coltype where dt = '100'
+PREHOOK: query: select count(*) from alter_coltype where dt = '100'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####
-POSTHOOK: query: -- select with paritition predicate.
-select count(*) from alter_coltype where dt = '100'
+POSTHOOK: query: select count(*) from alter_coltype where dt = '100'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####
 25
-PREHOOK: query: -- alter partition key column data type for dt column.
-alter table alter_coltype partition column (dt int)
+PREHOOK: query: alter table alter_coltype partition column (dt int)
 PREHOOK: type: ALTERTABLE_PARTCOLTYPE
 PREHOOK: Input: default@alter_coltype
-POSTHOOK: query: -- alter partition key column data type for dt column.
-alter table alter_coltype partition column (dt int)
+POSTHOOK: query: alter table alter_coltype partition column (dt int)
 POSTHOOK: type: ALTERTABLE_PARTCOLTYPE
 POSTHOOK: Input: default@alter_coltype
 POSTHOOK: Output: default@alter_coltype
-PREHOOK: query: -- load a new partition using new data type.
-insert overwrite table alter_coltype partition(dt=100, ts='3.0') select * from src1
+PREHOOK: query: insert overwrite table alter_coltype partition(dt=100, ts='3.0') select * from src1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
 PREHOOK: Output: default@alter_coltype@dt=100/ts=3.0
-POSTHOOK: query: -- load a new partition using new data type.
-insert overwrite table alter_coltype partition(dt=100, ts='3.0') select * from src1
+POSTHOOK: query: insert overwrite table alter_coltype partition(dt=100, ts='3.0') select * from src1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@alter_coltype@dt=100/ts=3.0
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100,ts=3.0).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100,ts=3.0).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- make sure the partition predicate still works. 
-select count(*) from alter_coltype where dt = '100'
+PREHOOK: query: select count(*) from alter_coltype where dt = '100'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####
-POSTHOOK: query: -- make sure the partition predicate still works. 
-select count(*) from alter_coltype where dt = '100'
+POSTHOOK: query: select count(*) from alter_coltype where dt = '100'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####
 50
 PREHOOK: query: explain extended select count(*) from alter_coltype where dt = '100'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_coltype
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select count(*) from alter_coltype where dt = '100'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_coltype
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM `default`.`alter_coltype`
+WHERE `dt` = 100
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -93,12 +87,10 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- alter partition key column data type for ts column.
-alter table alter_coltype partition column (ts double)
+PREHOOK: query: alter table alter_coltype partition column (ts double)
 PREHOOK: type: ALTERTABLE_PARTCOLTYPE
 PREHOOK: Input: default@alter_coltype
-POSTHOOK: query: -- alter partition key column data type for ts column.
-alter table alter_coltype partition column (ts double)
+POSTHOOK: query: alter table alter_coltype partition column (ts double)
 POSTHOOK: type: ALTERTABLE_PARTCOLTYPE
 POSTHOOK: Input: default@alter_coltype
 POSTHOOK: Output: default@alter_coltype
@@ -109,33 +101,36 @@ POSTHOOK: query: alter table alter_coltype partition column (dt string)
 POSTHOOK: type: ALTERTABLE_PARTCOLTYPE
 POSTHOOK: Input: default@alter_coltype
 POSTHOOK: Output: default@alter_coltype
-PREHOOK: query: -- load a new partition using new data type.
-insert overwrite table alter_coltype partition(dt='100', ts=3.0) select * from src1
+PREHOOK: query: insert overwrite table alter_coltype partition(dt='100', ts=3.0) select * from src1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
 PREHOOK: Output: default@alter_coltype@dt=100/ts=3.0
-POSTHOOK: query: -- load a new partition using new data type.
-insert overwrite table alter_coltype partition(dt='100', ts=3.0) select * from src1
+POSTHOOK: query: insert overwrite table alter_coltype partition(dt='100', ts=3.0) select * from src1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@alter_coltype@dt=100/ts=3.0
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100,ts=3.0).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100,ts=3.0).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: --  validate partition key column predicate can still work.
-select count(*) from alter_coltype where ts = '6.30'
+PREHOOK: query: select count(*) from alter_coltype where ts = '6.30'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####
-POSTHOOK: query: --  validate partition key column predicate can still work.
-select count(*) from alter_coltype where ts = '6.30'
+POSTHOOK: query: select count(*) from alter_coltype where ts = '6.30'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####
 25
 PREHOOK: query: explain extended select count(*) from alter_coltype where ts = '6.30'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_coltype
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select count(*) from alter_coltype where ts = '6.30'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_coltype
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM `default`.`alter_coltype`
+WHERE `ts` = 6.3
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -146,23 +141,26 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: --  validate partition key column predicate on two different partition column data type 
---  can still work.
-select count(*) from alter_coltype where ts = 3.0 and dt=100
+PREHOOK: query: select count(*) from alter_coltype where ts = 3.0 and dt=100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####
-POSTHOOK: query: --  validate partition key column predicate on two different partition column data type 
---  can still work.
-select count(*) from alter_coltype where ts = 3.0 and dt=100
+POSTHOOK: query: select count(*) from alter_coltype where ts = 3.0 and dt=100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####
 25
 PREHOOK: query: explain extended select count(*) from alter_coltype where ts = 3.0 and dt=100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_coltype
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select count(*) from alter_coltype where ts = 3.0 and dt=100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_coltype
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM `default`.`alter_coltype`
+WHERE `ts` = 3.0 AND `dt` = 100
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -173,15 +171,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- query where multiple partition values (of different datatypes) are being selected 
-select key, value, dt, ts from alter_coltype where dt is not null
+PREHOOK: query: select key, value, dt, ts from alter_coltype where dt is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_coltype
 PREHOOK: Input: default@alter_coltype@dt=100/ts=3.0
 PREHOOK: Input: default@alter_coltype@dt=100/ts=6.30
 #### A masked pattern was here ####
-POSTHOOK: query: -- query where multiple partition values (of different datatypes) are being selected 
-select key, value, dt, ts from alter_coltype where dt is not null
+POSTHOOK: query: select key, value, dt, ts from alter_coltype where dt is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_coltype
 POSTHOOK: Input: default@alter_coltype@dt=100/ts=3.0
@@ -239,8 +235,19 @@ POSTHOOK: Input: default@alter_coltype@dt=100/ts=6.30
 		100	6.3
 PREHOOK: query: explain extended select key, value, dt, ts from alter_coltype where dt is not null
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_coltype
+PREHOOK: Input: default@alter_coltype@dt=100/ts=3.0
+PREHOOK: Input: default@alter_coltype@dt=100/ts=6.30
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select key, value, dt, ts from alter_coltype where dt is not null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_coltype
+POSTHOOK: Input: default@alter_coltype@dt=100/ts=3.0
+POSTHOOK: Input: default@alter_coltype@dt=100/ts=6.30
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, `dt`, `ts`
+FROM `default`.`alter_coltype`
+WHERE `dt` IS NOT NULL
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -256,8 +263,9 @@ STAGE PLANS:
               dt 100
               ts 3.0
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types string:string
@@ -279,6 +287,8 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types string:string
@@ -300,8 +310,9 @@ STAGE PLANS:
               dt 100
               ts 6.30
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types string:string
@@ -323,6 +334,8 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types string:string
@@ -340,12 +353,13 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: alter_coltype
-          Statistics: Num rows: 50 Data size: 382 Basic stats: COMPLETE Column stats: NONE
+          filterExpr: dt is not null (type: boolean)
+          Statistics: Num rows: 50 Data size: 18350 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: key (type: string), value (type: string), dt (type: string), ts (type: double)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 50 Data size: 382 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 50 Data size: 18350 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: select count(*) from alter_coltype where ts = 3.0
@@ -357,13 +371,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####
 25
-PREHOOK: query: -- make sure the partition predicate still works. 
-select count(*) from alter_coltype where dt = '100'
+PREHOOK: query: select count(*) from alter_coltype where dt = '100'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####
-POSTHOOK: query: -- make sure the partition predicate still works. 
-select count(*) from alter_coltype where dt = '100'
+POSTHOOK: query: select count(*) from alter_coltype where dt = '100'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####
@@ -381,7 +393,6 @@ ts                  	double
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 ts                  	double              	                    
 PREHOOK: query: desc alter_coltype partition (dt='100', ts='6.30')
@@ -397,7 +408,6 @@ ts                  	double
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 ts                  	double              	                    
 PREHOOK: query: desc alter_coltype partition (dt='100', ts=3.0)
@@ -413,7 +423,6 @@ ts                  	double
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 ts                  	double              	                    
 PREHOOK: query: drop table alter_coltype
@@ -464,7 +473,7 @@ POSTHOOK: query: insert into table pt.alterdynamic_part_table partition(partcol1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: pt@alterdynamic_part_table@partcol1=1/partcol2=1
-POSTHOOK: Lineage: alterdynamic_part_table PARTITION(partcol1=1,partcol2=1).intcol SIMPLE []
+POSTHOOK: Lineage: alterdynamic_part_table PARTITION(partcol1=1,partcol2=1).intcol EXPRESSION []
 PREHOOK: query: alter table pt.alterdynamic_part_table partition column (partcol1 int)
 PREHOOK: type: ALTERTABLE_PARTCOLTYPE
 PREHOOK: Input: pt@alterdynamic_part_table
@@ -474,8 +483,17 @@ POSTHOOK: Input: pt@alterdynamic_part_table
 POSTHOOK: Output: pt@alterdynamic_part_table
 PREHOOK: query: explain extended select intcol from pt.alterdynamic_part_table where partcol1='1' and partcol2='1'
 PREHOOK: type: QUERY
+PREHOOK: Input: pt@alterdynamic_part_table
+PREHOOK: Input: pt@alterdynamic_part_table@partcol1=1/partcol2=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select intcol from pt.alterdynamic_part_table where partcol1='1' and partcol2='1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: pt@alterdynamic_part_table
+POSTHOOK: Input: pt@alterdynamic_part_table@partcol1=1/partcol2=1
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `intcol`
+FROM `pt`.`alterdynamic_part_table`
+WHERE `partcol1` = 1 AND `partcol2` = '1'
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -491,8 +509,9 @@ STAGE PLANS:
               partcol1 1
               partcol2 1
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"intcol":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns intcol
               columns.comments 
               columns.types string
@@ -514,6 +533,8 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
+                column.name.delimiter ,
                 columns intcol
                 columns.comments 
                 columns.types string
@@ -531,18 +552,28 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: alterdynamic_part_table
-          Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+          filterExpr: ((partcol1 = 1) and (partcol2 = '1')) (type: boolean)
+          Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: intcol (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: explain extended select intcol from pt.alterdynamic_part_table where (partcol1='2' and partcol2='1')or (partcol1='1' and partcol2='__HIVE_DEFAULT_PARTITION__')
 PREHOOK: type: QUERY
+PREHOOK: Input: pt@alterdynamic_part_table
+PREHOOK: Input: pt@alterdynamic_part_table@partcol1=2/partcol2=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select intcol from pt.alterdynamic_part_table where (partcol1='2' and partcol2='1')or (partcol1='1' and partcol2='__HIVE_DEFAULT_PARTITION__')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: pt@alterdynamic_part_table
+POSTHOOK: Input: pt@alterdynamic_part_table@partcol1=2/partcol2=1
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `intcol`
+FROM `pt`.`alterdynamic_part_table`
+WHERE ROW(`partcol1`, `partcol2`) IN (ROW(2, '1'), ROW(1, '__HIVE_DEFAULT_PARTITION__'))
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -558,8 +589,9 @@ STAGE PLANS:
               partcol1 2
               partcol2 1
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"intcol":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns intcol
               columns.comments 
               columns.types string
@@ -581,6 +613,8 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
+                column.name.delimiter ,
                 columns intcol
                 columns.comments 
                 columns.types string
@@ -598,12 +632,13 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: alterdynamic_part_table
-          Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+          filterExpr: (struct(partcol1,partcol2)) IN (const struct(2,'1'), const struct(1,'__HIVE_DEFAULT_PARTITION__')) (type: boolean)
+          Statistics: Num rows: 1 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: intcol (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: select intcol from pt.alterdynamic_part_table where (partcol1='2' and partcol2='1')or (partcol1='1' and partcol2='__HIVE_DEFAULT_PARTITION__')

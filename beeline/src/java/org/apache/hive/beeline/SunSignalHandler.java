@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,20 +30,29 @@ import sun.misc.SignalHandler;
 
 public class SunSignalHandler implements BeeLineSignalHandler, SignalHandler {
   private Statement stmt = null;
+  private final BeeLine beeLine;
 
-  SunSignalHandler () {
+  SunSignalHandler (BeeLine beeLine) {
+    this.beeLine = beeLine;
     // Interpret Ctrl+C as a request to cancel the currently
     // executing query.
     Signal.handle (new Signal ("INT"), this);
   }
 
+  @Override
   public void setStatement(Statement stmt) {
     this.stmt = stmt;
   }
 
+  @Override
   public void handle (Signal signal) {
     try {
-      if (stmt != null) {
+      // exit the JVM if Ctrl+C is received
+      // and no current statement is executing
+      if(stmt == null || stmt.isClosed()) {
+        System.exit(127);
+      } else {
+        beeLine.info(beeLine.loc("interrupt-ctrl-c"));
         stmt.cancel();
       }
     } catch (SQLException ex) {

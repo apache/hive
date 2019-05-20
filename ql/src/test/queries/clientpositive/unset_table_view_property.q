@@ -1,3 +1,4 @@
+--! qt:dataset:src
 CREATE DATABASE vt;
 
 CREATE TABLE vt.testTable(col1 INT, col2 INT);

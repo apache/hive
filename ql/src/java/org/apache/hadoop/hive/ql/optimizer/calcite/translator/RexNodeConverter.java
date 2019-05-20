@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,47 +17,59 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 import org.apache.calcite.avatica.util.TimeUnit;
 import org.apache.calcite.avatica.util.TimeUnitRange;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexSubQuery;
 import org.apache.calcite.rex.RexUtil;
+import org.apache.calcite.sql.SqlBinaryOperator;
 import org.apache.calcite.sql.SqlCollation;
 import org.apache.calcite.sql.SqlIntervalQualifier;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlCastFunction;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.fun.SqlQuantifyOperator;
 import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.ConversionUtil;
+import org.apache.calcite.util.DateString;
 import org.apache.calcite.util.NlsString;
+import org.apache.calcite.util.TimestampString;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToDateSqlOperator;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter.HiveNlsString.Interpretation;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -67,16 +79,21 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeSubQueryDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCase;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToChar;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDate;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDecimal;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToString;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToTimestampLocalTZ;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToVarchar;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUnixTimeStamp;
@@ -91,9 +108,14 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.ImmutableMap;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class RexNodeConverter {
 
@@ -116,9 +138,26 @@ public class RexNodeConverter {
   private final ImmutableList<InputCtx> inputCtxs;
   private final boolean                 flattenExpr;
 
+  //outerRR belongs to outer query and is required to resolve correlated references
+  private final RowResolver             outerRR;
+  private final ImmutableMap<String, Integer> outerNameToPosMap;
+  private int correlatedId;
+
   //Constructor used by HiveRexExecutorImpl
   public RexNodeConverter(RelOptCluster cluster) {
     this(cluster, new ArrayList<InputCtx>(), false);
+  }
+
+  //subqueries will need outer query's row resolver
+  public RexNodeConverter(RelOptCluster cluster, RelDataType inpDataType,
+      ImmutableMap<String, Integer> outerNameToPosMap,
+      ImmutableMap<String, Integer> nameToPosMap, RowResolver hiveRR, RowResolver outerRR, int offset, boolean flattenExpr, int correlatedId) {
+    this.cluster = cluster;
+    this.inputCtxs = ImmutableList.of(new InputCtx(inpDataType, nameToPosMap, hiveRR, offset));
+    this.flattenExpr = flattenExpr;
+    this.outerRR = outerRR;
+    this.outerNameToPosMap = outerNameToPosMap;
+    this.correlatedId = correlatedId;
   }
 
   public RexNodeConverter(RelOptCluster cluster, RelDataType inpDataType,
@@ -126,12 +165,16 @@ public class RexNodeConverter {
     this.cluster = cluster;
     this.inputCtxs = ImmutableList.of(new InputCtx(inpDataType, nameToPosMap, null, offset));
     this.flattenExpr = flattenExpr;
+    this.outerRR = null;
+    this.outerNameToPosMap = null;
   }
 
   public RexNodeConverter(RelOptCluster cluster, List<InputCtx> inpCtxLst, boolean flattenExpr) {
     this.cluster = cluster;
     this.inputCtxs = ImmutableList.<InputCtx> builder().addAll(inpCtxLst).build();
     this.flattenExpr = flattenExpr;
+    this.outerRR  = null;
+    this.outerNameToPosMap = null;
   }
 
   public RexNode convert(ExprNodeDesc expr) throws SemanticException {
@@ -143,15 +186,122 @@ public class RexNodeConverter {
       return convert((ExprNodeColumnDesc) expr);
     } else if (expr instanceof ExprNodeFieldDesc) {
       return convert((ExprNodeFieldDesc) expr);
+    } else if(expr instanceof  ExprNodeSubQueryDesc) {
+      return convert((ExprNodeSubQueryDesc) expr);
     } else {
       throw new RuntimeException("Unsupported Expression");
     }
     // TODO: handle ExprNodeColumnListDesc
   }
 
+  private RexNode getSomeSubquery(final RelNode subqueryRel, final RexNode lhs,
+      final SqlQuantifyOperator quantifyOperator) {
+    if(quantifyOperator == SqlStdOperatorTable.SOME_EQ) {
+      return RexSubQuery.in(subqueryRel, ImmutableList.<RexNode>of(lhs));
+    } else if (quantifyOperator == SqlStdOperatorTable.SOME_NE) {
+      RexSubQuery subQuery = RexSubQuery.in(subqueryRel, ImmutableList.<RexNode>of(lhs));
+      return cluster.getRexBuilder().makeCall(SqlStdOperatorTable.NOT, subQuery);
+    } else {
+      return RexSubQuery.some(subqueryRel, ImmutableList.of(lhs), quantifyOperator);
+    }
+  }
+
+  private void throwInvalidSubqueryError(final ASTNode comparisonOp) throws SemanticException {
+    throw new CalciteSubquerySemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
+        "Invalid operator:" + comparisonOp.toString()));
+  }
+
+  // <>ANY and =ALL is not supported
+  private RexNode convertSubquerySomeAll(final ExprNodeSubQueryDesc subQueryDesc)
+      throws SemanticException {
+    assert(subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.SOME
+        || subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.ALL);
+
+    RexNode rexNodeLhs = convert(subQueryDesc.getSubQueryLhs());
+    ASTNode comparisonOp = subQueryDesc.getComparisonOp();
+    SqlQuantifyOperator quantifyOperator = null;
+
+    switch (comparisonOp.getType()) {
+    case HiveParser.EQUAL:
+      if(subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.ALL) {
+        throwInvalidSubqueryError(comparisonOp);
+      }
+      quantifyOperator = SqlStdOperatorTable.SOME_EQ;
+      break;
+    case HiveParser.LESSTHAN:
+      quantifyOperator = SqlStdOperatorTable.SOME_LT;
+      break;
+    case HiveParser.LESSTHANOREQUALTO:
+      quantifyOperator = SqlStdOperatorTable.SOME_LE;
+      break;
+    case HiveParser.GREATERTHAN:
+      quantifyOperator = SqlStdOperatorTable.SOME_GT;
+      break;
+    case HiveParser.GREATERTHANOREQUALTO:
+      quantifyOperator = SqlStdOperatorTable.SOME_GE;
+      break;
+    case HiveParser.NOTEQUAL:
+      if(subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.SOME) {
+        throwInvalidSubqueryError(comparisonOp);
+      }
+      quantifyOperator = SqlStdOperatorTable.SOME_NE;
+      break;
+    default:
+      throw new CalciteSubquerySemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
+          "Invalid operator:" + comparisonOp.toString()));
+    }
+
+    if(subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.ALL) {
+      quantifyOperator = SqlStdOperatorTable.some(quantifyOperator.comparisonKind.negateNullSafe());
+    }
+    RexNode someQuery = getSomeSubquery(subQueryDesc.getRexSubQuery(), rexNodeLhs,
+        quantifyOperator);
+    if(subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.ALL) {
+      return cluster.getRexBuilder().makeCall(SqlStdOperatorTable.NOT, someQuery);
+    }
+    return someQuery;
+  }
+
+  private RexNode convert(final ExprNodeSubQueryDesc subQueryDesc) throws  SemanticException {
+    if(subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.IN) {
+      /*
+       * Check.5.h :: For In and Not In the SubQuery must implicitly or
+       * explicitly only contain one select item.
+       */
+      if(subQueryDesc.getRexSubQuery().getRowType().getFieldCount() > 1) {
+        throw new CalciteSubquerySemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
+            "SubQuery can contain only 1 item in Select List."));
+      }
+      //create RexNode for LHS
+      RexNode rexNodeLhs = convert(subQueryDesc.getSubQueryLhs());
+
+      //create RexSubQuery node
+      RexNode rexSubQuery = RexSubQuery.in(subQueryDesc.getRexSubQuery(),
+          ImmutableList.<RexNode>of(rexNodeLhs));
+      return  rexSubQuery;
+    } else if(subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.EXISTS) {
+      RexNode subQueryNode = RexSubQuery.exists(subQueryDesc.getRexSubQuery());
+      return subQueryNode;
+    } else if(subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.SCALAR){
+      if(subQueryDesc.getRexSubQuery().getRowType().getFieldCount() > 1) {
+        throw new CalciteSubquerySemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
+            "SubQuery can contain only 1 item in Select List."));
+      }
+      //create RexSubQuery node
+      RexNode rexSubQuery = RexSubQuery.scalar(subQueryDesc.getRexSubQuery());
+      return rexSubQuery;
+    } else if(subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.SOME
+        || subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.ALL) {
+      return convertSubquerySomeAll(subQueryDesc);
+    } else {
+      throw new CalciteSubquerySemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
+          "Invalid subquery: " + subQueryDesc.getType()));
+    }
+  }
+
   private RexNode convert(final ExprNodeFieldDesc fieldDesc) throws SemanticException {
     RexNode rexNode = convert(fieldDesc.getDesc());
-    if (rexNode instanceof RexCall) {
+    if (rexNode.getType().isStruct()) {
       // regular case of accessing nested field in a column
       return cluster.getRexBuilder().makeFieldAccess(rexNode, fieldDesc.getFieldName(), true);
     } else {
@@ -176,11 +326,14 @@ public class RexNodeConverter {
     boolean isNumeric = (tgtUdf instanceof GenericUDFBaseBinary
         && func.getTypeInfo().getCategory() == Category.PRIMITIVE
         && (PrimitiveGrouping.NUMERIC_GROUP == PrimitiveObjectInspectorUtils.getPrimitiveGrouping(
-            ((PrimitiveTypeInfo) func.getTypeInfo()).getPrimitiveCategory())));
+        ((PrimitiveTypeInfo) func.getTypeInfo()).getPrimitiveCategory())));
     boolean isCompare = !isNumeric && tgtUdf instanceof GenericUDFBaseCompare;
     boolean isWhenCase = tgtUdf instanceof GenericUDFWhen || tgtUdf instanceof GenericUDFCase;
     boolean isTransformableTimeStamp = func.getGenericUDF() instanceof GenericUDFUnixTimeStamp &&
-            func.getChildren().size() != 0;
+        func.getChildren().size() != 0;
+    boolean isBetween = !isNumeric && tgtUdf instanceof GenericUDFBetween;
+    boolean isIN = !isNumeric && tgtUdf instanceof GenericUDFIn;
+    boolean isAllPrimitive = true;
 
     if (isNumeric) {
       tgtDT = func.getTypeInfo();
@@ -189,7 +342,7 @@ public class RexNodeConverter {
       // TODO: checking 2 children is useless, compare already does that.
     } else if (isCompare && (func.getChildren().size() == 2)) {
       tgtDT = FunctionRegistry.getCommonClassForComparison(func.getChildren().get(0)
-            .getTypeInfo(), func.getChildren().get(1).getTypeInfo());
+          .getTypeInfo(), func.getChildren().get(1).getTypeInfo());
     } else if (isWhenCase) {
       // If it is a CASE or WHEN, we need to check that children do not contain stateful functions
       // as they are not allowed
@@ -199,15 +352,33 @@ public class RexNodeConverter {
     } else if (isTransformableTimeStamp) {
       // unix_timestamp(args) -> to_unix_timestamp(args)
       func = ExprNodeGenericFuncDesc.newInstance(new GenericUDFToUnixTimeStamp(), func.getChildren());
+    } else if (isBetween) {
+      assert func.getChildren().size() == 4;
+      // We skip first child as is not involved (is the revert boolean)
+      // The target type needs to account for all 3 operands
+      tgtDT = FunctionRegistry.getCommonClassForComparison(
+          func.getChildren().get(1).getTypeInfo(),
+          FunctionRegistry.getCommonClassForComparison(
+              func.getChildren().get(2).getTypeInfo(),
+              func.getChildren().get(3).getTypeInfo()));
+    } else if (isIN) {
+      // We're only considering the first element of the IN list for the type
+      assert func.getChildren().size() > 1;
+      tgtDT = FunctionRegistry.getCommonClassForComparison(func.getChildren().get(0)
+          .getTypeInfo(), func.getChildren().get(1).getTypeInfo());
     }
 
-    for (ExprNodeDesc childExpr : func.getChildren()) {
+    for (int i =0; i < func.getChildren().size(); ++i) {
+      ExprNodeDesc childExpr = func.getChildren().get(i);
       tmpExprNode = childExpr;
-      if (tgtDT != null
+      if (tgtDT != null && tgtDT.getCategory() == Category.PRIMITIVE
           && TypeInfoUtils.isConversionRequiredForComparison(tgtDT, childExpr.getTypeInfo())) {
-        if (isCompare) {
+        if (isCompare || isBetween || isIN) {
           // For compare, we will convert requisite children
-          tmpExprNode = ParseUtils.createConversionCast(childExpr, (PrimitiveTypeInfo) tgtDT);
+          // For BETWEEN skip the first child (the revert boolean)
+          if (!isBetween || i > 0) {
+            tmpExprNode = ParseUtils.createConversionCast(childExpr, (PrimitiveTypeInfo) tgtDT);
+          }
         } else if (isNumeric) {
           // For numeric, we'll do minimum necessary cast - if we cast to the type
           // of expression, bad things will happen.
@@ -218,6 +389,8 @@ public class RexNodeConverter {
         }
       }
 
+      isAllPrimitive =
+          isAllPrimitive && tmpExprNode.getTypeInfo().getCategory() == Category.PRIMITIVE;
       argTypeBldr.add(TypeConverter.convert(tmpExprNode.getTypeInfo(), cluster.getTypeFactory()));
       tmpRN = convert(tmpExprNode);
       childRexNodeLst.add(tmpRN);
@@ -236,14 +409,56 @@ public class RexNodeConverter {
       if (calciteOp.getKind() == SqlKind.CASE) {
         // If it is a case operator, we need to rewrite it
         childRexNodeLst = rewriteCaseChildren(func, childRexNodeLst);
+        // Adjust branch types by inserting explicit casts if the actual is ambigous
+        childRexNodeLst = adjustCaseBranchTypes(childRexNodeLst, retType);
       } else if (HiveExtractDate.ALL_FUNCTIONS.contains(calciteOp)) {
         // If it is a extract operator, we need to rewrite it
         childRexNodeLst = rewriteExtractDateChildren(calciteOp, childRexNodeLst);
       } else if (HiveFloorDate.ALL_FUNCTIONS.contains(calciteOp)) {
         // If it is a floor <date> operator, we need to rewrite it
         childRexNodeLst = rewriteFloorDateChildren(calciteOp, childRexNodeLst);
+      } else if (calciteOp.getKind() == SqlKind.IN && isAllPrimitive) {
+        if (childRexNodeLst.size() == 2) {
+          // if it is a single item in an IN clause, transform A IN (B) to A = B
+          // from IN [A,B] => EQUALS [A,B]
+          // except complex types
+          calciteOp = SqlStdOperatorTable.EQUALS;
+        } else if (RexUtil.isReferenceOrAccess(childRexNodeLst.get(0), true)) {
+          // if it is more than an single item in an IN clause,
+          // transform from IN [A,B,C] => OR [EQUALS [A,B], EQUALS [A,C]]
+          // except complex types
+          childRexNodeLst = rewriteInClauseChildren(calciteOp, childRexNodeLst);
+          calciteOp = SqlStdOperatorTable.OR;
+        }
+      } else if (calciteOp.getKind() == SqlKind.COALESCE &&
+          childRexNodeLst.size() > 1) {
+        // Rewrite COALESCE as a CASE
+        // This allows to be further reduced to OR, if possible
+        calciteOp = SqlStdOperatorTable.CASE;
+        childRexNodeLst = rewriteCoalesceChildren(func, childRexNodeLst);
+        // Adjust branch types by inserting explicit casts if the actual is ambigous
+        childRexNodeLst = adjustCaseBranchTypes(childRexNodeLst, retType);
+      } else if (calciteOp == HiveToDateSqlOperator.INSTANCE) {
+        childRexNodeLst = rewriteToDateChildren(childRexNodeLst);
+      } else if (calciteOp.getKind() == SqlKind.BETWEEN) {
+        assert childRexNodeLst.get(0).isAlwaysTrue() || childRexNodeLst.get(0).isAlwaysFalse();
+        boolean invert = childRexNodeLst.get(0).isAlwaysTrue();
+        SqlBinaryOperator cmpOp;
+        if (invert) {
+          calciteOp = SqlStdOperatorTable.OR;
+          cmpOp = SqlStdOperatorTable.GREATER_THAN;
+        } else {
+          calciteOp = SqlStdOperatorTable.AND;
+          cmpOp = SqlStdOperatorTable.LESS_THAN_OR_EQUAL;
+        }
+        RexNode op = childRexNodeLst.get(1);
+        RexNode rangeL = childRexNodeLst.get(2);
+        RexNode rangeH = childRexNodeLst.get(3);
+        childRexNodeLst.clear();
+        childRexNodeLst.add(cluster.getRexBuilder().makeCall(cmpOp, rangeL, op));
+        childRexNodeLst.add(cluster.getRexBuilder().makeCall(cmpOp, op, rangeH));
       }
-      expr = cluster.getRexBuilder().makeCall(calciteOp, childRexNodeLst);
+      expr = cluster.getRexBuilder().makeCall(retType, calciteOp, childRexNodeLst);
     } else {
       retType = expr.getType();
     }
@@ -272,8 +487,9 @@ public class RexNodeConverter {
           if (udfClassName.equals("UDFToBoolean") || udfClassName.equals("UDFToByte")
               || udfClassName.equals("UDFToDouble") || udfClassName.equals("UDFToInteger")
               || udfClassName.equals("UDFToLong") || udfClassName.equals("UDFToShort")
-              || udfClassName.equals("UDFToFloat") || udfClassName.equals("UDFToString"))
+              || udfClassName.equals("UDFToFloat")) {
             castExpr = true;
+          }
         }
       }
     }
@@ -288,10 +504,9 @@ public class RexNodeConverter {
     if (childRexNodeLst != null && childRexNodeLst.size() == 1) {
       GenericUDF udf = func.getGenericUDF();
       if ((udf instanceof GenericUDFToChar) || (udf instanceof GenericUDFToVarchar)
+          || (udf instanceof GenericUDFToString)
           || (udf instanceof GenericUDFToDecimal) || (udf instanceof GenericUDFToDate)
-          // Calcite can not specify the scale for timestamp. As a result, all
-          // the millisecond part will be lost
-          || (udf instanceof GenericUDFTimestamp)
+          || (udf instanceof GenericUDFTimestamp) || (udf instanceof GenericUDFToTimestampLocalTZ)
           || (udf instanceof GenericUDFToBinary) || castExprUsingUDFBridge(udf)) {
         castExpr = cluster.getRexBuilder().makeAbstractCast(
             TypeConverter.convert(func.getTypeInfo(), cluster.getTypeFactory()),
@@ -323,13 +538,13 @@ public class RexNodeConverter {
     if (FunctionRegistry.getNormalizedFunctionName(func.getFuncText()).equals("case")) {
       RexNode firstPred = childRexNodeLst.get(0);
       int length = childRexNodeLst.size() % 2 == 1 ?
-              childRexNodeLst.size() : childRexNodeLst.size() - 1;
+          childRexNodeLst.size() : childRexNodeLst.size() - 1;
       for (int i = 1; i < length; i++) {
         if (i % 2 == 1) {
           // We rewrite it
           newChildRexNodeLst.add(
-                  cluster.getRexBuilder().makeCall(
-                          SqlStdOperatorTable.EQUALS, firstPred, childRexNodeLst.get(i)));
+              cluster.getRexBuilder().makeCall(
+                  SqlStdOperatorTable.EQUALS, firstPred, childRexNodeLst.get(i)));
         } else {
           newChildRexNodeLst.add(childRexNodeLst.get(i));
         }
@@ -344,34 +559,92 @@ public class RexNodeConverter {
     // Calcite always needs the else clause to be defined explicitly
     if (newChildRexNodeLst.size() % 2 == 0) {
       newChildRexNodeLst.add(cluster.getRexBuilder().makeNullLiteral(
-              newChildRexNodeLst.get(newChildRexNodeLst.size()-1).getType().getSqlTypeName()));
+          newChildRexNodeLst.get(newChildRexNodeLst.size()-1).getType()));
     }
     return newChildRexNodeLst;
   }
 
+  /**
+   * Adds explicit casts if Calcite's type system could not resolve the CASE branches to a common type.
+   *
+   * Calcite is more stricter than hive w.r.t type conversions.
+   * If a CASE has branches with string/int/boolean branch types; there is no common type.
+   */
+  private List<RexNode> adjustCaseBranchTypes(List<RexNode> nodes, RelDataType retType) {
+    List<RelDataType> branchTypes = new ArrayList<>();
+    for (int i = 0; i < nodes.size(); i++) {
+      if (i % 2 == 1 || i == nodes.size() - 1) {
+        branchTypes.add(nodes.get(i).getType());
+      }
+    }
+    RelDataType commonType = cluster.getTypeFactory().leastRestrictive(branchTypes);
+    if (commonType != null) {
+      // conversion is possible; not changes are neccessary
+      return nodes;
+    }
+    List<RexNode> newNodes = new ArrayList<>();
+    for (int i = 0; i < nodes.size(); i++) {
+      RexNode node = nodes.get(i);
+      if (i % 2 == 1 || i == nodes.size() - 1) {
+        newNodes.add(cluster.getRexBuilder().makeCast(retType, node));
+      } else {
+        newNodes.add(node);
+      }
+    }
+    return newNodes;
+  }
+
   private List<RexNode> rewriteExtractDateChildren(SqlOperator op, List<RexNode> childRexNodeLst)
       throws SemanticException {
-    List<RexNode> newChildRexNodeLst = new ArrayList<RexNode>();
+    List<RexNode> newChildRexNodeLst = new ArrayList<>(2);
+    final boolean isTimestampLevel;
     if (op == HiveExtractDate.YEAR) {
       newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.YEAR));
+      isTimestampLevel = false;
     } else if (op == HiveExtractDate.QUARTER) {
       newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.QUARTER));
+      isTimestampLevel = false;
     } else if (op == HiveExtractDate.MONTH) {
       newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.MONTH));
+      isTimestampLevel = false;
     } else if (op == HiveExtractDate.WEEK) {
       newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.WEEK));
+      isTimestampLevel = false;
     } else if (op == HiveExtractDate.DAY) {
       newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.DAY));
+      isTimestampLevel = false;
     } else if (op == HiveExtractDate.HOUR) {
       newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.HOUR));
+      isTimestampLevel = true;
     } else if (op == HiveExtractDate.MINUTE) {
       newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.MINUTE));
+      isTimestampLevel = true;
     } else if (op == HiveExtractDate.SECOND) {
       newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.SECOND));
+      isTimestampLevel = true;
+    } else {
+      isTimestampLevel = false;
     }
-    assert childRexNodeLst.size() == 1;
-    newChildRexNodeLst.add(childRexNodeLst.get(0));
+
+    final RexNode child = Iterables.getOnlyElement(childRexNodeLst);
+    if (SqlTypeUtil.isDatetime(child.getType()) || SqlTypeUtil.isInterval(child.getType())) {
+      newChildRexNodeLst.add(child);
+    } else {
+      // We need to add a cast to DATETIME Family
+      if (isTimestampLevel) {
+        newChildRexNodeLst.add(makeCast(SqlTypeName.TIMESTAMP, child));
+      } else {
+        newChildRexNodeLst.add(makeCast(SqlTypeName.DATE, child));
+      }
+    }
+
     return newChildRexNodeLst;
+  }
+
+  private RexNode makeCast(SqlTypeName typeName, final RexNode child) {
+    RelDataType sqlType = cluster.getTypeFactory().createSqlType(typeName);
+    RelDataType nullableType = cluster.getTypeFactory().createTypeWithNullability(sqlType, true);
+    return cluster.getRexBuilder().makeCast(nullableType, child);
   }
 
   private List<RexNode> rewriteFloorDateChildren(SqlOperator op, List<RexNode> childRexNodeLst)
@@ -399,6 +672,50 @@ public class RexNodeConverter {
     return newChildRexNodeLst;
   }
 
+  private List<RexNode> rewriteToDateChildren(List<RexNode> childRexNodeLst) {
+    List<RexNode> newChildRexNodeLst = new ArrayList<RexNode>();
+    assert childRexNodeLst.size() == 1;
+    RexNode child = childRexNodeLst.get(0);
+    if (SqlTypeUtil.isDatetime(child.getType()) || SqlTypeUtil.isInterval(child.getType())) {
+      newChildRexNodeLst.add(child);
+    } else {
+      newChildRexNodeLst.add(makeCast(SqlTypeName.TIMESTAMP, child));
+    }
+    return newChildRexNodeLst;
+  }
+
+  private List<RexNode> rewriteInClauseChildren(SqlOperator op, List<RexNode> childRexNodeLst)
+      throws SemanticException {
+    assert op.getKind() == SqlKind.IN;
+    RexNode firstPred = childRexNodeLst.get(0);
+    List<RexNode> newChildRexNodeLst = new ArrayList<RexNode>();
+    for (int i = 1; i < childRexNodeLst.size(); i++) {
+      newChildRexNodeLst.add(
+          cluster.getRexBuilder().makeCall(
+              SqlStdOperatorTable.EQUALS, firstPred, childRexNodeLst.get(i)));
+    }
+    return newChildRexNodeLst;
+  }
+
+  private List<RexNode> rewriteCoalesceChildren(
+      ExprNodeGenericFuncDesc func, List<RexNode> childRexNodeLst) {
+    final List<RexNode> convertedChildList = Lists.newArrayList();
+    assert childRexNodeLst.size() > 0;
+    final RexBuilder rexBuilder = cluster.getRexBuilder();
+    int i=0;
+    for (; i < childRexNodeLst.size()-1; ++i) {
+      // WHEN child not null THEN child
+      final RexNode child = childRexNodeLst.get(i);
+      RexNode childCond = rexBuilder.makeCall(
+          SqlStdOperatorTable.IS_NOT_NULL, child);
+      convertedChildList.add(childCond);
+      convertedChildList.add(child);
+    }
+    // Add the last child as the ELSE element
+    convertedChildList.add(childRexNodeLst.get(i));
+    return convertedChildList;
+  }
+
   private static boolean checkForStatefulFunctions(List<ExprNodeDesc> list) {
     for (ExprNodeDesc node : list) {
       if (node instanceof ExprNodeGenericFuncDesc) {
@@ -408,7 +725,7 @@ public class RexNodeConverter {
           return true;
         }
         if (node.getChildren() != null && !node.getChildren().isEmpty() &&
-                checkForStatefulFunctions(node.getChildren())) {
+            checkForStatefulFunctions(node.getChildren())) {
           return true;
         }
       }
@@ -419,7 +736,7 @@ public class RexNodeConverter {
   private InputCtx getInputCtx(ExprNodeColumnDesc col) throws SemanticException {
     InputCtx ctxLookingFor = null;
 
-    if (inputCtxs.size() == 1) {
+    if (inputCtxs.size() == 1 && inputCtxs.get(0).hiveRR == null) {
       ctxLookingFor = inputCtxs.get(0);
     } else {
       String tableAlias = col.getTabAlias();
@@ -434,15 +751,30 @@ public class RexNodeConverter {
         }
       }
 
-      if (noInp > 1)
-        throw new RuntimeException("Ambigous column mapping");
+      if (noInp > 1) {
+        throw new RuntimeException("Ambiguous column mapping");
+      }
     }
 
     return ctxLookingFor;
   }
 
   protected RexNode convert(ExprNodeColumnDesc col) throws SemanticException {
+    //if this is co-rrelated we need to make RexCorrelVariable(with id and type)
+    // id and type should be retrieved from outerRR
     InputCtx ic = getInputCtx(col);
+    if(ic == null) {
+      // we have correlated column, build data type from outer rr
+      RelDataType rowType = TypeConverter.getType(cluster, this.outerRR, null);
+      if (this.outerNameToPosMap.get(col.getColumn()) == null) {
+        throw new SemanticException(ErrorMsg.INVALID_COLUMN_NAME.getMsg(col.getColumn()));
+      }
+
+      int pos = this.outerNameToPosMap.get(col.getColumn());
+      CorrelationId colCorr = new CorrelationId(this.correlatedId);
+      RexNode corExpr = cluster.getRexBuilder().makeCorrel(rowType, colCorr);
+      return cluster.getRexBuilder().makeFieldAccess(corExpr, pos);
+    }
     int pos = ic.hiveNameToPosMap.get(col.getColumn());
     return cluster.getRexBuilder().makeInputRef(
         ic.calciteInpDataType.getFieldList().get(pos).getType(), pos + ic.offsetInCalciteSchema);
@@ -451,15 +783,30 @@ public class RexNodeConverter {
   private static final BigInteger MIN_LONG_BI = BigInteger.valueOf(Long.MIN_VALUE),
       MAX_LONG_BI = BigInteger.valueOf(Long.MAX_VALUE);
 
-  private static NlsString asUnicodeString(String text) {
-    return new NlsString(text, ConversionUtil.NATIVE_UTF16_CHARSET_NAME, SqlCollation.IMPLICIT);
+  private static NlsString makeHiveUnicodeString(Interpretation interpretation, String text) {
+    return new HiveNlsString(interpretation, text, ConversionUtil.NATIVE_UTF16_CHARSET_NAME, SqlCollation.IMPLICIT);
+  }
+
+  static class HiveNlsString extends NlsString {
+
+    enum Interpretation {
+      CHAR, VARCHAR, STRING;
+    }
+
+    public final Interpretation interpretation;
+
+    public HiveNlsString(Interpretation interpretation, String value, String charsetName, SqlCollation collation) {
+      super(value, charsetName, collation);
+      this.interpretation = interpretation;
+    }
+
   }
 
   protected RexNode convert(ExprNodeConstantDesc literal) throws CalciteSemanticException {
-    RexBuilder rexBuilder = cluster.getRexBuilder();
-    RelDataTypeFactory dtFactory = rexBuilder.getTypeFactory();
-    PrimitiveTypeInfo hiveType = (PrimitiveTypeInfo) literal.getTypeInfo();
-    RelDataType calciteDataType = TypeConverter.convert(hiveType, dtFactory);
+    final RexBuilder rexBuilder = cluster.getRexBuilder();
+    final RelDataTypeFactory dtFactory = rexBuilder.getTypeFactory();
+    final PrimitiveTypeInfo hiveType = (PrimitiveTypeInfo) literal.getTypeInfo();
+    final RelDataType calciteDataType = TypeConverter.convert(hiveType, dtFactory);
 
     PrimitiveCategory hiveTypeCategory = hiveType.getPrimitiveCategory();
 
@@ -513,21 +860,26 @@ public class RexNodeConverter {
       }
       BigDecimal bd = (BigDecimal) value;
       BigInteger unscaled = bd.unscaledValue();
-      if (unscaled.compareTo(MIN_LONG_BI) >= 0 && unscaled.compareTo(MAX_LONG_BI) <= 0) {
-        calciteLiteral = rexBuilder.makeExactLiteral(bd);
+
+
+      int precision = bd.unscaledValue().abs().toString().length();
+      int scale = bd.scale();
+      RelDataType relType;
+
+      if (precision > scale) {
+        // bd is greater than or equal to 1
+        relType =
+            cluster.getTypeFactory().createSqlType(SqlTypeName.DECIMAL, precision, scale);
       } else {
-        // CBO doesn't support unlimited precision decimals. In practice, this
-        // will work...
-        // An alternative would be to throw CboSemanticException and fall back
-        // to no CBO.
-        RelDataType relType = cluster.getTypeFactory().createSqlType(SqlTypeName.DECIMAL,
-            unscaled.toString().length(), bd.scale());
-        calciteLiteral = rexBuilder.makeExactLiteral(bd, relType);
+        // bd is less than 1
+        relType =
+            cluster.getTypeFactory().createSqlType(SqlTypeName.DECIMAL, scale + 1, scale);
       }
+      calciteLiteral = rexBuilder.makeExactLiteral(bd, relType);
       break;
     case FLOAT:
       calciteLiteral = rexBuilder.makeApproxLiteral(
-              new BigDecimal(Float.toString((Float)value)), calciteDataType);
+          new BigDecimal(Float.toString((Float)value)), calciteDataType);
       break;
     case DOUBLE:
       // TODO: The best solution is to support NaN in expression reduction.
@@ -535,64 +887,80 @@ public class RexNodeConverter {
         throw new CalciteSemanticException("NaN", UnsupportedFeature.Invalid_decimal);
       }
       calciteLiteral = rexBuilder.makeApproxLiteral(
-              new BigDecimal(Double.toString((Double)value)), calciteDataType);
+          new BigDecimal(Double.toString((Double)value)), calciteDataType);
       break;
     case CHAR:
       if (value instanceof HiveChar) {
         value = ((HiveChar) value).getValue();
       }
-      calciteLiteral = rexBuilder.makeCharLiteral(asUnicodeString((String) value));
+      calciteLiteral = rexBuilder.makeCharLiteral(makeHiveUnicodeString(Interpretation.CHAR, (String) value));
       break;
     case VARCHAR:
       if (value instanceof HiveVarchar) {
         value = ((HiveVarchar) value).getValue();
       }
-      calciteLiteral = rexBuilder.makeCharLiteral(asUnicodeString((String) value));
+      calciteLiteral = rexBuilder.makeCharLiteral(makeHiveUnicodeString(Interpretation.VARCHAR, (String) value));
       break;
     case STRING:
-      calciteLiteral = rexBuilder.makeCharLiteral(asUnicodeString((String) value));
+      calciteLiteral = rexBuilder.makeCharLiteral(makeHiveUnicodeString(Interpretation.STRING, (String) value));
       break;
     case DATE:
-      Calendar cal = new GregorianCalendar();
-      cal.setTime((Date) value);
-      calciteLiteral = rexBuilder.makeDateLiteral(cal);
+      final Date date = (Date) value;
+      calciteLiteral = rexBuilder.makeDateLiteral(
+          DateString.fromDaysSinceEpoch(date.toEpochDay()));
       break;
     case TIMESTAMP:
-      Calendar c = null;
+      final TimestampString tsString;
       if (value instanceof Calendar) {
-        c = (Calendar)value;
+        tsString = TimestampString.fromCalendarFields((Calendar) value);
       } else {
-        c = Calendar.getInstance();
-        c.setTimeInMillis(((Timestamp)value).getTime());
+        final Timestamp ts = (Timestamp) value;
+        tsString = TimestampString.fromMillisSinceEpoch(ts.toEpochMilli()).withNanos(ts.getNanos());
       }
-      calciteLiteral = rexBuilder.makeTimestampLiteral(c, RelDataType.PRECISION_NOT_SPECIFIED);
+      // Must call makeLiteral, not makeTimestampLiteral
+      // to have the RexBuilder.roundTime logic kick in
+      calciteLiteral = rexBuilder.makeLiteral(
+          tsString,
+          rexBuilder.getTypeFactory().createSqlType(
+              SqlTypeName.TIMESTAMP,
+              rexBuilder.getTypeFactory().getTypeSystem().getDefaultPrecision(SqlTypeName.TIMESTAMP)),
+          false);
+      break;
+    case TIMESTAMPLOCALTZ:
+      final TimestampString tsLocalTZString;
+      if (value == null) {
+        tsLocalTZString = null;
+      } else {
+        Instant i = ((TimestampTZ)value).getZonedDateTime().toInstant();
+        tsLocalTZString = TimestampString
+            .fromMillisSinceEpoch(i.toEpochMilli())
+            .withNanos(i.getNano());
+      }
+      calciteLiteral = rexBuilder.makeTimestampWithLocalTimeZoneLiteral(
+          tsLocalTZString,
+          rexBuilder.getTypeFactory().getTypeSystem().getDefaultPrecision(SqlTypeName.TIMESTAMP_WITH_LOCAL_TIME_ZONE));
       break;
     case INTERVAL_YEAR_MONTH:
       // Calcite year-month literal value is months as BigDecimal
       BigDecimal totalMonths = BigDecimal.valueOf(((HiveIntervalYearMonth) value).getTotalMonths());
       calciteLiteral = rexBuilder.makeIntervalLiteral(totalMonths,
-          new SqlIntervalQualifier(TimeUnit.YEAR, TimeUnit.MONTH, new SqlParserPos(1,1)));
+          new SqlIntervalQualifier(TimeUnit.YEAR, TimeUnit.MONTH, new SqlParserPos(1, 1)));
       break;
     case INTERVAL_DAY_TIME:
-      // Calcite RexBuilder L525 divides value by the multiplier.
-      // Need to get CAlCITE-1020 in.
-      throw new CalciteSemanticException("INTERVAL_DAY_TIME is not well supported",
-          UnsupportedFeature.Invalid_interval);
       // Calcite day-time interval is millis value as BigDecimal
       // Seconds converted to millis
-      // BigDecimal secsValueBd = BigDecimal
-      // .valueOf(((HiveIntervalDayTime) value).getTotalSeconds() * 1000);
-      // // Nanos converted to millis
-      // BigDecimal nanosValueBd = BigDecimal.valueOf(((HiveIntervalDayTime)
-      // value).getNanos(), 6);
-      // calciteLiteral =
-      // rexBuilder.makeIntervalLiteral(secsValueBd.add(nanosValueBd),
-      // new SqlIntervalQualifier(TimeUnit.MILLISECOND, null, new
-      // SqlParserPos(1, 1)));
-      // break;
+      BigDecimal secsValueBd = BigDecimal
+          .valueOf(((HiveIntervalDayTime) value).getTotalSeconds() * 1000);
+      // Nanos converted to millis
+      BigDecimal nanosValueBd = BigDecimal.valueOf(((HiveIntervalDayTime)
+          value).getNanos(), 6);
+      calciteLiteral =
+          rexBuilder.makeIntervalLiteral(secsValueBd.add(nanosValueBd),
+              new SqlIntervalQualifier(TimeUnit.MILLISECOND, null, new
+                  SqlParserPos(1, 1)));
+      break;
     case VOID:
-      calciteLiteral = cluster.getRexBuilder().makeLiteral(null,
-          cluster.getTypeFactory().createSqlType(SqlTypeName.NULL), true);
+      calciteLiteral = rexBuilder.makeLiteral(null, calciteDataType, true);
       break;
     case BINARY:
     case UNKNOWN:

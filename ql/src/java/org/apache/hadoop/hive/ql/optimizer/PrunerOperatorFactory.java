@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.serde2.SerDeException;
 
 /**
  * Operator factory for pruning processing of operator graph We find
@@ -92,7 +93,7 @@ public abstract class PrunerOperatorFactory {
     /**
      * Generate predicate.
      *
-     * Subclass should implement the function. Please refer to {@link OpProcFactory.FilterPPR}
+     * Subclass should implement the function. Please refer to {@link org.apache.hadoop.hive.ql.optimizer.ppr.OpProcFactory.FilterPPR}
      *
      * @param procCtx
      * @param fop
@@ -101,7 +102,7 @@ public abstract class PrunerOperatorFactory {
      * @throws UDFArgumentException
      */
     protected abstract void generatePredicate(NodeProcessorCtx procCtx, FilterOperator fop,
-        TableScanOperator top) throws SemanticException, UDFArgumentException;
+        TableScanOperator top) throws SemanticException;
     /**
      * Add pruning predicate.
      *

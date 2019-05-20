@@ -6,13 +6,9 @@ POSTHOOK: query: create table create_table_creator_priv_test(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@create_table_creator_priv_test
-PREHOOK: query: -- all privileges should have been set for user
-
-show grant user user1 on table create_table_creator_priv_test
+PREHOOK: query: show grant user user1 on table create_table_creator_priv_test
 PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: -- all privileges should have been set for user
-
-show grant user user1 on table create_table_creator_priv_test
+POSTHOOK: query: show grant user user1 on table create_table_creator_priv_test
 POSTHOOK: type: SHOW_GRANT
 default	create_table_creator_priv_test			user1	USER	DELETE	true	-1	user1
 default	create_table_creator_priv_test			user1	USER	INSERT	true	-1	user1

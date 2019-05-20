@@ -4,6 +4,7 @@ SET hive.vectorized.execution.enabled=true;
 SET hive.auto.convert.join=true;
 set hive.fetch.task.conversion=none;
 set hive.mapred.mode=nonstrict;
+set hive.join.inner.residual=false;
 
 -- SORT_QUERY_RESULTS
 --
@@ -21,16 +22,21 @@ load data local inpath '../../data/files/TINT' into table TINT_txt;
 
 create table TSINT stored as orc AS SELECT * FROM TSINT_txt;
 
+-- Add a single NULL row that will come from ORC as isRepeated.
+insert into TSINT values (NULL, NULL);
+
 create table TINT stored as orc AS SELECT * FROM TINT_txt;
 
+-- Add a single NULL row that will come from ORC as isRepeated.
+insert into TINT values (NULL, NULL);
 
-explain
+explain vectorization expression
 select tint.rnum, tsint.rnum, tint.cint, tsint.csint, (case when (tint.cint between tsint.csint and tsint.csint) then "Ok" else "NoOk" end) as between_col from tint , tsint;
 
 select tint.rnum, tsint.rnum, tint.cint, tsint.csint, (case when (tint.cint between tsint.csint and tsint.csint) then "Ok" else "NoOk" end) as between_col from tint , tsint;
 
 
-explain
+explain vectorization expression
 select tint.rnum, tsint.rnum, tint.cint, tsint.csint from tint , tsint where tint.cint between tsint.csint and tsint.csint;
 
 select tint.rnum, tsint.rnum, tint.cint, tsint.csint from tint , tsint where tint.cint between tsint.csint and tsint.csint;

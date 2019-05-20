@@ -34,3 +34,19 @@ INSERT OVERWRITE TABLE destinTable SELECT one,two FROM sourceTable WHERE ds='201
 drop table destinTable;
 
 drop table sourceTable;
+
+CREATE TABLE sourceTable (one string,two string) PARTITIONED BY (DS string,HR string);
+
+load data local inpath '../../data/files/kv1.txt' INTO TABLE sourceTable partition(DS='2011-11-11', HR='11');
+
+CREATE TABLE destinTable (one string,two string) PARTITIONED BY (DS string,HR string);
+
+EXPLAIN INSERT OVERWRITE TABLE destinTable PARTITION (DS='2011-11-11', HR='11') if not exists
+SELECT one,two FROM sourceTable WHERE DS='2011-11-11' AND HR='11' order by one desc, two desc limit 5;
+
+INSERT OVERWRITE TABLE destinTable PARTITION (DS='2011-11-11', HR='11') if not exists
+SELECT one,two FROM sourceTable WHERE DS='2011-11-11' AND HR='11' order by one desc, two desc limit 5;
+
+drop table destinTable;
+
+drop table sourceTable;

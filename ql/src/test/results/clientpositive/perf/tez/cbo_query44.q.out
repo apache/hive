@@ -1,0 +1,115 @@
+Warning: Shuffle Join MERGEJOIN[103][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 8' is a cross product
+PREHOOK: query: explain cbo
+select  asceding.rnk, i1.i_product_name best_performing, i2.i_product_name worst_performing
+from(select *
+     from (select item_sk,rank() over (order by rank_col asc) rnk
+           from (select ss_item_sk item_sk,avg(ss_net_profit) rank_col 
+                 from store_sales ss1
+                 where ss_store_sk = 410
+                 group by ss_item_sk
+                 having avg(ss_net_profit) > 0.9*(select avg(ss_net_profit) rank_col
+                                                  from store_sales
+                                                  where ss_store_sk = 410
+                                                    and ss_hdemo_sk is null
+                                                  group by ss_store_sk))V1)V11
+     where rnk  < 11) asceding,
+    (select *
+     from (select item_sk,rank() over (order by rank_col desc) rnk
+           from (select ss_item_sk item_sk,avg(ss_net_profit) rank_col
+                 from store_sales ss1
+                 where ss_store_sk = 410
+                 group by ss_item_sk
+                 having avg(ss_net_profit) > 0.9*(select avg(ss_net_profit) rank_col
+                                                  from store_sales
+                                                  where ss_store_sk = 410
+                                                    and ss_hdemo_sk is null
+                                                  group by ss_store_sk))V2)V21
+     where rnk  < 11) descending,
+item i1,
+item i2
+where asceding.rnk = descending.rnk 
+  and i1.i_item_sk=asceding.item_sk
+  and i2.i_item_sk=descending.item_sk
+order by asceding.rnk
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select  asceding.rnk, i1.i_product_name best_performing, i2.i_product_name worst_performing
+from(select *
+     from (select item_sk,rank() over (order by rank_col asc) rnk
+           from (select ss_item_sk item_sk,avg(ss_net_profit) rank_col 
+                 from store_sales ss1
+                 where ss_store_sk = 410
+                 group by ss_item_sk
+                 having avg(ss_net_profit) > 0.9*(select avg(ss_net_profit) rank_col
+                                                  from store_sales
+                                                  where ss_store_sk = 410
+                                                    and ss_hdemo_sk is null
+                                                  group by ss_store_sk))V1)V11
+     where rnk  < 11) asceding,
+    (select *
+     from (select item_sk,rank() over (order by rank_col desc) rnk
+           from (select ss_item_sk item_sk,avg(ss_net_profit) rank_col
+                 from store_sales ss1
+                 where ss_store_sk = 410
+                 group by ss_item_sk
+                 having avg(ss_net_profit) > 0.9*(select avg(ss_net_profit) rank_col
+                                                  from store_sales
+                                                  where ss_store_sk = 410
+                                                    and ss_hdemo_sk is null
+                                                  group by ss_store_sk))V2)V21
+     where rnk  < 11) descending,
+item i1,
+item i2
+where asceding.rnk = descending.rnk 
+  and i1.i_item_sk=asceding.item_sk
+  and i2.i_item_sk=descending.item_sk
+order by asceding.rnk
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
+  HiveProject(rnk=[$3], best_performing=[$1], worst_performing=[$5])
+    HiveJoin(condition=[=($3, $7)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject(i_item_sk=[$0], i_product_name=[$21])
+          HiveFilter(condition=[IS NOT NULL($0)])
+            HiveTableScan(table=[[default, item]], table:alias=[i1])
+        HiveProject(item_sk=[$0], rank_window_0=[$1])
+          HiveFilter(condition=[AND(<($1, 11), IS NOT NULL($0))])
+            HiveProject(item_sk=[$0], rank_window_0=[rank() OVER (PARTITION BY 0 ORDER BY $1 NULLS FIRST ROWS BETWEEN 2147483647 FOLLOWING AND 2147483647 PRECEDING)])
+              HiveJoin(condition=[>($1, *(0.9, $2))], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveProject($f0=[$0], $f1=[/($1, $2)])
+                  HiveAggregate(group=[{2}], agg#0=[sum($22)], agg#1=[count($22)])
+                    HiveFilter(condition=[=($7, 410)])
+                      HiveTableScan(table=[[default, store_sales]], table:alias=[ss1])
+                HiveProject($f1=[/($1, $2)])
+                  HiveAggregate(group=[{0}], agg#0=[sum($1)], agg#1=[count($1)])
+                    HiveProject($f0=[true], $f1=[$22])
+                      HiveFilter(condition=[AND(=($7, 410), IS NULL($5))])
+                        HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+      HiveProject(i_item_sk=[$0], i_product_name=[$1], item_sk=[$2], rank_window_0=[$3])
+        HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveProject(i_item_sk=[$0], i_product_name=[$21])
+            HiveFilter(condition=[IS NOT NULL($0)])
+              HiveTableScan(table=[[default, item]], table:alias=[i2])
+          HiveProject(item_sk=[$0], rank_window_0=[$1])
+            HiveFilter(condition=[AND(<($1, 11), IS NOT NULL($0))])
+              HiveProject(item_sk=[$0], rank_window_0=[rank() OVER (PARTITION BY 0 ORDER BY $1 DESC NULLS LAST ROWS BETWEEN 2147483647 FOLLOWING AND 2147483647 PRECEDING)])
+                HiveJoin(condition=[>($1, *(0.9, $2))], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveProject($f0=[$0], $f1=[/($1, $2)])
+                    HiveAggregate(group=[{2}], agg#0=[sum($22)], agg#1=[count($22)])
+                      HiveFilter(condition=[=($7, 410)])
+                        HiveTableScan(table=[[default, store_sales]], table:alias=[ss1])
+                  HiveProject($f1=[/($1, $2)])
+                    HiveAggregate(group=[{0}], agg#0=[sum($1)], agg#1=[count($1)])
+                      HiveProject($f0=[true], $f1=[$22])
+                        HiveFilter(condition=[AND(=($7, 410), IS NULL($5))])
+                          HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+

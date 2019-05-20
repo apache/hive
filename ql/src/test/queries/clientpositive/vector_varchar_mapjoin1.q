@@ -37,15 +37,15 @@ create table varchar_join1_vc2_orc stored as orc as select * from varchar_join1_
 create table varchar_join1_str_orc stored as orc as select * from varchar_join1_str;
 
 -- Join varchar with same length varchar
-explain select * from varchar_join1_vc1_orc a join varchar_join1_vc1_orc b on (a.c2 = b.c2) order by a.c1;
+explain vectorization select * from varchar_join1_vc1_orc a join varchar_join1_vc1_orc b on (a.c2 = b.c2) order by a.c1;
 select * from varchar_join1_vc1_orc a join varchar_join1_vc1_orc b on (a.c2 = b.c2) order by a.c1;
 
 -- Join varchar with different length varchar
-explain select * from varchar_join1_vc1_orc a join varchar_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1;
+explain vectorization select * from varchar_join1_vc1_orc a join varchar_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1;
 select * from varchar_join1_vc1_orc a join varchar_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1;
 
 -- Join varchar with string
-explain select * from varchar_join1_vc1_orc a join varchar_join1_str_orc b on (a.c2 = b.c2) order by a.c1;
+explain vectorization select * from varchar_join1_vc1_orc a join varchar_join1_str_orc b on (a.c2 = b.c2) order by a.c1;
 select * from varchar_join1_vc1_orc a join varchar_join1_str_orc b on (a.c2 = b.c2) order by a.c1;
 
 drop table varchar_join1_vc1;

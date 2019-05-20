@@ -1,8 +1,11 @@
+--! qt:dataset:src1
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecutePrinter,org.apache.hadoop.hive.ql.hooks.PrintCompletedTasksHook;
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask.size=6000;
+set hive.optimize.semijoin.conversion=true;
 
 -- we will generate one MR job.
 EXPLAIN
@@ -176,25 +179,25 @@ GROUP BY tmp1.key
 ORDER BY key, cnt;
 
 -- Check if we can correctly handle partitioned table.
-CREATE TABLE part_table(key string, value string) PARTITIONED BY (partitionId int);
-INSERT OVERWRITE TABLE part_table PARTITION (partitionId=1)
+CREATE TABLE part_table_n0(key string, value string) PARTITIONED BY (partitionId int);
+INSERT OVERWRITE TABLE part_table_n0 PARTITION (partitionId=1)
   SELECT key, value FROM src ORDER BY key, value LIMIT 100;
-INSERT OVERWRITE TABLE part_table PARTITION (partitionId=2)
+INSERT OVERWRITE TABLE part_table_n0 PARTITION (partitionId=2)
   SELECT key, value FROM src1 ORDER BY key, value;
 
 EXPLAIN
 SELECT count(*)
-FROM part_table x JOIN src1 y ON (x.key = y.key);
+FROM part_table_n0 x JOIN src1 y ON (x.key = y.key);
 
 SELECT count(*)
-FROM part_table x JOIN src1 y ON (x.key = y.key);
+FROM part_table_n0 x JOIN src1 y ON (x.key = y.key);
 
 set hive.auto.convert.join.noconditionaltask.size=10000000;
 set hive.optimize.correlation=false;
 -- HIVE-5891 Alias conflict when merging multiple mapjoin tasks into their common
 -- child mapred task
 EXPLAIN   
-SELECT * FROM (
+SELECT x.key FROM (
   SELECT c.key FROM
     (SELECT a.key FROM src a JOIN src b ON a.key=b.key GROUP BY a.key) tmp
     JOIN src c ON tmp.key=c.key
@@ -202,9 +205,9 @@ SELECT * FROM (
   SELECT c.key FROM
     (SELECT a.key FROM src a JOIN src b ON a.key=b.key GROUP BY a.key) tmp
     JOIN src c ON tmp.key=c.key
-) x;
+) x order by x.key;
 
-SELECT * FROM (
+SELECT x.key FROM (
   SELECT c.key FROM
     (SELECT a.key FROM src a JOIN src b ON a.key=b.key GROUP BY a.key) tmp
     JOIN src c ON tmp.key=c.key
@@ -212,5 +215,5 @@ SELECT * FROM (
   SELECT c.key FROM
     (SELECT a.key FROM src a JOIN src b ON a.key=b.key GROUP BY a.key) tmp
     JOIN src c ON tmp.key=c.key
-) x;
+) x order by x.key;
 

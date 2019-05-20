@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,7 +23,7 @@ public class CoreBlobstoreNegativeCliDriver extends AbstractCoreBlobstoreCliDriv
   }
 
   @Override
-  public void runTest(String tname, String fname, String fpath) throws Exception {
+  public void runTest(String tname, String fname, String fpath) {
     super.runTestHelper(tname, fname, fpath, false);
   }
 }

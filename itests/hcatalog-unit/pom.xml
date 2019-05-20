@@ -25,7 +25,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive-it</artifactId>
-    <version>2.2.0-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -72,6 +72,13 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+        <groupId>org.apache.hive.hcatalog</groupId>
+        <artifactId>hive-webhcat-java-client</artifactId>
+        <version>${project.version}</version>
+        <type>test-jar</type>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-hbase-handler</artifactId>
       <version>${project.version}</version>
@@ -91,7 +98,13 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-metastore</artifactId>
+      <artifactId>hive-standalone-metastore-common</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-server</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
@@ -137,7 +150,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
@@ -154,7 +167,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
@@ -190,7 +203,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
@@ -218,7 +231,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
@@ -273,6 +286,18 @@
       <artifactId>hbase-server</artifactId>
       <version>${hbase.version}</version>
       <scope>test</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>org.glassfish.web</groupId>
+            <artifactId>javax.servlet.jsp</artifactId>
+          </exclusion>
+        </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-mapreduce</artifactId>
+      <version>${hbase.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
@@ -287,6 +312,16 @@
       <version>${pig.version}</version>
       <classifier>h2</classifier>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>tomcat</groupId>
+          <artifactId>jasper-compiler</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>tomcat</groupId>
+          <artifactId>jasper-runtime</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <!--this should be automatically brought in by Pig, it's not in Pig 0.12 due to a bug

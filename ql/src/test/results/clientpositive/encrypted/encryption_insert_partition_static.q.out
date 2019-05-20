@@ -1,12 +1,6 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- init
-drop table IF EXISTS encryptedTable PURGE
+PREHOOK: query: drop table IF EXISTS encryptedTable PURGE
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- init
-drop table IF EXISTS encryptedTable PURGE
+POSTHOOK: query: drop table IF EXISTS encryptedTable PURGE
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table IF EXISTS unencryptedTable PURGE
 PREHOOK: type: DROPTABLE
@@ -16,14 +10,14 @@ PREHOOK: query: create table encryptedTable(key string,
     value string) partitioned by (ds string) clustered by (key) into 2 buckets stored as orc
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:default
 PREHOOK: Output: default@encryptedTable
 POSTHOOK: query: create table encryptedTable(key string,
     value string) partitioned by (ds string) clustered by (key) into 2 buckets stored as orc
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@encryptedTable
 Encryption key created: 'key_1'
@@ -38,24 +32,22 @@ POSTHOOK: query: create table unencryptedTable(key string,
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@unencryptedTable
-PREHOOK: query: -- insert encrypted table from values
-insert into table encryptedTable partition
+PREHOOK: query: insert into table encryptedTable partition
     (ds='today') values
     ('501', 'val_501'),
     ('502', 'val_502')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@encryptedtable@ds=today
-POSTHOOK: query: -- insert encrypted table from values
-insert into table encryptedTable partition
+POSTHOOK: query: insert into table encryptedTable partition
     (ds='today') values
     ('501', 'val_501'),
     ('502', 'val_502')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@encryptedtable@ds=today
-POSTHOOK: Lineage: encryptedtable PARTITION(ds=today).key SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: encryptedtable PARTITION(ds=today).value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: encryptedtable PARTITION(ds=today).key SCRIPT []
+POSTHOOK: Lineage: encryptedtable PARTITION(ds=today).value SCRIPT []
 PREHOOK: query: select * from encryptedTable order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@encryptedtable
@@ -68,14 +60,12 @@ POSTHOOK: Input: default@encryptedtable@ds=today
 #### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
 501	val_501	today
 502	val_502	today
-PREHOOK: query: -- insert encrypted table from unencrypted source
-insert into table encryptedTable partition (ds='yesterday')
+PREHOOK: query: insert into table encryptedTable partition (ds='yesterday')
 select * from src where key in ('238', '86')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@encryptedtable@ds=yesterday
-POSTHOOK: query: -- insert encrypted table from unencrypted source
-insert into table encryptedTable partition (ds='yesterday')
+POSTHOOK: query: insert into table encryptedTable partition (ds='yesterday')
 select * from src where key in ('238', '86')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -99,15 +89,13 @@ POSTHOOK: Input: default@encryptedtable@ds=yesterday
 501	val_501	today
 502	val_502	today
 86	val_86	yesterday
-PREHOOK: query: -- insert unencrypted table from encrypted source
-insert into table unencryptedTable partition (ds='today')
+PREHOOK: query: insert into table unencryptedTable partition (ds='today')
 select key, value from encryptedTable where ds='today'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@encryptedtable
 PREHOOK: Input: default@encryptedtable@ds=today
 PREHOOK: Output: default@unencryptedtable@ds=today
-POSTHOOK: query: -- insert unencrypted table from encrypted source
-insert into table unencryptedTable partition (ds='today')
+POSTHOOK: query: insert into table unencryptedTable partition (ds='today')
 select key, value from encryptedTable where ds='today'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@encryptedtable
@@ -134,25 +122,23 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@unencryptedtable
 PREHOOK: Input: default@unencryptedtable@ds=today
 PREHOOK: Input: default@unencryptedtable@ds=yesterday
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from unencryptedTable order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@unencryptedtable
 POSTHOOK: Input: default@unencryptedtable@ds=today
 POSTHOOK: Input: default@unencryptedtable@ds=yesterday
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 238	val_238	yesterday
 238	val_238	yesterday
 501	val_501	today
 502	val_502	today
 86	val_86	yesterday
-PREHOOK: query: -- clean up
-drop table encryptedTable PURGE
+PREHOOK: query: drop table encryptedTable PURGE
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@encryptedtable
 PREHOOK: Output: default@encryptedtable
-POSTHOOK: query: -- clean up
-drop table encryptedTable PURGE
+POSTHOOK: query: drop table encryptedTable PURGE
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@encryptedtable
 POSTHOOK: Output: default@encryptedtable

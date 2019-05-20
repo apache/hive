@@ -1,7 +1,7 @@
 -- SORT_QUERY_RESULTS
 
 -- verify that we can actually read avro files
-CREATE TABLE doctors 
+CREATE TABLE doctors_n1 
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
 STORED AS
@@ -9,7 +9,7 @@ INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
 TBLPROPERTIES ('avro.schema.literal'='{
   "namespace": "testing.hive.avro.serde",
-  "name": "doctors",
+  "name": "doctors_n1",
   "type": "record",
   "fields": [
     {
@@ -30,9 +30,9 @@ TBLPROPERTIES ('avro.schema.literal'='{
   ]
 }');
 
-DESCRIBE doctors;
+DESCRIBE doctors_n1;
 
-LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors;
+LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors_n1;
 
-SELECT * FROM doctors;
+SELECT * FROM doctors_n1;
 

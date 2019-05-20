@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,6 +22,9 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.database.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -30,8 +33,6 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hive.hcatalog.common.HCatConstants;
 
@@ -84,12 +85,13 @@ final class CreateDatabaseHook extends HCatSemanticAnalyzerBase {
   }
 
   @Override
-  protected void authorizeDDLWork(HiveSemanticAnalyzerHookContext context,
-                  Hive hive, DDLWork work) throws HiveException {
-    CreateDatabaseDesc createDb = work.getCreateDatabaseDesc();
-    if (createDb != null) {
+  protected void authorizeDDLWork2(HiveSemanticAnalyzerHookContext cntxt, Hive hive, DDLWork2 work)
+      throws HiveException {
+    DDLDesc ddlDesc = work.getDDLDesc();
+    if (ddlDesc instanceof CreateDatabaseDesc) {
+      CreateDatabaseDesc createDb = (CreateDatabaseDesc)ddlDesc;
       Database db = new Database(createDb.getName(), createDb.getComment(),
-        createDb.getLocationUri(), createDb.getDatabaseProperties());
+          createDb.getLocationUri(), createDb.getDatabaseProperties());
       authorize(db, Privilege.CREATE);
     }
   }

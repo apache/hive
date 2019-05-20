@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -35,8 +35,8 @@ public class TestMapJoinMemoryExhaustionHandler {
   public void setup() {
     logHelper = new LogHelper(LOG);
   }
-  @Test(expected=MapJoinMemoryExhaustionException.class)
-  public void testAbort() throws MapJoinMemoryExhaustionException {
+  @Test(expected=MapJoinMemoryExhaustionError.class)
+  public void testAbort() throws MapJoinMemoryExhaustionError {
     MapJoinMemoryExhaustionHandler handler = new MapJoinMemoryExhaustionHandler(logHelper, 0.01d);
     List<byte[]> memoryConsumer = new ArrayList<byte[]>();
     while(true) {

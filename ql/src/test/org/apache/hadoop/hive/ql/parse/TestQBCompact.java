@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import junit.framework.Assert;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
@@ -31,14 +34,11 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.junit.Assert;
 
 /**
  * Tests for parsing and semantic analysis of ALTER TABLE ... compact.
@@ -49,7 +49,7 @@ public class TestQBCompact {
 
   @BeforeClass
   public static void init() throws Exception {
-    queryState = new QueryState(null);
+    queryState = new QueryState.Builder().build();
     conf = queryState.getConf();
     conf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
@@ -69,21 +69,34 @@ public class TestQBCompact {
     h.createPartition(t, partSpec);
   }
 
-  private AlterTableSimpleDesc parseAndAnalyze(String query) throws Exception {
+  @AfterClass
+  public static void deInit() throws Exception {
+    Hive h = Hive.get(conf);
+    h.dropTable("foo");
+  }
+
+  private void parseAndAnalyze(String query) throws Exception {
     ParseDriver hd = new ParseDriver();
     ASTNode head = (ASTNode)hd.parse(query).getChild(0);
     BaseSemanticAnalyzer a = SemanticAnalyzerFactory.get(queryState, head);
     a.analyze(head, new Context(conf));
-    List<Task<? extends Serializable>> roots = a.getRootTasks();
+    List<Task<?>> roots = a.getRootTasks();
+    Assert.assertEquals(1, roots.size());
+  }
+
+  private AlterTableSimpleDesc parseAndAnalyzeAlterTable(String query) throws Exception {
+    ParseDriver hd = new ParseDriver();
+    ASTNode head = (ASTNode)hd.parse(query).getChild(0);
+    BaseSemanticAnalyzer a = SemanticAnalyzerFactory.get(queryState, head);
+    a.analyze(head, new Context(conf));
+    List<Task<?>> roots = a.getRootTasks();
     Assert.assertEquals(1, roots.size());
     return ((DDLWork)roots.get(0).getWork()).getAlterTblSimpleDesc();
   }
 
-
   @Test
   public void testNonPartitionedTable() throws Exception {
-    boolean sawException = false;
-    AlterTableSimpleDesc desc = parseAndAnalyze("alter table foo compact 'major'");
+    AlterTableSimpleDesc desc = parseAndAnalyzeAlterTable("alter table foo compact 'major'");
     Assert.assertEquals("major", desc.getCompactionType());
     Assert.assertEquals("default.foo", desc.getTableName());
   }
@@ -103,7 +116,7 @@ public class TestQBCompact {
   @Test
   public void testMajor() throws Exception {
     AlterTableSimpleDesc desc =
-        parseAndAnalyze("alter table foo partition(ds = 'today') compact 'major'");
+        parseAndAnalyzeAlterTable("alter table foo partition(ds = 'today') compact 'major'");
     Assert.assertEquals("major", desc.getCompactionType());
     Assert.assertEquals("default.foo", desc.getTableName());
     HashMap<String, String> parts = desc.getPartSpec();
@@ -114,7 +127,7 @@ public class TestQBCompact {
   @Test
   public void testMinor() throws Exception {
     AlterTableSimpleDesc desc =
-        parseAndAnalyze("alter table foo partition(ds = 'today') compact 'minor'");
+        parseAndAnalyzeAlterTable("alter table foo partition(ds = 'today') compact 'minor'");
     Assert.assertEquals("minor", desc.getCompactionType());
     Assert.assertEquals("default.foo", desc.getTableName());
     HashMap<String, String> parts = desc.getPartSpec();

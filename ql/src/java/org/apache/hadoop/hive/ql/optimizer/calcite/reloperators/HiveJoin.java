@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,7 +24,6 @@ import java.util.Set;
 
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptCost;
-import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.InvalidRelException;
 import org.apache.calcite.rel.RelCollation;
@@ -35,6 +34,7 @@ import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.calcite.rel.RelShuttle;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.ImmutableBitSet;
@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCostModel.JoinAlgorithm;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveDefaultCostModel.DefaultJoinAlgorithm;
@@ -157,7 +158,7 @@ public class HiveJoin extends Join implements HiveRelNode {
   }
 
   public MapJoinStreamingRelation getStreamingSide() {
-    RelMetadataQuery mq = RelMetadataQuery.instance();
+    RelMetadataQuery mq = left.getCluster().getMetadataQuery();
     Double leftInputSize = mq.memory(left);
     Double rightInputSize = mq.memory(right);
     if (leftInputSize == null && rightInputSize == null) {
@@ -199,9 +200,10 @@ public class HiveJoin extends Join implements HiveRelNode {
             ImmutableIntList.copyOf(
                     joinPredInfo.getProjsFromRightPartOfJoinKeysInChildSchema()));
 
+    final RelMetadataQuery mq = this.left.getCluster().getMetadataQuery();
     for (int i=0; i<this.getInputs().size(); i++) {
       boolean correctOrderFound = RelCollations.contains(
-          RelMetadataQuery.instance().collations(this.getInputs().get(i)),
+          mq.collations(this.getInputs().get(i)),
           joinKeysInChildren.get(i));
       if (correctOrderFound) {
         sortedInputsBuilder.set(i);
@@ -214,20 +216,20 @@ public class HiveJoin extends Join implements HiveRelNode {
     this.joinCost = joinCost;
   }
 
-  /**
-   * Model cost of join as size of Inputs.
-   */
-  @Override
-  public RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
-    return mq.getNonCumulativeCost(this);
-  }
-
   @Override
   public RelWriter explainTerms(RelWriter pw) {
     return super.explainTerms(pw)
         .item("algorithm", joinAlgorithm == null ?
-                "none" : joinAlgorithm)
+                "none" : joinAlgorithm.toString())
         .item("cost", joinCost == null ?
-                "not available" : joinCost);
+                "not available" : joinCost.toString());
+  }
+
+  //required for HiveRelDecorrelator
+  public RelNode accept(RelShuttle shuttle) {
+    if (shuttle instanceof HiveRelShuttle) {
+      return ((HiveRelShuttle)shuttle).visit(this);
+    }
+    return shuttle.visit(this);
   }
 }

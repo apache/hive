@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashTableResult;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
 // Multi-Key hash table import.
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinBytesHashMultiSet;
 
@@ -39,6 +39,8 @@ import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinByte
 import org.apache.hadoop.hive.ql.exec.vector.VectorSerializeRow;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
+
+import com.google.common.base.Preconditions;
 
 /*
  * Specialized class for doing a vectorized map join that is an inner join on Multi-Key
@@ -48,8 +50,17 @@ import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerialize
 public class VectorMapJoinInnerBigOnlyMultiKeyOperator extends VectorMapJoinInnerBigOnlyGenerateResultOperator {
 
   private static final long serialVersionUID = 1L;
-  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinInnerBigOnlyMultiKeyOperator.class.getName());
+
+  //------------------------------------------------------------------------------------------------
+
   private static final String CLASS_NAME = VectorMapJoinInnerBigOnlyMultiKeyOperator.class.getName();
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+
+  protected String getLoggingPrefix() {
+    return super.getLoggingPrefix(CLASS_NAME);
+  }
+
+  //------------------------------------------------------------------------------------------------
 
   // (none)
 
@@ -87,9 +98,9 @@ public class VectorMapJoinInnerBigOnlyMultiKeyOperator extends VectorMapJoinInne
     super(ctx);
   }
 
-  public VectorMapJoinInnerBigOnlyMultiKeyOperator(CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
-    super(ctx, vContext, conf);
+  public VectorMapJoinInnerBigOnlyMultiKeyOperator(CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
+    super(ctx, conf, vContext, vectorDesc);
   }
 
   //---------------------------------------------------------------------------
@@ -97,45 +108,40 @@ public class VectorMapJoinInnerBigOnlyMultiKeyOperator extends VectorMapJoinInne
   //
 
   @Override
-  public void process(Object row, int tag) throws HiveException {
+  protected void commonSetup() throws HiveException {
+    super.commonSetup();
+
+    /*
+     * Initialize Multi-Key members for this specialized class.
+     */
+
+    keyVectorSerializeWrite = new VectorSerializeRow(
+                                    new BinarySortableSerializeWrite(bigTableKeyColumnMap.length));
+    keyVectorSerializeWrite.init(bigTableKeyTypeInfos, bigTableKeyColumnMap);
+
+    currentKeyOutput = new Output();
+    saveKeyOutput = new Output();
+  }
+
+  @Override
+  public void hashTableSetup() throws HiveException {
+    super.hashTableSetup();
+
+    /*
+     * Get our Single-Column Long hash multi-set information for this specialized class.
+     */
+
+    /*
+     * Get our Multi-Key hash multi-set information for this specialized class.
+     */
+
+    hashMultiSet = (VectorMapJoinBytesHashMultiSet) vectorMapJoinHashTable;
+  }
+
+  @Override
+  public void processBatch(VectorizedRowBatch batch) throws HiveException {
 
     try {
-      VectorizedRowBatch batch = (VectorizedRowBatch) row;
-
-      alias = (byte) tag;
-
-      if (needCommonSetup) {
-        // Our one time process method initialization.
-        commonSetup(batch);
-
-        /*
-         * Initialize Multi-Key members for this specialized class.
-         */
-
-        keyVectorSerializeWrite = new VectorSerializeRow(
-                                        new BinarySortableSerializeWrite(bigTableKeyColumnMap.length));
-        keyVectorSerializeWrite.init(bigTableKeyTypeNames, bigTableKeyColumnMap);
-
-        currentKeyOutput = new Output();
-        saveKeyOutput = new Output();
-
-        needCommonSetup = false;
-      }
-
-      if (needHashTableSetup) {
-        // Setup our hash table specialization.  It will be the first time the process
-        // method is called, or after a Hybrid Grace reload.
-
-        /*
-         * Get our Multi-Key hash multi-set information for this specialized class.
-         */
-
-        hashMultiSet = (VectorMapJoinBytesHashMultiSet) vectorMapJoinHashTable;
-
-        needHashTableSetup = false;
-      }
-
-      batchCounter++;
 
       // Do the per-batch setup for an inner big-only join.
 
@@ -148,11 +154,7 @@ public class VectorMapJoinInnerBigOnlyMultiKeyOperator extends VectorMapJoinInne
       }
 
       final int inputLogicalSize = batch.size;
-
       if (inputLogicalSize == 0) {
-        if (isLogDebugEnabled) {
-          LOG.debug(CLASS_NAME + " batch #" + batchCounter + " empty");
-        }
         return;
       }
 
@@ -216,7 +218,7 @@ public class VectorMapJoinInnerBigOnlyMultiKeyOperator extends VectorMapJoinInne
          * Common repeated join result processing.
          */
 
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " repeated joinResult " + joinResult.name());
         }
         finishInnerBigOnlyRepeated(batch, joinResult, hashMultiSetResults[0]);
@@ -226,7 +228,7 @@ public class VectorMapJoinInnerBigOnlyMultiKeyOperator extends VectorMapJoinInne
          * NOT Repeating.
          */
 
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " non-repeated");
         }
 
@@ -375,7 +377,7 @@ public class VectorMapJoinInnerBigOnlyMultiKeyOperator extends VectorMapJoinInne
           }
         }
 
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME +
               " allMatchs " + intArrayToRangesString(allMatchs, allMatchCount) +
               " equalKeySeriesValueCounts " + longArrayToRangesString(equalKeySeriesValueCounts, equalKeySeriesCount) +

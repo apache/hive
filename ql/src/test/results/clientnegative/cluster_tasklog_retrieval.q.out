@@ -1,16 +1,13 @@
-PREHOOK: query: -- TaskLog retrieval upon Null Pointer Exception in Cluster
-
-CREATE TEMPORARY FUNCTION evaluate_npe AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFEvaluateNPE'
+PREHOOK: query: CREATE TEMPORARY FUNCTION evaluate_npe AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFEvaluateNPE'
 PREHOOK: type: CREATEFUNCTION
 PREHOOK: Output: evaluate_npe
-POSTHOOK: query: -- TaskLog retrieval upon Null Pointer Exception in Cluster
-
-CREATE TEMPORARY FUNCTION evaluate_npe AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFEvaluateNPE'
+POSTHOOK: query: CREATE TEMPORARY FUNCTION evaluate_npe AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFEvaluateNPE'
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: evaluate_npe
 PREHOOK: query: FROM src
 SELECT evaluate_npe(src.key) LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask

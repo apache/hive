@@ -2,9 +2,7 @@ PREHOOK: query: drop table date_join1
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table date_join1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table date_join1 (
+PREHOOK: query: create table date_join1 (
   ORIGIN_CITY_NAME string,
   DEST_CITY_NAME string,
   FL_DATE date,
@@ -14,9 +12,7 @@ create table date_join1 (
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@date_join1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table date_join1 (
+POSTHOOK: query: create table date_join1 (
   ORIGIN_CITY_NAME string,
   DEST_CITY_NAME string,
   FL_DATE date,
@@ -34,16 +30,14 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_join.txt' OVER
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@date_join1
-PREHOOK: query: -- Note that there are 2 rows with date 2000-11-28, so we should expect 4 rows with that date in the join results
-select t1.fl_num, t1.fl_date, t2.fl_num, t2.fl_date
+PREHOOK: query: select t1.fl_num, t1.fl_date, t2.fl_num, t2.fl_date
   from date_join1 t1 
   join date_join1 t2 
   on (t1.fl_date = t2.fl_date)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@date_join1
 #### A masked pattern was here ####
-POSTHOOK: query: -- Note that there are 2 rows with date 2000-11-28, so we should expect 4 rows with that date in the join results
-select t1.fl_num, t1.fl_date, t2.fl_num, t2.fl_date
+POSTHOOK: query: select t1.fl_num, t1.fl_date, t2.fl_num, t2.fl_date
   from date_join1 t1 
   join date_join1 t2 
   on (t1.fl_date = t2.fl_date)

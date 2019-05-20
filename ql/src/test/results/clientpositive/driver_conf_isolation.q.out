@@ -1,0 +1,34 @@
+PREHOOK: query: select "strict"
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select "strict"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+strict
+PREHOOK: query: create table t (a int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t (a int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: analyze table t compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: analyze table t compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+PREHOOK: query: select "strict"
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select "strict"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+strict

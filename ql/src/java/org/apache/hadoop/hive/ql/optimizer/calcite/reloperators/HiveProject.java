@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,24 +22,25 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.calcite.plan.RelOptCluster;
-import org.apache.calcite.plan.RelOptCost;
-import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.RelShuttle;
 import org.apache.calcite.rel.core.Project;
-import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
+import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.util.Util;
 import org.apache.calcite.util.mapping.Mapping;
 import org.apache.calcite.util.mapping.MappingType;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -89,7 +90,8 @@ public class HiveProject extends Project implements HiveRelNode {
       String msg = "Select list contains multiple expressions with the same name." + fieldNames;
       throw new CalciteSemanticException(msg, UnsupportedFeature.Same_name_in_multiple_expressions);
     }
-    RelDataType rowType = RexUtil.createStructType(cluster.getTypeFactory(), exps, fieldNames);
+    RelDataType rowType = RexUtil.createStructType(
+        cluster.getTypeFactory(), exps, fieldNames, SqlValidatorUtil.EXPR_SUGGESTER);
     return create(cluster, child, exps, rowType, Collections.<RelCollation> emptyList());
   }
 
@@ -121,7 +123,7 @@ public class HiveProject extends Project implements HiveRelNode {
    * are projected multiple times.
    *
    * <p>
-   * This method could optimize the result as {@link #permute} does, but does
+   * This method could optimize the result as permute does, but does
    * not at present.
    *
    * @param rel
@@ -174,11 +176,6 @@ public class HiveProject extends Project implements HiveRelNode {
   }
 
   @Override
-  public RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
-    return mq.getNonCumulativeCost(this);
-  }
-
-  @Override
   public void implement(Implementor implementor) {
   }
 
@@ -194,6 +191,14 @@ public class HiveProject extends Project implements HiveRelNode {
 
   public boolean isSynthetic() {
     return isSysnthetic;
+  }
+
+  //required for HiveRelDecorrelator
+  @Override public RelNode accept(RelShuttle shuttle) {
+    if(shuttle instanceof HiveRelShuttle) {
+      return ((HiveRelShuttle)shuttle).visit(this);
+    }
+    return shuttle.visit(this);
   }
 
 }

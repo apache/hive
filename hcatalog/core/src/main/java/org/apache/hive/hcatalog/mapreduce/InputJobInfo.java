@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,8 +20,10 @@ package org.apache.hive.hcatalog.mapreduce;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -84,7 +86,7 @@ public class InputJobInfo implements Serializable {
              String filter,
              Properties properties) {
     this.databaseName = (databaseName == null) ?
-      MetaStoreUtils.DEFAULT_DATABASE_NAME : databaseName;
+      Warehouse.DEFAULT_DATABASE_NAME : databaseName;
     this.tableName = tableName;
     this.filter = filter;
     this.properties = properties == null ? new Properties() : properties;
@@ -158,16 +160,26 @@ public class InputJobInfo implements Serializable {
   /**
    * Serialize this object, compressing the partitions which can exceed the
    * allowed jobConf size.
+   * Partitions will be compressed and put into a byte array which then we have to write into the
+   * ObjectOutputStream this method is given.
    * @see <a href="https://issues.apache.org/jira/browse/HCATALOG-453">HCATALOG-453</a>
    */
   private void writeObject(ObjectOutputStream oos)
     throws IOException {
     oos.defaultWriteObject();
+
+    ByteArrayOutputStream serialObj = new ByteArrayOutputStream();
+    ObjectOutputStream objStream = new ObjectOutputStream(serialObj);
     Deflater def = new Deflater(Deflater.BEST_COMPRESSION);
     ObjectOutputStream partInfoWriter =
-      new ObjectOutputStream(new DeflaterOutputStream(oos, def));
+            new ObjectOutputStream(new DeflaterOutputStream(objStream, def));
     partInfoWriter.writeObject(partitions);
+
+    //Closing only the writer used for compression byte stream
     partInfoWriter.close();
+
+    //Appending the compressed partition information
+    oos.writeObject(serialObj.toByteArray());
   }
 
   /**
@@ -179,8 +191,12 @@ public class InputJobInfo implements Serializable {
   private void readObject(ObjectInputStream ois)
     throws IOException, ClassNotFoundException {
     ois.defaultReadObject();
+
+    //Next object in the stream will be a byte array of partition information which is compressed
+    ObjectInputStream pis = new ObjectInputStream(new ByteArrayInputStream(
+            (byte[])ois.readObject()));
     ObjectInputStream partInfoReader =
-      new ObjectInputStream(new InflaterInputStream(ois));
+        new ObjectInputStream(new InflaterInputStream(pis));
     partitions = (List<PartInfo>)partInfoReader.readObject();
     if (partitions != null) {
       for (PartInfo partInfo : partitions) {
@@ -189,5 +205,7 @@ public class InputJobInfo implements Serializable {
         }
       }
     }
+    //Closing only the reader used for decompression byte stream
+    partInfoReader.close();
   }
 }

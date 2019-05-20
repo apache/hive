@@ -21,9 +21,9 @@ The characters in the argument string must be legal hexadecimal
 digits: '0' .. '9', 'A' .. 'F', 'a' .. 'f'. If UNHEX() encounters
 any nonhexadecimal digits in the argument, it returns NULL. Also,
 if there are an odd number of characters a leading 0 is appended.
-PREHOOK: query: -- Good inputs
-
-SELECT
+Function class:org.apache.hadoop.hive.ql.udf.UDFUnhex
+Function type:BUILTIN
+PREHOOK: query: SELECT
   unhex('4D7953514C'),
   unhex('31323637'),
   unhex('61'),
@@ -33,9 +33,7 @@ FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Good inputs
-
-SELECT
+POSTHOOK: query: SELECT
   unhex('4D7953514C'),
   unhex('31323637'),
   unhex('61'),
@@ -46,8 +44,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 MySQL	1267	a	-4	
-PREHOOK: query: -- Bad inputs
-SELECT
+PREHOOK: query: SELECT
   unhex('MySQL'),
   unhex('G123'),
   unhex('\0')
@@ -55,8 +52,7 @@ FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Bad inputs
-SELECT
+POSTHOOK: query: SELECT
   unhex('MySQL'),
   unhex('G123'),
   unhex('\0')

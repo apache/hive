@@ -1,10 +1,6 @@
-PREHOOK: query: -- Can't combine IF NOT EXISTS and OR REPLACE.
-
-drop view v
+PREHOOK: query: drop view v
 PREHOOK: type: DROPVIEW
-POSTHOOK: query: -- Can't combine IF NOT EXISTS and OR REPLACE.
-
-drop view v
+POSTHOOK: query: drop view v
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: create view v partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
@@ -16,4 +12,6 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 FAILED: SemanticException Can't combine IF NOT EXISTS and OR REPLACE.

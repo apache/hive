@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,8 +18,8 @@
 
 package org.apache.hive.common.util;
 
+import java.io.*;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * BloomFilter is a probabilistic data structure for set membership check. BloomFilters are
@@ -70,17 +70,15 @@ public class BloomFilter {
 
   /**
    * A constructor to support rebuilding the BloomFilter from a serialized representation.
-   * @param bits
-   * @param numBits
-   * @param numFuncs
+   * @param bits - bits are used as such for bitset and are NOT copied, any changes to bits will affect bloom filter
+   * @param numFuncs - number of hash functions
    */
-  public BloomFilter(List<Long> bits, int numBits, int numFuncs) {
+  public BloomFilter(long[] bits, int numFuncs) {
     super();
-    long[] copied = new long[bits.size()];
-    for (int i = 0; i < bits.size(); i++) copied[i] = bits.get(i);
-    bitSet = new BitSet(copied);
-    this.numBits = numBits;
-    numHashFunctions = numFuncs;
+    // input long[] is set as such without copying, so any modification to the source will affect bloom filter
+    this.bitSet = new BitSet(bits);
+    this.numBits = bits.length * Long.SIZE;
+    this.numHashFunctions = numFuncs;
   }
 
   static int optimalNumOfHashFunctions(long n, long m) {
@@ -116,7 +114,7 @@ public class BloomFilter {
     int hash2 = (int) (hash64 >>> 32);
 
     for (int i = 1; i <= numHashFunctions; i++) {
-      int combinedHash = hash1 + (i * hash2);
+      int combinedHash = hash1 + ((i + 1) * hash2);
       // hashcode should be positive, flip all the bits if it's negative
       if (combinedHash < 0) {
         combinedHash = ~combinedHash;
@@ -160,7 +158,7 @@ public class BloomFilter {
     int hash2 = (int) (hash64 >>> 32);
 
     for (int i = 1; i <= numHashFunctions; i++) {
-      int combinedHash = hash1 + (i * hash2);
+      int combinedHash = hash1 + ((i + 1) * hash2);
       // hashcode should be positive, flip all the bits if it's negative
       if (combinedHash < 0) {
         combinedHash = ~combinedHash;
@@ -239,6 +237,90 @@ public class BloomFilter {
 
   public void reset() {
     this.bitSet.clear();
+  }
+
+  /**
+   * Serialize a bloom filter
+   * @param out output stream to write to
+   * @param bloomFilter BloomFilter that needs to be seralized
+   */
+  public static void serialize(OutputStream out, BloomFilter bloomFilter) throws IOException {
+    /**
+     * Serialized BloomFilter format:
+     * 1 byte for the number of hash functions.
+     * 1 big endian int(That is how OutputStream works) for the number of longs in the bitset
+     * big endian longs in the BloomFilter bitset
+     */
+    DataOutputStream dataOutputStream = new DataOutputStream(out);
+    dataOutputStream.writeByte(bloomFilter.numHashFunctions);
+    dataOutputStream.writeInt(bloomFilter.getBitSet().length);
+    for (long value : bloomFilter.getBitSet()) {
+      dataOutputStream.writeLong(value);
+    }
+  }
+
+  /**
+   * Deserialize a bloom filter
+   * Read a byte stream, which was written by {@linkplain #serialize(OutputStream, BloomFilter)}
+   * into a {@code BloomFilter}
+   * @param in input bytestream
+   * @return deserialized BloomFilter
+   */
+  public static BloomFilter deserialize(InputStream in) throws IOException {
+    if (in == null) {
+      throw new IOException("Input stream is null");
+    }
+
+    try {
+      DataInputStream dataInputStream = new DataInputStream(in);
+      int numHashFunc = dataInputStream.readByte();
+      int numLongs = dataInputStream.readInt();
+      long[] data = new long[numLongs];
+      for (int i = 0; i < numLongs; i++) {
+        data[i] = dataInputStream.readLong();
+      }
+      return new BloomFilter(data, numHashFunc);
+    } catch (RuntimeException e) {
+      IOException io = new IOException( "Unable to deserialize BloomFilter");
+      io.initCause(e);
+      throw io;
+    }
+  }
+
+  // Given a byte array consisting of a serialized BloomFilter, gives the offset (from 0)
+  // for the start of the serialized long values that make up the bitset.
+  // NumHashFunctions (1 byte) + NumBits (4 bytes)
+  public static final int START_OF_SERIALIZED_LONGS = 5;
+
+  /**
+   * Merges BloomFilter bf2 into bf1.
+   * Assumes 2 BloomFilters with the same size/hash functions are serialized to byte arrays
+   * @param bf1Bytes
+   * @param bf1Start
+   * @param bf1Length
+   * @param bf2Bytes
+   * @param bf2Start
+   * @param bf2Length
+   */
+  public static void mergeBloomFilterBytes(
+      byte[] bf1Bytes, int bf1Start, int bf1Length,
+      byte[] bf2Bytes, int bf2Start, int bf2Length) {
+    if (bf1Length != bf2Length) {
+      throw new IllegalArgumentException("bf1Length " + bf1Length + " does not match bf2Length " + bf2Length);
+    }
+
+    // Validation on the bitset size/3 hash functions.
+    for (int idx = 0; idx < START_OF_SERIALIZED_LONGS; ++idx) {
+      if (bf1Bytes[bf1Start + idx] != bf2Bytes[bf2Start + idx]) {
+        throw new IllegalArgumentException("bf1 NumHashFunctions/NumBits does not match bf2");
+      }
+    }
+
+    // Just bitwise-OR the bits together - size/# functions should be the same,
+    // rest of the data is serialized long values for the bitset which are supposed to be bitwise-ORed.
+    for (int idx = START_OF_SERIALIZED_LONGS; idx < bf1Length; ++idx) {
+      bf1Bytes[bf1Start + idx] |= bf2Bytes[bf2Start + idx];
+    }
   }
 
   /**

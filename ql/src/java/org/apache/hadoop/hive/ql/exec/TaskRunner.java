@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,8 +21,9 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.hadoop.hive.common.LogUtils;
+import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +36,6 @@ public class TaskRunner extends Thread {
   protected Task<? extends Serializable> tsk;
   protected TaskResult result;
   protected SessionState ss;
-  private OperationLog operationLog;
   private static AtomicLong taskCounter = new AtomicLong(0);
   private static ThreadLocal<Long> taskRunnerID = new ThreadLocal<Long>() {
     @Override
@@ -48,10 +48,13 @@ public class TaskRunner extends Thread {
 
   private static transient final Logger LOG = LoggerFactory.getLogger(TaskRunner.class);
 
-  public TaskRunner(Task<? extends Serializable> tsk, TaskResult result) {
+  private final DriverContext driverCtx;
+
+  public TaskRunner(Task<? extends Serializable> tsk, DriverContext ctx) {
     this.tsk = tsk;
-    this.result = result;
+    this.result = new TaskResult();
     ss = SessionState.get();
+    driverCtx = ctx;
   }
 
   public Task<? extends Serializable> getTask() {
@@ -72,9 +75,9 @@ public class TaskRunner extends Thread {
 
   @Override
   public void run() {
+    LogUtils.registerLoggingContext(tsk.getConf());
     runner = Thread.currentThread();
     try {
-      OperationLog.setCurrentOperationLog(operationLog);
       SessionState.start(ss);
       runSequential();
     } finally {
@@ -97,7 +100,7 @@ public class TaskRunner extends Thread {
   public void runSequential() {
     int exitVal = -101;
     try {
-      exitVal = tsk.executeTask();
+      exitVal = tsk.executeTask(ss == null ? null : ss.getHiveHistory());
     } catch (Throwable t) {
       if (tsk.getException() == null) {
         tsk.setException(t);
@@ -105,6 +108,7 @@ public class TaskRunner extends Thread {
       LOG.error("Error in executeTask", t);
     }
     result.setExitVal(exitVal);
+    driverCtx.releaseRunnable();
     if (tsk.getException() != null) {
       result.setTaskError(tsk.getException());
     }
@@ -112,9 +116,5 @@ public class TaskRunner extends Thread {
 
   public static long getTaskRunnerID () {
     return taskRunnerID.get();
-  }
-
-  public void setOperationLog(OperationLog operationLog) {
-    this.operationLog = operationLog;
   }
 }

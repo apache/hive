@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -121,14 +121,14 @@ public class JoinUtil {
   }
 
   public static int populateJoinKeyValue(List<ExprNodeEvaluator>[] outMap,
-      Map<Byte, List<ExprNodeDesc>> inputMap, int posBigTableAlias) throws HiveException {
-    return populateJoinKeyValue(outMap, inputMap, null, posBigTableAlias);
+      Map<Byte, List<ExprNodeDesc>> inputMap, int posBigTableAlias, Configuration conf) throws HiveException {
+    return populateJoinKeyValue(outMap, inputMap, null, posBigTableAlias, conf);
   }
 
   public static int populateJoinKeyValue(List<ExprNodeEvaluator>[] outMap,
       Map<Byte, List<ExprNodeDesc>> inputMap,
       Byte[] order,
-      int posBigTableAlias) throws HiveException {
+      int posBigTableAlias, Configuration conf) throws HiveException {
     int total = 0;
     for (Entry<Byte, List<ExprNodeDesc>> e : inputMap.entrySet()) {
       if (e.getValue() == null) {
@@ -140,7 +140,7 @@ public class JoinUtil {
         if (key == (byte) posBigTableAlias) {
           valueFields.add(null);
         } else {
-          valueFields.add(ExprNodeEvaluatorFactory.get(expr));
+          valueFields.add(expr == null ? null : ExprNodeEvaluatorFactory.get(expr, conf));
         }
       }
       outMap[key] = valueFields;
@@ -228,6 +228,23 @@ public class JoinUtil {
     for (int idx = 1; idx < num; idx++) {
       MASKS[idx] = (short)(2 * MASKS[idx-1]);
     }
+  }
+
+  /**
+   * Returns true if the row does not pass through filters.
+   */
+  protected static boolean isFiltered(Object row, List<ExprNodeEvaluator> filters,
+          List<ObjectInspector> filtersOIs) throws HiveException {
+    for (int i = 0; i < filters.size(); i++) {
+      ExprNodeEvaluator evaluator = filters.get(i);
+      Object condition = evaluator.evaluate(row);
+      Boolean result = (Boolean) ((PrimitiveObjectInspector) filtersOIs.get(i)).
+              getPrimitiveJavaObject(condition);
+      if (result == null || !result) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

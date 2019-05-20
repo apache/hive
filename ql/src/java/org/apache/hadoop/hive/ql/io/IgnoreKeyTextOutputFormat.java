@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,7 +30,7 @@ import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.hadoop.util.Progressable;
 
 /**
- * This class replaces key with null before feeding the <key, value> to
+ * This class replaces key with null before feeding the &lt;key, value&gt; to
  * TextOutputFormat.RecordWriter.
  * 
  * @deprecated use {@link HiveIgnoreKeyTextOutputFormat} instead}

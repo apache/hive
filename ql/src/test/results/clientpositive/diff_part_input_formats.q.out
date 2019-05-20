@@ -1,14 +1,8 @@
-PREHOOK: query: -- Tests the case where a table is changed from sequence file to a RC file,
--- resulting in partitions in both file formats. If no valid partitions are
--- selected, then it should still use RC file for reading the dummy partition.
-CREATE TABLE part_test (key STRING, value STRING) PARTITIONED BY (ds STRING) STORED AS SEQUENCEFILE
+PREHOOK: query: CREATE TABLE part_test (key STRING, value STRING) PARTITIONED BY (ds STRING) STORED AS SEQUENCEFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@part_test
-POSTHOOK: query: -- Tests the case where a table is changed from sequence file to a RC file,
--- resulting in partitions in both file formats. If no valid partitions are
--- selected, then it should still use RC file for reading the dummy partition.
-CREATE TABLE part_test (key STRING, value STRING) PARTITIONED BY (ds STRING) STORED AS SEQUENCEFILE
+POSTHOOK: query: CREATE TABLE part_test (key STRING, value STRING) PARTITIONED BY (ds STRING) STORED AS SEQUENCEFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_test

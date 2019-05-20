@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -194,7 +194,7 @@ public class Var {
 	  }
 	  else if (type == Type.DOUBLE) {
 	    if (val.type == Type.STRING) {
-        value = new Double((String)val.value);
+        value = Double.valueOf((String) val.value);
       }
 	    else if (val.type == Type.BIGINT || val.type == Type.DECIMAL) {
         value = Double.valueOf(val.doubleValue());
@@ -265,13 +265,13 @@ public class Var {
     }
     else if (type == java.sql.Types.INTEGER || type == java.sql.Types.BIGINT ||
         type == java.sql.Types.SMALLINT || type == java.sql.Types.TINYINT) {
-      cast(new Var(new Long(rs.getLong(idx))));
+      cast(new Var(Long.valueOf(rs.getLong(idx))));
     }
     else if (type == java.sql.Types.DECIMAL || type == java.sql.Types.NUMERIC) {
       cast(new Var(rs.getBigDecimal(idx)));
     }
     else if (type == java.sql.Types.FLOAT || type == java.sql.Types.DOUBLE) {
-      cast(new Var(new Double(rs.getDouble(idx))));
+      cast(new Var(Double.valueOf(rs.getDouble(idx))));
     }
     return this;
   }
@@ -327,7 +327,7 @@ public class Var {
       return Type.BIGINT;
     }
     else if (type.equalsIgnoreCase("CHAR") || type.equalsIgnoreCase("VARCHAR") || type.equalsIgnoreCase("VARCHAR2") || 
-             type.equalsIgnoreCase("STRING") || type.equalsIgnoreCase("XML")) {
+             type.equalsIgnoreCase("STRING") || type.equalsIgnoreCase("XML") || type.equalsIgnoreCase("CHARACTER")) {
       return Type.STRING;
     }
     else if (type.equalsIgnoreCase("DEC") || type.equalsIgnoreCase("DECIMAL") || type.equalsIgnoreCase("NUMERIC") ||
@@ -411,7 +411,7 @@ public class Var {
       }
     }
     else if (type == Type.STRING && var.type == Type.STRING &&
-            ((String)value).equals((String)var.value)) {
+            ((String)value).equals(var.value)) {
       return true;
     }
     else if (type == Type.DECIMAL && var.type == Type.DECIMAL &&
@@ -475,9 +475,9 @@ public class Var {
 	 /**
    * Increment an integer value
    */
-  public Var increment(Long i) {
+  public Var increment(long i) {
     if (type == Type.BIGINT) {
-      value = new Long(((Long)value).longValue() + i);
+      value = Long.valueOf(((Long) value).longValue() + i);
     }
     return this;
   }
@@ -485,12 +485,12 @@ public class Var {
   /**
   * Decrement an integer value
   */
- public Var decrement(Long i) {
-   if (type == Type.BIGINT) {
-     value = new Long(((Long)value).longValue() - i);
-   }
-   return this;
- }
+  public Var decrement(long i) {
+    if (type == Type.BIGINT) {
+      value = Long.valueOf(((Long) value).longValue() - i);
+    }
+    return this;
+  }
   
 	/**
 	 * Return an integer value
@@ -552,12 +552,30 @@ public class Var {
 	}
 	
 	/**
-	 * Negate the boolean value
+	 * Negate the value
 	 */
 	public void negate() {
-    if(type == Type.BOOL && value != null) {
+    if (value == null){
+      return;
+    }
+    if (type == Type.BOOL) {
       boolean v = ((Boolean)value).booleanValue();
       value = Boolean.valueOf(!v);
+    }
+    else if (type == Type.DECIMAL) {
+      BigDecimal v = (BigDecimal)value;
+      value = v.negate();
+    }
+    else if (type == Type.DOUBLE) {
+      Double v = (Double)value;
+      value = -v;
+    }
+    else if (type == Type.BIGINT) {
+      Long v = (Long)value;
+      value = -v;
+    }
+    else {
+      throw new NumberFormatException("invalid type " + type);
     }
   }
 	
@@ -606,7 +624,7 @@ public class Var {
 	}
 
   /**
-   * Convert value to SQL string - string literals are quoted and escaped, ab'c -> 'ab''c'
+   * Convert value to SQL string - string literals are quoted and escaped, ab'c -&gt; 'ab''c'
    */
   public String toSqlString() {
     if (value == null) {

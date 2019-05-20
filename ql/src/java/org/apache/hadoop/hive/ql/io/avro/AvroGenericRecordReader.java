@@ -19,7 +19,10 @@ package org.apache.hadoop.hive.ql.io.avro;
 
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.rmi.server.UID;
+import java.time.DateTimeException;
+import java.time.ZoneId;
 import java.util.Map;
 import java.util.Properties;
 
@@ -29,9 +32,12 @@ import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.mapred.FsInput;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.serde2.avro.AvroSerDe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
@@ -57,6 +63,7 @@ public class AvroGenericRecordReader implements
   final private org.apache.avro.file.FileReader<GenericRecord> reader;
   final private long start;
   final private long stop;
+  private ZoneId writerTimezone;
   protected JobConf jobConf;
   final private boolean isEmptyInput;
   /**
@@ -93,6 +100,8 @@ public class AvroGenericRecordReader implements
     }
     this.stop = split.getStart() + split.getLength();
     this.recordReaderID = new UID();
+
+    this.writerTimezone = extractWriterTimezoneFromMetadata(job, split, gdr);
   }
 
   /**
@@ -112,10 +121,8 @@ public class AvroGenericRecordReader implements
       for (Map.Entry<Path,PartitionDesc> pathsAndParts: mapWork.getPathToPartitionInfo().entrySet()){
         Path partitionPath = pathsAndParts.getKey();
         if(pathIsInPartition(split.getPath(), partitionPath)) {
-          if(LOG.isInfoEnabled()) {
-              LOG.info("Matching partition " + partitionPath +
-                      " with input split " + split);
-          }
+          LOG.info("Matching partition {} with input split {}", partitionPath,
+              split);
 
           Properties props = pathsAndParts.getValue().getProperties();
           if(props.containsKey(AvroTableProperties.SCHEMA_LITERAL.getPropName()) || props.containsKey(AvroTableProperties.SCHEMA_URL.getPropName())) {
@@ -126,30 +133,51 @@ public class AvroGenericRecordReader implements
           }
         }
       }
-      if(LOG.isInfoEnabled()) {
-        LOG.info("Unable to match filesplit " + split + " with a partition.");
-      }
+      LOG.info("Unable to match filesplit {} with a partition.", split);
     }
 
     // In "select * from table" situations (non-MR), we can add things to the job
     // It's safe to add this to the job since it's not *actually* a mapred job.
     // Here the global state is confined to just this process.
     String s = job.get(AvroTableProperties.AVRO_SERDE_SCHEMA.getPropName());
-    if(s != null) {
-      LOG.info("Found the avro schema in the job: " + s);
+    if (StringUtils.isNotBlank(s)) {
+      LOG.info("Found the avro schema in the job");
+      LOG.debug("Avro schema: {}", s);
       return AvroSerdeUtils.getSchemaFor(s);
     }
     // No more places to get the schema from. Give up.  May have to re-encode later.
     return null;
   }
 
+  private ZoneId extractWriterTimezoneFromMetadata(JobConf job, FileSplit split,
+      GenericDatumReader<GenericRecord> gdr) throws IOException {
+    if (job == null || gdr == null || split == null || split.getPath() == null) {
+      return null;
+    }
+    try {
+      DataFileReader<GenericRecord> dataFileReader =
+          new DataFileReader<GenericRecord>(new FsInput(split.getPath(), job), gdr);
+      if (dataFileReader.getMeta(AvroSerDe.WRITER_TIME_ZONE) != null) {
+        try {
+          return ZoneId.of(new String(dataFileReader.getMeta(AvroSerDe.WRITER_TIME_ZONE),
+              StandardCharsets.UTF_8));
+        } catch (DateTimeException e) {
+          throw new RuntimeException("Can't parse writer time zone stored in file metadata", e);
+        }
+      }
+    } catch (IOException e) {
+      // Can't access metadata, carry on.
+    }
+    return null;
+  }
+
   private boolean pathIsInPartition(Path split, Path partitionPath) {
     boolean schemeless = split.toUri().getScheme() == null;
     if (schemeless) {
-      String schemelessPartitionPath = partitionPath.toUri().getPath();
-      return split.toString().startsWith(schemelessPartitionPath);
+      Path pathNoSchema = Path.getPathWithoutSchemeAndAuthority(partitionPath);
+      return FileUtils.isPathWithinSubtree(split,pathNoSchema);
     } else {
-      return split.toString().startsWith(partitionPath.toString());
+      return FileUtils.isPathWithinSubtree(split,partitionPath);
     }
   }
 
@@ -175,7 +203,7 @@ public class AvroGenericRecordReader implements
 
   @Override
   public AvroGenericRecordWritable createValue() {
-    return new AvroGenericRecordWritable();
+    return new AvroGenericRecordWritable(writerTimezone);
   }
 
   @Override

@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set mapred.input.dir.recursive=true;
 set hive.merge.mapfiles=false;	
@@ -5,7 +6,6 @@ set hive.merge.mapredfiles=false;
 
 -- Ensure skewed value map has escaped directory name
 
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- SORT_QUERY_RESULTS
 
 -- test where the skewed values are more than 1 say columns no. 2 and 4 in a table with 5 columns

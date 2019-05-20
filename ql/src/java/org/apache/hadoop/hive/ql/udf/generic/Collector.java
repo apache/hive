@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,11 +18,15 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Collector gets data from a source.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface Collector {
   /**
    * Other classes will call collect() with the data that it has.

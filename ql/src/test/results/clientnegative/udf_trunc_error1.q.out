@@ -1,1 +1,1 @@
-FAILED: SemanticException [Error 10016]: Line 1:27 Argument type mismatch '1': trunk() only takes STRING/CHAR/VARCHAR types as second argument, got INT
+FAILED: SemanticException [Error 10014]: Line 1:7 Wrong arguments '1': Got wrong argument types : first argument type : string, second argument type : int

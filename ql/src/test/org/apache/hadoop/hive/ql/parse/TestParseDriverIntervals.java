@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -40,7 +40,7 @@ public class TestParseDriverIntervals {
     ret.add(new Object[] { "select 1 days" });
     ret.add(new Object[] { "select (1) days" });
     ret.add(new Object[] { "select (1) day" });
-    ret.add(new Object[] { "select (1+1) days" });
+    ret.add(new Object[] { "select interval (1+1) days" });
     ret.add(new Object[] { "select interval 1 days" });
     ret.add(new Object[] { "select interval '1' days" });
     ret.add(new Object[] { "select interval (x) days" });
@@ -74,8 +74,9 @@ public class TestParseDriverIntervals {
     if (children != null) {
       for (Node c : children) {
         ASTNode r = findFunctionNode((ASTNode) c);
-        if (r != null)
+        if (r != null) {
           return r;
+        }
       }
     }
     return null;

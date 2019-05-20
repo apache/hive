@@ -1,0 +1,59 @@
+PREHOOK: query: DROP TABLE having_blobstore_test
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE having_blobstore_test
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE having_blobstore_test(a int, b int, c string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ' '
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/having_blobstore/having_blobstore_test
+PREHOOK: Output: database:default
+PREHOOK: Output: default@having_blobstore_test
+POSTHOOK: query: CREATE TABLE having_blobstore_test(a int, b int, c string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ' '
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/having_blobstore/having_blobstore_test
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@having_blobstore_test
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/having_data.txt' INTO TABLE having_blobstore_test
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@having_blobstore_test
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/having_data.txt' INTO TABLE having_blobstore_test
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@having_blobstore_test
+PREHOOK: query: SELECT a, COUNT(b) AS ct FROM having_blobstore_test GROUP BY a HAVING ct > 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@having_blobstore_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a, COUNT(b) AS ct FROM having_blobstore_test GROUP BY a HAVING ct > 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@having_blobstore_test
+#### A masked pattern was here ####
+1	2
+3	2
+5	3
+PREHOOK: query: SELECT a, MAX(b) FROM having_blobstore_test GROUP BY a HAVING MAX(b) > 9
+PREHOOK: type: QUERY
+PREHOOK: Input: default@having_blobstore_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a, MAX(b) FROM having_blobstore_test GROUP BY a HAVING MAX(b) > 9
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@having_blobstore_test
+#### A masked pattern was here ####
+5	12
+9	51
+PREHOOK: query: SELECT a, MAX(b), MAX(c) FROM having_blobstore_test GROUP BY a HAVING MIN(c) < 'b'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@having_blobstore_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a, MAX(b), MAX(c) FROM having_blobstore_test GROUP BY a HAVING MIN(c) < 'b'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@having_blobstore_test
+#### A masked pattern was here ####
+1	5	a
+5	12	d

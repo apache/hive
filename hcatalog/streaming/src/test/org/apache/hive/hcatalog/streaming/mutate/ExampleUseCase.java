@@ -70,7 +70,7 @@ public class ExampleUseCase {
     // DATA SHOULD GET SORTED BY YOUR ETL/MERGE PROCESS HERE
     //
     // Group the data by (partitionValues, ROW__ID.bucketId)
-    // Order the groups by (ROW__ID.lastTransactionId, ROW__ID.rowId)
+    // Order the groups by (ROW__ID.writeId, ROW__ID.rowId)
     // --------------------------------------------------------------
     
     // One of these runs at the output of each reducer

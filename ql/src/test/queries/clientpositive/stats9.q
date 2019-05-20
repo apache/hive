@@ -1,3 +1,4 @@
+--! qt:dataset:srcbucket
 set datanucleus.cache.collections=false;
 set hive.stats.autogather=false;
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -62,6 +62,16 @@ public @interface UDFType {
   boolean stateful() default false;
 
   /**
+   * Property used to mark functions like current_timestamp, current_date, current_database().
+   * These functions aren't actually deterministic (the values can change between queries),
+   * but the value returned by these functions should be consistent for the life of the query,
+   * so constant folding still applies for these functions.
+   * Queries using these functions should not be eligible for materialized views or query caching.
+   * @return true if the function is a runtime constant
+   */
+  boolean runtimeConstant() default false;
+
+  /**
    * A UDF is considered distinctLike if the UDF can be evaluated on just the
    * distinct values of a column. Examples include min and max UDFs. This
    * information is used by metadata-only optimizer.
@@ -76,4 +86,12 @@ public @interface UDFType {
    * @return true if the function implies order
    */
   boolean impliesOrder() default false;
+
+  /**
+   * Whether result of this operation will be altered by reordering its
+   * children.
+   *
+   * @return true if commutative law applies to this function
+   */
+  boolean commutative() default false;
 }

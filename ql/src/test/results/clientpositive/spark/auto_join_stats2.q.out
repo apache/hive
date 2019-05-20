@@ -1,14 +1,8 @@
-PREHOOK: query: -- Auto_join2 no longer tests merging the mapjoin work if big-table selection is based on stats, as src3 is smaller statistically than src1 + src2.
--- Hence forcing the third table to be smaller.
-
-create table smalltable(key string, value string) stored as textfile
+PREHOOK: query: create table smalltable(key string, value string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@smalltable
-POSTHOOK: query: -- Auto_join2 no longer tests merging the mapjoin work if big-table selection is based on stats, as src3 is smaller statistically than src1 + src2.
--- Hence forcing the third table to be smaller.
-
-create table smalltable(key string, value string) stored as textfile
+POSTHOOK: query: create table smalltable(key string, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smalltable
@@ -20,10 +14,17 @@ POSTHOOK: query: load data local inpath '../../data/files/T1.txt' into table sma
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@smalltable
+Warning: Map Join MAPJOIN[22][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@smalltable
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smalltable
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -37,37 +38,41 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: src2
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  alias: smalltable
+                  filterExpr: UDFToDouble(key) is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    predicate: UDFToDouble(key) is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      expressions: key (type: string), UDFToDouble(key) (type: double)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
-                          0 _col0 (type: string)
-                          1 _col0 (type: string)
+                          0 
+                          1 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: smalltable
-                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                  alias: src1
+                  filterExpr: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (UDFToDouble(key) is not null and key is not null) (type: boolean)
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                      expressions: key (type: string), UDFToDouble(key) (type: double)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
-                          0 (UDFToDouble(_col0) + UDFToDouble(_col1)) (type: double)
-                          1 UDFToDouble(_col0) (type: double)
+                          0 _col0 (type: string)
+                          1 _col0 (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -78,42 +83,51 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src1
+                  alias: src2
+                  filterExpr: (key is not null and UDFToDouble(key) is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: key is not null (type: boolean)
+                    predicate: (UDFToDouble(key) is not null and key is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
+                      expressions: key (type: string), UDFToDouble(key) (type: double)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
                         keys:
-                          0 _col0 (type: string)
-                          1 _col0 (type: string)
-                        outputColumnNames: _col0, _col1
+                          0 
+                          1 
+                        outputColumnNames: _col0, _col1, _col2, _col3
                         input vertices:
                           1 Map 2
-                        Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 500 Data size: 155812 Basic stats: COMPLETE Column stats: NONE
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
                           keys:
-                            0 (UDFToDouble(_col0) + UDFToDouble(_col1)) (type: double)
-                            1 UDFToDouble(_col0) (type: double)
-                          outputColumnNames: _col0, _col1, _col2
+                            0 _col0 (type: string)
+                            1 _col0 (type: string)
+                          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                           input vertices:
                             1 Map 3
-                          Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
-                            table:
-                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          Statistics: Num rows: 550 Data size: 171393 Basic stats: COMPLETE Column stats: NONE
+                          Filter Operator
+                            predicate: ((_col5 + _col1) = _col3) (type: boolean)
+                            Statistics: Num rows: 275 Data size: 85696 Basic stats: COMPLETE Column stats: NONE
+                            Select Operator
+                              expressions: _col4 (type: string), _col0 (type: string), _col2 (type: string)
+                              outputColumnNames: _col0, _col1, _col2
+                              Statistics: Num rows: 275 Data size: 85696 Basic stats: COMPLETE Column stats: NONE
+                              File Output Operator
+                                compressed: false
+                                Statistics: Num rows: 275 Data size: 85696 Basic stats: COMPLETE Column stats: NONE
+                                table:
+                                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -123,6 +137,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+Warning: Map Join MAPJOIN[22][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smalltable
@@ -161,8 +176,16 @@ POSTHOOK: Input: default@smalltable
 POSTHOOK: Output: default@smalltable
 PREHOOK: query: explain select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key) JOIN smalltable2 ON (src1.key + src2.key = smalltable2.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@smalltable
+PREHOOK: Input: default@smalltable2
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key) JOIN smalltable2 ON (src1.key + src2.key = smalltable2.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smalltable
+POSTHOOK: Input: default@smalltable2
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -177,56 +200,62 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src2
+                  filterExpr: (key is not null and UDFToDouble(key) is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: key is not null (type: boolean)
+                    predicate: (UDFToDouble(key) is not null and key is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
+                      expressions: key (type: string), UDFToDouble(key) (type: double)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: smalltable
-                  Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  alias: smalltable2
+                  filterExpr: UDFToDouble(key) is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                    predicate: UDFToDouble(key) is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: key (type: string)
+                      expressions: UDFToDouble(key) (type: double)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
-                          0 (UDFToDouble(_col0) + UDFToDouble(_col1)) (type: double)
-                          1 UDFToDouble(_col0) (type: double)
-                          2 UDFToDouble(_col0) (type: double)
+                          0 (_col1 + _col3) (type: double)
+                          1 _col0 (type: double)
+                          2 _col1 (type: double)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: smalltable2
-                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                  alias: smalltable
+                  filterExpr: UDFToDouble(key) is not null (type: boolean)
+                  Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                    predicate: UDFToDouble(key) is not null (type: boolean)
+                    Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                      expressions: key (type: string), UDFToDouble(key) (type: double)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
-                          0 (UDFToDouble(_col0) + UDFToDouble(_col1)) (type: double)
-                          1 UDFToDouble(_col0) (type: double)
-                          2 UDFToDouble(_col0) (type: double)
+                          0 (_col1 + _col3) (type: double)
+                          1 _col0 (type: double)
+                          2 _col1 (type: double)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -238,13 +267,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src1
+                  filterExpr: (key is not null and UDFToDouble(key) is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: key is not null (type: boolean)
+                    predicate: (UDFToDouble(key) is not null and key is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
+                      expressions: key (type: string), UDFToDouble(key) (type: double)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
@@ -252,7 +282,7 @@ STAGE PLANS:
                         keys:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
-                        outputColumnNames: _col0, _col1
+                        outputColumnNames: _col0, _col1, _col2, _col3
                         input vertices:
                           1 Map 2
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
@@ -261,21 +291,26 @@ STAGE PLANS:
                                Inner Join 0 to 1
                                Inner Join 0 to 2
                           keys:
-                            0 (UDFToDouble(_col0) + UDFToDouble(_col1)) (type: double)
-                            1 UDFToDouble(_col0) (type: double)
-                            2 UDFToDouble(_col0) (type: double)
-                          outputColumnNames: _col0, _col1, _col2
+                            0 (_col1 + _col3) (type: double)
+                            1 _col0 (type: double)
+                            2 _col1 (type: double)
+                          outputColumnNames: _col0, _col2, _col5
                           input vertices:
                             1 Map 3
                             2 Map 4
                           Statistics: Num rows: 1210 Data size: 12854 Basic stats: COMPLETE Column stats: NONE
-                          File Output Operator
-                            compressed: false
+                          Select Operator
+                            expressions: _col0 (type: string), _col2 (type: string), _col5 (type: string)
+                            outputColumnNames: _col0, _col1, _col2
                             Statistics: Num rows: 1210 Data size: 12854 Basic stats: COMPLETE Column stats: NONE
-                            table:
-                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            File Output Operator
+                              compressed: false
+                              Statistics: Num rows: 1210 Data size: 12854 Basic stats: COMPLETE Column stats: NONE
+                              table:
+                                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 

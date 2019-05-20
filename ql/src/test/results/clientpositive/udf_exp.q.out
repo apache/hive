@@ -11,3 +11,5 @@ exp(x) - Returns e to the power of x
 Example:
    > SELECT exp(0) FROM src LIMIT 1;
   1
+Function class:org.apache.hadoop.hive.ql.udf.UDFExp
+Function type:BUILTIN

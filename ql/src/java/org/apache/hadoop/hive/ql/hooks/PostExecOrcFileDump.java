@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -88,33 +88,43 @@ public class PostExecOrcFileDump implements ExecuteWithHookContext {
       }
 
       for (Path dir : directories) {
-        FileSystem fs = dir.getFileSystem(conf);
-        List<FileStatus> fileList = HdfsUtils.listLocatedStatus(fs, dir,
-            hiddenFileFilter);
-
-        for (FileStatus fileStatus : fileList) {
-          LOG.info("Printing orc file dump for " + fileStatus.getPath());
-          if (fileStatus.getLen() > 0) {
-            try {
-              // just creating orc reader is going to do sanity checks to make sure its valid ORC file
-              OrcFile.createReader(fs, fileStatus.getPath());
-              console.printError("-- BEGIN ORC FILE DUMP --");
-              FileDump.main(new String[]{fileStatus.getPath().toString(), "--rowindex=*"});
-              console.printError("-- END ORC FILE DUMP --");
-            } catch (FileFormatException e) {
-              LOG.warn("File " + fileStatus.getPath() + " is not ORC. Skip printing orc file dump");
-            } catch (IOException e) {
-              LOG.warn("Skip printing orc file dump. Exception: " + e.getMessage());
-            }
-          } else {
-            LOG.warn("Zero length file encountered. Skip printing orc file dump.");
-          }
-        }
+        printFileStatus(console, dir.getFileSystem(conf), dir);
       }
 
       // restore the old out stream
       System.out.flush();
       System.setOut(old);
+    }
+  }
+
+  private void printFileStatus(SessionState.LogHelper console, FileSystem fs, Path dir) throws Exception {
+    List<FileStatus> fileList = HdfsUtils.listLocatedStatus(fs, dir,
+        hiddenFileFilter);
+
+    for (FileStatus fileStatus : fileList) {
+      if (fileStatus.isDirectory()) {
+
+        // delta directory in case of ACID
+        printFileStatus(console, fs, fileStatus.getPath());
+      } else {
+
+        LOG.info("Printing orc file dump for " + fileStatus.getPath());
+        if (fileStatus.getLen() > 0) {
+          try {
+            // just creating orc reader is going to do sanity checks to make sure its valid ORC file
+            OrcFile.createReader(fs, fileStatus.getPath());
+            console.printError("-- BEGIN ORC FILE DUMP --");
+            FileDump.main(new String[]{fileStatus.getPath().toString(), "--rowindex=*"});
+            console.printError("-- END ORC FILE DUMP --");
+          } catch (FileFormatException e) {
+            LOG.warn("File " + fileStatus.getPath() + " is not ORC. Skip printing orc file dump");
+          } catch (IOException e) {
+            LOG.warn("Skip printing orc file dump. Exception: " + e.getMessage());
+          }
+        } else {
+          LOG.warn("Zero length file encountered. Skip printing orc file dump.");
+        }
+      }
     }
   }
 

@@ -1,0 +1,103 @@
+PREHOOK: query: DROP TABLE exim_employee
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE exim_employee
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE exim_employee (emp_id int COMMENT "employee id")
+COMMENT "employee table"
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@exim_employee
+POSTHOOK: query: CREATE TABLE exim_employee (emp_id int COMMENT "employee id")
+COMMENT "employee table"
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@exim_employee
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/test.dat"
+INTO TABLE exim_employee
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@exim_employee
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/test.dat"
+INTO TABLE exim_employee
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@exim_employee
+PREHOOK: query: DESCRIBE EXTENDED exim_employee
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@exim_employee
+POSTHOOK: query: DESCRIBE EXTENDED exim_employee
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@exim_employee
+emp_id              	int                 	employee id         
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM exim_employee
+PREHOOK: type: QUERY
+PREHOOK: Input: default@exim_employee
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM exim_employee
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@exim_employee
+#### A masked pattern was here ####
+1
+2
+3
+4
+5
+6
+PREHOOK: query: EXPORT TABLE exim_employee
+TO '### test.blobstore.path ###/import_blobstore_to_blobstore_nonpart/export/exim_employee'
+PREHOOK: type: EXPORT
+PREHOOK: Input: default@exim_employee
+PREHOOK: Output: ### test.blobstore.path ###/import_blobstore_to_blobstore_nonpart/export/exim_employee
+POSTHOOK: query: EXPORT TABLE exim_employee
+TO '### test.blobstore.path ###/import_blobstore_to_blobstore_nonpart/export/exim_employee'
+POSTHOOK: type: EXPORT
+POSTHOOK: Input: default@exim_employee
+POSTHOOK: Output: ### test.blobstore.path ###/import_blobstore_to_blobstore_nonpart/export/exim_employee
+PREHOOK: query: DROP TABLE exim_employee
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@exim_employee
+PREHOOK: Output: default@exim_employee
+POSTHOOK: query: DROP TABLE exim_employee
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@exim_employee
+POSTHOOK: Output: default@exim_employee
+PREHOOK: query: IMPORT FROM '### test.blobstore.path ###/import_blobstore_to_blobstore_nonpart/export/exim_employee'
+#### A masked pattern was here ####
+PREHOOK: type: IMPORT
+PREHOOK: Input: ### test.blobstore.path ###/import_blobstore_to_blobstore_nonpart/export/exim_employee
+PREHOOK: Input: ### test.blobstore.path ###/import_blobstore_to_blobstore_nonpart/import/exim_employee
+PREHOOK: Output: database:default
+POSTHOOK: query: IMPORT FROM '### test.blobstore.path ###/import_blobstore_to_blobstore_nonpart/export/exim_employee'
+#### A masked pattern was here ####
+POSTHOOK: type: IMPORT
+POSTHOOK: Input: ### test.blobstore.path ###/import_blobstore_to_blobstore_nonpart/export/exim_employee
+POSTHOOK: Input: ### test.blobstore.path ###/import_blobstore_to_blobstore_nonpart/import/exim_employee
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@exim_employee
+PREHOOK: query: DESCRIBE EXTENDED exim_employee
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@exim_employee
+POSTHOOK: query: DESCRIBE EXTENDED exim_employee
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@exim_employee
+emp_id              	int                 	employee id         
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM exim_employee
+PREHOOK: type: QUERY
+PREHOOK: Input: default@exim_employee
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM exim_employee
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@exim_employee
+#### A masked pattern was here ####
+1
+2
+3
+4
+5
+6

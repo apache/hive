@@ -1,10 +1,6 @@
-PREHOOK: query: -- Can't have recursive views
-
-drop table t
+PREHOOK: query: drop table t
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Can't have recursive views
-
-drop table t
+POSTHOOK: query: drop table t
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop view r0
 PREHOOK: type: DROPVIEW
@@ -40,6 +36,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@r0
+POSTHOOK: Lineage: r0.id SIMPLE [(t)t.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: create view r1 as select * from r0
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@r0
@@ -52,6 +49,7 @@ POSTHOOK: Input: default@r0
 POSTHOOK: Input: default@t
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@r1
+POSTHOOK: Lineage: r1.id SIMPLE [(t)t.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: create view r2 as select * from r1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@r0
@@ -66,6 +64,7 @@ POSTHOOK: Input: default@r1
 POSTHOOK: Input: default@t
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@r2
+POSTHOOK: Lineage: r2.id SIMPLE [(t)t.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: create view r3 as select * from r2
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@r0
@@ -82,6 +81,7 @@ POSTHOOK: Input: default@r2
 POSTHOOK: Input: default@t
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@r3
+POSTHOOK: Lineage: r3.id SIMPLE [(t)t.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: drop view r0
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@r0

@@ -1,11 +1,7 @@
-PREHOOK: query: -- SORT_BEFORE_DIFF
-
-CREATE DATABASE IF NOT EXISTS test_db COMMENT 'Hive test database'
+PREHOOK: query: CREATE DATABASE IF NOT EXISTS test_db COMMENT 'Hive test database'
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:test_db
-POSTHOOK: query: -- SORT_BEFORE_DIFF
-
-CREATE DATABASE IF NOT EXISTS test_db COMMENT 'Hive test database'
+POSTHOOK: query: CREATE DATABASE IF NOT EXISTS test_db COMMENT 'Hive test database'
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:test_db
 PREHOOK: query: SHOW DATABASES

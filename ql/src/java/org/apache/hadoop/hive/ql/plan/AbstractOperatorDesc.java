@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,21 +19,32 @@
 package org.apache.hadoop.hive.ql.plan;
 
 
+import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
-import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 
-public class AbstractOperatorDesc implements OperatorDesc {
+public abstract class AbstractOperatorDesc implements OperatorDesc {
 
   protected boolean vectorMode = false;
+
+  // Reference to vectorization description needed for EXPLAIN VECTORIZATION, hash table loading,
+  // etc.
+  protected VectorDesc vectorDesc;
+
   protected Statistics statistics;
   protected transient OpTraits opTraits;
   protected transient Map<String, String> opProps;
   protected long memNeeded = 0;
+  protected long memAvailable = 0;
   protected String runtimeStatsTmpDir;
+
+  /**
+   * A map of output column name to input expression map. This is used by
+   * optimizer and built during semantic analysis contains only key elements for
+   * reduce sink and group by op
+   */
+  protected Map<String, ExprNodeDesc> colExprMap;
 
   @Override
   @Explain(skipHeader = true, displayName = "Statistics")
@@ -62,6 +73,14 @@ public class AbstractOperatorDesc implements OperatorDesc {
 
   public void setVectorMode(boolean vm) {
     this.vectorMode = vm;
+  }
+
+  public void setVectorDesc(VectorDesc vectorDesc) {
+    this.vectorDesc = vectorDesc;
+  }
+
+  public VectorDesc getVectorDesc() {
+    return vectorDesc;
   }
 
   @Override
@@ -93,12 +112,57 @@ public class AbstractOperatorDesc implements OperatorDesc {
     this.memNeeded = memNeeded;
   }
 
+  @Override
+  public long getMaxMemoryAvailable() {
+    return memAvailable;
+  }
+
+  @Override
+  public void setMaxMemoryAvailable(final long memoryAvailble) {
+    this.memAvailable = memoryAvailble;
+  }
+
+  @Override
   public String getRuntimeStatsTmpDir() {
     return runtimeStatsTmpDir;
   }
 
+  @Override
   public void setRuntimeStatsTmpDir(String runtimeStatsTmpDir) {
     this.runtimeStatsTmpDir = runtimeStatsTmpDir;
+  }
+
+  /**
+   * The default implementation delegates to {@link #equals(Object)}. Intended to be
+   * overridden by sub classes.
+   */
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    return equals(other);
+  }
+
+  @Explain(displayName = "columnExprMap", jsonOnly = true)
+  public Map<String, String> getColumnExprMapForExplain() {
+    Map<String, String> colExprMapForExplain = new HashMap<>();
+    for(String col:this.colExprMap.keySet()) {
+      colExprMapForExplain.put(col, this.colExprMap.get(col).getExprString());
+    }
+    return colExprMapForExplain;
+  }
+
+  @Override
+  public Map<String, ExprNodeDesc> getColumnExprMap() {
+    return this.colExprMap;
+  }
+
+  @Override
+  public void setColumnExprMap(Map<String, ExprNodeDesc> colExprMap) {
+    this.colExprMap = colExprMap;
+  }
+
+  @Override
+  public void fillSignature(Map<String, Object> ret) {
+    throw new RuntimeException();
   }
 
 }

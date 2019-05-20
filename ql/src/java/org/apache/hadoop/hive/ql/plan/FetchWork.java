@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,23 +21,29 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeMap;
 
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 /**
  * FetchWork.
  *
  */
-@Explain(displayName = "Fetch Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+@Explain(displayName = "Fetch Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED },
+    vectorization = Vectorization.SUMMARY_PATH)
 public class FetchWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
@@ -70,6 +76,13 @@ public class FetchWork implements Serializable {
    * indeed written using ThriftJDBCBinarySerDe
    */
   private boolean isUsingThriftJDBCBinarySerDe = false;
+
+  /**
+   * Whether this FetchWork is returning a cached query result
+   */
+  private boolean isCachedResult = false;
+
+  private Set<FileStatus> filesToFetch = null;
 
   public boolean isHiveServerQuery() {
 	return isHiveServerQuery;
@@ -123,6 +136,7 @@ public class FetchWork implements Serializable {
     this.partDir = new ArrayList<Path>(partDir);
     this.partDesc = new ArrayList<PartitionDesc>(partDesc);
     this.limit = limit;
+    this.filesToFetch = new HashSet<>();
   }
 
   public void initializeForFetch(CompilationOpContext ctx) {
@@ -218,7 +232,7 @@ public class FetchWork implements Serializable {
     if (partDir != null && partDir.size() > 1) {
       if (partDesc == null || partDir.size() != partDesc.size()) {
         throw new RuntimeException(
-            "Partiton Directory list size doesn't match Partition Descriptor list size");
+            "Partition Directory list size doesn't match Partition Descriptor list size");
       }
 
       // Construct a sorted Map of Partition Dir - Partition Descriptor; ordering is based on
@@ -284,6 +298,13 @@ public class FetchWork implements Serializable {
     return source;
   }
 
+  public boolean isSourceTable() {
+    if(this.source != null && this.source instanceof TableScanOperator) {
+      return true;
+    }
+    return false;
+  }
+
   public void setSource(Operator<?> source) {
     this.source = source;
   }
@@ -320,5 +341,60 @@ public class FetchWork implements Serializable {
     }
 
     return ret;
+  }
+
+  // -----------------------------------------------------------------------------------------------
+
+  private boolean vectorizationExamined;
+
+  public void setVectorizationExamined(boolean vectorizationExamined) {
+    this.vectorizationExamined = vectorizationExamined;
+  }
+
+  public boolean getVectorizationExamined() {
+    return vectorizationExamined;
+  }
+
+  public class FetchExplainVectorization {
+
+    private final FetchWork fetchWork;
+
+    public FetchExplainVectorization(FetchWork fetchWork) {
+      this.fetchWork = fetchWork;
+    }
+
+    @Explain(vectorization = Vectorization.SUMMARY, displayName = "enabled", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public boolean enabled() {
+      return false;
+    }
+
+    @Explain(vectorization = Vectorization.SUMMARY, displayName = "enabledConditionsNotMet", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public List<String> enabledConditionsNotMet() {
+      return VectorizationCondition.getConditionsSupported(false);
+    }
+  }
+
+  @Explain(vectorization = Vectorization.SUMMARY, displayName = "Fetch Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+  public FetchExplainVectorization getMapExplainVectorization() {
+    if (!getVectorizationExamined()) {
+      return null;
+    }
+    return new FetchExplainVectorization(this);
+  }
+  @Explain(displayName = "Cached Query Result", displayOnlyOnTrue = true, explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public boolean isCachedResult() {
+    return isCachedResult;
+  }
+
+  public void setCachedResult(boolean isCachedResult) {
+    this.isCachedResult = isCachedResult;
+  }
+
+  public void setFilesToFetch(Set<FileStatus> filesToFetch) {
+    this.filesToFetch = filesToFetch;
+  }
+
+  public Set<FileStatus> getFilesToFetch() {
+    return filesToFetch;
   }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -42,16 +42,6 @@ public class TestMapredParquetOutputFormat {
   @Test
   public void testConstructorWithFormat() {
     new MapredParquetOutputFormat((ParquetOutputFormat<ParquetHiveRecord>) mock(ParquetOutputFormat.class));
-  }
-
-  @Test
-  public void testGetRecordWriterThrowsException() {
-    try {
-      new MapredParquetOutputFormat().getRecordWriter(null, null, null, null);
-      fail("should throw runtime exception.");
-    } catch (Exception e) {
-      assertEquals("Should never be used", e.getMessage());
-    }
   }
 
   @SuppressWarnings("unchecked")

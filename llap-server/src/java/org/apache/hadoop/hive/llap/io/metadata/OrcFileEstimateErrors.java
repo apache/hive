@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,14 +23,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
-import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
 import org.apache.hadoop.hive.common.io.DiskRangeList.MutateHelper;
-import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator;
-import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator.ObjectEstimator;
 import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
 import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
 import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.hive.ql.io.orc.encoded.IncompleteCb;
+import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator;
+import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator.ObjectEstimator;
 
 public class OrcFileEstimateErrors extends LlapCacheableBuffer {
   private final Object fileKey;
@@ -61,8 +60,8 @@ public class OrcFileEstimateErrors extends LlapCacheableBuffer {
     }
   }
 
-  public DiskRangeList getIncompleteCbs(DiskRangeList ranges, long baseOffset,
-      DiskRangeListFactory factory, BooleanRef gotAllData) {
+  public DiskRangeList getIncompleteCbs(
+      DiskRangeList ranges, long baseOffset, BooleanRef gotAllData) {
     DiskRangeList prev = ranges.prev;
     if (prev == null) {
       prev = new MutateHelper(ranges);
@@ -104,8 +103,8 @@ public class OrcFileEstimateErrors extends LlapCacheableBuffer {
   }
 
   @Override
-  protected boolean invalidate() {
-    return true;
+  protected int invalidate() {
+    return INVALIDATE_OK;
   }
 
   @Override
@@ -121,5 +120,11 @@ public class OrcFileEstimateErrors extends LlapCacheableBuffer {
   @Override
   protected boolean isLocked() {
     return false;
+  }
+
+  @Override
+  public String getTag() {
+    // We don't care about these.
+    return "OrcEstimates";
   }
 }

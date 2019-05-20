@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,9 +24,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.io.BytesWritable;
 
 
@@ -38,10 +40,15 @@ public class PTFTopNHash extends TopNHash {
   private TopNHash largestPartition;
   private boolean prevIndexPartIsNull;
   private Set<Integer> indexesWithNullPartKey;
+  private OperatorDesc conf;
+  private Configuration hconf;
     
   public void initialize(
-      int topN, float memUsage, boolean isMapGroupBy, BinaryCollector collector) {
-    super.initialize(topN, memUsage, isMapGroupBy, collector);
+    int topN, float memUsage, boolean isMapGroupBy, BinaryCollector collector, final OperatorDesc conf,
+    final Configuration hconf) {
+    super.initialize(topN, memUsage, isMapGroupBy, collector, conf, hconf);
+    this.conf = conf;
+    this.hconf = hconf;
     this.isMapGroupBy = isMapGroupBy;
     this.memUsage = memUsage;
     partitionHeaps = new HashMap<Key, TopNHash>();
@@ -76,7 +83,7 @@ public class PTFTopNHash extends TopNHash {
     TopNHash partHeap = partitionHeaps.get(pk);
     if ( partHeap == null ) {
       partHeap = new TopNHash();
-      partHeap.initialize(topN, memUsage, isMapGroupBy, collector);
+      partHeap.initialize(topN, memUsage, isMapGroupBy, collector, conf, hconf);
       if ( batchIndex >= 0 ) {
         partHeap.startVectorizedBatch(batchSize);
       }

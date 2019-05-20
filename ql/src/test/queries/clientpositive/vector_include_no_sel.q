@@ -6,6 +6,7 @@ SET hive.auto.convert.join=true;
 SET hive.auto.convert.join.noconditionaltask=true;
 SET hive.auto.convert.join.noconditionaltask.size=1000000000;
 SET hive.mapred.mode=nonstrict;
+set hive.fetch.task.conversion=none;
 
 -- HIVE-13872
 -- Looking for TableScan immediately followed by ReduceSink (no intervening SEL operator).
@@ -47,7 +48,7 @@ stored as textfile;
 
 LOAD DATA LOCAL INPATH '../../data/files/store_sales.txt' OVERWRITE INTO TABLE store_sales_txt;
 
-create table store_sales stored as orc as select * from store_sales_txt;
+create table store_sales_n1 stored as orc as select * from store_sales_txt;
 
 
 create table customer_demographics_txt
@@ -69,11 +70,11 @@ LOAD DATA LOCAL INPATH '../../data/files/customer_demographics.txt' OVERWRITE IN
 
 create table customer_demographics stored as orc as select * from customer_demographics_txt;
 
-explain
-select count(1) from customer_demographics,store_sales
-where ((customer_demographics.cd_demo_sk = store_sales.ss_cdemo_sk and customer_demographics.cd_marital_status = 'M') or
-       (customer_demographics.cd_demo_sk = store_sales.ss_cdemo_sk and customer_demographics.cd_marital_status = 'U'));
+explain vectorization expression
+select count(1) from customer_demographics,store_sales_n1
+where ((customer_demographics.cd_demo_sk = store_sales_n1.ss_cdemo_sk and customer_demographics.cd_marital_status = 'M') or
+       (customer_demographics.cd_demo_sk = store_sales_n1.ss_cdemo_sk and customer_demographics.cd_marital_status = 'U'));
 
-select count(1) from customer_demographics,store_sales
-where ((customer_demographics.cd_demo_sk = store_sales.ss_cdemo_sk and customer_demographics.cd_marital_status = 'M') or
-       (customer_demographics.cd_demo_sk = store_sales.ss_cdemo_sk and customer_demographics.cd_marital_status = 'U'));
+select count(1) from customer_demographics,store_sales_n1
+where ((customer_demographics.cd_demo_sk = store_sales_n1.ss_cdemo_sk and customer_demographics.cd_marital_status = 'M') or
+       (customer_demographics.cd_demo_sk = store_sales_n1.ss_cdemo_sk and customer_demographics.cd_marital_status = 'U'));

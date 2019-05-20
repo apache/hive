@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
  * <br>
  * The produced filter object filters out all users that are not found in the search result
  * of the query provided in Hive configuration.
- * @see HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_CUSTOMLDAPQUERY
+ * @see org.apache.hadoop.hive.conf.HiveConf.ConfVars#HIVE_SERVER2_PLAIN_LDAP_CUSTOMLDAPQUERY
  */
 public class CustomQueryFilterFactory implements FilterFactory {
 

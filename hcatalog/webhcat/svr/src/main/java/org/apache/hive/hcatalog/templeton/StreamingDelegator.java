@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -51,7 +51,7 @@ public class StreamingDelegator extends LauncherDelegator {
                Boolean enableJobReconnect,
                JobType jobType)
     throws NotAuthorizedException, BadParam, BusyException, QueueException,
-    ExecuteException, IOException, InterruptedException {
+    ExecuteException, IOException, InterruptedException, TooManyRequestsException {
       List<String> args = makeArgs(inputs, inputreader, output, mapper, reducer, combiner,
       fileList, cmdenvs, jarArgs);
 
@@ -102,11 +102,11 @@ public class StreamingDelegator extends LauncherDelegator {
 
     for (String e : cmdenvs) {
       args.add("-cmdenv");
-      args.add(TempletonUtils.quoteForWindows(e));
+      args.add(e);
     }
 
     for (String arg : jarArgs) {
-      args.add(TempletonUtils.quoteForWindows(arg));
+      args.add(arg);
     }
 
     return args;

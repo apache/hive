@@ -100,6 +100,8 @@ POSTHOOK: Input: default@table_b1
 POSTHOOK: Input: default@table_b2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@a_view
+POSTHOOK: Lineage: a_view.autoname EXPRESSION [(table_a1)a1.FieldSchema(name:composite_key, type:string, comment:null), (table_b1)b1.FieldSchema(name:composite_key, type:string, comment:null), ]
+POSTHOOK: Lineage: a_view.col1 EXPRESSION [(table_b1)b1.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: INSERT INTO TABLE table_b1
 SELECT * FROM (
 SELECT 'something|awful', 'col1'

@@ -12,8 +12,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@repairtable
 PREHOOK: query: MSCK TABLE repairtable
 PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable
 POSTHOOK: query: MSCK TABLE repairtable
 POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable
 PREHOOK: query: MSCK TABLE default.repairtable
 PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

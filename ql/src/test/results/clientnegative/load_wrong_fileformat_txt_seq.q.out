@@ -1,16 +1,8 @@
-PREHOOK: query: -- test for loading into tables with the correct file format
--- test for loading into partitions with the correct file format
-
-
-CREATE TABLE T1(name STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1(name STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@T1
-POSTHOOK: query: -- test for loading into tables with the correct file format
--- test for loading into partitions with the correct file format
-
-
-CREATE TABLE T1(name STRING) STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE T1(name STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T1

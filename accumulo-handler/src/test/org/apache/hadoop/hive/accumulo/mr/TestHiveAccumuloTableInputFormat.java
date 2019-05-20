@@ -54,6 +54,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.accumulo.AccumuloConnectionParameters;
 import org.apache.hadoop.hive.accumulo.AccumuloHiveConstants;
 import org.apache.hadoop.hive.accumulo.AccumuloHiveRow;
+import org.apache.hadoop.hive.accumulo.HiveAccumuloHelper;
 import org.apache.hadoop.hive.accumulo.columns.ColumnEncoding;
 import org.apache.hadoop.hive.accumulo.columns.ColumnMapper;
 import org.apache.hadoop.hive.accumulo.columns.ColumnMapping;
@@ -472,6 +473,10 @@ public class TestHiveAccumuloTableInputFormat {
     Set<Range> ranges = Collections.singleton(new Range());
 
     HiveAccumuloTableInputFormat mockInputFormat = Mockito.mock(HiveAccumuloTableInputFormat.class);
+    HiveAccumuloHelper helper = Mockito.mock(HiveAccumuloHelper.class);
+
+    // Stub out a mocked Helper instance
+    Mockito.when(mockInputFormat.getHelper()).thenReturn(helper);
 
     // Call out to the real configure method
     Mockito.doCallRealMethod().when(mockInputFormat)
@@ -485,8 +490,8 @@ public class TestHiveAccumuloTableInputFormat {
         ranges);
 
     // Verify that the correct methods are invoked on AccumuloInputFormat
-    Mockito.verify(mockInputFormat).setMockInstance(conf, mockInstance.getInstanceName());
-    Mockito.verify(mockInputFormat).setConnectorInfo(conf, USER, new PasswordToken(PASS));
+    Mockito.verify(helper).setInputFormatMockInstance(conf, mockInstance.getInstanceName());
+    Mockito.verify(helper).setInputFormatConnectorInfo(conf, USER, new PasswordToken(PASS));
     Mockito.verify(mockInputFormat).setInputTableName(conf, TEST_TABLE);
     Mockito.verify(mockInputFormat).setScanAuthorizations(conf,
         con.securityOperations().getUserAuthorizations(USER));
@@ -509,10 +514,13 @@ public class TestHiveAccumuloTableInputFormat {
 
     ZooKeeperInstance zkInstance = Mockito.mock(ZooKeeperInstance.class);
     HiveAccumuloTableInputFormat mockInputFormat = Mockito.mock(HiveAccumuloTableInputFormat.class);
+    HiveAccumuloHelper helper = Mockito.mock(HiveAccumuloHelper.class);
 
     // Stub out the ZKI mock
     Mockito.when(zkInstance.getInstanceName()).thenReturn(instanceName);
     Mockito.when(zkInstance.getZooKeepers()).thenReturn(zookeepers);
+    // Stub out a mocked Helper instance
+    Mockito.when(mockInputFormat.getHelper()).thenReturn(helper);
 
     // Call out to the real configure method
     Mockito.doCallRealMethod().when(mockInputFormat)
@@ -526,8 +534,8 @@ public class TestHiveAccumuloTableInputFormat {
         ranges);
 
     // Verify that the correct methods are invoked on AccumuloInputFormat
-    Mockito.verify(mockInputFormat).setZooKeeperInstance(conf, instanceName, zookeepers, false);
-    Mockito.verify(mockInputFormat).setConnectorInfo(conf, USER, new PasswordToken(PASS));
+    Mockito.verify(helper).setInputFormatZooKeeperInstance(conf, instanceName, zookeepers, false);
+    Mockito.verify(helper).setInputFormatConnectorInfo(conf, USER, new PasswordToken(PASS));
     Mockito.verify(mockInputFormat).setInputTableName(conf, TEST_TABLE);
     Mockito.verify(mockInputFormat).setScanAuthorizations(conf,
         con.securityOperations().getUserAuthorizations(USER));
@@ -551,10 +559,13 @@ public class TestHiveAccumuloTableInputFormat {
 
     ZooKeeperInstance zkInstance = Mockito.mock(ZooKeeperInstance.class);
     HiveAccumuloTableInputFormat mockInputFormat = Mockito.mock(HiveAccumuloTableInputFormat.class);
+    HiveAccumuloHelper helper = Mockito.mock(HiveAccumuloHelper.class);
 
     // Stub out the ZKI mock
     Mockito.when(zkInstance.getInstanceName()).thenReturn(instanceName);
     Mockito.when(zkInstance.getZooKeepers()).thenReturn(zookeepers);
+    // Stub out a mocked Helper instance
+    Mockito.when(mockInputFormat.getHelper()).thenReturn(helper);
 
     // Call out to the real configure method
     Mockito.doCallRealMethod().when(mockInputFormat)
@@ -568,8 +579,8 @@ public class TestHiveAccumuloTableInputFormat {
         ranges);
 
     // Verify that the correct methods are invoked on AccumuloInputFormat
-    Mockito.verify(mockInputFormat).setZooKeeperInstance(conf, instanceName, zookeepers, false);
-    Mockito.verify(mockInputFormat).setConnectorInfo(conf, USER, new PasswordToken(PASS));
+    Mockito.verify(helper).setInputFormatZooKeeperInstance(conf, instanceName, zookeepers, false);
+    Mockito.verify(helper).setInputFormatConnectorInfo(conf, USER, new PasswordToken(PASS));
     Mockito.verify(mockInputFormat).setInputTableName(conf, TEST_TABLE);
     Mockito.verify(mockInputFormat).setScanAuthorizations(conf, new Authorizations("foo,bar"));
     Mockito.verify(mockInputFormat).addIterators(conf, iterators);
@@ -605,10 +616,13 @@ public class TestHiveAccumuloTableInputFormat {
 
     ZooKeeperInstance zkInstance = Mockito.mock(ZooKeeperInstance.class);
     HiveAccumuloTableInputFormat mockInputFormat = Mockito.mock(HiveAccumuloTableInputFormat.class);
+    HiveAccumuloHelper helper = Mockito.mock(HiveAccumuloHelper.class);
 
     // Stub out the ZKI mock
     Mockito.when(zkInstance.getInstanceName()).thenReturn(instanceName);
     Mockito.when(zkInstance.getZooKeepers()).thenReturn(zookeepers);
+    // Stub out a mocked Helper instance
+    Mockito.when(mockInputFormat.getHelper()).thenReturn(helper);
 
     // Call out to the real configure method
     Mockito.doCallRealMethod().when(mockInputFormat)
@@ -622,8 +636,8 @@ public class TestHiveAccumuloTableInputFormat {
         ranges);
 
     // Verify that the correct methods are invoked on AccumuloInputFormat
-    Mockito.verify(mockInputFormat).setZooKeeperInstance(conf, instanceName, zookeepers, false);
-    Mockito.verify(mockInputFormat).setConnectorInfo(conf, USER, new PasswordToken(PASS));
+    Mockito.verify(helper).setInputFormatZooKeeperInstance(conf, instanceName, zookeepers, false);
+    Mockito.verify(helper).setInputFormatConnectorInfo(conf, USER, new PasswordToken(PASS));
     Mockito.verify(mockInputFormat).setInputTableName(conf, TEST_TABLE);
     Mockito.verify(mockInputFormat).setScanAuthorizations(conf,
         con.securityOperations().getUserAuthorizations(USER));
@@ -659,12 +673,15 @@ public class TestHiveAccumuloTableInputFormat {
 
     ZooKeeperInstance zkInstance = Mockito.mock(ZooKeeperInstance.class);
     HiveAccumuloTableInputFormat mockInputFormat = Mockito.mock(HiveAccumuloTableInputFormat.class);
+    HiveAccumuloHelper helper = Mockito.mock(HiveAccumuloHelper.class);
 
     // Stub out the ZKI mock
     Mockito.when(zkInstance.getInstanceName()).thenReturn(instanceName);
     Mockito.when(zkInstance.getZooKeepers()).thenReturn(zookeepers);
     Mockito.when(mockInputFormat.getPairCollection(columnMapper.getColumnMappings())).thenReturn(
         cfCqPairs);
+    // Stub out a mocked Helper instance
+    Mockito.when(mockInputFormat.getHelper()).thenReturn(helper);
 
     // Call out to the real configure method
     Mockito.doCallRealMethod().when(mockInputFormat)
@@ -678,8 +695,8 @@ public class TestHiveAccumuloTableInputFormat {
         ranges);
 
     // Verify that the correct methods are invoked on AccumuloInputFormat
-    Mockito.verify(mockInputFormat).setZooKeeperInstance(conf, instanceName, zookeepers, false);
-    Mockito.verify(mockInputFormat).setConnectorInfo(conf, USER, new PasswordToken(PASS));
+    Mockito.verify(helper).setInputFormatZooKeeperInstance(conf, instanceName, zookeepers, false);
+    Mockito.verify(helper).setInputFormatConnectorInfo(conf, USER, new PasswordToken(PASS));
     Mockito.verify(mockInputFormat).setInputTableName(conf, TEST_TABLE);
     Mockito.verify(mockInputFormat).setScanAuthorizations(conf,
         con.securityOperations().getUserAuthorizations(USER));

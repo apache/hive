@@ -17,13 +17,13 @@ THISSERVICE=llapdump
 export SERVICE_LIST="${SERVICE_LIST}${THISSERVICE} "
 
 llapdump () {
-  CLASS=org.apache.hive.jdbc.LlapDump
+  CLASS=org.apache.hadoop.hive.llap.LlapDump
   HIVE_OPTS=''
   execHiveCmd $CLASS "$@"
 }
 
 llapdump_help () {
-  echo "usage ./hive llapdump [-l <url>] [-u <user>] [-p <pwd>] <query>"
+  echo "usage ./hive --service llapdump [-l <url>] [-u <user>] [-p <pwd>] <query>"
   echo ""
   echo "  --location (-l)  hs2 url"
   echo "  --user (-u)      user name"

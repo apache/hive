@@ -1,25 +1,15 @@
-PREHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
-
-CREATE TABLE  table_priv1(i int)
+PREHOOK: query: CREATE TABLE  table_priv1(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_priv1
-POSTHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
-
-CREATE TABLE  table_priv1(i int)
+POSTHOOK: query: CREATE TABLE  table_priv1(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_priv1
-PREHOOK: query: -- all privileges should have been set for user
-
--- grant insert privilege to another user
-GRANT INSERT ON table_priv1 TO USER user2
+PREHOOK: query: GRANT INSERT ON table_priv1 TO USER user2
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@table_priv1
-POSTHOOK: query: -- all privileges should have been set for user
-
--- grant insert privilege to another user
-GRANT INSERT ON table_priv1 TO USER user2
+POSTHOOK: query: GRANT INSERT ON table_priv1 TO USER user2
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@table_priv1
 PREHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv1
@@ -27,12 +17,10 @@ PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv1
 POSTHOOK: type: SHOW_GRANT
 default	table_priv1			user2	USER	INSERT	false	-1	user1
-PREHOOK: query: -- grant select privilege to another user with grant
-GRANT SELECT ON table_priv1 TO USER user2 with grant option
+PREHOOK: query: GRANT SELECT ON table_priv1 TO USER user2 with grant option
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@table_priv1
-POSTHOOK: query: -- grant select privilege to another user with grant
-GRANT SELECT ON table_priv1 TO USER user2 with grant option
+POSTHOOK: query: GRANT SELECT ON table_priv1 TO USER user2 with grant option
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@table_priv1
 PREHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv1
@@ -41,14 +29,10 @@ POSTHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv1
 POSTHOOK: type: SHOW_GRANT
 default	table_priv1			user2	USER	INSERT	false	-1	user1
 default	table_priv1			user2	USER	SELECT	true	-1	user1
-PREHOOK: query: -- changed to other user - user2
--- grant permissions to another user as user2
-GRANT SELECT ON table_priv1 TO USER user3 with grant option
+PREHOOK: query: GRANT SELECT ON table_priv1 TO USER user3 with grant option
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@table_priv1
-POSTHOOK: query: -- changed to other user - user2
--- grant permissions to another user as user2
-GRANT SELECT ON table_priv1 TO USER user3 with grant option
+POSTHOOK: query: GRANT SELECT ON table_priv1 TO USER user3 with grant option
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@table_priv1
 PREHOOK: query: SHOW GRANT USER user3 ON TABLE table_priv1
@@ -56,14 +40,10 @@ PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: SHOW GRANT USER user3 ON TABLE table_priv1
 POSTHOOK: type: SHOW_GRANT
 default	table_priv1			user3	USER	SELECT	true	-1	user2
-PREHOOK: query: -- change to other user - user3
--- grant permissions to another user as user3
-GRANT SELECT ON table_priv1 TO USER user4 with grant option
+PREHOOK: query: GRANT SELECT ON table_priv1 TO USER user4 with grant option
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@table_priv1
-POSTHOOK: query: -- change to other user - user3
--- grant permissions to another user as user3
-GRANT SELECT ON table_priv1 TO USER user4 with grant option
+POSTHOOK: query: GRANT SELECT ON table_priv1 TO USER user4 with grant option
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@table_priv1
 PREHOOK: query: SHOW GRANT USER user4 ON TABLE table_priv1
@@ -71,16 +51,10 @@ PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: SHOW GRANT USER user4 ON TABLE table_priv1
 POSTHOOK: type: SHOW_GRANT
 default	table_priv1			user4	USER	SELECT	true	-1	user3
-#### A masked pattern was here ####
-
--- grant all with grant to user22
-GRANT ALL ON table_priv1 TO USER user22 with grant option
+PREHOOK: query: GRANT ALL ON table_priv1 TO USER user22 with grant option
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@table_priv1
-#### A masked pattern was here ####
-
--- grant all with grant to user22
-GRANT ALL ON table_priv1 TO USER user22 with grant option
+POSTHOOK: query: GRANT ALL ON table_priv1 TO USER user22 with grant option
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@table_priv1
 PREHOOK: query: SHOW GRANT USER user22 ON TABLE table_priv1
@@ -91,12 +65,10 @@ default	table_priv1			user22	USER	DELETE	true	-1	user1
 default	table_priv1			user22	USER	INSERT	true	-1	user1
 default	table_priv1			user22	USER	SELECT	true	-1	user1
 default	table_priv1			user22	USER	UPDATE	true	-1	user1
-PREHOOK: query: -- grant all without grant to user33
-GRANT ALL ON table_priv1 TO USER user33 with grant option
+PREHOOK: query: GRANT ALL ON table_priv1 TO USER user33 with grant option
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@table_priv1
-POSTHOOK: query: -- grant all without grant to user33
-GRANT ALL ON table_priv1 TO USER user33 with grant option
+POSTHOOK: query: GRANT ALL ON table_priv1 TO USER user33 with grant option
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@table_priv1
 PREHOOK: query: SHOW GRANT USER user33 ON TABLE table_priv1

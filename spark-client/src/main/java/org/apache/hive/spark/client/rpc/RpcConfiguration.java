@@ -19,6 +19,7 @@ package org.apache.hive.spark.client.rpc;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,15 +46,18 @@ public final class RpcConfiguration {
   private static final Logger LOG = LoggerFactory.getLogger(RpcConfiguration.class);
 
   public static final ImmutableSet<String> HIVE_SPARK_RSC_CONFIGS = ImmutableSet.of(
-    HiveConf.ConfVars.SPARK_RPC_CLIENT_CONNECT_TIMEOUT.varname,
-    HiveConf.ConfVars.SPARK_RPC_CLIENT_HANDSHAKE_TIMEOUT.varname,
-    HiveConf.ConfVars.SPARK_RPC_CHANNEL_LOG_LEVEL.varname,
-    HiveConf.ConfVars.SPARK_RPC_MAX_MESSAGE_SIZE.varname,
-    HiveConf.ConfVars.SPARK_RPC_MAX_THREADS.varname,
-    HiveConf.ConfVars.SPARK_RPC_SECRET_RANDOM_BITS.varname,
-    HiveConf.ConfVars.SPARK_RPC_SERVER_ADDRESS.varname
+      HiveConf.ConfVars.SPARK_CLIENT_FUTURE_TIMEOUT.varname,
+      HiveConf.ConfVars.SPARK_RPC_CLIENT_CONNECT_TIMEOUT.varname,
+      HiveConf.ConfVars.SPARK_RPC_CLIENT_HANDSHAKE_TIMEOUT.varname,
+      HiveConf.ConfVars.SPARK_RPC_CHANNEL_LOG_LEVEL.varname,
+      HiveConf.ConfVars.SPARK_RPC_MAX_MESSAGE_SIZE.varname,
+      HiveConf.ConfVars.SPARK_RPC_MAX_THREADS.varname,
+      HiveConf.ConfVars.SPARK_RPC_SECRET_RANDOM_BITS.varname,
+      HiveConf.ConfVars.SPARK_RPC_SERVER_ADDRESS.varname,
+      HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname
   );
   public static final ImmutableSet<String> HIVE_SPARK_TIME_CONFIGS = ImmutableSet.of(
+    HiveConf.ConfVars.SPARK_CLIENT_FUTURE_TIMEOUT.varname,
     HiveConf.ConfVars.SPARK_RPC_CLIENT_CONNECT_TIMEOUT.varname,
     HiveConf.ConfVars.SPARK_RPC_CLIENT_HANDSHAKE_TIMEOUT.varname
   );
@@ -66,12 +70,19 @@ public final class RpcConfiguration {
   private static final HiveConf DEFAULT_CONF = new HiveConf();
 
   public RpcConfiguration(Map<String, String> config) {
-    this.config = config;
+    // make sure we don't modify the config in RpcConfiguration
+    this.config = Collections.unmodifiableMap(config);
+  }
+
+  public long getFutureTimeoutMs() {
+    String value = config.get(HiveConf.ConfVars.SPARK_CLIENT_FUTURE_TIMEOUT.varname);
+    return value != null ? Long.parseLong(value) : DEFAULT_CONF.getTimeVar(
+      HiveConf.ConfVars.SPARK_CLIENT_FUTURE_TIMEOUT, TimeUnit.MILLISECONDS);
   }
 
   long getConnectTimeoutMs() {
     String value = config.get(HiveConf.ConfVars.SPARK_RPC_CLIENT_CONNECT_TIMEOUT.varname);
-    return value != null ? Integer.parseInt(value) : DEFAULT_CONF.getTimeVar(
+    return value != null ? Long.parseLong(value) : DEFAULT_CONF.getTimeVar(
       HiveConf.ConfVars.SPARK_RPC_CLIENT_CONNECT_TIMEOUT, TimeUnit.MILLISECONDS);
   }
 
@@ -113,10 +124,9 @@ public final class RpcConfiguration {
    * Parses the port string like 49152-49222,49228 into the port list. A default 0
    * is added for the empty port string.
    * @return a list of configured ports.
-   * @exception IOException is thrown if the property is not configured properly
    */
-  List<Integer> getServerPorts() throws IOException {
-    String errMsg = "Incorrect RPC server port configuration for HiveServer2";
+  List<Integer> getServerPorts() {
+    String errMsg = "Malformed configuration value for " + HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname;
     String portString = config.get(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname);
     ArrayList<Integer> ports = new ArrayList<Integer>();
     try {
@@ -125,7 +135,7 @@ public final class RpcConfiguration {
           String[] range = portRange.split("-");
           if (range.length == 0 || range.length > 2
               || (range.length == 2 && Integer.valueOf(range[0]) > Integer.valueOf(range[1]))) {
-            throw new IOException(errMsg);
+            throw new IllegalArgumentException(errMsg);
           }
           if (range.length == 1) {
             ports.add(Integer.valueOf(range[0]));
@@ -141,7 +151,7 @@ public final class RpcConfiguration {
 
       return ports;
     } catch(NumberFormatException e) {
-      throw new IOException(errMsg);
+      throw new IllegalArgumentException(errMsg, e);
     }
   }
 

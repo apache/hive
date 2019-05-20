@@ -15,6 +15,7 @@ package org.apache.hive.benchmark.serde;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -28,6 +29,7 @@ import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
 import org.apache.hadoop.hive.serde2.lazy.LazyShort;
 import org.apache.hadoop.hive.serde2.lazy.LazyTimestamp;
+import org.apache.hadoop.hive.serde2.lazy.fast.StringToDouble;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyPrimitiveObjectInspectorFactory;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -62,7 +64,7 @@ public class LazySimpleSerDeBench {
   @BenchmarkMode(Mode.AverageTime)
   @Fork(1)
   @State(Scope.Thread)
-  @OutputTimeUnit(TimeUnit.NANOSECONDS)
+  @OutputTimeUnit(TimeUnit.MILLISECONDS)
   public static abstract class AbstractDeserializer {
 
     public int[] offsets = new int[DEFAULT_DATA_SIZE];
@@ -449,8 +451,32 @@ public class LazySimpleSerDeBench {
 
   @BenchmarkMode(Mode.AverageTime)
   @Fork(1)
+  @OutputTimeUnit(TimeUnit.MILLISECONDS)
+  @Warmup(iterations = 4, time = 2, timeUnit = TimeUnit.MILLISECONDS)
+  @Measurement(iterations = 4, time = 2, timeUnit = TimeUnit.MILLISECONDS)
   @State(Scope.Thread)
-  @OutputTimeUnit(TimeUnit.NANOSECONDS)
+  public static class ParseDouble {
+    byte[] bytes = "1234567890.12345".getBytes(StandardCharsets.UTF_8);
+
+    @Benchmark
+    public void floatingDecimalBench() {
+      for (int i = 0; i < DEFAULT_ITER_TIME; i++) {
+        StringToDouble.strtod(bytes, 0, bytes.length);
+      }
+    }
+
+    @Benchmark
+    public void doubleBench() {
+      for (int i = 0; i < DEFAULT_ITER_TIME; i++) {
+        Double.parseDouble(new String(bytes, 0, bytes.length, StandardCharsets.UTF_8));
+      }
+    }
+  }
+
+  @BenchmarkMode(Mode.AverageTime)
+  @Fork(1)
+  @State(Scope.Thread)
+  @OutputTimeUnit(TimeUnit.MILLISECONDS)
   public static class GoodLazyDate {
 
     final LazyDate obj = new LazyDate(
@@ -533,7 +559,7 @@ public class LazySimpleSerDeBench {
   @BenchmarkMode(Mode.AverageTime)
   @Fork(1)
   @State(Scope.Thread)
-  @OutputTimeUnit(TimeUnit.NANOSECONDS)
+  @OutputTimeUnit(TimeUnit.MILLISECONDS)
   public static class GoodLazyTimestamp {
 
     final LazyTimestamp obj = new LazyTimestamp(

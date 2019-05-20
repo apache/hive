@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.LeadLagInfo;
 import org.apache.hadoop.hive.ql.parse.WindowingExprNodeEvaluatorFactory;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
 import org.apache.hadoop.hive.ql.plan.ptf.OrderExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
@@ -40,7 +41,6 @@ import org.apache.hadoop.hive.ql.plan.ptf.PTFInputDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFQueryInputDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.ShapeDetails;
-import org.apache.hadoop.hive.ql.plan.ptf.ValueBoundaryDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
@@ -110,7 +110,7 @@ public class PTFDeserializer {
     TableFunctionEvaluator tEval = def.getTFunction();
     WindowingTableFunctionResolver tResolver =
         (WindowingTableFunctionResolver) constructResolver(def.getResolverClassName());
-    tResolver.initialize(ptfDesc, def, tEval);
+    tResolver.initialize(hConf, ptfDesc, def, tEval);
 
 
     /*
@@ -125,8 +125,7 @@ public class PTFDeserializer {
       }
       if (wFnDef.getWindowFrame() != null) {
         WindowFrameDef wFrmDef = wFnDef.getWindowFrame();
-        initialize(wFrmDef.getStart(), inpShape);
-        initialize(wFrmDef.getEnd(), inpShape);
+        initialize(wFrmDef, inpShape);
       }
       setupWdwFnEvaluator(wFnDef);
     }
@@ -172,7 +171,7 @@ public class PTFDeserializer {
     TableFunctionEvaluator tEval = def.getTFunction();
     // TableFunctionResolver tResolver = FunctionRegistry.getTableFunctionResolver(def.getName());
     TableFunctionResolver tResolver = constructResolver(def.getResolverClassName());
-    tResolver.initialize(ptfDesc, def, tEval);
+    tResolver.initialize(hConf, ptfDesc, def, tEval);
 
     /*
      * 3. give Evaluator chance to setup for RawInput execution; setup RawInput shape
@@ -212,10 +211,9 @@ public class PTFDeserializer {
     def.setOI(OI);
   }
 
-  protected void initialize(BoundaryDef def, ShapeDetails inpShape) throws HiveException {
-    if (def instanceof ValueBoundaryDef) {
-      ValueBoundaryDef vDef = (ValueBoundaryDef) def;
-      for (OrderExpressionDef exprDef : vDef.getOrderDef().getExpressions()) {
+  protected void initialize(WindowFrameDef winFrame, ShapeDetails inpShape) throws HiveException {
+    if (winFrame.getWindowType() == WindowType.RANGE) {
+      for (OrderExpressionDef exprDef : winFrame.getOrderDef().getExpressions()) {
         initialize(exprDef, inpShape);
       }
     }

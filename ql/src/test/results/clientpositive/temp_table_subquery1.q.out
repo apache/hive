@@ -8,8 +8,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_temp
-PREHOOK: query: -- subquery exists
-select *
+PREHOOK: query: select *
 from src_temp b
 where exists
   (select a.key
@@ -19,8 +18,7 @@ where exists
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_temp
 #### A masked pattern was here ####
-POSTHOOK: query: -- subquery exists
-select *
+POSTHOOK: query: select *
 from src_temp b
 where exists
   (select a.key
@@ -41,15 +39,13 @@ POSTHOOK: Input: default@src_temp
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: -- subquery in
-select *
+PREHOOK: query: select *
 from src_temp
 where src_temp.key in (select key from src_temp s1 where s1.key > '9')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_temp
 #### A masked pattern was here ####
-POSTHOOK: query: -- subquery in
-select *
+POSTHOOK: query: select *
 from src_temp
 where src_temp.key in (select key from src_temp s1 where s1.key > '9')
 POSTHOOK: type: QUERY

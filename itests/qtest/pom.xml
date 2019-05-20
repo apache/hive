@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive-it</artifactId>
-    <version>2.2.0-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -46,12 +46,6 @@
     <!-- test intra-project -->
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-ant</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
       <artifactId>hive-common</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
@@ -64,13 +58,26 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-metastore</artifactId>
+      <artifactId>hive-standalone-metastore-common</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-metastore</artifactId>
+      <artifactId>hive-standalone-metastore-common</artifactId>
+      <version>${project.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-server</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-server</artifactId>
       <version>${project.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
@@ -125,6 +132,28 @@
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-jdbc-handler</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>kafka-handler</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.kafka</groupId>
+          <artifactId>kafka-clients</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-client</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
 
     <!-- test inter-project -->
     <dependency>
@@ -156,7 +185,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
@@ -173,7 +202,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
@@ -209,7 +238,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
@@ -225,7 +254,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
@@ -318,12 +347,24 @@
       <artifactId>hbase-server</artifactId>
       <version>${hbase.version}</version>
       <scope>test</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>org.glassfish.web</groupId>
+            <artifactId>javax.servlet.jsp</artifactId>
+          </exclusion>
+        </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-server</artifactId>
       <version>${hbase.version}</version>
       <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-mapreduce</artifactId>
+      <version>${hbase.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -349,7 +390,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
@@ -371,11 +412,31 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-it-druid</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-bundle</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>
@@ -417,11 +478,10 @@
             <configuration>
               <target>
                 <property name="test.classpath" refid="maven.test.classpath"/>
-                <echo message="${test.classpath}"/>
                 <taskdef resource="net/sf/antcontrib/antcontrib.properties"
                   classpathref="maven.plugin.classpath" />
                 <mkdir dir="${project.build.directory}/qfile-results/clientpositive/" />
-                <mkdir dir="${project.build.directory}/qfile-results/clientpositive/perf" /> 
+                <mkdir dir="${project.build.directory}/qfile-results/clientpositive/perf" />
                 <mkdir dir="${project.build.directory}/qfile-results/clientnegative/" />
                 <mkdir dir="${project.build.directory}/qfile-results/clientcompare"/>
                 <mkdir dir="${project.build.directory}/qfile-results/positive/" />

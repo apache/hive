@@ -1,5 +1,10 @@
+--! qt:dataset:src
+--! qt:dataset:alltypesorc
+set hive.stats.column.autogather=false;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
+set hive.fetch.task.conversion=none;
+
 drop table char_2;
 
 create table char_2 (
@@ -14,7 +19,7 @@ from src
 order by key asc
 limit 5;
 
-explain select key, value
+explain vectorization only select key, value
 from char_2
 order by key asc
 limit 5;
@@ -30,7 +35,7 @@ from src
 order by key desc
 limit 5;
 
-explain select key, value
+explain vectorization only select key, value
 from char_2
 order by key desc
 limit 5;
@@ -49,7 +54,7 @@ create table char_3 (
   field char(12)
 ) stored as orc;
 
-explain
+explain vectorization only operator
 insert into table char_3 select cint from alltypesorc limit 10;
 
 insert into table char_3 select cint from alltypesorc limit 10;

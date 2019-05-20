@@ -6,17 +6,11 @@ PREHOOK: query: DROP VIEW xxx9
 PREHOOK: type: DROPVIEW
 POSTHOOK: query: DROP VIEW xxx9
 POSTHOOK: type: DROPVIEW
-PREHOOK: query: -- create two levels of view reference, then invalidate intermediate view
--- by dropping a column from underlying table, and verify that
--- querying outermost view results in full error context
-CREATE TABLE xxx10 (key int, value int)
+PREHOOK: query: CREATE TABLE xxx10 (key int, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@xxx10
-POSTHOOK: query: -- create two levels of view reference, then invalidate intermediate view
--- by dropping a column from underlying table, and verify that
--- querying outermost view results in full error context
-CREATE TABLE xxx10 (key int, value int)
+POSTHOOK: query: CREATE TABLE xxx10 (key int, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@xxx10
@@ -30,6 +24,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@xxx10
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@xxx9
+POSTHOOK: Lineage: xxx9.key SIMPLE [(xxx10)xxx10.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: xxx9.value SIMPLE [(xxx10)xxx10.FieldSchema(name:value, type:int, comment:null), ]
 PREHOOK: query: CREATE VIEW xxx8 AS SELECT * FROM xxx9 xxx
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@xxx10
@@ -42,6 +38,8 @@ POSTHOOK: Input: default@xxx10
 POSTHOOK: Input: default@xxx9
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@xxx8
+POSTHOOK: Lineage: xxx8.key SIMPLE [(xxx10)xxx10.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: xxx8.value SIMPLE [(xxx10)xxx10.FieldSchema(name:value, type:int, comment:null), ]
 PREHOOK: query: ALTER TABLE xxx10 REPLACE COLUMNS (key int)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@xxx10

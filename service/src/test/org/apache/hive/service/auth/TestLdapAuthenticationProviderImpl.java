@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,6 +22,7 @@ import java.util.Arrays;
 import javax.naming.NamingException;
 import javax.security.sasl.AuthenticationException;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.apache.hive.service.auth.ldap.DirSearch;
 import org.apache.hive.service.auth.ldap.DirSearchFactory;
 import org.apache.hive.service.auth.ldap.LdapSearchFactory;
@@ -154,7 +155,7 @@ public class TestLdapAuthenticationProviderImpl {
   }
 
   @Test
-  public void testAuthenticateWhenGroupFilterPasses() throws NamingException, AuthenticationException, IOException {
+  public void testAuthenticateWhenGroupMembershipKeyFilterPasses() throws NamingException, AuthenticationException, IOException {
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, "group1,group2");
 
     when(search.findUserDn("user1")).thenReturn("cn=user1,ou=PowerUsers,dc=mycorp,dc=com");
@@ -174,7 +175,7 @@ public class TestLdapAuthenticationProviderImpl {
   }
 
   @Test
-  public void testAuthenticateWhenUserAndGroupFiltersPass() throws NamingException, AuthenticationException, IOException {
+  public void testAuthenticateWhenUserAndGroupMembershipKeyFiltersPass() throws NamingException, AuthenticationException, IOException {
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, "group1,group2");
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERFILTER, "user1,user2");
 
@@ -195,7 +196,7 @@ public class TestLdapAuthenticationProviderImpl {
   }
 
   @Test
-  public void testAuthenticateWhenUserFilterPassesAndGroupFilterFails()
+  public void testAuthenticateWhenUserFilterPassesAndGroupMembershipKeyFilterFails()
       throws NamingException, AuthenticationException, IOException {
     thrown.expect(AuthenticationException.class);
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, "group1,group2");
@@ -212,7 +213,7 @@ public class TestLdapAuthenticationProviderImpl {
   }
 
   @Test
-  public void testAuthenticateWhenUserFilterFailsAndGroupFilterPasses()
+  public void testAuthenticateWhenUserFilterFailsAndGroupMembershipKeyFilterPasses()
       throws NamingException, AuthenticationException, IOException {
     thrown.expect(AuthenticationException.class);
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, "group3");
@@ -256,6 +257,184 @@ public class TestLdapAuthenticationProviderImpl {
         "cn=user2,ou=PowerUsers,dc=mycorp,dc=com"));
 
     authenticateUserAndCheckSearchIsClosed("user3");
+  }
+
+  @Test
+  public void testAuthenticateWhenUserMembershipKeyFilterPasses() throws NamingException, AuthenticationException, IOException {
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, "HIVE-USERS");
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BASEDN, "dc=mycorp,dc=com");
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERMEMBERSHIP_KEY, "memberOf");
+
+    when(search.findUserDn("user1")).thenReturn("cn=user1,ou=PowerUsers,dc=mycorp,dc=com");
+
+    String groupDn = "cn=HIVE-USERS,ou=Groups,dc=mycorp,dc=com";
+    when(search.findGroupDn("HIVE-USERS")).thenReturn(groupDn);
+    when(search.isUserMemberOfGroup("user1", groupDn)).thenReturn(true);
+
+    auth = new LdapAuthenticationProviderImpl(conf, factory);
+    auth.Authenticate("user1", "Blah");
+
+    verify(factory, times(1)).getInstance(isA(HiveConf.class), anyString(), eq("Blah"));
+    verify(search, times(1)).findGroupDn(anyString());
+    verify(search, times(1)).isUserMemberOfGroup(anyString(), anyString());
+    verify(search, atLeastOnce()).close();
+  }
+
+  @Test
+  public void testAuthenticateWhenUserMembershipKeyFilterFails() throws NamingException, AuthenticationException, IOException {
+    thrown.expect(AuthenticationException.class);
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, "HIVE-USERS");
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BASEDN, "dc=mycorp,dc=com");
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERMEMBERSHIP_KEY, "memberOf");
+
+    when(search.findUserDn("user1")).thenReturn("cn=user1,ou=PowerUsers,dc=mycorp,dc=com");
+
+    String groupDn = "cn=HIVE-USERS,ou=Groups,dc=mycorp,dc=com";
+    when(search.findGroupDn("HIVE-USERS")).thenReturn(groupDn);
+    when(search.isUserMemberOfGroup("user1", groupDn)).thenReturn(false);
+
+    auth = new LdapAuthenticationProviderImpl(conf, factory);
+    auth.Authenticate("user1", "Blah");
+  }
+
+  @Test
+  public void testAuthenticateWhenUserMembershipKeyFilter2x2PatternsPasses() throws NamingException, AuthenticationException, IOException {
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, "HIVE-USERS1,HIVE-USERS2");
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPDNPATTERN,
+        "cn=%s,ou=Groups,ou=branch1,dc=mycorp,dc=com");
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERDNPATTERN,
+        "cn=%s,ou=Userss,ou=branch1,dc=mycorp,dc=com");
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERMEMBERSHIP_KEY, "memberOf");
+
+    when(search.findUserDn("user1")).thenReturn("cn=user1,ou=PowerUsers,dc=mycorp,dc=com");
+
+    when(search.findGroupDn("HIVE-USERS1"))
+        .thenReturn("cn=HIVE-USERS1,ou=Groups,ou=branch1,dc=mycorp,dc=com");
+    when(search.findGroupDn("HIVE-USERS2"))
+        .thenReturn("cn=HIVE-USERS2,ou=Groups,ou=branch1,dc=mycorp,dc=com");
+
+    when(search.isUserMemberOfGroup("user1", "cn=HIVE-USERS1,ou=Groups,ou=branch1,dc=mycorp,dc=com")).thenThrow(NamingException.class);
+    when(search.isUserMemberOfGroup("user1", "cn=HIVE-USERS2,ou=Groups,ou=branch1,dc=mycorp,dc=com")).thenReturn(true);
+
+    auth = new LdapAuthenticationProviderImpl(conf, factory);
+    auth.Authenticate("user1", "Blah");
+
+    verify(factory, times(1)).getInstance(isA(HiveConf.class), anyString(), eq("Blah"));
+    verify(search, times(2)).findGroupDn(anyString());
+    verify(search, times(2)).isUserMemberOfGroup(anyString(), anyString());
+    verify(search, atLeastOnce()).close();
+  }
+
+  @Test
+  public void testAuthenticateWithBindInCredentialFilePasses() throws AuthenticationException, NamingException {
+    String bindUser = "cn=BindUser,ou=Users,ou=branch1,dc=mycorp,dc=com";
+    String bindPass = "testPassword";
+    String authFullUser = "cn=user1,ou=Users,ou=branch1,dc=mycorp,dc=com";
+    String authUser = "user1";
+    String authPass = "Blah";
+    String tmpDir = System.getProperty("build.dir");
+    String credentialsPath = "jceks://file" + tmpDir + "/test-classes/creds/test.jceks";
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_USER, bindUser);
+    conf.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH, credentialsPath);
+
+    System.out.println(tmpDir);
+
+    when(search.findUserDn(eq(authUser))).thenReturn(authFullUser);
+
+    auth = new LdapAuthenticationProviderImpl(conf, factory);
+    auth.Authenticate(authUser, authPass);
+
+    verify(factory, times(1)).getInstance(isA(HiveConf.class), eq(bindUser), eq(bindPass));
+    verify(factory, times(1)).getInstance(isA(HiveConf.class), eq(authFullUser), eq(authPass));
+    verify(search, times(1)).findUserDn(eq(authUser));
+  }
+
+  @Test
+  public void testAuthenticateWithBindInMissingCredentialFilePasses() throws AuthenticationException, NamingException {
+    String bindUser = "cn=BindUser,ou=Users,ou=branch1,dc=mycorp,dc=com";
+    String authUser = "user1";
+    String authPass = "Blah";
+    String tmpDir = System.getProperty("build.dir");
+    String credentialsPath = "jceks://file" + tmpDir + "/test-classes/creds/nonExistent.jceks";
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_USER, bindUser);
+    conf.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH, credentialsPath);
+
+    auth = new LdapAuthenticationProviderImpl(conf, factory);
+    auth.Authenticate(authUser, authPass);
+
+    verify(factory, times(1)).getInstance(isA(HiveConf.class), eq(authUser), eq(authPass));
+  }
+
+  @Test
+  public void testAuthenticateWithBindUserPasses() throws AuthenticationException, NamingException {
+    String bindUser = "cn=BindUser,ou=Users,ou=branch1,dc=mycorp,dc=com";
+    String bindPass = "Blah";
+    String authFullUser = "cn=user1,ou=Users,ou=branch1,dc=mycorp,dc=com";
+    String authUser = "user1";
+    String authPass = "Blah2";
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_USER, bindUser);
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_PASSWORD, bindPass);
+
+    when(search.findUserDn(eq(authUser))).thenReturn(authFullUser);
+
+    auth = new LdapAuthenticationProviderImpl(conf, factory);
+    auth.Authenticate(authUser, authPass);
+
+    verify(factory, times(1)).getInstance(isA(HiveConf.class), eq(bindUser), eq(bindPass));
+    verify(factory, times(1)).getInstance(isA(HiveConf.class), eq(authFullUser), eq(authPass));
+    verify(search, times(1)).findUserDn(eq(authUser));
+  }
+
+  @Test
+  public void testAuthenticateWithBindUserFailsOnAuthentication() throws AuthenticationException, NamingException {
+    String bindUser = "cn=BindUser,ou=Users,ou=branch1,dc=mycorp,dc=com";
+    String bindPass = "Blah";
+    String authFullUser = "cn=user1,ou=Users,ou=branch1,dc=mycorp,dc=com";
+    String authUser = "user1";
+    String authPass = "Blah2";
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_USER, bindUser);
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_PASSWORD, bindPass);
+
+    thrown.expect(AuthenticationException.class);
+    when(factory.getInstance(any(HiveConf.class), eq(authFullUser), eq(authPass))).
+      thenThrow(AuthenticationException.class);
+    when(search.findUserDn(eq(authUser))).thenReturn(authFullUser);
+
+    auth = new LdapAuthenticationProviderImpl(conf, factory);
+    auth.Authenticate(authUser, authPass);
+  }
+
+  @Test
+  public void testAuthenticateWithBindUserFailsOnGettingDn() throws AuthenticationException, NamingException {
+    String bindUser = "cn=BindUser,ou=Users,ou=branch1,dc=mycorp,dc=com";
+    String bindPass = "Blah";
+    String authFullUser = "cn=user1,ou=Users,ou=branch1,dc=mycorp,dc=com";
+    String authUser = "user1";
+    String authPass = "Blah2";
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_USER, bindUser);
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_PASSWORD, bindPass);
+
+    thrown.expect(AuthenticationException.class);
+    when(search.findUserDn(eq(authUser))).thenThrow(NamingException.class);
+
+    auth = new LdapAuthenticationProviderImpl(conf, factory);
+    auth.Authenticate(authUser, authPass);
+  }
+
+  @Test
+  public void testAuthenticateWithBindUserFailsOnBinding() throws AuthenticationException {
+    String bindUser = "cn=BindUser,ou=Users,ou=branch1,dc=mycorp,dc=com";
+    String bindPass = "Blah";
+    String authUser = "user1";
+    String authPass = "Blah2";
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_USER, bindUser);
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_PASSWORD, bindPass);
+
+    thrown.expect(AuthenticationException.class);
+    when(factory.getInstance(any(HiveConf.class), eq(bindUser), eq(bindPass))).thenThrow(AuthenticationException.class);
+
+    auth = new LdapAuthenticationProviderImpl(conf, factory);
+    auth.Authenticate(authUser, authPass);
   }
 
   private void expectAuthenticationExceptionForInvalidPassword() {

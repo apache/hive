@@ -1,33 +1,37 @@
-PREHOOK: query: create table t (
+PREHOOK: query: create table t_n9 (
 	dp double precision,
 	d double,
 	f float,
 	i int,
 	ii integer,
 	si smallint,
-	bi bigint
+	bi bigint,
+        de  dec,
+        dc  dec(3,2)
 	)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t (
+PREHOOK: Output: default@t_n9
+POSTHOOK: query: create table t_n9 (
 	dp double precision,
 	d double,
 	f float,
 	i int,
 	ii integer,
 	si smallint,
-	bi bigint
+	bi bigint,
+        de  dec,
+        dc  dec(3,2)
 	)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
-PREHOOK: query: describe t
+POSTHOOK: Output: default@t_n9
+PREHOOK: query: describe t_n9
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@t
-POSTHOOK: query: describe t
+PREHOOK: Input: default@t_n9
+POSTHOOK: query: describe t_n9
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n9
 dp                  	double              	                    
 d                   	double              	                    
 f                   	float               	                    
@@ -35,3 +39,5 @@ i                   	int
 ii                  	int                 	                    
 si                  	smallint            	                    
 bi                  	bigint              	                    
+de                  	decimal(10,0)       	                    
+dc                  	decimal(3,2)        	                    

@@ -16,6 +16,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testViewPart
+POSTHOOK: Lineage: testViewPart.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: ALTER VIEW testViewPart 
 ADD PARTITION (value='val_86') PARTITION (value='val_xyz')
 PREHOOK: type: ALTERTABLE_ADDPARTS
@@ -37,12 +38,10 @@ POSTHOOK: query: DESCRIBE FORMATTED testViewPart
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@testviewpart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -51,6 +50,13 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	2                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -63,10 +69,10 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT key, value   	 
+Original Query:     	SELECT key, value   	 
 	                    	FROM src            
 	                    	WHERE key=86        
-View Expanded Text: 	SELECT `src`.`key`, `src`.`value`	 
+Expanded Query:     	SELECT `src`.`key`, `src`.`value`	 
 	                    	FROM `default`.`src`
 	                    	WHERE `src`.`key`=86
 FAILED: SemanticException [Error 10217]: Cannot replace a view with CREATE VIEW or REPLACE VIEW or ALTER VIEW AS SELECT if the view has partitions

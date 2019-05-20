@@ -64,7 +64,8 @@ struct OperatorType {
     ORCFILEMERGE = 22,
     RCFILEMERGE = 23,
     MERGEJOIN = 24,
-    SPARKPRUNINGSINK = 25
+    SPARKPRUNINGSINK = 25,
+    TOPNKEY = 26
   };
 };
 
@@ -93,7 +94,12 @@ struct StageType {
     MOVE = 8,
     STATS = 9,
     DEPENDENCY_COLLECTION = 10,
-    COLUMNSTATS = 11
+    COLUMNSTATS = 11,
+    REPL_DUMP = 12,
+    REPL_BOOTSTRAP_LOAD = 13,
+    REPL_STATE_LOG = 14,
+    REPL_TXN = 15,
+    REPL_INCREMENTAL_LOAD = 16
   };
 };
 

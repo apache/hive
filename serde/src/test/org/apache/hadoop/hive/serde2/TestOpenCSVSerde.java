@@ -1,15 +1,4 @@
-package org.apache.hadoop.hive.serde2;
-
-import java.util.List;
-import java.util.Properties;
-
-import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.io.Text;
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,6 +15,19 @@ import static org.junit.Assert.assertEquals;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+ 
+package org.apache.hadoop.hive.serde2;
+
+import java.util.List;
+import java.util.Properties;
+
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.io.Text;
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+
+
 
 public class TestOpenCSVSerde {
   private final OpenCSVSerde csv = new OpenCSVSerde();

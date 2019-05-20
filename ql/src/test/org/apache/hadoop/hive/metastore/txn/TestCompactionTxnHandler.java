@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.metastore.txn;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
@@ -49,13 +51,14 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 
 /**
- * Tests for TxnHandler.
+ * Tests for CompactionTxnHandler.
  */
 public class TestCompactionTxnHandler {
 
@@ -64,6 +67,10 @@ public class TestCompactionTxnHandler {
 
   public TestCompactionTxnHandler() throws Exception {
     TxnDbUtil.setConfValues(conf);
+    // Set config so that TxnUtils.buildQueryWithINClauseStrings() will
+    // produce multiple queries
+    conf.setIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_QUERY_LENGTH, 1);
+    conf.setIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE, 10);
     tearDown();
   }
 
@@ -81,8 +88,8 @@ public class TestCompactionTxnHandler {
     assertEquals(CompactionType.MINOR, ci.type);
     assertNull(ci.runAs);
     assertNull(txnHandler.findNextToCompact("fred"));
-
-    txnHandler.setRunAs(ci.id, "bob");
+    ci.runAs = "bob";
+    txnHandler.updateCompactorState(ci, openTxn());
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
@@ -221,6 +228,64 @@ public class TestCompactionTxnHandler {
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     assertEquals(1, rsp.getCompactsSize());
     assertTrue(TxnHandler.SUCCEEDED_RESPONSE.equals(rsp.getCompacts().get(0).getState()));
+  }
+
+  @Test
+  public void testMarkFailed() throws Exception {
+    CompactionRequest rqst = new CompactionRequest("foo", "bar", CompactionType.MINOR);
+    rqst.setPartitionname("ds=today");
+    txnHandler.compact(rqst);
+    assertEquals(0, txnHandler.findReadyToClean().size());
+    CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    assertNotNull(ci);
+
+    assertEquals(0, txnHandler.findReadyToClean().size());
+    txnHandler.markFailed(ci);
+    assertNull(txnHandler.findNextToCompact("fred"));
+    boolean failedCheck = txnHandler.checkFailedCompactions(ci);
+    assertFalse(failedCheck);
+    try {
+      // The first call to markFailed() should have removed the record from
+      // COMPACTION_QUEUE, so a repeated call should fail
+      txnHandler.markFailed(ci);
+      fail("The first call to markFailed() must have failed as this call did "
+          + "not throw the expected exception");
+    } catch (IllegalStateException e) {
+      // This is expected
+      assertTrue(e.getMessage().contains("No record with CQ_ID="));
+    }
+
+    // There are not enough failed compactions yet so checkFailedCompactions() should return false.
+    // But note that any sql error will also result in a return of false.
+    assertFalse(txnHandler.checkFailedCompactions(ci));
+
+    // Add more failed compactions so that the total is exactly COMPACTOR_INITIATOR_FAILED_THRESHOLD
+    for (int i = 1 ; i <  conf.getIntVar(HiveConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD); i++) {
+      addFailedCompaction("foo", "bar", CompactionType.MINOR, "ds=today");
+    }
+    // Now checkFailedCompactions() will return true
+    assertTrue(txnHandler.checkFailedCompactions(ci));
+
+    // Now add enough failed compactions to ensure purgeCompactionHistory() will attempt delete;
+    // HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED is enough for this.
+    // But we also want enough to tickle the code in TxnUtils.buildQueryWithINClauseStrings()
+    // so that it produces multiple queries. For that we need at least 290.
+    for (int i = 0 ; i < 300; i++) {
+      addFailedCompaction("foo", "bar", CompactionType.MINOR, "ds=today");
+    }
+    txnHandler.purgeCompactionHistory();
+  }
+
+  private void addFailedCompaction(String dbName, String tableName, CompactionType type,
+      String partitionName) throws MetaException {
+    CompactionRequest rqst;
+    CompactionInfo ci;
+    rqst = new CompactionRequest(dbName, tableName, type);
+    rqst.setPartitionname(partitionName);
+    txnHandler.compact(rqst);
+    ci = txnHandler.findNextToCompact("fred");
+    assertNotNull(ci);
+    txnHandler.markFailed(ci);
   }
 
   @Test
@@ -415,6 +480,14 @@ public class TestCompactionTxnHandler {
     String tableName = "adp_table";
     OpenTxnsResponse openTxns = txnHandler.openTxns(new OpenTxnRequest(1, "me", "localhost"));
     long txnId = openTxns.getTxn_ids().get(0);
+
+    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(dbName, tableName);
+    rqst.setTxnIds(openTxns.getTxn_ids());
+    AllocateTableWriteIdsResponse writeIds = txnHandler.allocateTableWriteIds(rqst);
+    long writeId = writeIds.getTxnToWriteIds().get(0).getWriteId();
+    assertEquals(txnId, writeIds.getTxnToWriteIds().get(0).getTxnId());
+    assertEquals(1, writeId);
+
     // lock a table, as in dynamic partitions
     LockComponent lc = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, dbName);
     lc.setIsDynamicPartitionWrite(true);
@@ -426,7 +499,7 @@ public class TestCompactionTxnHandler {
     LockResponse lock = txnHandler.lock(lr);
     assertEquals(LockState.ACQUIRED, lock.getState());
 
-    AddDynamicPartitions adp = new AddDynamicPartitions(txnId, dbName, tableName,
+    AddDynamicPartitions adp = new AddDynamicPartitions(txnId, writeId, dbName, tableName,
       Arrays.asList("ds=yesterday", "ds=today"));
     adp.setOperationType(dop);
     txnHandler.addDynamicPartitions(adp);
@@ -450,13 +523,13 @@ public class TestCompactionTxnHandler {
 
   @Before
   public void setUp() throws Exception {
-    TxnDbUtil.prepDb();
+    TxnDbUtil.prepDb(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
   }
 
   @After
   public void tearDown() throws Exception {
-    TxnDbUtil.cleanDb();
+    TxnDbUtil.cleanDb(conf);
   }
 
   private long openTxn() throws MetaException {

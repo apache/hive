@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -43,7 +43,7 @@
  *   <li>Support for additional generic compression: LZO, SNAPPY, ZLIB.</li>
  * </ul>
  *
- * <p>
+ * <br>
  * <b>Format:</b>
  * <pre>
  * {@code
@@ -54,9 +54,8 @@
  * PS LENGTH (1 byte)
  * }
  * </pre>
- * </p>
  *
- * <p>
+ * <br>
  * <b>Stripe:</b>
  * <pre>
  * {@code
@@ -65,6 +64,5 @@
  * STRIPE-FOOTER
  * }
  * </pre>
- * </p>
  */
 package org.apache.hadoop.hive.ql.io.orc;

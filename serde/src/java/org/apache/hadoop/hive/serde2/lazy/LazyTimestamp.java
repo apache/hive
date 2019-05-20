@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,12 +19,10 @@ package org.apache.hadoop.hive.serde2.lazy;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.sql.Timestamp;
+import java.nio.charset.StandardCharsets;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyTimestampObjectInspector;
 
 /**
@@ -35,17 +33,16 @@ import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyTimestam
  *    YYYY-MM-DD HH:MM:SS.[fff...]
  *
  */
-public class LazyTimestamp extends LazyPrimitive<LazyTimestampObjectInspector, TimestampWritable> {
-  private static final Logger LOG = LoggerFactory.getLogger(LazyTimestamp.class);
+public class LazyTimestamp extends LazyPrimitive<LazyTimestampObjectInspector, TimestampWritableV2> {
 
   public LazyTimestamp(LazyTimestampObjectInspector oi) {
     super(oi);
-    data = new TimestampWritable();
+    data = new TimestampWritableV2();
   }
 
   public LazyTimestamp(LazyTimestamp copy) {
     super(copy);
-    data = new TimestampWritable(copy.data);
+    data = new TimestampWritableV2(copy.data);
   }
 
   /**
@@ -58,20 +55,15 @@ public class LazyTimestamp extends LazyPrimitive<LazyTimestampObjectInspector, T
    */
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
-    String s = null;
     if (!LazyUtils.isDateMaybe(bytes.getData(), start, length)) {
       isNull = true;
       return;
     }
-    try {
-      s = new String(bytes.getData(), start, length, "US-ASCII");
-    } catch (UnsupportedEncodingException e) {
-      LOG.error("Unsupported encoding found ", e);
-      s = "";
-    }
+    String s =
+        new String(bytes.getData(), start, length, StandardCharsets.US_ASCII);
 
     Timestamp t = null;
-    if (s.compareTo("NULL") == 0) {
+    if ("NULL".equals(s)) {
       isNull = true;
       logExceptionMessage(bytes, start, length, "TIMESTAMP");
     } else {
@@ -94,18 +86,17 @@ public class LazyTimestamp extends LazyPrimitive<LazyTimestampObjectInspector, T
    *          The Timestamp to write
    * @throws IOException
    */
-  public static void writeUTF8(OutputStream out, TimestampWritable i)
+  public static void writeUTF8(OutputStream out, TimestampWritableV2 i)
       throws IOException {
-    if (i == null) {
-      // Serialize as time 0
-      out.write(TimestampWritable.nullBytes);
-    } else {
-      out.write(i.toString().getBytes("US-ASCII"));
+    byte[] b = TimestampWritableV2.nullBytes;
+    if (i != null) {
+      b = i.toString().getBytes(StandardCharsets.US_ASCII);
     }
+    out.write(b);
   }
 
   @Override
-  public TimestampWritable getWritableObject() {
+  public TimestampWritableV2 getWritableObject() {
     return data;
   }
 }

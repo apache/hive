@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,8 +22,10 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Descriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
+import java.util.Arrays;
 import java.util.HashSet;
 
 /**
@@ -31,37 +33,44 @@ import java.util.HashSet;
  */
 public class FilterDecimalColumnInList extends VectorExpression implements IDecimalInExpr {
   private static final long serialVersionUID = 1L;
-  private int inputCol;
+  private final int inputCol;
   private HiveDecimal[] inListValues;
 
+  // Transient members initialized by transientInit method.
+
   // The set object containing the IN list.
-  private transient HashSet<HiveDecimal> inSet;
+  private transient HashSet<HiveDecimalWritable> inSet;
 
   public FilterDecimalColumnInList() {
     super();
-    inSet = null;
+
+    // Dummy final assignments.
+    inputCol = -1;
   }
 
   /**
    * After construction you must call setInListValues() to add the values to the IN set.
    */
   public FilterDecimalColumnInList(int colNum) {
+    super();
     this.inputCol = colNum;
-    inSet = null;
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void transientInit() throws HiveException {
+    super.transientInit();
+
+    inSet = new HashSet<HiveDecimalWritable>(inListValues.length);
+    for (HiveDecimal val : inListValues) {
+      inSet.add(new HiveDecimalWritable(val));
+    }
+  }
+
+  @Override
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
-    }
-
-    if (inSet == null) {
-      inSet = new HashSet<HiveDecimal>(inListValues.length);
-      for (HiveDecimal val : inListValues) {
-        inSet.add(val);
-      }
     }
 
     DecimalColumnVector inputColVector = (DecimalColumnVector) batch.cols[inputCol];
@@ -81,7 +90,7 @@ public class FilterDecimalColumnInList extends VectorExpression implements IDeci
         // All must be selected otherwise size would be zero
         // Repeating property will not change.
 
-        if (!(inSet.contains(vector[0].getHiveDecimal()))) {
+        if (!(inSet.contains(vector[0]))) {
           //Entire batch is filtered out.
           batch.size = 0;
         }
@@ -89,7 +98,7 @@ public class FilterDecimalColumnInList extends VectorExpression implements IDeci
         int newSize = 0;
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          if (inSet.contains(vector[i].getHiveDecimal())) {
+          if (inSet.contains(vector[i])) {
             sel[newSize++] = i;
           }
         }
@@ -97,7 +106,7 @@ public class FilterDecimalColumnInList extends VectorExpression implements IDeci
       } else {
         int newSize = 0;
         for(int i = 0; i != n; i++) {
-          if (inSet.contains(vector[i].getHiveDecimal())) {
+          if (inSet.contains(vector[i])) {
             sel[newSize++] = i;
           }
         }
@@ -112,7 +121,7 @@ public class FilterDecimalColumnInList extends VectorExpression implements IDeci
         //All must be selected otherwise size would be zero
         //Repeating property will not change.
         if (!nullPos[0]) {
-          if (!inSet.contains(vector[0].getHiveDecimal())) {
+          if (!inSet.contains(vector[0])) {
 
             //Entire batch is filtered out.
             batch.size = 0;
@@ -125,7 +134,7 @@ public class FilterDecimalColumnInList extends VectorExpression implements IDeci
         for(int j = 0; j != n; j++) {
           int i = sel[j];
           if (!nullPos[i]) {
-           if (inSet.contains(vector[i].getHiveDecimal())) {
+           if (inSet.contains(vector[i])) {
              sel[newSize++] = i;
            }
           }
@@ -137,7 +146,7 @@ public class FilterDecimalColumnInList extends VectorExpression implements IDeci
         int newSize = 0;
         for(int i = 0; i != n; i++) {
           if (!nullPos[i]) {
-            if (inSet.contains(vector[i].getHiveDecimal())) {
+            if (inSet.contains(vector[i])) {
               sel[newSize++] = i;
             }
           }
@@ -150,17 +159,6 @@ public class FilterDecimalColumnInList extends VectorExpression implements IDeci
     }
   }
 
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
-  @Override
-  public int getOutputColumn() {
-    return -1;
-  }
-
   @Override
   public Descriptor getDescriptor() {
 
@@ -171,4 +169,10 @@ public class FilterDecimalColumnInList extends VectorExpression implements IDeci
   public void setInListValues(HiveDecimal[] a) {
     this.inListValues = a;
   }
+
+  @Override
+  public String vectorExpressionParameters() {
+    return getColumnParamString(0, inputCol) + ", values " + Arrays.toString(inListValues);
+  }
+
 }

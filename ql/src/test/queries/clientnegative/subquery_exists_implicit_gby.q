@@ -1,6 +1,7 @@
+--! qt:dataset:src
 
 
-select * 
+select *
 from src b 
 where exists 
   (select count(*) 

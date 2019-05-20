@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,16 +26,17 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.io.IOContextMap;
+import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
+import org.apache.hadoop.hive.ql.optimizer.physical.LlapClusterStateForCompile;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.CollectDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
@@ -54,6 +55,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -61,6 +63,10 @@ import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
+import static org.mockito.Mockito.when;
+
+import junit.framework.TestCase;
 
 /**
  * TestOperators.
@@ -213,10 +219,11 @@ public class TestOperators extends TestCase {
     try {
       System.out.println("Testing Script Operator");
       // col1
-      ExprNodeDesc exprDesc1 = TestExecDriver.getStringColumn("col1");
-
+      ExprNodeDesc exprDesc1 = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "col1", "",
+          false);
       // col2
-      ExprNodeDesc expr1 = TestExecDriver.getStringColumn("col0");
+      ExprNodeDesc expr1 = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "col0", "",
+          false);
       ExprNodeDesc expr2 = new ExprNodeConstantDesc("1");
       ExprNodeDesc exprDesc2 = TypeCheckProcFactory.DefaultExprProcessor
           .getFuncExprNodeDesc("concat", expr1, expr2);
@@ -387,6 +394,7 @@ public class TestOperators extends TestCase {
       // ensure that both of the partitions are in the complete list.
       String[] dirs = job.get("hive.complete.dir.list").split("\t");
       assertEquals(2, dirs.length);
+      Arrays.sort(dirs);
       assertEquals(true, dirs[0].endsWith("/state=CA"));
       assertEquals(true, dirs[1].endsWith("/state=OR"));
       return super.getSplits(job, splits);
@@ -408,31 +416,108 @@ public class TestOperators extends TestCase {
         "inputformat 'org.apache.hadoop.hive.ql.exec.TestOperators$CustomInFmt' " +
         "outputformat 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat' " +
         "tblproperties ('myprop1'='val1', 'myprop2' = 'val2')";
-    Driver driver = new Driver();
-    driver.init();
+    Driver driver = new Driver(conf);
     CommandProcessorResponse response = driver.run(cmd);
     assertEquals(0, response.getResponseCode());
     List<Object> result = new ArrayList<Object>();
 
     cmd = "load data local inpath '../data/files/employee.dat' " +
         "overwrite into table fetchOp partition (state='CA')";
-    driver.init();
     response = driver.run(cmd);
     assertEquals(0, response.getResponseCode());
 
     cmd = "load data local inpath '../data/files/employee2.dat' " +
         "overwrite into table fetchOp partition (state='OR')";
-    driver.init();
     response = driver.run(cmd);
     assertEquals(0, response.getResponseCode());
 
     cmd = "select * from fetchOp";
-    driver.init();
     driver.setMaxRows(500);
     response = driver.run(cmd);
     assertEquals(0, response.getResponseCode());
     driver.getResults(result);
     assertEquals(20, result.size());
     driver.close();
+  }
+
+  @Test
+  public void testNoConditionalTaskSizeForLlap() {
+    ConvertJoinMapJoin convertJoinMapJoin = new ConvertJoinMapJoin();
+    long defaultNoConditionalTaskSize = 1024L * 1024L * 1024L;
+    HiveConf hiveConf = new HiveConf();
+    hiveConf.setLongVar(HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD, defaultNoConditionalTaskSize);
+
+    LlapClusterStateForCompile llapInfo = null;
+    if ("llap".equalsIgnoreCase(hiveConf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_MODE))) {
+      llapInfo = LlapClusterStateForCompile.getClusterInfo(hiveConf);
+      llapInfo.initClusterInfo();
+    }
+    // execution mode not set, null is returned
+    assertEquals(defaultNoConditionalTaskSize,
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo).getAdjustedNoConditionalTaskSize());
+    hiveConf.set(HiveConf.ConfVars.HIVE_EXECUTION_MODE.varname, "llap");
+
+    if ("llap".equalsIgnoreCase(hiveConf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_MODE))) {
+      llapInfo = LlapClusterStateForCompile.getClusterInfo(hiveConf);
+      llapInfo.initClusterInfo();
+    }
+
+    // default executors is 4, max slots is 3. so 3 * 20% of noconditional task size will be oversubscribed
+    hiveConf.set(HiveConf.ConfVars.LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR.varname, "0.2");
+    hiveConf.set(HiveConf.ConfVars.LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY.varname, "3");
+    double fraction = hiveConf.getFloatVar(HiveConf.ConfVars.LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR);
+    int maxSlots = 3;
+    long expectedSize = (long) (defaultNoConditionalTaskSize + (defaultNoConditionalTaskSize * fraction * maxSlots));
+    assertEquals(expectedSize,
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo)
+        .getAdjustedNoConditionalTaskSize());
+
+    // num executors is less than max executors per query (which is not expected case), default executors will be
+    // chosen. 4 * 20% of noconditional task size will be oversubscribed
+    int chosenSlots = hiveConf.getIntVar(HiveConf.ConfVars.LLAP_DAEMON_NUM_EXECUTORS);
+    hiveConf.set(HiveConf.ConfVars.LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY.varname, "5");
+    expectedSize = (long) (defaultNoConditionalTaskSize + (defaultNoConditionalTaskSize * fraction * chosenSlots));
+    assertEquals(expectedSize,
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo)
+        .getAdjustedNoConditionalTaskSize());
+
+    // disable memory checking
+    hiveConf.set(HiveConf.ConfVars.LLAP_MAPJOIN_MEMORY_MONITOR_CHECK_INTERVAL.varname, "0");
+    assertFalse(
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo).doMemoryMonitoring());
+
+    // invalid inflation factor
+    hiveConf.set(HiveConf.ConfVars.LLAP_MAPJOIN_MEMORY_MONITOR_CHECK_INTERVAL.varname, "10000");
+    hiveConf.set(HiveConf.ConfVars.HIVE_HASH_TABLE_INFLATION_FACTOR.varname, "0.0f");
+    assertFalse(
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo).doMemoryMonitoring());
+  }
+
+  @Test
+  public void testLlapMemoryOversubscriptionMaxExecutorsPerQueryCalculation() {
+    ConvertJoinMapJoin convertJoinMapJoin = new ConvertJoinMapJoin();
+    HiveConf hiveConf = new HiveConf();
+
+    LlapClusterStateForCompile llapInfo = Mockito.mock(LlapClusterStateForCompile.class);
+
+    when(llapInfo.getNumExecutorsPerNode()).thenReturn(1);
+    assertEquals(1,
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo).getMaxExecutorsOverSubscribeMemory());
+    assertEquals(3,
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, null).getMaxExecutorsOverSubscribeMemory());
+
+    when(llapInfo.getNumExecutorsPerNode()).thenReturn(6);
+    assertEquals(2,
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo).getMaxExecutorsOverSubscribeMemory());
+
+    when(llapInfo.getNumExecutorsPerNode()).thenReturn(30);
+    assertEquals(8,
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo).getMaxExecutorsOverSubscribeMemory());
+
+    hiveConf.set(HiveConf.ConfVars.LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY.varname, "5");
+    assertEquals(5,
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, llapInfo).getMaxExecutorsOverSubscribeMemory());
+    assertEquals(5,
+        convertJoinMapJoin.getMemoryMonitorInfo(hiveConf, null).getMaxExecutorsOverSubscribeMemory());
   }
 }

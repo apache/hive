@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -173,11 +173,11 @@ public abstract class CLIServiceTest {
     queryString = "SELECT ID+1 FROM TEST_EXEC";
     opHandle = client.executeStatement(sessionHandle, queryString, confOverlay);
 
-    OperationStatus opStatus = client.getOperationStatus(opHandle);
+    OperationStatus opStatus = client.getOperationStatus(opHandle, false);
     checkOperationTimes(opHandle, opStatus);
     // Expect query to be completed now
     assertEquals("Query should be finished",
-        OperationState.FINISHED, client.getOperationStatus(opHandle).getState());
+        OperationState.FINISHED, client.getOperationStatus(opHandle, false).getState());
     client.closeOperation(opHandle);
 
     // Cleanup
@@ -240,6 +240,7 @@ public abstract class CLIServiceTest {
      * to give a runtime time error.
      * Also check that the sqlState and errorCode should be set
      */
+    // TODO: this is brittle.. anything that touches this path during compile will break this test
     queryString = "CREATE TABLE NON_EXISTING_TAB (ID STRING) location 'invalid://localhost:10000/a/b/c'";
     opStatus = runAsyncAndWait(sessionHandle, queryString, confOverlay, OperationState.ERROR, longPollingTimeout);
     // sqlState, errorCode should be set
@@ -273,10 +274,10 @@ public abstract class CLIServiceTest {
     System.out.println("Cancelling " + opHandle);
     client.cancelOperation(opHandle);
 
-    OperationStatus operationStatus = client.getOperationStatus(opHandle);
+    OperationStatus operationStatus = client.getOperationStatus(opHandle, false);
     checkOperationTimes(opHandle, operationStatus);
 
-    state = client.getOperationStatus(opHandle).getState();
+    state = client.getOperationStatus(opHandle, false).getState();
     System.out.println(opHandle + " after cancelling, state= " + state);
     assertEquals("Query should be cancelled", OperationState.CANCELED, state);
 
@@ -535,7 +536,7 @@ public abstract class CLIServiceTest {
     long longPollingTimeDelta;
     OperationStatus opStatus = null;
     OperationState state = null;
-    int count = 0;    
+    int count = 0;
     long start = System.currentTimeMillis();
     while (true) {
       // Break if iteration times out
@@ -545,7 +546,7 @@ public abstract class CLIServiceTest {
       }
       longPollingStart = System.currentTimeMillis();
       System.out.println("Long polling starts at: " + longPollingStart);
-      opStatus = client.getOperationStatus(opHandle);
+      opStatus = client.getOperationStatus(opHandle, false);
       state = opStatus.getState();
       longPollingEnd = System.currentTimeMillis();
       System.out.println("Long polling ends at: " + longPollingEnd);
@@ -568,7 +569,7 @@ public abstract class CLIServiceTest {
         assertTrue(longPollingTimeDelta - 0.9*expectedTimeout > 0);
       }
     }
-    assertEquals(expectedState, client.getOperationStatus(opHandle).getState());
+    assertEquals(expectedState, client.getOperationStatus(opHandle, false).getState());
     client.closeOperation(opHandle);
     return opStatus;
   }
@@ -606,7 +607,7 @@ public abstract class CLIServiceTest {
     assertNotNull(opHandle);
     // query should pass and create the table
     assertEquals("Query should be finished",
-        OperationState.FINISHED, client.getOperationStatus(opHandle).getState());
+        OperationState.FINISHED, client.getOperationStatus(opHandle, false).getState());
     client.closeOperation(opHandle);
 
     // select from  the new table should pass
@@ -615,7 +616,7 @@ public abstract class CLIServiceTest {
     assertNotNull(opHandle);
     // query should pass and create the table
     assertEquals("Query should be finished",
-        OperationState.FINISHED, client.getOperationStatus(opHandle).getState());
+        OperationState.FINISHED, client.getOperationStatus(opHandle, false).getState());
     client.closeOperation(opHandle);
 
     // the settings in conf overlay should not be part of session config
@@ -653,7 +654,7 @@ public abstract class CLIServiceTest {
     OperationStatus status = null;
     int count = 0;
     while (true) {
-      status = client.getOperationStatus(ophandle);
+      status = client.getOperationStatus(ophandle, false);
       checkOperationTimes(ophandle, status);
       OperationState state = status.getState();
       System.out.println("Polling: " + ophandle + " count=" + (++count)
@@ -665,8 +666,8 @@ public abstract class CLIServiceTest {
       ByteArrayInputStream in = new ByteArrayInputStream(jsonTaskStatus.getBytes("UTF-8"));
       List<QueryDisplay.TaskDisplay> taskStatuses =
         mapper.readValue(in, new TypeReference<List<QueryDisplay.TaskDisplay>>(){});
-      checkTaskStatuses(taskStatuses);
       System.out.println("task statuses: " + jsonTaskStatus); // TaskDisplay doesn't have a toString, using json
+      checkTaskStatuses(taskStatuses);
       if (OperationState.CANCELED == state || state == OperationState.CLOSED
         || state == OperationState.FINISHED
         || state == OperationState.ERROR) {
@@ -693,9 +694,6 @@ public abstract class CLIServiceTest {
           assertNull(taskDisplay.getReturnValue());
           break;
         case RUNNING:
-          if (taskDisplay.getTaskType() == StageType.MAPRED || taskDisplay.getTaskType() == StageType.MAPREDLOCAL) {
-            assertNotNull(taskDisplay.getExternalHandle());
-          }
           assertNotNull(taskDisplay.getBeginTime());
           assertNull(taskDisplay.getEndTime());
           assertNotNull(taskDisplay.getElapsedTime());

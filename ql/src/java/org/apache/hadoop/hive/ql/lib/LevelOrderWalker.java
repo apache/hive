@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,8 +23,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -47,13 +49,15 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 public class LevelOrderWalker extends DefaultGraphWalker {
   // Only specified nodes of these types will be walked.
   // Empty set means all the nodes will be walked.
-  private HashSet<Class<? extends Node>> nodeTypes = new HashSet<Class<? extends Node>>();
+  private Set<Class<? extends Node>> nodeTypes = new HashSet<>();
 
   // How many levels of ancestors to keep in the stack during dispatching
   private final int numLevels;
 
   /**
-   * Constructor with keeping all the ancestors in the operator stack during dispatching.
+   * Constructor with keeping all the ancestors in the operator stack during
+   * dispatching.
+   *
    * @param disp Dispatcher to call for each op encountered
    */
   public LevelOrderWalker(Dispatcher disp) {
@@ -62,9 +66,10 @@ public class LevelOrderWalker extends DefaultGraphWalker {
   }
 
   /**
-   * Constructor with specified number of ancestor levels to keep in the operator
-   * stack during dispatching.
-   * @param disp      Dispatcher to call for each op encountered
+   * Constructor with specified number of ancestor levels to keep in the
+   * operator stack during dispatching.
+   *
+   * @param disp Dispatcher to call for each op encountered
    * @param numLevels Number of ancestor levels
    */
   public LevelOrderWalker(Dispatcher disp, int numLevels) {
@@ -73,7 +78,7 @@ public class LevelOrderWalker extends DefaultGraphWalker {
   }
 
   @SuppressWarnings("unchecked")
-  public void setNodeTypes(Class<? extends Node> ...nodeTypes) {
+  public void setNodeTypes(Class<? extends Node>... nodeTypes) {
     this.nodeTypes.addAll(Arrays.asList(nodeTypes));
   }
 
@@ -90,20 +95,18 @@ public class LevelOrderWalker extends DefaultGraphWalker {
 
     // Starting from the startNodes, add the children whose parents have been
     // included in the list.
-    HashSet<Node> addedNodes = new HashSet<Node>();
-    for (Node node : startNodes) {
-      addedNodes.add(node);
-    }
+    Set<Node> addedNodes = new HashSet<>(startNodes);
     int index = 0;
-    while(index < toWalk.size()) {
-      if (toWalk.get(index).getChildren() != null) {
-        for(Node child : toWalk.get(index).getChildren()) {
+    while (index < toWalk.size()) {
+      List<? extends Node> children = toWalk.get(index).getChildren();
+      if (CollectionUtils.isNotEmpty(children)) {
+        for (Node child : children) {
           Operator<? extends OperatorDesc> childOP =
               (Operator<? extends OperatorDesc>) child;
 
-          if (!addedNodes.contains(child) &&
-              (childOP.getParentOperators() == null ||
-              addedNodes.containsAll(childOP.getParentOperators()))) {
+          if (!addedNodes.contains(child)
+              && (childOP.getParentOperators() == null
+                  || addedNodes.containsAll(childOP.getParentOperators()))) {
             toWalk.add(child);
             addedNodes.add(child);
           }
@@ -112,7 +115,7 @@ public class LevelOrderWalker extends DefaultGraphWalker {
       ++index;
     }
 
-    for(Node nd : toWalk) {
+    for (Node nd : toWalk) {
       if (!nodeTypes.isEmpty() && !nodeTypes.contains(nd.getClass())) {
         continue;
       }
@@ -129,24 +132,26 @@ public class LevelOrderWalker extends DefaultGraphWalker {
   /**
    * Enumerate numLevels of ancestors by putting them in the stack and dispatch
    * the current node.
+   *
    * @param nd current operator in the ancestor tree
    * @param level how many level of ancestors included in the stack
    * @param stack operator stack
    * @throws SemanticException
    */
   @SuppressWarnings("unchecked")
-  private void walk(Node nd, int level, Stack<Node> stack) throws SemanticException {
+  private void walk(Node nd, int level, Stack<Node> stack)
+      throws SemanticException {
     List<Operator<? extends OperatorDesc>> parents =
-        ((Operator<? extends OperatorDesc>)nd).getParentOperators();
+        ((Operator<? extends OperatorDesc>) nd).getParentOperators();
 
-    if (level >= numLevels || parents == null || parents.isEmpty()) {
+    if (level >= numLevels || CollectionUtils.isEmpty(parents)) {
       dispatch(stack.peek(), stack);
       return;
     }
 
-    for(Node parent : parents) {
+    for (Node parent : parents) {
       stack.add(0, parent);
-      walk(parent, level+1, stack);
+      walk(parent, level + 1, stack);
       stack.remove(0);
     }
   }

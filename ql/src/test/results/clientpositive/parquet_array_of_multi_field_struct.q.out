@@ -1,14 +1,10 @@
-PREHOOK: query: -- this test creates a Parquet table with an array of multi-field structs
-
-CREATE TABLE parquet_array_of_multi_field_structs (
+PREHOOK: query: CREATE TABLE parquet_array_of_multi_field_structs (
     locations ARRAY<STRUCT<latitude: DOUBLE, longitude: DOUBLE>>
 ) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_array_of_multi_field_structs
-POSTHOOK: query: -- this test creates a Parquet table with an array of multi-field structs
-
-CREATE TABLE parquet_array_of_multi_field_structs (
+POSTHOOK: query: CREATE TABLE parquet_array_of_multi_field_structs (
     locations ARRAY<STRUCT<latitude: DOUBLE, longitude: DOUBLE>>
 ) STORED AS PARQUET
 POSTHOOK: type: CREATETABLE
@@ -41,19 +37,13 @@ POSTHOOK: query: DROP TABLE parquet_array_of_multi_field_structs
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parquet_array_of_multi_field_structs
 POSTHOOK: Output: default@parquet_array_of_multi_field_structs
-PREHOOK: query: -- maps use the same writable structure, so validate that the data can be read
--- as a map instead of an array of structs
-
-CREATE TABLE parquet_map_view_of_multi_field_structs (
+PREHOOK: query: CREATE TABLE parquet_map_view_of_multi_field_structs (
     locations MAP<DOUBLE, DOUBLE>
 ) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_map_view_of_multi_field_structs
-POSTHOOK: query: -- maps use the same writable structure, so validate that the data can be read
--- as a map instead of an array of structs
-
-CREATE TABLE parquet_map_view_of_multi_field_structs (
+POSTHOOK: query: CREATE TABLE parquet_map_view_of_multi_field_structs (
     locations MAP<DOUBLE, DOUBLE>
 ) STORED AS PARQUET
 POSTHOOK: type: CREATETABLE

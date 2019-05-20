@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,28 +17,28 @@
  */
 package org.apache.hadoop.hive.accumulo;
 
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.QTestArguments;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.apache.hadoop.hive.ql.QTestUtil;
 
 /**
  * AccumuloQTestUtil initializes Accumulo-specific test fixtures.
  */
 public class AccumuloQTestUtil extends QTestUtil {
-  AccumuloTestSetup setup = null;
 
   public AccumuloQTestUtil(String outDir, String logDir, MiniClusterType miniMr,
       AccumuloTestSetup setup, String initScript, String cleanupScript) throws Exception {
 
-    super(outDir, logDir, miniMr, null, "0.20", initScript, cleanupScript, false, false);
-    setup.setupWithHiveConf(conf);
-    this.setup = setup;
-  }
-
-  @Override
-  public void initConf() throws Exception {
-    if (setup != null) {
-      setup.updateConf(conf);
-    }
-    super.initConf();
+    super(
+        QTestArguments.QTestArgumentsBuilder.instance()
+          .withOutDir(outDir)
+          .withLogDir(logDir)
+          .withClusterType(miniMr)
+          .withConfDir(null)
+          .withInitScript(initScript)
+          .withCleanupScript(cleanupScript)
+          .withLlapIo(false)
+          .withQTestSetup(setup)
+          .build());
   }
 }

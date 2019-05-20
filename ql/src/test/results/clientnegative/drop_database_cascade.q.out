@@ -1,13 +1,7 @@
-PREHOOK: query: -- This test verifies that if the functions and tables unregistered when the database is dropped
--- and other databases are not affected
-
-CREATE DATABASE TEST_database
+PREHOOK: query: CREATE DATABASE TEST_database
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:TEST_database
-POSTHOOK: query: -- This test verifies that if the functions and tables unregistered when the database is dropped
--- and other databases are not affected
-
-CREATE DATABASE TEST_database
+POSTHOOK: query: CREATE DATABASE TEST_database
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:TEST_database
 PREHOOK: query: USE TEST_database

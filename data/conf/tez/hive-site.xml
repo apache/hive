@@ -273,4 +273,29 @@
   <value>true</value>
 </property>
 
+<property>
+  <name>hive.join.inner.residual</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>hive.stats.fetch.bitvector</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>hive.tez.cartesian-product.enabled</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>yarn.nodemanager.disk-health-checker.max-disk-utilization-per-disk-percentage</name>
+  <value>99</value>
+</property>
+
+<property>
+  <name>hive.query.results.cache.enabled</name>
+  <value>false</value>
+</property>
+
 </configuration>

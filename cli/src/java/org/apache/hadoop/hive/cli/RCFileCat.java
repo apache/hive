@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -54,7 +54,7 @@ public class RCFileCat implements Tool{
   // In verbose mode, print an update per RECORD_PRINT_INTERVAL records
   private static final int RECORD_PRINT_INTERVAL = (1024*1024);
 
-  protected static boolean test=false;
+  protected boolean test = false;
 
   public RCFileCat() {
     super();
@@ -63,12 +63,12 @@ public class RCFileCat implements Tool{
       onUnmappableCharacter(CodingErrorAction.REPLACE);
   }
 
-  private static CharsetDecoder decoder;
+  private CharsetDecoder decoder;
 
   Configuration conf = null;
 
-  private static String TAB ="\t";
-  private static String NEWLINE ="\r\n";
+  private static final String TAB ="\t";
+  private static final String NEWLINE ="\r\n";
 
   @Override
   public int run(String[] args) throws Exception {
@@ -243,7 +243,7 @@ public class RCFileCat implements Tool{
     this.conf = conf;
   }
 
-  private static String Usage = "RCFileCat [--start=start_offet] [--length=len] [--verbose] " +
+  private static final String Usage = "RCFileCat [--start=start_offet] [--length=len] [--verbose] " +
       "[--column-sizes | --column-sizes-pretty] [--file-sizes] fileName";
 
   public static void main(String[] args) {
@@ -262,7 +262,7 @@ public class RCFileCat implements Tool{
     }
   }
 
-  private static void setupBufferedOutput() {
+  private void setupBufferedOutput() {
     OutputStream pdataOut;
     if (test) {
       pdataOut = System.out;
@@ -275,6 +275,7 @@ public class RCFileCat implements Tool{
         new PrintStream(bos, false);
     System.setOut(ps);
   }
+
   private static void printUsage(String errorMsg) {
     System.err.println(Usage);
     if(errorMsg != null) {

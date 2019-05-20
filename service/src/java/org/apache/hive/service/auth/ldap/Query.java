@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -99,6 +99,17 @@ public final class Query {
      */
     public QueryBuilder map(String key, String value) {
       filterTemplate.add(key, value);
+      return this;
+    }
+
+    /**
+     * Sets mapping between names in the search filter template and actual values.
+     * @param key marker in the search filter template.
+     * @param values array of values
+     * @return the current instance of the builder
+     */
+    public QueryBuilder map(String key, String[] values) {
+      filterTemplate.add(key, values);
       return this;
     }
 

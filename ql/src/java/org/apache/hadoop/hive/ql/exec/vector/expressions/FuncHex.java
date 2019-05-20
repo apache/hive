@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,8 +24,8 @@ import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 public class FuncHex extends FuncLongToString {
   private static final long serialVersionUID = 1L;
 
-  public FuncHex(int inputCol, int outputCol) {
-    super(inputCol, outputCol);
+  public FuncHex(int inputCol, int outputColumnNum) {
+    super(inputCol, outputColumnNum);
   }
 
   public FuncHex() {

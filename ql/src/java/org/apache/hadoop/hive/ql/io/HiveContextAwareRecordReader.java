@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -50,7 +50,7 @@ import org.apache.hadoop.mapred.RecordReader;
   * data.  The binary search can be used by setting the value of inputFormatSorted in the
   * MapreduceWork to true, but it should only be used if the data is going to a FilterOperator,
   * which filters by comparing a value in the data with a constant, using one of the comparisons
-  * =, <, >, <=, >=.  If the RecordReader's underlying format is an RCFile, this object can perform
+  * =, &lt;, &gt;, &lt;=, &gt;=.  If the RecordReader's underlying format is an RCFile, this object can perform
   * a binary search to find the block to begin reading from, and stop reading once it can be
   * determined no other entries will match the filter.
   */
@@ -187,8 +187,8 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
     long blockStart = -1;
     FileSplit fileSplit = split;
     Path path = fileSplit.getPath();
-    FileSystem fs = path.getFileSystem(job);
     if (inputFormatClass.getName().contains("SequenceFile")) {
+      FileSystem fs = path.getFileSystem(job);
       SequenceFile.Reader in = new SequenceFile.Reader(fs, path, job);
       blockPointer = in.isBlockCompressed();
       in.sync(fileSplit.getStart());
@@ -198,6 +198,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
       blockPointer = true;
       blockStart = ((RCFileRecordReader) recordReader).getStart();
     } else if (inputFormatClass.getName().contains("RCFile")) {
+      FileSystem fs = path.getFileSystem(job);
       blockPointer = true;
       RCFile.Reader in = new RCFile.Reader(fs, path, job);
       in.sync(fileSplit.getStart());
@@ -205,7 +206,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
       in.close();
     }
     this.jobConf = job;
-    this.initIOContext(blockStart, blockPointer, path.makeQualified(fs));
+    this.initIOContext(blockStart, blockPointer, path);
 
     this.initIOContextSortedProps(split, recordReader, job);
   }
@@ -243,6 +244,15 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
   private FooterBuffer footerBuffer = null;
   private int headerCount = 0;
   private int footerCount = 0;
+
+  protected FooterBuffer getFooterBuffer() {
+       return footerBuffer;
+  }
+
+  protected void setFooterBuffer( FooterBuffer buf) {
+    footerBuffer = buf;
+  }
+
 
   public boolean doNext(K key, V value) throws IOException {
     if (this.isSorted) {
@@ -308,6 +318,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
       if (this.ioCxtRef.getCurrentBlockStart() == 0) {
 
         // Check if the table file has header to skip.
+        footerBuffer = null;
         Path filePath = this.ioCxtRef.getInputPath();
         PartitionDesc part = null;
         try {
@@ -316,7 +327,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
               .getMapWork(jobConf).getPathToPartitionInfo();
           }
           part = HiveFileFormatUtils
-              .getPartitionDescFromPathRecursively(pathToPartitionInfo,
+              .getFromPathRecursively(pathToPartitionInfo,
                   filePath, IOPrepareCache.get().getPartitionDescMap());
         } catch (AssertionError ae) {
           LOG.info("Cannot get partition description from " + this.ioCxtRef.getInputPath()

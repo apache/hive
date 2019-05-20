@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -36,9 +36,9 @@ import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -49,8 +49,15 @@ import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hive.common.util.HiveStringUtils;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hive.common.util.StreamPrinter;
+import org.apache.hadoop.mapred.RunningJob;
+
+import com.google.common.annotations.VisibleForTesting;
+
+import org.json.JSONException;
+
+import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod.PROXY;
 
 /**
  * Extension of ExecDriver:
@@ -70,6 +77,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
   static final String HIVE_MAIN_CLIENT_DEBUG_OPTS = "HIVE_MAIN_CLIENT_DEBUG_OPTS";
   static final String HIVE_CHILD_CLIENT_DEBUG_OPTS = "HIVE_CHILD_CLIENT_DEBUG_OPTS";
   static final String[] HIVE_SYS_PROP = {"build.dir", "build.dir.hive", "hive.query.id"};
+  static final String HADOOP_PROXY_USER = "HADOOP_PROXY_USER";
 
   private transient ContentSummary inputSummary = null;
   private transient boolean runningViaChild = false;
@@ -266,6 +274,10 @@ public class MapRedTask extends ExecDriver implements Serializable {
         configureDebugVariablesForChildJVM(variables);
       }
 
+      if (PROXY == Utils.getUGI().getAuthenticationMethod()) {
+        variables.put(HADOOP_PROXY_USER, Utils.getUGI().getShortUserName());
+      }
+
       env = new String[variables.size()];
       int pos = 0;
       for (Map.Entry<String, String> entry : variables.entrySet()) {
@@ -274,7 +286,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
         env[pos++] = name + "=" + value;
       }
       // Run ExecDriver in another JVM
-      executor = Runtime.getRuntime().exec(cmdLine, env, new File(workDir));
+      executor = spawn(cmdLine, workDir, env);
 
       CachingPrintStream errPrintStream =
           new CachingPrintStream(SessionState.getConsole().getChildErrStream());
@@ -322,6 +334,11 @@ public class MapRedTask extends ExecDriver implements Serializable {
     }
   }
 
+  @VisibleForTesting
+  Process spawn(String cmdLine, String workDir, String[] env) throws IOException {
+    return Runtime.getRuntime().exec(cmdLine, env, new File(workDir));
+  }
+
   static void configureDebugVariablesForChildJVM(Map<String, String> environmentVariables) {
     // this method contains various asserts to warn if environment variables are in a buggy state
     assert environmentVariables.containsKey(HADOOP_CLIENT_OPTS)
@@ -342,6 +359,15 @@ public class MapRedTask extends ExecDriver implements Serializable {
         + " environment variable must be set to \"y\" or \"n\" when debugging";
 
     if (environmentVariables.get(HIVE_DEBUG_RECURSIVE).equals("y")) {
+      // HADOOP_CLIENT_OPTS is appended to HADOOP_OPTS in HADOOP.sh, so we should remove the old
+      // HADOOP_CLIENT_OPTS which might have the main debug options from current HADOOP_OPTS. A new
+      // HADOOP_CLIENT_OPTS is created with child JVM debug options, and it will be appended to
+      // HADOOP_OPTS agina when HADOOP.sh is executed for the child process.
+      assert environmentVariables.containsKey(HADOOP_OPTS_KEY)
+        && environmentVariables.get(HADOOP_OPTS_KEY) != null: HADOOP_OPTS_KEY
+        + " environment variable must have been set.";
+      environmentVariables.put(HADOOP_OPTS_KEY, environmentVariables.get(HADOOP_OPTS_KEY)
+        .replace(environmentVariables.get(HADOOP_CLIENT_OPTS), ""));
       // swap debug options in HADOOP_CLIENT_OPTS to those that the child JVM should have
       assert environmentVariables.containsKey(HIVE_CHILD_CLIENT_DEBUG_OPTS)
           && environmentVariables.get(HIVE_CHILD_CLIENT_DEBUG_OPTS) != null : HIVE_CHILD_CLIENT_DEBUG_OPTS
@@ -487,6 +513,19 @@ public class MapRedTask extends ExecDriver implements Serializable {
       return getWork().getReduceWork() == null ? null : getWork().getReduceWork().getReducer();
     }
     return null;
+  }
+
+  public void updateWebUiStats(MapRedStats mapRedStats, RunningJob rj) {
+    if (queryDisplay != null &&
+        conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_SHOW_STATS) &&
+        conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_SHOW_GRAPH) &&
+        conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT)) {
+      try {
+        queryDisplay.updateTaskStatistics(mapRedStats, rj, getId());
+      } catch (IOException | JSONException e) {
+        LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e), e);
+      }
+    }
   }
 
   @Override

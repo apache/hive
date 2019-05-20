@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.math.stat.descriptive.SummaryStatistics;
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
 import org.apache.hadoop.mapred.FileSplit;
@@ -125,7 +125,9 @@ public class TestHostAffinitySplitLocationProvider {
         }
         lastLocations[splitIx] = splitLocation;
       }
-      if (locs == MIN_LOC_COUNT) continue;
+      if (locs == MIN_LOC_COUNT) {
+        continue;
+      }
       String msgTail = " when going to " + locs + " locations";
       String movedMsg = moved + " splits moved",
           newMsg = newLoc + " splits went to the new node";
@@ -166,7 +168,7 @@ public class TestHostAffinitySplitLocationProvider {
   }
 
 
-  @Test (timeout = 10000)
+  @Test (timeout = 20000)
   public void testConsistentHashingFallback() throws IOException {
     final int LOC_COUNT_TO = 20, SPLIT_COUNT = 500, MAX_MISS_COUNT = 4,
         LOC_COUNT_FROM = MAX_MISS_COUNT + 1;
@@ -223,7 +225,7 @@ public class TestHostAffinitySplitLocationProvider {
     }
     // All of this is completely bogus and mostly captures the following function:
     // f(output) = I-eyeballed-the(output) == they-look-ok.
-    // It's pretty much a golden file... 
+    // It's pretty much a golden file...
     // The fact that stdev doesn't increase with increasing missCount is captured outside.
     double avg = ss.getSum()/ss.getN(), stdev = ss.getStandardDeviation(), cv = stdev/avg;
     double allowedMin = avg - 2.5 * stdev, allowedMax = avg + 2.5 * stdev;
@@ -296,6 +298,48 @@ public class TestHostAffinitySplitLocationProvider {
     assertArrayEquals(retLoc12, retLoc122);
     assertArrayEquals(retLoc13, retLoc132);
   }
+
+  @Test (timeout = 90000000)
+  public void testDFSLocalityAwareAffinity() throws IOException {
+    List<String> someLocations = locations.subList(0, 2); // 0,1 locations
+    HostAffinitySplitLocationProvider locationProvider = new HostAffinitySplitLocationProvider(someLocations);
+
+    // Different base localities
+    InputSplit os1 = createMockFileSplit(true, "path1", 0, 15000, new String[] {locations.get(0), locations.get(1)}); // 0 or 1
+    InputSplit os2 = createMockFileSplit(true, "path2", 0, 30000, new String[] {locations.get(2), locations.get(3)}); // 0 or 1
+    InputSplit os3 = createMockFileSplit(true, "path3", 15000, 30000, new String[] {locations.get(0), locations.get(2)}); // 0
+    InputSplit os4 = createMockFileSplit(true, "path4", 15000, 30000, new String[] {locations.get(1), locations.get(2)}); // 1
+
+    String[] retLoc1 = locationProvider.getLocations(os1);
+    String[] retLoc2 = locationProvider.getLocations(os2);
+    String[] retLoc3 = locationProvider.getLocations(os3);
+    String[] retLoc4 = locationProvider.getLocations(os4);
+
+    assertEquals(1, retLoc1.length);
+    assertTrue(someLocations.contains(retLoc1[0]));
+
+    assertEquals(1, retLoc2.length);
+    assertTrue(someLocations.contains(retLoc2[0]));
+
+    assertEquals(1, retLoc3.length);
+    assertTrue(someLocations.contains(retLoc3[0]));
+    assertEquals(someLocations.get(0), retLoc3[0]); // is always 0
+
+    assertEquals(1, retLoc4.length);
+    assertTrue(someLocations.contains(retLoc4[0]));
+    assertEquals(someLocations.get(1), retLoc4[0]); // is always 1
+
+    String[] againLoc1 = locationProvider.getLocations(os1);
+    String[] againLoc2 = locationProvider.getLocations(os2);
+    String[] againLoc3 = locationProvider.getLocations(os3);
+    String[] againLoc4 = locationProvider.getLocations(os4);
+
+    assertArrayEquals(retLoc1, againLoc1);
+    assertArrayEquals(retLoc2, againLoc2);
+    assertArrayEquals(retLoc3, againLoc3);
+    assertArrayEquals(retLoc4, againLoc4);
+  }
+
 
 
   private InputSplit createMockInputSplit(String[] locations) throws IOException {

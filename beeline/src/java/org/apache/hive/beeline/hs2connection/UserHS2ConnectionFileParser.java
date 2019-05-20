@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -44,7 +44,7 @@ public class UserHS2ConnectionFileParser implements HS2ConnectionFileParser {
           + (System.getProperty("os.name").toLowerCase().indexOf("windows") != -1 ? "" : ".")
           + "beeline" + File.separator;
   public static final String ETC_HIVE_CONF_LOCATION =
-      File.separator + "etc" + File.separator + "conf" + File.separator + "hive";
+      File.separator + "etc" + File.separator + "hive" + File.separator + "conf";
 
   private final List<String> locations = new ArrayList<>();
   private static final Logger log = LoggerFactory.getLogger(UserHS2ConnectionFileParser.class);
@@ -56,7 +56,7 @@ public class UserHS2ConnectionFileParser implements HS2ConnectionFileParser {
       locations.add(
           System.getenv("HIVE_CONF_DIR") + File.separator + DEFAULT_CONNECTION_CONFIG_FILE_NAME);
     }
-    locations.add(ETC_HIVE_CONF_LOCATION + DEFAULT_CONNECTION_CONFIG_FILE_NAME);
+    locations.add(ETC_HIVE_CONF_LOCATION + File.separator + DEFAULT_CONNECTION_CONFIG_FILE_NAME);
   }
 
   @VisibleForTesting
@@ -86,9 +86,6 @@ public class UserHS2ConnectionFileParser implements HS2ConnectionFileParser {
         if (key.startsWith(BEELINE_CONNECTION_PROPERTY_PREFIX)) {
           props.setProperty(key.substring(BEELINE_CONNECTION_PROPERTY_PREFIX.length()),
               kv.getValue());
-        } else {
-          log.warn("Ignoring " + key + " since it does not start with "
-              + BEELINE_CONNECTION_PROPERTY_PREFIX);
         }
       }
     } catch (Exception ex) {

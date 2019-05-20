@@ -1,0 +1,64 @@
+PREHOOK: query: DROP TABLE join_src
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE join_src
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE join_src (
+    key int,
+    value string)
+STORED AS TEXTFILE
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/join2/join_src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@join_src
+POSTHOOK: query: CREATE TABLE join_src (
+    key int,
+    value string)
+STORED AS TEXTFILE
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/join2/join_src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@join_src
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/smbbucket_1.txt' INTO TABLE join_src
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@join_src
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/smbbucket_1.txt' INTO TABLE join_src
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@join_src
+PREHOOK: query: SELECT *
+FROM join_src a
+LEFT OUTER JOIN join_src b ON (a.key=b.key AND a.key < 10)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@join_src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM join_src a
+LEFT OUTER JOIN join_src b ON (a.key=b.key AND a.key < 10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@join_src
+#### A masked pattern was here ####
+1	val_1	1	val_1
+10	val_10	NULL	NULL
+3	val_3	3	val_3
+4	val_4	4	val_4
+5	val_5	5	val_5
+PREHOOK: query: SELECT *
+FROM join_src a
+RIGHT OUTER JOIN join_src b ON (a.key=b.key AND a.key < 10)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@join_src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM join_src a
+RIGHT OUTER JOIN join_src b ON (a.key=b.key AND a.key < 10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@join_src
+#### A masked pattern was here ####
+1	val_1	1	val_1
+3	val_3	3	val_3
+4	val_4	4	val_4
+5	val_5	5	val_5
+NULL	NULL	10	val_10

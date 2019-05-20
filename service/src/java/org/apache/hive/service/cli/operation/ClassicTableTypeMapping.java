@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -36,9 +36,9 @@ import com.google.common.collect.Multimap;
 /**
  * ClassicTableTypeMapping.
  * Classic table type mapping :
- *  Managed Table ==> Table
- *  External Table ==> Table
- *  Virtual View ==> View
+ *  Managed Table ==&gt; Table
+ *  External Table ==&gt; Table
+ *  Virtual View ==&gt; View
  */
 public class ClassicTableTypeMapping implements TableTypeMapping {
 

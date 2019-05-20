@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.cbo.returnpath.hiveop=true;
 
 DESCRIBE FUNCTION percentile;

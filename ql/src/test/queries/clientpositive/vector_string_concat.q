@@ -1,6 +1,7 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
+set hive.fetch.task.conversion=none;
 
 DROP TABLE over1k;
 DROP TABLE over1korc;
@@ -15,7 +16,7 @@ CREATE TABLE over1k(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE;
@@ -31,13 +32,13 @@ CREATE TABLE over1korc(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 STORED AS ORC;
 
 INSERT INTO TABLE over1korc SELECT * FROM over1k;
 
-EXPLAIN SELECT s AS `string`,
+EXPLAIN VECTORIZATION EXPRESSION SELECT s AS `string`,
        CONCAT(CONCAT('      ',s),'      ') AS `none_padded_str`,
        CONCAT(CONCAT('|',RTRIM(CONCAT(CONCAT('      ',s),'      '))),'|') AS `none_z_rtrim_str`
        FROM over1korc LIMIT 20;
@@ -49,7 +50,7 @@ SELECT s AS `string`,
 
 ------------------------------------------------------------------------------------------
 
-create table vectortab2k(
+create table vectortab2k_n0(
             t tinyint,
             si smallint,
             i int,
@@ -66,9 +67,9 @@ create table vectortab2k(
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE;
 
-LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k;
+LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k_n0;
 
-create table vectortab2korc(
+create table vectortab2korc_n0(
             t tinyint,
             si smallint,
             i int,
@@ -84,17 +85,17 @@ create table vectortab2korc(
             dt date)
 STORED AS ORC;
 
-INSERT INTO TABLE vectortab2korc SELECT * FROM vectortab2k;
+INSERT INTO TABLE vectortab2korc_n0 SELECT * FROM vectortab2k_n0;
 
-EXPLAIN
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING)) AS `field`
-    FROM vectortab2korc 
+    FROM vectortab2korc_n0 
     GROUP BY CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING))
     ORDER BY `field`
     LIMIT 50;
 
 SELECT CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING)) AS `field`
-    FROM vectortab2korc 
+    FROM vectortab2korc_n0 
     GROUP BY CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING))
     ORDER BY `field`
     LIMIT 50;

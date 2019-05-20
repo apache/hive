@@ -98,11 +98,11 @@ POSTHOOK: Output: default@agg_01@dim_shops_id=3
 PREHOOK: query: select * from dim_shops
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from dim_shops
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	foo
 2	bar
 3	baz
@@ -112,14 +112,14 @@ PREHOOK: Input: default@agg_01
 PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@agg_01@dim_shops_id=2
 PREHOOK: Input: default@agg_01@dim_shops_id=3
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from agg_01
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@agg_01
 POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@agg_01@dim_shops_id=2
 POSTHOOK: Input: default@agg_01@dim_shops_id=3
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	1
 2	1
 3	1
@@ -138,6 +138,12 @@ d1.label in ('foo', 'bar')
 GROUP BY d1.label
 ORDER BY d1.label
 PREHOOK: type: QUERY
+PREHOOK: Input: default@agg_01
+PREHOOK: Input: default@agg_01@dim_shops_id=1
+PREHOOK: Input: default@agg_01@dim_shops_id=2
+PREHOOK: Input: default@agg_01@dim_shops_id=3
+PREHOOK: Input: default@dim_shops
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
 FROM agg_01 agg,
 dim_shops d1
@@ -147,6 +153,12 @@ d1.label in ('foo', 'bar')
 GROUP BY d1.label
 ORDER BY d1.label
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@agg_01
+POSTHOOK: Input: default@agg_01@dim_shops_id=1
+POSTHOOK: Input: default@agg_01@dim_shops_id=2
+POSTHOOK: Input: default@agg_01@dim_shops_id=3
+POSTHOOK: Input: default@dim_shops
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -166,11 +178,11 @@ STAGE PLANS:
                 TableScan
                   alias: agg
                   filterExpr: dim_shops_id is not null (type: boolean)
-                  Statistics: Num rows: 9 Data size: 63 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 9 Data size: 1071 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: amount (type: decimal(10,0)), dim_shops_id (type: int)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 9 Data size: 36 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 9 Data size: 1044 Basic stats: COMPLETE Column stats: PARTIAL
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -180,23 +192,20 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col3
                       input vertices:
                         1 Map 4
-                      Statistics: Num rows: 9 Data size: 39 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col3 (type: string), _col0 (type: decimal(10,0))
-                        outputColumnNames: _col3, _col0
-                        Statistics: Num rows: 9 Data size: 39 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count(), sum(_col0)
-                          keys: _col3 (type: string)
-                          mode: hash
-                          outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 9 Data size: 39 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            key expressions: _col0 (type: string)
-                            sort order: +
-                            Map-reduce partition columns: _col0 (type: string)
-                            Statistics: Num rows: 9 Data size: 39 Basic stats: COMPLETE Column stats: NONE
-                            value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
+                      Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count(), sum(_col0)
+                        keys: _col3 (type: string)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
             Execution mode: llap
             LLAP IO: no inputs
         Map 4 
@@ -204,34 +213,35 @@ STAGE PLANS:
                 TableScan
                   alias: d1
                   filterExpr: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
-                  Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
-                    Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: int), label (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string)
                       Select Operator
                         expressions: _col0 (type: int)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: int)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
                             Target column: dim_shops_id (int)
                             Target Input: agg
                             Partition key expr: dim_shops_id
-                            Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                             Target Vertex: Map 1
             Execution mode: llap
             LLAP IO: no inputs
@@ -243,11 +253,11 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
-                  Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
         Reducer 3 
             Execution mode: llap
@@ -255,10 +265,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint), VALUE._col1 (type: decimal(20,0))
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -284,7 +294,7 @@ PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@agg_01@dim_shops_id=2
 PREHOOK: Input: default@agg_01@dim_shops_id=3
 PREHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT d1.label, count(*), sum(agg.amount)
 FROM agg_01 agg,
 dim_shops d1
@@ -299,7 +309,7 @@ POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@agg_01@dim_shops_id=2
 POSTHOOK: Input: default@agg_01@dim_shops_id=3
 POSTHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 bar	3	15
 foo	3	6
 PREHOOK: query: EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
@@ -311,6 +321,12 @@ d1.label in ('foo', 'bar')
 GROUP BY d1.label
 ORDER BY d1.label
 PREHOOK: type: QUERY
+PREHOOK: Input: default@agg_01
+PREHOOK: Input: default@agg_01@dim_shops_id=1
+PREHOOK: Input: default@agg_01@dim_shops_id=2
+PREHOOK: Input: default@agg_01@dim_shops_id=3
+PREHOOK: Input: default@dim_shops
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
 FROM agg_01 agg,
 dim_shops d1
@@ -320,6 +336,12 @@ d1.label in ('foo', 'bar')
 GROUP BY d1.label
 ORDER BY d1.label
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@agg_01
+POSTHOOK: Input: default@agg_01@dim_shops_id=1
+POSTHOOK: Input: default@agg_01@dim_shops_id=2
+POSTHOOK: Input: default@agg_01@dim_shops_id=3
+POSTHOOK: Input: default@dim_shops
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -339,11 +361,11 @@ STAGE PLANS:
                 TableScan
                   alias: agg
                   filterExpr: dim_shops_id is not null (type: boolean)
-                  Statistics: Num rows: 9 Data size: 63 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 9 Data size: 1071 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: amount (type: decimal(10,0)), dim_shops_id (type: int)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 9 Data size: 36 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 9 Data size: 1044 Basic stats: COMPLETE Column stats: PARTIAL
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -353,23 +375,20 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col3
                       input vertices:
                         1 Map 4
-                      Statistics: Num rows: 9 Data size: 39 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col3 (type: string), _col0 (type: decimal(10,0))
-                        outputColumnNames: _col3, _col0
-                        Statistics: Num rows: 9 Data size: 39 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count(), sum(_col0)
-                          keys: _col3 (type: string)
-                          mode: hash
-                          outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 9 Data size: 39 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            key expressions: _col0 (type: string)
-                            sort order: +
-                            Map-reduce partition columns: _col0 (type: string)
-                            Statistics: Num rows: 9 Data size: 39 Basic stats: COMPLETE Column stats: NONE
-                            value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
+                      Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count(), sum(_col0)
+                        keys: _col3 (type: string)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
             Execution mode: llap
             LLAP IO: no inputs
         Map 4 
@@ -377,19 +396,19 @@ STAGE PLANS:
                 TableScan
                   alias: d1
                   filterExpr: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
-                  Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
-                    Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: int), label (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
@@ -401,11 +420,11 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
-                  Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
         Reducer 3 
             Execution mode: llap
@@ -413,10 +432,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint), VALUE._col1 (type: decimal(20,0))
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -442,7 +461,7 @@ PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@agg_01@dim_shops_id=2
 PREHOOK: Input: default@agg_01@dim_shops_id=3
 PREHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT d1.label, count(*), sum(agg.amount)
 FROM agg_01 agg,
 dim_shops d1
@@ -457,7 +476,7 @@ POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@agg_01@dim_shops_id=2
 POSTHOOK: Input: default@agg_01@dim_shops_id=3
 POSTHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 bar	3	15
 foo	3	6
 PREHOOK: query: EXPLAIN SELECT d1.label
@@ -465,11 +484,23 @@ FROM agg_01 agg,
 dim_shops d1
 WHERE agg.dim_shops_id = d1.id
 PREHOOK: type: QUERY
+PREHOOK: Input: default@agg_01
+PREHOOK: Input: default@agg_01@dim_shops_id=1
+PREHOOK: Input: default@agg_01@dim_shops_id=2
+PREHOOK: Input: default@agg_01@dim_shops_id=3
+PREHOOK: Input: default@dim_shops
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT d1.label
 FROM agg_01 agg,
 dim_shops d1
 WHERE agg.dim_shops_id = d1.id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@agg_01
+POSTHOOK: Input: default@agg_01@dim_shops_id=1
+POSTHOOK: Input: default@agg_01@dim_shops_id=2
+POSTHOOK: Input: default@agg_01@dim_shops_id=3
+POSTHOOK: Input: default@dim_shops
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -520,19 +551,19 @@ STAGE PLANS:
                 TableScan
                   alias: d1
                   filterExpr: id is not null (type: boolean)
-                  Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: id is not null (type: boolean)
-                    Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: int), label (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
@@ -553,7 +584,7 @@ PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@agg_01@dim_shops_id=2
 PREHOOK: Input: default@agg_01@dim_shops_id=3
 PREHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT d1.label
 FROM agg_01 agg,
 dim_shops d1
@@ -564,7 +595,7 @@ POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@agg_01@dim_shops_id=2
 POSTHOOK: Input: default@agg_01@dim_shops_id=3
 POSTHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 foo
 foo
 foo
@@ -574,19 +605,27 @@ bar
 baz
 baz
 baz
-Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Map 1' is a cross product
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN SELECT agg.amount
 FROM agg_01 agg,
 dim_shops d1
 WHERE agg.dim_shops_id = d1.id
 and agg.dim_shops_id = 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@agg_01
+PREHOOK: Input: default@agg_01@dim_shops_id=1
+PREHOOK: Input: default@dim_shops
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT agg.amount
 FROM agg_01 agg,
 dim_shops d1
 WHERE agg.dim_shops_id = d1.id
 and agg.dim_shops_id = 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@agg_01
+POSTHOOK: Input: default@agg_01@dim_shops_id=1
+POSTHOOK: Input: default@dim_shops
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -596,7 +635,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Map 2 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (XPROD_EDGE), Map 3 (XPROD_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -604,46 +643,51 @@ STAGE PLANS:
                 TableScan
                   alias: agg
                   filterExpr: (dim_shops_id = 1) (type: boolean)
-                  Statistics: Num rows: 3 Data size: 33 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 345 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: amount (type: decimal(10,0))
                     outputColumnNames: _col0
-                    Statistics: Num rows: 3 Data size: 33 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 
-                        1 
-                      outputColumnNames: _col0
-                      input vertices:
-                        1 Map 2
-                      Statistics: Num rows: 3 Data size: 51 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 3 Data size: 51 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    Statistics: Num rows: 3 Data size: 345 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 3 Data size: 345 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: decimal(10,0))
             Execution mode: llap
             LLAP IO: no inputs
-        Map 2 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: d1
-                  filterExpr: (1 = id) (type: boolean)
-                  Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                  filterExpr: (id = 1) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (1 = id) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (id = 1) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0
+                Statistics: Num rows: 9 Data size: 1080 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 9 Data size: 1080 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -651,27 +695,27 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Map 1' is a cross product
+Warning: Shuffle Join MERGEJOIN[15][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT agg.amount
 FROM agg_01 agg,
 dim_shops d1
 WHERE agg.dim_shops_id = d1.id
-and agg.dim_shops_id = 1
+and agg.dim_shops_id = 1 order by agg.amount
 PREHOOK: type: QUERY
 PREHOOK: Input: default@agg_01
 PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT agg.amount
 FROM agg_01 agg,
 dim_shops d1
 WHERE agg.dim_shops_id = d1.id
-and agg.dim_shops_id = 1
+and agg.dim_shops_id = 1 order by agg.amount
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@agg_01
 POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 2
 3
@@ -684,6 +728,12 @@ d1.label in ('foo', 'bar')
 GROUP BY d1.label
 ORDER BY d1.label
 PREHOOK: type: QUERY
+PREHOOK: Input: default@agg_01
+PREHOOK: Input: default@agg_01@dim_shops_id=1
+PREHOOK: Input: default@agg_01@dim_shops_id=2
+PREHOOK: Input: default@agg_01@dim_shops_id=3
+PREHOOK: Input: default@dim_shops
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
 FROM agg_01 agg,
 dim_shops d1
@@ -693,6 +743,12 @@ d1.label in ('foo', 'bar')
 GROUP BY d1.label
 ORDER BY d1.label
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@agg_01
+POSTHOOK: Input: default@agg_01@dim_shops_id=1
+POSTHOOK: Input: default@agg_01@dim_shops_id=2
+POSTHOOK: Input: default@agg_01@dim_shops_id=3
+POSTHOOK: Input: default@dim_shops
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -712,11 +768,11 @@ STAGE PLANS:
                 TableScan
                   alias: agg
                   filterExpr: dim_shops_id is not null (type: boolean)
-                  Statistics: Num rows: 9 Data size: 63 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 9 Data size: 1071 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: amount (type: decimal(10,0)), dim_shops_id (type: int)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 9 Data size: 36 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 9 Data size: 1044 Basic stats: COMPLETE Column stats: PARTIAL
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -726,23 +782,20 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col3
                       input vertices:
                         1 Map 4
-                      Statistics: Num rows: 9 Data size: 39 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col3 (type: string), _col0 (type: decimal(10,0))
-                        outputColumnNames: _col3, _col0
-                        Statistics: Num rows: 9 Data size: 39 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count(), sum(_col0)
-                          keys: _col3 (type: string)
-                          mode: hash
-                          outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 9 Data size: 39 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            key expressions: _col0 (type: string)
-                            sort order: +
-                            Map-reduce partition columns: _col0 (type: string)
-                            Statistics: Num rows: 9 Data size: 39 Basic stats: COMPLETE Column stats: NONE
-                            value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
+                      Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count(), sum(_col0)
+                        keys: _col3 (type: string)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
             Execution mode: llap
             LLAP IO: no inputs
         Map 4 
@@ -750,34 +803,35 @@ STAGE PLANS:
                 TableScan
                   alias: d1
                   filterExpr: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
-                  Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
-                    Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: int), label (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string)
                       Select Operator
                         expressions: _col0 (type: int)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: int)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
                             Target column: dim_shops_id (int)
                             Target Input: agg
                             Partition key expr: dim_shops_id
-                            Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                             Target Vertex: Map 1
             Execution mode: llap
             LLAP IO: no inputs
@@ -789,11 +843,11 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
-                  Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
         Reducer 3 
             Execution mode: llap
@@ -801,10 +855,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint), VALUE._col1 (type: decimal(20,0))
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -830,7 +884,7 @@ PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@agg_01@dim_shops_id=2
 PREHOOK: Input: default@agg_01@dim_shops_id=3
 PREHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT d1.label, count(*), sum(agg.amount)
 FROM agg_01 agg,
 dim_shops d1
@@ -845,7 +899,7 @@ POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@agg_01@dim_shops_id=2
 POSTHOOK: Input: default@agg_01@dim_shops_id=3
 POSTHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 bar	3	15
 foo	3	6
 PREHOOK: query: EXPLAIN 
@@ -853,11 +907,23 @@ SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'foo'
 UNION ALL
 SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'bar'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@agg_01
+PREHOOK: Input: default@agg_01@dim_shops_id=1
+PREHOOK: Input: default@agg_01@dim_shops_id=2
+PREHOOK: Input: default@agg_01@dim_shops_id=3
+PREHOOK: Input: default@dim_shops
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN 
 SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'foo'
 UNION ALL
 SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'bar'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@agg_01
+POSTHOOK: Input: default@agg_01@dim_shops_id=1
+POSTHOOK: Input: default@agg_01@dim_shops_id=2
+POSTHOOK: Input: default@agg_01@dim_shops_id=3
+POSTHOOK: Input: default@dim_shops
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -876,11 +942,11 @@ STAGE PLANS:
                 TableScan
                   alias: agg_01
                   filterExpr: dim_shops_id is not null (type: boolean)
-                  Statistics: Num rows: 9 Data size: 63 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 9 Data size: 1044 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: amount (type: decimal(10,0)), dim_shops_id (type: int)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 9 Data size: 36 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 9 Data size: 1044 Basic stats: COMPLETE Column stats: PARTIAL
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -890,10 +956,10 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 9 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 18 Data size: 78 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 18 Data size: 2296 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -905,33 +971,34 @@ STAGE PLANS:
                 TableScan
                   alias: dim_shops
                   filterExpr: ((label = 'foo') and id is not null) (type: boolean)
-                  Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((label = 'foo') and id is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: int)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
                             Target column: dim_shops_id (int)
                             Target Input: agg_01
                             Partition key expr: dim_shops_id
-                            Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                             Target Vertex: Map 1
             Execution mode: llap
             LLAP IO: no inputs
@@ -940,11 +1007,11 @@ STAGE PLANS:
                 TableScan
                   alias: agg_01
                   filterExpr: dim_shops_id is not null (type: boolean)
-                  Statistics: Num rows: 9 Data size: 63 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 9 Data size: 1044 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: amount (type: decimal(10,0)), dim_shops_id (type: int)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 9 Data size: 36 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 9 Data size: 1044 Basic stats: COMPLETE Column stats: PARTIAL
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -954,10 +1021,10 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       input vertices:
                         1 Map 5
-                      Statistics: Num rows: 9 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 18 Data size: 78 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 18 Data size: 2296 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -969,33 +1036,34 @@ STAGE PLANS:
                 TableScan
                   alias: dim_shops
                   filterExpr: ((label = 'bar') and id is not null) (type: boolean)
-                  Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((label = 'bar') and id is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: int)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
                             Target column: dim_shops_id (int)
                             Target Input: agg_01
                             Partition key expr: dim_shops_id
-                            Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                             Target Vertex: Map 4
             Execution mode: llap
             LLAP IO: no inputs
@@ -1017,7 +1085,7 @@ PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@agg_01@dim_shops_id=2
 PREHOOK: Input: default@agg_01@dim_shops_id=3
 PREHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'foo'
 UNION ALL
 SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'bar'
@@ -1027,29 +1095,37 @@ POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@agg_01@dim_shops_id=2
 POSTHOOK: Input: default@agg_01@dim_shops_id=3
 POSTHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 2
 3
 4
 5
 6
-PREHOOK: query: -- Dynamic partition pruning will be removed as data size exceeds the limit;
--- and for self join on partitioning column, it should not fail (HIVE-10559).
-explain
+PREHOOK: query: explain
 select count(*)
 from srcpart s1,
      srcpart s2
 where s1.ds = s2.ds
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Dynamic partition pruning will be removed as data size exceeds the limit;
--- and for self join on partitioning column, it should not fail (HIVE-10559).
-explain
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
 select count(*)
 from srcpart s1,
      srcpart s2
 where s1.ds = s2.ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1060,7 +1136,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1084,6 +1160,7 @@ STAGE PLANS:
                       Statistics: Num rows: 2000000 Data size: 16000000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
+                        minReductionHashAggr: 0.0
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1142,7 +1219,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*)
 from srcpart s1,
      srcpart s2
@@ -1153,5 +1230,5 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2000000

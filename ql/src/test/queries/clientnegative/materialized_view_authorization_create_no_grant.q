@@ -12,4 +12,4 @@ grant select on table amvcng_gtable to user user2;
 
 set user.name=user2;
 
-create materialized view amvcng_gmat_view as select a, c from amvcng_gtable;
+create materialized view amvcng_gmat_view disable rewrite as select a, c from amvcng_gtable;

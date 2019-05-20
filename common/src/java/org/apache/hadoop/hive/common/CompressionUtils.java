@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -112,8 +112,8 @@ public class CompressionUtils {
    * The output file is created in the output folder, having the same name as the input file, minus
    * the '.tar' extension.
    *
-   * @param inputFile the input .tar file
-   * @param outputDir the output directory file.
+   * @param inputFileName the input .tar file
+   * @param outputDirName the output directory file.
    * @throws IOException
    * @throws FileNotFoundException
    *
@@ -131,8 +131,8 @@ public class CompressionUtils {
    * The output file is created in the output folder, having the same name as the input file, minus
    * the '.tar' extension.
    *
-   * @param inputFile the input .tar file
-   * @param outputDir the output directory file.
+   * @param inputFileName the input .tar file
+   * @param outputDirName the output directory file.
    * @throws IOException
    * @throws FileNotFoundException
    *
@@ -159,6 +159,10 @@ public class CompressionUtils {
     TarArchiveEntry entry = null;
     while ((entry = (TarArchiveEntry) debInputStream.getNextEntry()) != null) {
       final File outputFile = new File(outputDir, entry.getName());
+      if (!outputFile.toPath().toAbsolutePath().normalize()
+          .startsWith(outputDir.toPath().toAbsolutePath().normalize())) {
+        throw new IOException("Untarred file is not under the output directory");
+      }
       if (entry.isDirectory()) {
         if (flatten) {
           // no sub-directories

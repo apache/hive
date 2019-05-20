@@ -1,13 +1,11 @@
-PREHOOK: query: -- Global Limit optimization does not work with ACID table. Make sure to skip it for ACID table.
-CREATE TABLE acidtest1(c1 INT, c2 STRING)
+PREHOOK: query: CREATE TABLE acidtest1(c1 INT, c2 STRING)
 CLUSTERED BY (c1) INTO 3 BUCKETS
 STORED AS ORC
 TBLPROPERTIES ("transactional"="true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@acidtest1
-POSTHOOK: query: -- Global Limit optimization does not work with ACID table. Make sure to skip it for ACID table.
-CREATE TABLE acidtest1(c1 INT, c2 STRING)
+POSTHOOK: query: CREATE TABLE acidtest1(c1 INT, c2 STRING)
 CLUSTERED BY (c1) INTO 3 BUCKETS
 STORED AS ORC
 TBLPROPERTIES ("transactional"="true")

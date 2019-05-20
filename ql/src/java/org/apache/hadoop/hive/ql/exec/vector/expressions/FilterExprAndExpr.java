@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,8 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * This class represents a non leaf binary operator in the expression tree.
@@ -33,7 +36,7 @@ public class FilterExprAndExpr extends VectorExpression {
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
     childExpressions[0].evaluate(batch);
     for (int childIndex = 1; childIndex < childExpressions.length; childIndex++) {
       childExpressions[childIndex].evaluate(batch);
@@ -41,13 +44,9 @@ public class FilterExprAndExpr extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return -1;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
+  public String vectorExpressionParameters() {
+    // The children are input.
+    return null;
   }
 
   @Override

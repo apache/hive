@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -35,6 +35,8 @@ import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 /**
  * The abstract class HCatClient containing APIs for HCatalog DDL commands.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class HCatClient {
 
   public enum DropDBMode {RESTRICT, CASCADE}
@@ -186,7 +188,7 @@ public abstract class HCatClient {
    * Serializer for HCatTable.
    * @param hcatTable The HCatTable to be serialized into string form
    * @return String representation of the HCatTable.
-   * @throws HCatException, on failure to serialize.
+   * @throws HCatException on failure to serialize.
    */
   public abstract String serializeTable(HCatTable hcatTable) throws HCatException;
 
@@ -202,7 +204,7 @@ public abstract class HCatClient {
    * Serializer for HCatPartition.
    * @param hcatPartition The HCatPartition instance to be serialized.
    * @return String representation of the HCatPartition.
-   * @throws HCatException, on failure to serialize.
+   * @throws HCatException on failure to serialize.
    */
   public abstract String serializePartition(HCatPartition hcatPartition) throws HCatException;
 
@@ -210,7 +212,7 @@ public abstract class HCatClient {
    * Serializer for a list of HCatPartition.
    * @param hcatPartitions The HCatPartitions to be serialized.
    * @return A list of Strings, each representing an HCatPartition.
-   * @throws HCatException, on failure to serialize.
+   * @throws HCatException on failure to serialize.
    */
   public abstract List<String> serializePartitions(List<HCatPartition> hcatPartitions) throws HCatException;
 
@@ -218,7 +220,7 @@ public abstract class HCatClient {
    * Deserializer for an HCatPartition.
    * @param hcatPartitionStringRep The String representation of the HCatPartition, presumably retrieved from {@link #serializePartition(HCatPartition)}
    * @return HCatPartition instance reconstructed from the string.
-   * @throws HCatException, on failure to deserialze.
+   * @throws HCatException on failure to deserialze.
    */
   public abstract HCatPartition deserializePartition(String hcatPartitionStringRep) throws HCatException;
 
@@ -226,7 +228,7 @@ public abstract class HCatClient {
    * Deserializer for a list of HCatPartition strings.
    * @param hcatPartitionStringReps The list of HCatPartition strings to be deserialized.
    * @return A list of HCatPartition instances, each reconstructed from an entry in the string-list.
-   * @throws HCatException, on failure to deserialize.
+   * @throws HCatException on failure to deserialize.
    */
   public abstract List<HCatPartition> deserializePartitions(List<String> hcatPartitionStringReps) throws HCatException;
 
@@ -387,7 +389,8 @@ public abstract class HCatClient {
    * @param tableName The table name.
    * @param partitionSpec The partition specification, {[col_name,value],[col_name2,value2]}.
    * @param ifExists Hive returns an error if the partition specified does not exist, unless ifExists is set to true.
-   * @throws HCatException,ConnectionFailureException
+   * @throws HCatException
+   * @throws ConnectionFailureException
    */
   public abstract void dropPartitions(String dbName, String tableName,
                     Map<String, String> partitionSpec, boolean ifExists)
@@ -406,7 +409,8 @@ public abstract class HCatClient {
    * @param partitionSpec The partition specification, {[col_name,value],[col_name2,value2]}.
    * @param ifExists Hive returns an error if the partition specified does not exist, unless ifExists is set to true.
    * @param deleteData Whether to delete the underlying data.
-   * @throws HCatException,ConnectionFailureException
+   * @throws HCatException
+   * @throws ConnectionFailureException
    */
    public abstract void dropPartitions(String dbName, String tableName,
                     Map<String, String> partitionSpec, boolean ifExists, boolean deleteData)
@@ -417,7 +421,7 @@ public abstract class HCatClient {
    * @param dbName The database name.
    * @param tblName The table name.
    * @param filter The filter string,
-   *    for example "part1 = \"p1_abc\" and part2 <= "\p2_test\"". Filtering can
+   *    for example "part1 = \"p1_abc\" and part2 &lt;= "\p2_test\"". Filtering can
    *    be done only on string partition keys.
    * @return list of partitions
    * @throws HCatException
@@ -466,7 +470,8 @@ public abstract class HCatClient {
    * @param owner the owner
    * @param renewerKerberosPrincipalName the renewer kerberos principal name
    * @return the delegation token
-   * @throws HCatException,ConnectionFailureException
+   * @throws HCatException
+   * @throws ConnectionFailureException
    */
   public abstract String getDelegationToken(String owner,
                         String renewerKerberosPrincipalName) throws HCatException;
@@ -496,7 +501,7 @@ public abstract class HCatClient {
    * @param dbName The name of the DB.
    * @param tableName The name of the table.
    * @return Topic-name for the message-bus on which messages will be sent for the specified table.
-   * By default, this is set to <db-name>.<table-name>. Returns null when not set.
+   * By default, this is set to &lt;db-name&gt;.&lt;table-name&gt;. Returns null when not set.
    */
   public abstract String getMessageBusTopicName(String dbName, String tableName) throws HCatException;
 
@@ -507,7 +512,7 @@ public abstract class HCatClient {
    * @param lastEventId : The last event id that was processed for this reader. The returned
    *                    replication tasks will start from this point forward
    * @param maxEvents : Maximum number of events to consider for generating the
-   *                  replication tasks. If < 1, then all available events will be considered.
+   *                  replication tasks. If &lt; 1, then all available events will be considered.
    * @param dbName : The database name for which we're interested in the events for.
    * @param tableName : The table name for which we're interested in the events for - if null,
    *                  then this function will behave as if it were running at a db level.
@@ -523,7 +528,7 @@ public abstract class HCatClient {
    * @param lastEventId The last event id that was consumed by this reader.  The returned
    *                    notifications will start at the next eventId available this eventId that
    *                    matches the filter.
-   * @param maxEvents Maximum number of events to return.  If < 1, then all available events will
+   * @param maxEvents Maximum number of events to return.  If &lt; 1, then all available events will
    *                  be returned.
    * @param filter Filter to determine if message should be accepted.  If null, then all
    *               available events up to maxEvents will be returned.

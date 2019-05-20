@@ -8,6 +8,8 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED max
 POSTHOOK: type: DESCFUNCTION
 max(expr) - Returns the maximum value of expr
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax
+Function type:BUILTIN
 PREHOOK: query: SELECT max(struct(CAST(key as INT), value)),
        max(struct(key, value))
 FROM src

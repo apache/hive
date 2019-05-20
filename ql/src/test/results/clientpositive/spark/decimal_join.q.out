@@ -1,14 +1,8 @@
-PREHOOK: query: -- HIVE-5292 Join on decimal columns fails
--- SORT_QUERY_RESULTS
-
-create table src_dec (key decimal(3,0), value string)
+PREHOOK: query: create table src_dec (key decimal(3,0), value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@src_dec
-POSTHOOK: query: -- HIVE-5292 Join on decimal columns fails
--- SORT_QUERY_RESULTS
-
-create table src_dec (key decimal(3,0), value string)
+POSTHOOK: query: create table src_dec (key decimal(3,0), value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_dec

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,7 +24,7 @@ import java.io.FileReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 
 /**
  * Suite for testing location. e.g. if "alter table alter partition
@@ -53,10 +53,11 @@ public class TestLocationQueries extends BaseTestQueries {
      * @return non-zero if it failed
      */
     @Override
-    public int checkCliDriverResults(String tname) throws Exception {
+    public QTestProcessExecResult checkCliDriverResults(String tname) throws Exception {
       File logFile = new File(logDir, tname + ".out");
 
       int failedCount = 0;
+      StringBuilder fileNames = new StringBuilder("Files failing the location check:");
       FileReader fr = new FileReader(logFile);
       BufferedReader in = new BufferedReader(fr);
       try {
@@ -69,26 +70,36 @@ public class TestLocationQueries extends BaseTestQueries {
             File f = new File(m.group(1));
             if (!f.getName().equals(locationSubdir)) {
               failedCount++;
+              fileNames.append(f.getName()).append("\r\n");
             }
             locationCount++;
           }
         }
         // we always have to find at least one location, otw the test is useless
         if (locationCount == 0) {
-          return Integer.MAX_VALUE;
+          return QTestProcessExecResult.create(Integer.MAX_VALUE, "0 locations tested");
         }
       } finally {
         in.close();
       }
 
-      return failedCount;
+      return QTestProcessExecResult.create(failedCount, fileNames.toString());
     }
 
-    public CheckResults(String outDir, String logDir, MiniClusterType miniMr,
-        String hadoopVer, String locationSubdir)
+    public CheckResults(String outDir, String logDir, MiniClusterType miniMr, String locationSubdir)
       throws Exception
     {
-      super(outDir, logDir, miniMr, null, hadoopVer, "", "", false, false);
+      super(
+          QTestArguments.QTestArgumentsBuilder.instance()
+            .withOutDir(outDir)
+            .withLogDir(logDir)
+            .withClusterType(miniMr)
+            .withConfDir(null)
+            .withInitScript("")
+            .withCleanupScript("")
+            .withLlapIo(false)
+            .build());
+
       this.locationSubdir = locationSubdir;
     }
   }
@@ -106,12 +117,13 @@ public class TestLocationQueries extends BaseTestQueries {
     QTestUtil[] qt = new QTestUtil[qfiles.length];
 
     for (int i = 0; i < qfiles.length; i++) {
-      qt[i] = new CheckResults(resDir, logDir, MiniClusterType.none, "0.20", "parta");
-      qt[i].addFile(qfiles[i]);
+      qt[i] = new CheckResults(resDir, logDir, MiniClusterType.NONE, "parta");
+      qt[i].newSession();
+      qt[i].addFile(qfiles[i], false);
       qt[i].clearTestSideEffects();
     }
 
-    boolean success = QTestUtil.queryListRunnerSingleThreaded(qfiles, qt);
+    boolean success = QTestRunnerUtils.queryListRunnerSingleThreaded(qfiles, qt);
     if (!success) {
       fail("One or more queries failed");
     }

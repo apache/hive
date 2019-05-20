@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,12 +17,19 @@
  */
 package org.apache.hadoop.hive.ql.udf;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.joda.time.Chronology;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -40,25 +47,38 @@ import com.google.common.collect.ImmutableMap;
 public abstract class UDFDateFloor extends UDF {
 
   private final QueryGranularity granularity;
-  private final TimestampWritable result;
+  private final TimestampWritableV2 resultTS;
+  private final TimestampLocalTZWritable resultTSLTZ;
 
   public UDFDateFloor(String granularity) {
     this.granularity = QueryGranularity.fromString(granularity);
-    this.result = new TimestampWritable();
+    this.resultTS = new TimestampWritableV2();
+    this.resultTSLTZ = new TimestampLocalTZWritable();
   }
 
-  public TimestampWritable evaluate(TimestampWritable t) {
+  public TimestampWritableV2 evaluate(TimestampWritableV2 t) {
     if (t == null) {
       return null;
     }
-    final long originalTimestamp = t.getTimestamp().getTime(); // default
-    final long originalTimestampUTC = new DateTime(originalTimestamp)
-        .withZoneRetainFields(DateTimeZone.UTC).getMillis(); // default -> utc
+    final long originalTimestamp = t.getTimestamp().toEpochMilli();
+    final long newTimestamp = granularity.truncate(originalTimestamp);
+    resultTS.set(Timestamp.ofEpochMilli(newTimestamp));
+    return resultTS;
+  }
+
+  public TimestampLocalTZWritable evaluate(TimestampLocalTZWritable t) {
+    if (t == null) {
+      return null;
+    }
+    final ZonedDateTime localZDT = t.getTimestampTZ().getZonedDateTime(); // default
+    final long originalTimestampUTC = localZDT.withZoneSameLocal(ZoneOffset.UTC)
+        .toInstant().toEpochMilli(); // default -> utc
     final long newTimestampUTC = granularity.truncate(originalTimestampUTC); // utc
-    final long newTimestamp = new DateTime(newTimestampUTC, DateTimeZone.UTC)
-        .withZoneRetainFields(DateTimeZone.getDefault()).getMillis(); // utc -> default
-    result.setTime(newTimestamp);
-    return result;
+    final ZonedDateTime newLocalZDT = ZonedDateTime.of(
+        LocalDateTime.ofInstant(Instant.ofEpochMilli(newTimestampUTC), ZoneOffset.UTC),
+        localZDT.getZone()); // utc -> default
+    resultTSLTZ.set(new TimestampTZ(newLocalZDT));
+    return resultTSLTZ;
   }
 
   /*

@@ -1,0 +1,93 @@
+PREHOOK: query: CREATE TABLE src_null_n2(a bigint) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_null_n2
+POSTHOOK: query: CREATE TABLE src_null_n2(a bigint) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_null_n2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nulls.txt' INTO TABLE src_null_n2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@src_null_n2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nulls.txt' INTO TABLE src_null_n2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@src_null_n2
+PREHOOK: query: create table all_nulls as SELECT a, cast(a as double) as b, cast(a as decimal) as c  FROM src_null_n2 where a is null limit 5
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src_null_n2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@all_nulls
+POSTHOOK: query: create table all_nulls as SELECT a, cast(a as double) as b, cast(a as decimal) as c  FROM src_null_n2 where a is null limit 5
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src_null_n2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@all_nulls
+POSTHOOK: Lineage: all_nulls.a SIMPLE []
+POSTHOOK: Lineage: all_nulls.b SIMPLE []
+POSTHOOK: Lineage: all_nulls.c SIMPLE []
+PREHOOK: query: analyze table all_nulls compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@all_nulls
+#### A masked pattern was here ####
+PREHOOK: Output: default@all_nulls
+POSTHOOK: query: analyze table all_nulls compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@all_nulls
+#### A masked pattern was here ####
+POSTHOOK: Output: default@all_nulls
+PREHOOK: query: describe formatted all_nulls a
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@all_nulls
+POSTHOOK: query: describe formatted all_nulls a
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@all_nulls
+col_name	a	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+data_type	bigint	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+min	0	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+max	0	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+num_nulls	5	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+distinct_count	1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+avg_col_len		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+max_col_len		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+num_trues		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+num_falses		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+bitVector	HL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+comment	from deserializer	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: describe formatted all_nulls b
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@all_nulls
+POSTHOOK: query: describe formatted all_nulls b
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@all_nulls
+col_name	b	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+data_type	double	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+min	0.0	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+max	0.0	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+num_nulls	5	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+distinct_count	1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+avg_col_len		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+max_col_len		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+num_trues		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+num_falses		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+bitVector	HL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+comment	from deserializer	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: drop table all_nulls
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@all_nulls
+PREHOOK: Output: default@all_nulls
+POSTHOOK: query: drop table all_nulls
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@all_nulls
+POSTHOOK: Output: default@all_nulls
+PREHOOK: query: drop table src_null_n2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_null_n2
+PREHOOK: Output: default@src_null_n2
+POSTHOOK: query: drop table src_null_n2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_null_n2
+POSTHOOK: Output: default@src_null_n2

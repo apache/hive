@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,8 +18,15 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.io.IOException;
+
+import org.apache.hadoop.hive.ql.processors.ErasureProcessor;
+import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.mapred.Counters;
 import org.apache.hadoop.mapred.Counters.Counter;
+import org.apache.hadoop.mapred.JobConf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MapRedStats.
@@ -30,15 +37,21 @@ import org.apache.hadoop.mapred.Counters.Counter;
  *
  */
 public class MapRedStats {
-  int numMap;
-  int numReduce;
-  long cpuMSec;
-  Counters counters = null;
-  boolean success;
+  private static final String CLASS_NAME = MapRedStats.class.getName();
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+  private JobConf jobConf;
+  private int numMap;
+  private int numReduce;
+  private long cpuMSec;
+  private Counters counters = null;
+  private boolean success;
 
-  String jobId;
+  private String jobId;
 
-  public MapRedStats(int numMap, int numReduce, long cpuMSec, boolean ifSuccess, String jobId) {
+  private long numModifiedRows;
+
+  public MapRedStats(JobConf jobConf, int numMap, int numReduce, long cpuMSec, boolean ifSuccess, String jobId) {
+    this.jobConf = jobConf;
     this.numMap = numMap;
     this.numReduce = numReduce;
     this.cpuMSec = cpuMSec;
@@ -94,6 +107,14 @@ public class MapRedStats {
     this.jobId = jobId;
   }
 
+  public long getNumModifiedRows() {
+    return numModifiedRows;
+  }
+
+  public void setNumModifiedRows(long numModifiedRows) {
+    this.numModifiedRows = numModifiedRows;
+  }
+
   public String getTaskNumbers() {
     StringBuilder sb = new StringBuilder();
     if (numMap > 0) {
@@ -134,10 +155,40 @@ public class MapRedStats {
       if (hdfsWrittenCntr != null && (hdfsWritten = hdfsWrittenCntr.getValue()) >= 0) {
         sb.append(" HDFS Write: " + hdfsWritten);
       }
+
+      HadoopShims.HdfsErasureCodingShim erasureShim = getHdfsErasureCodingShim();
+
+      if (erasureShim != null && erasureShim.isMapReduceStatAvailable()) {
+        // Erasure Coding stats - added in HADOOP-15507, expected in Hadoop 3.2.0
+        Counter hdfsReadEcCntr = counters.findCounter("FileSystemCounters",
+            "HDFS_BYTES_READ_EC"); // FileSystemCounter.BYTES_READ_EC
+        if (hdfsReadEcCntr != null) {
+          long hdfsReadEc = hdfsReadEcCntr.getValue();
+          if (hdfsReadEc >= 0) {
+            sb.append(" HDFS EC Read: " + hdfsReadEc);
+          }
+        }
+      }
     }
 
     sb.append(" " + (success ? "SUCCESS" : "FAIL"));
 
     return sb.toString();
+  }
+
+  /**
+   * Get the Erasure Coding Shim.
+   * @return a HdfsErasureCodingShim
+   */
+  private HadoopShims.HdfsErasureCodingShim getHdfsErasureCodingShim() {
+    HadoopShims.HdfsErasureCodingShim erasureShim = null;
+    try {
+      erasureShim = ErasureProcessor.getErasureShim(jobConf);
+    } catch (IOException e) {
+      // this should not happen
+      LOG.warn("Could not get Erasure Coding shim for reason: " + e.getMessage());
+      // fall through
+    }
+    return erasureShim;
   }
 }

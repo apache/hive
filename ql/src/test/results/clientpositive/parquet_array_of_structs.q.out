@@ -1,14 +1,10 @@
-PREHOOK: query: -- this test creates a Parquet table with an array of structs
-
-CREATE TABLE parquet_array_of_structs (
+PREHOOK: query: CREATE TABLE parquet_array_of_structs (
     locations ARRAY<STRUCT<latitude: DOUBLE, longitude: DOUBLE>>
 ) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_array_of_structs
-POSTHOOK: query: -- this test creates a Parquet table with an array of structs
-
-CREATE TABLE parquet_array_of_structs (
+POSTHOOK: query: CREATE TABLE parquet_array_of_structs (
     locations ARRAY<STRUCT<latitude: DOUBLE, longitude: DOUBLE>>
 ) STORED AS PARQUET
 POSTHOOK: type: CREATETABLE

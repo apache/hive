@@ -1,3 +1,4 @@
+--! qt:dataset:src
 explain select key || value from src;
 
 select concat('a','b','c');
@@ -24,16 +25,16 @@ create table ct2 (c int);
 insert into ct1 values (7),(5),(3),(1);
 insert into ct2 values (8),(6),(4),(2);
 
-create view ct_v1 as select * from ct1 union all select * from ct2 order by c;
+create view ct_v1 as select * from ct1 union all select * from ct2;
 
-select c,c * c + c || 'x', 'c+c=' || c+c || ', c*c=' || c*c || ', (c&c)=' || (c & c) from ct_v1;
+select c,c * c + c || 'x', 'c+c=' || c+c || ', c*c=' || c*c || ', (c&c)=' || (c & c) from ct_v1 order by c;
 
 
 select *, 'x' || (c&3) , 'a' || c*c+c || 'b' from ct_v1
 		order by 'a' || c*c+c || 'b';
 
-select 'x' || (c&3),collect_list(c) from ct_v1
-		group by 'x' || (c&3);
+select 'x' || (c&3) from ct_v1
+		group by 'x' || (c&3) order by 'x' || (c&3);
 
 explain select concat('a','b','c');
 explain select 'a' || 'b' || 'c';
@@ -43,3 +44,8 @@ explain select 'a' || 'b' || 'c';
 -- true and (false or false) and (true or true) => false	should not happen
 select true and false or false and true or true;
 
+explain formatted select key || value from src;
+
+explain formatted select key || value || key from src;
+
+explain formatted select key || value || key || value from src;

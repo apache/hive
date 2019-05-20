@@ -11,7 +11,7 @@ CREATE TABLE serde_opencsv(
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
 WITH SERDEPROPERTIES(
   "separatorChar" = ",",
-  "quoteChar"     = "'",
+  "quoteChar"     = "\'",
   "escapeChar"    = "\\"
 ) stored as textfile;
 
@@ -27,7 +27,7 @@ CREATE TABLE serde_opencsv(
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
 WITH SERDEPROPERTIES(
   "separatorChar" = ",",
-  "quoteChar"     = "'",
+  "quoteChar"     = "\'",
   "escapeChar"    = "\\"
 ) stored as textfile;
 

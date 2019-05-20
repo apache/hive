@@ -1,3 +1,7 @@
+--! qt:dataset:src
+
+set hive.vectorized.execution.enabled=false;
+
 create database if not exists test;
 drop table if exists test.test_orc_src;
 drop table if exists test.test_orc_src2;

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
@@ -46,11 +47,7 @@ public abstract class VectorMapJoinFastLongHashTable
 
   public static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastLongHashTable.class);
 
-  private transient final boolean isLogDebugEnabled = LOG.isDebugEnabled();
-
   private final HashTableKeyType hashTableKeyType;
-
-  private final boolean isOuterJoin;
 
   private final BinarySortableDeserializeRead keyBinarySortableDeserializeRead;
 
@@ -73,14 +70,13 @@ public abstract class VectorMapJoinFastLongHashTable
     return max;
   }
 
-  @Override
-  public void putRow(BytesWritable currentKey, BytesWritable currentValue) throws HiveException, IOException {
+  public boolean adaptPutRow(BytesWritable currentKey, BytesWritable currentValue) throws HiveException, IOException {
     byte[] keyBytes = currentKey.getBytes();
     int keyLength = currentKey.getLength();
     keyBinarySortableDeserializeRead.set(keyBytes, 0, keyLength);
     try {
       if (!keyBinarySortableDeserializeRead.readNextField()) {
-        return;
+        return false;
       }
     } catch (Exception e) {
       throw new HiveException(
@@ -93,6 +89,7 @@ public abstract class VectorMapJoinFastLongHashTable
                             keyBinarySortableDeserializeRead, hashTableKeyType);
 
     add(key, currentValue);
+    return true;
   }
 
   protected abstract void assignSlot(int slot, long key, boolean isNewKey, BytesWritable currentValue);
@@ -130,7 +127,7 @@ public abstract class VectorMapJoinFastLongHashTable
     }
 
     if (largestNumberOfSteps < i) {
-      if (isLogDebugEnabled) {
+      if (LOG.isDebugEnabled()) {
         LOG.debug("Probed " + i + " slots (the longest so far) to find space");
       }
       largestNumberOfSteps = i;
@@ -156,6 +153,10 @@ public abstract class VectorMapJoinFastLongHashTable
 
   private void expandAndRehash() {
 
+    // We allocate pairs, so we cannot go above highest Integer power of 2 / 4.
+    if (logicalHashBucketCount > ONE_QUARTER_LIMIT) {
+      throwExpandError(ONE_QUARTER_LIMIT, "Long");
+    }
     int newLogicalHashBucketCount = logicalHashBucketCount * 2;
     int newLogicalHashBucketMask = newLogicalHashBucketCount - 1;
     int newMetricPutConflict = 0;
@@ -190,7 +191,7 @@ public abstract class VectorMapJoinFastLongHashTable
         }
 
         if (newLargestNumberOfSteps < i) {
-          if (isLogDebugEnabled) {
+          if (LOG.isDebugEnabled()) {
             LOG.debug("Probed " + i + " slots (the longest so far) to find space");
           }
           newLargestNumberOfSteps = i;
@@ -212,10 +213,9 @@ public abstract class VectorMapJoinFastLongHashTable
     largestNumberOfSteps = newLargestNumberOfSteps;
     resizeThreshold = (int)(logicalHashBucketCount * loadFactor);
     metricExpands++;
-    // LOG.debug("VectorMapJoinFastLongHashTable expandAndRehash new logicalHashBucketCount " + logicalHashBucketCount + " resizeThreshold " + resizeThreshold + " metricExpands " + metricExpands);
   }
 
-  protected long findReadSlot(long key, long hashCode) {
+  protected int findReadSlot(long key, long hashCode) {
 
     int intHashCode = (int) hashCode;
     int slot = intHashCode & logicalHashBucketMask;
@@ -227,20 +227,16 @@ public abstract class VectorMapJoinFastLongHashTable
       long valueRef = slotPairs[pairIndex];
       if (valueRef == 0) {
         // Given that we do not delete, an empty slot means no match.
-        // LOG.debug("VectorMapJoinFastLongHashTable findReadSlot key " + key + " slot " + slot + " pairIndex " + pairIndex + " empty slot (i = " + i + ")");
         return -1;
       }
       long tableKey = slotPairs[pairIndex + 1];
       if (key == tableKey) {
-        // LOG.debug("VectorMapJoinFastLongHashTable findReadSlot key " + key + " slot " + slot + " pairIndex " + pairIndex + " found key (i = " + i + ")");
-        return slotPairs[pairIndex];
+        return pairIndex;
       }
       // Some other key (collision) - keep probing.
       probeSlot += (++i);
       if (i > largestNumberOfSteps) {
-        // LOG.debug("VectorMapJoinFastLongHashTable findReadSlot returning not found");
         // We know we never went that far when we were inserting.
-        // LOG.debug("VectorMapJoinFastLongHashTable findReadSlot key " + key + " slot " + slot + " pairIndex " + pairIndex + " largestNumberOfSteps " + largestNumberOfSteps + " (i = " + i + ")");
         return -1;
       }
       slot = (int)(probeSlot & logicalHashBucketMask);
@@ -256,15 +252,22 @@ public abstract class VectorMapJoinFastLongHashTable
   protected long[] slotPairs;
 
   private void allocateBucketArray() {
+    // We allocate pairs, so we cannot go above highest Integer power of 2 / 4.
+    if (logicalHashBucketCount > ONE_QUARTER_LIMIT) {
+      throwExpandError(ONE_QUARTER_LIMIT, "Long");
+    }
     int slotPairArraySize = 2 * logicalHashBucketCount;
     slotPairs = new long[slotPairArraySize];
   }
 
   public VectorMapJoinFastLongHashTable(
-        boolean minMaxEnabled, boolean isOuterJoin, HashTableKeyType hashTableKeyType,
-        int initialCapacity, float loadFactor, int writeBuffersSize) {
-    super(initialCapacity, loadFactor, writeBuffersSize);
-    this.isOuterJoin = isOuterJoin;
+        boolean isFullOuter,
+        boolean minMaxEnabled,
+        HashTableKeyType hashTableKeyType,
+        int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
+    super(
+        isFullOuter,
+        initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
     this.hashTableKeyType = hashTableKeyType;
     PrimitiveTypeInfo[] primitiveTypeInfos = { hashTableKeyType.getPrimitiveTypeInfo() };
     keyBinarySortableDeserializeRead =
@@ -275,5 +278,19 @@ public abstract class VectorMapJoinFastLongHashTable
     useMinMax = minMaxEnabled;
     min = Long.MAX_VALUE;
     max = Long.MIN_VALUE;
+  }
+
+  @Override
+  public long getEstimatedMemorySize() {
+    JavaDataModel jdm = JavaDataModel.get();
+    long size = super.getEstimatedMemorySize();
+    size += slotPairs == null ? 0 : jdm.lengthForLongArrayOfSize(slotPairs.length);
+    size += (2 * jdm.primitive2());
+    size += (2 * jdm.primitive1());
+    size += jdm.object();
+    // adding 16KB constant memory for keyBinarySortableDeserializeRead as the rabit hole is deep to implement
+    // MemoryEstimate interface, also it is constant overhead
+    size += (16 * 1024L);
+    return size;
   }
 }

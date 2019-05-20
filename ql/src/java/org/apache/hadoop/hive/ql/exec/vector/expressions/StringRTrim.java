@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,8 +23,10 @@ import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 public class StringRTrim extends StringUnaryUDFDirect {
   private static final long serialVersionUID = 1L;
 
-  public StringRTrim(int inputColumn, int outputColumn) {
-    super(inputColumn, outputColumn);
+  private static final byte[] EMPTY_BYTES = new byte[0];
+
+  public StringRTrim(int inputColumn, int outputColumnNum) {
+    super(inputColumn, outputColumnNum);
   }
 
   public StringRTrim() {
@@ -36,15 +38,23 @@ public class StringRTrim extends StringUnaryUDFDirect {
    * Operate on the data in place, and set the output by reference
    * to improve performance. Ignore null handling. That will be handled separately.
    */
-  protected void func(BytesColumnVector outV, byte[][] vector, int[] start, int[] length, int i) {
-    int j = start[i] + length[i] - 1;
+  protected void func(BytesColumnVector outV, byte[][] vector, int[] start, int[] length,
+      int batchIndex) {
 
-    // skip trailing blank characters
-    while(j >= start[i] && vector[i][j] == 0x20) {
-      j--;
+    byte[] bytes = vector[batchIndex];
+    final int startIndex = start[batchIndex];
+
+    // Skip trailing blank characters.
+    int index = startIndex + length[batchIndex] - 1;
+    while(index >= startIndex && bytes[index] == 0x20) {
+      index--;
     }
 
-    // set output vector
-    outV.setVal(i, vector[i], start[i], (j - start[i]) + 1);
+    final int resultLength = index - startIndex + 1;
+    if (resultLength == 0) {
+      outV.setVal(batchIndex, EMPTY_BYTES, 0, 0);
+      return;
+    }
+    outV.setVal(batchIndex, bytes, startIndex, resultLength);
   }
 }

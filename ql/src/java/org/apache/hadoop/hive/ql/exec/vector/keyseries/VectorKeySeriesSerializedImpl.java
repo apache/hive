@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,9 +21,9 @@ package org.apache.hadoop.hive.ql.exec.vector.keyseries;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.fast.SerializeWrite;
-import org.apache.hive.common.util.HashCodeUtil;
 
 import com.google.common.base.Preconditions;
+import org.apache.hive.common.util.Murmur3;
 
 /**
  * Implementation of base serialization interface.
@@ -93,9 +93,8 @@ public abstract class VectorKeySeriesSerializedImpl<T extends SerializeWrite>
    * Batch compute the hash codes for all the serialized keys.
    *
    * NOTE: MAJOR MAJOR ASSUMPTION:
-   *     We assume that HashCodeUtil.murmurHash produces the same result
-   *     as MurmurHash.hash with seed = 0 (the method used by ReduceSinkOperator for
-   *     UNIFORM distribution).
+   *     We use Murmur3.hash32(seed=0) across the board for the ReduceSink UNIFORM distribution.
+   *     Previous use of HashCodeUtil is deprecated.
    */
   protected void computeSerializedHashCodes() {
     int offset = 0;
@@ -103,7 +102,7 @@ public abstract class VectorKeySeriesSerializedImpl<T extends SerializeWrite>
     byte[] bytes = output.getData();
     for (int i = 0; i < nonNullKeyCount; i++) {
       keyLength = serializedKeyLengths[i];
-      hashCodes[i] = HashCodeUtil.murmurHash(bytes, offset, keyLength);
+      hashCodes[i] = Murmur3.hash32(bytes, offset, keyLength, 0);
       offset += keyLength;
     }
   }

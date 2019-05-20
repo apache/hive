@@ -187,11 +187,11 @@ POSTHOOK: Input: default@sent_tmp2
 7669656C7365697469676572
 766F6E
 C39C6265727365747A756E67
-PREHOOK: query: SELECT sentences("Hive is an excellent tool for data querying; and perhaps more versatile than machine translation!! Multiple, ill-formed sentences...confounding punctuation--and yet this UDF still works!!!!") AS value FROM src ORDER BY value ASC LIMIT 1
+PREHOOK: query: SELECT sentences("Hive is an excellent tool for data querying\; and perhaps more versatile than machine translation!! Multiple, ill-formed sentences...confounding punctuation--and yet this UDF still works!!!!") AS value FROM src ORDER BY value ASC LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sentences("Hive is an excellent tool for data querying; and perhaps more versatile than machine translation!! Multiple, ill-formed sentences...confounding punctuation--and yet this UDF still works!!!!") AS value FROM src ORDER BY value ASC LIMIT 1
+POSTHOOK: query: SELECT sentences("Hive is an excellent tool for data querying\; and perhaps more versatile than machine translation!! Multiple, ill-formed sentences...confounding punctuation--and yet this UDF still works!!!!") AS value FROM src ORDER BY value ASC LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

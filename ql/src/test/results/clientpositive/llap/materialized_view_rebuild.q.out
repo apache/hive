@@ -1,0 +1,119 @@
+PREHOOK: query: drop materialized view if exists mv_rebuild
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: query: drop materialized view if exists mv_rebuild
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: query: drop table if exists basetable_rebuild
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists basetable_rebuild
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table basetable_rebuild (a int, b varchar(256), c decimal(10,2))
+stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@basetable_rebuild
+POSTHOOK: query: create table basetable_rebuild (a int, b varchar(256), c decimal(10,2))
+stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@basetable_rebuild
+PREHOOK: query: insert into basetable_rebuild values (1, 'alfred', 10.30),(2, 'bob', 3.14),(2, 'bonnie', 172342.2),(3, 'calvin', 978.76),(3, 'charlie', 9.8)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@basetable_rebuild
+POSTHOOK: query: insert into basetable_rebuild values (1, 'alfred', 10.30),(2, 'bob', 3.14),(2, 'bonnie', 172342.2),(3, 'calvin', 978.76),(3, 'charlie', 9.8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@basetable_rebuild
+POSTHOOK: Lineage: basetable_rebuild.a SCRIPT []
+POSTHOOK: Lineage: basetable_rebuild.b SCRIPT []
+POSTHOOK: Lineage: basetable_rebuild.c SCRIPT []
+PREHOOK: query: create materialized view mv_rebuild as select a, b, sum(a) from basetable_rebuild group by a,b
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@basetable_rebuild
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv_rebuild
+POSTHOOK: query: create materialized view mv_rebuild as select a, b, sum(a) from basetable_rebuild group by a,b
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@basetable_rebuild
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv_rebuild
+PREHOOK: query: select * from mv_rebuild
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv_rebuild
+#### A masked pattern was here ####
+POSTHOOK: query: select * from mv_rebuild
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv_rebuild
+#### A masked pattern was here ####
+1	alfred	1
+2	bob	2
+2	bonnie	2
+3	calvin	3
+3	charlie	3
+PREHOOK: query: insert into basetable_rebuild values (4, 'amia', 7.5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@basetable_rebuild
+POSTHOOK: query: insert into basetable_rebuild values (4, 'amia', 7.5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@basetable_rebuild
+POSTHOOK: Lineage: basetable_rebuild.a SCRIPT []
+POSTHOOK: Lineage: basetable_rebuild.b SCRIPT []
+POSTHOOK: Lineage: basetable_rebuild.c SCRIPT []
+PREHOOK: query: select * from mv_rebuild
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv_rebuild
+#### A masked pattern was here ####
+POSTHOOK: query: select * from mv_rebuild
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv_rebuild
+#### A masked pattern was here ####
+1	alfred	1
+2	bob	2
+2	bonnie	2
+3	calvin	3
+3	charlie	3
+PREHOOK: query: alter materialized view mv_rebuild rebuild
+PREHOOK: type: QUERY
+PREHOOK: Input: default@basetable_rebuild
+PREHOOK: Input: default@mv_rebuild
+PREHOOK: Output: default@mv_rebuild
+POSTHOOK: query: alter materialized view mv_rebuild rebuild
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@basetable_rebuild
+POSTHOOK: Input: default@mv_rebuild
+POSTHOOK: Output: default@mv_rebuild
+POSTHOOK: Lineage: mv_rebuild._c2 EXPRESSION [(basetable_rebuild)basetable_rebuild.FieldSchema(name:a, type:int, comment:null), (mv_rebuild)default.mv_rebuild.FieldSchema(name:_c2, type:bigint, comment:null), ]
+POSTHOOK: Lineage: mv_rebuild.a EXPRESSION [(basetable_rebuild)basetable_rebuild.FieldSchema(name:a, type:int, comment:null), (mv_rebuild)default.mv_rebuild.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: mv_rebuild.b EXPRESSION [(basetable_rebuild)basetable_rebuild.FieldSchema(name:b, type:varchar(256), comment:null), (mv_rebuild)default.mv_rebuild.FieldSchema(name:b, type:varchar(256), comment:null), ]
+PREHOOK: query: select * from mv_rebuild
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv_rebuild
+#### A masked pattern was here ####
+POSTHOOK: query: select * from mv_rebuild
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv_rebuild
+#### A masked pattern was here ####
+1	alfred	1
+2	bob	2
+2	bonnie	2
+3	calvin	3
+3	charlie	3
+4	amia	4
+PREHOOK: query: drop materialized view mv_rebuild
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv_rebuild
+PREHOOK: Output: default@mv_rebuild
+POSTHOOK: query: drop materialized view mv_rebuild
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv_rebuild
+POSTHOOK: Output: default@mv_rebuild
+PREHOOK: query: drop table basetable_rebuild
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@basetable_rebuild
+PREHOOK: Output: default@basetable_rebuild
+POSTHOOK: query: drop table basetable_rebuild
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@basetable_rebuild
+POSTHOOK: Output: default@basetable_rebuild

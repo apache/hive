@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,22 +18,27 @@
 
 package org.apache.hive.common.util;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.joda.time.DateTime;
+import org.joda.time.LocalDateTime;
 import org.joda.time.MutableDateTime;
 import org.joda.time.DateTimeFieldType;
+import org.joda.time.chrono.ISOChronology;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
 import org.joda.time.format.DateTimeParser;
 import org.joda.time.format.DateTimeParserBucket;
+
+import javax.annotation.Nullable;
+
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * Timestamp parser using Joda DateTimeFormatter. Parser accepts 0 or more date time format
@@ -46,7 +51,8 @@ public class TimestampParser {
 
   protected final static String[] stringArray = new String[] {};
   protected final static String millisFormatString = "millis";
-  protected final static DateTime startingDateValue = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+  protected final static DateTime startingDateValue =
+      new DateTime(1970, 1, 1, 0, 0, 0, 0, ISOChronology.getInstanceUTC());
 
   protected String[] formatStrings = null;
   protected DateTimeFormatter fmt = null;
@@ -78,7 +84,10 @@ public class TimestampParser {
           parsers[idx] = DateTimeFormat.forPattern(formatString).getParser();
         }
       }
-      fmt = new DateTimeFormatterBuilder().append(null, parsers).toFormatter();
+      fmt = new DateTimeFormatterBuilder()
+              .append(null, parsers)
+              .toFormatter()
+              .withDefaultYear(1970);
     }
   }
 
@@ -90,20 +99,42 @@ public class TimestampParser {
    */
   public Timestamp parseTimestamp(String strValue) throws IllegalArgumentException {
     if (fmt != null) {
+      Optional<Timestamp> parsed = tryParseWithFormat(strValue);
+      if (parsed.isPresent()) {
+        return parsed.get();
+      }
+    }
+
+    // Otherwise try default timestamp parsing
+    return Timestamp.valueOf(strValue);
+  }
+
+  private Optional<Timestamp> tryParseWithFormat(String strValue) {
+    checkState(fmt != null);
+
+    if (startingDateValue != null) {
       // reset value in case any date fields are missing from the date pattern
-      MutableDateTime mdt = new MutableDateTime(startingDateValue);
+      MutableDateTime mdt = new MutableDateTime(
+          startingDateValue, ISOChronology.getInstanceUTC());
 
       // Using parseInto() avoids throwing exception when parsing,
       // allowing fallback to default timestamp parsing if custom patterns fail.
       int ret = fmt.parseInto(mdt, strValue, 0);
       // Only accept parse results if we parsed the entire string
       if (ret == strValue.length()) {
-        return new Timestamp(mdt.getMillis());
+        return Optional.of(Timestamp.ofEpochMilli(mdt.getMillis()));
       }
+      return Optional.empty();
     }
 
-    // Otherwise try default timestamp parsing
-    return Timestamp.valueOf(strValue);
+    try {
+      LocalDateTime dt = fmt.parseLocalDateTime(strValue);
+      return Optional.of(
+          Timestamp.ofEpochMilli(
+              dt.toDateTime(ISOChronology.getInstanceUTC().getZone()).getMillis()));
+    } catch (IllegalArgumentException e) {
+      return Optional.empty();
+    }
   }
 
   /**
@@ -141,7 +172,8 @@ public class TimestampParser {
 
       // Joda DateTime only has precision to millis, cut off any fractional portion
       long millis = Long.parseLong(matcher.group(1));
-      DateTime dt = new DateTime(millis);
+      DateTime dt =
+          new DateTime(millis, ISOChronology.getInstanceUTC());
       for (DateTimeFieldType field : dateTimeFields) {
         bucket.saveField(field, dt.get(field));
       }

@@ -1,8 +1,0 @@
-PREHOOK: query: create table part (c int) partitioned by (d string)
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: database:default
-PREHOOK: Output: default@part
-FAILED: Hive Internal Error: java.lang.RuntimeException(Cannot overwrite read-only table: part)
-java.lang.RuntimeException: Cannot overwrite read-only table: part
-#### A masked pattern was here ####
-

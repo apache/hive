@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,14 +22,20 @@ import java.util.List;
 
 public class OpTraits {
 
-  List<List<String>> bucketColNames;
-  List<List<String>> sortColNames;
-  int numBuckets;
+  private List<List<String>> bucketColNames;
+  private List<List<String>> sortColNames;
+  private int numBuckets;
+  private int numReduceSinks;
+  private int bucketingVersion;
 
-  public OpTraits(List<List<String>> bucketColNames, int numBuckets, List<List<String>> sortColNames) {
+  public OpTraits(List<List<String>> bucketColNames, int numBuckets,
+      List<List<String>> sortColNames, int numReduceSinks,
+                  int bucketingVersion) {
     this.bucketColNames = bucketColNames;
     this.numBuckets = numBuckets;
     this.sortColNames = sortColNames;
+    this.numReduceSinks = numReduceSinks;
+    this.bucketingVersion = bucketingVersion;
   }
 
   public List<List<String>> getBucketColNames() {
@@ -54,5 +60,28 @@ public class OpTraits {
 
   public List<List<String>> getSortCols() {
     return sortColNames;
+  }
+
+
+  public void setNumReduceSinks(int numReduceSinks) {
+    this.numReduceSinks = numReduceSinks;
+  }
+
+  public int getNumReduceSinks() {
+    return this.numReduceSinks;
+  }
+
+  public void setBucketingVersion(int bucketingVersion) {
+    this.bucketingVersion = bucketingVersion;
+  }
+
+  public int getBucketingVersion() {
+    return bucketingVersion;
+  }
+
+  @Override
+  public String toString() {
+    return "{ bucket column names: " + bucketColNames + "; sort column names: "
+        + sortColNames + "; bucket count: " + numBuckets + "; bucketing version: " + bucketingVersion + " }";
   }
 }

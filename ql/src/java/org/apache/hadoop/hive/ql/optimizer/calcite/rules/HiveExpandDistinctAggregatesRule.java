@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -61,6 +61,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.math.IntMath;
 
 /**
  * Planner rule that expands distinct aggregates
@@ -139,6 +140,7 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
 
     if (numCountDistinct > 1 && numCountDistinct == aggregate.getAggCallList().size()
         && aggregate.getGroupSet().isEmpty()) {
+      LOG.debug("Trigger countDistinct rewrite. numCountDistinct is " + numCountDistinct);
       // now positions contains all the distinct positions, i.e., $5, $4, $6
       // we need to first sort them as group by set
       // and then get their position later, i.e., $4->1, $5->2, $6->3
@@ -160,9 +162,10 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
 
     // If all of the agg expressions are distinct and have the same
     // arguments then we can use a more efficient form.
+    final RelMetadataQuery mq = call.getMetadataQuery();
     if ((nonDistinctCount == 0) && (argListSets.size() == 1)) {
       for (Integer arg : argListSets.iterator().next()) {
-        Set<RelColumnOrigin> colOrigs = RelMetadataQuery.instance().getColumnOrigins(aggregate, arg);
+        Set<RelColumnOrigin> colOrigs = mq.getColumnOrigins(aggregate.getInput(), arg);
         if (null != colOrigs) {
           for (RelColumnOrigin colOrig : colOrigs) {
             RelOptHiveTable hiveTbl = (RelOptHiveTable)colOrig.getOriginTable();
@@ -186,9 +189,12 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
    * Converts an aggregate relational expression that contains only
    * count(distinct) to grouping sets with count. For example select
    * count(distinct department_id), count(distinct gender), count(distinct
-   * education_level) from employee; can be transformed to select count(case i
-   * when 1 then 1 else null end) as c0, count(case i when 2 then 1 else null
-   * end) as c1, count(case i when 4 then 1 else null end) as c2 from (select
+   * education_level) from employee; can be transformed to 
+   * select 
+   * count(case when i=1 and department_id is not null then 1 else null end) as c0, 
+   * count(case when i=2 and gender is not null then 1 else null end) as c1, 
+   * count(case when i=4 and education_level is not null then 1 else null end) as c2 
+   * from (select
    * grouping__id as i, department_id, gender, education_level from employee
    * group by department_id, gender, education_level grouping sets
    * (department_id, gender, education_level))subq;
@@ -202,10 +208,11 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
     return createCount(groupingSets, argList, cleanArgList, map, sourceOfForCountDistinct);
   }
 
-  private long getGroupingIdValue(List<Integer> list, List<Integer> sourceOfForCountDistinct) {
-    long ind = 0;
+  private int getGroupingIdValue(List<Integer> list, List<Integer> sourceOfForCountDistinct,
+          int groupCount) {
+    int ind = IntMath.pow(2, groupCount) - 1;
     for (int i : list) {
-      ind |= 1 << sourceOfForCountDistinct.indexOf(i);
+      ind &= ~(1 << groupCount - sourceOfForCountDistinct.indexOf(i) - 1);
     }
     return ind;
   }
@@ -230,13 +237,22 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
           }
         });
     final List<RexNode> gbChildProjLst = Lists.newArrayList();
+    // for singular arg, count should not include null
+    // e.g., count(case when i=1 and department_id is not null then 1 else null end) as c0, 
+    // for non-singular args, count can include null, i.e. (,) is counted as 1
     for (List<Integer> list : cleanArgList) {
-      RexNode equal = rexBuilder.makeCall(SqlStdOperatorTable.EQUALS,
-          originalInputRefs.get(originalInputRefs.size() - 1),
-          rexBuilder.makeExactLiteral(new BigDecimal(getGroupingIdValue(list, sourceOfForCountDistinct))));
-      RexNode condition = rexBuilder.makeCall(SqlStdOperatorTable.CASE, equal,
+      RexNode condition = rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, originalInputRefs
+          .get(originalInputRefs.size() - 1), rexBuilder.makeExactLiteral(new BigDecimal(
+          getGroupingIdValue(list, sourceOfForCountDistinct, aggr.getGroupCount()))));
+      if (list.size() == 1) {
+        int pos = list.get(0);
+        RexNode notNull = rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL,
+            originalInputRefs.get(pos));
+        condition = rexBuilder.makeCall(SqlStdOperatorTable.AND, condition, notNull);
+      }
+      RexNode when = rexBuilder.makeCall(SqlStdOperatorTable.CASE, condition,
           rexBuilder.makeExactLiteral(BigDecimal.ONE), rexBuilder.constantNull());
-      gbChildProjLst.add(condition);
+      gbChildProjLst.add(when);
     }
 
     // create the project before GB
@@ -252,7 +268,7 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
       aggregateCalls.add(aggregateCall);
     }
     Aggregate aggregate = new HiveAggregate(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), gbInputRel,
-        false, ImmutableBitSet.of(), null, aggregateCalls);
+        ImmutableBitSet.of(), null, aggregateCalls);
 
     // create the project after GB. For those repeated values, e.g., select
     // count(distinct x, y), count(distinct y, x), we find the correct mapping.
@@ -311,10 +327,10 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
     // Create GroupingID column
     AggregateCall aggCall = AggregateCall.create(HiveGroupingID.INSTANCE, false,
         new ImmutableList.Builder<Integer>().build(), -1, this.cluster.getTypeFactory()
-            .createSqlType(SqlTypeName.INTEGER), HiveGroupingID.INSTANCE.getName());
+            .createSqlType(SqlTypeName.BIGINT), HiveGroupingID.INSTANCE.getName());
     aggregateCalls.add(aggCall);
     return new HiveAggregate(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
-        aggregate.getInput(), true, groupSet, origGroupSets, aggregateCalls);
+        aggregate.getInput(), groupSet, origGroupSets, aggregateCalls);
   }
 
   /**

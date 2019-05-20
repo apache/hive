@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.optimize.skewjoin=true;
 set hive.auto.convert.join=false;
 

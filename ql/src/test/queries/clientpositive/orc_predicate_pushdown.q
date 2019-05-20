@@ -1,4 +1,6 @@
+set hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
+
 -- SORT_QUERY_RESULTS
 
 CREATE TABLE orc_pred(t tinyint,
@@ -10,13 +12,13 @@ CREATE TABLE orc_pred(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 STORED AS ORC;
 
 ALTER TABLE orc_pred SET SERDEPROPERTIES ('orc.row.index.stride' = '1000');
 
-CREATE TABLE staging(t tinyint,
+CREATE TABLE staging_n2(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -25,14 +27,14 @@ CREATE TABLE staging(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE;
 
-LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE staging;
+LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE staging_n2;
 
-INSERT INTO TABLE orc_pred select * from staging;
+INSERT INTO TABLE orc_pred select * from staging_n2;
 
 -- no predicate case. the explain plan should not have filter expression in table scan operator
 

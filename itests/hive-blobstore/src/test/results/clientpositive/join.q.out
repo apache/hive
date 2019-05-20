@@ -1,0 +1,198 @@
+PREHOOK: query: DROP TABLE events
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE events
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE profiled_users
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE profiled_users
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE page_profiles_latest
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE page_profiles_latest
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE page_profiles_out
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE page_profiles_out
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE events (
+    userUid string,
+    trackingId string,
+    eventType string,
+    action string,
+    url string)
+PARTITIONED BY (dt string)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ' '
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/join/page-profiles
+PREHOOK: Output: database:default
+PREHOOK: Output: default@events
+POSTHOOK: query: CREATE TABLE events (
+    userUid string,
+    trackingId string,
+    eventType string,
+    action string,
+    url string)
+PARTITIONED BY (dt string)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ' '
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/join/page-profiles
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@events
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/5col_data.txt' OVERWRITE INTO TABLE events
+PARTITION (dt='2010-12-08')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@events
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/5col_data.txt' OVERWRITE INTO TABLE events
+PARTITION (dt='2010-12-08')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@events
+POSTHOOK: Output: default@events@dt=2010-12-08
+PREHOOK: query: CREATE TABLE profiled_users (
+    userUid string,
+    categoryId int,
+    score bigint,
+    count bigint)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ' '
+LINES TERMINATED BY '\n'
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/join/measured-profiles
+PREHOOK: Output: database:default
+PREHOOK: Output: default@profiled_users
+POSTHOOK: query: CREATE TABLE profiled_users (
+    userUid string,
+    categoryId int,
+    score bigint,
+    count bigint)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ' '
+LINES TERMINATED BY '\n'
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/join/measured-profiles
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@profiled_users
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/4col_data.txt' OVERWRITE INTO TABLE profiled_users
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@profiled_users
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/4col_data.txt' OVERWRITE INTO TABLE profiled_users
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@profiled_users
+PREHOOK: query: CREATE EXTERNAL TABLE page_profiles_latest (
+    url string,
+    categoryId int,
+    score bigint,
+    count bigint)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ' '
+LINES TERMINATED BY '\n'
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/join/page-profiles/dt=2010-12-08
+PREHOOK: Output: database:default
+PREHOOK: Output: default@page_profiles_latest
+POSTHOOK: query: CREATE EXTERNAL TABLE page_profiles_latest (
+    url string,
+    categoryId int,
+    score bigint,
+    count bigint)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ' '
+LINES TERMINATED BY '\n'
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/join/page-profiles/dt=2010-12-08
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@page_profiles_latest
+PREHOOK: query: CREATE TABLE page_profiles_out (
+    url string,
+    categoryId int,
+    score bigint,
+    count bigint)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ' '
+LINES TERMINATED BY '\n'
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/join/page_profiles_out
+PREHOOK: Output: database:default
+PREHOOK: Output: default@page_profiles_out
+POSTHOOK: query: CREATE TABLE page_profiles_out (
+    url string,
+    categoryId int,
+    score bigint,
+    count bigint)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ' '
+LINES TERMINATED BY '\n'
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/join/page_profiles_out
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@page_profiles_out
+PREHOOK: query: INSERT OVERWRITE TABLE page_profiles_out
+SELECT url, categoryId, SUM(score) as score, SUM(count) AS count
+FROM (
+    SELECT
+        e.url AS url,
+        u.categoryId AS categoryId,
+        ROUND(SUM(IF(u.score > 0, log2(u.score + 2), 0))) AS score,
+        SUM(u.count) AS count
+    FROM events e
+    JOIN profiled_users u ON (e.userUid = u.userUid)
+    WHERE e.userUid != "0"
+    GROUP BY e.url, u.categoryId
+    UNION ALL
+    SELECT * FROM page_profiles_latest
+) page_profiles
+GROUP BY url, categoryId
+PREHOOK: type: QUERY
+PREHOOK: Input: default@events
+PREHOOK: Input: default@events@dt=2010-12-08
+PREHOOK: Input: default@page_profiles_latest
+PREHOOK: Input: default@profiled_users
+PREHOOK: Output: default@page_profiles_out
+POSTHOOK: query: INSERT OVERWRITE TABLE page_profiles_out
+SELECT url, categoryId, SUM(score) as score, SUM(count) AS count
+FROM (
+    SELECT
+        e.url AS url,
+        u.categoryId AS categoryId,
+        ROUND(SUM(IF(u.score > 0, log2(u.score + 2), 0))) AS score,
+        SUM(u.count) AS count
+    FROM events e
+    JOIN profiled_users u ON (e.userUid = u.userUid)
+    WHERE e.userUid != "0"
+    GROUP BY e.url, u.categoryId
+    UNION ALL
+    SELECT * FROM page_profiles_latest
+) page_profiles
+GROUP BY url, categoryId
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@events
+POSTHOOK: Input: default@events@dt=2010-12-08
+POSTHOOK: Input: default@page_profiles_latest
+POSTHOOK: Input: default@profiled_users
+POSTHOOK: Output: default@page_profiles_out
+POSTHOOK: Lineage: page_profiles_out.categoryid EXPRESSION [(profiled_users)u.FieldSchema(name:categoryid, type:int, comment:null), (page_profiles_latest)page_profiles_latest.FieldSchema(name:categoryid, type:int, comment:null), ]
+POSTHOOK: Lineage: page_profiles_out.count EXPRESSION [(profiled_users)u.FieldSchema(name:count, type:bigint, comment:null), (page_profiles_latest)page_profiles_latest.FieldSchema(name:count, type:bigint, comment:null), ]
+POSTHOOK: Lineage: page_profiles_out.score EXPRESSION [(profiled_users)u.FieldSchema(name:score, type:bigint, comment:null), (page_profiles_latest)page_profiles_latest.FieldSchema(name:score, type:bigint, comment:null), ]
+POSTHOOK: Lineage: page_profiles_out.url EXPRESSION [(events)e.FieldSchema(name:url, type:string, comment:null), (page_profiles_latest)page_profiles_latest.FieldSchema(name:url, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM page_profiles_out
+PREHOOK: type: QUERY
+PREHOOK: Input: default@page_profiles_out
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM page_profiles_out
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@page_profiles_out
+#### A masked pattern was here ####
+101	1	1	3
+102	2	2	4
+102	3	3	9
+url1	1	3	7
+url1	3	2	3
+url2	2	2	4
+url2	3	2	9
+url3	2	2	4
+url3	3	2	9

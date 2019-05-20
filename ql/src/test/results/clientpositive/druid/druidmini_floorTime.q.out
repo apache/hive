@@ -1,0 +1,692 @@
+PREHOOK: query: SELECT floor(`__time` to SECOND) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY floor(`__time` to SECOND)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT floor(`__time` to SECOND) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY floor(`__time` to SECOND)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 16:00:00.0 US/Pacific
+PREHOOK: query: EXPLAIN SELECT floor(`__time` to SECOND) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY floor(`__time` to SECOND)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN SELECT floor(`__time` to SECOND) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY floor(`__time` to SECOND)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_alltypesorc
+          properties:
+            druid.fieldNames timestamp
+            druid.fieldTypes timestamp with local time zone
+            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table_alltypesorc","descending":false,"granularity":{"type":"period","period":"PT1S","timeZone":"US/Pacific"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
+            druid.query.type timeseries
+          Select Operator
+            expressions: timestamp (type: timestamp with local time zone)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: SELECT floor(`__time` to MINUTE) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY floor(`__time` to MINUTE)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT floor(`__time` to MINUTE) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY floor(`__time` to MINUTE)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 16:00:00.0 US/Pacific
+PREHOOK: query: EXPLAIN SELECT floor(`__time` to MINUTE) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY floor(`__time` to MINUTE)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN SELECT floor(`__time` to MINUTE) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY floor(`__time` to MINUTE)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_alltypesorc
+          properties:
+            druid.fieldNames timestamp
+            druid.fieldTypes timestamp with local time zone
+            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table_alltypesorc","descending":false,"granularity":{"type":"period","period":"PT1M","timeZone":"US/Pacific"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
+            druid.query.type timeseries
+          Select Operator
+            expressions: timestamp (type: timestamp with local time zone)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: SELECT floor(`__time` to HOUR) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY floor(`__time` to HOUR)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT floor(`__time` to HOUR) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY floor(`__time` to HOUR)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1969-12-31 15:00:00.0 US/Pacific
+1969-12-31 16:00:00.0 US/Pacific
+PREHOOK: query: EXPLAIN SELECT floor(`__time` to HOUR) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY floor(`__time` to HOUR)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN SELECT floor(`__time` to HOUR) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY floor(`__time` to HOUR)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_alltypesorc
+          properties:
+            druid.fieldNames timestamp
+            druid.fieldTypes timestamp with local time zone
+            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table_alltypesorc","descending":false,"granularity":{"type":"period","period":"PT1H","timeZone":"US/Pacific"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
+            druid.query.type timeseries
+          Select Operator
+            expressions: timestamp (type: timestamp with local time zone)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: SELECT EXTRACT(DAY from `__time`) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(DAY from `__time`)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT EXTRACT(DAY from `__time`) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(DAY from `__time`)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+31
+PREHOOK: query: EXPLAIN SELECT EXTRACT(DAY from `__time`) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(DAY from `__time`)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN SELECT EXTRACT(DAY from `__time`) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(DAY from `__time`)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_alltypesorc
+          properties:
+            druid.fieldNames extract_day
+            druid.fieldTypes int
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract_day","extractionFn":{"type":"timeFormat","format":"d","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Select Operator
+            expressions: extract_day (type: int)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: SELECT EXTRACT(WEEK from `__time`) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(WEEK from `__time`)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT EXTRACT(WEEK from `__time`) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(WEEK from `__time`)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+PREHOOK: query: EXPLAIN SELECT EXTRACT(WEEK from `__time`) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(WEEK from `__time`)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN SELECT EXTRACT(WEEK from `__time`) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(WEEK from `__time`)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_alltypesorc
+          properties:
+            druid.fieldNames extract_week
+            druid.fieldTypes int
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract_week","extractionFn":{"type":"timeFormat","format":"w","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Select Operator
+            expressions: extract_week (type: int)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: SELECT EXTRACT(MONTH from `__time`) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(MONTH from `__time`)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT EXTRACT(MONTH from `__time`) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(MONTH from `__time`)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+12
+PREHOOK: query: EXPLAIN SELECT EXTRACT(MONTH from `__time`) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(MONTH from `__time`)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN SELECT EXTRACT(MONTH from `__time`) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(MONTH from `__time`)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_alltypesorc
+          properties:
+            druid.fieldNames extract_month
+            druid.fieldTypes int
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract_month","extractionFn":{"type":"timeFormat","format":"M","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Select Operator
+            expressions: extract_month (type: int)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: SELECT EXTRACT(QUARTER from `__time`) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(QUARTER from `__time`)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT EXTRACT(QUARTER from `__time`) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(QUARTER from `__time`)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+4
+PREHOOK: query: EXPLAIN SELECT EXTRACT(QUARTER from `__time`) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(QUARTER from `__time`)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN SELECT EXTRACT(QUARTER from `__time`) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(QUARTER from `__time`)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_alltypesorc
+          properties:
+            druid.fieldNames vc
+            druid.fieldTypes int
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"LONG"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_extract(\"__time\",'QUARTER','US/Pacific')","outputType":"LONG"}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Select Operator
+            expressions: vc (type: int)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: SELECT EXTRACT(YEAR from `__time`) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(YEAR from `__time`)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT EXTRACT(YEAR from `__time`) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(YEAR from `__time`)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1969
+PREHOOK: query: EXPLAIN SELECT EXTRACT(YEAR from `__time`) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(YEAR from `__time`)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN SELECT EXTRACT(YEAR from `__time`) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(YEAR from `__time`)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_alltypesorc
+          properties:
+            druid.fieldNames extract_year
+            druid.fieldTypes int
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract_year","extractionFn":{"type":"timeFormat","format":"yyyy","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Select Operator
+            expressions: extract_year (type: int)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: EXPLAIN SELECT EXTRACT(SECOND from `__time`) FROM druid_table_alltypesorc WHERE EXTRACT(SECOND from `__time`) = 0  LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN SELECT EXTRACT(SECOND from `__time`) FROM druid_table_alltypesorc WHERE EXTRACT(SECOND from `__time`) = 0  LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_alltypesorc
+          properties:
+            druid.fieldNames vc
+            druid.fieldTypes int
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"bound","dimension":"__time","lower":"0","lowerStrict":false,"upper":"0","upperStrict":false,"ordering":"numeric","extractionFn":{"type":"timeFormat","format":"s","timeZone":"US/Pacific","locale":"en-US"}},"virtualColumns":[{"type":"expression","name":"vc","expression":"0","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList","limit":1}
+            druid.query.type scan
+          Select Operator
+            expressions: vc (type: int)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: SELECT EXTRACT(SECOND from `__time`) FROM druid_table_alltypesorc WHERE EXTRACT(SECOND from `__time`) = 0  LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT EXTRACT(SECOND from `__time`) FROM druid_table_alltypesorc WHERE EXTRACT(SECOND from `__time`) = 0  LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+PREHOOK: query: EXPLAIN SELECT EXTRACT(MINUTE from `__time`) FROM druid_table_alltypesorc
+WHERE  EXTRACT(MINUTE from `__time`) >= 0 LIMIT 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN SELECT EXTRACT(MINUTE from `__time`) FROM druid_table_alltypesorc
+WHERE  EXTRACT(MINUTE from `__time`) >= 0 LIMIT 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_alltypesorc
+          properties:
+            druid.fieldNames vc
+            druid.fieldTypes int
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"bound","dimension":"__time","lower":"0","lowerStrict":false,"ordering":"numeric","extractionFn":{"type":"timeFormat","format":"m","timeZone":"US/Pacific","locale":"en-US"}},"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_extract(\"__time\",'MINUTE','US/Pacific')","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList","limit":2}
+            druid.query.type scan
+          Select Operator
+            expressions: vc (type: int)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: SELECT EXTRACT(MINUTE from `__time`) as minute FROM druid_table_alltypesorc
+       WHERE  EXTRACT(MINUTE from `__time`) >= 0 order by minute LIMIT 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT EXTRACT(MINUTE from `__time`) as minute FROM druid_table_alltypesorc
+       WHERE  EXTRACT(MINUTE from `__time`) >= 0 order by minute LIMIT 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+0
+PREHOOK: query: EXPLAIN SELECT EXTRACT(HOUR from `__time`) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN SELECT EXTRACT(HOUR from `__time`) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_alltypesorc
+          properties:
+            druid.fieldNames vc
+            druid.fieldTypes int
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_extract(\"__time\",'HOUR','US/Pacific')","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList","limit":1}
+            druid.query.type scan
+          Select Operator
+            expressions: vc (type: int)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: SELECT EXTRACT(HOUR from `__time`) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT EXTRACT(HOUR from `__time`) FROM druid_table_alltypesorc
+WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+15
+PREHOOK: query: EXPLAIN SELECT EXTRACT(DAY from `__time`), EXTRACT(DAY from `__time`) DIV 7 AS WEEK, SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 9, 2) AS day_str
+FROM druid_table_alltypesorc WHERE SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 9, 2)  = 31 LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN SELECT EXTRACT(DAY from `__time`), EXTRACT(DAY from `__time`) DIV 7 AS WEEK, SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 9, 2) AS day_str
+FROM druid_table_alltypesorc WHERE SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 9, 2)  = 31 LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_alltypesorc
+          properties:
+            druid.fieldNames vc,vc0,vc1
+            druid.fieldTypes int,bigint,string
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"expression","expression":"(CAST(substring(timestamp_format(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P1D','','UTC'),'yyyy-MM-dd','UTC'), 8, 2), 'DOUBLE') == 31)"},"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_extract(\"__time\",'DAY','US/Pacific')","outputType":"LONG"},{"type":"expression","name":"vc0","expression":"div(timestamp_extract(\"__time\",'DAY','US/Pacific'),7)","outputType":"LONG"},{"type":"expression","name":"vc1","expression":"substring(timestamp_format(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P1D','','UTC'),'yyyy-MM-dd','UTC'), 8, 2)","outputType":"STRING"}],"columns":["vc","vc0","vc1"],"resultFormat":"compactedList","limit":1}
+            druid.query.type scan
+          Select Operator
+            expressions: vc (type: int), vc0 (type: bigint), vc1 (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            ListSink
+
+PREHOOK: query: SELECT EXTRACT(DAY from `__time`) , EXTRACT(DAY from `__time`) DIV 7 AS WEEK, SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 9, 2) AS dar_str
+FROM druid_table_alltypesorc WHERE SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 9, 2)  = 31 LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT EXTRACT(DAY from `__time`) , EXTRACT(DAY from `__time`) DIV 7 AS WEEK, SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 9, 2) AS dar_str
+FROM druid_table_alltypesorc WHERE SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 9, 2)  = 31 LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+31	4	31
+PREHOOK: query: EXPLAIN SELECT EXTRACT(WEEK from `__time`) FROM druid_table_alltypesorc WHERE EXTRACT(WEEK from `__time`) >= 1
+AND  EXTRACT(WEEK from `__time`) DIV 4 + 1 = 1 LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN SELECT EXTRACT(WEEK from `__time`) FROM druid_table_alltypesorc WHERE EXTRACT(WEEK from `__time`) >= 1
+AND  EXTRACT(WEEK from `__time`) DIV 4 + 1 = 1 LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_alltypesorc
+          properties:
+            druid.fieldNames vc
+            druid.fieldTypes int
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"and","fields":[{"type":"bound","dimension":"__time","lower":"1","lowerStrict":false,"ordering":"numeric","extractionFn":{"type":"timeFormat","format":"w","timeZone":"US/Pacific","locale":"en-US"}},{"type":"expression","expression":"((div(timestamp_extract(\"__time\",'WEEK','US/Pacific'),4) + 1) == 1)"}]},"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_extract(\"__time\",'WEEK','US/Pacific')","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList","limit":1}
+            druid.query.type scan
+          Select Operator
+            expressions: vc (type: int)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: SELECT EXTRACT(WEEK from `__time`) FROM druid_table_alltypesorc WHERE EXTRACT(WEEK from `__time`) >= 1
+AND  EXTRACT(WEEK from `__time`) DIV 4 + 1 = 1 LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT EXTRACT(WEEK from `__time`) FROM druid_table_alltypesorc WHERE EXTRACT(WEEK from `__time`) >= 1
+AND  EXTRACT(WEEK from `__time`) DIV 4 + 1 = 1 LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+PREHOOK: query: EXPLAIN SELECT EXTRACT(MONTH FROM  `__time`) / 4 + 1, EXTRACT(MONTH FROM  `__time`), SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 6, 2) as month_str FROM druid_table_alltypesorc
+WHERE EXTRACT(MONTH FROM  `__time`) / 4 + 1 = 4 AND EXTRACT(MONTH FROM  `__time`) BETWEEN 11 AND 12 LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN SELECT EXTRACT(MONTH FROM  `__time`) / 4 + 1, EXTRACT(MONTH FROM  `__time`), SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 6, 2) as month_str FROM druid_table_alltypesorc
+WHERE EXTRACT(MONTH FROM  `__time`) / 4 + 1 = 4 AND EXTRACT(MONTH FROM  `__time`) BETWEEN 11 AND 12 LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_alltypesorc
+          properties:
+            druid.fieldNames vc,vc0,vc1
+            druid.fieldTypes double,int,string
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"and","fields":[{"type":"expression","expression":"(((CAST(timestamp_extract(\"__time\",'MONTH','US/Pacific'), 'DOUBLE') / 4) + 1) == 4)"},{"type":"bound","dimension":"__time","lower":"11","lowerStrict":false,"upper":"12","upperStrict":false,"ordering":"numeric","extractionFn":{"type":"timeFormat","format":"M","timeZone":"US/Pacific","locale":"en-US"}}]},"virtualColumns":[{"type":"expression","name":"vc","expression":"4","outputType":"DOUBLE"},{"type":"expression","name":"vc0","expression":"timestamp_extract(\"__time\",'MONTH','US/Pacific')","outputType":"LONG"},{"type":"expression","name":"vc1","expression":"substring(timestamp_format(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P1D','','UTC'),'yyyy-MM-dd','UTC'), 5, 2)","outputType":"STRING"}],"columns":["vc","vc0","vc1"],"resultFormat":"compactedList","limit":1}
+            druid.query.type scan
+          Select Operator
+            expressions: vc (type: double), vc0 (type: int), vc1 (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            ListSink
+
+PREHOOK: query: SELECT EXTRACT(MONTH FROM  `__time`) / 4 + 1, EXTRACT(MONTH FROM  `__time`), SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 6, 2) as month_str FROM druid_table_alltypesorc
+       WHERE EXTRACT(MONTH FROM  `__time`) / 4 + 1 = 4 AND EXTRACT(MONTH FROM  `__time`) BETWEEN 11 AND 12 LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT EXTRACT(MONTH FROM  `__time`) / 4 + 1, EXTRACT(MONTH FROM  `__time`), SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 6, 2) as month_str FROM druid_table_alltypesorc
+       WHERE EXTRACT(MONTH FROM  `__time`) / 4 + 1 = 4 AND EXTRACT(MONTH FROM  `__time`) BETWEEN 11 AND 12 LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+4.0	12	12
+PREHOOK: query: EXPLAIN SELECT EXTRACT(QUARTER from `__time`),  EXTRACT(MONTH FROM  `__time`) / 4 + 1 as q_number FROM druid_table_alltypesorc WHERE EXTRACT(QUARTER from `__time`) >= 4
+          AND EXTRACT(MONTH FROM  `__time`) / 4 + 1 = 4 LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN SELECT EXTRACT(QUARTER from `__time`),  EXTRACT(MONTH FROM  `__time`) / 4 + 1 as q_number FROM druid_table_alltypesorc WHERE EXTRACT(QUARTER from `__time`) >= 4
+          AND EXTRACT(MONTH FROM  `__time`) / 4 + 1 = 4 LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_alltypesorc
+          properties:
+            druid.fieldNames vc,vc0
+            druid.fieldTypes int,double
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"and","fields":[{"type":"expression","expression":"(timestamp_extract(\"__time\",'QUARTER','US/Pacific') >= 4)"},{"type":"expression","expression":"(((CAST(timestamp_extract(\"__time\",'MONTH','US/Pacific'), 'DOUBLE') / 4) + 1) == 4)"}]},"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_extract(\"__time\",'QUARTER','US/Pacific')","outputType":"LONG"},{"type":"expression","name":"vc0","expression":"4","outputType":"DOUBLE"}],"columns":["vc","vc0"],"resultFormat":"compactedList","limit":1}
+            druid.query.type scan
+          Select Operator
+            expressions: vc (type: int), vc0 (type: double)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: SELECT EXTRACT(QUARTER from `__time`), EXTRACT(MONTH FROM  `__time`) / 4 + 1  as q_number FROM druid_table_alltypesorc WHERE EXTRACT(QUARTER from `__time`) >= 4
+  AND EXTRACT(MONTH FROM  `__time`) / 4 + 1 = 4 LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT EXTRACT(QUARTER from `__time`), EXTRACT(MONTH FROM  `__time`) / 4 + 1  as q_number FROM druid_table_alltypesorc WHERE EXTRACT(QUARTER from `__time`) >= 4
+  AND EXTRACT(MONTH FROM  `__time`) / 4 + 1 = 4 LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+4	4.0
+PREHOOK: query: EXPLAIN SELECT EXTRACT(YEAR from `__time`), SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 1, 4) AS year_str FROM druid_table_alltypesorc WHERE EXTRACT(YEAR from `__time`) >= 1969
+AND CAST(EXTRACT(YEAR from `__time`) as STRING) = '1969' LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN SELECT EXTRACT(YEAR from `__time`), SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 1, 4) AS year_str FROM druid_table_alltypesorc WHERE EXTRACT(YEAR from `__time`) >= 1969
+AND CAST(EXTRACT(YEAR from `__time`) as STRING) = '1969' LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_alltypesorc
+          properties:
+            druid.fieldNames vc,vc0
+            druid.fieldTypes int,string
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"and","fields":[{"type":"bound","dimension":"__time","lower":"1969-01-01T08:00:00.000Z","lowerStrict":false,"ordering":"lexicographic","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"UTC"}},{"type":"expression","expression":"(CAST(timestamp_extract(\"__time\",'YEAR','US/Pacific'), 'STRING') == '1969')"}]},"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_extract(\"__time\",'YEAR','US/Pacific')","outputType":"LONG"},{"type":"expression","name":"vc0","expression":"substring(timestamp_format(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),'','UTC'),'P1D','','UTC'),'yyyy-MM-dd','UTC'), 0, 4)","outputType":"STRING"}],"columns":["vc","vc0"],"resultFormat":"compactedList","limit":1}
+            druid.query.type scan
+          Select Operator
+            expressions: vc (type: int), vc0 (type: string)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: SELECT EXTRACT(YEAR from `__time`), SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 1, 4) as year_str FROM druid_table_alltypesorc WHERE EXTRACT(YEAR from `__time`) >= 1969
+AND CAST(EXTRACT(YEAR from `__time`) as STRING) = '1969' LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_alltypesorc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT EXTRACT(YEAR from `__time`), SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 1, 4) as year_str FROM druid_table_alltypesorc WHERE EXTRACT(YEAR from `__time`) >= 1969
+AND CAST(EXTRACT(YEAR from `__time`) as STRING) = '1969' LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_alltypesorc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1969	1969

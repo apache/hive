@@ -1,61 +1,51 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE T1(key STRING, val STRING)
+PREHOOK: query: CREATE TABLE T1_n139(key STRING, val STRING)
 SKEWED BY (key) ON ((2), (7)) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE T1(key STRING, val STRING)
+PREHOOK: Output: default@T1_n139
+POSTHOOK: query: CREATE TABLE T1_n139(key STRING, val STRING)
 SKEWED BY (key) ON ((2), (7)) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+POSTHOOK: Output: default@T1_n139
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n139
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+PREHOOK: Output: default@t1_n139
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n139
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
-PREHOOK: query: CREATE TABLE T2(key STRING, val STRING)
+POSTHOOK: Output: default@t1_n139
+PREHOOK: query: CREATE TABLE T2_n81(key STRING, val STRING)
 SKEWED BY (key) ON ((3), (8)) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2
-POSTHOOK: query: CREATE TABLE T2(key STRING, val STRING)
+PREHOOK: Output: default@T2_n81
+POSTHOOK: query: CREATE TABLE T2_n81(key STRING, val STRING)
 SKEWED BY (key) ON ((3), (8)) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
+POSTHOOK: Output: default@T2_n81
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n81
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
+PREHOOK: Output: default@t2_n81
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n81
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t2
-PREHOOK: query: -- a simple query with skew on both the tables on the join key
--- multiple skew values are present for the skewed keys
--- but the skewed values do not overlap.
--- The join values are a superset of the skewed keys.
--- adding a order by at the end to make the results deterministic
-
-EXPLAIN
-SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val
+POSTHOOK: Output: default@t2_n81
+PREHOOK: query: EXPLAIN
+SELECT a.*, b.* FROM T1_n139 a JOIN T2_n81 b ON a.key = b.key and a.val = b.val
 PREHOOK: type: QUERY
-POSTHOOK: query: -- a simple query with skew on both the tables on the join key
--- multiple skew values are present for the skewed keys
--- but the skewed values do not overlap.
--- The join values are a superset of the skewed keys.
--- adding a order by at the end to make the results deterministic
-
-EXPLAIN
-SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val
+PREHOOK: Input: default@t1_n139
+PREHOOK: Input: default@t2_n81
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT a.*, b.* FROM T1_n139 a JOIN T2_n81 b ON a.key = b.key and a.val = b.val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n139
+POSTHOOK: Input: default@t2_n81
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-4
@@ -68,34 +58,36 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (key is not null and val is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key is not null and val is not null and ((((key = '2') or (key = '7')) or (key = '3')) or (key = '8'))) (type: boolean)
-              Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              predicate: (((((key = '2') or (key = '7')) or (key = '3')) or (key = '8')) and key is not null and val is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), val (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: b
-            Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (key is not null and val is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key is not null and val is not null and ((((key = '2') or (key = '7')) or (key = '3')) or (key = '8'))) (type: boolean)
-              Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              predicate: (((((key = '2') or (key = '7')) or (key = '3')) or (key = '8')) and key is not null and val is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), val (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -104,7 +96,7 @@ STAGE PLANS:
             0 _col0 (type: string), _col1 (type: string)
             1 _col0 (type: string), _col1 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 1 Data size: 33 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -117,20 +109,20 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Union
-              Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 808 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 808 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             Union
-              Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 808 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 808 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -141,40 +133,43 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key is not null and val is not null and (not ((((key = '2') or (key = '7')) or (key = '3')) or (key = '8')))) (type: boolean)
-              Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((not ((((key = '2') or (key = '7')) or (key = '3')) or (key = '8'))) and key is not null and val is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), val (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: b
-            Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key is not null and val is not null and (not ((((key = '2') or (key = '7')) or (key = '3')) or (key = '8')))) (type: boolean)
-              Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((not ((((key = '2') or (key = '7')) or (key = '3')) or (key = '8'))) and key is not null and val is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), val (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
+          keys:
+            0 _col0 (type: string), _col1 (type: string)
+            1 _col0 (type: string), _col1 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 1 Data size: 33 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -188,31 +183,33 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val
+PREHOOK: query: SELECT a.*, b.* FROM T1_n139 a JOIN T2_n81 b ON a.key = b.key and a.val = b.val
 ORDER BY a.key, b.key, a.val, b.val
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n139
+PREHOOK: Input: default@t2_n81
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val
+POSTHOOK: query: SELECT a.*, b.* FROM T1_n139 a JOIN T2_n81 b ON a.key = b.key and a.val = b.val
 ORDER BY a.key, b.key, a.val, b.val
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n139
+POSTHOOK: Input: default@t2_n81
 #### A masked pattern was here ####
 3	13	3	13
 8	18	8	18
 8	18	8	18
-PREHOOK: query: -- test outer joins also
-
-EXPLAIN
-SELECT a.*, b.* FROM T1 a LEFT OUTER JOIN T2 b ON a.key = b.key and a.val = b.val
+PREHOOK: query: EXPLAIN
+SELECT a.*, b.* FROM T1_n139 a LEFT OUTER JOIN T2_n81 b ON a.key = b.key and a.val = b.val
 PREHOOK: type: QUERY
-POSTHOOK: query: -- test outer joins also
-
-EXPLAIN
-SELECT a.*, b.* FROM T1 a LEFT OUTER JOIN T2 b ON a.key = b.key and a.val = b.val
+PREHOOK: Input: default@t1_n139
+PREHOOK: Input: default@t2_n81
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT a.*, b.* FROM T1_n139 a LEFT OUTER JOIN T2_n81 b ON a.key = b.key and a.val = b.val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n139
+POSTHOOK: Input: default@t2_n81
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-4
@@ -225,43 +222,44 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((((key = '2') or (key = '7')) or (key = '3')) or (key = '8')) (type: boolean)
-              Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), val (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: b
-            Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (key is not null and val is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((key = '2') or (key = '7')) or (key = '3')) or (key = '8')) (type: boolean)
-              Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              predicate: (((((key = '2') or (key = '7')) or (key = '3')) or (key = '8')) and key is not null and val is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), val (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Left Outer Join0 to 1
+               Left Outer Join 0 to 1
           keys:
             0 _col0 (type: string), _col1 (type: string)
             1 _col0 (type: string), _col1 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 1 Data size: 33 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -274,20 +272,20 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Union
-              Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 808 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 808 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             Union
-              Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 808 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 808 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -298,40 +296,43 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (not ((((key = '2') or (key = '7')) or (key = '3')) or (key = '8'))) (type: boolean)
-              Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), val (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: b
-            Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (not ((((key = '2') or (key = '7')) or (key = '3')) or (key = '8'))) (type: boolean)
-              Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((not ((((key = '2') or (key = '7')) or (key = '3')) or (key = '8'))) and key is not null and val is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), val (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Left Outer Join0 to 1
+               Left Outer Join 0 to 1
+          keys:
+            0 _col0 (type: string), _col1 (type: string)
+            1 _col0 (type: string), _col1 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 1 Data size: 33 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -345,17 +346,17 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a.*, b.* FROM T1 a LEFT OUTER JOIN T2 b ON a.key = b.key and a.val = b.val
+PREHOOK: query: SELECT a.*, b.* FROM T1_n139 a LEFT OUTER JOIN T2_n81 b ON a.key = b.key and a.val = b.val
 ORDER BY a.key, b.key, a.val, b.val
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n139
+PREHOOK: Input: default@t2_n81
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a.*, b.* FROM T1 a LEFT OUTER JOIN T2 b ON a.key = b.key and a.val = b.val
+POSTHOOK: query: SELECT a.*, b.* FROM T1_n139 a LEFT OUTER JOIN T2_n81 b ON a.key = b.key and a.val = b.val
 ORDER BY a.key, b.key, a.val, b.val
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n139
+POSTHOOK: Input: default@t2_n81
 #### A masked pattern was here ####
 1	11	NULL	NULL
 2	12	NULL	NULL
@@ -364,16 +365,18 @@ POSTHOOK: Input: default@t2
 8	18	8	18
 8	18	8	18
 8	28	NULL	NULL
-PREHOOK: query: -- a group by at the end should not change anything
-
-EXPLAIN
-SELECT a.key, count(1) FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val group by a.key
+PREHOOK: query: EXPLAIN
+SELECT a.key, count(1) FROM T1_n139 a JOIN T2_n81 b ON a.key = b.key and a.val = b.val group by a.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- a group by at the end should not change anything
-
-EXPLAIN
-SELECT a.key, count(1) FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val group by a.key
+PREHOOK: Input: default@t1_n139
+PREHOOK: Input: default@t2_n81
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT a.key, count(1) FROM T1_n139 a JOIN T2_n81 b ON a.key = b.key and a.val = b.val group by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n139
+POSTHOOK: Input: default@t2_n81
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-4
@@ -386,34 +389,36 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (key is not null and val is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key is not null and val is not null and ((((key = '2') or (key = '7')) or (key = '3')) or (key = '8'))) (type: boolean)
-              Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              predicate: (((((key = '2') or (key = '7')) or (key = '3')) or (key = '8')) and key is not null and val is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), val (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: b
-            Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (key is not null and val is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key is not null and val is not null and ((((key = '2') or (key = '7')) or (key = '3')) or (key = '8'))) (type: boolean)
-              Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              predicate: (((((key = '2') or (key = '7')) or (key = '3')) or (key = '8')) and key is not null and val is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), val (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -422,7 +427,7 @@ STAGE PLANS:
             0 _col0 (type: string), _col1 (type: string)
             1 _col0 (type: string), _col1 (type: string)
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 33 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -435,33 +440,35 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Union
-              Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 808 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 keys: _col0 (type: string)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 808 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 808 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
           TableScan
             Union
-              Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 808 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 keys: _col0 (type: string)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 808 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 808 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
@@ -469,10 +476,10 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 33 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 33 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -483,40 +490,43 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key is not null and val is not null and (not ((((key = '2') or (key = '7')) or (key = '3')) or (key = '8')))) (type: boolean)
-              Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((not ((((key = '2') or (key = '7')) or (key = '3')) or (key = '8'))) and key is not null and val is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), val (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: b
-            Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key is not null and val is not null and (not ((((key = '2') or (key = '7')) or (key = '3')) or (key = '8')))) (type: boolean)
-              Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((not ((((key = '2') or (key = '7')) or (key = '3')) or (key = '8'))) and key is not null and val is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), val (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
+          keys:
+            0 _col0 (type: string), _col1 (type: string)
+            1 _col0 (type: string), _col1 (type: string)
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 33 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -530,24 +540,30 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a.key, count(1) FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val group by a.key
+PREHOOK: query: SELECT a.key, count(1) FROM T1_n139 a JOIN T2_n81 b ON a.key = b.key and a.val = b.val group by a.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n139
+PREHOOK: Input: default@t2_n81
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a.key, count(1) FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val group by a.key
+POSTHOOK: query: SELECT a.key, count(1) FROM T1_n139 a JOIN T2_n81 b ON a.key = b.key and a.val = b.val group by a.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n139
+POSTHOOK: Input: default@t2_n81
 #### A masked pattern was here ####
 3	1
 8	2
 PREHOOK: query: EXPLAIN
-SELECT a.key, count(1) FROM T1 a LEFT OUTER JOIN T2 b ON a.key = b.key and a.val = b.val group by a.key
+SELECT a.key, count(1) FROM T1_n139 a LEFT OUTER JOIN T2_n81 b ON a.key = b.key and a.val = b.val group by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n139
+PREHOOK: Input: default@t2_n81
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
-SELECT a.key, count(1) FROM T1 a LEFT OUTER JOIN T2 b ON a.key = b.key and a.val = b.val group by a.key
+SELECT a.key, count(1) FROM T1_n139 a LEFT OUTER JOIN T2_n81 b ON a.key = b.key and a.val = b.val group by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n139
+POSTHOOK: Input: default@t2_n81
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-4
@@ -560,43 +576,44 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((((key = '2') or (key = '7')) or (key = '3')) or (key = '8')) (type: boolean)
-              Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), val (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: b
-            Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (key is not null and val is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((key = '2') or (key = '7')) or (key = '3')) or (key = '8')) (type: boolean)
-              Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              predicate: (((((key = '2') or (key = '7')) or (key = '3')) or (key = '8')) and key is not null and val is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), val (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Left Outer Join0 to 1
+               Left Outer Join 0 to 1
           keys:
             0 _col0 (type: string), _col1 (type: string)
             1 _col0 (type: string), _col1 (type: string)
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 33 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -609,33 +626,35 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Union
-              Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 808 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 keys: _col0 (type: string)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 808 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 808 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
           TableScan
             Union
-              Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 808 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 keys: _col0 (type: string)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 808 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 808 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
@@ -643,10 +662,10 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 33 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 33 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -657,40 +676,43 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (not ((((key = '2') or (key = '7')) or (key = '3')) or (key = '8'))) (type: boolean)
-              Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), val (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: b
-            Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (not ((((key = '2') or (key = '7')) or (key = '3')) or (key = '8'))) (type: boolean)
-              Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((not ((((key = '2') or (key = '7')) or (key = '3')) or (key = '8'))) and key is not null and val is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), val (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Left Outer Join0 to 1
+               Left Outer Join 0 to 1
+          keys:
+            0 _col0 (type: string), _col1 (type: string)
+            1 _col0 (type: string), _col1 (type: string)
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 33 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -704,15 +726,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a.key, count(1) FROM T1 a LEFT OUTER JOIN T2 b ON a.key = b.key and a.val = b.val group by a.key
+PREHOOK: query: SELECT a.key, count(1) FROM T1_n139 a LEFT OUTER JOIN T2_n81 b ON a.key = b.key and a.val = b.val group by a.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n139
+PREHOOK: Input: default@t2_n81
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a.key, count(1) FROM T1 a LEFT OUTER JOIN T2 b ON a.key = b.key and a.val = b.val group by a.key
+POSTHOOK: query: SELECT a.key, count(1) FROM T1_n139 a LEFT OUTER JOIN T2_n81 b ON a.key = b.key and a.val = b.val group by a.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n139
+POSTHOOK: Input: default@t2_n81
 #### A masked pattern was here ####
 1	1
 2	1

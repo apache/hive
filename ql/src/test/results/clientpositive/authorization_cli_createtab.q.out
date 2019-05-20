@@ -1,14 +1,8 @@
-PREHOOK: query: -- verify that sql std auth can be set as the authorizer with hive cli
--- and that the create table/view result in correct permissions (suitable for sql std auth mode)
-
-create table t_cli(i int)
+PREHOOK: query: create table t_cli(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t_cli
-POSTHOOK: query: -- verify that sql std auth can be set as the authorizer with hive cli
--- and that the create table/view result in correct permissions (suitable for sql std auth mode)
-
-create table t_cli(i int)
+POSTHOOK: query: create table t_cli(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_cli
@@ -30,6 +24,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t_cli
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v_cli
+POSTHOOK: Lineage: v_cli.i SIMPLE [(t_cli)t_cli.FieldSchema(name:i, type:int, comment:null), ]
 PREHOOK: query: show grant user hive_test_user on v_cli
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on v_cli

@@ -25,7 +25,7 @@
   <parent>
     <groupId>org.apache.hive.hcatalog</groupId>
     <artifactId>hive-hcatalog</artifactId>
-    <version>2.2.0-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
@@ -48,24 +48,63 @@
     </dependency>
     <!-- inter-project -->
     <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-rewrite</artifactId>
+      <version>${jetty.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-server</artifactId>
+      <version>${jetty.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-servlet</artifactId>
+      <version>${jetty.version}</version>
+    </dependency>
+    <dependency>
       <groupId>com.sun.jersey</groupId>
       <artifactId>jersey-core</artifactId>
       <version>${jersey.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.ws.rs</groupId>
+          <artifactId>jsr311-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.sun.jersey</groupId>
       <artifactId>jersey-json</artifactId>
       <version>${jersey.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-server</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.sun.jersey</groupId>
       <artifactId>jersey-servlet</artifactId>
       <version>${jersey.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-server</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.sun.jersey.contribs</groupId>
       <artifactId>wadl-resourcedoc-doclet</artifactId>
       <version>${wadl-resourcedoc-doclet.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-server</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -83,19 +122,19 @@
       <version>${zookeeper.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.jackson</groupId>
-      <artifactId>jackson-core-asl</artifactId>
-      <version>${jackson.version}</version>
-    </dependency>
-     <dependency>
-      <groupId>org.codehaus.jackson</groupId>
-      <artifactId>jackson-mapper-asl</artifactId>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
       <version>${jackson.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.jetty.aggregate</groupId>
-      <artifactId>jetty-all-server</artifactId>
-      <version>${jetty.version}</version>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -103,16 +142,21 @@
       <version>${slf4j.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-jdbc</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-auth</artifactId>
       <version>${hadoop.version}</version>
         <exclusions>
-             <exclusion>
+          <exclusion>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
@@ -121,18 +165,57 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
       <version>${hadoop.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.eclipse.jetty</groupId>
+          <artifactId>jetty</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.jetty</groupId>
+          <artifactId>jetty-util</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-hdfs</artifactId>
       <version>${hadoop.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.eclipse.jetty</groupId>
+          <artifactId>jetty</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.jetty</groupId>
+          <artifactId>jetty-util</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-mapreduce-client-core</artifactId>
       <version>${hadoop.version}</version>
     </dependency>
+    <dependency>
+      <groupId>javax.ws.rs</groupId>
+      <artifactId>javax.ws.rs-api</artifactId>
+      <version>${rs-api.version}</version>
+    </dependency>
     <!-- test inter-project -->
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-common</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-server</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

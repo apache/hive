@@ -1,15 +1,9 @@
-PREHOOK: query: -- 9. Test Windowing Functions
--- SORT_QUERY_RESULTS
-
-select count(c_int) over() from cbo_t1
+PREHOOK: query: select count(c_int) over() from cbo_t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: -- 9. Test Windowing Functions
--- SORT_QUERY_RESULTS
-
-select count(c_int) over() from cbo_t1
+POSTHOOK: query: select count(c_int) over() from cbo_t1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014

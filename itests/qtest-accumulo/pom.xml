@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive-it</artifactId>
-    <version>2.2.0-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -38,19 +38,15 @@
     <!-- Profile activation clause for accumulo-tests will flip skip.accumulo.tests to false
          as long as -DskipAccumuloTests is not specified -->
     <skip.accumulo.tests>true</skip.accumulo.tests>
-    <accumulo-thrift.version>0.9.0</accumulo-thrift.version>
+    <!-- Must correspond with the Accumulo version specified in the pom -->
+    <accumulo-thrift.version>0.9.1</accumulo-thrift.version>
+    <accumulo-htrace.version>3.1.0-incubating</accumulo-htrace.version>
     <test.dfs.mkdir>-mkdir -p</test.dfs.mkdir>
   </properties>
 
   <dependencies>
     <!-- dependencies are always listed in sorted order by groupId, artifectId -->
     <!-- test intra-project -->
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-ant</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-common</artifactId>
@@ -71,13 +67,26 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-metastore</artifactId>
+      <artifactId>hive-standalone-metastore-common</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-metastore</artifactId>
+      <artifactId>hive-standalone-metastore-common</artifactId>
+      <version>${project.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-server</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-server</artifactId>
       <version>${project.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
@@ -97,6 +106,10 @@
         <exclusion>
           <groupId>org.apache.hive</groupId>
           <artifactId>hive-exec</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.hive</groupId>
+          <artifactId>hive-it-druid</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -170,7 +183,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
@@ -187,7 +200,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
@@ -217,7 +230,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
@@ -233,7 +246,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
@@ -265,23 +278,9 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
-      <artifactId>hbase-common</artifactId>
-      <version>${hbase.version}</version>
-      <scope>test</scope>
-      <classifier>tests</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-hadoop-compat</artifactId>
       <version>${hbase.version}</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hbase</groupId>
-      <artifactId>hbase-hadoop-compat</artifactId>
-      <version>${hbase.version}</version>
-      <scope>test</scope>
-      <classifier>tests</classifier>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
@@ -291,14 +290,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
-      <artifactId>hbase-hadoop2-compat</artifactId>
-      <version>${hbase.version}</version>
-      <scope>test</scope>
-      <classifier>tests</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hbase</groupId>
-      <artifactId>hbase-server</artifactId>
+      <artifactId>hbase-mapreduce</artifactId>
       <version>${hbase.version}</version>
       <scope>test</scope>
     </dependency>
@@ -306,7 +298,18 @@
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-server</artifactId>
       <version>${hbase.version}</version>
-      <classifier>tests</classifier>
+      <scope>test</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>org.glassfish.web</groupId>
+            <artifactId>javax.servlet.jsp</artifactId>
+          </exclusion>
+        </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.htrace</groupId>
+      <artifactId>htrace-core</artifactId>
+      <version>${accumulo-htrace.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -332,7 +335,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
@@ -348,7 +351,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
@@ -364,7 +367,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
@@ -390,9 +393,15 @@
       </properties>
       <dependencies>
       	<dependency>
-	        <groupId>org.apache.accumulo</groupId>
-	        <artifactId>accumulo-minicluster</artifactId>
-	        <scope>test</scope>
+	  <groupId>org.apache.accumulo</groupId>
+	  <artifactId>accumulo-minicluster</artifactId>
+	  <scope>test</scope>
+          <exclusions>
+            <exclusion>
+              <groupId>commons-beanutils</groupId>
+              <artifactId>commons-beanutils-core</artifactId>
+            </exclusion>
+          </exclusions>
         </dependency>
         <!-- Override the thrift dependency pulled in for metaserver -->
         <dependency>

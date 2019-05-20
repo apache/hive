@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -233,7 +233,7 @@ public class SkewJoinHandler {
       // right now we assume that the group by is an ArrayList object. It may
       // change in future.
       if (!(dummyKey instanceof List)) {
-        throw new RuntimeException("Bug in handle skew key in a seperate job.");
+        throw new RuntimeException("Bug in handle skew key in a separate job.");
       }
 
       skewKeyInCurrentGroup = true;

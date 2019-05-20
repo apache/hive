@@ -9,6 +9,8 @@ JOIN
 (SELECT src.key as c5, src.value as c6 from src) src3
 ON src1.c1 + src2.c3 = src3.c5 AND src3.c5 < 200
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT sum(hash(src1.c1, src2.c4)) 
 FROM
@@ -20,6 +22,8 @@ JOIN
 (SELECT src.key as c5, src.value as c6 from src) src3
 ON src1.c1 + src2.c3 = src3.c5 AND src3.c5 < 200
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -34,9 +38,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (UDFToDouble(key) < 100.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(key) < 100.0) (type: boolean)
+                    predicate: (UDFToDouble(key) < 100.0D) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
@@ -46,24 +51,27 @@ STAGE PLANS:
                         keys:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (UDFToDouble(key) < 200.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(key) < 200.0) (type: boolean)
+                    predicate: (UDFToDouble(key) < 200.0D) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: key (type: string)
+                      expressions: UDFToDouble(key) (type: double)
                       outputColumnNames: _col0
                       Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 (UDFToDouble(_col2) + UDFToDouble(_col0)) (type: double)
-                          1 UDFToDouble(_col0) (type: double)
+                          1 _col0 (type: double)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -77,9 +85,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (UDFToDouble(key) < 100.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(key) < 100.0) (type: boolean)
+                    predicate: (UDFToDouble(key) < 100.0D) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -100,7 +109,7 @@ STAGE PLANS:
                                Inner Join 0 to 1
                           keys:
                             0 (UDFToDouble(_col2) + UDFToDouble(_col0)) (type: double)
-                            1 UDFToDouble(_col0) (type: double)
+                            1 _col0 (type: double)
                           outputColumnNames: _col1, _col2
                           input vertices:
                             1 Map 4
@@ -111,6 +120,7 @@ STAGE PLANS:
                             Statistics: Num rows: 200 Data size: 2132 Basic stats: COMPLETE Column stats: NONE
                             Group By Operator
                               aggregations: sum(_col0)
+                              minReductionHashAggr: 0.99
                               mode: hash
                               outputColumnNames: _col0
                               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -118,9 +128,11 @@ STAGE PLANS:
                                 sort order: 
                                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                                 value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)

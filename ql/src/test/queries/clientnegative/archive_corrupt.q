@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 USE default;
 
 set hive.archive.enabled = true;
@@ -7,7 +8,6 @@ drop table tstsrcpart;
 
 create table tstsrcpart like srcpart;
 
--- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
 -- The version of GzipCodec that is provided in Hadoop 0.20 silently ignores
 -- file format errors. However, versions of Hadoop that include
 -- HADOOP-6835 (e.g. 0.23 and 1.x) cause a Wrong File Format exception

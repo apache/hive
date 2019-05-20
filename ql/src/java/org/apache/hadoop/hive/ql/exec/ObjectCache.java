@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -42,6 +42,16 @@ public interface ObjectCache {
    * @return the last cached object with the key, null if none.
    */
   public <T> T retrieve(String key, Callable<T> fn) throws HiveException;
+
+  /**
+   * Retrieve object from cache.
+   *
+   * @param <T>
+   * @param key
+   *          function to generate the object if it's not there
+   * @return the last cached object with the key, null if none.
+   */
+  public <T> T retrieve(String key) throws HiveException;
 
   /**
    * Retrieve object from cache asynchronously.

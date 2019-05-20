@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -105,7 +105,8 @@ public class LlapTokenIdentifier extends AbstractDelegationTokenIdentifier {
 
   @Override
   public String toString() {
-    return KIND + "; " + super.toString() + ", cluster " + clusterId + ", app ID " + appId;
+    return KIND + "; " + super.toString() + ", cluster " + clusterId
+        + ", app ID " + appId + ", signing " + isSigningRequired;
   }
 
   @InterfaceAudience.Private

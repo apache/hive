@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -80,6 +80,9 @@ public class RuleRegExp implements Rule {
       if (wildCards.contains(pc)) {
         hasWildCard = true;
         ret = ret && (pc == wcc);
+        if (!ret) {
+          return false;
+        }
       }
     }
     return ret && hasWildCard;
@@ -87,7 +90,7 @@ public class RuleRegExp implements Rule {
 
   /**
    * The rule specified by the regular expression. Note that, the regular
-   * expression is specified in terms of Node name. For eg: TS.*RS -> means
+   * expression is specified in terms of Node name. For eg: TS.*RS -&gt; means
    * TableScan Node followed by anything any number of times followed by
    * ReduceSink
    * 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,28 +17,28 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Date;
-
+import java.time.ZonedDateTime;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.UDFType;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
-// If there is a new UDFType to describe a function that is deterministic within a query
-// but changes value between queries, this function would fall into that category.
-@UDFType(deterministic = true)
+// This function is not a deterministic function, but a runtime constant.
+// The return value is constant within a query but can be different between queries.
+@UDFType(deterministic = false, runtimeConstant = true)
 @Description(name = "current_date",
     value = "_FUNC_() - Returns the current date at the start of query evaluation."
     + " All calls of current_date within the same query return the same value.")
 @NDV(maxNdv = 1)
 public class GenericUDFCurrentDate extends GenericUDF {
 
-  protected DateWritable currentDate;
+  protected DateWritableV2 currentDate;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)
@@ -50,9 +50,12 @@ public class GenericUDFCurrentDate extends GenericUDF {
     }
 
     if (currentDate == null) {
-      Date dateVal =
-          Date.valueOf(SessionState.get().getQueryCurrentTimestamp().toString().substring(0, 10));
-      currentDate = new DateWritable(dateVal);
+      SessionState ss = SessionState.get();
+      ZonedDateTime dateTime = ss.getQueryCurrentTimestamp().atZone(
+          ss.getConf().getLocalTimeZone());
+      Date dateVal = Date.valueOf(
+          dateTime.toString().substring(0, 10));
+      currentDate = new DateWritableV2(dateVal);
     }
 
     return PrimitiveObjectInspectorFactory.writableDateObjectInspector;
@@ -63,11 +66,11 @@ public class GenericUDFCurrentDate extends GenericUDF {
     return currentDate;
   }
 
-  public DateWritable getCurrentDate() {
+  public DateWritableV2 getCurrentDate() {
     return currentDate;
   }
 
-  public void setCurrentDate(DateWritable currentDate) {
+  public void setCurrentDate(DateWritableV2 currentDate) {
     this.currentDate = currentDate;
   }
 
@@ -83,7 +86,7 @@ public class GenericUDFCurrentDate extends GenericUDF {
     // Need to preserve currentDate
     GenericUDFCurrentDate other = (GenericUDFCurrentDate) newInstance;
     if (this.currentDate != null) {
-      other.currentDate = new DateWritable(this.currentDate);
+      other.currentDate = new DateWritableV2(this.currentDate);
     }
   }
 }

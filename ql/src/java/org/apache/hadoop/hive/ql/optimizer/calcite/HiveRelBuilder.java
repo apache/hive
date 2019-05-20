@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
+import org.apache.calcite.avatica.util.TimeUnitRange;
 import org.apache.calcite.plan.Context;
 import org.apache.calcite.plan.Contexts;
 import org.apache.calcite.plan.RelOptCluster;
@@ -27,10 +28,18 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.server.CalciteServerStatement;
+import org.apache.calcite.sql.SqlAggFunction;
+import org.apache.calcite.sql.SqlFunction;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.FrameworkConfig;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilderFactory;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunction;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlMinMaxAggFunction;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumAggFunction;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumEmptyIsZeroAggFunction;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
 
 
 /**
@@ -54,6 +63,7 @@ public class HiveRelBuilder extends RelBuilder {
     final RelOptSchema[] relOptSchemas = {null};
     Frameworks.withPrepare(
         new Frameworks.PrepareAction<Void>(config) {
+          @Override
           public Void apply(RelOptCluster cluster, RelOptSchema relOptSchema,
               SchemaPlus rootSchema, CalciteServerStatement statement) {
             clusters[0] = cluster;
@@ -68,6 +78,7 @@ public class HiveRelBuilder extends RelBuilder {
    * Just add a {@link RelOptCluster} and a {@link RelOptSchema} */
   public static RelBuilderFactory proto(final Context context) {
     return new RelBuilderFactory() {
+      @Override
       public RelBuilder create(RelOptCluster cluster, RelOptSchema schema) {
         return new HiveRelBuilder(context, cluster, schema);
       }
@@ -105,6 +116,48 @@ public class HiveRelBuilder extends RelBuilder {
     final RelNode sort = HiveRelFactories.HIVE_SORT_FACTORY.createSort(
             input, RelCollations.of(), null, literal(0));
     return this.push(sort);
+  }
+
+  public static SqlFunction getFloorSqlFunction(TimeUnitRange flag) {
+    switch (flag) {
+      case YEAR:
+        return HiveFloorDate.YEAR;
+      case QUARTER:
+        return HiveFloorDate.QUARTER;
+      case MONTH:
+        return HiveFloorDate.MONTH;
+      case DAY:
+        return HiveFloorDate.DAY;
+      case HOUR:
+        return HiveFloorDate.HOUR;
+      case MINUTE:
+        return HiveFloorDate.MINUTE;
+      case SECOND:
+        return HiveFloorDate.SECOND;
+    }
+    return SqlStdOperatorTable.FLOOR;
+  }
+
+  public static SqlAggFunction getRollup(SqlAggFunction aggregation) {
+    if (aggregation instanceof HiveSqlSumAggFunction
+        || aggregation instanceof HiveSqlMinMaxAggFunction
+        || aggregation instanceof HiveSqlSumEmptyIsZeroAggFunction) {
+      return aggregation;
+    }
+    if (aggregation instanceof HiveSqlCountAggFunction) {
+      HiveSqlCountAggFunction countAgg = (HiveSqlCountAggFunction) aggregation;
+      return new HiveSqlSumEmptyIsZeroAggFunction(countAgg.isDistinct(), countAgg.getReturnTypeInference(),
+          countAgg.getOperandTypeInference(), countAgg.getOperandTypeChecker());
+    }
+    return null;
+  }
+
+  @Override
+  protected boolean shouldMergeProject() {
+    /* CALCITE-2470 added ability to merge Project-s together.
+     * The problem with it is that it may merge 2 windowing expressions.
+     */
+    return false;
   }
 
 }

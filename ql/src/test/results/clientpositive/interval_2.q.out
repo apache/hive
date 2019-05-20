@@ -1,6 +1,4 @@
-PREHOOK: query: -- group-by/order-by/aggregation functions
-
-select
+PREHOOK: query: select
   iym, count(*), min(key), max(key), min(iym), max(iym), min(idt), max(idt)
 from (
   select
@@ -14,9 +12,7 @@ limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- group-by/order-by/aggregation functions
-
-select
+POSTHOOK: query: select
   iym, count(*), min(key), max(key), min(iym), max(iym), min(idt), max(idt)
 from (
   select
@@ -68,8 +64,7 @@ POSTHOOK: Input: default@src
 496-1	1	496	496	496-1	496-1	496 01:01:01.000000000	496 01:01:01.000000000
 495-1	1	495	495	495-1	495-1	495 01:01:01.000000000	495 01:01:01.000000000
 494-1	1	494	494	494-1	494-1	494 01:01:01.000000000	494 01:01:01.000000000
-PREHOOK: query: -- same query as previous, with having clause
-select
+PREHOOK: query: select
   iym, count(*), min(key), max(key), min(iym), max(iym), min(idt), max(idt)
 from (
   select
@@ -84,8 +79,7 @@ limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- same query as previous, with having clause
-select
+POSTHOOK: query: select
   iym, count(*), min(key), max(key), min(iym), max(iym), min(idt), max(idt)
 from (
   select
@@ -169,8 +163,7 @@ POSTHOOK: Input: default@src
 496 01:01:01.000000000	1	496	496	496-1	496-1	496 01:01:01.000000000	496 01:01:01.000000000
 495 01:01:01.000000000	1	495	495	495-1	495-1	495 01:01:01.000000000	495 01:01:01.000000000
 494 01:01:01.000000000	1	494	494	494-1	494-1	494 01:01:01.000000000	494 01:01:01.000000000
-PREHOOK: query: -- same query as previous, with having clause
-select
+PREHOOK: query: select
   idt, count(*), min(key), max(key), min(iym), max(iym), min(idt), max(idt)
 from (
   select
@@ -185,8 +178,7 @@ limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- same query as previous, with having clause
-select
+POSTHOOK: query: select
   idt, count(*), min(key), max(key), min(iym), max(iym), min(idt), max(idt)
 from (
   select

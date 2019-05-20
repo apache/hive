@@ -1,14 +1,10 @@
-PREHOOK: query: -- this test reads and writes a parquet file with a map of maps
-
-CREATE TABLE parquet_map_of_maps (
+PREHOOK: query: CREATE TABLE parquet_map_of_maps (
     map_of_maps MAP<STRING, MAP<STRING, INT>>
 ) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_map_of_maps
-POSTHOOK: query: -- this test reads and writes a parquet file with a map of maps
-
-CREATE TABLE parquet_map_of_maps (
+POSTHOOK: query: CREATE TABLE parquet_map_of_maps (
     map_of_maps MAP<STRING, MAP<STRING, INT>>
 ) STORED AS PARQUET
 POSTHOOK: type: CREATETABLE

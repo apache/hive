@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -32,10 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.transfer.DataTransferFactory;
 import org.apache.hive.hcatalog.data.transfer.HCatReader;
@@ -51,7 +48,7 @@ import org.junit.Test;
 public class TestReaderWriter extends HCatBaseTest {
 
   @Test
-  public void test() throws MetaException, CommandNeedRetryException,
+  public void test() throws Exception,
       IOException, ClassNotFoundException {
 
     driver.run("drop table mytbl");
@@ -100,7 +97,7 @@ public class TestReaderWriter extends HCatBaseTest {
     }
   }
 
-  private WriterContext runsInMaster(Map<String, String> config) throws HCatException {
+  private WriterContext runsInMaster(Map<String, String> config) throws Exception {
 
     WriteEntity.Builder builder = new WriteEntity.Builder();
     WriteEntity entity = builder.withTable("mytbl").build();

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -115,7 +115,8 @@ public class TestParquetSerDe extends TestCase {
     assertEquals(wb[0], boi.getStructFieldData(awb, b));
   }
 
-  private void deserializeAndSerializeLazySimple(final ParquetHiveSerDe serDe, final ArrayWritable t) throws SerDeException {
+  private void deserializeAndSerializeLazySimple(final ParquetHiveSerDe serDe, final ArrayWritable t)
+      throws SerDeException {
 
     // Get the row structure
     final StructObjectInspector oi = (StructObjectInspector) serDe.getObjectInspector();
@@ -123,13 +124,13 @@ public class TestParquetSerDe extends TestCase {
     // Deserialize
     final Object row = serDe.deserialize(t);
     assertEquals("deserialization gives the wrong object class", row.getClass(), ArrayWritable.class);
-    assertEquals("size correct after deserialization", serDe.getSerDeStats().getRawDataSize(), t.get().length);
     assertEquals("deserialization gives the wrong object", t, row);
 
     // Serialize
     final ParquetHiveRecord serializedArr = (ParquetHiveRecord) serDe.serialize(row, oi);
-    assertEquals("size correct after serialization", serDe.getSerDeStats().getRawDataSize(), ((ArrayWritable)serializedArr.getObject()).get().length);
-    assertTrue("serialized object should be equal to starting object", arrayWritableEquals(t, (ArrayWritable)serializedArr.getObject()));
+    assertTrue("serialized object should be equal to starting object",
+        arrayWritableEquals(t, (ArrayWritable)serializedArr.getObject()));
+    assertEquals("Stats are not collected during serialization and deserialization", null, serDe.getSerDeStats());
   }
 
   private Properties createProperties() {

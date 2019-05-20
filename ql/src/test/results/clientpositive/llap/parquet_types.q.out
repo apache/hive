@@ -214,9 +214,7 @@ uvwzy	5	abcdede	7
 vwxyz	5	abcdede	7
 wxyza	5	abcde	5
 bcdef	5	abcde	5
-PREHOOK: query: -- test types in group by
-
-SELECT ctinyint,
+PREHOOK: query: SELECT ctinyint,
   MAX(cint),
   MIN(csmallint),
   COUNT(cstring1),
@@ -228,9 +226,7 @@ ORDER BY ctinyint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_types
 #### A masked pattern was here ####
-POSTHOOK: query: -- test types in group by
-
-SELECT ctinyint,
+POSTHOOK: query: SELECT ctinyint,
   MAX(cint),
   MIN(csmallint),
   COUNT(cstring1),

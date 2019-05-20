@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table acid_uot(
+PREHOOK: query: create table acid_uot(
     ctinyint TINYINT,
     csmallint SMALLINT,
     cint INT,
@@ -17,9 +15,7 @@ PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
 PREHOOK: Output: default@acid_uot
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table acid_uot(
+POSTHOOK: query: create table acid_uot(
     ctinyint TINYINT,
     csmallint SMALLINT,
     cint INT,

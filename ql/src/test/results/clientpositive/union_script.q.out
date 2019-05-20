@@ -1,11 +1,9 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-select * from (
+PREHOOK: query: select * from (
   select transform(key) using 'cat' as cola from src)s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-select * from (
+POSTHOOK: query: select * from (
   select transform(key) using 'cat' as cola from src)s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src

@@ -1,3 +1,21 @@
+PREHOOK: query: EXPLAIN SHOW FUNCTIONS
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: EXPLAIN SHOW FUNCTIONS
+POSTHOOK: type: SHOWFUNCTIONS
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Functions
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: SHOW FUNCTIONS
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS
@@ -26,21 +44,29 @@ add_months
 aes_decrypt
 aes_encrypt
 and
+approx_distinct
 array
 array_contains
 ascii
 asin
 assert_true
+assert_true_oom
 atan
 avg
 base64
 between
 bin
+bloom_filter
 bround
+bucket_number
+buildversion
+cardinality_violation
 case
 cbrt
 ceil
 ceiling
+char_length
+character_length
 chr
 coalesce
 collect_list
@@ -58,8 +84,12 @@ covar_samp
 crc32
 create_union
 cume_dist
+current_authorizer
+current_catalog
 current_database
 current_date
+current_groups
+current_schema
 current_timestamp
 current_user
 date_add
@@ -77,12 +107,10 @@ div
 e
 elt
 encode
-ewah_bitmap
-ewah_bitmap_and
-ewah_bitmap_empty
-ewah_bitmap_or
+enforce_constraint
 exp
 explode
+extract_union
 factorial
 field
 find_in_set
@@ -101,22 +129,30 @@ from_unixtime
 from_utc_timestamp
 get_json_object
 get_splits
+get_sql_schema
 greatest
+grouping
 hash
 hex
 histogram_numeric
 hour
 if
 in
+in_bloom_filter
 in_file
 index
 initcap
 inline
 instr
 internal_interval
+isfalse
+isnotfalse
 isnotnull
+isnottrue
 isnull
+istrue
 java_method
+json_read
 json_tuple
 lag
 last_day
@@ -127,6 +163,8 @@ least
 length
 levenshtein
 like
+likeall
+likeany
 ln
 locate
 log
@@ -148,10 +186,13 @@ mask_show_last_n
 matchpath
 max
 md5
+mid
 min
 minute
+mod
 month
 months_between
+murmur_hash
 named_struct
 negative
 next_day
@@ -164,20 +205,25 @@ not
 ntile
 nullif
 nvl
+octet_length
 or
 parse_url
 parse_url_tuple
 percent_rank
 percentile
 percentile_approx
+percentile_cont
+percentile_disc
 pi
 pmod
 posexplode
+position
 positive
 pow
 power
 printf
 quarter
+quote
 radians
 rand
 rank
@@ -186,9 +232,19 @@ reflect2
 regexp
 regexp_extract
 regexp_replace
+regr_avgx
+regr_avgy
+regr_count
+regr_intercept
+regr_r2
+regr_slope
+regr_sxx
+regr_sxy
+regr_syy
 repeat
 replace
 replicate_rows
+restrict_information_schema
 reverse
 rlike
 round
@@ -211,6 +267,7 @@ sort_array_by
 soundex
 space
 split
+sq_count_check
 sqrt
 stack
 std
@@ -223,25 +280,37 @@ substr
 substring
 substring_index
 sum
+surrogate_key
 tan
 to_date
+to_epoch_milli
 to_unix_timestamp
 to_utc_timestamp
 translate
 trim
 trunc
+tumbling_window
 ucase
+udftoboolean
+udftobyte
+udftodouble
+udftofloat
+udftointeger
+udftolong
+udftoshort
 unbase64
 unhex
 unix_timestamp
 upper
 uuid
+validate_acid_sort_order
 var_pop
 var_samp
 variance
 version
 weekofyear
 when
+width_bucket
 windowingtablefunction
 xpath
 xpath_boolean
@@ -255,14 +324,36 @@ xpath_string
 year
 |
 ~
+PREHOOK: query: EXPLAIN SHOW FUNCTIONS '^c.*'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: EXPLAIN SHOW FUNCTIONS '^c.*'
+POSTHOOK: type: SHOWFUNCTIONS
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Functions
+      pattern: ^c.*
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: SHOW FUNCTIONS '^c.*'
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS '^c.*'
 POSTHOOK: type: SHOWFUNCTIONS
+cardinality_violation
 case
 cbrt
 ceil
 ceiling
+char_length
+character_length
 chr
 coalesce
 collect_list
@@ -280,8 +371,12 @@ covar_samp
 crc32
 create_union
 cume_dist
+current_authorizer
+current_catalog
 current_database
 current_date
+current_groups
+current_schema
 current_timestamp
 current_user
 PREHOOK: query: SHOW FUNCTIONS '.*e$'
@@ -302,6 +397,10 @@ floor_minute
 from_unixtime
 in_file
 inline
+isfalse
+isnotfalse
+isnottrue
+istrue
 json_tuple
 last_value
 lcase
@@ -314,7 +413,9 @@ parse_url_tuple
 percentile
 posexplode
 positive
+quote
 regexp_replace
+regr_slope
 replace
 reverse
 rlike
@@ -323,6 +424,8 @@ space
 to_date
 translate
 ucase
+udftobyte
+udftodouble
 variance
 xpath_double
 PREHOOK: query: SHOW FUNCTIONS 'log.*'
@@ -343,10 +446,30 @@ date_format
 date_sub
 datediff
 to_date
+validate_acid_sort_order
 PREHOOK: query: SHOW FUNCTIONS '***'
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS '***'
 POSTHOOK: type: SHOWFUNCTIONS
+PREHOOK: query: EXPLAIN SHOW FUNCTIONS LIKE 'When'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: EXPLAIN SHOW FUNCTIONS LIKE 'When'
+POSTHOOK: type: SHOWFUNCTIONS
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Functions
+      pattern: When
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: SHOW FUNCTIONS LIKE 'When'
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS LIKE 'When'
@@ -374,10 +497,13 @@ mask_show_last_n
 matchpath
 max
 md5
+mid
 min
 minute
+mod
 month
 months_between
+murmur_hash
 xpath
 xpath_boolean
 xpath_double

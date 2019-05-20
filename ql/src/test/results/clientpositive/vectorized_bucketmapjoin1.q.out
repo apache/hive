@@ -94,12 +94,22 @@ POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@vsmb_bucket_txt
 POSTHOOK: Lineage: vsmb_bucket_txt.key SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 POSTHOOK: Lineage: vsmb_bucket_txt.value SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select /*+MAPJOIN(a)*/ * from vsmb_bucket_1 a join vsmb_bucket_2 b on a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+PREHOOK: Input: default@vsmb_bucket_1
+PREHOOK: Input: default@vsmb_bucket_2
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization expression
 select /*+MAPJOIN(a)*/ * from vsmb_bucket_1 a join vsmb_bucket_2 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vsmb_bucket_1
+POSTHOOK: Input: default@vsmb_bucket_2
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -110,10 +120,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -130,7 +141,12 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          notVectorizedReason: MAPJOIN operator: FilterMaps not supported for Vector Pass-Thru SMB MapJoin
+          vectorized: false
 
   Stage: Stage-0
     Fetch Operator
@@ -152,12 +168,22 @@ POSTHOOK: Input: default@vsmb_bucket_2
 528534767	cvLH6Eat2yFsyy7p	528534767	cvLH6Eat2yFsyy7p
 528534767	cvLH6Eat2yFsyy7p	528534767	cvLH6Eat2yFsyy7p
 528534767	cvLH6Eat2yFsyy7p	528534767	cvLH6Eat2yFsyy7p
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select /*+MAPJOIN(b)*/ * from vsmb_bucket_1 a join vsmb_bucket_RC b on a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+PREHOOK: Input: default@vsmb_bucket_1
+PREHOOK: Input: default@vsmb_bucket_rc
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization expression
 select /*+MAPJOIN(b)*/ * from vsmb_bucket_1 a join vsmb_bucket_RC b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vsmb_bucket_1
+POSTHOOK: Input: default@vsmb_bucket_rc
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -168,10 +194,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -188,7 +215,12 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          notVectorizedReason: MAPJOIN operator: FilterMaps not supported for Vector Pass-Thru SMB MapJoin
+          vectorized: false
 
   Stage: Stage-0
     Fetch Operator
@@ -210,22 +242,22 @@ POSTHOOK: Input: default@vsmb_bucket_rc
 528534767	cvLH6Eat2yFsyy7p	528534767	cvLH6Eat2yFsyy7p
 528534767	cvLH6Eat2yFsyy7p	528534767	cvLH6Eat2yFsyy7p
 528534767	cvLH6Eat2yFsyy7p	528534767	cvLH6Eat2yFsyy7p
-PREHOOK: query: -- RC file does not yet provide the vectorized CommonRCFileformat out-of-the-box
--- explain
--- select /*+MAPJOIN(b)*/ * from vsmb_bucket_RC a join vsmb_bucket_2 b on a.key = b.key;
--- select /*+MAPJOIN(b)*/ * from vsmb_bucket_RC a join vsmb_bucket_2 b on a.key = b.key;
-
-explain
+PREHOOK: query: explain vectorization expression
 select /*+MAPJOIN(b)*/ * from vsmb_bucket_1 a join vsmb_bucket_TXT b on a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- RC file does not yet provide the vectorized CommonRCFileformat out-of-the-box
--- explain
--- select /*+MAPJOIN(b)*/ * from vsmb_bucket_RC a join vsmb_bucket_2 b on a.key = b.key;
--- select /*+MAPJOIN(b)*/ * from vsmb_bucket_RC a join vsmb_bucket_2 b on a.key = b.key;
-
-explain
+PREHOOK: Input: default@vsmb_bucket_1
+PREHOOK: Input: default@vsmb_bucket_txt
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization expression
 select /*+MAPJOIN(b)*/ * from vsmb_bucket_1 a join vsmb_bucket_TXT b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vsmb_bucket_1
+POSTHOOK: Input: default@vsmb_bucket_txt
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -236,10 +268,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -256,7 +289,12 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          notVectorizedReason: MAPJOIN operator: FilterMaps not supported for Vector Pass-Thru SMB MapJoin
+          vectorized: false
 
   Stage: Stage-0
     Fetch Operator

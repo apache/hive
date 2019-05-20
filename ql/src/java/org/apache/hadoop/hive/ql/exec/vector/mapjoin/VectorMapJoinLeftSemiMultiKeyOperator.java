@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashTableResult;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
 // Multi-Key hash table import.
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinBytesHashSet;
 
@@ -40,6 +40,8 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorSerializeRow;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
 
+import com.google.common.base.Preconditions;
+
 /*
  * Specialized class for doing a vectorized map join that is an left semi join on Multi-Key
  * using hash set.
@@ -47,8 +49,17 @@ import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerialize
 public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemiGenerateResultOperator {
 
   private static final long serialVersionUID = 1L;
-  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinInnerBigOnlyLongOperator.class.getName());
+
+  //------------------------------------------------------------------------------------------------
+
   private static final String CLASS_NAME = VectorMapJoinLeftSemiMultiKeyOperator.class.getName();
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+
+  protected String getLoggingPrefix() {
+    return super.getLoggingPrefix(CLASS_NAME);
+  }
+
+  //------------------------------------------------------------------------------------------------
 
   // (none)
 
@@ -86,9 +97,9 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
     super(ctx);
   }
 
-  public VectorMapJoinLeftSemiMultiKeyOperator(CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
-    super(ctx, vContext, conf);
+  public VectorMapJoinLeftSemiMultiKeyOperator(CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
+    super(ctx, conf, vContext, vectorDesc);
   }
 
   //---------------------------------------------------------------------------
@@ -96,45 +107,36 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
   //
 
   @Override
-  public void process(Object row, int tag) throws HiveException {
+  protected void commonSetup() throws HiveException {
+    super.commonSetup();
+
+    /*
+     * Initialize Multi-Key members for this specialized class.
+     */
+
+    keyVectorSerializeWrite = new VectorSerializeRow(
+                                    new BinarySortableSerializeWrite(bigTableKeyColumnMap.length));
+    keyVectorSerializeWrite.init(bigTableKeyTypeInfos, bigTableKeyColumnMap);
+
+    currentKeyOutput = new Output();
+    saveKeyOutput = new Output();
+  }
+
+  @Override
+  public void hashTableSetup() throws HiveException {
+    super.hashTableSetup();
+
+    /*
+     * Get our Multi-Key hash set information for this specialized class.
+     */
+
+    hashSet = (VectorMapJoinBytesHashSet) vectorMapJoinHashTable;
+  }
+
+  @Override
+  public void processBatch(VectorizedRowBatch batch) throws HiveException {
 
     try {
-      VectorizedRowBatch batch = (VectorizedRowBatch) row;
-
-      alias = (byte) tag;
-
-      if (needCommonSetup) {
-        // Our one time process method initialization.
-        commonSetup(batch);
-
-        /*
-         * Initialize Multi-Key members for this specialized class.
-         */
-
-        keyVectorSerializeWrite = new VectorSerializeRow(
-                                        new BinarySortableSerializeWrite(bigTableKeyColumnMap.length));
-        keyVectorSerializeWrite.init(bigTableKeyTypeNames, bigTableKeyColumnMap);
-
-        currentKeyOutput = new Output();
-        saveKeyOutput = new Output();
-
-        needCommonSetup = false;
-      }
-
-      if (needHashTableSetup) {
-        // Setup our hash table specialization.  It will be the first time the process
-        // method is called, or after a Hybrid Grace reload.
-
-        /*
-         * Get our Multi-Key hash set information for this specialized class.
-         */
-
-        hashSet = (VectorMapJoinBytesHashSet) vectorMapJoinHashTable;
-
-        needHashTableSetup = false;
-      }
-
-      batchCounter++;
 
       // Do the per-batch setup for an left semi join.
 
@@ -147,11 +149,7 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
       }
 
       final int inputLogicalSize = batch.size;
-
       if (inputLogicalSize == 0) {
-        if (isLogDebugEnabled) {
-          LOG.debug(CLASS_NAME + " batch #" + batchCounter + " empty");
-        }
         return;
       }
 
@@ -216,7 +214,7 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
          * Common repeated join result processing.
          */
 
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " repeated joinResult " + joinResult.name());
         }
         finishLeftSemiRepeated(batch, joinResult, hashSetResults[0]);
@@ -226,7 +224,7 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
          * NOT Repeating.
          */
 
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " non-repeated");
         }
 
@@ -371,7 +369,7 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
           }
         }
 
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME +
               " allMatchs " + intArrayToRangesString(allMatchs, allMatchCount) +
               " spills " + intArrayToRangesString(spills, spillCount) +

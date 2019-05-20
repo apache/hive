@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 
 public class HiveSemanticAnalyzerHookContextImpl implements HiveSemanticAnalyzerHookContext {
 
@@ -35,6 +36,7 @@ public class HiveSemanticAnalyzerHookContextImpl implements HiveSemanticAnalyzer
   private String userName;
   private String ipAddress;
   private String command;
+  private HiveOperation commandType;
 
   @Override
   public Hive getHive() throws HiveException {
@@ -56,6 +58,7 @@ public class HiveSemanticAnalyzerHookContextImpl implements HiveSemanticAnalyzer
   public void update(BaseSemanticAnalyzer sem) {
     this.inputs = sem.getInputs();
     this.outputs = sem.getOutputs();
+    this.commandType = sem.getQueryState().getHiveOperation();
   }
 
   @Override
@@ -94,5 +97,15 @@ public class HiveSemanticAnalyzerHookContextImpl implements HiveSemanticAnalyzer
   @Override
   public void setCommand(String command) {
     this.command = command;
+  }
+
+  @Override
+  public HiveOperation getHiveOperation() {
+    return commandType;
+  }
+
+  @Override
+  public void setHiveOperation(HiveOperation commandType) {
+    this.commandType = commandType;
   }
 }

@@ -1,17 +1,11 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- 1. testNoPTFNoWindowing
-select p_mfgr, p_name, p_size
+PREHOOK: query: select p_mfgr, p_name, p_size
 from part
 distribute by p_mfgr
 sort by p_name
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- 1. testNoPTFNoWindowing
-select p_mfgr, p_name, p_size
+POSTHOOK: query: select p_mfgr, p_name, p_size
 from part
 distribute by p_mfgr
 sort by p_name
@@ -44,8 +38,7 @@ Manufacturer#5	almond antique medium spring khaki	6
 Manufacturer#5	almond antique sky peru orange	2
 Manufacturer#5	almond aquamarine dodger light gainsboro	46
 Manufacturer#5	almond azure blanched chiffon midnight	23
-PREHOOK: query: -- 2. testUDAFsNoWindowingNoPTFNoGBY
-select p_mfgr,p_name, p_retailprice,  
+PREHOOK: query: select p_mfgr,p_name, p_retailprice,  
 sum(p_retailprice) over(partition by p_mfgr order by p_name) as s,
 min(p_retailprice) over(partition by p_mfgr order by p_name) as mi,
 max(p_retailprice) over(partition by p_mfgr order by p_name) as ma,
@@ -54,8 +47,7 @@ from part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: -- 2. testUDAFsNoWindowingNoPTFNoGBY
-select p_mfgr,p_name, p_retailprice,  
+POSTHOOK: query: select p_mfgr,p_name, p_retailprice,  
 sum(p_retailprice) over(partition by p_mfgr order by p_name) as s,
 min(p_retailprice) over(partition by p_mfgr order by p_name) as mi,
 max(p_retailprice) over(partition by p_mfgr order by p_name) as ma,
@@ -90,13 +82,11 @@ Manufacturer#5	almond antique medium spring khaki	1611.66	3401.3500000000004	161
 Manufacturer#5	almond antique sky peru orange	1788.73	5190.08	1611.66	1789.69	1730.0266666666666
 Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	6208.18	1018.1	1789.69	1552.045
 Manufacturer#5	almond azure blanched chiffon midnight	1464.48	7672.66	1018.1	1789.69	1534.532
-PREHOOK: query: -- 3. testConstExprInSelect
-select 'tst1' as key, count(1) as value from part
+PREHOOK: query: select 'tst1' as key, count(1) as value from part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: -- 3. testConstExprInSelect
-select 'tst1' as key, count(1) as value from part
+POSTHOOK: query: select 'tst1' as key, count(1) as value from part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####

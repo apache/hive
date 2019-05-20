@@ -1,1 +1,0 @@
-FAILED: SemanticException [Error 10249]: Line 4:14 Unsupported SubQuery Expression 'key': Only SubQuery expressions that are top level conjuncts are allowed

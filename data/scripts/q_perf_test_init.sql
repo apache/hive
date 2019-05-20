@@ -1,5 +1,5 @@
 drop table if exists call_center;
-create external table call_center
+create table call_center
 (
     cc_call_center_sk        int,
     cc_call_center_id        string,
@@ -34,10 +34,10 @@ create external table call_center
     cc_tax_percentage        decimal(5,2)
 )
 row format delimited fields terminated by '\t'
-STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB");
 
 drop table if exists catalog_page;
-create external table catalog_page
+create table catalog_page
 (
     cp_catalog_page_sk       int,
     cp_catalog_page_id       string,
@@ -50,11 +50,11 @@ create external table catalog_page
     cp_type                  string
 )
 row format delimited fields terminated by '\t'
-STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB");
 
 
 drop table if exists catalog_returns;
-create external table catalog_returns
+create table catalog_returns
 (
     cr_returned_date_sk        int,
     cr_returned_time_sk        int,
@@ -85,11 +85,11 @@ create external table catalog_returns
     cr_net_loss                decimal(7,2)
 )
 row format delimited fields terminated by '\t'
-STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB");
 
 
 drop table if exists catalog_sales;
-create external table catalog_sales
+create table catalog_sales
 (
     cs_sold_date_sk            int,
     cs_sold_time_sk            int,
@@ -127,11 +127,11 @@ create external table catalog_sales
     cs_net_profit              decimal(7,2)
 )
 row format delimited fields terminated by '\t'
-STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB");
 
 
 drop table if exists customer;
-create external table customer
+create table customer
 (
     c_customer_sk             int,
     c_customer_id             string,
@@ -153,11 +153,11 @@ create external table customer
     c_last_review_date        string
 )
 row format delimited fields terminated by '\t'
-STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB");
 
 
 drop table if exists customer_address;
-create external table customer_address
+create table customer_address
 (
     ca_address_sk             int,
     ca_address_id             string,
@@ -174,11 +174,11 @@ create external table customer_address
     ca_location_type          string
 )
 row format delimited fields terminated by '\t'
-STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB");
 
 
 drop table if exists customer_demographics;
-create external table customer_demographics
+create table customer_demographics
 (
     cd_demo_sk                int,
     cd_gender                 string,
@@ -191,11 +191,11 @@ create external table customer_demographics
     cd_dep_college_count      int 
 )
 row format delimited fields terminated by '\t'
-STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB");
 
 
 drop table if exists date_dim;
-create external table date_dim
+create table date_dim
 (
     d_date_sk                 int,
     d_date_id                 string,
@@ -227,11 +227,11 @@ create external table date_dim
     d_current_year            string 
 )
 row format delimited fields terminated by '\t'
-STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB");
 
 
 drop table if exists household_demographics;
-create external table household_demographics
+create table household_demographics
 (
     hd_demo_sk                int,
     hd_income_band_sk         int,
@@ -240,22 +240,22 @@ create external table household_demographics
     hd_vehicle_count          int
 )
 row format delimited fields terminated by '\t'
-STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB");
 
 
 drop table if exists income_band;
-create external table income_band
+create table income_band
 (
     ib_income_band_sk        int,
     ib_lower_bound           int,
     ib_upper_bound           int
 )
 row format delimited fields terminated by '\t'
-STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB");
 
 
 drop table if exists inventory;
-create external table inventory
+create table inventory
 (
     inv_date_sk                int,
     inv_item_sk                int,
@@ -263,11 +263,11 @@ create external table inventory
     inv_quantity_on_hand       int
 )
 row format delimited fields terminated by '\t'
-STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB");
 
 
 drop table if exists item;
-create external table item
+create table item
 (
     i_item_sk                 int,
     i_item_id                 string,
@@ -293,11 +293,11 @@ create external table item
     i_product_name            string
 )
 row format delimited fields terminated by '\t'
-STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB");
 
 
 drop table if exists promotion;
-create external table promotion
+create table promotion
 (
     p_promo_sk                int,
     p_promo_id                string,
@@ -320,22 +320,22 @@ create external table promotion
     p_discount_active         string 
 )
 row format delimited fields terminated by '\t'
-STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB");
 
 
 drop table if exists reason;
-create external table reason
+create table reason
 (
     r_reason_sk         int,
     r_reason_id         string,
     r_reason_desc       string
 )
 row format delimited fields terminated by '\t'
-STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB");
 
 
 drop table if exists ship_mode;
-create external table ship_mode
+create table ship_mode
 (
     sm_ship_mode_sk           int,
     sm_ship_mode_id           string,
@@ -345,11 +345,11 @@ create external table ship_mode
     sm_contract               string
 )
 row format delimited fields terminated by '\t'
-STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB");
 
 
 drop table if exists store;
-create external table store
+create table store
 (
     s_store_sk                int,
     s_store_id                string,
@@ -382,11 +382,11 @@ create external table store
     s_tax_precentage          decimal(5,2)
 )
 row format delimited fields terminated by '\t'
-STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB");
 
 
 drop table if exists store_returns;
-create external table store_returns
+create table store_returns
 (
     sr_returned_date_sk      int,
     sr_return_time_sk        int,
@@ -410,11 +410,11 @@ create external table store_returns
     sr_net_loss              decimal(7,2)
 )
 row format delimited fields terminated by '\t'
-STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB");
 
 
 drop table if exists store_sales;
-create external table store_sales
+create table store_sales
 (
     ss_sold_date_sk           int,
     ss_sold_time_sk           int,
@@ -441,11 +441,11 @@ create external table store_sales
     ss_net_profit             decimal(7,2)
 )
 row format delimited fields terminated by '\t'
-STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB");
 
 
 drop table if exists time_dim;
-create external table time_dim
+create table time_dim
 (
     t_time_sk                 int,
     t_time_id                 string,
@@ -459,11 +459,11 @@ create external table time_dim
     t_meal_time               string
 )
 row format delimited fields terminated by '\t'
-STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB");
 
 
 drop table if exists warehouse;
-create external table warehouse
+create table warehouse
 (
     w_warehouse_sk            int,
     w_warehouse_id            string,
@@ -481,11 +481,11 @@ create external table warehouse
     w_gmt_offset              decimal(5,2)
 )
 row format delimited fields terminated by '\t'
-STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB");
 
 
 drop table if exists web_page;
-create external table web_page
+create table web_page
 (
     wp_web_page_sk           int,
     wp_web_page_id           string,
@@ -503,11 +503,11 @@ create external table web_page
     wp_max_ad_count          int
 )
 row format delimited fields terminated by '\t'
-STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB");
 
 
 drop table if exists web_returns;
-create external table web_returns
+create table web_returns
 (
     wr_returned_date_sk        int,
     wr_returned_time_sk        int,
@@ -535,11 +535,11 @@ create external table web_returns
     wr_net_loss                decimal(7,2)
 )
 row format delimited fields terminated by '\t'
-STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB");
 
 
 drop table if exists web_sales;
-create external table web_sales
+create table web_sales
 (
     ws_sold_date_sk           int,
     ws_sold_time_sk           int,
@@ -577,11 +577,11 @@ create external table web_sales
     ws_net_profit             decimal(7,2)
 )
 row format delimited fields terminated by '\t'
-STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB");
 
 
 drop table if exists web_site;
-create external table web_site
+create table web_site
 (
     web_site_sk             int,
     web_site_id             string,
@@ -611,6 +611,6 @@ create external table web_site
     web_tax_percentage      decimal(5,2)
 )
 row format delimited fields terminated by '\t'
-STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB");
 
 

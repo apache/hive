@@ -163,7 +163,7 @@
 
 <property>
   <name>hive.exec.post.hooks</name>
-  <value>org.apache.hadoop.hive.ql.hooks.PostExecutePrinter</value>
+  <value>org.apache.hadoop.hive.ql.hooks.PostExecutePrinter, org.apache.hadoop.hive.ql.hooks.RuntimeStatsPersistenceCheckerHook, org.apache.hadoop.hive.ql.hooks.NoOperatorReuseCheckerHook</value>
   <description>Post Execute Hook for Tests</description>
 </property>
 
@@ -285,6 +285,11 @@
   <value>false</value>
 </property>
 
+<property>
+  <name>hive.join.inner.residual</name>
+  <value>true</value>
+</property>
+
 <!-- llap properties -->
 
 <property>
@@ -327,6 +332,30 @@
   <name>ipc.clients-per-factory</name>
   <value>4</value>
   <description> </description>
+</property>
+<property>
+  <name>hive.stats.fetch.bitvector</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>hive.tez.cartesian-product.enabled</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>yarn.nodemanager.disk-health-checker.max-disk-utilization-per-disk-percentage</name>
+  <value>99</value>
+</property>
+
+<property>
+  <name>hive.query.results.cache.enabled</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>tez.counters.max</name>
+  <value>1024</value>
 </property>
 
 </configuration>

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,12 +19,16 @@
 package org.apache.hadoop.hive.ql.io.orc.encoded;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.hadoop.hive.common.Pool;
 import org.apache.hadoop.hive.common.Pool.PoolObjectHelper;
 import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.orc.CompressionCodec;
 import org.apache.orc.DataReader;
 import org.apache.orc.OrcProto;
 
@@ -33,9 +37,19 @@ import org.apache.orc.OrcProto;
  */
 public interface Reader extends org.apache.hadoop.hive.ql.io.orc.Reader {
 
+  /**
+   * Creates the encoded reader.
+   * @param fileKey File ID to read, to use for cache lookups and such.
+   * @param dataCache Data cache to use for cache lookups.
+   * @param dataReader Data reader to read data not found in cache (from disk, HDFS, and such).
+   * @param pf Pool factory to create object pools.
+   * @return The reader.
+   */
+  EncodedReader encodedReader(Object fileKey, DataCache dataCache, DataReader dataReader,
+      PoolFactory pf, IoTrace trace, boolean useCodecPool, String tag) throws IOException;
+
   /** The factory that can create (or return) the pools used by encoded reader. */
   public interface PoolFactory {
-    <T> Pool<T> createPool(int size, PoolObjectHelper<T> helper);
     Pool<OrcEncodedColumnBatch> createEncodedColumnBatchPool();
     Pool<ColumnStreamData> createColumnStreamDataPool();
   }
@@ -61,16 +75,57 @@ public interface Reader extends org.apache.hadoop.hive.ql.io.orc.Reader {
     public void initOrcColumn(int colIx) {
       super.initColumn(colIx, MAX_DATA_STREAMS);
     }
-  }
 
-  /**
-   * Creates the encoded reader.
-   * @param fileKey File ID to read, to use for cache lookups and such.
-   * @param dataCache Data cache to use for cache lookups.
-   * @param dataReader Data reader to read data not found in cache (from disk, HDFS, and such).
-   * @param pf Pool factory to create object pools.
-   * @return The reader.
-   */
-  EncodedReader encodedReader(
-      Object fileKey, DataCache dataCache, DataReader dataReader, PoolFactory pf) throws IOException;
+    /**
+     * Same as columnData, but for the data that already comes as VRBs.
+     * The combination of the two contains all the necessary data,
+     */
+    protected List<ColumnVector>[] columnVectors;
+
+    @Override
+    public void reset() {
+      super.reset();
+      if (columnVectors == null) return;
+      Arrays.fill(columnVectors, null);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void initColumnWithVectors(int colIx, List<ColumnVector> data) {
+      if (columnVectors == null) {
+        columnVectors = new List[columnData.length];
+      }
+      columnVectors[colIx] = data;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    protected void resetColumnArrays(int columnCount) {
+      super.resetColumnArrays(columnCount);
+      if (columnVectors != null && columnCount == columnVectors.length) {
+        Arrays.fill(columnVectors, null);
+        return;
+      }
+      if (columnVectors != null) {
+        columnVectors = new List[columnCount];
+      } // else just keep it null
+    }
+
+    public boolean hasVectors(int colIx) {
+      return columnVectors != null && columnVectors[colIx] != null;
+    }
+
+    public List<ColumnVector> getColumnVectors(int colIx) {
+      if (!hasVectors(colIx)) throw new AssertionError("No data for column " + colIx);
+      return columnVectors[colIx];
+    }
+
+    public int getColumnsWithDataCount() {
+      int childCount = hasData.length, result = 0;
+      for (int childIx = 0; childIx < childCount; ++childIx) {
+        if (!hasData(childIx) && !hasVectors(childIx)) continue;
+        ++result;
+      }
+      return result;
+    }
+  }
 }

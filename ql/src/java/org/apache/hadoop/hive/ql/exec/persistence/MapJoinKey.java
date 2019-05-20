@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,9 +24,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
-import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
+import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBase;
+import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 
 /**
@@ -93,14 +94,17 @@ public abstract class MapJoinKey {
     return true;
   }
 
-  public static boolean isSupportedField(String typeName) {
-    TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
-
+  public static boolean isSupportedField(TypeInfo typeInfo) {
     if (typeInfo.getCategory() != Category.PRIMITIVE) return false; // not supported
     PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
     PrimitiveCategory pc = primitiveTypeInfo.getPrimitiveCategory();
     if (!SUPPORTED_PRIMITIVES.contains(pc)) return false; // not supported
     return true;
+  }
+
+  public static boolean isSupportedField(String typeName) {
+    TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
+    return isSupportedField(typeInfo);
   }
 
 
@@ -115,7 +119,7 @@ public abstract class MapJoinKey {
    * Serializes row to output for vectorized path.
    * @param byteStream Output to reuse. Can be null, in that case a new one would be created.
    */
-  public static Output serializeVector(Output byteStream, VectorHashKeyWrapper kw,
+  public static Output serializeVector(Output byteStream, VectorHashKeyWrapperBase kw,
       VectorExpressionWriter[] keyOutputWriters, VectorHashKeyWrapperBatch keyWrapperBatch,
       boolean[] nulls, boolean[] sortableSortOrders, byte[] nullMarkers, byte[] notNullMarkers)
               throws HiveException, SerDeException {
@@ -167,5 +171,19 @@ public abstract class MapJoinKey {
       throw new HiveException("Serialization error", e);
     }
     return byteStream;
+  }
+
+  /*
+   * Deserializes a key.  Needed for FULL OUTER MapJoin to unpack the Small Table key when
+   * adding the non matched key to the join output result.
+   */
+  public static List<Object> deserializeRow(byte[] keyBytes, int keyOffset, int keyLength,
+      BytesWritable bytesWritable, AbstractSerDe serde) throws HiveException {
+    try {
+      bytesWritable.set(keyBytes, keyOffset, keyLength);
+      return (List<Object>) serde.deserialize(bytesWritable);
+    } catch (SerDeException e) {
+      throw new HiveException("Serialization error", e);
+    }
   }
 }

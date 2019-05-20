@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -32,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 import javax.security.sasl.SaslException;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.PlainSaslHelper;
 import org.apache.hive.service.cli.CLIServiceClient;
@@ -48,6 +47,7 @@ import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.rpc.thrift.TCLIService;
+import org.apache.hive.service.rpc.thrift.TOperationHandle;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -191,8 +191,13 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
     }
 
     @Override
-    public OperationStatus getOperationStatus(OperationHandle opHandle) throws HiveSQLException {
-      return cliService.getOperationStatus(opHandle);
+    public OperationStatus getOperationStatus(OperationHandle opHandle, boolean getProgressUpdate) throws HiveSQLException {
+      return cliService.getOperationStatus(opHandle, getProgressUpdate);
+    }
+
+    @Override
+    public String getQueryId(TOperationHandle operationHandle) throws HiveSQLException {
+      return cliService.getQueryId(operationHandle);
     }
 
     @Override
@@ -234,6 +239,11 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
       throws HiveSQLException {
       return cliService.getCrossReference(sessionHandle, primaryCatalog, primarySchema,
         primaryTable, foreignCatalog, foreignSchema, foreignTable);
+    }
+
+    @Override
+    public void setApplicationName(SessionHandle sh, String value) throws HiveSQLException {
+      cliService.setApplicationName(sh, value);
     }
   }
 

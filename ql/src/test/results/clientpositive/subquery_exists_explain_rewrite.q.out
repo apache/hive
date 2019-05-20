@@ -1,5 +1,4 @@
-PREHOOK: query: -- no agg, corr
-explain rewrite
+PREHOOK: query: explain rewrite
 select * 
 from src b 
 where exists 
@@ -8,8 +7,7 @@ where exists
   where b.value = a.value  and a.key = b.key and a.value > 'val_9'
   )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- no agg, corr
-explain rewrite
+POSTHOOK: query: explain rewrite
 select * 
 from src b 
 where exists 
@@ -35,8 +33,7 @@ from src b  left semi join (select a.key, a.value as sq_corr_0, a.key as sq_corr
   where a.value > 'val_9'
   ) sq_1  on b.value = sq_1.sq_corr_0 and sq_1.sq_corr_1 = b.key 
 where 1 = 1
-PREHOOK: query: -- sq in from
-explain rewrite
+PREHOOK: query: explain rewrite
 select * 
 from (select * 
       from src b 
@@ -46,8 +43,7 @@ from (select *
           where b.value = a.value  and a.key = b.key and a.value > 'val_9')
      ) a
 PREHOOK: type: QUERY
-POSTHOOK: query: -- sq in from
-explain rewrite
+POSTHOOK: query: explain rewrite
 select * 
 from (select * 
       from src b 

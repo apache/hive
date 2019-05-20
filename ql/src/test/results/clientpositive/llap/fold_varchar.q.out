@@ -1,0 +1,61 @@
+PREHOOK: query: create table t (a string,vc varchar(10),c char(10))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t (a string,vc varchar(10),c char(10))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: insert into t values('bee','bee','bee'),('xxx','xxx','xxx')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into t values('bee','bee','bee'),('xxx','xxx','xxx')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.a SCRIPT []
+POSTHOOK: Lineage: t.c SCRIPT []
+POSTHOOK: Lineage: t.vc SCRIPT []
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select	assert_true(t0.v = t1.v) from
+	(select hash(a) as v from t where a='bee') as t0
+join	(select hash(a) as v from t where a='bee' or a='xbee') as t1 on (true)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select	assert_true(t0.v = t1.v) from
+	(select hash(a) as v from t where a='bee') as t0
+join	(select hash(a) as v from t where a='bee' or a='xbee') as t1 on (true)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+NULL
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select	assert_true(t0.v = t1.v) from
+	(select hash(vc) as v from t where vc='bee') as t0
+join	(select hash(vc) as v from t where vc='bee' or vc='xbee') as t1 on (true)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select	assert_true(t0.v = t1.v) from
+	(select hash(vc) as v from t where vc='bee') as t0
+join	(select hash(vc) as v from t where vc='bee' or vc='xbee') as t1 on (true)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+NULL
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select	assert_true(t0.v = t1.v) from
+	(select hash(c) as v from t where c='bee') as t0
+join	(select hash(c) as v from t where c='bee' or c='xbee') as t1 on (true)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select	assert_true(t0.v = t1.v) from
+	(select hash(c) as v from t where c='bee') as t0
+join	(select hash(c) as v from t where c='bee' or c='xbee') as t1 on (true)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+NULL

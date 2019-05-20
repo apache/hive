@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,17 +22,30 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.shims.HadoopShims;
+
+import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Assert;
 import org.junit.Test;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -145,5 +158,110 @@ public class TestFileUtils {
     Path unchangedPath = FileUtils.makeAbsolute(localFileSystem, new Path("/absolute/path"));
 
     assertEquals(unchangedPath.toString(), absolutePath.toString());
+  }
+
+  @Test
+  public void testIsPathWithinSubtree() throws IOException {
+    Path splitPath = new Path("file:///user/hive/warehouse/src/data.txt");
+    Path splitPathWithNoSchema = Path.getPathWithoutSchemeAndAuthority(splitPath);
+
+    Set<Path> parents = new HashSet<>();
+    FileUtils.populateParentPaths(parents, splitPath);
+    FileUtils.populateParentPaths(parents, splitPathWithNoSchema);
+
+    Path key = new Path("/user/hive/warehouse/src");
+    verifyIsPathWithInSubTree(splitPath, key, false);
+    verifyIsPathWithInSubTree(splitPathWithNoSchema, key, true);
+    verifyIfParentsContainPath(key, parents, true);
+
+    key = new Path("/user/hive/warehouse/src_2");
+    verifyIsPathWithInSubTree(splitPath, key, false);
+    verifyIsPathWithInSubTree(splitPathWithNoSchema, key, false);
+    verifyIfParentsContainPath(key, parents, false);
+
+    key = new Path("/user/hive/warehouse/src/data.txt");
+    verifyIsPathWithInSubTree(splitPath, key, false);
+    verifyIsPathWithInSubTree(splitPathWithNoSchema, key, true);
+    verifyIfParentsContainPath(key, parents, true);
+
+    key = new Path("file:///user/hive/warehouse/src");
+    verifyIsPathWithInSubTree(splitPath, key, true);
+    verifyIsPathWithInSubTree(splitPathWithNoSchema, key, false);
+    verifyIfParentsContainPath(key, parents, true);
+
+    key = new Path("file:///user/hive/warehouse/src_2");
+    verifyIsPathWithInSubTree(splitPath, key, false);
+    verifyIsPathWithInSubTree(splitPathWithNoSchema, key, false);
+    verifyIfParentsContainPath(key, parents, false);
+
+    key = new Path("file:///user/hive/warehouse/src/data.txt");
+    verifyIsPathWithInSubTree(splitPath, key, true);
+    verifyIsPathWithInSubTree(splitPathWithNoSchema, key, false);
+    verifyIfParentsContainPath(key, parents, true);
+  }
+
+  private void verifyIsPathWithInSubTree(Path splitPath, Path key, boolean expected) {
+    boolean result = FileUtils.isPathWithinSubtree(splitPath, key);
+    assertEquals("splitPath=" + splitPath + ", key=" + key, expected, result);
+  }
+
+  private void verifyIfParentsContainPath(Path key, Set<Path> parents, boolean expected) {
+    boolean result = parents.contains(key);
+    assertEquals("key=" + key, expected, result);
+  }
+
+  @Test
+  public void testCopyWithDistcp() throws IOException {
+    Path copySrc = new Path("copySrc");
+    Path copyDst = new Path("copyDst");
+    HiveConf conf = new HiveConf(TestFileUtils.class);
+
+    FileSystem mockFs = mock(FileSystem.class);
+    when(mockFs.getUri()).thenReturn(URI.create("hdfs:///"));
+
+    ContentSummary mockContentSummary = mock(ContentSummary.class);
+    when(mockContentSummary.getFileCount()).thenReturn(Long.MAX_VALUE);
+    when(mockContentSummary.getLength()).thenReturn(Long.MAX_VALUE);
+    when(mockFs.getContentSummary(any(Path.class))).thenReturn(mockContentSummary);
+
+    HadoopShims shims = mock(HadoopShims.class);
+    when(shims.runDistCp(Collections.singletonList(copySrc), copyDst, conf)).thenReturn(true);
+
+    Assert.assertTrue(FileUtils.copy(mockFs, copySrc, mockFs, copyDst, false, false, conf, shims));
+    verify(shims).runDistCp(Collections.singletonList(copySrc), copyDst, conf);
+  }
+
+  @Test
+  public void testCopyWithDistCpAs() throws IOException {
+    Path copySrc = new Path("copySrc");
+    Path copyDst = new Path("copyDst");
+    HiveConf conf = new HiveConf(TestFileUtils.class);
+
+    FileSystem fs = copySrc.getFileSystem(conf);
+
+    String doAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
+    UserGroupInformation proxyUser = UserGroupInformation.createProxyUser(
+            doAsUser, UserGroupInformation.getLoginUser());
+
+    HadoopShims shims = mock(HadoopShims.class);
+    when(shims.runDistCpAs(Collections.singletonList(copySrc), copyDst, conf, proxyUser)).thenReturn(true);
+    when(shims.runDistCp(Collections.singletonList(copySrc), copyDst, conf)).thenReturn(false);
+
+    // doAs when asked
+    Assert.assertTrue(FileUtils.distCp(fs, Collections.singletonList(copySrc), copyDst, false, proxyUser, conf, shims));
+    verify(shims).runDistCpAs(Collections.singletonList(copySrc), copyDst, conf, proxyUser);
+    // don't doAs when not asked
+    Assert.assertFalse(FileUtils.distCp(fs, Collections.singletonList(copySrc), copyDst, true, null, conf, shims));
+    verify(shims).runDistCp(Collections.singletonList(copySrc), copyDst, conf);
+
+    // When distcp is done with doAs, the delete should also be done as doAs. But in current code its broken. This
+    // should be fixed. For now check is added to avoid wrong usage. So if doAs is set, delete source should be false.
+    try {
+      FileUtils.distCp(fs, Collections.singletonList(copySrc), copyDst, true, proxyUser, conf, shims);
+      Assert.assertTrue("Should throw IOException as doAs is called with delete source set to true".equals(""));
+    } catch (IOException e) {
+      Assert.assertTrue(e.getMessage().
+              equalsIgnoreCase("Distcp is called with doAsUser and delete source set as true"));
+    }
   }
 }

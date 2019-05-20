@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.See the NOTICE file
  * distributed with this work for additional information
@@ -207,10 +207,11 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       ColumnProjectionUtils.appendReadColumns(
           jobClone, ts.getNeededColumnIDs(), ts.getNeededColumns(), ts.getNeededNestedColumnPaths());
       // push down filters
-      HiveInputFormat.pushFilters(jobClone, ts);
+      HiveInputFormat.pushFilters(jobClone, ts, null);
 
-      AcidUtils.setTransactionalTableScan(jobClone, ts.getConf().isAcidTable());
-      AcidUtils.setAcidOperationalProperties(jobClone, ts.getConf().getAcidOperationalProperties());
+      AcidUtils.setAcidOperationalProperties(jobClone, ts.getConf().isTranscationalTable(),
+          ts.getConf().getAcidOperationalProperties());
+      AcidUtils.setValidWriteIdList(jobClone, ts.getConf());
 
       ts.passExecContext(getExecContext());
 
@@ -542,7 +543,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     BucketMatcher bucketMatcher = ReflectionUtil.newInstance(bucketMatcherCls, null);
 
     getExecContext().setFileId(bucketMatcherCxt.createFileId(currentInputPath.toString()));
-    if (isLogInfoEnabled) {
+    if (LOG.isInfoEnabled()) {
       LOG.info("set task id: " + getExecContext().getFileId());
     }
 
@@ -768,9 +769,9 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       }
       Integer current = top();
       if (current == null) {
-	if (isLogInfoEnabled) {
-	  LOG.info("MergeQueue forwarded " + counter + " rows");
-	}
+        if (LOG.isInfoEnabled()) {
+          LOG.info("MergeQueue forwarded " + counter + " rows");
+        }
         return null;
       }
       counter++;

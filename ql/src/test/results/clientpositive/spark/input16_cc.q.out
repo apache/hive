@@ -1,12 +1,6 @@
-PREHOOK: query: -- TestSerDe is a user defined serde where the default delimiter is Ctrl-B
--- the user is overwriting it with ctrlC
-
-DROP TABLE INPUT16_CC
+PREHOOK: query: DROP TABLE INPUT16_CC
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- TestSerDe is a user defined serde where the default delimiter is Ctrl-B
--- the user is overwriting it with ctrlC
-
-DROP TABLE INPUT16_CC
+POSTHOOK: query: DROP TABLE INPUT16_CC
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE INPUT16_CC(KEY STRING, VALUE STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.TestSerDe'  with serdeproperties ('testserde.default.serialization.format'='\003', 'dummy.prop.not.used'='dummyy.val') STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -27,11 +21,11 @@ POSTHOOK: Output: default@input16_cc
 PREHOOK: query: SELECT INPUT16_CC.VALUE, INPUT16_CC.KEY FROM INPUT16_CC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@input16_cc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT INPUT16_CC.VALUE, INPUT16_CC.KEY FROM INPUT16_CC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@input16_cc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 val_238	238
 val_86	86
 val_311	311

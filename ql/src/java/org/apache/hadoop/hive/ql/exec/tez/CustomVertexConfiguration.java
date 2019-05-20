@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,7 +21,10 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
+import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.ql.plan.TezWork.VertexType;
 import org.apache.hadoop.io.Writable;
 
@@ -39,22 +42,24 @@ public class CustomVertexConfiguration implements Writable {
   private VertexType vertexType = VertexType.AUTO_INITIALIZED_EDGES;
   private int numInputs;
   private String inputName;
+  private Map<String, Integer> inputToBucketMap;
 
   public CustomVertexConfiguration() {
   }
 
   // this is the constructor to use for the Bucket map join case.
   public CustomVertexConfiguration(int numBuckets, VertexType vertexType) {
-    this(numBuckets, vertexType, "", 1);
+    this(numBuckets, vertexType, "", 1, null);
   }
 
   // this is the constructor to use for SMB.
   public CustomVertexConfiguration(int numBuckets, VertexType vertexType, String inputName,
-      int numInputs) {
+                                   int numInputs, Map<String, Integer> inputToBucketMap) {
     this.numBuckets = numBuckets;
     this.vertexType = vertexType;
     this.numInputs = numInputs;
     this.inputName = inputName;
+    this.inputToBucketMap = inputToBucketMap;
   }
 
   @Override
@@ -63,6 +68,14 @@ public class CustomVertexConfiguration implements Writable {
     out.writeInt(this.numBuckets);
     out.writeInt(numInputs);
     out.writeUTF(inputName);
+    int sz = inputToBucketMap != null ? inputToBucketMap.size() : 0;
+    out.writeInt(sz);
+    if (sz > 0) {
+      for (Map.Entry<String, Integer> entry : inputToBucketMap.entrySet()) {
+        out.writeUTF(entry.getKey());
+        out.writeInt(entry.getValue());
+      }
+    }
   }
 
   @Override
@@ -71,6 +84,16 @@ public class CustomVertexConfiguration implements Writable {
     this.numBuckets = in.readInt();
     this.numInputs = in.readInt();
     this.inputName = in.readUTF();
+    int sz = in.readInt();
+    Preconditions.checkState(sz >= 0);
+    if (sz == 0) {
+      this.inputToBucketMap = null;
+    } else {
+      this.inputToBucketMap = new HashMap<>();
+      for (int i = 0; i < sz; i++) {
+        this.inputToBucketMap.put(in.readUTF(), in.readInt());
+      }
+    }
   }
 
   public int getNumBuckets() {
@@ -87,5 +110,9 @@ public class CustomVertexConfiguration implements Writable {
 
   public int getNumInputs() {
     return numInputs;
+  }
+
+  public Map<String, Integer> getInputToBucketMap() {
+    return inputToBucketMap;
   }
 }

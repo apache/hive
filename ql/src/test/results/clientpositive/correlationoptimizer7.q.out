@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src x JOIN src1 y ON (x.key = y.key)
@@ -8,9 +6,10 @@ FROM (SELECT x.key AS key, count(1) AS cnt
 JOIN src1 yy
 ON xx.key=yy.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src x JOIN src1 y ON (x.key = y.key)
@@ -18,6 +17,9 @@ FROM (SELECT x.key AS key, count(1) AS cnt
 JOIN src1 yy
 ON xx.key=yy.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-9 is a root stage
   Stage-2 depends on stages: Stage-9
@@ -29,21 +31,22 @@ STAGE PLANS:
   Stage: Stage-9
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_0:$hdt$_1:y 
+        $hdt$_0:$hdt$_1:y 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_0:$hdt$_1:y 
+        $hdt$_0:$hdt$_1:y 
           TableScan
             alias: y
-            Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: string)
@@ -54,14 +57,15 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -69,19 +73,21 @@ STAGE PLANS:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
                   outputColumnNames: _col0
-                  Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 39 Data size: 3393 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count()
                     keys: _col0 (type: string)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: bigint)
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -90,7 +96,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -108,14 +114,15 @@ STAGE PLANS:
         $hdt$_1:yy 
           TableScan
             alias: yy
-            Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: string)
@@ -132,14 +139,15 @@ STAGE PLANS:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 810 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 810 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
 
@@ -192,6 +200,9 @@ FROM (SELECT x.key AS key, count(1) AS cnt
 JOIN src1 yy
 ON xx.key=yy.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt
@@ -200,6 +211,9 @@ FROM (SELECT x.key AS key, count(1) AS cnt
 JOIN src1 yy
 ON xx.key=yy.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-6 is a root stage
   Stage-2 depends on stages: Stage-6
@@ -209,21 +223,22 @@ STAGE PLANS:
   Stage: Stage-6
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_0:$hdt$_1:y 
+        $hdt$_0:$hdt$_1:y 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_0:$hdt$_1:y 
+        $hdt$_0:$hdt$_1:y 
           TableScan
             alias: y
-            Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: string)
@@ -234,30 +249,32 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: yy
-            Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: string)
           TableScan
             alias: x
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -265,32 +282,33 @@ STAGE PLANS:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
                   outputColumnNames: _col0
-                  Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 39 Data size: 3393 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count()
                     keys: _col0 (type: string)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: bigint)
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
         Demux Operator
-          Statistics: Num rows: 575 Data size: 6034 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 27 Data size: 4565 Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: count(VALUE._col0)
             keys: KEY._col0 (type: string)
             mode: mergepartial
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 287 Data size: 3011 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
             Mux Operator
-              Statistics: Num rows: 862 Data size: 9045 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 29 Data size: 4755 Basic stats: COMPLETE Column stats: COMPLETE
               Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -298,16 +316,16 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Statistics: Num rows: 31 Data size: 5230 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Statistics: Num rows: 31 Data size: 5230 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Mux Operator
-            Statistics: Num rows: 862 Data size: 9045 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 29 Data size: 4755 Basic stats: COMPLETE Column stats: COMPLETE
             Join Operator
               condition map:
                    Inner Join 0 to 1
@@ -315,10 +333,10 @@ STAGE PLANS:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Statistics: Num rows: 31 Data size: 5230 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Statistics: Num rows: 31 Data size: 5230 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -365,13 +383,7 @@ POSTHOOK: Input: default@src1
 406	4	406	val_406
 66	1	66	val_66
 98	2	98	val_98
-PREHOOK: query: -- Without correlation optimizer, we will have 3 MR jobs.
--- The first one is a MapJoin and Aggregation (in the Reduce Phase).
--- The second one is another MapJoin. The third one is for ordering.
--- With the correlation optimizer, right now, we have
--- 1 MR jobs, evaluatinf the sub-query xx and the join of
--- xx and yy.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src x JOIN src1 y ON (x.key = y.key)
@@ -379,13 +391,10 @@ FROM (SELECT x.key AS key, count(1) AS cnt
 JOIN src1 yy
 ON xx.key=yy.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Without correlation optimizer, we will have 3 MR jobs.
--- The first one is a MapJoin and Aggregation (in the Reduce Phase).
--- The second one is another MapJoin. The third one is for ordering.
--- With the correlation optimizer, right now, we have
--- 1 MR jobs, evaluatinf the sub-query xx and the join of
--- xx and yy.
-EXPLAIN
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src x JOIN src1 y ON (x.key = y.key)
@@ -393,6 +402,9 @@ FROM (SELECT x.key AS key, count(1) AS cnt
 JOIN src1 yy
 ON xx.key=yy.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-9 is a root stage
   Stage-2 depends on stages: Stage-9
@@ -404,21 +416,22 @@ STAGE PLANS:
   Stage: Stage-9
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_0:$hdt$_1:y 
+        $hdt$_0:$hdt$_1:y 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_0:$hdt$_1:y 
+        $hdt$_0:$hdt$_1:y 
           TableScan
             alias: y
-            Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: string)
@@ -429,14 +442,15 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -444,19 +458,21 @@ STAGE PLANS:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
                   outputColumnNames: _col0
-                  Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 39 Data size: 3393 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count()
                     keys: _col0 (type: string)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: bigint)
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -465,7 +481,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -483,14 +499,15 @@ STAGE PLANS:
         $hdt$_1:yy 
           TableScan
             alias: yy
-            Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: string)
@@ -507,14 +524,15 @@ STAGE PLANS:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 810 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 810 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
 
@@ -567,6 +585,9 @@ FROM (SELECT x.key AS key, count(1) AS cnt
 JOIN src1 yy
 ON xx.key=yy.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt
@@ -575,6 +596,9 @@ FROM (SELECT x.key AS key, count(1) AS cnt
 JOIN src1 yy
 ON xx.key=yy.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-6 is a root stage
   Stage-2 depends on stages: Stage-6
@@ -584,21 +608,22 @@ STAGE PLANS:
   Stage: Stage-6
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_0:$hdt$_1:y 
+        $hdt$_0:$hdt$_1:y 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_0:$hdt$_1:y 
+        $hdt$_0:$hdt$_1:y 
           TableScan
             alias: y
-            Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: string)
@@ -609,30 +634,32 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: yy
-            Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: string)
           TableScan
             alias: x
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -640,32 +667,33 @@ STAGE PLANS:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
                   outputColumnNames: _col0
-                  Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 39 Data size: 3393 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count()
                     keys: _col0 (type: string)
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: bigint)
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
         Demux Operator
-          Statistics: Num rows: 575 Data size: 6034 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 27 Data size: 4565 Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: count(VALUE._col0)
             keys: KEY._col0 (type: string)
             mode: mergepartial
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 287 Data size: 3011 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
             Mux Operator
-              Statistics: Num rows: 862 Data size: 9045 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 29 Data size: 4755 Basic stats: COMPLETE Column stats: COMPLETE
               Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -673,16 +701,16 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Statistics: Num rows: 31 Data size: 5230 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Statistics: Num rows: 31 Data size: 5230 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Mux Operator
-            Statistics: Num rows: 862 Data size: 9045 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 29 Data size: 4755 Basic stats: COMPLETE Column stats: COMPLETE
             Join Operator
               condition map:
                    Inner Join 0 to 1
@@ -690,10 +718,10 @@ STAGE PLANS:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Statistics: Num rows: 31 Data size: 5230 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Statistics: Num rows: 31 Data size: 5230 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

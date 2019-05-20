@@ -11,6 +11,8 @@ least(v1, v2, ...) - Returns the least value in a list of values
 Example:
   > SELECT least(2, 3, 1) FROM src LIMIT 1;
   1
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFLeast
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN
 SELECT LEAST('a', 'b', 'c'),
        LEAST('C', 'a', 'B'),
@@ -28,6 +30,8 @@ SELECT LEAST('a', 'b', 'c'),
        LEAST(cast(null as string), null, null)
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT LEAST('a', 'b', 'c'),
        LEAST('C', 'a', 'B'),
@@ -45,6 +49,8 @@ SELECT LEAST('a', 'b', 'c'),
        LEAST(cast(null as string), null, null)
 FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

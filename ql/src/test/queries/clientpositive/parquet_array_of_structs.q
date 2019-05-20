@@ -1,3 +1,5 @@
+set hive.vectorized.execution.enabled=false;
+
 -- this test creates a Parquet table with an array of structs
 
 CREATE TABLE parquet_array_of_structs (

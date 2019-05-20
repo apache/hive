@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,13 +21,14 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringToLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastDoubleToLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastTimestampToLong;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.lazy.LazyByte;
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.io.BooleanWritable;
@@ -42,7 +43,7 @@ import org.apache.hadoop.io.Text;
  *
  */
 @VectorizedExpressions({CastTimestampToLong.class, CastDoubleToLong.class,
-    CastDecimalToLong.class})
+    CastDecimalToLong.class, CastStringToLong.class})
 public class UDFToByte extends UDF {
   private final ByteWritable byteWritable = new ByteWritable();
 
@@ -171,7 +172,7 @@ public class UDFToByte extends UDF {
           return null;
         }
       try {
-        byteWritable.set(LazyByte.parseByte(i.getBytes(), 0, i.getLength(), 10));
+        byteWritable.set(LazyByte.parseByte(i.getBytes(), 0, i.getLength(), 10, true));
         return byteWritable;
       } catch (NumberFormatException e) {
         // MySQL returns 0 if the string is not a well-formed numeric value.
@@ -182,20 +183,25 @@ public class UDFToByte extends UDF {
     }
   }
 
-  public ByteWritable evaluate(TimestampWritable i) {
+  public ByteWritable evaluate(TimestampWritableV2 i) {
     if (i == null) {
       return null;
     } else {
-      byteWritable.set((byte)i.getSeconds());
+      final long longValue = i.getSeconds();
+      final byte byteValue = (byte) longValue;
+      if (byteValue != longValue) {
+        return null;
+      }
+      byteWritable.set(byteValue);
       return byteWritable;
     }
   }
 
   public ByteWritable evaluate(HiveDecimalWritable i) {
-    if (i == null) {
+    if (i == null || !i.isSet() || !i.isByte()) {
       return null;
     } else {
-      byteWritable.set(i.getHiveDecimal().byteValue());
+      byteWritable.set(i.byteValue());
       return byteWritable;
     }
   }

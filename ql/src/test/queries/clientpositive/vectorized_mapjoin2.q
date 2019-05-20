@@ -15,7 +15,7 @@ create temporary table y (b int) stored as orc;
 insert into x values(1);
 insert into y values(1);
 
-explain
+explain vectorization expression
 select count(1) from x, y where a = b;
 
 select count(1) from x, y where a = b;

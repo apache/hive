@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -39,7 +39,13 @@ public class TestVectorRowObject extends TestCase {
       vectorExtractRow.extractRow(batch, i, row);
       Object[] expectedRow = randomRows[firstRandomRowIndex + i];
       for (int c = 0; c < rowSize; c++) {
-        if (!row[c].equals(expectedRow[c])) {
+        Object actualValue = row[c];
+        Object expectedValue = expectedRow[c];
+        if (actualValue == null || expectedValue == null) {
+          if (actualValue != expectedValue) {
+            fail("Row " + (firstRandomRowIndex + i) + " and column " + c + " mismatch");
+          }
+        } else if (!actualValue.equals(expectedValue)) {
           fail("Row " + (firstRandomRowIndex + i) + " and column " + c + " mismatch");
         }
       }
@@ -51,7 +57,9 @@ public class TestVectorRowObject extends TestCase {
     String[] emptyScratchTypeNames = new String[0];
 
     VectorRandomRowSource source = new VectorRandomRowSource();
-    source.init(r);
+
+    source.init(r, VectorRandomRowSource.SupportedTypes.ALL, 4,
+        /* allowNulls */ true, /* isUnicodeOk */ true);
 
     VectorizedRowBatchCtx batchContext = new VectorizedRowBatchCtx();
     batchContext.init(source.rowStructObjectInspector(), emptyScratchTypeNames);
@@ -69,7 +77,7 @@ public class TestVectorRowObject extends TestCase {
     VectorExtractRow vectorExtractRow = new VectorExtractRow();
     vectorExtractRow.init(source.typeNames());
 
-    Object[][] randomRows = source.randomRows(10000);
+    Object[][] randomRows = source.randomRows(1000);
     if (sort) {
       source.sort(randomRows);
     }

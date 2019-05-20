@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncBRoundWithNumDigits
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncBRoundDecimalToDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncBRoundDoubleToDouble;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 @Description(name = "bround",
 value = "_FUNC_(x[, d]) - round x to d decimal places using HALF_EVEN rounding mode.",
@@ -37,8 +38,10 @@ extended = "Banker's rounding. The value is rounded to the nearest even number. 
 public class GenericUDFBRound extends GenericUDFRound {
 
   @Override
-  protected HiveDecimal round(HiveDecimal input, int scale) {
-    return RoundUtils.bround(input, scale);
+  protected HiveDecimalWritable round(HiveDecimalWritable inputDecWritable, int scale) {
+    HiveDecimalWritable result = new HiveDecimalWritable(inputDecWritable);
+    result.mutateSetScale(scale, HiveDecimal.ROUND_HALF_EVEN);
+    return result;
   }
 
   @Override

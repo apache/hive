@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -47,7 +47,7 @@ import javax.crypto.Mac;
  * A simple sleep processor implementation that sleeps for the configured
  * time in milliseconds.
  *
- * @see Config for configuring the HivePreWarmProcessor
+ * @see Configuration for configuring the HivePreWarmProcessor
  */
 public class HivePreWarmProcessor extends AbstractLogicalIOProcessor {
 
@@ -86,7 +86,7 @@ public class HivePreWarmProcessor extends AbstractLogicalIOProcessor {
     ReadaheadPool rpool = ReadaheadPool.getInstance();
     ShimLoader.getHadoopShims();
 
-    URL hiveurl = new URL("jar:"+DagUtils.getInstance().getExecJarPathLocal()+"!/");
+    URL hiveurl = new URL("jar:" + DagUtils.getInstance().getExecJarPathLocal(conf) + "!/");
     JarURLConnection hiveconn = (JarURLConnection)hiveurl.openConnection();
     JarFile hivejar = hiveconn.getJarFile();
     try {

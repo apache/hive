@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -116,7 +116,6 @@ public class UnparseTranslator {
       if (existingEntry.getValue().tokenStopIndex <= tokenStopIndex &&
             existingEntry.getKey() >= tokenStartIndex) {
         // Collect newer entry is if a super-set of existing entry,
-        assert (replacementText.contains(existingEntry.getValue().replacementText));
         subsetEntries.add(existingEntry.getKey());
         // check if the existing entry contains the new
       } else if (existingEntry.getValue().tokenStopIndex >= tokenStopIndex &&

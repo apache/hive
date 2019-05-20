@@ -1,3 +1,4 @@
+--! qt:dataset:src
 FROM src
 INSERT OVERWRITE TABLE dest1 SELECT src.* WHERE src.key < 100
 INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200

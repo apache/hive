@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -55,15 +55,15 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  *
  *  Without this optimization:
  *
- *  TS -> FIL -> SEL -> RS ->
- *                             JOIN -> SEL -> FS
- *  TS -> FIL -> SEL -> RS ->
+ *  TS -&gt; FIL -&gt; SEL -&gt; RS -&gt;
+ *                             JOIN -&gt; SEL -&gt; FS
+ *  TS -&gt; FIL -&gt; SEL -&gt; RS -&gt;
  *
  *  With this optimization
  *
- *  TS -> FIL -> RS ->
- *                      JOIN -> FS
- *  TS -> FIL -> RS ->
+ *  TS -&gt; FIL -&gt; RS -&gt;
+ *                      JOIN -&gt; FS
+ *  TS -&gt; FIL -&gt; RS -&gt;
  *
  *  Note absence of select operator after filter and after join operator.
  *  Also, see : identity_proj_remove.q

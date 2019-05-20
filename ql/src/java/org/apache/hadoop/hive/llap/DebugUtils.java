@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional debugrmation
@@ -24,6 +24,7 @@ package org.apache.hadoop.hive.llap;
  */
 public class DebugUtils {
   public static String toString(boolean[] a) {
+    if (a == null) return "null";
     StringBuilder b = new StringBuilder();
     b.append('[');
     for (int i = 0; i < a.length; ++i) {

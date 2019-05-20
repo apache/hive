@@ -1,5 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-select key from
+PREHOOK: query: select key from
 (
 select key from src
 union all
@@ -10,8 +9,7 @@ select key from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-select key from
+POSTHOOK: query: select key from
 (
 select key from src
 union all

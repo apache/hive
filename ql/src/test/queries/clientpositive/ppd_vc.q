@@ -1,3 +1,5 @@
+--! qt:dataset:srcpart
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 --HIVE-3926 PPD on virtual column of partitioned table is not working
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -33,6 +33,11 @@ public class ObjectCacheWrapper implements ObjectCache {
   @Override
   public void release(String key) {
     globalCache.release(makeKey(key));
+  }
+
+  @Override
+  public <T> T retrieve(String key) throws HiveException {
+    return globalCache.retrieve(makeKey(key));
   }
 
   @Override

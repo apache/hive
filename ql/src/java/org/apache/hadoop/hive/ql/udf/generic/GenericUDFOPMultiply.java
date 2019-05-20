@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -34,11 +34,17 @@ import org.apache.hadoop.io.LongWritable;
 
 @Description(name = "*", value = "a _FUNC_ b - Multiplies a by b")
 @VectorizedExpressions({LongColMultiplyLongColumn.class, LongColMultiplyDoubleColumn.class,
+    LongColMultiplyLongColumnChecked.class, LongColMultiplyDoubleColumnChecked.class,
   DoubleColMultiplyLongColumn.class, DoubleColMultiplyDoubleColumn.class,
+    DoubleColMultiplyLongColumnChecked.class, DoubleColMultiplyDoubleColumnChecked.class,
   LongColMultiplyLongScalar.class, LongColMultiplyDoubleScalar.class,
+    LongColMultiplyLongScalarChecked.class, LongColMultiplyDoubleScalarChecked.class,
   DoubleColMultiplyLongScalar.class, DoubleColMultiplyDoubleScalar.class,
+    DoubleColMultiplyLongScalarChecked.class, DoubleColMultiplyDoubleScalarChecked.class,
   LongScalarMultiplyLongColumn.class, LongScalarMultiplyDoubleColumn.class,
+    LongScalarMultiplyLongColumnChecked.class, LongScalarMultiplyDoubleColumnChecked.class,
   DoubleScalarMultiplyLongColumn.class, DoubleScalarMultiplyDoubleColumn.class,
+    DoubleScalarMultiplyLongColumnChecked.class, DoubleScalarMultiplyDoubleColumnChecked.class,
   DecimalColMultiplyDecimalColumn.class, DecimalColMultiplyDecimalScalar.class,
   DecimalScalarMultiplyDecimalColumn.class})
 public class GenericUDFOPMultiply extends GenericUDFBaseNumeric {
@@ -98,9 +104,13 @@ public class GenericUDFOPMultiply extends GenericUDFBaseNumeric {
 
   @Override
   protected DecimalTypeInfo deriveResultDecimalTypeInfo(int prec1, int scale1, int prec2, int scale2) {
-    int scale = Math.min(HiveDecimal.MAX_SCALE, scale1 + scale2 );
-    int prec = Math.min(HiveDecimal.MAX_PRECISION, prec1 + prec2 + 1);
-    return TypeInfoFactory.getDecimalTypeInfo(prec, scale);
+    // From https://msdn.microsoft.com/en-us/library/ms190476.aspx
+    // e1 * e2
+    // Precision: p1 + p2 + 1
+    // Scale: s1 + s2
+    int scale = scale1 + scale2;
+    int prec = prec1 + prec2 + 1;
+    return adjustPrecScale(prec, scale);
   }
 
 }

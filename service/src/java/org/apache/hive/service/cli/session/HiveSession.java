@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hive.service.auth.HiveAuthFactory;
@@ -183,7 +184,14 @@ public interface HiveSession extends HiveSessionBase {
 	      String primarySchema, String primaryTable, String foreignCatalog,
 	      String foreignSchema, String foreignTable) 
     throws HiveSQLException;
-  
+
+  /**
+   *
+   * @return
+   * @throws HiveSQLException
+   */
+  HiveConf getSessionConf() throws HiveSQLException;
+
   /**
    * close the session
    * @throws HiveSQLException
@@ -191,6 +199,8 @@ public interface HiveSession extends HiveSessionBase {
   void close() throws HiveSQLException;
 
   void cancelOperation(OperationHandle opHandle) throws HiveSQLException;
+
+  void updateQueryTag(String queryId, String queryTag) throws HiveSQLException;
 
   void closeOperation(OperationHandle opHandle) throws HiveSQLException;
 
@@ -214,4 +224,6 @@ public interface HiveSession extends HiveSessionBase {
   long getNoOperationTime();
 
   Future<?> submitBackgroundOperation(Runnable work);
+
+  void setApplicationName(String value);
 }

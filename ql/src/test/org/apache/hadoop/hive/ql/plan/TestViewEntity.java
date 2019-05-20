@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,14 +24,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.parse.AbstractSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.TestReadEntityDirect.CheckInputReadEntityDirect;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -68,7 +66,6 @@ public class TestViewEntity {
         .setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     SessionState.start(conf);
     driver = new Driver(conf);
-    driver.init();
   }
 
   @AfterClass
@@ -141,6 +138,91 @@ public class TestViewEntity {
 
   }
 
+
+  /**
+   * Verify that the parent entities are captured correctly for view in subquery with WHERE
+   * subquery referencing a view. Optimizer: Cost-based
+   * @throws Exception
+   */
+  @Test
+  public void testViewInSubQueryWithWhereClauseCbo() throws Exception {
+    driver.getConf().setBoolVar(HiveConf.ConfVars.HIVE_CBO_ENABLED, true);
+    testViewInSubQueryWithWhereClause();
+  }
+
+  /**
+   * Verify that the parent entities are captured correctly for view in subquery with WHERE
+   * subquery referencing a view. Optimizer: Rule-based
+   *
+   * @throws Exception
+   */
+  @Test
+  public void testViewInSubQueryWithWhereClauseRbo() throws Exception {
+    driver.getConf().setBoolVar(HiveConf.ConfVars.HIVE_CBO_ENABLED, false);
+    testViewInSubQueryWithWhereClause();
+  }
+
+  private void testViewInSubQueryWithWhereClause() {
+    String prefix = "tvsubquerywithwhereclause" + NAME_PREFIX;
+    final String tab1 = prefix + "t";
+    final String view1 = prefix + "v";
+    final String view2 = prefix + "v2";
+    final String tab1row1 = "'x','y','z'";
+    final String tab1row2 = "'a','b','c'";
+
+    //drop all if exists
+    int ret = driver.run("drop table if exists " + tab1).getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+    ret = driver.run("drop view if exists " + view1).getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+    ret = driver.run("drop view if exists " + view2).getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+
+    //create tab1
+    ret = driver.run("create table " + tab1 + "(col1 string, col2 string, col3 string)")
+        .getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+    ret = driver.run("insert into " + tab1 + " values (" + tab1row1 + ")").getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+
+    //create view1
+    ret = driver.run("create view " + view1 + " as select " +
+        tab1 + ".col1, " + tab1 + ".col2, " + tab1 + ".col3 " +
+        " from " + tab1).getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+
+    ret = driver.run("insert into " + tab1 + " values (" + tab1row2 + ")").getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+
+    //create view2
+    ret = driver.run(
+        "create view " + view2 + " as select " +
+            tab1 + ".col1, " + tab1 + ".col2, " + tab1 + ".col3 " +
+            " from " + tab1 +
+            " where " + tab1 + ".col1 NOT IN (" +
+            "SELECT " + view1 + ".col1 FROM " + view1 + ")").getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+
+    //select from view2
+    driver.compile("select * from " + view2);
+
+    //verify that only view2 is direct input in above query
+    ReadEntity[] readEntities = CheckInputReadEntity.readEntities;
+    for (ReadEntity readEntity : readEntities) {
+      String name = readEntity.getName();
+      if (name.equals("default@" + tab1)) {
+        assertFalse("Table should not be direct input", readEntity.isDirect());
+      } else if (name.equals("default@" + view1)) {
+        assertFalse("View1 should not be direct input", readEntity.isDirect());
+      } else if (name.equals("default@" + view2)) {
+        assertTrue("View2 should be direct input", readEntity.isDirect());
+      } else {
+        fail("Unrecognized ReadEntity input");
+      }
+    }
+  }
+
+
   /**
    * Verify that the the query with the subquery inside a view will have the correct
    * direct and indirect inputs.
@@ -168,8 +250,45 @@ public class TestViewEntity {
     // table1 and view1 as second read entity
     assertEquals("default@" + view1, CheckInputReadEntity.readEntities[1].getName());
     assertFalse("Table is not direct input", CheckInputReadEntity.readEntities[1].isDirect());
+    Set<ReadEntity> parents = CheckInputReadEntity.readEntities[1].getParents();
+    assertTrue("Table does not have parent", parents != null && parents.size() > 0);
     assertEquals("default@" + tab1, CheckInputReadEntity.readEntities[2].getName());
     assertFalse("Table is not direct input", CheckInputReadEntity.readEntities[2].isDirect());
 
   }
+
+  /**
+   * Verify that the the query with the subquery inside a view will have the correct
+   * direct and indirect inputs.
+   * @throws Exception
+   */
+  @Test
+  public void testUnionAllInSubView() throws Exception {
+    String prefix = "tvunionallinsubview" + NAME_PREFIX;
+    final String tab1 = prefix + "t";
+    final String view1 = prefix + "v";
+    final String view2 = prefix + "v2";
+
+    int ret = driver.run("create table " + tab1 + "(id int)").getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+    ret = driver.run("create view " + view1 + " as select * from " + tab1).getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+
+    ret = driver.run("create view " + view2 + " as select * from (select * from " + view1 + " union all select * from " + view1 + ") x").getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+
+    driver.compile("select * from " + view2);
+    // view entity
+    assertEquals("default@" + view2, CheckInputReadEntity.readEntities[0].getName());
+
+    // table1 and view1 as second read entity
+    assertEquals("default@" + view1, CheckInputReadEntity.readEntities[1].getName());
+    assertFalse("Table is not direct input", CheckInputReadEntity.readEntities[1].isDirect());
+    Set<ReadEntity> parents = CheckInputReadEntity.readEntities[1].getParents();
+    assertTrue("Table does not have parent", parents != null && parents.size() > 0);
+    assertEquals("default@" + tab1, CheckInputReadEntity.readEntities[2].getName());
+    assertFalse("Table is not direct input", CheckInputReadEntity.readEntities[2].isDirect());
+
+  }
+
 }

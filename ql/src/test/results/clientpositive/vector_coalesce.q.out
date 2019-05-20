@@ -1,19 +1,23 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN SELECT cdouble, cstring1, cint, cfloat, csmallint, coalesce(cdouble, cstring1, cint, cfloat, csmallint) as c
+PREHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cdouble, cstring1, cint, cfloat, csmallint, coalesce(cdouble, cstring1, cint, cfloat, csmallint) as c
 FROM alltypesorc
 WHERE (cdouble IS NULL)
 ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN SELECT cdouble, cstring1, cint, cfloat, csmallint, coalesce(cdouble, cstring1, cint, cfloat, csmallint) as c
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cdouble, cstring1, cint, cfloat, csmallint, coalesce(cdouble, cstring1, cint, cfloat, csmallint) as c
 FROM alltypesorc
 WHERE (cdouble IS NULL)
 ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -22,43 +26,40 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Map Operator Tree:
-          TableScan
-            alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 1045942 Basic stats: COMPLETE Column stats: COMPLETE
-            Filter Operator
-              predicate: cdouble is null (type: boolean)
-              Statistics: Num rows: 3114 Data size: 265164 Basic stats: COMPLETE Column stats: COMPLETE
-              Select Operator
-                expressions: cstring1 (type: string), cint (type: int), cfloat (type: float), csmallint (type: smallint), COALESCE(null,cstring1,cint,cfloat,csmallint) (type: string)
-                outputColumnNames: _col1, _col2, _col3, _col4, _col5
-                Statistics: Num rows: 3114 Data size: 819540 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  key expressions: _col1 (type: string), _col2 (type: int), _col3 (type: float), _col4 (type: smallint), _col5 (type: string)
-                  sort order: +++++
-                  Statistics: Num rows: 3114 Data size: 819540 Basic stats: COMPLETE Column stats: COMPLETE
-                  TopN Hash Memory Usage: 0.1
+            TableScan Vectorization:
+                native: true
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: SelectColumnIsNull(col 5:double)
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [6, 2, 4, 1, 21]
+                    selectExpressions: IfExprColumnCondExpr(col 13:boolean, col 6:stringcol 20:string)(children: IsNotNull(col 6:string) -> 13:boolean, col 6:string, IfExprCondExprCondExpr(col 14:boolean, col 15:stringcol 19:string)(children: IsNotNull(col 2:int) -> 14:boolean, CastLongToString(col 2:int) -> 15:string, IfExprCondExprCondExpr(col 16:boolean, col 17:stringcol 18:string)(children: IsNotNull(col 4:float) -> 16:boolean, CastFloatToString(col 4:float) -> 17:string, CastLongToString(col 1:smallint) -> 18:string) -> 19:string) -> 20:string) -> 21:string
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkOperator
+                      native: false
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
-        Select Operator
-          expressions: null (type: double), KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: int), KEY.reducesinkkey2 (type: float), KEY.reducesinkkey3 (type: smallint), KEY.reducesinkkey4 (type: string)
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 3114 Data size: 246572 Basic stats: COMPLETE Column stats: COMPLETE
-          Limit
-            Number of rows: 10
-            Statistics: Num rows: 10 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 10 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
-      limit: 10
-      Processor Tree:
-        ListSink
 
 PREHOOK: query: SELECT cdouble, cstring1, cint, cfloat, csmallint, coalesce(cdouble, cstring1, cint, cfloat, csmallint) as c 
 FROM alltypesorc
@@ -76,28 +77,36 @@ LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-NULL	NULL	-413196097	-51.0	NULL	-413196097
-NULL	NULL	-413553449	11.0	NULL	-413553449
-NULL	NULL	-457224565	11.0	NULL	-457224565
-NULL	NULL	-591488718	-51.0	NULL	-591488718
-NULL	NULL	-656987896	8.0	NULL	-656987896
-NULL	NULL	-670908417	8.0	NULL	-670908417
-NULL	NULL	-738306196	-51.0	NULL	-738306196
-NULL	NULL	-819152895	8.0	NULL	-819152895
-NULL	NULL	-827212561	8.0	NULL	-827212561
-NULL	NULL	-949587513	11.0	NULL	-949587513
-PREHOOK: query: EXPLAIN SELECT ctinyint, cdouble, cint, coalesce(ctinyint+10, (cdouble+log2(cint)), 0) as c
+NULL	00MmJs1fiJp37y60mj4Ej8	-698191930	-51.0	NULL	00MmJs1fiJp37y60mj4Ej8
+NULL	00PafC7v	349566607	-51.0	NULL	00PafC7v
+NULL	00iT08	284688862	-51.0	NULL	00iT08
+NULL	00k3yt70n476d6UQA	-391432229	8.0	NULL	00k3yt70n476d6UQA
+NULL	014ILGhXxNY7g02hl0Xw	633097881	11.0	NULL	014ILGhXxNY7g02hl0Xw
+NULL	02VRbSC5I	551634127	8.0	NULL	02VRbSC5I
+NULL	02k5poW73QsWM	891702124	11.0	NULL	02k5poW73QsWM
+NULL	02v8WnLuYDos3Cq	-648704945	8.0	NULL	02v8WnLuYDos3Cq
+NULL	02vDyIVT752	388584379	11.0	NULL	02vDyIVT752
+NULL	0333uXvwB3ADRa4aP1h	336245146	8.0	NULL	0333uXvwB3ADRa4aP1h
+PREHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT ctinyint, cdouble, cint, coalesce(ctinyint+10, (cdouble+log2(cint)), 0) as c
 FROM alltypesorc
 WHERE (ctinyint IS NULL)
 ORDER BY ctinyint, cdouble, cint, c
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT ctinyint, cdouble, cint, coalesce(ctinyint+10, (cdouble+log2(cint)), 0) as c
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT ctinyint, cdouble, cint, coalesce(ctinyint+10, (cdouble+log2(cint)), 0) as c
 FROM alltypesorc
 WHERE (ctinyint IS NULL)
 ORDER BY ctinyint, cdouble, cint, c
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -106,43 +115,40 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Map Operator Tree:
-          TableScan
-            alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 146792 Basic stats: COMPLETE Column stats: COMPLETE
-            Filter Operator
-              predicate: ctinyint is null (type: boolean)
-              Statistics: Num rows: 3115 Data size: 37224 Basic stats: COMPLETE Column stats: COMPLETE
-              Select Operator
-                expressions: cdouble (type: double), cint (type: int), COALESCE(null,(cdouble + log2(cint)),0) (type: double)
-                outputColumnNames: _col1, _col2, _col3
-                Statistics: Num rows: 3115 Data size: 52844 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  key expressions: _col1 (type: double), _col2 (type: int), _col3 (type: double)
-                  sort order: +++
-                  Statistics: Num rows: 3115 Data size: 52844 Basic stats: COMPLETE Column stats: COMPLETE
-                  TopN Hash Memory Usage: 0.1
+            TableScan Vectorization:
+                native: true
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: SelectColumnIsNull(col 0:tinyint)
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [5, 2, 20]
+                    selectExpressions: IfExprCondExprCondExpr(col 16:boolean, col 18:doublecol 19:double)(children: ColAndCol(col 13:boolean, col 15:boolean)(children: IsNotNull(col 5:double) -> 13:boolean, IsNotNull(col 14:double)(children: FuncLog2LongToDouble(col 2:int) -> 14:double) -> 15:boolean) -> 16:boolean, DoubleColAddDoubleColumn(col 5:double, col 17:double)(children: FuncLog2LongToDouble(col 2:int) -> 17:double) -> 18:double, ConstantVectorExpression(val 0.0) -> 19:double) -> 20:double
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkOperator
+                      native: false
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
-        Select Operator
-          expressions: null (type: tinyint), KEY.reducesinkkey0 (type: double), KEY.reducesinkkey1 (type: int), KEY.reducesinkkey2 (type: double)
-          outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 3115 Data size: 27928 Basic stats: COMPLETE Column stats: COMPLETE
-          Limit
-            Number of rows: 10
-            Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
-      limit: 10
-      Processor Tree:
-        ListSink
 
 PREHOOK: query: SELECT ctinyint, cdouble, cint, coalesce(ctinyint+10, (cdouble+log2(cint)), 0) as c
 FROM alltypesorc
@@ -160,28 +166,36 @@ LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-NULL	NULL	-1015272448	0.0
-NULL	NULL	-609074876	0.0
-NULL	NULL	-700300206	0.0
-NULL	NULL	-726473298	0.0
-NULL	NULL	-738747840	0.0
-NULL	NULL	-838810013	0.0
-NULL	NULL	-850295959	0.0
-NULL	NULL	-886426182	0.0
-NULL	NULL	-899422227	0.0
-NULL	NULL	-971543377	0.0
-PREHOOK: query: EXPLAIN SELECT cfloat, cbigint, coalesce(cfloat, cbigint, 0) as c
+NULL	-16269.0	-378213344	0.0
+NULL	-16274.0	-671342269	0.0
+NULL	-16296.0	-146635689	0.0
+NULL	-16296.0	593429004	-16266.855499800256
+NULL	-16300.0	-860437234	0.0
+NULL	-16306.0	384405526	-16277.481946165259
+NULL	-16307.0	559926362	-16277.939338135451
+NULL	-16309.0	-826497289	0.0
+NULL	-16310.0	206154150	-16282.380851737113
+NULL	-16379.0	-894716315	0.0
+PREHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cfloat, cbigint, coalesce(cfloat, cbigint, 0) as c
 FROM alltypesorc
 WHERE (cfloat IS NULL AND cbigint IS NULL)
 ORDER BY cfloat, cbigint, c
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT cfloat, cbigint, coalesce(cfloat, cbigint, 0) as c
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cfloat, cbigint, coalesce(cfloat, cbigint, 0) as c
 FROM alltypesorc
 WHERE (cfloat IS NULL AND cbigint IS NULL)
 ORDER BY cfloat, cbigint, c
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -190,40 +204,36 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Map Operator Tree:
-          TableScan
-            alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 110088 Basic stats: COMPLETE Column stats: COMPLETE
-            Filter Operator
-              predicate: (cfloat is null and cbigint is null) (type: boolean)
-              Statistics: Num rows: 790 Data size: 7092 Basic stats: COMPLETE Column stats: COMPLETE
-              Select Operator
-                Statistics: Num rows: 790 Data size: 3172 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  sort order: 
-                  Statistics: Num rows: 790 Data size: 3172 Basic stats: COMPLETE Column stats: COMPLETE
-                  TopN Hash Memory Usage: 0.1
+            TableScan Vectorization:
+                native: true
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: FilterExprAndExpr(children: SelectColumnIsNull(col 4:float), SelectColumnIsNull(col 3:bigint))
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [13, 14, 15]
+                    selectExpressions: ConstantVectorExpression(val null) -> 13:float, ConstantVectorExpression(val null) -> 14:bigint, ConstantVectorExpression(val 0.0) -> 15:float
+                  Limit Vectorization:
+                      className: VectorLimitOperator
+                      native: true
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: null (type: float), null (type: bigint), 0.0 (type: float)
-          outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 790 Data size: 3172 Basic stats: COMPLETE Column stats: COMPLETE
-          Limit
-            Number of rows: 10
-            Statistics: Num rows: 10 Data size: 52 Basic stats: COMPLETE Column stats: COMPLETE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 10 Data size: 52 Basic stats: COMPLETE Column stats: COMPLETE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
 
   Stage: Stage-0
     Fetch Operator
-      limit: 10
-      Processor Tree:
-        ListSink
 
 PREHOOK: query: SELECT cfloat, cbigint, coalesce(cfloat, cbigint, 0) as c
 FROM alltypesorc
@@ -251,18 +261,26 @@ NULL	NULL	0.0
 NULL	NULL	0.0
 NULL	NULL	0.0
 NULL	NULL	0.0
-PREHOOK: query: EXPLAIN SELECT ctimestamp1, ctimestamp2, coalesce(ctimestamp1, ctimestamp2) as c
+PREHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT ctimestamp1, ctimestamp2, coalesce(ctimestamp1, ctimestamp2) as c
 FROM alltypesorc 
 WHERE ctimestamp1 IS NOT NULL OR ctimestamp2 IS NOT NULL
 ORDER BY ctimestamp1, ctimestamp2, c
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT ctimestamp1, ctimestamp2, coalesce(ctimestamp1, ctimestamp2) as c
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT ctimestamp1, ctimestamp2, coalesce(ctimestamp1, ctimestamp2) as c
 FROM alltypesorc 
 WHERE ctimestamp1 IS NOT NULL OR ctimestamp2 IS NOT NULL
 ORDER BY ctimestamp1, ctimestamp2, c
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -271,43 +289,40 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Map Operator Tree:
-          TableScan
-            alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 983040 Basic stats: COMPLETE Column stats: COMPLETE
-            Filter Operator
-              predicate: (ctimestamp1 is not null or ctimestamp2 is not null) (type: boolean)
-              Statistics: Num rows: 12288 Data size: 983040 Basic stats: COMPLETE Column stats: COMPLETE
-              Select Operator
-                expressions: ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), COALESCE(ctimestamp1,ctimestamp2) (type: timestamp)
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 12288 Data size: 1474560 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  key expressions: _col0 (type: timestamp), _col1 (type: timestamp), _col2 (type: timestamp)
-                  sort order: +++
-                  Statistics: Num rows: 12288 Data size: 1474560 Basic stats: COMPLETE Column stats: COMPLETE
-                  TopN Hash Memory Usage: 0.1
+            TableScan Vectorization:
+                native: true
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: FilterExprOrExpr(children: SelectColumnIsNotNull(col 8:timestamp), SelectColumnIsNotNull(col 9:timestamp))
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [8, 9, 14]
+                    selectExpressions: IfExprTimestampColumnColumn(col 13:boolean, col 8:timestampcol 9:timestamp)(children: IsNotNull(col 8:timestamp) -> 13:boolean) -> 14:timestamp
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkOperator
+                      native: false
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: timestamp), KEY.reducesinkkey1 (type: timestamp), KEY.reducesinkkey2 (type: timestamp)
-          outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 12288 Data size: 1474560 Basic stats: COMPLETE Column stats: COMPLETE
-          Limit
-            Number of rows: 10
-            Statistics: Num rows: 10 Data size: 1200 Basic stats: COMPLETE Column stats: COMPLETE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 10 Data size: 1200 Basic stats: COMPLETE Column stats: COMPLETE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
-      limit: 10
-      Processor Tree:
-        ListSink
 
 PREHOOK: query: SELECT ctimestamp1, ctimestamp2, coalesce(ctimestamp1, ctimestamp2) as c
 FROM alltypesorc 
@@ -325,28 +340,36 @@ LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-NULL	1969-12-31 15:59:30.929	1969-12-31 15:59:30.929
-NULL	1969-12-31 15:59:30.929	1969-12-31 15:59:30.929
-NULL	1969-12-31 15:59:30.929	1969-12-31 15:59:30.929
-NULL	1969-12-31 15:59:43.63	1969-12-31 15:59:43.63
-NULL	1969-12-31 15:59:43.658	1969-12-31 15:59:43.658
-NULL	1969-12-31 15:59:43.672	1969-12-31 15:59:43.672
-NULL	1969-12-31 15:59:43.684	1969-12-31 15:59:43.684
-NULL	1969-12-31 15:59:43.703	1969-12-31 15:59:43.703
-NULL	1969-12-31 15:59:43.704	1969-12-31 15:59:43.704
-NULL	1969-12-31 15:59:43.709	1969-12-31 15:59:43.709
-PREHOOK: query: EXPLAIN SELECT cfloat, cbigint, coalesce(cfloat, cbigint) as c
+1969-12-31 15:59:30.929	1969-12-31 15:59:55.451	1969-12-31 15:59:30.929
+1969-12-31 15:59:30.929	1969-12-31 15:59:55.451	1969-12-31 15:59:30.929
+1969-12-31 15:59:30.929	1969-12-31 15:59:58.174	1969-12-31 15:59:30.929
+1969-12-31 15:59:30.929	1969-12-31 15:59:58.456	1969-12-31 15:59:30.929
+1969-12-31 15:59:43.619	1969-12-31 16:00:14.793	1969-12-31 15:59:43.619
+1969-12-31 15:59:43.627	1969-12-31 16:00:03.679	1969-12-31 15:59:43.627
+1969-12-31 15:59:43.628	1969-12-31 15:59:55.451	1969-12-31 15:59:43.628
+1969-12-31 15:59:43.631	1969-12-31 16:00:06.612	1969-12-31 15:59:43.631
+1969-12-31 15:59:43.637	1969-12-31 15:59:58.174	1969-12-31 15:59:43.637
+1969-12-31 15:59:43.64	1969-12-31 15:59:58.174	1969-12-31 15:59:43.64
+PREHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cfloat, cbigint, coalesce(cfloat, cbigint) as c
 FROM alltypesorc
 WHERE (cfloat IS NULL AND cbigint IS NULL)
 ORDER BY cfloat, cbigint, c
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT cfloat, cbigint, coalesce(cfloat, cbigint) as c
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cfloat, cbigint, coalesce(cfloat, cbigint) as c
 FROM alltypesorc
 WHERE (cfloat IS NULL AND cbigint IS NULL)
 ORDER BY cfloat, cbigint, c
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -355,40 +378,36 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Map Operator Tree:
-          TableScan
-            alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 110088 Basic stats: COMPLETE Column stats: COMPLETE
-            Filter Operator
-              predicate: (cfloat is null and cbigint is null) (type: boolean)
-              Statistics: Num rows: 790 Data size: 7092 Basic stats: COMPLETE Column stats: COMPLETE
-              Select Operator
-                Statistics: Num rows: 790 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  sort order: 
-                  Statistics: Num rows: 790 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                  TopN Hash Memory Usage: 0.1
+            TableScan Vectorization:
+                native: true
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: FilterExprAndExpr(children: SelectColumnIsNull(col 4:float), SelectColumnIsNull(col 3:bigint))
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [13, 14, 15]
+                    selectExpressions: ConstantVectorExpression(val null) -> 13:float, ConstantVectorExpression(val null) -> 14:bigint, ConstantVectorExpression(val null) -> 15:float
+                  Limit Vectorization:
+                      className: VectorLimitOperator
+                      native: true
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: null (type: float), null (type: bigint), null (type: float)
-          outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 790 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-          Limit
-            Number of rows: 10
-            Statistics: Num rows: 10 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 10 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
 
   Stage: Stage-0
     Fetch Operator
-      limit: 10
-      Processor Tree:
-        ListSink
 
 PREHOOK: query: SELECT cfloat, cbigint, coalesce(cfloat, cbigint) as c
 FROM alltypesorc
@@ -416,16 +435,24 @@ NULL	NULL	NULL
 NULL	NULL	NULL
 NULL	NULL	NULL
 NULL	NULL	NULL
-PREHOOK: query: EXPLAIN SELECT cbigint, ctinyint, coalesce(cbigint, ctinyint) as c
+PREHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cbigint, ctinyint, coalesce(cbigint, ctinyint) as c
 FROM alltypesorc
 WHERE cbigint IS NULL
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT cbigint, ctinyint, coalesce(cbigint, ctinyint) as c
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cbigint, ctinyint, coalesce(cbigint, ctinyint) as c
 FROM alltypesorc
 WHERE cbigint IS NULL
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -434,33 +461,36 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Map Operator Tree:
-          TableScan
-            alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 110088 Basic stats: COMPLETE Column stats: COMPLETE
-            Filter Operator
-              predicate: cbigint is null (type: boolean)
-              Statistics: Num rows: 3115 Data size: 27912 Basic stats: COMPLETE Column stats: COMPLETE
-              Select Operator
-                expressions: null (type: bigint), ctinyint (type: tinyint), COALESCE(null,ctinyint) (type: tinyint)
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 3115 Data size: 21772 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 10
-                  Statistics: Num rows: 10 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 10 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            TableScan Vectorization:
+                native: true
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: SelectColumnIsNull(col 3:bigint)
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [13, 0, 0]
+                    selectExpressions: ConstantVectorExpression(val null) -> 13:bigint
+                  Limit Vectorization:
+                      className: VectorLimitOperator
+                      native: true
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
 
   Stage: Stage-0
     Fetch Operator
-      limit: 10
-      Processor Tree:
-        ListSink
 
 PREHOOK: query: SELECT cbigint, ctinyint, coalesce(cbigint, ctinyint) as c
 FROM alltypesorc

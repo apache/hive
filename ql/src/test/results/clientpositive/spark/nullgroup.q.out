@@ -1,9 +1,13 @@
 PREHOOK: query: explain
 select count(1) from src x where x.key > 9999
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(1) from src x where x.key > 9999
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -19,14 +23,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
+                  filterExpr: (UDFToDouble(key) > 9999.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(key) > 9999.0) (type: boolean)
+                    predicate: (UDFToDouble(key) > 9999.0D) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
-                        aggregations: count(1)
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -67,9 +73,13 @@ POSTHOOK: Input: default@src
 PREHOOK: query: explain
 select count(1) from src x where x.key > 9999
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(1) from src x where x.key > 9999
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -85,14 +95,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
+                  filterExpr: (UDFToDouble(key) > 9999.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(key) > 9999.0) (type: boolean)
+                    predicate: (UDFToDouble(key) > 9999.0D) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
-                        aggregations: count(1)
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -133,9 +145,13 @@ POSTHOOK: Input: default@src
 PREHOOK: query: explain
 select count(1) from src x where x.key > 9999
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(1) from src x where x.key > 9999
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -152,9 +168,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
+                  filterExpr: (UDFToDouble(key) > 9999.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(key) > 9999.0) (type: boolean)
+                    predicate: (UDFToDouble(key) > 9999.0D) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
@@ -165,7 +182,7 @@ STAGE PLANS:
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 mode: partial1
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -206,9 +223,13 @@ POSTHOOK: Input: default@src
 PREHOOK: query: explain
 select count(1) from src x where x.key > 9999
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(1) from src x where x.key > 9999
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -224,9 +245,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
+                  filterExpr: (UDFToDouble(key) > 9999.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(key) > 9999.0) (type: boolean)
+                    predicate: (UDFToDouble(key) > 9999.0D) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
@@ -236,7 +258,7 @@ STAGE PLANS:
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 mode: complete
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE

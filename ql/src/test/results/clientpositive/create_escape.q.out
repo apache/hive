@@ -1,49 +1,49 @@
-PREHOOK: query: CREATE TABLE table1 (a STRING, b STRING)
+PREHOOK: query: CREATE TABLE table1_n6 (a STRING, b STRING)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' ESCAPED BY '\\'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table1
-POSTHOOK: query: CREATE TABLE table1 (a STRING, b STRING)
+PREHOOK: Output: default@table1_n6
+POSTHOOK: query: CREATE TABLE table1_n6 (a STRING, b STRING)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' ESCAPED BY '\\'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table1
-PREHOOK: query: DESCRIBE table1
+POSTHOOK: Output: default@table1_n6
+PREHOOK: query: DESCRIBE table1_n6
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table1
-POSTHOOK: query: DESCRIBE table1
+PREHOOK: Input: default@table1_n6
+POSTHOOK: query: DESCRIBE table1_n6
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n6
 a                   	string              	                    
 b                   	string              	                    
-PREHOOK: query: DESCRIBE EXTENDED table1
+PREHOOK: query: DESCRIBE EXTENDED table1_n6
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table1
-POSTHOOK: query: DESCRIBE EXTENDED table1
+PREHOOK: Input: default@table1_n6
+POSTHOOK: query: DESCRIBE EXTENDED table1_n6
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n6
 a                   	string              	                    
 b                   	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: INSERT OVERWRITE TABLE table1 SELECT key, '\\\t\\' FROM src WHERE key = 86
+PREHOOK: query: INSERT OVERWRITE TABLE table1_n6 SELECT key, '\\\t\\' FROM src WHERE key = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@table1
-POSTHOOK: query: INSERT OVERWRITE TABLE table1 SELECT key, '\\\t\\' FROM src WHERE key = 86
+PREHOOK: Output: default@table1_n6
+POSTHOOK: query: INSERT OVERWRITE TABLE table1_n6 SELECT key, '\\\t\\' FROM src WHERE key = 86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@table1
-POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: table1.b SIMPLE []
-PREHOOK: query: SELECT * FROM table1
+POSTHOOK: Output: default@table1_n6
+POSTHOOK: Lineage: table1_n6.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table1_n6.b SIMPLE []
+PREHOOK: query: SELECT * FROM table1_n6
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n6
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM table1
+POSTHOOK: query: SELECT * FROM table1_n6
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n6
 #### A masked pattern was here ####
 86	\	\

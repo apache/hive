@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -45,9 +45,10 @@ import jline.Terminal;
 import jline.TerminalFactory;
 import jline.console.completer.Completer;
 import jline.console.completer.StringsCompleter;
+import jline.console.history.MemoryHistory;
 import org.apache.hadoop.hive.conf.HiveConf;
 
-class BeeLineOpts implements Completer {
+public class BeeLineOpts implements Completer {
   public static final int DEFAULT_MAX_WIDTH = 80;
   public static final int DEFAULT_MAX_HEIGHT = 80;
   public static final int DEFAULT_HEADER_INTERVAL = 100;
@@ -60,14 +61,16 @@ class BeeLineOpts implements Completer {
   public static final char DEFAULT_DELIMITER_FOR_DSV = '|';
   public static final int DEFAULT_MAX_COLUMN_WIDTH = 50;
   public static final int DEFAULT_INCREMENTAL_BUFFER_ROWS = 1000;
+  public static final String DEFAULT_DELIMITER = ";";
 
-  public static String URL_ENV_PREFIX = "BEELINE_URL_";
+  public static final String URL_ENV_PREFIX = "BEELINE_URL_";
 
   private final BeeLine beeLine;
   private boolean autosave = false;
   private boolean silent = false;
   private boolean color = false;
   private boolean showHeader = true;
+  private boolean escapeCRLF = false;
   private boolean showDbInPrompt = false;
   private int headerInterval = 100;
   private boolean fastConnect = true;
@@ -75,6 +78,7 @@ class BeeLineOpts implements Completer {
   private boolean verbose = false;
   private boolean force = false;
   private boolean incremental = true;
+  private boolean convertBinaryArrayToString = true;
   private int incrementalBufferRows = DEFAULT_INCREMENTAL_BUFFER_ROWS;
   private boolean showWarnings = false;
   private boolean showNestedErrs = false;
@@ -92,7 +96,6 @@ class BeeLineOpts implements Completer {
   private HiveConf conf;
   private boolean trimScripts = true;
   private boolean allowMultiLineCommand = true;
-  private boolean showConnectedUrl = false;
 
   //This can be set for old behavior of nulls printed as empty strings
   private boolean nullEmptyString = false;
@@ -101,6 +104,7 @@ class BeeLineOpts implements Completer {
 
   private final File rcFile = new File(saveDir(), "beeline.properties");
   private String historyFile = new File(saveDir(), "history").getAbsolutePath();
+  private int maxHistoryRows = MemoryHistory.DEFAULT_MAX_SIZE;
 
   private String scriptFile = null;
   private String[] initFiles = null;
@@ -110,10 +114,13 @@ class BeeLineOpts implements Completer {
   private Map<String, String> hiveVariables = new HashMap<String, String>();
   private Map<String, String> hiveConfVariables = new HashMap<String, String>();
   private boolean helpAsked;
+  private boolean beelineSiteUrlsAsked;
 
   private String lastConnectedUrl = null;
 
   private TreeSet<String> cachedPropertyNameSet = null;
+
+  private String delimiter = DEFAULT_DELIMITER;
 
   @Retention(RetentionPolicy.RUNTIME)
   public @interface Ignore {
@@ -384,6 +391,14 @@ class BeeLineOpts implements Completer {
     return numberFormat;
   }
 
+  public void setConvertBinaryArrayToString(boolean convert) {
+    this.convertBinaryArrayToString = convert;
+  }
+
+  public boolean getConvertBinaryArrayToString() {
+    return this.convertBinaryArrayToString;
+  }
+
   public void setMaxWidth(int maxWidth) {
     this.maxWidth = maxWidth;
   }
@@ -432,6 +447,17 @@ class BeeLineOpts implements Completer {
     return historyFile;
   }
 
+  /**
+   * @param numRows - the number of rows to store in history file
+   */
+  public void setMaxHistoryRows(int numRows) {
+    this.maxHistoryRows = numRows;
+  }
+
+  public int getMaxHistoryRows() {
+    return maxHistoryRows;
+  }
+
   public void setScriptFile(String scriptFile) {
     this.scriptFile = scriptFile;
   }
@@ -468,6 +494,22 @@ class BeeLineOpts implements Completer {
       HiveConf conf = beeLine.getCommands().getHiveConf(true);
       header = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CLI_PRINT_HEADER);
       return header;
+    }
+  }
+
+  public void setEscapeCRLF(boolean escapeCRLF) {
+    this.escapeCRLF = escapeCRLF;
+  }
+
+  public boolean getEscapeCRLF() {
+    if (beeLine.isBeeLine()) {
+      return escapeCRLF;
+    } else { //hive cli
+      if(conf != null) {
+        return HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CLI_PRINT_ESCAPE_CRLF);
+      } else {
+        return false;
+      }
     }
   }
 
@@ -535,14 +577,6 @@ class BeeLineOpts implements Completer {
 
   public boolean getAutosave() {
     return autosave;
-  }
-
-  public boolean getShowConnectedUrl() {
-    return showConnectedUrl;
-  }
-
-  public void setShowConnectedUrl(boolean showConnectedUrl) {
-    this.showConnectedUrl = showConnectedUrl;
   }
 
   public void setOutputFormat(String outputFormat) {
@@ -646,13 +680,30 @@ class BeeLineOpts implements Completer {
   public boolean isHelpAsked() {
     return helpAsked;
   }
+  
+  public void setBeelineSiteUrlsAsked(boolean beelineSiteUrlsAsked) {
+    this.beelineSiteUrlsAsked = beelineSiteUrlsAsked;
+  }
 
+  public boolean isBeelineSiteUrlsAsked() {
+    return beelineSiteUrlsAsked;
+  }
+
+  
   public String getLastConnectedUrl(){
     return lastConnectedUrl;
   }
 
   public void setLastConnectedUrl(String lastConnectedUrl){
     this.lastConnectedUrl = lastConnectedUrl;
+  }
+
+  public String getDelimiter() {
+    return this.delimiter;
+  }
+
+  public void setDelimiter(String delimiter) {
+    this.delimiter = delimiter;
   }
 
   @Ignore

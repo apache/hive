@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,13 +22,12 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
  * Returns the date that is num_days before start_date.
  */
 public class VectorUDFDateSubColCol extends VectorUDFDateAddColCol {
-  public VectorUDFDateSubColCol(int colNum1, int colNum2, int outputColumn) {
-    super(colNum1, colNum2, outputColumn);
+  public VectorUDFDateSubColCol(int colNum1, int colNum2, int outputColumnNum) {
+    super(colNum1, colNum2, outputColumnNum);
     isPositive = false;
   }
 
   public VectorUDFDateSubColCol() {
     super();
-    isPositive = false;
   }
 }

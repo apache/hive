@@ -25,13 +25,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.Test;
 
 public class TestWarehousePartitionHelper {
 
-  private static final Configuration CONFIGURATION = new Configuration();
+  private static final HiveConf CONFIGURATION = new HiveConf();
   private static final Path TABLE_PATH = new Path("table");
   
   private static final List<String> UNPARTITIONED_COLUMNS = Collections.emptyList();

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -73,7 +73,7 @@ public class TestIUD {
         "(tok_tabname src) " +
         "(tok_where " +
           "(and " +
-            "(tok_function tok_isnotnull (tok_table_or_col key)) " +
+            "(tok_function isnotnull (tok_table_or_col key)) " +
             "(< (. (tok_table_or_col src) value) 0))))",
       ast.toStringTree());
   }
@@ -110,7 +110,7 @@ public class TestIUD {
         "(tok_set_columns_clause " +
           "(= " +
             "(tok_table_or_col key) 3)) " +
-        "(tok_where (tok_function tok_isnull (tok_table_or_col value))))",
+        "(tok_where (tok_function isnull (tok_table_or_col value))))",
       ast.toStringTree());
   }
   @Test
@@ -122,7 +122,7 @@ public class TestIUD {
         "(= (tok_table_or_col key) (+ (- 3) (% (* 5 9) 8))) " +
         "(= (tok_table_or_col val) (tok_function tok_int (+ 6.1 (tok_table_or_col c)))) " +
         "(= (tok_table_or_col d) (- (tok_table_or_col d) 1))) " +
-        "(tok_where (tok_function tok_isnull (tok_table_or_col value))))",
+        "(tok_where (tok_function isnull (tok_table_or_col value))))",
       ast.toStringTree());
   }
   @Test
@@ -150,7 +150,7 @@ public class TestIUD {
         "(tok_select " +
           "(tok_selexpr (. (tok_table_or_col pvs) viewtime)) " +
           "(tok_selexpr (. (tok_table_or_col pvs) userid))) " +
-        "(tok_where (tok_function tok_isnull (. (tok_table_or_col pvs) userid)))))",
+        "(tok_where (tok_function isnull (. (tok_table_or_col pvs) userid)))))",
       ast.toStringTree());
   }
   @Test
@@ -160,144 +160,10 @@ public class TestIUD {
       Assert.assertFalse("Expected ParseException", true);
     }
     catch(ParseException ex) {
-      Assert.assertEquals("Failure didn't match.", "line 1:23 missing EOF at '(' near 'values'",ex.getMessage());
+      Assert.assertEquals("Failure didn't match.",
+          "line 1:24 cannot recognize input near 'values' '(' '3' in joinSource",
+          ex.getMessage());
     }
-  }
-  @Test
-  public void testSelectStarFromVirtTable1Row() throws ParseException {
-    ASTNode ast = parse("select * from (values (3,4)) as vc(a,b)");
-    Assert.assertEquals("AST doesn't match",
-      "(tok_query " +
-        "(tok_from " +
-          "(tok_virtual_table " +
-            "(tok_virtual_tabref (tok_tabname vc) (tok_col_name a b)) " +
-            "(tok_values_table (tok_value_row 3 4)))) " +
-        "(tok_insert (tok_destination (tok_dir tok_tmp_file)) (tok_select (tok_selexpr tok_allcolref))))",
-      ast.toStringTree());
-  }
-  @Test
-  public void testSelectStarFromVirtTable2Row() throws ParseException {
-    ASTNode ast = parse("select * from (values (1,2),(3,4)) as vc(a,b)");
-    Assert.assertEquals("AST doesn't match",
-      "(tok_query " +
-        "(tok_from " +
-          "(tok_virtual_table " +
-            "(tok_virtual_tabref (tok_tabname vc) (tok_col_name a b)) " +
-            "(tok_values_table (tok_value_row 1 2) (tok_value_row 3 4)))) " +
-        "(tok_insert (tok_destination (tok_dir tok_tmp_file)) (tok_select (tok_selexpr tok_allcolref))))",
-      ast.toStringTree());
-  }
-  @Test
-  public void testSelectStarFromVirtTable2RowNamedProjections() throws ParseException {
-    ASTNode ast = parse("select a as c, b as d from (values (1,2),(3,4)) as vc(a,b)");
-    Assert.assertEquals("AST doesn't match",
-      "(tok_query " +
-        "(tok_from " +
-        "(tok_virtual_table " +
-          "(tok_virtual_tabref (tok_tabname vc) (tok_col_name a b)) " +
-          "(tok_values_table (tok_value_row 1 2) (tok_value_row 3 4)))) " +
-        "(tok_insert (tok_destination (tok_dir tok_tmp_file)) " +
-          "(tok_select (tok_selexpr (tok_table_or_col a) c) (tok_selexpr (tok_table_or_col b) d))))",
-      ast.toStringTree());
-  }
-  @Test
-  public void testInsertIntoTableAsSelectFromNamedVirtTable() throws ParseException {
-    ASTNode ast = parse("insert into page_view select a,b as c from (values (1,2),(3,4)) as vc(a,b) where b = 9");
-    Assert.assertEquals("AST doesn't match",
-      "(tok_query " +
-        "(tok_from " +
-          "(tok_virtual_table " +
-            "(tok_virtual_tabref (tok_tabname vc) (tok_col_name a b)) " +
-            "(tok_values_table (tok_value_row 1 2) (tok_value_row 3 4)))) " +
-        "(tok_insert (tok_insert_into (tok_tab (tok_tabname page_view))) " +
-          "(tok_select " +
-            "(tok_selexpr (tok_table_or_col a)) " +
-            "(tok_selexpr (tok_table_or_col b) c)) " +
-          "(tok_where (= (tok_table_or_col b) 9))))",
-      ast.toStringTree());
-  }
-  /**
-   * same as testInsertIntoTableAsSelectFromNamedVirtTable but with column list on target table
-   * @throws ParseException
-   */
-  @Test
-  public void testInsertIntoTableAsSelectFromNamedVirtTableNamedCol() throws ParseException {
-    ASTNode ast = parse("insert into page_view(c1,c2) select a,b as c from (values (1,2),(3,4)) as vc(a,b) where b = 9");
-    Assert.assertEquals("AST doesn't match",
-      "(tok_query " +
-        "(tok_from " +
-        "(tok_virtual_table " +
-        "(tok_virtual_tabref (tok_tabname vc) (tok_col_name a b)) " +
-        "(tok_values_table (tok_value_row 1 2) (tok_value_row 3 4)))) " +
-        "(tok_insert (tok_insert_into (tok_tab (tok_tabname page_view)) (tok_tabcolname c1 c2)) " +
-        "(tok_select " +
-        "(tok_selexpr (tok_table_or_col a)) " +
-        "(tok_selexpr (tok_table_or_col b) c)) " +
-        "(tok_where (= (tok_table_or_col b) 9))))",
-      ast.toStringTree());
-  }
-  @Test
-  public void testInsertIntoTableFromAnonymousTable1Row() throws ParseException {
-    ASTNode ast = parse("insert into page_view values(1,2)");
-    Assert.assertEquals("AST doesn't match",
-      "(tok_query " +
-        "(tok_from " +
-        "(tok_virtual_table " +
-        "(tok_virtual_tabref tok_anonymous) " +
-        "(tok_values_table (tok_value_row 1 2)))) " +
-        "(tok_insert (tok_insert_into (tok_tab (tok_tabname page_view))) " +
-        "(tok_select (tok_selexpr tok_allcolref))))",
-      ast.toStringTree());
-  }
-  /**
-   * Same as testInsertIntoTableFromAnonymousTable1Row but with column list on target table
-   * @throws ParseException
-   */
-  @Test
-  public void testInsertIntoTableFromAnonymousTable1RowNamedCol() throws ParseException {
-    ASTNode ast = parse("insert into page_view(a,b) values(1,2)");
-    Assert.assertEquals("AST doesn't match",
-      "(tok_query " +
-        "(tok_from " +
-          "(tok_virtual_table " +
-            "(tok_virtual_tabref tok_anonymous) " +
-            "(tok_values_table (tok_value_row 1 2))" +
-          ")" +
-        ") " +
-        "(tok_insert " +
-          "(tok_insert_into " +
-            "(tok_tab (tok_tabname page_view)) " +
-            "(tok_tabcolname a b)" +//this is "extra" piece we get vs previous query
-          ") " +
-          "(tok_select " +
-            "(tok_selexpr tok_allcolref)" +
-          ")" +
-        ")" +
-      ")", ast.toStringTree());
-  }
-  @Test
-  public void testInsertIntoTableFromAnonymousTable() throws ParseException {
-    ASTNode ast = parse("insert into table page_view values(-1,2),(3,+4)");
-    Assert.assertEquals("AST doesn't match",
-      "(tok_query " +
-        "(tok_from " +
-          "(tok_virtual_table " +
-          "(tok_virtual_tabref tok_anonymous) " +
-          "(tok_values_table (tok_value_row (- 1) 2) (tok_value_row 3 (+ 4))))) " +
-        "(tok_insert (tok_insert_into (tok_tab (tok_tabname page_view))) " +
-          "(tok_select (tok_selexpr tok_allcolref))))",
-      ast.toStringTree());
-    //same query as above less the "table" keyword KW_table
-    ast = parse("insert into page_view values(-1,2),(3,+4)");
-    Assert.assertEquals("AST doesn't match",
-      "(tok_query " +
-        "(tok_from " +
-        "(tok_virtual_table " +
-        "(tok_virtual_tabref tok_anonymous) " +
-        "(tok_values_table (tok_value_row (- 1) 2) (tok_value_row 3 (+ 4))))) " +
-        "(tok_insert (tok_insert_into (tok_tab (tok_tabname page_view))) " +
-        "(tok_select (tok_selexpr tok_allcolref))))",
-      ast.toStringTree());
   }
   @Test
   public void testMultiInsert() throws ParseException {

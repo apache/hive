@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -34,6 +34,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.RowId;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.SQLXML;
 import java.sql.Time;
@@ -63,7 +64,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Array getArray(int i) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -74,7 +75,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Array getArray(String parameterName) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -85,7 +86,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public BigDecimal getBigDecimal(int parameterIndex) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -96,7 +97,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public BigDecimal getBigDecimal(String parameterName) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -107,7 +108,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public BigDecimal getBigDecimal(int parameterIndex, int scale) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -118,7 +119,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Blob getBlob(int i) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -129,7 +130,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Blob getBlob(String parameterName) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -140,7 +141,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public boolean getBoolean(int parameterIndex) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -151,7 +152,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public boolean getBoolean(String parameterName) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -162,7 +163,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public byte getByte(int parameterIndex) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -173,7 +174,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public byte getByte(String parameterName) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -184,7 +185,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public byte[] getBytes(int parameterIndex) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -195,7 +196,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public byte[] getBytes(String parameterName) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -206,7 +207,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Reader getCharacterStream(int arg0) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -217,7 +218,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Reader getCharacterStream(String arg0) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -228,7 +229,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Clob getClob(int i) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -239,7 +240,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Clob getClob(String parameterName) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -250,7 +251,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Date getDate(int parameterIndex) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -261,7 +262,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Date getDate(String parameterName) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -272,7 +273,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Date getDate(int parameterIndex, Calendar cal) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -284,7 +285,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Date getDate(String parameterName, Calendar cal) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -295,7 +296,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public double getDouble(int parameterIndex) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -306,7 +307,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public double getDouble(String parameterName) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -317,7 +318,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public float getFloat(int parameterIndex) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -328,7 +329,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public float getFloat(String parameterName) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -339,7 +340,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public int getInt(int parameterIndex) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -350,7 +351,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public int getInt(String parameterName) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -361,7 +362,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public long getLong(int parameterIndex) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -372,7 +373,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public long getLong(String parameterName) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -383,7 +384,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Reader getNCharacterStream(int parameterIndex) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -394,7 +395,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Reader getNCharacterStream(String parameterName) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -405,7 +406,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public NClob getNClob(int parameterIndex) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -416,7 +417,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public NClob getNClob(String parameterName) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -427,7 +428,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public String getNString(int parameterIndex) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -438,7 +439,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public String getNString(String parameterName) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -449,7 +450,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Object getObject(int parameterIndex) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -460,17 +461,17 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Object getObject(String parameterName) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   public <T> T getObject(int parameterIndex, Class<T> type) throws SQLException {
     // TODO JDK 1.7
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   public <T> T getObject(String parameterName, Class<T> type) throws SQLException {
     // TODO JDK 1.7
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -481,7 +482,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Object getObject(int i, Map<String, Class<?>> map) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -492,7 +493,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Object getObject(String parameterName, Map<String, Class<?>> map) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -503,7 +504,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Ref getRef(int i) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -514,7 +515,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Ref getRef(String parameterName) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -525,7 +526,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public RowId getRowId(int parameterIndex) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -536,7 +537,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public RowId getRowId(String parameterName) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -547,7 +548,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public SQLXML getSQLXML(int parameterIndex) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -558,7 +559,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public SQLXML getSQLXML(String parameterName) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -569,7 +570,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public short getShort(int parameterIndex) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -580,7 +581,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public short getShort(String parameterName) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -591,7 +592,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public String getString(int parameterIndex) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -602,7 +603,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public String getString(String parameterName) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -613,7 +614,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Time getTime(int parameterIndex) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -624,7 +625,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Time getTime(String parameterName) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -635,7 +636,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Time getTime(int parameterIndex, Calendar cal) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -647,7 +648,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Time getTime(String parameterName, Calendar cal) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -658,7 +659,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Timestamp getTimestamp(int parameterIndex) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -669,7 +670,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Timestamp getTimestamp(String parameterName) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -680,7 +681,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Timestamp getTimestamp(int parameterIndex, Calendar cal) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -692,7 +693,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Timestamp getTimestamp(String parameterName, Calendar cal) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -703,7 +704,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public URL getURL(int parameterIndex) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -714,7 +715,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public URL getURL(String parameterName) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -725,7 +726,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void registerOutParameter(int parameterIndex, int sqlType) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -736,7 +737,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void registerOutParameter(String parameterName, int sqlType) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -748,7 +749,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void registerOutParameter(int parameterIndex, int sqlType, int scale)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -761,7 +762,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void registerOutParameter(int paramIndex, int sqlType, String typeName)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -774,7 +775,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void registerOutParameter(String parameterName, int sqlType, int scale)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -787,7 +788,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void registerOutParameter(String parameterName, int sqlType,
       String typeName) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -800,7 +801,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setAsciiStream(String parameterName, InputStream x)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -813,7 +814,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setAsciiStream(String parameterName, InputStream x, int length)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -826,7 +827,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setAsciiStream(String parameterName, InputStream x, long length)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -839,7 +840,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setBigDecimal(String parameterName, BigDecimal x)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -852,7 +853,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setBinaryStream(String parameterName, InputStream x)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -865,7 +866,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setBinaryStream(String parameterName, InputStream x, int length)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -878,7 +879,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setBinaryStream(String parameterName, InputStream x, long length)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -889,7 +890,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setBlob(String parameterName, Blob x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -902,7 +903,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setBlob(String parameterName, InputStream inputStream)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -915,7 +916,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setBlob(String parameterName, InputStream inputStream, long length)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -926,7 +927,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setBoolean(String parameterName, boolean x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -937,7 +938,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setByte(String parameterName, byte x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -948,7 +949,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setBytes(String parameterName, byte[] x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -961,7 +962,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setCharacterStream(String parameterName, Reader reader)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -974,7 +975,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setCharacterStream(String parameterName, Reader reader, int length)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -987,7 +988,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setCharacterStream(String parameterName, Reader reader,
       long length) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -998,7 +999,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setClob(String parameterName, Clob x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1009,7 +1010,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setClob(String parameterName, Reader reader) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1022,7 +1023,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setClob(String parameterName, Reader reader, long length)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1033,7 +1034,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setDate(String parameterName, Date x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1046,7 +1047,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setDate(String parameterName, Date x, Calendar cal)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1057,7 +1058,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setDouble(String parameterName, double x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1068,7 +1069,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setFloat(String parameterName, float x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1079,7 +1080,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setInt(String parameterName, int x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1090,7 +1091,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setLong(String parameterName, long x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1103,7 +1104,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setNCharacterStream(String parameterName, Reader value)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1116,7 +1117,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setNCharacterStream(String parameterName, Reader value,
       long length) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1127,7 +1128,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setNClob(String parameterName, NClob value) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1138,7 +1139,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setNClob(String parameterName, Reader reader) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1151,7 +1152,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setNClob(String parameterName, Reader reader, long length)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1164,7 +1165,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setNString(String parameterName, String value)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1175,7 +1176,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setNull(String parameterName, int sqlType) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1188,7 +1189,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setNull(String parameterName, int sqlType, String typeName)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1200,7 +1201,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setObject(String parameterName, Object x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1213,7 +1214,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setObject(String parameterName, Object x, int targetSqlType)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1226,7 +1227,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setObject(String parameterName, Object x, int targetSqlType,
       int scale) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1237,7 +1238,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setRowId(String parameterName, RowId x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1250,7 +1251,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setSQLXML(String parameterName, SQLXML xmlObject)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1261,7 +1262,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setShort(String parameterName, short x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1273,7 +1274,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setString(String parameterName, String x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1284,7 +1285,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setTime(String parameterName, Time x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1297,7 +1298,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setTime(String parameterName, Time x, Calendar cal)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1310,7 +1311,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setTimestamp(String parameterName, Timestamp x)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1323,7 +1324,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setTimestamp(String parameterName, Timestamp x, Calendar cal)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1334,7 +1335,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setURL(String parameterName, URL val) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1345,7 +1346,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public boolean wasNull() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1356,7 +1357,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void addBatch() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1367,7 +1368,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void clearParameters() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1378,7 +1379,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public boolean execute() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1399,7 +1400,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public int executeUpdate() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1410,7 +1411,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public ResultSetMetaData getMetaData() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1421,7 +1422,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public ParameterMetaData getParameterMetaData() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1432,7 +1433,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setArray(int i, Array x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1443,7 +1444,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setAsciiStream(int arg0, InputStream arg1) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1456,7 +1457,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setAsciiStream(int parameterIndex, InputStream x, int length)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1469,7 +1470,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setAsciiStream(int arg0, InputStream arg1, long arg2)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1481,7 +1482,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setBigDecimal(int parameterIndex, BigDecimal x)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1493,7 +1494,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setBinaryStream(int parameterIndex, InputStream x)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1506,7 +1507,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setBinaryStream(int parameterIndex, InputStream x, int length)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1519,7 +1520,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setBinaryStream(int parameterIndex, InputStream x, long length)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1530,7 +1531,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setBlob(int i, Blob x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1542,7 +1543,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setBlob(int parameterIndex, InputStream inputStream)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1554,7 +1555,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setBlob(int parameterIndex, InputStream inputStream, long length)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1565,7 +1566,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setBoolean(int parameterIndex, boolean x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1576,7 +1577,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setByte(int parameterIndex, byte x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1587,7 +1588,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setBytes(int parameterIndex, byte[] x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1599,7 +1600,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setCharacterStream(int parameterIndex, Reader reader)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1612,7 +1613,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setCharacterStream(int parameterIndex, Reader reader, int length)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1625,7 +1626,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setCharacterStream(int parameterIndex, Reader reader, long length)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1636,7 +1637,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setClob(int i, Clob x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1647,7 +1648,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setClob(int parameterIndex, Reader reader) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1659,7 +1660,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setClob(int parameterIndex, Reader reader, long length)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1670,7 +1671,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setDate(int parameterIndex, Date x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1683,7 +1684,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setDate(int parameterIndex, Date x, Calendar cal)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1694,7 +1695,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setDouble(int parameterIndex, double x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1705,7 +1706,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setFloat(int parameterIndex, float x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1716,7 +1717,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setInt(int parameterIndex, int x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1727,7 +1728,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setLong(int parameterIndex, long x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1739,7 +1740,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setNCharacterStream(int parameterIndex, Reader value)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1752,7 +1753,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setNCharacterStream(int parameterIndex, Reader value, long length)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1763,7 +1764,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setNClob(int parameterIndex, NClob value) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1774,7 +1775,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setNClob(int parameterIndex, Reader reader) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1786,7 +1787,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setNClob(int parameterIndex, Reader reader, long length)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1797,7 +1798,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setNString(int parameterIndex, String value) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1808,7 +1809,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setNull(int parameterIndex, int sqlType) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1820,7 +1821,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setNull(int paramIndex, int sqlType, String typeName)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1831,7 +1832,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setObject(int parameterIndex, Object x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1843,7 +1844,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setObject(int parameterIndex, Object x, int targetSqlType)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1855,7 +1856,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setObject(int parameterIndex, Object x, int targetSqlType,
       int scale) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1866,7 +1867,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setRef(int i, Ref x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1877,7 +1878,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setRowId(int parameterIndex, RowId x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1889,7 +1890,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setSQLXML(int parameterIndex, SQLXML xmlObject)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1900,7 +1901,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setShort(int parameterIndex, short x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1911,7 +1912,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setString(int parameterIndex, String x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1922,7 +1923,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setTime(int parameterIndex, Time x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1935,7 +1936,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setTime(int parameterIndex, Time x, Calendar cal)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1946,7 +1947,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setTimestamp(int parameterIndex, Timestamp x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1959,7 +1960,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setTimestamp(int parameterIndex, Timestamp x, Calendar cal)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1970,7 +1971,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setURL(int parameterIndex, URL x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1983,7 +1984,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public void setUnicodeStream(int parameterIndex, InputStream x, int length)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1994,7 +1995,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void addBatch(String sql) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2005,7 +2006,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void cancel() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2016,7 +2017,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void clearBatch() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2027,7 +2028,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void clearWarnings() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2038,17 +2039,17 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void close() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   public void closeOnCompletion() throws SQLException {
     // JDK 1.7
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   public boolean isCloseOnCompletion() throws SQLException {
     // JDK 1.7
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2059,7 +2060,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public boolean execute(String sql) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2070,7 +2071,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public boolean execute(String sql, int autoGeneratedKeys) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2081,7 +2082,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public boolean execute(String sql, int[] columnIndexes) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2092,7 +2093,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public boolean execute(String sql, String[] columnNames) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2103,7 +2104,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public int[] executeBatch() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2114,7 +2115,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public ResultSet executeQuery(String sql) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2125,7 +2126,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public int executeUpdate(String sql) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2137,7 +2138,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public int executeUpdate(String sql, int autoGeneratedKeys)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2148,7 +2149,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public int executeUpdate(String sql, int[] columnIndexes) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2160,7 +2161,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
   public int executeUpdate(String sql, String[] columnNames)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2181,7 +2182,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public int getFetchDirection() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2192,7 +2193,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public int getFetchSize() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2203,7 +2204,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public ResultSet getGeneratedKeys() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2214,7 +2215,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public int getMaxFieldSize() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2225,7 +2226,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public int getMaxRows() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2236,7 +2237,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public boolean getMoreResults() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2247,7 +2248,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public boolean getMoreResults(int current) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2258,7 +2259,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public int getQueryTimeout() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2269,7 +2270,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public ResultSet getResultSet() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2280,7 +2281,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public int getResultSetConcurrency() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2291,7 +2292,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public int getResultSetHoldability() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2302,7 +2303,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public int getResultSetType() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2313,7 +2314,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public int getUpdateCount() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2324,7 +2325,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public SQLWarning getWarnings() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2335,7 +2336,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public boolean isClosed() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2346,7 +2347,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public boolean isPoolable() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2357,7 +2358,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setCursorName(String name) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2368,7 +2369,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setEscapeProcessing(boolean enable) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2379,7 +2380,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setFetchDirection(int direction) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2390,7 +2391,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setFetchSize(int rows) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2401,7 +2402,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setMaxFieldSize(int max) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2412,7 +2413,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setMaxRows(int max) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2423,7 +2424,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setPoolable(boolean arg0) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2434,7 +2435,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public void setQueryTimeout(int seconds) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2445,7 +2446,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public boolean isWrapperFor(Class<?> iface) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -2456,7 +2457,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public <T> T unwrap(Class<T> iface) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
 }

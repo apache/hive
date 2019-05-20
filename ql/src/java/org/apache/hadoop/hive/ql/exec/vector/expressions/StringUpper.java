@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -27,8 +27,8 @@ import org.apache.hadoop.io.Text;
 public class StringUpper extends StringUnaryUDF {
   private static final long serialVersionUID = 1L;
 
-  public StringUpper(int colNum, int outputColumn) {
-    super(colNum, outputColumn, new IUDFUnaryString() {
+  public StringUpper(int colNum, int outputColumnNum) {
+    super(colNum, outputColumnNum, new IUDFUnaryString() {
 
       Text t = new Text();
 

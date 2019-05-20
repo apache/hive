@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,12 +29,15 @@ import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveO
 
 import java.math.BigDecimal;
 import java.util.Calendar;
-import java.util.Date;
+import java.util.TimeZone;
 
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
@@ -44,7 +47,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  * UDFMonthsBetween.
  *
  */
-@Description(name = "months_between", value = "_FUNC_(date1, date2) - returns number of months between dates date1 and date2",
+@Description(name = "months_between", value = "_FUNC_(date1, date2, roundOff) "
+    + "- returns number of months between dates date1 and date2",
     extended = "If date1 is later than date2, then the result is positive. "
     + "If date1 is earlier than date2, then the result is negative. "
     + "If date1 and date2 are either the same days of the month or both last days of months, "
@@ -53,24 +57,32 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
     + "month and considers the difference in time components date1 and date2.\n"
     + "date1 and date2 type can be date, timestamp or string in the format "
     + "'yyyy-MM-dd' or 'yyyy-MM-dd HH:mm:ss'. "
-    + "The result is rounded to 8 decimal places.\n"
+    + "The result is rounded to 8 decimal places by default. Set roundOff=false otherwise.\n"
     + " Example:\n"
     + "  > SELECT _FUNC_('1997-02-28 10:30:00', '1996-10-30');\n 3.94959677")
 public class GenericUDFMonthsBetween extends GenericUDF {
+
   private transient Converter[] tsConverters = new Converter[2];
   private transient PrimitiveCategory[] tsInputTypes = new PrimitiveCategory[2];
   private transient Converter[] dtConverters = new Converter[2];
   private transient PrimitiveCategory[] dtInputTypes = new PrimitiveCategory[2];
-  private final Calendar cal1 = Calendar.getInstance();
-  private final Calendar cal2 = Calendar.getInstance();
+  private final Calendar cal1 = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+  private final Calendar cal2 = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
   private final DoubleWritable output = new DoubleWritable();
+  private boolean isRoundOffNeeded = true;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
-    checkArgsSize(arguments, 2, 2);
+    checkArgsSize(arguments, 2, 3);
 
     checkArgPrimitive(arguments, 0);
     checkArgPrimitive(arguments, 1);
+
+    if (arguments.length == 3) {
+      if (arguments[2] instanceof ConstantObjectInspector) {
+        isRoundOffNeeded = getConstantBooleanValue(arguments, 2);
+      }
+    }
 
     // the function should support both short date and full timestamp format
     // time part of the timestamp should not be skipped
@@ -94,31 +106,33 @@ public class GenericUDFMonthsBetween extends GenericUDF {
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     // the function should support both short date and full timestamp format
     // time part of the timestamp should not be skipped
-    Date date1 = getTimestampValue(arguments, 0, tsConverters);
+    Timestamp date1 = getTimestampValue(arguments, 0, tsConverters);
     if (date1 == null) {
-      date1 = getDateValue(arguments, 0, dtInputTypes, dtConverters);
-      if (date1 == null) {
+      Date date = getDateValue(arguments, 0, dtInputTypes, dtConverters);
+      if (date == null) {
         return null;
       }
+      date1 = Timestamp.ofEpochMilli(date.toEpochMilli());
     }
 
-    Date date2 = getTimestampValue(arguments, 1, tsConverters);
+    Timestamp date2 = getTimestampValue(arguments, 1, tsConverters);
     if (date2 == null) {
-      date2 = getDateValue(arguments, 1, dtInputTypes, dtConverters);
-      if (date2 == null) {
+      Date date = getDateValue(arguments, 1, dtInputTypes, dtConverters);
+      if (date == null) {
         return null;
       }
+      date2 = Timestamp.ofEpochMilli(date.toEpochMilli());
     }
 
-    cal1.setTime(date1);
-    cal2.setTime(date2);
+    cal1.setTimeInMillis(date1.toEpochMilli());
+    cal2.setTimeInMillis(date2.toEpochMilli());
 
     // skip day/time part if both dates are end of the month
     // or the same day of the month
     int monDiffInt = (cal1.get(YEAR) - cal2.get(YEAR)) * 12 + (cal1.get(MONTH) - cal2.get(MONTH));
     if (cal1.get(DATE) == cal2.get(DATE)
         || (cal1.get(DATE) == cal1.getActualMaximum(DATE) && cal2.get(DATE) == cal2
-            .getActualMaximum(DATE))) {
+        .getActualMaximum(DATE))) {
       output.set(monDiffInt);
       return output;
     }
@@ -129,9 +143,11 @@ public class GenericUDFMonthsBetween extends GenericUDF {
     // 1 sec is 0.000000373 months (1/2678400). 1 month is 31 days.
     // there should be no adjustments for leap seconds
     double monBtwDbl = monDiffInt + (sec1 - sec2) / 2678400D;
-    // Round a double to 8 decimal places.
-    double result = BigDecimal.valueOf(monBtwDbl).setScale(8, ROUND_HALF_UP).doubleValue();
-    output.set(result);
+    if (isRoundOffNeeded) {
+      // Round a double to 8 decimal places.
+      monBtwDbl = BigDecimal.valueOf(monBtwDbl).setScale(8, ROUND_HALF_UP).doubleValue();
+    }
+    output.set(monBtwDbl);
     return output;
   }
 

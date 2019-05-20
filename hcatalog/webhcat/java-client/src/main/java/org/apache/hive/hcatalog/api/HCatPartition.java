@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -25,7 +25,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -41,13 +42,15 @@ import org.slf4j.LoggerFactory;
 /**
  * The HCatPartition is a wrapper around org.apache.hadoop.hive.metastore.api.Partition.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class HCatPartition {
 
   private static final Logger LOG = LoggerFactory.getLogger(HCatPartition.class);
 
   private HCatTable hcatTable;
   private String tableName;
-  private String dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
+  private String dbName = Warehouse.DEFAULT_DATABASE_NAME;
   private List<String> values;
   private int createTime;
   private int lastAccessTime;

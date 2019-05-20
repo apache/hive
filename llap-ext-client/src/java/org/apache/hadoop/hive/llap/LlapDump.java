@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,17 +17,7 @@
  */
 package org.apache.hadoop.hive.llap;
 
-import java.io.OutputStream;
-import java.io.InputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.FileInputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -39,27 +29,15 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.mapred.RecordReader;
-import org.apache.hadoop.mapred.RecordWriter;
-import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.InputSplit;
-import org.apache.hadoop.hive.llap.io.api.LlapProxy;
-import org.apache.hadoop.hive.llap.LlapBaseInputFormat;
-import org.apache.hadoop.hive.llap.LlapRowInputFormat;
-import org.apache.hadoop.hive.llap.LlapRowRecordReader;
-import org.apache.hadoop.hive.llap.Row;
-import org.apache.hadoop.hive.llap.Schema;
 
 /**
  * Utility to test query and data retrieval via the LLAP input format.
- * llapdump --hiveconf hive.zookeeper.quorum=localhost --hiveconf hive.zookeeper.client.port=2181 --hiveconf hive.llap.daemon.service.hosts=@llap_MiniLlapCluster 'select * from employee where employee_id < 10'
+ * llapdump --hiveconf hive.zookeeper.quorum=localhost --hiveconf hive.zookeeper.client.port=2181\
+ *   --hiveconf hive.llap.daemon.service.hosts=@llap_MiniLlapCluster 'select * from employee where employee_id &lt; 10'
  *
  */
 public class LlapDump {
@@ -160,10 +138,11 @@ public class LlapDump {
   private static void printRow(Row row) {
     Schema schema = row.getSchema();
     StringBuilder sb = new StringBuilder();
-    for (int idx = 0; idx < schema.getColumns().size(); ++idx) {
-      if (idx > 0) {
+    int length = schema.getColumns().size();
+    for (int idx = 0; idx < length; ++idx) {
+      sb.append(row.getValue(idx));
+      if (idx != length - 1) {
         sb.append(", ");
-        sb.append(row.getValue(idx));
       }
     }
     System.out.println(sb.toString());

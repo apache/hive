@@ -42,13 +42,11 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@char_nested_1
 POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- arrays
-create table char_nested_array (c1 array<char(20)>)
+PREHOOK: query: create table char_nested_array (c1 array<char(20)>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@char_nested_array
-POSTHOOK: query: -- arrays
-create table char_nested_array (c1 array<char(20)>)
+POSTHOOK: query: create table char_nested_array (c1 array<char(20)>)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_nested_array
@@ -79,13 +77,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_nested_array
 #### A masked pattern was here ####
 ["val_0               ","val_0               "]
-PREHOOK: query: -- maps
-create table char_nested_map (c1 map<int, char(20)>)
+PREHOOK: query: create table char_nested_map (c1 map<int, char(20)>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@char_nested_map
-POSTHOOK: query: -- maps
-create table char_nested_map (c1 map<int, char(20)>)
+POSTHOOK: query: create table char_nested_map (c1 map<int, char(20)>)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_nested_map
@@ -116,13 +112,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_nested_map
 #### A masked pattern was here ####
 {0:"val_0               "}
-PREHOOK: query: -- structs
-create table char_nested_struct (c1 struct<a:int, b:char(20), c:string>)
+PREHOOK: query: create table char_nested_struct (c1 struct<a:int, b:char(20), c:string>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@char_nested_struct
-POSTHOOK: query: -- structs
-create table char_nested_struct (c1 struct<a:int, b:char(20), c:string>)
+POSTHOOK: query: create table char_nested_struct (c1 struct<a:int, b:char(20), c:string>)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_nested_struct
@@ -159,15 +153,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_nested_struct
 #### A masked pattern was here ####
 {"a":0,"b":"val_0               ","c":"val_0"}
-PREHOOK: query: -- nested type with create table as
-create table char_nested_cta as 
+PREHOOK: query: create table char_nested_cta as 
   select * from char_nested_struct
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@char_nested_struct
 PREHOOK: Output: database:default
 PREHOOK: Output: default@char_nested_cta
-POSTHOOK: query: -- nested type with create table as
-create table char_nested_cta as 
+POSTHOOK: query: create table char_nested_cta as 
   select * from char_nested_struct
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@char_nested_struct
@@ -190,15 +182,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_nested_cta
 #### A masked pattern was here ####
 {"a":0,"b":"val_0               ","c":"val_0"}
-PREHOOK: query: -- nested type with view
-create table char_nested_view as 
+PREHOOK: query: create table char_nested_view as 
   select * from char_nested_struct
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@char_nested_struct
 PREHOOK: Output: database:default
 PREHOOK: Output: default@char_nested_view
-POSTHOOK: query: -- nested type with view
-create table char_nested_view as 
+POSTHOOK: query: create table char_nested_view as 
   select * from char_nested_struct
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@char_nested_struct

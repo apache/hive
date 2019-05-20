@@ -1,9 +1,12 @@
+--! qt:dataset:alltypesorc
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.vectorized.execution.enabled=true;
 set hive.auto.convert.join=true;
 set hive.mapjoin.hybridgrace.hashtable=false;
-explain 
+set hive.fetch.task.conversion=none;
+
+explain vectorization 
 select count(*) from (select c.ctinyint 
 from alltypesorc c
 left outer join alltypesorc cd

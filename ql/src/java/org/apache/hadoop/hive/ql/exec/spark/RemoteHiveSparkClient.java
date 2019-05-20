@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 
@@ -33,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.ql.io.NullScanFileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -44,11 +46,13 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.exec.DagUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.RemoteSparkJobRef;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.RemoteSparkJobStatus;
 import org.apache.hadoop.hive.ql.io.HiveKey;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -73,8 +77,8 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   private static final long serialVersionUID = 1L;
 
   private static final String MR_JAR_PROPERTY = "tmpjars";
+  private static final String MR_CREDENTIALS_LOCATION_PROPERTY = "mapreduce.job.credentials.binary";
   private static final transient Logger LOG = LoggerFactory.getLogger(RemoteHiveSparkClient.class);
-  private static final long MAX_PREWARM_TIME = 5000; // 5s
   private static final transient Splitter CSV_SPLITTER = Splitter.on(",").omitEmptyStrings();
 
   private transient Map<String, String> conf;
@@ -86,21 +90,24 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   private transient List<URI> localFiles = new ArrayList<URI>();
 
   private final transient long sparkClientTimtout;
+  private final String sessionId;
 
-  RemoteHiveSparkClient(HiveConf hiveConf, Map<String, String> conf) throws Exception {
+  RemoteHiveSparkClient(HiveConf hiveConf, Map<String, String> conf, String sessionId) throws Exception {
     this.hiveConf = hiveConf;
     sparkClientTimtout = hiveConf.getTimeVar(HiveConf.ConfVars.SPARK_CLIENT_FUTURE_TIMEOUT,
         TimeUnit.SECONDS);
     sparkConf = HiveSparkClientFactory.generateSparkConf(conf);
     this.conf = conf;
+    this.sessionId = sessionId;
     createRemoteClient();
   }
 
   private void createRemoteClient() throws Exception {
-    remoteClient = SparkClientFactory.createClient(conf, hiveConf);
+    remoteClient = SparkClientFactory.createClient(conf, hiveConf, sessionId);
 
     if (HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_PREWARM_ENABLED) &&
-        hiveConf.get("spark.master").startsWith("yarn-")) {
+            (SparkClientUtilities.isYarnMaster(hiveConf.get("spark.master")) ||
+             SparkClientUtilities.isLocalMaster(hiveConf.get("spark.master")))) {
       int minExecutors = getExecutorsToWarm();
       if (minExecutors <= 0) {
         return;
@@ -108,12 +115,14 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
 
       LOG.info("Prewarm Spark executors. The minimum number of executors to warm is " + minExecutors);
 
-      // Spend at most MAX_PREWARM_TIME to wait for executors to come up.
+      // Spend at most HIVE_PREWARM_SPARK_TIMEOUT to wait for executors to come up.
       int curExecutors = 0;
+      long maxPrewarmTime = HiveConf.getTimeVar(hiveConf, ConfVars.HIVE_PREWARM_SPARK_TIMEOUT,
+          TimeUnit.MILLISECONDS);
       long ts = System.currentTimeMillis();
       do {
         try {
-          curExecutors = getExecutorCount(MAX_PREWARM_TIME, TimeUnit.MILLISECONDS);
+          curExecutors = getExecutorCount(maxPrewarmTime, TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
           // let's don't fail on future timeout since we have a timeout for pre-warm
           LOG.warn("Timed out getting executor count.", e);
@@ -123,9 +132,9 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
           return;
         }
         Thread.sleep(500); // sleep half a second
-      } while (System.currentTimeMillis() - ts < MAX_PREWARM_TIME);
+      } while (System.currentTimeMillis() - ts < maxPrewarmTime);
 
-      LOG.info("Timeout (" + MAX_PREWARM_TIME / 1000 + "s) occurred while prewarming executors. " +
+      LOG.info("Timeout (" + maxPrewarmTime / 1000 + "s) occurred while prewarming executors. " +
           "The current number of executors is " + curExecutors);
     }
   }
@@ -172,8 +181,10 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   }
 
   @Override
-  public SparkJobRef execute(final DriverContext driverContext, final SparkWork sparkWork) throws Exception {
-    if (hiveConf.get("spark.master").startsWith("yarn-") && !remoteClient.isActive()) {
+  public SparkJobRef execute(final DriverContext driverContext, final SparkWork sparkWork)
+      throws Exception {
+    if (SparkClientUtilities.isYarnMaster(hiveConf.get("spark.master")) &&
+        !remoteClient.isActive()) {
       // Re-create the remote client if not active any more
       close();
       createRemoteClient();
@@ -200,17 +211,25 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     FileSystem fs = emptyScratchDir.getFileSystem(jobConf);
     fs.mkdirs(emptyScratchDir);
 
+    // make sure NullScanFileSystem can be loaded - HIVE-18442
+    jobConf.set("fs." + NullScanFileSystem.getBaseScheme() + ".impl",
+        NullScanFileSystem.class.getCanonicalName());
+
     byte[] jobConfBytes = KryoSerializer.serializeJobConf(jobConf);
     byte[] scratchDirBytes = KryoSerializer.serialize(emptyScratchDir);
     byte[] sparkWorkBytes = KryoSerializer.serialize(sparkWork);
 
     JobStatusJob job = new JobStatusJob(jobConfBytes, scratchDirBytes, sparkWorkBytes);
+    if (driverContext.isShutdown()) {
+      throw new HiveException("Operation is cancelled.");
+    }
+
     JobHandle<Serializable> jobHandle = remoteClient.submit(job);
     RemoteSparkJobStatus sparkJobStatus = new RemoteSparkJobStatus(remoteClient, jobHandle, sparkClientTimtout);
     return new RemoteSparkJobRef(hiveConf, jobHandle, sparkJobStatus);
   }
 
-  private void refreshLocalResources(SparkWork sparkWork, HiveConf conf) throws IOException {
+  private synchronized void refreshLocalResources(SparkWork sparkWork, HiveConf conf) throws IOException {
     // add hive-exec jar
     addJars((new JobConf(this.getClass())).getJar());
 
@@ -230,8 +249,10 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     for (BaseWork work : sparkWork.getAllWork()) {
       work.configureJobConf(jobConf);
     }
-    addJars(conf.get(MR_JAR_PROPERTY));
+    addJars(jobConf.get(MR_JAR_PROPERTY));
 
+    // remove the location of container tokens
+    conf.unset(MR_CREDENTIALS_LOCATION_PROPERTY);
     // add added files
     String addedFiles = Utilities.getResourceFiles(conf, SessionState.ResourceType.FILE);
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVEADDEDFILES, addedFiles);
@@ -243,6 +264,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     addResources(addedArchives);
   }
 
+  //This method is not thread safe
   private void addResources(String addedFiles) throws IOException {
     for (String addedFile : CSV_SPLITTER.split(Strings.nullToEmpty(addedFiles))) {
       try {
@@ -260,6 +282,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     }
   }
 
+  //This method is not thread safe
   private void addJars(String addedJars) throws IOException {
     for (String addedJar : CSV_SPLITTER.split(Strings.nullToEmpty(addedJars))) {
       try {
@@ -286,7 +309,8 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     localJars.clear();
   }
 
-  private static class JobStatusJob implements Job<Serializable> {
+  @VisibleForTesting
+  static class JobStatusJob implements Job<Serializable> {
 
     private static final long serialVersionUID = 1L;
     private final byte[] jobConfBytes;
@@ -338,6 +362,11 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
         new SparkPlanGenerator(jc.sc(), null, localJobConf, localScratchDir, sparkReporter);
       SparkPlan plan = gen.generate(localSparkWork);
 
+      // We get the query name for this SparkTask and set it to the description for the associated
+      // Spark job; query names are guaranteed to be unique for each Spark job because the task id
+      // is concatenated to the end of the query name
+      jc.sc().setJobGroup("queryId = " + localSparkWork.getQueryId(), DagUtils.getQueryName(localJobConf));
+
       // Execute generated plan.
       JavaPairRDD<HiveKey, BytesWritable> finalRDD = plan.generateGraph();
       // We use Spark RDD async action to submit job as it's the only way to get jobId now.
@@ -347,15 +376,12 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     }
 
     private void logConfigurations(JobConf localJobConf) {
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Logging job configuration: ");
-        StringWriter outWriter = new StringWriter();
-        try {
-          Configuration.dumpConfiguration(localJobConf, outWriter);
-        } catch (IOException e) {
-          LOG.warn("Error logging job configuration", e);
-        }
-        LOG.info(outWriter.toString());
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Logging job configuration: ");
+        StringBuilder outWriter = new StringBuilder();
+        // redact sensitive information before logging
+        HiveConfUtil.dumpConfig(localJobConf, outWriter);
+        LOG.debug(outWriter.toString());
       }
     }
   }

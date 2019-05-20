@@ -1,10 +1,8 @@
-PREHOOK: query: -- Test temp tables with upper/lower case names
-create temporary table Default.Temp_Table_Names (C1 string, c2 string)
+PREHOOK: query: create temporary table Default.Temp_Table_Names (C1 string, c2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: Default@Temp_Table_Names
 PREHOOK: Output: database:default
-POSTHOOK: query: -- Test temp tables with upper/lower case names
-create temporary table Default.Temp_Table_Names (C1 string, c2 string)
+POSTHOOK: query: create temporary table Default.Temp_Table_Names (C1 string, c2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: Default@Temp_Table_Names
 POSTHOOK: Output: database:default

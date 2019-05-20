@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,56 +20,62 @@ package org.apache.hadoop.hive.ql.exec.spark.status.impl;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticGroup;
+import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsNames;
 import org.apache.hive.spark.client.metrics.Metrics;
 import org.apache.hive.spark.client.metrics.ShuffleReadMetrics;
 
-final class SparkMetricsUtils {
-
-  private final static String EXECUTOR_DESERIALIZE_TIME = "ExecutorDeserializeTime";
-  private final static String EXECUTOR_RUN_TIME = "ExecutorRunTime";
-  private final static String RESULT_SIZE = "ResultSize";
-  private final static String JVM_GC_TIME = "JvmGCTime";
-  private final static String RESULT_SERIALIZATION_TIME = "ResultSerializationTime";
-  private final static String MEMORY_BYTES_SPLIED = "MemoryBytesSpilled";
-  private final static String DISK_BYTES_SPILLED = "DiskBytesSpilled";
-  private final static String BYTES_READ = "BytesRead";
-  private final static String REMOTE_BLOCKS_FETCHED = "RemoteBlocksFetched";
-  private final static String LOCAL_BLOCKS_FETCHED = "LocalBlocksFetched";
-  private final static String TOTAL_BLOCKS_FETCHED = "TotalBlocksFetched";
-  private final static String FETCH_WAIT_TIME = "FetchWaitTime";
-  private final static String REMOTE_BYTES_READ = "RemoteBytesRead";
-  private final static String SHUFFLE_BYTES_WRITTEN = "ShuffleBytesWritten";
-  private final static String SHUFFLE_WRITE_TIME = "ShuffleWriteTime";
+public final class SparkMetricsUtils {
 
   private SparkMetricsUtils(){}
 
   static Map<String, Long> collectMetrics(Metrics allMetrics) {
     Map<String, Long> results = new LinkedHashMap<String, Long>();
-    results.put(EXECUTOR_DESERIALIZE_TIME, allMetrics.executorDeserializeTime);
-    results.put(EXECUTOR_RUN_TIME, allMetrics.executorRunTime);
-    results.put(RESULT_SIZE, allMetrics.resultSize);
-    results.put(JVM_GC_TIME, allMetrics.jvmGCTime);
-    results.put(RESULT_SERIALIZATION_TIME, allMetrics.resultSerializationTime);
-    results.put(MEMORY_BYTES_SPLIED, allMetrics.memoryBytesSpilled);
-    results.put(DISK_BYTES_SPILLED, allMetrics.diskBytesSpilled);
+    results.put(SparkStatisticsNames.TASK_DURATION_TIME, allMetrics.taskDurationTime);
+    results.put(SparkStatisticsNames.EXECUTOR_CPU_TIME, allMetrics.executorCpuTime);
+    results.put(SparkStatisticsNames.EXECUTOR_RUN_TIME, allMetrics.executorRunTime);
+    results.put(SparkStatisticsNames.JVM_GC_TIME, allMetrics.jvmGCTime);
+    results.put(SparkStatisticsNames.MEMORY_BYTES_SPILLED, allMetrics.memoryBytesSpilled);
+    results.put(SparkStatisticsNames.DISK_BYTES_SPILLED, allMetrics.diskBytesSpilled);
+    results.put(SparkStatisticsNames.EXECUTOR_DESERIALIZE_TIME, allMetrics.executorDeserializeTime);
+    results.put(SparkStatisticsNames.EXECUTOR_DESERIALIZE_CPU_TIME,
+            allMetrics.executorDeserializeCpuTime);
+    results.put(SparkStatisticsNames.RESULT_SIZE, allMetrics.resultSize);
+    results.put(SparkStatisticsNames.RESULT_SERIALIZATION_TIME, allMetrics.resultSerializationTime);
     if (allMetrics.inputMetrics != null) {
-      results.put(BYTES_READ, allMetrics.inputMetrics.bytesRead);
+      results.put(SparkStatisticsNames.BYTES_READ, allMetrics.inputMetrics.bytesRead);
+      results.put(SparkStatisticsNames.RECORDS_READ, allMetrics.inputMetrics.recordsRead);
     }
     if (allMetrics.shuffleReadMetrics != null) {
       ShuffleReadMetrics shuffleReadMetrics = allMetrics.shuffleReadMetrics;
       long rbf = shuffleReadMetrics.remoteBlocksFetched;
       long lbf = shuffleReadMetrics.localBlocksFetched;
-      results.put(REMOTE_BLOCKS_FETCHED, rbf);
-      results.put(LOCAL_BLOCKS_FETCHED, lbf);
-      results.put(TOTAL_BLOCKS_FETCHED, rbf + lbf);
-      results.put(FETCH_WAIT_TIME, shuffleReadMetrics.fetchWaitTime);
-      results.put(REMOTE_BYTES_READ, shuffleReadMetrics.remoteBytesRead);
+      results.put(SparkStatisticsNames.SHUFFLE_TOTAL_BYTES_READ,
+              shuffleReadMetrics.remoteBytesRead + shuffleReadMetrics.localBytesRead);
+      results.put(SparkStatisticsNames.SHUFFLE_REMOTE_BYTES_READ, shuffleReadMetrics.remoteBytesRead);
+      results.put(SparkStatisticsNames.SHUFFLE_LOCAL_BYTES_READ, shuffleReadMetrics.localBytesRead);
+      results.put(SparkStatisticsNames.SHUFFLE_REMOTE_BYTES_READ_TO_DISK, shuffleReadMetrics
+              .remoteBytesReadToDisk);
+      results.put(SparkStatisticsNames.SHUFFLE_RECORDS_READ, shuffleReadMetrics.recordsRead);
+      results.put(SparkStatisticsNames.SHUFFLE_TOTAL_BLOCKS_FETCHED, rbf + lbf);
+      results.put(SparkStatisticsNames.SHUFFLE_REMOTE_BLOCKS_FETCHED, rbf);
+      results.put(SparkStatisticsNames.SHUFFLE_LOCAL_BLOCKS_FETCHED, lbf);
+      results.put(SparkStatisticsNames.SHUFFLE_FETCH_WAIT_TIME, shuffleReadMetrics.fetchWaitTime);
     }
     if (allMetrics.shuffleWriteMetrics != null) {
-      results.put(SHUFFLE_BYTES_WRITTEN, allMetrics.shuffleWriteMetrics.shuffleBytesWritten);
-      results.put(SHUFFLE_WRITE_TIME, allMetrics.shuffleWriteMetrics.shuffleWriteTime);
+      results.put(SparkStatisticsNames.SHUFFLE_BYTES_WRITTEN, allMetrics.shuffleWriteMetrics.shuffleBytesWritten);
+      results.put(SparkStatisticsNames.SHUFFLE_RECORDS_WRITTEN,
+              allMetrics.shuffleWriteMetrics.shuffleRecordsWritten);
+      results.put(SparkStatisticsNames.SHUFFLE_WRITE_TIME, allMetrics.shuffleWriteMetrics.shuffleWriteTime);
+    }
+    if (allMetrics.outputMetrics != null) {
+      results.put(SparkStatisticsNames.BYTES_WRITTEN, allMetrics.outputMetrics.bytesWritten);
+      results.put(SparkStatisticsNames.RECORDS_WRITTEN, allMetrics.outputMetrics.recordsWritten);
     }
     return results;
   }
 
+  public static long getSparkStatisticAsLong(SparkStatisticGroup group, String name) {
+    return Long.parseLong(group.getSparkStatistic(name).getValue());
+  }
 }

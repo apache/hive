@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,10 +29,11 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hive.jdbc.HiveConnection;
+import org.apache.hive.service.auth.HiveAuthConstants;
+import org.apache.hive.service.cli.session.SessionUtils;
 import org.apache.hive.beeline.BeeLine;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
-import org.apache.hive.service.auth.HiveAuthFactory;
 
 /**
  * Simple client application to test various direct and proxy connection to HiveServer2
@@ -195,15 +196,15 @@ public class ProxyAuthTest {
     try {
       url = "jdbc:hive2://" + host + ":" + port + "/default;auth=delegationToken";
       con = DriverManager.getConnection(url);
-      throw new Exception ("connection should have failed after token cancelation");
+      throw new Exception ("connection should have failed after token cancellation");
     } catch (SQLException e) {
       // Expected to fail due to canceled token
     }
   }
 
   private static void storeTokenInJobConf(String tokenStr) throws Exception {
-    Utils.setTokenStr(Utils.getUGI(),
-          tokenStr, HiveAuthFactory.HS2_CLIENT_TOKEN);
+    SessionUtils.setTokenStr(Utils.getUGI(),
+          tokenStr, HiveAuthConstants.HS2_CLIENT_TOKEN);
     System.out.println("Stored token " + tokenStr);
   }
 

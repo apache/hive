@@ -1,3 +1,4 @@
+--! qt:dataset:src
 FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value)

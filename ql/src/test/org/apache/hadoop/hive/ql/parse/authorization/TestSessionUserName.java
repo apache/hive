@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse.authorization;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -31,9 +31,16 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerImp
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 
 public class TestSessionUserName {
@@ -73,6 +80,35 @@ public class TestSessionUserName {
 
     Assert.assertEquals("check username", USER_NAME,
         HiveAuthorizerStoringUserNameFactory.username);
+  }
+
+  /**
+   * Test that the groupNames are retrieved properly from UGI
+   * @throws Exception
+   */
+  @Test
+  public void testSessionGetGroupNames() throws Exception {
+    final String testUser = "authtestuser";
+    final List<String> testGroups = Arrays.asList("group1", "group2");
+    UserGroupInformation.createUserForTesting(testUser, testGroups.toArray(new String[0]));
+
+    SessionState ss = new SessionState(getAuthV2HiveConf(), testUser);
+    setupDataNucleusFreeHive(ss.getConf());
+    assertEquals("check groups", testGroups, ss.getAuthenticator().getGroupNames());
+  }
+
+  /**
+   * Test that the groupNames returned is null, when the user name is null. The user name is null
+   * in the case of embedded HS2 and we assert that we don't throw an NPE in that case.
+   * @throws Exception
+   */
+  @Test
+  public void testSessionNullUser() throws Exception {
+    SessionState ss = new SessionState(getAuthV2HiveConf(), null);
+    setupDataNucleusFreeHive(ss.getConf());
+    SessionState.start(ss);
+
+    assertNull("getGroupNames when userName == null", ss.getAuthenticator().getGroupNames());
   }
 
   /**

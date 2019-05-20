@@ -14,6 +14,8 @@ explain extended
 analyze table Employee_Part partition (employeeSalary=2000.0) compute statistics for columns employeeID;
 analyze table Employee_Part partition (employeeSalary=2000.0) compute statistics for columns employeeID;
 
+describe formatted Employee_Part partition(employeeSalary=2000.0);
+
 explain 
 analyze table Employee_Part partition (employeeSalary=4000.0) compute statistics for columns employeeID;
 explain extended

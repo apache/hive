@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked"})
-public class TCLIServiceConstants {
+@org.apache.hadoop.hive.common.classification.InterfaceAudience.Public @org.apache.hadoop.hive.common.classification.InterfaceStability.Stable public class TCLIServiceConstants {
 
   public static final Set<TTypeId> PRIMITIVE_TYPES = new HashSet<TTypeId>();
   static {
@@ -55,6 +55,7 @@ public class TCLIServiceConstants {
     PRIMITIVE_TYPES.add(org.apache.hive.service.rpc.thrift.TTypeId.CHAR_TYPE);
     PRIMITIVE_TYPES.add(org.apache.hive.service.rpc.thrift.TTypeId.INTERVAL_YEAR_MONTH_TYPE);
     PRIMITIVE_TYPES.add(org.apache.hive.service.rpc.thrift.TTypeId.INTERVAL_DAY_TIME_TYPE);
+    PRIMITIVE_TYPES.add(org.apache.hive.service.rpc.thrift.TTypeId.TIMESTAMPLOCALTZ_TYPE);
   }
 
   public static final Set<TTypeId> COMPLEX_TYPES = new HashSet<TTypeId>();
@@ -95,6 +96,7 @@ public class TCLIServiceConstants {
     TYPE_NAMES.put(org.apache.hive.service.rpc.thrift.TTypeId.CHAR_TYPE, "CHAR");
     TYPE_NAMES.put(org.apache.hive.service.rpc.thrift.TTypeId.INTERVAL_YEAR_MONTH_TYPE, "INTERVAL_YEAR_MONTH");
     TYPE_NAMES.put(org.apache.hive.service.rpc.thrift.TTypeId.INTERVAL_DAY_TIME_TYPE, "INTERVAL_DAY_TIME");
+    TYPE_NAMES.put(org.apache.hive.service.rpc.thrift.TTypeId.TIMESTAMPLOCALTZ_TYPE, "TIMESTAMP WITH LOCAL TIME ZONE");
   }
 
   public static final String CHARACTER_MAXIMUM_LENGTH = "characterMaximumLength";

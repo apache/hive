@@ -12,7 +12,7 @@ PREHOOK: query: create table acid_dot(
     cboolean1 BOOLEAN,
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:default
 PREHOOK: Output: default@acid_dot
 POSTHOOK: query: create table acid_dot(
@@ -29,17 +29,17 @@ POSTHOOK: query: create table acid_dot(
     cboolean1 BOOLEAN,
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_dot
 PREHOOK: query: select count(*) from acid_dot
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_dot
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from acid_dot
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_dot
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 12288
 PREHOOK: query: delete from acid_dot where cint < -1070551679
 PREHOOK: type: QUERY
@@ -52,10 +52,10 @@ POSTHOOK: Output: default@acid_dot
 PREHOOK: query: select count(*) from acid_dot
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_dot
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from acid_dot
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_dot
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 12280
 #### A masked pattern was here ####

@@ -72,7 +72,7 @@ public final class LlapTokenChecker {
     }
   }
 
-  private static List<LlapTokenIdentifier> getLlapTokens(
+  static List<LlapTokenIdentifier> getLlapTokens(
       UserGroupInformation ugi, String clusterId) {
     List<LlapTokenIdentifier> tokens = null;
     for (TokenIdentifier id : ugi.getTokenIdentifiers()) {
@@ -81,7 +81,7 @@ public final class LlapTokenChecker {
         LOG.debug("Token {}", id);
       }
       LlapTokenIdentifier llapId = (LlapTokenIdentifier)id;
-      if (!clusterId.equals(llapId.getClusterId())) continue;
+      if (clusterId != null && !clusterId.equals(llapId.getClusterId())) continue;
       if (tokens == null) {
         tokens = new ArrayList<>();
       }

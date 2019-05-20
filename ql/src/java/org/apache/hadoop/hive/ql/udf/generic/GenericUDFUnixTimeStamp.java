@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,15 +18,13 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.io.PrintStream;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.LongWritable;
@@ -47,13 +45,9 @@ public class GenericUDFUnixTimeStamp extends GenericUDFToUnixTimeStamp {
     } else {
       if (currentTimestamp == null) {
         currentTimestamp = new LongWritable(0);
-        setValueFromTs(currentTimestamp, SessionState.get().getQueryCurrentTimestamp());
+        setValueFromTs(currentTimestamp, Timestamp.ofEpochMilli(SessionState.get().getQueryCurrentTimestamp().toEpochMilli()));
         String msg = "unix_timestamp(void) is deprecated. Use current_timestamp instead.";
-        LOG.warn(msg);
-        PrintStream stream = LogHelper.getInfoStream();
-        if (stream != null) {
-          stream.println(msg);
-        }
+        SessionState.getConsole().printInfo(msg, false);
       }
     }
   }

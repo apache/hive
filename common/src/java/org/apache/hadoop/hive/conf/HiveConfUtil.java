@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,17 +18,20 @@
 
 package org.apache.hadoop.hive.conf;
 
+import com.google.common.collect.Iterables;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.Private;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hive.common.util.HiveStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -37,6 +40,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.stream.Stream;
+
+import static org.apache.hive.common.util.HiveStringUtils.COMMA;
+import static org.apache.hive.common.util.HiveStringUtils.EQUALS;
 
 /**
  * Hive Configuration utils
@@ -44,7 +51,7 @@ import java.util.StringTokenizer;
 @Private
 public class HiveConfUtil {
   private static final String CLASS_NAME = HiveConfUtil.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   /**
    * Check if metastore is being used in embedded mode.
    * This utility function exists so that the logic for determining the mode is same
@@ -92,11 +99,31 @@ public class HiveConfUtil {
    * @param hiddenSet The values to strip
    */
   public static void stripConfigurations(Configuration conf, Set<String> hiddenSet) {
-    for (String name : hiddenSet) {
-      if (conf.get(name) != null) {
-        conf.set(name, "");
-      }
-    }
+
+    // Find all configurations where the key contains any string from hiddenSet
+    Iterable<Map.Entry<String, String>> matching =
+        Iterables.filter(conf, confEntry -> {
+          for (String name : hiddenSet) {
+            if (confEntry.getKey().startsWith(name)) {
+              return true;
+            }
+          }
+          return false;
+        });
+
+    // Remove the value of every key found matching
+    matching.forEach(entry -> conf.set(entry.getKey(), StringUtils.EMPTY));
+  }
+
+  /**
+   * Searches the given configuration object and replaces all the configuration values for keys
+   * defined hive.conf.hidden.list by empty String
+   *
+   * @param conf - Configuration object which needs to be modified to remove sensitive keys
+   */
+  public static void stripConfigurations(Configuration conf) {
+    Set<String> hiddenSet = getHiddenSet(conf);
+    stripConfigurations(conf, hiddenSet);
   }
 
   public static void dumpConfig(Configuration originalConf, StringBuilder sb) {
@@ -140,6 +167,7 @@ public class HiveConfUtil {
    * password is through a file which stores the password in clear-text which needs to be readable
    * by all the consumers and therefore is not supported.
    *
+   *<ul>
    * <li>If HIVE_SERVER2_JOB_CREDENTIAL_PROVIDER_PATH is set in the hive configuration this method
    * overrides the MR job configuration property hadoop.security.credential.provider.path with its
    * value. If not set then it does not change the value of hadoop.security.credential.provider.path
@@ -150,7 +178,7 @@ public class HiveConfUtil {
    *   (2) If password is not set using (1) above we use HADOOP_CREDSTORE_PASSWORD if it is set.
    *   (3) If none of those are set, we do not set any password in the MR task environment. In this
    *       case the hadoop credential provider should use the default password of "none" automatically
-   *
+   *</ul>
    * @param jobConf - job specific configuration
    */
   public static void updateJobCredentialProviders(Configuration jobConf) {
@@ -160,23 +188,37 @@ public class HiveConfUtil {
 
     String jobKeyStoreLocation = jobConf.get(HiveConf.ConfVars.HIVE_SERVER2_JOB_CREDENTIAL_PROVIDER_PATH.varname);
     String oldKeyStoreLocation = jobConf.get(Constants.HADOOP_CREDENTIAL_PROVIDER_PATH_CONFIG);
+
     if (StringUtils.isNotBlank(jobKeyStoreLocation)) {
       jobConf.set(Constants.HADOOP_CREDENTIAL_PROVIDER_PATH_CONFIG, jobKeyStoreLocation);
       LOG.debug("Setting job conf credstore location to " + jobKeyStoreLocation
           + " previous location was " + oldKeyStoreLocation);
     }
 
-    String credStorepassword = getJobCredentialProviderPassword(jobConf);
-    if (credStorepassword != null) {
-      // if the execution engine is MR set the map/reduce env with the credential store password
+    String credstorePassword = getJobCredentialProviderPassword(jobConf);
+    if (credstorePassword != null) {
       String execEngine = jobConf.get(ConfVars.HIVE_EXECUTION_ENGINE.varname);
+
       if ("mr".equalsIgnoreCase(execEngine)) {
-        addKeyValuePair(jobConf, JobConf.MAPRED_MAP_TASK_ENV,
-            Constants.HADOOP_CREDENTIAL_PASSWORD_ENVVAR, credStorepassword);
-        addKeyValuePair(jobConf, JobConf.MAPRED_REDUCE_TASK_ENV,
-            Constants.HADOOP_CREDENTIAL_PASSWORD_ENVVAR, credStorepassword);
-        addKeyValuePair(jobConf, "yarn.app.mapreduce.am.admin.user.env",
-            Constants.HADOOP_CREDENTIAL_PASSWORD_ENVVAR, credStorepassword);
+        // if the execution engine is MR set the map/reduce env with the credential store password
+
+        Collection<String> redactedProperties =
+            jobConf.getStringCollection(MRJobConfig.MR_JOB_REDACTED_PROPERTIES);
+
+        Stream.of(
+            JobConf.MAPRED_MAP_TASK_ENV,
+            JobConf.MAPRED_REDUCE_TASK_ENV,
+            MRJobConfig.MR_AM_ADMIN_USER_ENV)
+
+            .forEach(property -> {
+              addKeyValuePair(jobConf, property,
+                  Constants.HADOOP_CREDENTIAL_PASSWORD_ENVVAR, credstorePassword);
+              redactedProperties.add(property);
+            });
+
+        // Hide sensitive configuration values from MR HistoryUI by telling MR to redact the following list.
+        jobConf.set(MRJobConfig.MR_JOB_REDACTED_PROPERTIES,
+            StringUtils.join(redactedProperties, COMMA));
       }
     }
   }
@@ -202,14 +244,13 @@ public class HiveConfUtil {
     return null;
   }
 
-  private static void addKeyValuePair(Configuration jobConf, String property, String keyName,
-      String newKeyValue) {
+  private static void addKeyValuePair(Configuration jobConf, String property, String keyName, String newKeyValue) {
     String existingValue = jobConf.get(property);
-    if (existingValue == null) {
-      jobConf.set(property, (keyName + "=" + newKeyValue));
+
+    if (StringUtils.isBlank(existingValue)) {
+      jobConf.set(property, (keyName + EQUALS + newKeyValue));
       return;
     }
-
     String propertyValue = HiveStringUtils.insertValue(keyName, newKeyValue, existingValue);
     jobConf.set(property, propertyValue);
   }

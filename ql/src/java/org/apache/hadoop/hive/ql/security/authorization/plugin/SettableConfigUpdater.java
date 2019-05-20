@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -47,7 +47,7 @@ public class SettableConfigUpdater {
     if(whiteListParamsStr == null || whiteListParamsStr.trim().isEmpty()) {
       throw new HiveAuthzPluginException("Configuration parameter "
           + ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST.varname
-          + " is not iniatialized.");
+          + " is not initialized.");
     }
 
     // append regexes that user wanted to add
@@ -63,7 +63,7 @@ public class SettableConfigUpdater {
     // if admin has already customized this list, honor that
     String curBlackList = hiveConf.getVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_BLACKLIST);
     if (curBlackList == null || curBlackList.trim().isEmpty()) {
-      hiveConf.setVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_BLACKLIST, "reflect,reflect2,java_method");
+      hiveConf.setVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_BLACKLIST, "reflect,reflect2,java_method,in_file");
     }
   }
 

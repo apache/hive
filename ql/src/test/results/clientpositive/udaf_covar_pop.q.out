@@ -39,6 +39,8 @@ Any pair with a NULL is ignored. If the function is applied to an empty set, NUL
 will be returned. Otherwise, it computes the following:
    (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)
 where neither x nor y is null.
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCovariance
+Function type:BUILTIN
 PREHOOK: query: SELECT covar_pop(b, c) FROM covar_tab WHERE a < 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@covar_tab

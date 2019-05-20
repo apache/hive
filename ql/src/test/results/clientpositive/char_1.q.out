@@ -1,10 +1,6 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-drop table char1
+PREHOOK: query: drop table char1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-drop table char1
+POSTHOOK: query: drop table char1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table char1_1
 PREHOOK: type: DROPTABLE
@@ -26,13 +22,11 @@ POSTHOOK: query: create table char1_1 (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char1_1
-PREHOOK: query: -- load from file
-load data local inpath '../../data/files/srcbucket0.txt' overwrite into table char1
+PREHOOK: query: load data local inpath '../../data/files/srcbucket0.txt' overwrite into table char1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@char1
-POSTHOOK: query: -- load from file
-load data local inpath '../../data/files/srcbucket0.txt' overwrite into table char1
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket0.txt' overwrite into table char1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@char1
@@ -46,14 +40,12 @@ POSTHOOK: Input: default@char1
 #### A masked pattern was here ####
 0         	val_0               
 0         	val_0               
-PREHOOK: query: -- insert overwrite, from same/different length char
-insert overwrite table char1
+PREHOOK: query: insert overwrite table char1
   select cast(key as char(10)), cast(value as char(15)) from src order by key, value limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@char1
-POSTHOOK: query: -- insert overwrite, from same/different length char
-insert overwrite table char1
+POSTHOOK: query: insert overwrite table char1
   select cast(key as char(10)), cast(value as char(15)) from src order by key, value limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -70,14 +62,12 @@ POSTHOOK: Input: default@char1
 #### A masked pattern was here ####
 0         	val_0               
 0         	val_0               
-PREHOOK: query: -- insert overwrite, from string
-insert overwrite table char1
+PREHOOK: query: insert overwrite table char1
   select key, value from src order by key, value limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@char1
-POSTHOOK: query: -- insert overwrite, from string
-insert overwrite table char1
+POSTHOOK: query: insert overwrite table char1
   select key, value from src order by key, value limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -94,20 +84,18 @@ POSTHOOK: Input: default@char1
 #### A masked pattern was here ####
 0         	val_0               
 0         	val_0               
-PREHOOK: query: -- insert string from char
-insert overwrite table char1_1
+PREHOOK: query: insert overwrite table char1_1
   select key, value from char1 order by key, value limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char1
 PREHOOK: Output: default@char1_1
-POSTHOOK: query: -- insert string from char
-insert overwrite table char1_1
+POSTHOOK: query: insert overwrite table char1_1
   select key, value from char1 order by key, value limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char1
 POSTHOOK: Output: default@char1_1
-POSTHOOK: Lineage: char1_1.key SIMPLE [(char1)char1.FieldSchema(name:key, type:char(10), comment:null), ]
-POSTHOOK: Lineage: char1_1.value SIMPLE [(char1)char1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char1_1.key EXPRESSION [(char1)char1.FieldSchema(name:key, type:char(10), comment:null), ]
+POSTHOOK: Lineage: char1_1.value EXPRESSION [(char1)char1.FieldSchema(name:value, type:char(20), comment:null), ]
 PREHOOK: query: select key, value from char1_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char1_1
@@ -116,16 +104,14 @@ POSTHOOK: query: select key, value from char1_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char1_1
 #### A masked pattern was here ####
-0         	val_0               
-0         	val_0               
-PREHOOK: query: -- respect string length
-insert overwrite table char1 
+0	val_0
+0	val_0
+PREHOOK: query: insert overwrite table char1 
   select key, cast(value as char(3)) from src order by key, value limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@char1
-POSTHOOK: query: -- respect string length
-insert overwrite table char1 
+POSTHOOK: query: insert overwrite table char1 
   select key, cast(value as char(3)) from src order by key, value limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src

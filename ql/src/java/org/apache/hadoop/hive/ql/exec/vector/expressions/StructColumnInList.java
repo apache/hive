@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Descriptor;
@@ -41,6 +42,7 @@ import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerialize
  */
 public class StructColumnInList extends StringColumnInList implements IStructInExpr {
   private static final long serialVersionUID = 1L;
+
   private VectorExpression[] structExpressions;
   private ColumnVector.Type[] fieldVectorColumnTypes;
   private int[] structColumnMap;
@@ -56,12 +58,12 @@ public class StructColumnInList extends StringColumnInList implements IStructInE
   /**
    * After construction you must call setInListValues() to add the values to the IN set.
    */
-  public StructColumnInList(int outputColumn) {
-    super(-1, outputColumn);
+  public StructColumnInList(int outputColumnNum) {
+    super(-1, outputColumnNum);
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     final int logicalSize = batch.size;
     if (logicalSize == 0) {
@@ -113,7 +115,7 @@ public class StructColumnInList extends StringColumnInList implements IStructInE
           case DECIMAL:
             DecimalColumnVector decColVector = ((DecimalColumnVector) colVec);
             binarySortableSerializeWrite.writeHiveDecimal(
-                decColVector.vector[adjustedIndex].getHiveDecimal(), decColVector.scale);
+                decColVector.vector[adjustedIndex], decColVector.scale);
             break;
 
           default:
@@ -136,12 +138,6 @@ public class StructColumnInList extends StringColumnInList implements IStructInE
     }
    }
 
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
   @Override
   public Descriptor getDescriptor() {
 
@@ -155,7 +151,7 @@ public class StructColumnInList extends StringColumnInList implements IStructInE
 
     // Tell our super class FilterStringColumnInList it will be evaluating our scratch
     // BytesColumnVector.
-    super.setInputColumn(scratchBytesColumn);
+    inputCol = scratchBytesColumn;
     this.scratchBytesColumn = scratchBytesColumn;
   }
 
@@ -168,8 +164,15 @@ public class StructColumnInList extends StringColumnInList implements IStructInE
     structColumnMap = new int[structExpressions.length];
     for (int i = 0; i < structColumnMap.length; i++) {
       VectorExpression ve = structExpressions[i];
-      structColumnMap[i] = ve.getOutputColumn();
+      structColumnMap[i] = ve.getOutputColumnNum();
     }
     this.fieldVectorColumnTypes = fieldVectorColumnTypes;
+  }
+
+  @Override
+  public String vectorExpressionParameters() {
+    return "structExpressions " + Arrays.toString(structExpressions) +
+        ", fieldVectorColumnTypes " + Arrays.toString(fieldVectorColumnTypes) +
+        ", structColumnMap " + Arrays.toString(structColumnMap);
   }
 }

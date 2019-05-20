@@ -12,3 +12,5 @@ Synonyms: upper
 Example:
   > SELECT ucase('Facebook') FROM src LIMIT 1;
   'FACEBOOK'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper
+Function type:BUILTIN

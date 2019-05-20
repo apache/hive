@@ -1,0 +1,592 @@
+PREHOOK: query: create table wre1_managed1 (c1 string, c2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@wre1_managed1
+POSTHOOK: query: create table wre1_managed1 (c1 string, c2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@wre1_managed1
+PREHOOK: query: show create table wre1_managed1
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@wre1_managed1
+POSTHOOK: query: show create table wre1_managed1
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@wre1_managed1
+CREATE TABLE `wre1_managed1`(
+  `c1` string, 
+  `c2` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: insert into table wre1_managed1 select * from src where key = '0'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@wre1_managed1
+POSTHOOK: query: insert into table wre1_managed1 select * from src where key = '0'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@wre1_managed1
+POSTHOOK: Lineage: wre1_managed1.c1 SIMPLE []
+POSTHOOK: Lineage: wre1_managed1.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select count(*) from wre1_managed1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@wre1_managed1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from wre1_managed1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@wre1_managed1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3
+PREHOOK: query: create external table wre1_ext1 (c1 string, c2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@wre1_ext1
+POSTHOOK: query: create external table wre1_ext1 (c1 string, c2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@wre1_ext1
+PREHOOK: query: show create table wre1_ext1
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@wre1_ext1
+POSTHOOK: query: show create table wre1_ext1
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@wre1_ext1
+CREATE EXTERNAL TABLE `wre1_ext1`(
+  `c1` string, 
+  `c2` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: insert into table wre1_ext1 select * from src where key < 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@wre1_ext1
+POSTHOOK: query: insert into table wre1_ext1 select * from src where key < 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@wre1_ext1
+POSTHOOK: Lineage: wre1_ext1.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: wre1_ext1.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select count(*) from wre1_ext1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@wre1_ext1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from wre1_ext1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@wre1_ext1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+5
+PREHOOK: query: insert overwrite table wre1_ext1 select * from src where key < 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@wre1_ext1
+POSTHOOK: query: insert overwrite table wre1_ext1 select * from src where key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@wre1_ext1
+POSTHOOK: Lineage: wre1_ext1.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: wre1_ext1.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select count(*) from wre1_ext1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@wre1_ext1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from wre1_ext1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@wre1_ext1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+10
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table wre1_ext1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@wre1_ext1
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table wre1_ext1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@wre1_ext1
+PREHOOK: query: select count(*) from wre1_ext1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@wre1_ext1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from wre1_ext1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@wre1_ext1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+500
+PREHOOK: query: create external table wre1_ext2 (c1 string, c2 string) location 'hdfs://### HDFS PATH ###'
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@wre1_ext2
+POSTHOOK: query: create external table wre1_ext2 (c1 string, c2 string) location 'hdfs://### HDFS PATH ###'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@wre1_ext2
+PREHOOK: query: show create table wre1_ext2
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@wre1_ext2
+POSTHOOK: query: show create table wre1_ext2
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@wre1_ext2
+CREATE EXTERNAL TABLE `wre1_ext2`(
+  `c1` string, 
+  `c2` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: insert into table wre1_ext2 select * from src where key < 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@wre1_ext2
+POSTHOOK: query: insert into table wre1_ext2 select * from src where key < 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@wre1_ext2
+POSTHOOK: Lineage: wre1_ext2.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: wre1_ext2.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select count(*) from wre1_ext2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@wre1_ext2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from wre1_ext2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@wre1_ext2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+5
+PREHOOK: query: insert overwrite table wre1_ext2 select * from src where key < 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@wre1_ext2
+POSTHOOK: query: insert overwrite table wre1_ext2 select * from src where key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@wre1_ext2
+POSTHOOK: Lineage: wre1_ext2.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: wre1_ext2.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select count(*) from wre1_ext2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@wre1_ext2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from wre1_ext2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@wre1_ext2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+10
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table wre1_ext2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@wre1_ext2
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table wre1_ext2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@wre1_ext2
+PREHOOK: query: select count(*) from wre1_ext2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@wre1_ext2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from wre1_ext2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@wre1_ext2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+500
+PREHOOK: query: create database wre1_db
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:wre1_db
+POSTHOOK: query: create database wre1_db
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:wre1_db
+PREHOOK: query: create external table wre1_db.wre1_ext3 (c1 string, c2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:wre1_db
+PREHOOK: Output: wre1_db@wre1_ext3
+POSTHOOK: query: create external table wre1_db.wre1_ext3 (c1 string, c2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:wre1_db
+POSTHOOK: Output: wre1_db@wre1_ext3
+PREHOOK: query: show create table wre1_db.wre1_ext3
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: wre1_db@wre1_ext3
+POSTHOOK: query: show create table wre1_db.wre1_ext3
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: wre1_db@wre1_ext3
+CREATE EXTERNAL TABLE `wre1_db.wre1_ext3`(
+  `c1` string, 
+  `c2` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: insert into table wre1_db.wre1_ext3 select * from src where key < 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: wre1_db@wre1_ext3
+POSTHOOK: query: insert into table wre1_db.wre1_ext3 select * from src where key < 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: wre1_db@wre1_ext3
+POSTHOOK: Lineage: wre1_ext3.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: wre1_ext3.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select count(*) from wre1_db.wre1_ext3
+PREHOOK: type: QUERY
+PREHOOK: Input: wre1_db@wre1_ext3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from wre1_db.wre1_ext3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: wre1_db@wre1_ext3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+5
+PREHOOK: query: insert overwrite table wre1_db.wre1_ext3 select * from src where key < 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: wre1_db@wre1_ext3
+POSTHOOK: query: insert overwrite table wre1_db.wre1_ext3 select * from src where key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: wre1_db@wre1_ext3
+POSTHOOK: Lineage: wre1_ext3.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: wre1_ext3.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select count(*) from wre1_db.wre1_ext3
+PREHOOK: type: QUERY
+PREHOOK: Input: wre1_db@wre1_ext3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from wre1_db.wre1_ext3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: wre1_db@wre1_ext3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+10
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table wre1_db.wre1_ext3
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: wre1_db@wre1_ext3
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table wre1_db.wre1_ext3
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: wre1_db@wre1_ext3
+PREHOOK: query: select count(*) from wre1_db.wre1_ext3
+PREHOOK: type: QUERY
+PREHOOK: Input: wre1_db@wre1_ext3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from wre1_db.wre1_ext3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: wre1_db@wre1_ext3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+500
+PREHOOK: query: create external table wre1_db.wre1_ext4 (c1 string, c2 string) location 'hdfs://### HDFS PATH ###'
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:wre1_db
+PREHOOK: Output: wre1_db@wre1_ext4
+POSTHOOK: query: create external table wre1_db.wre1_ext4 (c1 string, c2 string) location 'hdfs://### HDFS PATH ###'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:wre1_db
+POSTHOOK: Output: wre1_db@wre1_ext4
+PREHOOK: query: show create table wre1_db.wre1_ext4
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: wre1_db@wre1_ext4
+POSTHOOK: query: show create table wre1_db.wre1_ext4
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: wre1_db@wre1_ext4
+CREATE EXTERNAL TABLE `wre1_db.wre1_ext4`(
+  `c1` string, 
+  `c2` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: insert into table wre1_db.wre1_ext4 select * from src where key < 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: wre1_db@wre1_ext4
+POSTHOOK: query: insert into table wre1_db.wre1_ext4 select * from src where key < 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: wre1_db@wre1_ext4
+POSTHOOK: Lineage: wre1_ext4.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: wre1_ext4.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select count(*) from wre1_db.wre1_ext4
+PREHOOK: type: QUERY
+PREHOOK: Input: wre1_db@wre1_ext4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from wre1_db.wre1_ext4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: wre1_db@wre1_ext4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+5
+PREHOOK: query: insert overwrite table wre1_db.wre1_ext4 select * from src where key < 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: wre1_db@wre1_ext4
+POSTHOOK: query: insert overwrite table wre1_db.wre1_ext4 select * from src where key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: wre1_db@wre1_ext4
+POSTHOOK: Lineage: wre1_ext4.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: wre1_ext4.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select count(*) from wre1_db.wre1_ext4
+PREHOOK: type: QUERY
+PREHOOK: Input: wre1_db@wre1_ext4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from wre1_db.wre1_ext4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: wre1_db@wre1_ext4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+10
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table wre1_db.wre1_ext4
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: wre1_db@wre1_ext4
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table wre1_db.wre1_ext4
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: wre1_db@wre1_ext4
+PREHOOK: query: select count(*) from wre1_db.wre1_ext4
+PREHOOK: type: QUERY
+PREHOOK: Input: wre1_db@wre1_ext4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from wre1_db.wre1_ext4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: wre1_db@wre1_ext4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+500
+PREHOOK: query: create external table wre1_ext5 like wre1_ext2
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@wre1_ext5
+POSTHOOK: query: create external table wre1_ext5 like wre1_ext2
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@wre1_ext5
+PREHOOK: query: show create table wre1_ext5
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@wre1_ext5
+POSTHOOK: query: show create table wre1_ext5
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@wre1_ext5
+CREATE EXTERNAL TABLE `wre1_ext5`(
+  `c1` string, 
+  `c2` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+#### A masked pattern was here ####
+PREHOOK: query: insert into table wre1_ext5 select * from src where key < 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@wre1_ext5
+POSTHOOK: query: insert into table wre1_ext5 select * from src where key < 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@wre1_ext5
+POSTHOOK: Lineage: wre1_ext5.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: wre1_ext5.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select count(*) from wre1_ext5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@wre1_ext5
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from wre1_ext5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@wre1_ext5
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+5
+PREHOOK: query: insert overwrite table wre1_ext5 select * from src where key < 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@wre1_ext5
+POSTHOOK: query: insert overwrite table wre1_ext5 select * from src where key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@wre1_ext5
+POSTHOOK: Lineage: wre1_ext5.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: wre1_ext5.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select count(*) from wre1_ext5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@wre1_ext5
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from wre1_ext5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@wre1_ext5
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+10
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table wre1_ext5
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@wre1_ext5
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table wre1_ext5
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@wre1_ext5
+PREHOOK: query: select count(*) from wre1_ext5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@wre1_ext5
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from wre1_ext5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@wre1_ext5
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+500
+PREHOOK: query: create external table wre1_db.wre1_ext6 like wre1_ext2
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:wre1_db
+PREHOOK: Output: wre1_db@wre1_ext6
+POSTHOOK: query: create external table wre1_db.wre1_ext6 like wre1_ext2
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:wre1_db
+POSTHOOK: Output: wre1_db@wre1_ext6
+PREHOOK: query: show create table wre1_db.wre1_ext6
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: wre1_db@wre1_ext6
+POSTHOOK: query: show create table wre1_db.wre1_ext6
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: wre1_db@wre1_ext6
+CREATE EXTERNAL TABLE `wre1_db.wre1_ext6`(
+  `c1` string, 
+  `c2` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+#### A masked pattern was here ####
+PREHOOK: query: insert into table wre1_db.wre1_ext6 select * from src where key < 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: wre1_db@wre1_ext6
+POSTHOOK: query: insert into table wre1_db.wre1_ext6 select * from src where key < 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: wre1_db@wre1_ext6
+POSTHOOK: Lineage: wre1_ext6.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: wre1_ext6.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select count(*) from wre1_db.wre1_ext6
+PREHOOK: type: QUERY
+PREHOOK: Input: wre1_db@wre1_ext6
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from wre1_db.wre1_ext6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: wre1_db@wre1_ext6
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+5
+PREHOOK: query: insert overwrite table wre1_db.wre1_ext6 select * from src where key < 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: wre1_db@wre1_ext6
+POSTHOOK: query: insert overwrite table wre1_db.wre1_ext6 select * from src where key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: wre1_db@wre1_ext6
+POSTHOOK: Lineage: wre1_ext6.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: wre1_ext6.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select count(*) from wre1_db.wre1_ext6
+PREHOOK: type: QUERY
+PREHOOK: Input: wre1_db@wre1_ext6
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from wre1_db.wre1_ext6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: wre1_db@wre1_ext6
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+10
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table wre1_db.wre1_ext6
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: wre1_db@wre1_ext6
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table wre1_db.wre1_ext6
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: wre1_db@wre1_ext6
+PREHOOK: query: select count(*) from wre1_db.wre1_ext6
+PREHOOK: type: QUERY
+PREHOOK: Input: wre1_db@wre1_ext6
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from wre1_db.wre1_ext6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: wre1_db@wre1_ext6
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+500
+PREHOOK: query: drop table wre1_managed1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@wre1_managed1
+PREHOOK: Output: default@wre1_managed1
+POSTHOOK: query: drop table wre1_managed1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@wre1_managed1
+POSTHOOK: Output: default@wre1_managed1
+PREHOOK: query: drop table wre1_ext1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@wre1_ext1
+PREHOOK: Output: default@wre1_ext1
+POSTHOOK: query: drop table wre1_ext1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@wre1_ext1
+POSTHOOK: Output: default@wre1_ext1
+PREHOOK: query: drop table wre1_ext2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@wre1_ext2
+PREHOOK: Output: default@wre1_ext2
+POSTHOOK: query: drop table wre1_ext2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@wre1_ext2
+POSTHOOK: Output: default@wre1_ext2
+PREHOOK: query: drop database wre1_db cascade
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:wre1_db
+PREHOOK: Output: database:wre1_db
+PREHOOK: Output: wre1_db@wre1_ext3
+PREHOOK: Output: wre1_db@wre1_ext4
+PREHOOK: Output: wre1_db@wre1_ext6
+POSTHOOK: query: drop database wre1_db cascade
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:wre1_db
+POSTHOOK: Output: database:wre1_db
+POSTHOOK: Output: wre1_db@wre1_ext3
+POSTHOOK: Output: wre1_db@wre1_ext4
+POSTHOOK: Output: wre1_db@wre1_ext6
+#### A masked pattern was here ####

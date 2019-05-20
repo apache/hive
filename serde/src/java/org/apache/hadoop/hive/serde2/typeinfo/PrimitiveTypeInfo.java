@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,7 +19,10 @@
 package org.apache.hadoop.hive.serde2.typeinfo;
 
 import java.io.Serializable;
+import java.util.Objects;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
@@ -32,6 +35,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  * Always use the TypeInfoFactory to create new TypeInfo objects, instead of
  * directly creating an instance of this class.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class PrimitiveTypeInfo extends TypeInfo implements Serializable {
   private static final long serialVersionUID = 1L;
 
@@ -48,6 +53,7 @@ public class PrimitiveTypeInfo extends TypeInfo implements Serializable {
    * For TypeInfoFactory use only.
    */
   PrimitiveTypeInfo(String typeName) {
+    Objects.requireNonNull(typeName);
     this.typeName = typeName;
   }
 
@@ -86,29 +92,34 @@ public class PrimitiveTypeInfo extends TypeInfo implements Serializable {
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (this == other) {
-      return true;
-    }
-    if (other == null || getClass() != other.getClass()) {
-      return false;
-    }
-
-    PrimitiveTypeInfo pti = (PrimitiveTypeInfo) other;
-
-    return this.typeName.equals(pti.typeName);
-  }
-
-  /**
-   * Generate the hashCode for this TypeInfo.
-   */
-  @Override
-  public int hashCode() {
-    return typeName.hashCode();
-  }
-
-  @Override
   public String toString() {
     return typeName;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((typeName == null) ? 0 : typeName.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    PrimitiveTypeInfo other = (PrimitiveTypeInfo) obj;
+    if (typeName == null) {
+      if (other.typeName != null) {
+        return false;
+      }
+    } else if (!typeName.equals(other.typeName)) {
+      return false;
+    }
+    return true;
   }
 }

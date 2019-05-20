@@ -1,9 +1,7 @@
-#### A masked pattern was here ####
-create database ctas_auth
+PREHOOK: query: create database ctas_auth
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:ctas_auth
-#### A masked pattern was here ####
-create database ctas_auth
+POSTHOOK: query: create database ctas_auth
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:ctas_auth
 PREHOOK: query: create table t1(i int)

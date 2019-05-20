@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 show partitions srcpart;
 
 

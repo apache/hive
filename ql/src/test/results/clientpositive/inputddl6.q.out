@@ -1,14 +1,8 @@
-PREHOOK: query: -- test for describe extended table
--- test for describe extended table partition
--- test for alter table drop partition
-CREATE TABLE INPUTDDL6(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE INPUTDDL6(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@INPUTDDL6
-POSTHOOK: query: -- test for describe extended table
--- test for describe extended table partition
--- test for alter table drop partition
-CREATE TABLE INPUTDDL6(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE INPUTDDL6(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@INPUTDDL6
@@ -42,7 +36,6 @@ ds                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -58,7 +51,6 @@ ds                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -88,20 +80,21 @@ ds=2008-04-09
 PREHOOK: query: EXPLAIN
 DESCRIBE EXTENDED INPUTDDL6 PARTITION (ds='2008-04-09')
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@inputddl6
 POSTHOOK: query: EXPLAIN
 DESCRIBE EXTENDED INPUTDDL6 PARTITION (ds='2008-04-09')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@inputddl6
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-0
-      Describe Table Operator:
-        Describe Table
-          partition:
-            ds 2008-04-09
-          table: INPUTDDL6
+    Describe Table
+      partition:
+        ds 2008-04-09
+      table: INPUTDDL6
 
   Stage: Stage-1
     Fetch Operator

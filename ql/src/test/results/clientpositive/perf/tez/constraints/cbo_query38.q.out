@@ -1,0 +1,106 @@
+PREHOOK: query: explain cbo
+select  count(*) from (
+    select distinct c_last_name, c_first_name, d_date
+    from store_sales, date_dim, customer
+          where store_sales.ss_sold_date_sk = date_dim.d_date_sk
+      and store_sales.ss_customer_sk = customer.c_customer_sk
+      and d_month_seq between 1212 and 1212 + 11
+  intersect
+    select distinct c_last_name, c_first_name, d_date
+    from catalog_sales, date_dim, customer
+          where catalog_sales.cs_sold_date_sk = date_dim.d_date_sk
+      and catalog_sales.cs_bill_customer_sk = customer.c_customer_sk
+      and d_month_seq between 1212 and 1212 + 11
+  intersect
+    select distinct c_last_name, c_first_name, d_date
+    from web_sales, date_dim, customer
+          where web_sales.ws_sold_date_sk = date_dim.d_date_sk
+      and web_sales.ws_bill_customer_sk = customer.c_customer_sk
+      and d_month_seq between 1212 and 1212 + 11
+) hot_cust
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@web_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select  count(*) from (
+    select distinct c_last_name, c_first_name, d_date
+    from store_sales, date_dim, customer
+          where store_sales.ss_sold_date_sk = date_dim.d_date_sk
+      and store_sales.ss_customer_sk = customer.c_customer_sk
+      and d_month_seq between 1212 and 1212 + 11
+  intersect
+    select distinct c_last_name, c_first_name, d_date
+    from catalog_sales, date_dim, customer
+          where catalog_sales.cs_sold_date_sk = date_dim.d_date_sk
+      and catalog_sales.cs_bill_customer_sk = customer.c_customer_sk
+      and d_month_seq between 1212 and 1212 + 11
+  intersect
+    select distinct c_last_name, c_first_name, d_date
+    from web_sales, date_dim, customer
+          where web_sales.ws_sold_date_sk = date_dim.d_date_sk
+      and web_sales.ws_bill_customer_sk = customer.c_customer_sk
+      and d_month_seq between 1212 and 1212 + 11
+) hot_cust
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@web_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[count()])
+  HiveProject(c_last_name=[$0], c_first_name=[$1], d_date=[$2], $f3=[$3])
+    HiveFilter(condition=[=($3, 3)])
+      HiveAggregate(group=[{0, 1, 2}], agg#0=[count($3)])
+        HiveProject(c_last_name=[$0], c_first_name=[$1], d_date=[$2], $f3=[$3])
+          HiveUnion(all=[true])
+            HiveProject(c_last_name=[$1], c_first_name=[$0], d_date=[$2], $f3=[$3])
+              HiveAggregate(group=[{0, 1, 2}], agg#0=[count()])
+                HiveProject(c_first_name=[$0], c_last_name=[$1], d_date=[$2])
+                  HiveAggregate(group=[{1, 2, 6}])
+                    HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                      HiveProject(c_customer_sk=[$0], c_first_name=[$8], c_last_name=[$9])
+                        HiveTableScan(table=[[default, customer]], table:alias=[customer])
+                      HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                        HiveProject(ss_sold_date_sk=[$0], ss_customer_sk=[$3])
+                          HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($3))])
+                            HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                        HiveProject(d_date_sk=[$0], d_date=[$2])
+                          HiveFilter(condition=[BETWEEN(false, $3, 1212, 1223)])
+                            HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+            HiveProject(c_last_name=[$1], c_first_name=[$0], d_date=[$2], $f3=[$3])
+              HiveAggregate(group=[{0, 1, 2}], agg#0=[count()])
+                HiveProject(c_first_name=[$0], c_last_name=[$1], d_date=[$2])
+                  HiveAggregate(group=[{1, 2, 6}])
+                    HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                      HiveProject(c_customer_sk=[$0], c_first_name=[$8], c_last_name=[$9])
+                        HiveTableScan(table=[[default, customer]], table:alias=[customer])
+                      HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                        HiveProject(cs_sold_date_sk=[$0], cs_bill_customer_sk=[$3])
+                          HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($3))])
+                            HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                        HiveProject(d_date_sk=[$0], d_date=[$2])
+                          HiveFilter(condition=[BETWEEN(false, $3, 1212, 1223)])
+                            HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+            HiveProject(c_last_name=[$1], c_first_name=[$0], d_date=[$2], $f3=[$3])
+              HiveAggregate(group=[{0, 1, 2}], agg#0=[count()])
+                HiveProject(c_first_name=[$0], c_last_name=[$1], d_date=[$2])
+                  HiveAggregate(group=[{1, 2, 6}])
+                    HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                      HiveProject(c_customer_sk=[$0], c_first_name=[$8], c_last_name=[$9])
+                        HiveTableScan(table=[[default, customer]], table:alias=[customer])
+                      HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                        HiveProject(ws_sold_date_sk=[$0], ws_bill_customer_sk=[$4])
+                          HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($4))])
+                            HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                        HiveProject(d_date_sk=[$0], d_date=[$2])
+                          HiveFilter(condition=[BETWEEN(false, $3, 1212, 1223)])
+                            HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+

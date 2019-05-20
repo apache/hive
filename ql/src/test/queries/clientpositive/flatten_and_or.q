@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.optimize.point.lookup=false;
 
 explain

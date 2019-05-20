@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
  FROM 
   src a
  FULL OUTER JOIN 
@@ -9,9 +7,12 @@ EXPLAIN EXTENDED
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > 10 AND a.key < 20 AND b.key > 15 AND b.key < 25
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN EXTENDED
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED
  FROM 
   src a
  FULL OUTER JOIN 
@@ -20,6 +21,11 @@ EXPLAIN EXTENDED
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > 10 AND a.key < 20 AND b.key > 15 AND b.key < 25
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -30,38 +36,48 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: ((UDFToDouble(key) < 20.0D) and (UDFToDouble(key) > 15.0D)) (type: boolean)
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
-            Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: key, value
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: string)
-                null sort order: a
-                sort order: +
-                Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                tag: 0
-                value expressions: value (type: string)
-                auto parallelism: false
+            Filter Operator
+              isSamplingPred: false
+              predicate: ((UDFToDouble(key) < 20.0D) and (UDFToDouble(key) > 15.0D)) (type: boolean)
+              Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: key (type: string), value (type: string)
+                outputColumnNames: key, value
+                Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: key (type: string)
+                  null sort order: a
+                  sort order: +
+                  Map-reduce partition columns: key (type: string)
+                  Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                  tag: 0
+                  value expressions: value (type: string)
+                  auto parallelism: false
           TableScan
             alias: b
-            Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: ((UDFToDouble(key) > 15.0D) and (UDFToDouble(key) < 20.0D)) (type: boolean)
+            Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
-            Select Operator
-              expressions: key (type: string), value (type: string), ds (type: string)
-              outputColumnNames: key, value, ds
-              Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: string)
-                null sort order: a
-                sort order: +
-                Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                tag: 1
-                value expressions: value (type: string), ds (type: string)
-                auto parallelism: false
+            Filter Operator
+              isSamplingPred: false
+              predicate: ((UDFToDouble(key) < 20.0D) and (UDFToDouble(key) > 15.0D)) (type: boolean)
+              Statistics: Num rows: 111 Data size: 19758 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: key (type: string), value (type: string)
+                outputColumnNames: key, value
+                Statistics: Num rows: 111 Data size: 30192 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: key (type: string)
+                  null sort order: a
+                  sort order: +
+                  Map-reduce partition columns: key (type: string)
+                  Statistics: Num rows: 111 Data size: 30192 Basic stats: COMPLETE Column stats: COMPLETE
+                  tag: 1
+                  value expressions: value (type: string)
+                  auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -73,6 +89,8 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              bucketing_version 2
+              column.name.delimiter ,
               columns key,value
               columns.comments 'default','default'
               columns.types string:string
@@ -93,6 +111,8 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
                 columns.types string:string
@@ -120,6 +140,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 'default','default'
               columns.types string:string
@@ -141,6 +162,8 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
                 columns.types string:string
@@ -166,6 +189,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 'default','default'
               columns.types string:string
@@ -187,98 +211,8 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
-                columns key,value
-                columns.comments 'default','default'
-                columns.types string:string
-#### A masked pattern was here ####
-                name default.srcpart
-                partition_columns ds/hr
-                partition_columns.types string:string
-                serialization.ddl struct srcpart { string key, string value}
-                serialization.format 1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.srcpart
-            name: default.srcpart
-#### A masked pattern was here ####
-          Partition
-            base file name: hr=11
-            input format: org.apache.hadoop.mapred.TextInputFormat
-            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-            partition values:
-              ds 2008-04-09
-              hr 11
-            properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-              bucket_count -1
-              columns key,value
-              columns.comments 'default','default'
-              columns.types string:string
-#### A masked pattern was here ####
-              name default.srcpart
-              numFiles 1
-              numRows 500
-              partition_columns ds/hr
-              partition_columns.types string:string
-              rawDataSize 5312
-              serialization.ddl struct srcpart { string key, string value}
-              serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 5812
-#### A masked pattern was here ####
-            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              properties:
-                bucket_count -1
-                columns key,value
-                columns.comments 'default','default'
-                columns.types string:string
-#### A masked pattern was here ####
-                name default.srcpart
-                partition_columns ds/hr
-                partition_columns.types string:string
-                serialization.ddl struct srcpart { string key, string value}
-                serialization.format 1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.srcpart
-            name: default.srcpart
-#### A masked pattern was here ####
-          Partition
-            base file name: hr=12
-            input format: org.apache.hadoop.mapred.TextInputFormat
-            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-            partition values:
-              ds 2008-04-09
-              hr 12
-            properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-              bucket_count -1
-              columns key,value
-              columns.comments 'default','default'
-              columns.types string:string
-#### A masked pattern was here ####
-              name default.srcpart
-              numFiles 1
-              numRows 500
-              partition_columns ds/hr
-              partition_columns.types string:string
-              rawDataSize 5312
-              serialization.ddl struct srcpart { string key, string value}
-              serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 5812
-#### A masked pattern was here ####
-            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              properties:
-                bucket_count -1
+                bucketing_version 2
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
                 columns.types string:string
@@ -297,53 +231,42 @@ STAGE PLANS:
         /src [a]
         /srcpart/ds=2008-04-08/hr=11 [b]
         /srcpart/ds=2008-04-08/hr=12 [b]
-        /srcpart/ds=2008-04-09/hr=11 [b]
-        /srcpart/ds=2008-04-09/hr=12 [b]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Outer Join 0 to 1
-          filter mappings:
-            1 [0, 1]
-          filter predicates:
-            0 
-            1 {(VALUE.ds = '2008-04-08')}
+               Inner Join 0 to 1
           keys:
             0 key (type: string)
             1 key (type: string)
           outputColumnNames: key, value, key0, value0
-          Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 55 Data size: 19580 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string), value (type: string), key0 (type: string), value0 (type: string)
             outputColumnNames: key, value, key0, value0
-            Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              isSamplingPred: false
-              predicate: ((UDFToDouble(key) > 10.0) and (UDFToDouble(key) < 20.0) and (UDFToDouble(key0) > 15.0) and (UDFToDouble(key0) < 25.0)) (type: boolean)
-              Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
+            Statistics: Num rows: 55 Data size: 19580 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
 #### A masked pattern was here ####
-                NumFilesPerFileSink: 1
-                Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
+              NumFilesPerFileSink: 1
+              Statistics: Num rows: 55 Data size: 19580 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    properties:
-                      columns key,value,key0,value0
-                      columns.types string:string:string:string
-                      escape.delim \
-                      hive.serialization.extend.additional.nesting.levels true
-                      serialization.escape.crlf true
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                TotalFiles: 1
-                GatherStats: false
-                MultiFileSpray: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  properties:
+                    columns key,value,key0,value0
+                    columns.types string:string:string:string
+                    escape.delim \
+                    hive.serialization.extend.additional.nesting.levels true
+                    serialization.escape.crlf true
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
@@ -363,8 +286,6 @@ PREHOOK: Input: default@src
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
-PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: FROM 
   src a
@@ -378,8 +299,6 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
-POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 17	val_17	17	val_17
 17	val_17	17	val_17
@@ -402,6 +321,11 @@ PREHOOK: query: EXPLAIN EXTENDED
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > 10 AND a.key < 20 AND b.key > 15 AND b.key < 25 AND b.ds = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
  FROM 
   src a
@@ -411,6 +335,11 @@ POSTHOOK: query: EXPLAIN EXTENDED
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > 10 AND a.key < 20 AND b.key > 15 AND b.key < 25 AND b.ds = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -421,43 +350,45 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: ((UDFToDouble(key) < 20.0D) and (UDFToDouble(key) > 15.0D)) (type: boolean)
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((UDFToDouble(key) > 15.0) and (UDFToDouble(key) < 25.0)) (type: boolean)
-              Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((UDFToDouble(key) < 20.0D) and (UDFToDouble(key) > 15.0D)) (type: boolean)
+              Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: key, value
-                Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: key (type: string)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: key (type: string)
-                  Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: 0
                   value expressions: value (type: string)
                   auto parallelism: false
           TableScan
             alias: b
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: ((UDFToDouble(key) > 15.0D) and (UDFToDouble(key) < 20.0D)) (type: boolean)
+            Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((UDFToDouble(key) > 15.0) and (UDFToDouble(key) < 25.0)) (type: boolean)
-              Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((UDFToDouble(key) < 20.0D) and (UDFToDouble(key) > 15.0D)) (type: boolean)
+              Statistics: Num rows: 111 Data size: 19758 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: key, value
-                Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 111 Data size: 30192 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: key (type: string)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: key (type: string)
-                  Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 111 Data size: 30192 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: 1
                   value expressions: value (type: string)
                   auto parallelism: false
@@ -472,6 +403,8 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              bucketing_version 2
+              column.name.delimiter ,
               columns key,value
               columns.comments 'default','default'
               columns.types string:string
@@ -492,6 +425,8 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
                 columns.types string:string
@@ -519,6 +454,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 'default','default'
               columns.types string:string
@@ -540,6 +476,8 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
                 columns.types string:string
@@ -565,6 +503,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 'default','default'
               columns.types string:string
@@ -586,6 +525,8 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
                 columns.types string:string
@@ -608,42 +549,38 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Right Outer Join0 to 1
+               Inner Join 0 to 1
           keys:
             0 key (type: string)
             1 key (type: string)
           outputColumnNames: key, value, key0, value0
-          Statistics: Num rows: 122 Data size: 1296 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 55 Data size: 19580 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string), value (type: string), key0 (type: string), value0 (type: string)
             outputColumnNames: key, value, key0, value0
-            Statistics: Num rows: 122 Data size: 1296 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              isSamplingPred: false
-              predicate: ((UDFToDouble(key) > 10.0) and (UDFToDouble(key) < 20.0)) (type: boolean)
-              Statistics: Num rows: 13 Data size: 138 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
+            Statistics: Num rows: 55 Data size: 19580 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
 #### A masked pattern was here ####
-                NumFilesPerFileSink: 1
-                Statistics: Num rows: 13 Data size: 138 Basic stats: COMPLETE Column stats: NONE
+              NumFilesPerFileSink: 1
+              Statistics: Num rows: 55 Data size: 19580 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    properties:
-                      columns key,value,key0,value0
-                      columns.types string:string:string:string
-                      escape.delim \
-                      hive.serialization.extend.additional.nesting.levels true
-                      serialization.escape.crlf true
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                TotalFiles: 1
-                GatherStats: false
-                MultiFileSpray: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  properties:
+                    columns key,value,key0,value0
+                    columns.types string:string:string:string
+                    escape.delim \
+                    hive.serialization.extend.additional.nesting.levels true
+                    serialization.escape.crlf true
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator

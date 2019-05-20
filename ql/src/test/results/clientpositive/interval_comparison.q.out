@@ -1,5 +1,4 @@
-PREHOOK: query: -- should all be true
-select
+PREHOOK: query: select
   i1 = i1,
   i1 = i2,
   i1 >= i2,
@@ -22,8 +21,7 @@ from (
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- should all be true
-select
+POSTHOOK: query: select
   i1 = i1,
   i1 = i2,
   i1 >= i2,
@@ -47,8 +45,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 true	true	true	true	true	true	true	true	true	true	true
-PREHOOK: query: -- should all be false
-select
+PREHOOK: query: select
   i1 != i1,
   i1 != i2,
   i1 < i2,
@@ -69,8 +66,7 @@ from (
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- should all be false
-select
+POSTHOOK: query: select
   i1 != i1,
   i1 != i2,
   i1 < i2,
@@ -92,8 +88,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 false	false	false	false	false	false	false	false	false
-PREHOOK: query: -- should all be true
-select
+PREHOOK: query: select
   i1 = i1,
   i1 = i2,
   i1 >= i2,
@@ -116,8 +111,7 @@ from (
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- should all be true
-select
+POSTHOOK: query: select
   i1 = i1,
   i1 = i2,
   i1 >= i2,
@@ -141,8 +135,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 true	true	true	true	true	true	true	true	true	true	true
-PREHOOK: query: -- should all be false
-select
+PREHOOK: query: select
   i1 != i1,
   i1 != i2,
   i1 < i2,
@@ -163,8 +156,7 @@ from (
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- should all be false
-select
+POSTHOOK: query: select
   i1 != i1,
   i1 != i2,
   i1 < i2,

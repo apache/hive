@@ -1,3 +1,4 @@
+--! qt:dataset:src
 drop table varchar_nested_1;
 drop table varchar_nested_array;
 drop table varchar_nested_map;

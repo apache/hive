@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -48,7 +48,7 @@ public class OneNullRowInputFormat extends NullRowsInputFormat
       super(conf, split);
     }
 
-    private boolean processed;
+    protected boolean processed;
 
     @Override
     public long getPos() throws IOException {

@@ -34,7 +34,7 @@ import org.apache.hive.spark.counter.SparkCounters;
  */
 class JobHandleImpl<T extends Serializable> implements JobHandle<T> {
 
-  private final SparkClientImpl client;
+  private final SparkClient client;
   private final String jobId;
   private final MetricsCollection metrics;
   private final Promise<T> promise;
@@ -43,8 +43,8 @@ class JobHandleImpl<T extends Serializable> implements JobHandle<T> {
   private volatile State state;
   private volatile SparkCounters sparkCounters;
 
-  JobHandleImpl(SparkClientImpl client, Promise<T> promise, String jobId,
-                    List<Listener<T>> listeners) {
+  JobHandleImpl(SparkClient client, Promise<T> promise, String jobId,
+                List<Listener<T>> listeners) {
     this.client = client;
     this.jobId = jobId;
     this.promise = promise;
@@ -233,7 +233,7 @@ class JobHandleImpl<T extends Serializable> implements JobHandle<T> {
     }
   }
 
-  /** Last attempt at preventing stray jobs from accumulating in SparkClientImpl. */
+  /** Last attempt at preventing stray jobs from accumulating in SparkClient. */
   @Override
   protected void finalize() {
     if (!isDone()) {

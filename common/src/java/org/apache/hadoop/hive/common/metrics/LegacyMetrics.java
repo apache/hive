@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -226,9 +226,18 @@ public class LegacyMetrics implements Metrics {
   }
 
   @Override
+  public void removeGauge(String name) {
+    //This implementation completely and exhaustively reverses the addGauge method above.
+  }
+
+  @Override
   public void addRatio(String name, MetricsVariable<Integer> numerator,
                        MetricsVariable<Integer> denominator) {
     //Not implemented
+  }
+
+  public void markMeter(String name) {
+    //Not implemented.
   }
 
   public void set(String name, Object value) {

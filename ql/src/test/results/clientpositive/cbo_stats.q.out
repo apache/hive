@@ -1,12 +1,10 @@
-PREHOOK: query: -- 20. Test get stats with empty partition list
-select cbo_t1.value from cbo_t1 join cbo_t2 on cbo_t1.key = cbo_t2.key where cbo_t1.dt = '10' and cbo_t1.c_boolean = true
+PREHOOK: query: select cbo_t1.value from cbo_t1 join cbo_t2 on cbo_t1.key = cbo_t2.key where cbo_t1.dt = '10' and cbo_t1.c_boolean = true
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t2
 PREHOOK: Input: default@cbo_t2@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: -- 20. Test get stats with empty partition list
-select cbo_t1.value from cbo_t1 join cbo_t2 on cbo_t1.key = cbo_t2.key where cbo_t1.dt = '10' and cbo_t1.c_boolean = true
+POSTHOOK: query: select cbo_t1.value from cbo_t1 join cbo_t2 on cbo_t1.key = cbo_t2.key where cbo_t1.dt = '10' and cbo_t1.c_boolean = true
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t2

@@ -1,6 +1,4 @@
 set hive.mapred.mode=nonstrict;
--- Exclude test on Windows due to space character being escaped in Hive paths on Windows.
--- EXCLUDE_OS_WINDOWS
 
 DROP TABLE avro_timestamp_staging;
 DROP TABLE avro_timestamp;

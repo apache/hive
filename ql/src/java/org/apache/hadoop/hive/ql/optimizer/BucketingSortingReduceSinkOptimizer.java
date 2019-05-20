@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.See the NOTICE file
  * distributed with this work for additional information
@@ -401,20 +401,21 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
         return null;
       }
 
-      assert fsOp.getConf().getWriteType() == rsOp.getConf().getWriteType() :
-        "WriteType mismatch. fsOp is " + fsOp.getConf().getWriteType() +
-          "; rsOp is " + rsOp.getConf().getWriteType();
       // Don't do this optimization with updates or deletes
       if (fsOp.getConf().getWriteType() == AcidUtils.Operation.UPDATE ||
         fsOp.getConf().getWriteType() == AcidUtils.Operation.DELETE) {
         return null;
       }
 
-      if(stack.get(0) instanceof TableScanOperator) {
+      if (stack.get(0) instanceof TableScanOperator) {
         TableScanOperator tso = ((TableScanOperator)stack.get(0));
-        if(AcidUtils.isAcidTable(tso.getConf().getTableMetadata())) {
+        Table tab = tso.getConf().getTableMetadata();
+        if (AcidUtils.isFullAcidTable(tab)) {
           /*ACID tables have complex directory layout and require merging of delta files
           * on read thus we should not try to read bucket files directly*/
+          return null;
+        } else if (AcidUtils.isInsertOnlyTable(tab.getParameters())) {
+          // Do not support MM tables either at this point. We could do it with some extra logic.
           return null;
         }
       }
@@ -458,6 +459,7 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
       List<ExprNodeColumnDesc> sourceTableSortCols = new ArrayList<ExprNodeColumnDesc>();
       op = op.getParentOperators().get(0);
 
+      boolean isSrcMmTable = false;
       while (true) {
         if (!(op instanceof TableScanOperator) &&
             !(op instanceof FilterOperator) &&
@@ -506,6 +508,11 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
             assert !useBucketSortPositions;
             TableScanOperator ts = (TableScanOperator) op;
             Table srcTable = ts.getConf().getTableMetadata();
+            // Not supported for MM tables for now.
+            if (AcidUtils.isInsertOnlyTable(destTable.getParameters())) {
+              return null;
+            }
+
 
             // Find the positions of the bucketed columns in the table corresponding
             // to the select list.
@@ -611,8 +618,11 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
             sourceTableBucketCols.clear();
             sourceTableSortCols.clear();
 
-            if (selectDesc.getColList().size() < bucketPositions.size()) {
-             // Some columns in select are pruned. This may happen if those are constants.
+            if (selectDesc.getColList().size() < bucketPositions.size()
+                || selectDesc.getColList().size() != fsOp.getSchema().getSignature().size()) {
+              // Some columns in select are pruned. This may happen if those are constants.
+              // TODO: the best solution is to hook the operator before fs with the select operator. 
+              // See smb_mapjoin_20.q for more details. 
               return null;
             }
             // Only columns can be selected for both sorted and bucketed positions

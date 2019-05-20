@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -121,6 +121,7 @@ public class Cmp implements Runnable {
   /**
    * Get data for comparison from the source
    */
+  @Override
   public void run() {
     exec.executeQuery(ctx, query, conn);
   }
@@ -208,7 +209,7 @@ public class Cmp implements Runnable {
       exec.signal(e);
       return null;
     }
-    return new Boolean(equal);
+    return Boolean.valueOf(equal);
   }
   
   /**

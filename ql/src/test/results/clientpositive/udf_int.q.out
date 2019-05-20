@@ -8,3 +8,5 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED int
 POSTHOOK: type: DESCFUNCTION
 There is no documentation for function 'int'
+Function class:org.apache.hadoop.hive.ql.udf.UDFToInteger
+Function type:BUILTIN

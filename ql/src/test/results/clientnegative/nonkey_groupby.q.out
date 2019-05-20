@@ -1,1 +1,1 @@
-FAILED: SemanticException [Error 10025]: Line 1:15 Expression not in GROUP BY key 'key'
+FAILED: SemanticException [Error 10025]: Line 2:15 Expression not in GROUP BY key 'key'

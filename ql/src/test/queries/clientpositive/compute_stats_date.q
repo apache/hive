@@ -13,7 +13,7 @@ load data local inpath '../../data/files/flights_join.txt' overwrite into table 
 select count(*) from tab_date;
 
 -- compute statistical summary of data
-select compute_stats(fl_date, 16) from tab_date;
+select compute_stats(fl_date, 'hll') from tab_date;
 
 explain
 analyze table tab_date compute statistics for columns fl_date;

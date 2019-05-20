@@ -1,10 +1,6 @@
-PREHOOK: query: -- Can't update view to have a view cycle (2)
-
-drop view v
+PREHOOK: query: drop view v
 PREHOOK: type: DROPVIEW
-POSTHOOK: query: -- Can't update view to have a view cycle (2)
-
-drop view v
+POSTHOOK: query: drop view v
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: create view v1 partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
@@ -16,4 +12,6 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v1
+POSTHOOK: Lineage: v1.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v1.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 FAILED: SemanticException Recursive view default.v1 detected (cycle: default.v1 -> default.v1).

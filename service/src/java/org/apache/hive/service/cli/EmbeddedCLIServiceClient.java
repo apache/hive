@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hive.service.auth.HiveAuthFactory;
+import org.apache.hive.service.rpc.thrift.TOperationHandle;
 
 
 /**
@@ -159,8 +160,8 @@ public class EmbeddedCLIServiceClient extends CLIServiceClient {
    * @see org.apache.hive.service.cli.CLIServiceClient#getOperationStatus(org.apache.hive.service.cli.OperationHandle)
    */
   @Override
-  public OperationStatus getOperationStatus(OperationHandle opHandle) throws HiveSQLException {
-    return cliService.getOperationStatus(opHandle);
+  public OperationStatus getOperationStatus(OperationHandle opHandle, boolean getProgressUpdate) throws HiveSQLException {
+    return cliService.getOperationStatus(opHandle, getProgressUpdate);
   }
 
   /* (non-Javadoc)
@@ -225,5 +226,15 @@ public class EmbeddedCLIServiceClient extends CLIServiceClient {
 		throws HiveSQLException {
     return cliService.getCrossReference(sessionHandle, primaryCatalog, primarySchema,
       primaryTable, foreignCatalog, foreignSchema, foreignTable);
+  }
+
+  @Override
+  public String getQueryId(TOperationHandle operationHandle) throws HiveSQLException {
+    return cliService.getQueryId(operationHandle);
+  }
+
+  @Override
+  public void setApplicationName(SessionHandle sh, String value) throws HiveSQLException {
+    cliService.setApplicationName(sh, value);
   }
 }

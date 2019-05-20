@@ -1,0 +1,71 @@
+PREHOOK: query: create table my_passwd (
+username string,
+uid int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@my_passwd
+POSTHOOK: query: create table my_passwd (
+username string,
+uid int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@my_passwd
+PREHOOK: query: insert into my_passwd values
+                      ("Deepak", 1),
+                      ("Gunther", 2),
+                      ("Jason", 3),
+                      ("Prasanth", 4),
+                      ("Gopal", 5),
+                      ("Sergey", 6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@my_passwd
+POSTHOOK: query: insert into my_passwd values
+                      ("Deepak", 1),
+                      ("Gunther", 2),
+                      ("Jason", 3),
+                      ("Prasanth", 4),
+                      ("Gopal", 5),
+                      ("Sergey", 6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@my_passwd
+POSTHOOK: Lineage: my_passwd.uid SCRIPT []
+POSTHOOK: Lineage: my_passwd.username SCRIPT []
+PREHOOK: query: create view my_passwd_vw as select * from my_passwd limit 3
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@my_passwd
+PREHOOK: Output: database:default
+PREHOOK: Output: default@my_passwd_vw
+POSTHOOK: query: create view my_passwd_vw as select * from my_passwd limit 3
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@my_passwd
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@my_passwd_vw
+POSTHOOK: Lineage: my_passwd_vw.uid SIMPLE [(my_passwd)my_passwd.FieldSchema(name:uid, type:int, comment:null), ]
+POSTHOOK: Lineage: my_passwd_vw.username SIMPLE [(my_passwd)my_passwd.FieldSchema(name:username, type:string, comment:null), ]
+PREHOOK: query: grant select on table my_passwd to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@my_passwd
+POSTHOOK: query: grant select on table my_passwd to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@my_passwd
+PREHOOK: query: grant select on table my_passwd_vw to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@my_passwd_vw
+POSTHOOK: query: grant select on table my_passwd_vw to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@my_passwd_vw
+PREHOOK: query: select * from my_passwd_vw
+PREHOOK: type: QUERY
+PREHOOK: Input: default@my_passwd
+PREHOOK: Input: default@my_passwd_vw
+#### A masked pattern was here ####
+POSTHOOK: query: select * from my_passwd_vw
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@my_passwd
+POSTHOOK: Input: default@my_passwd_vw
+#### A masked pattern was here ####
+Deepak	1
+Gunther	2
+Jason	3

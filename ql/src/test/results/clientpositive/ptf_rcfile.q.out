@@ -38,10 +38,7 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part.rc' overwrite int
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@part_rc
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- testWindowingPTFWithPartRC
-select p_mfgr, p_name, p_size, 
+PREHOOK: query: select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
 sum(p_retailprice)  over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
@@ -51,10 +48,7 @@ order by p_name)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_rc
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- testWindowingPTFWithPartRC
-select p_mfgr, p_name, p_size, 
+POSTHOOK: query: select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
 sum(p_retailprice)  over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1

@@ -4,15 +4,11 @@ PREHOOK: Input: database:default
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
-PREHOOK: query: -- Test of hive.exec.max.dynamic.partitions.pernode
-
-CREATE TABLE max_parts(key STRING) PARTITIONED BY (value STRING)
+PREHOOK: query: CREATE TABLE max_parts(key STRING) PARTITIONED BY (value STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@max_parts
-POSTHOOK: query: -- Test of hive.exec.max.dynamic.partitions.pernode
-
-CREATE TABLE max_parts(key STRING) PARTITIONED BY (value STRING)
+POSTHOOK: query: CREATE TABLE max_parts(key STRING) PARTITIONED BY (value STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@max_parts

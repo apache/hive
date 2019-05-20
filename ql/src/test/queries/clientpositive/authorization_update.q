@@ -11,8 +11,8 @@ set user.name=user1;
 
 CREATE TABLE t_auth_up(i int, j int) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');
 
-CREATE TABLE t_select(i int);
-GRANT ALL ON TABLE t_select TO ROLE public;
+CREATE TABLE t_select_n0(i int);
+GRANT ALL ON TABLE t_select_n0 TO ROLE public;
 
 -- grant update privilege to another user
 GRANT UPDATE ON t_auth_up TO USER userWIns;

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,23 +19,15 @@ package org.apache.hadoop.hive.llap.io.metadata;
 
 import com.google.common.annotations.VisibleForTesting;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
 
-import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator;
-import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator.ObjectEstimator;
-import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
-import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
-import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
-import org.apache.orc.DataReader;
 import org.apache.orc.OrcProto;
+import org.apache.orc.OrcProto.RowIndexEntry;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.impl.OrcIndex;
 
-public class OrcStripeMetadata extends LlapCacheableBuffer {
+public class OrcStripeMetadata implements ConsumerStripeMetadata {
   private final OrcBatchKey stripeKey;
   private final List<OrcProto.ColumnEncoding> encodings;
   private final List<OrcProto.Stream> streams;
@@ -43,78 +35,14 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
   private final long rowCount;
   private OrcIndex rowIndex;
 
-  private final int estimatedMemUsage;
-
-  private final static HashMap<Class<?>, ObjectEstimator> SIZE_ESTIMATORS;
-  private final static ObjectEstimator SIZE_ESTIMATOR;
-  static {
-    OrcStripeMetadata osm = createDummy(new SyntheticFileId());
-    SIZE_ESTIMATORS = IncrementalObjectSizeEstimator.createEstimators(osm);
-    IncrementalObjectSizeEstimator.addEstimator(
-        "com.google.protobuf.LiteralByteString", SIZE_ESTIMATORS);
-    // Add long for the regular file ID estimation.
-    IncrementalObjectSizeEstimator.createEstimators(Long.class, SIZE_ESTIMATORS);
-    SIZE_ESTIMATOR = SIZE_ESTIMATORS.get(OrcStripeMetadata.class);
-  }
-
-  public OrcStripeMetadata(OrcBatchKey stripeKey, DataReader mr, StripeInformation stripe,
-      boolean[] includes, boolean[] sargColumns) throws IOException {
+  public OrcStripeMetadata(OrcBatchKey stripeKey, OrcProto.StripeFooter footer,
+      OrcIndex orcIndex, StripeInformation stripe) throws IOException {
     this.stripeKey = stripeKey;
-    OrcProto.StripeFooter footer = mr.readStripeFooter(stripe);
     streams = footer.getStreamsList();
     encodings = footer.getColumnsList();
     writerTimezone = footer.getWriterTimezone();
     rowCount = stripe.getNumberOfRows();
-    rowIndex = mr.readRowIndex(stripe, footer, includes, null, sargColumns, null);
-
-    estimatedMemUsage = SIZE_ESTIMATOR.estimate(this, SIZE_ESTIMATORS);
-  }
-
-  private OrcStripeMetadata(Object id) {
-    stripeKey = new OrcBatchKey(id, 0, 0);
-    encodings = new ArrayList<>();
-    streams = new ArrayList<>();
-    writerTimezone = "";
-    rowCount = estimatedMemUsage = 0;
-  }
-
-  @VisibleForTesting
-  public static OrcStripeMetadata createDummy(Object id) {
-    OrcStripeMetadata dummy = new OrcStripeMetadata(id);
-    dummy.encodings.add(OrcProto.ColumnEncoding.getDefaultInstance());
-    dummy.streams.add(OrcProto.Stream.getDefaultInstance());
-    OrcProto.RowIndex ri = OrcProto.RowIndex.newBuilder().addEntry(
-        OrcProto.RowIndexEntry.newBuilder().addPositions(1).setStatistics(
-            OrcFileMetadata.createStatsDummy())).build();
-    OrcProto.BloomFilterIndex bfi = OrcProto.BloomFilterIndex.newBuilder().addBloomFilter(
-        OrcProto.BloomFilter.newBuilder().addBitset(0)).build();
-    dummy.rowIndex = new OrcIndex(
-        new OrcProto.RowIndex[] { ri }, new OrcProto.BloomFilterIndex[] { bfi });
-    return dummy;
-  }
-
-  public boolean hasAllIndexes(boolean[] includes) {
-    for (int i = 0; i < includes.length; ++i) {
-      if (includes[i] && rowIndex.getRowGroupIndex()[i] == null) return false;
-    }
-    return true;
-  }
-
-  public void loadMissingIndexes(DataReader mr, StripeInformation stripe, boolean[] includes,
-      boolean[] sargColumns) throws IOException {
-    // Do not loose the old indexes. Create a super set includes
-    OrcProto.RowIndex[] existing = getRowIndexes();
-    boolean superset[] = new boolean[Math.max(existing.length, includes.length)];
-    for (int i = 0; i < includes.length; i++) {
-      superset[i] = includes[i];
-    }
-    for (int i = 0; i < existing.length; i++) {
-      superset[i] = superset[i] || (existing[i] != null);
-    }
-    // TODO: should we save footer to avoid a read here?
-    rowIndex = mr.readRowIndex(stripe, null, superset, rowIndex.getRowGroupIndex(),
-        sargColumns, rowIndex.getBloomFilterIndex());
-    // TODO: theoretically, we should re-estimate memory usage here and update memory manager
+    rowIndex = orcIndex;
   }
 
   public int getStripeIx() {
@@ -123,6 +51,10 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
 
   public OrcProto.RowIndex[] getRowIndexes() {
     return rowIndex.getRowGroupIndex();
+  }
+
+  public OrcProto.Stream.Kind[] getBloomFilterKinds() {
+    return rowIndex.getBloomFilterKinds();
   }
 
   public OrcProto.BloomFilterIndex[] getBloomFilterIndexes() {
@@ -140,25 +72,6 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
   public String getWriterTimezone() {
     return writerTimezone;
   }
-  @Override
-  public long getMemoryUsage() {
-    return estimatedMemUsage;
-  }
-
-  @Override
-  public void notifyEvicted(EvictionDispatcher evictionDispatcher) {
-    evictionDispatcher.notifyEvicted(this);
-  }
-
-  @Override
-  protected boolean invalidate() {
-    return true;
-  }
-
-  @Override
-  protected boolean isLocked() {
-    return false;
-  }
 
   public OrcBatchKey getKey() {
     return stripeKey;
@@ -171,5 +84,43 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
   @VisibleForTesting
   public void resetRowIndex() {
     rowIndex = null;
+  }
+
+  @Override
+  public RowIndexEntry getRowIndexEntry(int colIx, int rgIx) {
+    if (rowIndex == null || rowIndex.getRowGroupIndex()[colIx] == null) {
+      return null;
+    }
+    return rowIndex.getRowGroupIndex()[colIx].getEntry(rgIx);
+  }
+
+  @Override
+  public boolean supportsRowIndexes() {
+    if (rowIndex == null) {
+      return false;
+    }
+    // if all row indexes are null then indexes are disabled
+    boolean allNulls = true;
+    for (OrcProto.RowIndex rowIndex : rowIndex.getRowGroupIndex()) {
+      if (rowIndex != null) {
+        allNulls = false;
+        break;
+      }
+    }
+    if (allNulls) {
+      return false;
+    }
+    return true;
+  }
+
+  public OrcIndex getIndex() {
+    return rowIndex;
+  }
+
+  @Override
+  public String toString() {
+    return "OrcStripeMetadata [stripeKey=" + stripeKey + ", rowCount="
+        + rowCount + ", writerTimezone=" + writerTimezone + ", encodings="
+        + encodings + ", streams=" + streams + ", rowIndex=" + rowIndex + "]";
   }
 }

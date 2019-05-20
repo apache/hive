@@ -1,11 +1,12 @@
+--! qt:dataset:alltypesorc
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
-set hive.fetch.task.conversion=minimal;
+set hive.fetch.task.conversion=none;
 
 -- SORT_QUERY_RESULTS
 
-EXPLAIN
+EXPLAIN VECTORIZATION DETAIL
 SELECT ctimestamp1,
        cdouble,
        cboolean1,
@@ -56,7 +57,7 @@ LIMIT 20;
 
 
 -- double compare timestamp
-EXPLAIN
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT ctimestamp1,
        cdouble,
        cboolean1,

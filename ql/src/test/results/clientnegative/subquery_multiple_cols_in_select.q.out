@@ -1,1 +1,1 @@
-FAILED: SemanticException [Error 10250]: Line 6:14 Invalid SubQuery expression 'key': SubQuery can contain only 1 item in Select List.
+FAILED: SemanticException org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException: Invalid SubQuery expression SubQuery can contain only 1 item in Select List.

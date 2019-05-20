@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,11 +19,13 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -40,6 +42,7 @@ import org.apache.hadoop.io.Text;
     + "  [\"one\", \"two\", \"three\"]")
 public class GenericUDFSplit extends GenericUDF {
   private transient ObjectInspectorConverters.Converter[] converters;
+  private transient Pattern constPattern;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -52,6 +55,12 @@ public class GenericUDFSplit extends GenericUDF {
     for (int i = 0; i < arguments.length; i++) {
       converters[i] = ObjectInspectorConverters.getConverter(arguments[i],
           PrimitiveObjectInspectorFactory.writableStringObjectInspector);
+    }
+
+    ObjectInspector rightArg = arguments[1];
+    if (rightArg instanceof ConstantObjectInspector) {
+      constPattern = Pattern.compile(((ConstantObjectInspector) rightArg).
+          getWritableConstantValue().toString());
     }
 
     return ObjectInspectorFactory
@@ -68,14 +77,18 @@ public class GenericUDFSplit extends GenericUDF {
     }
 
     Text s = (Text) converters[0].convert(arguments[0].get());
-    Text regex = (Text) converters[1].convert(arguments[1].get());
-
     ArrayList<Text> result = new ArrayList<Text>();
 
-    for (String str : s.toString().split(regex.toString(), -1)) {
-      result.add(new Text(str));
+    if (constPattern == null) {
+      Text regex = (Text) converters[1].convert(arguments[1].get());
+      for (String str : s.toString().split(regex.toString(), -1)) {
+        result.add(new Text(str));
+      }
+    } else {
+      for (String str : constPattern.split(s.toString(), -1)) {
+        result.add(new Text(str));
+      }
     }
-
     return result;
   }
 

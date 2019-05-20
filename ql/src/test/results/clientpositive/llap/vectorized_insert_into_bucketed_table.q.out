@@ -1,0 +1,146 @@
+PREHOOK: query: create temporary table foo (x int) clustered by (x) into 4 buckets stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@foo
+POSTHOOK: query: create temporary table foo (x int) clustered by (x) into 4 buckets stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@foo
+PREHOOK: query: explain vectorization detail insert overwrite table foo values(1),(2),(3),(4),(9)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@foo
+POSTHOOK: query: explain vectorization detail insert overwrite table foo values(1),(2),(3),(4),(9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@foo
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: array(const struct(1),const struct(2),const struct(3),const struct(4),const struct(9)) (type: array<struct<col1:int>>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                    UDTF Operator
+                      Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                      function name: inline
+                      Select Operator
+                        expressions: col1 (type: int)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          sort order: 
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: int)
+            Execution mode: llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: false
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                enabledConditionsNotMet: Could not enable vectorization due to partition column names size 1 is greater than the number of table column names size 0 IS false
+                inputFileFormats: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: VALUE._col0:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int)
+                outputColumnNames: _col0
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0]
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: default.foo
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.foo
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: insert overwrite table foo values(1),(2),(3),(4),(9)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@foo
+POSTHOOK: query: insert overwrite table foo values(1),(2),(3),(4),(9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@foo
+POSTHOOK: Lineage: foo.x SCRIPT []
+PREHOOK: query: select *, regexp_extract(INPUT__FILE__NAME, '.*/(.*)', 1) from foo
+PREHOOK: type: QUERY
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
+POSTHOOK: query: select *, regexp_extract(INPUT__FILE__NAME, '.*/(.*)', 1) from foo
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
+2	000000_0
+9	000001_0
+4	000001_0
+1	000001_0
+3	000002_0
+PREHOOK: query: drop table foo
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@foo
+PREHOOK: Output: default@foo
+POSTHOOK: query: drop table foo
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@foo
+POSTHOOK: Output: default@foo

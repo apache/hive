@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -54,36 +54,60 @@ public class ExprNodeColumnDesc extends ExprNodeDesc implements Serializable {
    */
   private boolean isSkewedCol;
 
+  /**
+   * Is this column a generated column, i.e., a column
+   * that is generated from table schema when Hive inserting SEL op for column pruning.
+   * This column has no relation with the input query.
+   *
+   * This is used for nested column pruning where we could have the following scenario:
+   *   ...
+   *    |
+   *   SEL (use a)
+   *    |
+   *   OP (use a.f)
+   *    |
+   *   ...
+   * Without this field we do not know whether the column 'a' is actually specified in
+   * the input query or an inserted op by Hive. For the former case, the pruning needs
+   * to produce 'a', while for the latter case, it should produce 'a.f'.
+   */
+  private transient boolean isGenerated;
+
   public ExprNodeColumnDesc() {
   }
 
   public ExprNodeColumnDesc(ColumnInfo ci) {
-    this(ci.getType(), ci.getInternalName(), ci.getTabAlias(), ci.getIsVirtualCol());
+    this(ci, false);
+  }
+
+  public ExprNodeColumnDesc(ColumnInfo ci, boolean isGenerated) {
+    this(ci.getType(), ci.getInternalName(), ci.getTabAlias(), ci.getIsVirtualCol(), false, isGenerated);
   }
 
   public ExprNodeColumnDesc(TypeInfo typeInfo, String column, String tabAlias,
       boolean isPartitionColOrVirtualCol) {
-    super(typeInfo);
-    this.column = column;
-    this.tabAlias = tabAlias;
-    this.isPartitionColOrVirtualCol = isPartitionColOrVirtualCol;
+    this(typeInfo, column, tabAlias, isPartitionColOrVirtualCol, false, false);
   }
 
   public ExprNodeColumnDesc(Class<?> c, String column, String tabAlias,
       boolean isPartitionColOrVirtualCol) {
-    super(TypeInfoFactory.getPrimitiveTypeInfoFromJavaPrimitive(c));
-    this.column = column;
-    this.tabAlias = tabAlias;
-    this.isPartitionColOrVirtualCol = isPartitionColOrVirtualCol;
+    this(TypeInfoFactory.getPrimitiveTypeInfoFromJavaPrimitive(c),
+        column, tabAlias, isPartitionColOrVirtualCol, false, false);
   }
 
   public ExprNodeColumnDesc(TypeInfo typeInfo, String column, String tabAlias,
       boolean isPartitionColOrVirtualCol, boolean isSkewedCol) {
+    this(typeInfo, column, tabAlias, isPartitionColOrVirtualCol, isSkewedCol, false);
+  }
+
+  public ExprNodeColumnDesc(TypeInfo typeInfo, String column, String tabAlias,
+      boolean isPartitionColOrVirtualCol, boolean isSkewedCol, boolean isGenerated) {
     super(typeInfo);
     this.column = column;
     this.tabAlias = tabAlias;
     this.isPartitionColOrVirtualCol = isPartitionColOrVirtualCol;
     this.isSkewedCol = isSkewedCol;
+    this.isGenerated = isGenerated;
   }
 
   public String getColumn() {
@@ -108,6 +132,14 @@ public class ExprNodeColumnDesc extends ExprNodeDesc implements Serializable {
 
   public void setIsPartitionColOrVirtualCol(boolean isPartitionCol) {
     this.isPartitionColOrVirtualCol = isPartitionCol;
+  }
+
+  public boolean getIsGenerated() {
+    return this.isGenerated;
+  }
+
+  public void setIsGenerated(boolean isGenerated) {
+    this.isGenerated = isGenerated;
   }
 
   @Override

@@ -23,8 +23,7 @@ import java.util.Random;
 
 import org.apache.commons.lang.RandomStringUtils;
 
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 import org.junit.After;
 import org.junit.Before;
@@ -42,16 +41,14 @@ public class TestRow {
 
     Random rand = new Random();
     int iterations = 100;
-    Text col0 = new Text();
-    IntWritable col1 = new IntWritable();
     for (int idx = 0; idx < iterations; ++idx) {
       // Set the row values
       boolean isNullCol0 = (rand.nextDouble() <= 0.25);
-      col0.set(RandomStringUtils.random(10));
+      String col0 = RandomStringUtils.random(10);
       row.setValue(0, isNullCol0 ? null : col0);
 
       boolean isNullCol1 = (rand.nextDouble() <= 0.25);
-      col1.set(rand.nextInt());
+      Integer col1 = Integer.valueOf(rand.nextInt());
       row.setValue(1, isNullCol1 ? null : col1);
 
       // Validate the row values
@@ -60,7 +57,6 @@ public class TestRow {
         assertTrue(row.getValue("col0") == null);
       } else {
         assertTrue(row.getValue(0) != null);
-        assertTrue(col0 != row.getValue(0));
         assertEquals(col0, row.getValue(0));
         assertEquals(col0, row.getValue("col0"));
       }
@@ -70,7 +66,6 @@ public class TestRow {
         assertTrue(row.getValue("col1") == null);
       } else {
         assertTrue(row.getValue(1) != null);
-        assertTrue(col1 != row.getValue(1));
         assertEquals(col1, row.getValue(1));
         assertEquals(col1, row.getValue("col1"));
       }
@@ -81,10 +76,10 @@ public class TestRow {
     List<FieldDesc> colDescs = new ArrayList<FieldDesc>();
 
     colDescs.add(new FieldDesc("col0",
-        new TypeDesc(TypeDesc.Type.STRING)));
+        TypeInfoFactory.stringTypeInfo));
 
     colDescs.add(new FieldDesc("col1",
-        new TypeDesc(TypeDesc.Type.INT)));
+        TypeInfoFactory.intTypeInfo));
 
     Schema schema = new Schema(colDescs);
     return schema;

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,65 +18,57 @@
 package org.apache.hadoop.hive.druid.serde;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 
-import org.apache.calcite.adapter.druid.DruidTable;
+import com.fasterxml.jackson.databind.JavaType;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
 import org.apache.hadoop.io.NullWritable;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.collect.Iterators;
 
-import io.druid.query.Result;
-import io.druid.query.topn.DimensionAndMetricValueExtractor;
-import io.druid.query.topn.TopNQuery;
-import io.druid.query.topn.TopNResultValue;
+import org.apache.druid.query.Result;
+import org.apache.druid.query.topn.DimensionAndMetricValueExtractor;
+import org.apache.druid.query.topn.TopNResultValue;
 
 /**
  * Record reader for results for Druid TopNQuery.
  */
-public class DruidTopNQueryRecordReader
-        extends DruidQueryRecordReader<TopNQuery, Result<TopNResultValue>> {
+public class DruidTopNQueryRecordReader extends DruidQueryRecordReader<Result<TopNResultValue>> {
+
+  private static final TypeReference<Result<TopNResultValue>>
+      TYPE_REFERENCE =
+      new TypeReference<Result<TopNResultValue>>() {
+      };
 
   private Result<TopNResultValue> current;
-  private Iterator<DimensionAndMetricValueExtractor> values = Iterators.emptyIterator();
 
-  @Override
-  protected TopNQuery createQuery(String content) throws IOException {
-    return DruidStorageHandlerUtils.JSON_MAPPER.readValue(content, TopNQuery.class);
+  private Iterator<DimensionAndMetricValueExtractor> values = Collections.emptyIterator();
+
+  @Override protected JavaType getResultTypeDef() {
+    return DruidStorageHandlerUtils.JSON_MAPPER.getTypeFactory().constructType(TYPE_REFERENCE);
   }
 
-  @Override
-  protected List<Result<TopNResultValue>> createResultsList(InputStream content) throws IOException {
-    return DruidStorageHandlerUtils.SMILE_MAPPER.readValue(content,
-            new TypeReference<List<Result<TopNResultValue>>>(){});
-  }
-
-  @Override
-  public boolean nextKeyValue() {
+  @Override public boolean nextKeyValue() {
     if (values.hasNext()) {
       return true;
     }
-    if (results.hasNext()) {
-      current = results.next();
+    if (queryResultsIterator.hasNext()) {
+      current = queryResultsIterator.next();
       values = current.getValue().getValue().iterator();
       return nextKeyValue();
     }
     return false;
   }
 
-  @Override
-  public NullWritable getCurrentKey() throws IOException, InterruptedException {
+  @Override public NullWritable getCurrentKey() throws IOException, InterruptedException {
     return NullWritable.get();
   }
 
-  @Override
-  public DruidWritable getCurrentValue() throws IOException, InterruptedException {
+  @Override public DruidWritable getCurrentValue() throws IOException, InterruptedException {
     // Create new value
-    DruidWritable value = new DruidWritable();
-    value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, current.getTimestamp().getMillis());
+    DruidWritable value = new DruidWritable(false);
+    value.getValue().put("timestamp", current.getTimestamp().getMillis());
     if (values.hasNext()) {
       value.getValue().putAll(values.next().getBaseObject());
       return value;
@@ -84,12 +76,11 @@ public class DruidTopNQueryRecordReader
     return value;
   }
 
-  @Override
-  public boolean next(NullWritable key, DruidWritable value) {
+  @Override public boolean next(NullWritable key, DruidWritable value) {
     if (nextKeyValue()) {
       // Update value
       value.getValue().clear();
-      value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, current.getTimestamp().getMillis());
+      value.getValue().put("timestamp", current.getTimestamp().getMillis());
       if (values.hasNext()) {
         value.getValue().putAll(values.next().getBaseObject());
       }
@@ -98,9 +89,8 @@ public class DruidTopNQueryRecordReader
     return false;
   }
 
-  @Override
-  public float getProgress() {
-    return results.hasNext() || values.hasNext() ? 0 : 1;
+  @Override public float getProgress() {
+    return queryResultsIterator.hasNext() || values.hasNext() ? 0 : 1;
   }
 
 }

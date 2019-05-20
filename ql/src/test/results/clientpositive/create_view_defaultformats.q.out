@@ -16,6 +16,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sfsrc
+POSTHOOK: Lineage: sfsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: sfsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: create view rcsrc as select * from src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
@@ -26,6 +28,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rcsrc
+POSTHOOK: Lineage: rcsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rcsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted sfsrc
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@sfsrc
@@ -33,7 +37,6 @@ POSTHOOK: query: describe formatted sfsrc
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@sfsrc
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -43,6 +46,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -55,8 +59,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select * from src   	 
-View Expanded Text: 	select `src`.`key`, `src`.`value` from `default`.`src`	 
+Original Query:     	select * from src   	 
+Expanded Query:     	select `src`.`key`, `src`.`value` from `default`.`src`	 
 PREHOOK: query: describe formatted rcsrc
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@rcsrc
@@ -64,7 +68,6 @@ POSTHOOK: query: describe formatted rcsrc
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@rcsrc
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -74,6 +77,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -86,8 +90,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select * from src   	 
-View Expanded Text: 	select `src`.`key`, `src`.`value` from `default`.`src`	 
+Original Query:     	select * from src   	 
+Expanded Query:     	select `src`.`key`, `src`.`value` from `default`.`src`	 
 PREHOOK: query: select * from sfsrc where key = 100 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sfsrc

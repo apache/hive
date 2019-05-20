@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,11 +30,12 @@ public class CalciteSemanticException extends SemanticException {
   private static final long serialVersionUID = 1L;
 
   public enum UnsupportedFeature {
-    Distinct_without_an_aggreggation, Duplicates_in_RR, Filter_expression_with_non_boolean_return_type, 
-    Having_clause_without_any_groupby, Hint, Invalid_column_reference, Invalid_decimal, Invalid_interval,
-    Less_than_equal_greater_than, Multi_insert, Others, Same_name_in_multiple_expressions, 
-    Schema_less_table, Select_alias_in_having_clause, Select_transform, Subquery, 
-    Table_sample_clauses, UDTF, Union_type, Unique_join
+    Distinct_without_an_aggreggation, Duplicates_in_RR, Filter_expression_with_non_boolean_return_type,
+    Having_clause_without_any_groupby, Invalid_column_reference, Invalid_decimal,
+    Less_than_equal_greater_than, Others, Same_name_in_multiple_expressions,
+    Schema_less_table, Select_alias_in_having_clause, Select_transform, Subquery,
+    Table_sample_clauses, UDTF, Union_type, Unique_join,
+    HighPrecissionTimestamp // CALCITE-1690
   };
 
   private UnsupportedFeature unsupportedFeature;

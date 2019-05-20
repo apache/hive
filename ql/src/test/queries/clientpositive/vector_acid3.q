@@ -15,3 +15,13 @@ set hive.compute.query.using.stats=false;
 set hive.vectorized.execution.enabled;
 
 select count(1) from testacid1;
+
+drop table testacid1;
+set hive.exec.orc.delta.streaming.optimizations.enabled=true;
+
+create table testacid1(id int) clustered by (id) into 2 buckets stored as orc tblproperties("transactional"="true");
+
+insert into table testacid1 values (1),(2),(3),(4);
+
+select count(1) from testacid1;
+

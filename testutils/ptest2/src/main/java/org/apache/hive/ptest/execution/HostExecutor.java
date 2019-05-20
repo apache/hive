@@ -28,6 +28,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.common.base.Stopwatch;
 import org.apache.commons.lang.StringUtils;
@@ -70,6 +71,7 @@ class HostExecutor {
   private volatile boolean mShutdown;
   private int numParallelBatchesProcessed = 0;
   private int numIsolatedBatchesProcessed = 0;
+  private AtomicLong totalElapsedTimeInRsync = new AtomicLong(0L);
   
   HostExecutor(Host host, String privateKey, ListeningExecutorService executor,
       SSHCommandExecutor sshCommandExecutor,
@@ -138,6 +140,10 @@ class HostExecutor {
   }
   boolean isShutdown() {
     return mShutdown;
+  }
+
+  long getTotalRsyncTimeInMs() {
+    return totalElapsedTimeInRsync.get();
   }
   /**
    * Executes parallel test until the parallel work queue is empty. Then
@@ -311,6 +317,7 @@ class HostExecutor {
     if(result.getException() != null || result.getExitCode() != 0) {
       throw new SSHExecutionException(result);
     }
+    totalElapsedTimeInRsync.getAndAdd(result.getElapsedTimeInMs());
     return result;
   }
   /**
@@ -380,6 +387,7 @@ class HostExecutor {
     if(result.getException() != null || result.getExitCode() != Constants.EXIT_CODE_SUCCESS) {
       throw new SSHExecutionException(result);
     }
+    totalElapsedTimeInRsync.getAndAdd(result.getElapsedTimeInMs());
     return result;
   }
   /**

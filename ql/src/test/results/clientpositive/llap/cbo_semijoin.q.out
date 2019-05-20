@@ -1,13 +1,11 @@
-PREHOOK: query: -- 12. SemiJoin
-select cbo_t1.c_int           from cbo_t1 left semi join   cbo_t2 on cbo_t1.key=cbo_t2.key
+PREHOOK: query: select cbo_t1.c_int           from cbo_t1 left semi join   cbo_t2 on cbo_t1.key=cbo_t2.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: Input: default@cbo_t2
 PREHOOK: Input: default@cbo_t2@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: -- 12. SemiJoin
-select cbo_t1.c_int           from cbo_t1 left semi join   cbo_t2 on cbo_t1.key=cbo_t2.key
+POSTHOOK: query: select cbo_t1.c_int           from cbo_t1 left semi join   cbo_t2 on cbo_t1.key=cbo_t2.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -140,7 +140,7 @@ public abstract class AbstractJoinTaskDispatcher implements Dispatcher {
             aliasTotalKnownInputSize += size;
             Long es = aliasToSize.get(alias);
             if (es == null) {
-              es = new Long(0);
+              es = Long.valueOf(0);
             }
             es += size;
             aliasToSize.put(alias, es);
@@ -149,8 +149,7 @@ public abstract class AbstractJoinTaskDispatcher implements Dispatcher {
       }
       return aliasTotalKnownInputSize;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new SemanticException("Generate Map Join Task Error: " + e.getMessage());
+      throw new SemanticException("Generate Map Join Task Error: ", e);
     }
   }
 

@@ -1,3 +1,4 @@
+--! qt:dataset:src
 ADD JAR ivy://org.apache.hive.hive-it-custom-udfs:udf-classloader-udf1:+;
 ADD JAR ivy://org.apache.hive.hive-it-custom-udfs:udf-classloader-util:+;
 ADD JAR ivy://org.apache.hive.hive-it-custom-udfs:udf-classloader-udf2:+;

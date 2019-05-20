@@ -4,40 +4,40 @@ set hive.mapred.mode=nonstrict;
 drop database if exists x314 cascade;
 create database x314;
 use x314;
-create table source(s1 int, s2 int);
+create table source_n0(s1 int, s2 int);
 create table target1(x int, y int, z int);
 create table target2(x int, y int, z int);
 create table target3(x int, y int, z int);
 
-insert into source(s2,s1) values(2,1);
--- expect source to contain 1 row (1,2)
-select * from source;
-insert into target1(z,x) select * from source;
+insert into source_n0(s2,s1) values(2,1);
+-- expect source_n0 to contain 1 row (1,2)
+select * from source_n0;
+insert into target1(z,x) select * from source_n0;
 -- expect target1 to contain 1 row (2,NULL,1)
 select * from target1;
 
 -- note that schema spec for target1 and target2 are different
-from source insert into target1(x,y) select * insert into target2(x,z) select s2,s1;
+from source_n0 insert into target1(x,y) select * insert into target2(x,z) select s2,s1;
 --expect target1 to have 2rows (2,NULL,1), (1,2,NULL)
 select * from target1 order by x,y,z;
 -- expect target2 to have 1 row: (2,NULL,1)
 select * from target2;
 
 
-from source insert into target1(x,y,z) select null as x, * insert into target2(x,y,z) select null as x, source.*;
+from source_n0 insert into target1(x,y,z) select null as x, * insert into target2(x,y,z) select null as x, source_n0.*;
 -- expect target1 to have 3 rows: (2,NULL,1), (1,2,NULL), (NULL, 1,2)
 select * from target1 order by x,y,z;
 -- expect target2 to have 2 rows: (2,NULL,1), (NULL, 1,2)
 select * from target2 order by x,y,z;
 
 create table source2(s1 int, s2 int);
-insert into target3 (x,z) select source.s1,source2.s2 from source left outer join source2 on source.s1=source2.s2;
+insert into target3 (x,z) select source_n0.s1,source2.s2 from source_n0 left outer join source2 on source_n0.s1=source2.s2;
 --expect target3 to have 1 row (1,NULL,NULL)
 select * from target3;
 
 
 -- partitioned tables
-CREATE TABLE pageviews (userid VARCHAR(64), link STRING, source STRING) PARTITIONED BY (datestamp STRING, i int) CLUSTERED BY (userid) INTO 4 BUCKETS STORED AS ORC;
+CREATE TABLE pageviews (userid VARCHAR(64), link STRING, source_n0 STRING) PARTITIONED BY (datestamp STRING, i int) CLUSTERED BY (userid) INTO 4 BUCKETS STORED AS ORC;
 INSERT INTO TABLE pageviews PARTITION (datestamp = '2014-09-23', i = 1)(userid,link) VALUES ('jsmith', 'mail.com');
 -- expect 1 row: ('jsmith', 'mail.com', NULL) in partition '2014-09-23'/'1'
 select * from pageviews;

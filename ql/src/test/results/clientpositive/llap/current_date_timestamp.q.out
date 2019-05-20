@@ -11,14 +11,24 @@ true	true
 true	true
 true	true
 true	true
-PREHOOK: query: --ensure that timestamp is same for all the rows while using current_timestamp() query should return single row
-select count(*) from (select current_timestamp() from alltypesorc union select current_timestamp() from src limit 5 ) subq
+PREHOOK: query: explain cbo select current_timestamp() from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select current_timestamp() from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject($f0=[CAST(2012-01-01 01:02:03:TIMESTAMP(9)):TIMESTAMP(9)])
+  HiveTableScan(table=[[default, alltypesorc]], table:alias=[alltypesorc])
+
+PREHOOK: query: select count(*) from (select current_timestamp() from alltypesorc union select current_timestamp() from src limit 5 ) subq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: --ensure that timestamp is same for all the rows while using current_timestamp() query should return single row
-select count(*) from (select current_timestamp() from alltypesorc union select current_timestamp() from src limit 5 ) subq
+POSTHOOK: query: select count(*) from (select current_timestamp() from alltypesorc union select current_timestamp() from src limit 5 ) subq
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Input: default@src
@@ -41,12 +51,16 @@ POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 1
-PREHOOK: query: --current_timestamp() should appear as expression
-explain extended select current_timestamp() from alltypesorc
+PREHOOK: query: explain extended select current_timestamp() from alltypesorc
 PREHOOK: type: QUERY
-POSTHOOK: query: --current_timestamp() should appear as expression
-explain extended select current_timestamp() from alltypesorc
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select current_timestamp() from alltypesorc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(TIMESTAMP '2012-01-01 01:02:03.000000000' AS TIMESTAMP) AS `$f0`
+FROM `default`.`alltypesorc`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -59,12 +73,11 @@ STAGE PLANS:
           alias: alltypesorc
           GatherStats: false
           Select Operator
-            expressions: 2012-01-01 01:02:03.0 (type: timestamp)
+            expressions: TIMESTAMP'2012-01-01 01:02:03' (type: timestamp)
             outputColumnNames: _col0
             ListSink
 
-PREHOOK: query: --current_timestamp() + insert
-create temporary table tmp_runtimeconstant(
+PREHOOK: query: create temporary table tmp_runtimeconstant(
                       ts1 timestamp,
                       ts2 timestamp,
                       dt date,
@@ -75,8 +88,7 @@ create temporary table tmp_runtimeconstant(
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_runtimeconstant
-POSTHOOK: query: --current_timestamp() + insert
-create temporary table tmp_runtimeconstant(
+POSTHOOK: query: create temporary table tmp_runtimeconstant(
                       ts1 timestamp,
                       ts2 timestamp,
                       dt date,
@@ -136,13 +148,11 @@ true	true	true	true
 true	true	true	true
 true	true	true	true
 true	true	true	true
-PREHOOK: query: --current_date() + insert
-drop table if exists tmp_runtimeconstant
+PREHOOK: query: drop table if exists tmp_runtimeconstant
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_runtimeconstant
 PREHOOK: Output: default@tmp_runtimeconstant
-POSTHOOK: query: --current_date() + insert
-drop table if exists tmp_runtimeconstant
+POSTHOOK: query: drop table if exists tmp_runtimeconstant
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmp_runtimeconstant
 POSTHOOK: Output: default@tmp_runtimeconstant
@@ -179,13 +189,11 @@ true
 true
 true
 true
-PREHOOK: query: --current_timestamp() + current_date() + where
-drop table if exists tmp_runtimeconstant
+PREHOOK: query: drop table if exists tmp_runtimeconstant
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_runtimeconstant
 PREHOOK: Output: default@tmp_runtimeconstant
-POSTHOOK: query: --current_timestamp() + current_date() + where
-drop table if exists tmp_runtimeconstant
+POSTHOOK: query: drop table if exists tmp_runtimeconstant
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmp_runtimeconstant
 POSTHOOK: Output: default@tmp_runtimeconstant
@@ -222,8 +230,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_runtimeconstant
 #### A masked pattern was here ####
 0
-PREHOOK: query: --current_timestamp() as argument for unix_timestamp(), hour(), minute(), second()
-select unix_timestamp(current_timestamp()),
+PREHOOK: query: select unix_timestamp(current_timestamp()),
                            hour(current_timestamp()),
                            minute(current_timestamp()),
                            second(current_timestamp())
@@ -231,8 +238,7 @@ select unix_timestamp(current_timestamp()),
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: --current_timestamp() as argument for unix_timestamp(), hour(), minute(), second()
-select unix_timestamp(current_timestamp()),
+POSTHOOK: query: select unix_timestamp(current_timestamp()),
                            hour(current_timestamp()),
                            minute(current_timestamp()),
                            second(current_timestamp())
@@ -240,13 +246,12 @@ select unix_timestamp(current_timestamp()),
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-1325408523	1	2	3
-1325408523	1	2	3
-1325408523	1	2	3
-1325408523	1	2	3
-1325408523	1	2	3
-PREHOOK: query: --current_timestamp() as argument for various date udfs
-select to_date(current_timestamp()),
+1325379723	1	2	3
+1325379723	1	2	3
+1325379723	1	2	3
+1325379723	1	2	3
+1325379723	1	2	3
+PREHOOK: query: select to_date(current_timestamp()),
                            year(current_timestamp()),
                            month(current_timestamp()),
                            day(current_timestamp()),
@@ -260,8 +265,7 @@ select to_date(current_timestamp()),
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: --current_timestamp() as argument for various date udfs
-select to_date(current_timestamp()),
+POSTHOOK: query: select to_date(current_timestamp()),
                            year(current_timestamp()),
                            month(current_timestamp()),
                            day(current_timestamp()),
@@ -280,8 +284,7 @@ POSTHOOK: Input: default@alltypesorc
 2012-01-01	2012	1	1	52	0	2012-02-01	2011-12-01	2012-01-31	2012-01-06
 2012-01-01	2012	1	1	52	0	2012-02-01	2011-12-01	2012-01-31	2012-01-06
 2012-01-01	2012	1	1	52	0	2012-02-01	2011-12-01	2012-01-31	2012-01-06
-PREHOOK: query: --current_date() as argument for various date udfs
-select to_date(current_date()),
+PREHOOK: query: select to_date(current_date()),
                            year(current_date()),
                            month(current_date()),
                            day(current_date()),
@@ -295,8 +298,7 @@ select to_date(current_date()),
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: --current_date() as argument for various date udfs
-select to_date(current_date()),
+POSTHOOK: query: select to_date(current_date()),
                            year(current_date()),
                            month(current_date()),
                            day(current_date()),
@@ -354,11 +356,11 @@ where ctimestamp1 is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
--15340 08:00:12.326000000	-0 00:00:21.201000000	0 00:00:00.000000000	15340 07:59:51.125000000
--15340 08:00:03.213000000	-0 00:00:04.759000000	0 00:00:00.000000000	15340 07:59:58.454000000
--15340 08:00:14.813000000	-0 00:00:21.774000000	0 00:00:00.000000000	15340 07:59:53.039000000
--15340 08:00:08.566000000	-0 00:00:21.918000000	0 00:00:00.000000000	15340 07:59:46.648000000
--15340 07:59:44.993000000	-0 00:00:00.141000000	0 00:00:00.000000000	15340 07:59:44.852000000
+-15340 08:00:12.326000000	-0 00:00:22.201000000	0 00:00:00.000000000	15340 07:59:50.125000000
+-15340 08:00:03.213000000	-0 00:00:05.759000000	0 00:00:00.000000000	15340 07:59:57.454000000
+-15340 08:00:14.813000000	-0 00:00:22.774000000	0 00:00:00.000000000	15340 07:59:52.039000000
+-15340 08:00:08.566000000	-0 00:00:22.918000000	0 00:00:00.000000000	15340 07:59:45.648000000
+-15340 07:59:43.993000000	-0 00:00:00.141000000	0 00:00:00.000000000	15340 07:59:43.852000000
 PREHOOK: query: select current_date, current_timestamp from src limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

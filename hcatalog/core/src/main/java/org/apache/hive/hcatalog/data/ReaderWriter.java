@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,22 +22,23 @@ package org.apache.hive.hcatalog.data;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.sql.Date;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.io.VIntWritable;
 import org.apache.hadoop.io.VLongWritable;
 
@@ -95,7 +96,7 @@ public abstract class ReaderWriter {
 
     case DataType.MAP:
       int size = in.readInt();
-      Map<Object, Object> m = new HashMap<Object, Object>(size);
+      Map<Object, Object> m = new LinkedHashMap<Object, Object>(size);
       for (int i = 0; i < size; i++) {
         m.put(readDatum(in), readDatum(in));
       }
@@ -121,11 +122,11 @@ public abstract class ReaderWriter {
       hdw.readFields(in);
       return hdw.getHiveDecimal();
     case DataType.DATE:
-      DateWritable dw = new DateWritable();
+      DateWritableV2 dw = new DateWritableV2();
       dw.readFields(in);
       return dw.get();
     case DataType.TIMESTAMP:
-      TimestampWritable tw = new TimestampWritable();
+      TimestampWritableV2 tw = new TimestampWritableV2();
       tw.readFields(in);
       return tw.getTimestamp();
     default:
@@ -214,10 +215,10 @@ public abstract class ReaderWriter {
       new HiveDecimalWritable((HiveDecimal)val).write(out);
       return;
     case DataType.DATE:
-      new DateWritable((Date)val).write(out);
+      new DateWritableV2((Date)val).write(out);
       return;
     case DataType.TIMESTAMP:
-      new TimestampWritable((java.sql.Timestamp)val).write(out);
+      new TimestampWritableV2((Timestamp)val).write(out);
       return;
     default:
       throw new IOException("Unexpected data type " + type +

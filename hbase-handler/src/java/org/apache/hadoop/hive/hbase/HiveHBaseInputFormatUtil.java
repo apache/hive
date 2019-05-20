@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,31 +24,45 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.client.HTable;
+import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.filter.FirstKeyOnlyFilter;
 import org.apache.hadoop.hbase.filter.KeyOnlyFilter;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
+import org.apache.hadoop.hive.ql.exec.ExprNodeConstantEvaluator;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Util code common between HiveHBaseTableInputFormat and HiveHBaseTableSnapshotInputFormat.
  */
 class HiveHBaseInputFormatUtil {
 
-  /**
-   * Parse {@code jobConf} to create the target {@link HTable} instance.
-   */
-  public static HTable getTable(JobConf jobConf) throws IOException {
-    String hbaseTableName = jobConf.get(HBaseSerDe.HBASE_TABLE_NAME);
-    return new HTable(HBaseConfiguration.create(jobConf), Bytes.toBytes(hbaseTableName));
-  }
+  private static final Logger LOG = LoggerFactory.getLogger(HiveHBaseInputFormatUtil.class);
 
   /**
    * Parse {@code jobConf} to create a {@link Scan} instance.
@@ -126,14 +140,22 @@ class HiveHBaseInputFormatUtil {
     if (scanCache != null) {
       scan.setCaching(Integer.parseInt(scanCache));
     }
-    String scanCacheBlocks = jobConf.get(HBaseSerDe.HBASE_SCAN_CACHEBLOCKS);
-    if (scanCacheBlocks != null) {
-      scan.setCacheBlocks(Boolean.parseBoolean(scanCacheBlocks));
-    }
+
+    boolean scanCacheBlocks =
+        jobConf.getBoolean(HBaseSerDe.HBASE_SCAN_CACHEBLOCKS, false);
+    scan.setCacheBlocks(scanCacheBlocks);
+
     String scanBatch = jobConf.get(HBaseSerDe.HBASE_SCAN_BATCH);
     if (scanBatch != null) {
       scan.setBatch(Integer.parseInt(scanBatch));
     }
+
+    String filterObjectSerialized = jobConf.get(TableScanDesc.FILTER_OBJECT_CONF_STR);
+
+    if (filterObjectSerialized != null) {
+      setupScanRange(scan, filterObjectSerialized, jobConf, true);
+    }
+
     return scan;
   }
 
@@ -174,5 +196,158 @@ class HiveHBaseInputFormatUtil {
       conditions.add(condition);
     }
     return result;
+  }
+
+  static void setupScanRange(Scan scan, String filterObjectSerialized, JobConf jobConf,
+      boolean filterOnly) throws IOException {
+    HBaseScanRange range =
+            SerializationUtilities.deserializeObject(filterObjectSerialized,
+                    HBaseScanRange.class);
+    try {
+      range.setup(scan, jobConf, filterOnly);
+    } catch (Exception e) {
+      throw new IOException(e);
+    }
+  }
+
+  static void setupKeyRange(Scan scan, List<IndexSearchCondition> conditions, boolean isBinary)
+      throws IOException {
+    // Convert the search condition into a restriction on the HBase scan
+    byte[] startRow = HConstants.EMPTY_START_ROW, stopRow = HConstants.EMPTY_END_ROW;
+    for (IndexSearchCondition sc : conditions) {
+
+      ExprNodeConstantEvaluator eval = new ExprNodeConstantEvaluator(sc.getConstantDesc());
+      PrimitiveObjectInspector objInspector;
+      Object writable;
+
+      try {
+        objInspector = (PrimitiveObjectInspector) eval.initialize(null);
+        writable = eval.evaluate(null);
+      } catch (ClassCastException cce) {
+        throw new IOException("Currently only primitve types are supported. Found: "
+            + sc.getConstantDesc().getTypeString());
+      } catch (HiveException e) {
+        throw new IOException(e);
+      }
+
+      byte[] constantVal = getConstantVal(writable, objInspector, isBinary);
+      String comparisonOp = sc.getComparisonOp();
+
+      if ("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual".equals(comparisonOp)) {
+        startRow = constantVal;
+        stopRow = getNextBA(constantVal);
+      } else if ("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan".equals(comparisonOp)) {
+        stopRow = constantVal;
+      } else if ("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan"
+          .equals(comparisonOp)) {
+        startRow = constantVal;
+      } else if ("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan"
+          .equals(comparisonOp)) {
+        startRow = getNextBA(constantVal);
+      } else if ("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan"
+          .equals(comparisonOp)) {
+        stopRow = getNextBA(constantVal);
+      } else {
+        throw new IOException(comparisonOp + " is not a supported comparison operator");
+      }
+    }
+    scan.setStartRow(startRow);
+    scan.setStopRow(stopRow);
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug(Bytes.toStringBinary(startRow) + " ~ " + Bytes.toStringBinary(stopRow));
+    }
+  }
+
+  static void setupTimeRange(Scan scan, List<IndexSearchCondition> conditions) throws IOException {
+    long start = 0;
+    long end = Long.MAX_VALUE;
+    for (IndexSearchCondition sc : conditions) {
+      long timestamp = getTimestampVal(sc);
+      String comparisonOp = sc.getComparisonOp();
+      if ("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual".equals(comparisonOp)) {
+        start = timestamp;
+        end = timestamp + 1;
+      } else if ("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan".equals(comparisonOp)) {
+        end = timestamp;
+      } else if ("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan"
+          .equals(comparisonOp)) {
+        start = timestamp;
+      } else if ("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan"
+          .equals(comparisonOp)) {
+        start = timestamp + 1;
+      } else if ("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan"
+          .equals(comparisonOp)) {
+        end = timestamp + 1;
+      } else {
+        throw new IOException(comparisonOp + " is not a supported comparison operator");
+      }
+    }
+    scan.setTimeRange(start, end);
+  }
+
+  static long getTimestampVal(IndexSearchCondition sc) throws IOException {
+    long timestamp;
+    try {
+      ExprNodeConstantEvaluator eval = new ExprNodeConstantEvaluator(sc.getConstantDesc());
+      ObjectInspector inspector = eval.initialize(null);
+      Object value = eval.evaluate(null);
+      if (inspector instanceof LongObjectInspector) {
+        timestamp = ((LongObjectInspector) inspector).get(value);
+      } else {
+        PrimitiveObjectInspector primitive = (PrimitiveObjectInspector) inspector;
+        timestamp = PrimitiveObjectInspectorUtils.getTimestamp(value, primitive).toEpochMilli();
+      }
+    } catch (HiveException e) {
+      throw new IOException(e);
+    }
+    return timestamp;
+  }
+
+  static byte[] getConstantVal(Object writable, PrimitiveObjectInspector poi, boolean isKeyBinary)
+      throws IOException {
+
+    if (!isKeyBinary) {
+      // Key is stored in text format. Get bytes representation of constant also of
+      // text format.
+      byte[] startRow;
+      ByteStream.Output serializeStream = new ByteStream.Output();
+      LazyUtils.writePrimitiveUTF8(serializeStream, writable, poi, false, (byte) 0, null);
+      startRow = new byte[serializeStream.getLength()];
+      System.arraycopy(serializeStream.getData(), 0, startRow, 0, serializeStream.getLength());
+      return startRow;
+    }
+
+    PrimitiveCategory pc = poi.getPrimitiveCategory();
+    switch (poi.getPrimitiveCategory()) {
+    case INT:
+      return Bytes.toBytes(((IntWritable) writable).get());
+    case BOOLEAN:
+      return Bytes.toBytes(((BooleanWritable) writable).get());
+    case LONG:
+      return Bytes.toBytes(((LongWritable) writable).get());
+    case FLOAT:
+      return Bytes.toBytes(((FloatWritable) writable).get());
+    case DOUBLE:
+      return Bytes.toBytes(((DoubleWritable) writable).get());
+    case SHORT:
+      return Bytes.toBytes(((ShortWritable) writable).get());
+    case STRING:
+      return Bytes.toBytes(((Text) writable).toString());
+    case BYTE:
+      return Bytes.toBytes(((ByteWritable) writable).get());
+
+    default:
+      throw new IOException("Type not supported " + pc);
+    }
+  }
+
+  static byte[] getNextBA(byte[] current) {
+    // startRow is inclusive while stopRow is exclusive,
+    // this util method returns very next bytearray which will occur after the current one
+    // by padding current one with a trailing 0 byte.
+    byte[] next = new byte[current.length + 1];
+    System.arraycopy(current, 0, next, 0, current.length);
+    return next;
   }
 }

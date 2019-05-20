@@ -1,15 +1,9 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- 8. Test UDF/UDAF
-select count(*), count(c_int), sum(c_int), avg(c_int), max(c_int), min(c_int) from cbo_t1
+PREHOOK: query: select count(*), count(c_int), sum(c_int), avg(c_int), max(c_int), min(c_int) from cbo_t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- 8. Test UDF/UDAF
-select count(*), count(c_int), sum(c_int), avg(c_int), max(c_int), min(c_int) from cbo_t1
+POSTHOOK: query: select count(*), count(c_int), sum(c_int), avg(c_int), max(c_int), min(c_int) from cbo_t1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014

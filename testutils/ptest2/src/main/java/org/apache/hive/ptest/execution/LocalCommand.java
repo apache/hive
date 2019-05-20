@@ -37,6 +37,7 @@ public class LocalCommand {
   private final StreamReader streamReader;
   private Integer exitCode;
   private final int commandId;
+  private long elapsedTimeInMs;
   private final Stopwatch stopwatch = Stopwatch.createUnstarted();
 
   public LocalCommand(Logger logger, OutputPolicy outputPolicy, String command) throws IOException {
@@ -58,12 +59,20 @@ public class LocalCommand {
     }
   }
 
+  public long getElapsedTimeInMs() throws InterruptedException {
+    synchronized (process) {
+      awaitProcessCompletion();
+      return elapsedTimeInMs;
+    }
+  }
+
   private void awaitProcessCompletion() throws InterruptedException {
     synchronized (process) {
       if (exitCode == null) {
         exitCode = process.waitFor();
         if (stopwatch.isRunning()) {
           stopwatch.stop();
+          this.elapsedTimeInMs = stopwatch.elapsed(TimeUnit.MILLISECONDS);
           logger.info("Finished LocalCommandId={}. ElapsedTime(ms)={}", commandId,
               stopwatch.elapsed(
                   TimeUnit.MILLISECONDS));

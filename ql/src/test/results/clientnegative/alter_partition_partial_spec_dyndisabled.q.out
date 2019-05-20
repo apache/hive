@@ -34,7 +34,6 @@ p2                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	                    
 p2                  	string              	                    
 FAILED: SemanticException [Error 10095]: Dynamic partition is disabled. Either enable it by setting hive.exec.dynamic.partition=true or specify partition column values

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,6 +23,7 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.ExponentiallyDecayingReservoir;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.JmxReporter;
+import com.codahale.metrics.Meter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.MetricSet;
@@ -43,9 +44,12 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -76,17 +80,17 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.common.Metrics {
 
-  public static final String API_PREFIX = "api_";
-  public static final String ACTIVE_CALLS = "active_calls_";
   public static final Logger LOGGER = LoggerFactory.getLogger(CodahaleMetrics.class);
 
   public final MetricRegistry metricRegistry = new MetricRegistry();
   private final Lock timersLock = new ReentrantLock();
   private final Lock countersLock = new ReentrantLock();
   private final Lock gaugesLock = new ReentrantLock();
+  private final Lock metersLock = new ReentrantLock();
 
   private LoadingCache<String, Timer> timers;
   private LoadingCache<String, Counter> counters;
+  private LoadingCache<String, Meter> meters;
   private ConcurrentHashMap<String, Gauge> gauges;
 
   private HiveConf conf;
@@ -126,7 +130,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
       if (!isOpen) {
         isOpen = true;
         this.timerContext = timer.time();
-        CodahaleMetrics.this.incrementCounter(ACTIVE_CALLS + name);
+        CodahaleMetrics.this.incrementCounter(MetricsConstant.ACTIVE_CALLS + name);
       } else {
         LOGGER.warn("Scope named " + name + " is not closed, cannot be opened.");
       }
@@ -138,7 +142,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     public void close() {
       if (isOpen) {
         timerContext.close();
-        CodahaleMetrics.this.decrementCounter(ACTIVE_CALLS + name);
+        CodahaleMetrics.this.decrementCounter(MetricsConstant.ACTIVE_CALLS + name);
       } else {
         LOGGER.warn("Scope named " + name + " is not open, cannot be closed.");
       }
@@ -169,6 +173,16 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
         }
       }
     );
+    meters = CacheBuilder.newBuilder().build(
+        new CacheLoader<String, Meter>() {
+          @Override
+          public Meter load(String key) {
+            Meter meter = new Meter();
+            metricRegistry.register(key, meter);
+            return meter;
+          }
+        }
+    );
     gauges = new ConcurrentHashMap<String, Gauge>();
 
     //register JVM metrics
@@ -178,22 +192,8 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     registerAll("threads", new ThreadStatesGaugeSet());
     registerAll("classLoading", new ClassLoadingGaugeSet());
 
-    //Metrics reporter
-    Set<MetricsReporting> finalReporterList = new HashSet<MetricsReporting>();
-    List<String> metricsReporterNames = Lists.newArrayList(
-      Splitter.on(",").trimResults().omitEmptyStrings().split(conf.getVar(HiveConf.ConfVars.HIVE_METRICS_REPORTER)));
-
-    if(metricsReporterNames != null) {
-      for (String metricsReportingName : metricsReporterNames) {
-        try {
-          MetricsReporting reporter = MetricsReporting.valueOf(metricsReportingName.trim().toUpperCase());
-          finalReporterList.add(reporter);
-        } catch (IllegalArgumentException e) {
-          LOGGER.warn("Metrics reporter skipped due to invalid configured reporter: " + metricsReportingName);
-        }
-      }
-    }
-    initReporting(finalReporterList);
+    //initialize reporters
+    initReporting();
   }
 
 
@@ -209,11 +209,11 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     }
     timers.invalidateAll();
     counters.invalidateAll();
+    meters.invalidateAll();
   }
 
   @Override
   public void startStoredScope(String name) {
-    name = API_PREFIX + name;
     if (threadLocalScopes.get().containsKey(name)) {
       threadLocalScopes.get().get(name).open();
     } else {
@@ -223,7 +223,6 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
 
   @Override
   public void endStoredScope(String name) {
-    name = API_PREFIX + name;
     if (threadLocalScopes.get().containsKey(name)) {
       threadLocalScopes.get().get(name).close();
       threadLocalScopes.get().remove(name);
@@ -239,7 +238,6 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
   }
 
   public MetricsScope createScope(String name) {
-    name = API_PREFIX + name;
     return new CodahaleMetricsScope(name);
   }
 
@@ -296,6 +294,21 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     addGaugeInternal(name, gauge);
   }
 
+
+  @Override
+  public void removeGauge(String name) {
+    try {
+      gaugesLock.lock();
+      gauges.remove(name);
+      // Metrics throws an Exception if we don't do this when the key already exists
+      if (metricRegistry.getGauges().containsKey(name)) {
+        metricRegistry.remove(name);
+      }
+    } finally {
+      gaugesLock.unlock();
+    }
+  }
+
   @Override
   public void addRatio(String name, MetricsVariable<Integer> numerator,
                            MetricsVariable<Integer> denominator) {
@@ -322,6 +335,21 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     }
   }
 
+  @Override
+  public void markMeter(String name) {
+    String key = name;
+    try {
+      metersLock.lock();
+      Meter meter = meters.get(name);
+      meter.mark();
+    } catch (ExecutionException e) {
+      throw new IllegalStateException("Error retrieving meter " + name
+          + " from the metric registry ", e);
+    } finally {
+      metersLock.unlock();
+    }
+  }
+
   // This method is necessary to synchronize lazy-creation to the timers.
   private Timer getTimer(String name) {
     String key = name;
@@ -330,7 +358,8 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
       Timer timer = timers.get(key);
       return timer;
     } catch (ExecutionException e) {
-      throw new IllegalStateException("Error retrieving timer from the metric registry ", e);
+      throw new IllegalStateException("Error retrieving timer " + name
+          + " from the metric registry ", e);
     } finally {
       timersLock.unlock();
     }
@@ -359,107 +388,100 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
   }
 
   /**
-   * Should be only called once to initialize the reporters
+   * Initializes reporters from HIVE_CODAHALE_METRICS_REPORTER_CLASSES or HIVE_METRICS_REPORTER if the former is not defined.
+   * Note: if both confs are defined, only  HIVE_CODAHALE_METRICS_REPORTER_CLASSES will be used.
    */
-  private void initReporting(Set<MetricsReporting> reportingSet) {
-    for (MetricsReporting reporting : reportingSet) {
-      switch(reporting) {
-        case CONSOLE:
-          final ConsoleReporter consoleReporter = ConsoleReporter.forRegistry(metricRegistry)
-            .convertRatesTo(TimeUnit.SECONDS)
-            .convertDurationsTo(TimeUnit.MILLISECONDS)
-            .build();
-          consoleReporter.start(1, TimeUnit.SECONDS);
-          reporters.add(consoleReporter);
-          break;
-        case JMX:
-          final JmxReporter jmxReporter = JmxReporter.forRegistry(metricRegistry)
-            .convertRatesTo(TimeUnit.SECONDS)
-            .convertDurationsTo(TimeUnit.MILLISECONDS)
-            .build();
-          jmxReporter.start();
-          reporters.add(jmxReporter);
-          break;
-        case JSON_FILE:
-          final JsonFileReporter jsonFileReporter = new JsonFileReporter();
-          jsonFileReporter.start();
-          reporters.add(jsonFileReporter);
-          break;
-        case HADOOP2:
-          String applicationName = conf.get(HiveConf.ConfVars.HIVE_METRICS_HADOOP2_COMPONENT_NAME.varname);
-          long reportingInterval = HiveConf.toTime(
-              conf.get(HiveConf.ConfVars.HIVE_METRICS_HADOOP2_INTERVAL.varname),
-              TimeUnit.SECONDS, TimeUnit.SECONDS);
-          final HadoopMetrics2Reporter metrics2Reporter = HadoopMetrics2Reporter.forRegistry(metricRegistry)
-              .convertRatesTo(TimeUnit.SECONDS)
-              .convertDurationsTo(TimeUnit.MILLISECONDS)
-              .build(DefaultMetricsSystem.initialize(applicationName), // The application-level name
-                  applicationName, // Component name
-                  applicationName, // Component description
-                  "General"); // Name for each metric record
-          metrics2Reporter.start(reportingInterval, TimeUnit.SECONDS);
-          break;
-      }
+  private void initReporting() {
+
+    if (!(initCodahaleMetricsReporterClasses() || initMetricsReporter())) {
+      LOGGER.warn("Unable to initialize metrics reporting");
+    }
+    if (reporters.isEmpty()) {
+      // log a warning incase no reporters were successfully added
+      LOGGER.warn("No reporters configured for codahale metrics!");
     }
   }
 
-  class JsonFileReporter implements Closeable {
-    private ObjectMapper jsonMapper = null;
-    private java.util.Timer timer = null;
+  /**
+   * Initializes reporting using HIVE_CODAHALE_METRICS_REPORTER_CLASSES.
+   * @return whether initialization was successful or not
+   */
+  private boolean initCodahaleMetricsReporterClasses() {
 
-    public void start() {
-      this.jsonMapper = new ObjectMapper().registerModule(new MetricsModule(TimeUnit.MILLISECONDS, TimeUnit.MILLISECONDS, false));
-      this.timer = new java.util.Timer(true);
-
-      long time = conf.getTimeVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_INTERVAL, TimeUnit.MILLISECONDS);
-      final String pathString = conf.getVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_LOCATION);
-
-      timer.schedule(new TimerTask() {
-        @Override
-        public void run() {
-          BufferedWriter bw = null;
-          try {
-            String json = jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(metricRegistry);
-            Path tmpPath = new Path(pathString + ".tmp");
-            URI tmpPathURI = tmpPath.toUri();
-            FileSystem fs = null;
-            if (tmpPathURI.getScheme() == null && tmpPathURI.getAuthority() == null) {
-              //default local
-              fs = FileSystem.getLocal(conf);
-            } else {
-              fs = FileSystem.get(tmpPathURI, conf);
-            }
-            fs.delete(tmpPath, true);
-            bw = new BufferedWriter(new OutputStreamWriter(fs.create(tmpPath, true)));
-            bw.write(json);
-            bw.close();
-            fs.setPermission(tmpPath, FsPermission.createImmutable((short) 0644));
-
-            Path path = new Path(pathString);
-            fs.rename(tmpPath, path);
-            fs.setPermission(path, FsPermission.createImmutable((short) 0644));
-          } catch (Exception e) {
-            LOGGER.warn("Error writing JSON Metrics to file", e);
-          } finally {
-            try {
-              if (bw != null) {
-                bw.close();
-              }
-            } catch (IOException e) {
-              //Ignore.
-            }
-          }
-
-
-        }
-      }, 0, time);
+    List<String> reporterClasses = Lists.newArrayList(Splitter.on(",").trimResults().
+        omitEmptyStrings().split(conf.getVar(HiveConf.ConfVars.HIVE_CODAHALE_METRICS_REPORTER_CLASSES)));
+    if (reporterClasses.isEmpty()) {
+      return false;
     }
 
-    @Override
-    public void close() {
-      if (timer != null) {
-        this.timer.cancel();
+    for (String reporterClass : reporterClasses) {
+      Class name = null;
+      try {
+        name = conf.getClassByName(reporterClass);
+      } catch (ClassNotFoundException e) {
+        LOGGER.error("Unable to instantiate metrics reporter class " + reporterClass +
+            " from conf HIVE_CODAHALE_METRICS_REPORTER_CLASSES", e);
+        throw new IllegalArgumentException(e);
+      }
+      try {
+        // Note: Hadoop metric reporter does not support tags. We create a single reporter for all metrics.
+        Constructor constructor = name.getConstructor(MetricRegistry.class, HiveConf.class);
+        CodahaleReporter reporter = (CodahaleReporter) constructor.newInstance(metricRegistry, conf);
+        reporter.start();
+        reporters.add(reporter);
+      } catch (NoSuchMethodException | InstantiationException |
+          IllegalAccessException | InvocationTargetException e) {
+        LOGGER.error("Unable to instantiate using constructor(MetricRegistry, HiveConf) for"
+            + " reporter " + reporterClass + " from conf HIVE_CODAHALE_METRICS_REPORTER_CLASSES",
+            e);
+        throw new IllegalArgumentException(e);
       }
     }
+    return true;
+  }
+
+  /**
+   * Initializes reporting using HIVE_METRICS+REPORTER.
+   * @return whether initialization was successful or not
+   */
+  private boolean initMetricsReporter() {
+
+    List<String> metricsReporterNames = Lists.newArrayList(Splitter.on(",").trimResults().
+        omitEmptyStrings().split(conf.getVar(HiveConf.ConfVars.HIVE_METRICS_REPORTER)));
+    if (metricsReporterNames.isEmpty()) {
+      return false;
+    }
+
+    MetricsReporting reporter = null;
+    for (String metricsReportingName : metricsReporterNames) {
+      try {
+        reporter = MetricsReporting.valueOf(metricsReportingName.trim().toUpperCase());
+      } catch (IllegalArgumentException e) {
+        LOGGER.error("Invalid reporter name " + metricsReportingName, e);
+        throw e;
+      }
+      CodahaleReporter codahaleReporter = null;
+      switch (reporter) {
+      case CONSOLE:
+        codahaleReporter = new ConsoleMetricsReporter(metricRegistry, conf);
+        break;
+      case JMX:
+        codahaleReporter = new JmxMetricsReporter(metricRegistry, conf);
+        break;
+      case JSON_FILE:
+        codahaleReporter = new JsonFileMetricsReporter(metricRegistry, conf);
+        break;
+      case HADOOP2:
+        codahaleReporter = new Metrics2Reporter(metricRegistry, conf);
+        break;
+      default:
+        LOGGER.warn("Unhandled reporter " + reporter + " provided.");
+      }
+      if (codahaleReporter != null) {
+        codahaleReporter.start();
+        reporters.add(codahaleReporter);
+      }
+    }
+    return true;
   }
 }

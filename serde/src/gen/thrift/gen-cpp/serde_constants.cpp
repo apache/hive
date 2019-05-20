@@ -35,7 +35,7 @@ serdeConstants::serdeConstants() {
 
   FIELD_DELIM = "field.delim";
 
-  COLLECTION_DELIM = "colelction.delim";
+  COLLECTION_DELIM = "collection.delim";
 
   LINE_DELIM = "line.delim";
 
@@ -85,6 +85,8 @@ serdeConstants::serdeConstants() {
 
   INTERVAL_DAY_TIME_TYPE_NAME = "interval_day_time";
 
+  TIMESTAMPLOCALTZ_TYPE_NAME = "timestamp with local time zone";
+
   LIST_TYPE_NAME = "array";
 
   MAP_TYPE_NAME = "map";
@@ -98,6 +100,8 @@ serdeConstants::serdeConstants() {
   LIST_COLUMN_TYPES = "columns.types";
 
   TIMESTAMP_FORMATS = "timestamp.formats";
+
+  COLUMN_NAME_DELIMITER = "column.name.delimiter";
 
   PrimitiveTypes.insert("void");
   PrimitiveTypes.insert("boolean");
@@ -117,6 +121,7 @@ serdeConstants::serdeConstants() {
   PrimitiveTypes.insert("interval_day_time");
   PrimitiveTypes.insert("decimal");
   PrimitiveTypes.insert("binary");
+  PrimitiveTypes.insert("timestamp with local time zone");
 
   CollectionTypes.insert("array");
   CollectionTypes.insert("map");

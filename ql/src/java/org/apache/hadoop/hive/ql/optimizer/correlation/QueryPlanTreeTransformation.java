@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -229,7 +229,7 @@ public class QueryPlanTreeTransformation {
               handledRSs.add((ReduceSinkOperator)op);
               parentsOfMux.add(CorrelationUtilities.getSingleParent(op, true));
             } else {
-              throw new SemanticException("An slibing of ReduceSinkOperator is nethier a " +
+              throw new SemanticException("A sibling of ReduceSinkOperator is neither a " +
                   "DemuxOperator nor a ReduceSinkOperator");
             }
           }

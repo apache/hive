@@ -1,3 +1,4 @@
+--! qt:dataset:src
 SET hive.exec.driver.run.hooks=org.apache.hadoop.hive.ql.hooks.DriverTestHook;
 
 -- This query should appear in the Hive CLI output.

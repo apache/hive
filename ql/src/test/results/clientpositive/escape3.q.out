@@ -1,5 +1,4 @@
-PREHOOK: query: -- with string
-CREATE TABLE escape3_1
+PREHOOK: query: CREATE TABLE escape3_1
 ( 
 GERUND STRING, 
 ABBREV STRING,
@@ -11,8 +10,7 @@ STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@escape3_1
-POSTHOOK: query: -- with string
-CREATE TABLE escape3_1
+POSTHOOK: query: CREATE TABLE escape3_1
 ( 
 GERUND STRING, 
 ABBREV STRING,
@@ -45,8 +43,7 @@ writ|ing	MD	200
 w|aiting	|NC	300
 seein|g	TN|	400
 runn|ing	WV	500
-PREHOOK: query: -- with varchar
-CREATE TABLE escape3_2
+PREHOOK: query: CREATE TABLE escape3_2
 ( 
 GERUND VARCHAR(10), 
 ABBREV VARCHAR(3), 
@@ -58,8 +55,7 @@ STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@escape3_2
-POSTHOOK: query: -- with varchar
-CREATE TABLE escape3_2
+POSTHOOK: query: CREATE TABLE escape3_2
 ( 
 GERUND VARCHAR(10), 
 ABBREV VARCHAR(3), 
@@ -92,8 +88,7 @@ writ|ing	MD	200
 w|aiting	|NC	300
 seein|g	TN|	400
 runn|ing	WV	500
-PREHOOK: query: -- with char
-CREATE TABLE escape3_3
+PREHOOK: query: CREATE TABLE escape3_3
 ( 
 GERUND CHAR(10), 
 ABBREV CHAR(3), 
@@ -105,8 +100,7 @@ STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@escape3_3
-POSTHOOK: query: -- with char
-CREATE TABLE escape3_3
+POSTHOOK: query: CREATE TABLE escape3_3
 ( 
 GERUND CHAR(10), 
 ABBREV CHAR(3), 

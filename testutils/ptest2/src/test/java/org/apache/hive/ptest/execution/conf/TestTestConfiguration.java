@@ -21,7 +21,7 @@ package org.apache.hive.ptest.execution.conf;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.io.Resources;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.apache.hive.ptest.execution.PTest;
 import org.apache.hive.ptest.execution.context.ExecutionContext;
 import org.junit.Test;
@@ -42,10 +42,10 @@ public class TestTestConfiguration {
 
   @Test
   public void testGettersSetters() throws Exception {
-    ExecutionContextConfiguration execConf = ExecutionContextConfiguration.fromInputStream(
+    Context ctx = Context.fromInputStream(
         Resources.getResource("test-configuration.properties").openStream());
-    TestConfiguration conf = TestConfiguration.fromInputStream(
-        Resources.getResource("test-configuration.properties").openStream(), LOG);
+    ExecutionContextConfiguration execConf = ExecutionContextConfiguration.withContext(ctx);
+    TestConfiguration conf = TestConfiguration.withContext(ctx, LOG);
     Set<Host> expectedHosts = Sets.newHashSet(new Host("localhost", "hiveptest", new String[]{"/home/hiveptest"}, 2));
     ExecutionContext executionContext = execConf.getExecutionContextProvider().createExecutionContext();
     Assert.assertEquals(expectedHosts, executionContext.getHosts());
@@ -92,8 +92,8 @@ public class TestTestConfiguration {
     Set<Host> testHosts = new HashSet<Host>();
     testHosts.add(testHost);
 
-    TestConfiguration conf = TestConfiguration.fromInputStream(
-      Resources.getResource("test-configuration.properties").openStream(), LOG);
+    Context ctx = Context.fromInputStream(Resources.getResource("test-configuration.properties").openStream());
+    TestConfiguration conf = TestConfiguration.withContext(ctx, LOG);
     ExecutionContext execContext = new ExecutionContext(null, testHosts, "test", null);
     PTest.Builder mPTestBuilder = new PTest.Builder();
     PTest ptest = mPTestBuilder.build(conf, execContext, "1234", baseDir.newFolder(), null, null, null, null);

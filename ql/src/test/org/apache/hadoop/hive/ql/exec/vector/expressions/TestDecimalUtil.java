@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
@@ -229,7 +229,6 @@ public class TestDecimalUtil {
 
     HiveDecimal d3 = HiveDecimal.create("0.00000");
     Assert.assertEquals(0, d3.scale());
-    d3.setScale(5);
     DecimalUtil.sign(0, d3, lcv);
     Assert.assertEquals(0, lcv.vector[0]);
   }

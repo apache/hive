@@ -1,5 +1,4 @@
-PREHOOK: query: -- Should all be true
-select
+PREHOOK: query: select
   cast('abc' as varchar(10)) =  cast('abc' as varchar(10)),
   cast('abc' as varchar(10)) <= cast('abc' as varchar(10)),
   cast('abc' as varchar(10)) >= cast('abc' as varchar(10)),
@@ -10,8 +9,7 @@ from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Should all be true
-select
+POSTHOOK: query: select
   cast('abc' as varchar(10)) =  cast('abc' as varchar(10)),
   cast('abc' as varchar(10)) <= cast('abc' as varchar(10)),
   cast('abc' as varchar(10)) >= cast('abc' as varchar(10)),
@@ -23,8 +21,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 true	true	true	true	true	true
-PREHOOK: query: -- Different varchar lengths should still compare the same
-select
+PREHOOK: query: select
   cast('abc' as varchar(10)) =  cast('abc' as varchar(3)),
   cast('abc' as varchar(10)) <= cast('abc' as varchar(3)),
   cast('abc' as varchar(10)) >= cast('abc' as varchar(3)),
@@ -35,8 +32,7 @@ from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Different varchar lengths should still compare the same
-select
+POSTHOOK: query: select
   cast('abc' as varchar(10)) =  cast('abc' as varchar(3)),
   cast('abc' as varchar(10)) <= cast('abc' as varchar(3)),
   cast('abc' as varchar(10)) >= cast('abc' as varchar(3)),
@@ -48,8 +44,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 true	true	true	true	true	true
-PREHOOK: query: -- Should work with string types as well
-select
+PREHOOK: query: select
   cast('abc' as varchar(10)) =  'abc',
   cast('abc' as varchar(10)) <= 'abc',
   cast('abc' as varchar(10)) >= 'abc',
@@ -60,8 +55,7 @@ from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Should work with string types as well
-select
+POSTHOOK: query: select
   cast('abc' as varchar(10)) =  'abc',
   cast('abc' as varchar(10)) <= 'abc',
   cast('abc' as varchar(10)) >= 'abc',
@@ -73,30 +67,26 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 true	true	true	true	true	true
-PREHOOK: query: -- leading space is significant for varchar
-select
+PREHOOK: query: select
   cast(' abc' as varchar(10)) <> cast('abc' as varchar(10))
 from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- leading space is significant for varchar
-select
+POSTHOOK: query: select
   cast(' abc' as varchar(10)) <> cast('abc' as varchar(10))
 from src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 true
-PREHOOK: query: -- trailing space is significant for varchar
-select
+PREHOOK: query: select
   cast('abc ' as varchar(10)) <> cast('abc' as varchar(10))
 from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- trailing space is significant for varchar
-select
+POSTHOOK: query: select
   cast('abc ' as varchar(10)) <> cast('abc' as varchar(10))
 from src limit 1
 POSTHOOK: type: QUERY

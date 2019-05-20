@@ -1,6 +1,8 @@
+set hive.vectorized.execution.enabled=false;
+
 -- SORT_QUERY_RESULTS
 
-create table orc_split_elim (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc;
+create table orc_split_elim (userid bigint, string1 string, subtype double, decimal1 decimal(38,0), ts timestamp) stored as orc;
 
 load data local inpath '../../data/files/orc_split_elim.orc' into table orc_split_elim;
 
@@ -103,7 +105,7 @@ select userid,string1,subtype,decimal1,ts from orc_split_elim where userid<=70;
 SET hive.optimize.index.filter=false;
 
 -- partitioned table
-create table orc_split_elim_part (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) partitioned by (country string, year int) stored as orc;
+create table orc_split_elim_part (userid bigint, string1 string, subtype double, decimal1 decimal(38,0), ts timestamp) partitioned by (country string, year int) stored as orc;
 
 alter table orc_split_elim_part add partition(country='us', year=2000);
 alter table orc_split_elim_part add partition(country='us', year=2001);

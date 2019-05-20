@@ -18,14 +18,12 @@ POSTHOOK: query: alter table date_4 set serde 'org.apache.hadoop.hive.serde2.laz
 POSTHOOK: type: ALTERTABLE_SERIALIZER
 POSTHOOK: Input: default@date_4
 POSTHOOK: Output: default@date_4
-PREHOOK: query: -- Test date literal syntax
-insert overwrite table date_4 
+PREHOOK: query: insert overwrite table date_4 
   select date '2011-01-01' from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@date_4
-POSTHOOK: query: -- Test date literal syntax
-insert overwrite table date_4 
+POSTHOOK: query: insert overwrite table date_4 
   select date '2011-01-01' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src

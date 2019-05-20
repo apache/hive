@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,13 +18,13 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
-import com.google.common.annotations.VisibleForTesting;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Implementation of memory manager for low level cache. Note that memory is released during
@@ -38,29 +38,48 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
   private long maxSize;
 
   public LowLevelCacheMemoryManager(
-      Configuration conf, LowLevelCachePolicy evictor, LlapDaemonCacheMetrics metrics) {
-    this(HiveConf.getSizeVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE), evictor, metrics);
-  }
-
-  @VisibleForTesting
-  public LowLevelCacheMemoryManager(
       long maxSize, LowLevelCachePolicy evictor, LlapDaemonCacheMetrics metrics) {
     this.maxSize = maxSize;
     this.evictor = evictor;
     this.usedMemory = new AtomicLong(0);
     this.metrics = metrics;
-    metrics.setCacheCapacityTotal(maxSize);
     if (LlapIoImpl.LOG.isInfoEnabled()) {
       LlapIoImpl.LOG.info("Memory manager initialized with max size {} and" +
           " {} ability to evict blocks", maxSize, ((evictor == null) ? "no " : ""));
     }
   }
 
+  public static class ReserveFailedException extends RuntimeException {
+    private static final long serialVersionUID = 1L;
+    public ReserveFailedException(AtomicBoolean isStopped) {
+      super("Cannot reserve memory"
+          + (Thread.currentThread().isInterrupted() ? "; thread interrupted" : "")
+          + ((isStopped != null && isStopped.get()) ? "; thread stopped" : ""));
+    }
+  }
+
   @Override
-  public boolean reserveMemory(final long memoryToReserve, boolean waitForEviction) {
+  public void reserveMemory(final long memoryToReserve, AtomicBoolean isStopped) {
+    boolean result = reserveMemory(memoryToReserve, true, isStopped);
+    if (result) return;
+    // Can only happen if there's no evictor, or if thread is interrupted.
+    throw new ReserveFailedException(isStopped);
+  }
+
+  @Override public long evictMemory(long memoryToEvict) {
+    if (evictor == null) {
+      return 0;
+    }
+    long evicted = evictor.evictSomeBlocks(memoryToEvict);
+    releaseMemory(evicted);
+    return evicted;
+  }
+
+  @VisibleForTesting
+  public boolean reserveMemory(final long memoryToReserve,
+      boolean waitForEviction, AtomicBoolean isStopped) {
     // TODO: if this cannot evict enough, it will spin infinitely. Terminate at some point?
     int badCallCount = 0;
-    int nextLog = 4;
     long evictedTotalMetric = 0, reservedTotalMetric = 0, remainingToReserve = memoryToReserve;
     boolean result = true;
     while (remainingToReserve > 0) {
@@ -76,21 +95,23 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
       // TODO: for one-block case, we could move notification for the last block out of the loop.
       long evicted = evictor.evictSomeBlocks(remainingToReserve);
       if (evicted == 0) {
+        ++badCallCount;
         if (!waitForEviction) {
           result = false;
           break;
         }
-        ++badCallCount;
-        if (badCallCount == nextLog) {
-          LlapIoImpl.LOG.warn("Cannot evict blocks for " + badCallCount + " calls; cache full?");
-          nextLog <<= 1;
-          try {
-            Thread.sleep(Math.min(1000, nextLog));
-          } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            result = false;
-            break;
-          }
+
+        if (isStopped != null && isStopped.get()) {
+          result = false;
+          break;
+        }
+        try {
+          Thread.sleep(badCallCount > 9 ? 1000 : (1 << badCallCount));
+        } catch (InterruptedException e) {
+          LlapIoImpl.LOG.warn("Thread interrupted"); // We currently don't expect this.
+          Thread.currentThread().interrupt();
+          result = false;
+          break;
         }
         continue;
       }
@@ -108,19 +129,12 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
         usedMem = usedMemory.get();
       }
     }
+    if (!result) {
+      releaseMemory(reservedTotalMetric);
+      reservedTotalMetric = 0;
+    }
     metrics.incrCacheCapacityUsed(reservedTotalMetric - evictedTotalMetric);
     return result;
-  }
-
-
-  @Override
-  public void forceReservedMemory(int allocationSize, int count) {
-    if (evictor == null) return;
-    while (count > 0) {
-      int evictedCount = evictor.tryEvictContiguousData(allocationSize, count);
-      if (evictedCount == 0) return;
-      count -= evictedCount;
-    }
   }
 
   @Override
@@ -134,13 +148,24 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
   }
 
   @Override
-  public String debugDumpForOom() {
-    if (evictor == null) return null;
-    return "cache state\n" + evictor.debugDumpForOom();
-  }
-
-  @Override
   public void updateMaxSize(long maxSize) {
     this.maxSize = maxSize;
+  }
+
+  public long purge() {
+    if (evictor == null) return 0;
+    long evicted = evictor.purge();
+    if (evicted == 0) return 0;
+    long usedMem = -1;
+    do {
+      usedMem = usedMemory.get();
+    } while (!usedMemory.compareAndSet(usedMem, usedMem - evicted));
+    metrics.incrCacheCapacityUsed(-evicted);
+    return evicted;
+  }
+
+  @VisibleForTesting
+  public long getCurrentUsedSize() {
+    return usedMemory.get();
   }
 }

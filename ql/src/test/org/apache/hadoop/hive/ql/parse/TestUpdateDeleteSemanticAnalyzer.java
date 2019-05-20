@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -223,7 +223,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
 
   @Before
   public void setup() {
-    queryState = new QueryState(null);
+    queryState = new QueryState.Builder().build();
     conf = queryState.getConf();
     conf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
@@ -231,6 +231,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
     conf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     conf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
     conf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST, true);
   }
 
   public void cleanupTables() throws HiveException {
@@ -258,12 +259,11 @@ public class TestUpdateDeleteSemanticAnalyzer {
     ctx.setCmd(query);
     ctx.setHDFSCleanup(true);
 
-    ParseDriver pd = new ParseDriver();
-    ASTNode tree = pd.parse(query, ctx);
-    tree = ParseUtils.findRootNonNullToken(tree);
+    ASTNode tree = ParseUtils.parse(query, ctx);
 
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, tree);
     SessionState.get().initTxnMgr(conf);
+    SessionState.get().getTxnMgr().openTxn(ctx, conf.getUser());
     db = sem.getDb();
 
     // I have to create the tables here (rather than in setup()) because I need the Hive
@@ -300,7 +300,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
     ExplainConfiguration config = new ExplainConfiguration();
     config.setExtended(true);
     ExplainWork work = new ExplainWork(tmp, sem.getParseContext(), sem.getRootTasks(),
-        sem.getFetchTask(), sem, config, null);
+        sem.getFetchTask(), null, sem, config, null, plan.getOptimizedQueryString(), plan.getOptimizedCBOPlan());
     ExplainTask task = new ExplainTask();
     task.setWork(work);
     task.initialize(queryState, plan, null, null);

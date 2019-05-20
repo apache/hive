@@ -38,26 +38,18 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@table_desc
 POSTHOOK: Lineage: table_desc.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table_desc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- If the user asked for sort merge join to be enforced (by setting
--- hive.enforce.sortmergebucketmapjoin to true), an error should be thrown, since
--- one of the tables is in ascending order and the other is in descending order,
--- and sort merge bucket mapjoin cannot be performed. In the default mode, the
--- query would succeed, although a regular map-join would be performed instead of
--- what the user asked.
-
-explain 
+PREHOOK: query: explain 
 select /*+mapjoin(a)*/ * from table_asc a join table_desc b on a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- If the user asked for sort merge join to be enforced (by setting
--- hive.enforce.sortmergebucketmapjoin to true), an error should be thrown, since
--- one of the tables is in ascending order and the other is in descending order,
--- and sort merge bucket mapjoin cannot be performed. In the default mode, the
--- query would succeed, although a regular map-join would be performed instead of
--- what the user asked.
-
-explain 
+PREHOOK: Input: default@table_asc
+PREHOOK: Input: default@table_desc
+#### A masked pattern was here ####
+POSTHOOK: query: explain 
 select /*+mapjoin(a)*/ * from table_asc a join table_desc b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_asc
+POSTHOOK: Input: default@table_desc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -74,10 +66,11 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
-            Statistics: Num rows: 500 Data size: 4812 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 4812 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
               HashTable Sink Operator
                 keys:
                   0 key (type: int)
@@ -88,10 +81,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            Statistics: Num rows: 500 Data size: 4812 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 4812 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -99,18 +93,19 @@ STAGE PLANS:
                   0 key (type: int)
                   1 key (type: int)
                 outputColumnNames: _col0, _col1, _col5, _col6
-                Statistics: Num rows: 550 Data size: 5293 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 550 Data size: 52250 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 550 Data size: 5293 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 550 Data size: 52250 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 550 Data size: 5293 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 550 Data size: 52250 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
 

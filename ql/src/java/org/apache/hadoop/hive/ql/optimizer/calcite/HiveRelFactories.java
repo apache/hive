@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -37,17 +37,19 @@ import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
 import org.apache.calcite.rel.core.RelFactories.SemiJoinFactory;
 import org.apache.calcite.rel.core.RelFactories.SetOpFactory;
 import org.apache.calcite.rel.core.RelFactories.SortFactory;
+import org.apache.calcite.rel.rel2sql.SqlImplementor;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExcept;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIntersect;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExcept;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
@@ -101,7 +103,8 @@ public class HiveRelFactories {
     public RelNode createProject(RelNode child,
         List<? extends RexNode> childExprs, List<String> fieldNames) {
       RelOptCluster cluster = child.getCluster();
-      RelDataType rowType = RexUtil.createStructType(cluster.getTypeFactory(), childExprs, fieldNames);
+      RelDataType rowType = RexUtil.createStructType(
+          cluster.getTypeFactory(), childExprs, fieldNames, SqlValidatorUtil.EXPR_SUGGESTER);
       RelTraitSet trait = TraitsUtil.getDefaultTraitSet(cluster, child.getTraitSet());
       RelNode project = HiveProject.create(cluster, child,
           childExprs, rowType, trait, Collections.<RelCollation> emptyList());
@@ -193,7 +196,11 @@ public class HiveRelFactories {
     public RelNode createAggregate(RelNode child, boolean indicator,
             ImmutableBitSet groupSet, ImmutableList<ImmutableBitSet> groupSets,
             List<AggregateCall> aggCalls) {
-        return new HiveAggregate(child.getCluster(), child.getTraitSet(), child, indicator,
+        if (indicator) {
+          throw new IllegalStateException("Hive does not support indicator columns but Calcite "
+                  + "created an Aggregate operator containing them");
+        }
+        return new HiveAggregate(child.getCluster(), child.getTraitSet(), child,
                 groupSet, groupSets, aggCalls);
     }
   }

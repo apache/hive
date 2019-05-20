@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,24 +19,25 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
-import com.google.common.collect.MinMaxPriorityQueue;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.LlapDaemonInfo;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.io.BinaryComparable;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.WritableComparator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.MinMaxPriorityQueue;
 
 /**
  * Stores binary key/value in sorted manner to get top-n key/value
@@ -92,7 +93,8 @@ public class TopNHash {
   };
 
   public void initialize(
-      int topN, float memUsage, boolean isMapGroupBy, BinaryCollector collector) {
+    int topN, float memUsage, boolean isMapGroupBy, BinaryCollector collector, final OperatorDesc conf,
+    final Configuration hconf) {
     assert topN >= 0 && memUsage > 0;
     assert !this.isEnabled;
     this.isEnabled = false;
@@ -103,10 +105,22 @@ public class TopNHash {
       return; // topN == 0 will cause a short-circuit, don't need any initialization
     }
 
+    final boolean isTez = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez");
+    final boolean isLlap = LlapDaemonInfo.INSTANCE.isLlap();
+    final int numExecutors = isLlap ? LlapDaemonInfo.INSTANCE.getNumExecutors() : 1;
+
     // Used Memory = totalMemory() - freeMemory();
     // Total Free Memory = maxMemory() - Used Memory;
     long totalFreeMemory = Runtime.getRuntime().maxMemory() -
       Runtime.getRuntime().totalMemory() + Runtime.getRuntime().freeMemory();
+
+    if (isTez) {
+      MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
+      // TODO: For LLAP, assumption is off-heap cache.
+      final long memoryUsedPerExecutor = (memoryMXBean.getHeapMemoryUsage().getUsed() / numExecutors);
+      // this is total free memory available per executor in case of LLAP
+      totalFreeMemory = conf.getMaxMemoryAvailable() - memoryUsedPerExecutor;
+    }
 
     // limit * 64 : compensation of arrays for key/value/hashcodes
     this.threshold = (long) (memUsage * totalFreeMemory) - topN * 64L;
@@ -250,7 +264,7 @@ public class TopNHash {
   /**
    * Get vectorized batch result for particular index.
    * @param batchIndex index of the key in the batch.
-   * @return the result, same as from {@link #tryStoreKey(HiveKey)}
+   * @return the result, same as from {@link TopNHash#tryStoreKey(HiveKey,boolean)}
    */
   public int getVectorizedBatchResult(int batchIndex) {
     int result = batchIndexToResult[batchIndex];
@@ -295,9 +309,8 @@ public class TopNHash {
   /**
    * Stores the value for the key in the heap.
    * @param index The index, either from tryStoreKey or from tryStoreVectorizedKey result.
-   * @param hasCode hashCode of key, used by ptfTopNHash.
+   * @param hashCode hashCode of key, used by ptfTopNHash.
    * @param value The value to store.
-   * @param keyHash The key hash to store.
    * @param vectorized Whether the result is coming from a vectorized batch.
    */
   public void storeValue(int index, int hashCode, BytesWritable value, boolean vectorized) {

@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10014]: Line 1:7 Wrong arguments '12.123': TRUNC input only takes integer values, got 12.123

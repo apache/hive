@@ -1,0 +1,23 @@
+PREHOOK: query: select *
+from src
+where src.key in (select key from src where key > '9')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select *
+from src
+where src.key in (select key from src where key > '9')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+90	val_90
+90	val_90
+90	val_90
+92	val_92
+95	val_95
+95	val_95
+96	val_96
+97	val_97
+97	val_97
+98	val_98
+98	val_98

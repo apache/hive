@@ -1,0 +1,156 @@
+PREHOOK: query: drop table tstz1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tstz1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tstz1(t timestamp with local time zone)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tstz1
+POSTHOOK: query: create table tstz1(t timestamp with local time zone)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tstz1
+PREHOOK: query: insert overwrite table tstz1 select cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tstz1
+POSTHOOK: query: insert overwrite table tstz1 select cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tstz1
+POSTHOOK: Lineage: tstz1.t SIMPLE []
+PREHOOK: query: select cast(t as string) from tstz1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(t as string) from tstz1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+2016-01-03 12:26:34.0 US/Pacific
+PREHOOK: query: select cast(t as date) from tstz1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(t as date) from tstz1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+2016-01-03
+PREHOOK: query: select cast(t as timestamp) from tstz1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(t as timestamp) from tstz1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+2016-01-03 12:26:34
+PREHOOK: query: insert overwrite table tstz1 select '2016-01-03 12:26:34.1 GMT'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tstz1
+POSTHOOK: query: insert overwrite table tstz1 select '2016-01-03 12:26:34.1 GMT'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tstz1
+POSTHOOK: Lineage: tstz1.t EXPRESSION []
+PREHOOK: query: select cast(t as string) from tstz1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(t as string) from tstz1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+2016-01-03 04:26:34.1 US/Pacific
+PREHOOK: query: select cast(t as date) from tstz1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(t as date) from tstz1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+2016-01-03
+PREHOOK: query: select cast(t as timestamp) from tstz1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(t as timestamp) from tstz1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+2016-01-03 04:26:34.1
+PREHOOK: query: insert overwrite table tstz1 select '2016-01-03 12:26:34.0123 Europe/London'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tstz1
+POSTHOOK: query: insert overwrite table tstz1 select '2016-01-03 12:26:34.0123 Europe/London'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tstz1
+POSTHOOK: Lineage: tstz1.t EXPRESSION []
+PREHOOK: query: select cast(t as string) from tstz1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(t as string) from tstz1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+2016-01-03 04:26:34.0123 US/Pacific
+PREHOOK: query: select cast(t as date) from tstz1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(t as date) from tstz1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+2016-01-03
+PREHOOK: query: select cast(t as timestamp) from tstz1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(t as timestamp) from tstz1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+2016-01-03 04:26:34.0123
+PREHOOK: query: insert overwrite table tstz1 select '2016-01-03 12:26:34.012300 GMT+08:00'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tstz1
+POSTHOOK: query: insert overwrite table tstz1 select '2016-01-03 12:26:34.012300 GMT+08:00'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tstz1
+POSTHOOK: Lineage: tstz1.t EXPRESSION []
+PREHOOK: query: select cast(t as string) from tstz1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(t as string) from tstz1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+2016-01-02 20:26:34.0123 US/Pacific
+PREHOOK: query: select cast(t as date) from tstz1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(t as date) from tstz1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+2016-01-02
+PREHOOK: query: select cast(t as timestamp) from tstz1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(t as timestamp) from tstz1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+2016-01-02 20:26:34.0123

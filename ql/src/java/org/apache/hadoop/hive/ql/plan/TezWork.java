@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,12 +19,12 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +40,7 @@ import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
-
+import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 
 /**
  * TezWork. This class encapsulates all the work objects that can be executed
@@ -49,7 +49,8 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  *
  */
 @SuppressWarnings("serial")
-@Explain(displayName = "Tez", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+@Explain(displayName = "Tez", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED },
+    vectorization = Vectorization.SUMMARY_PATH)
 public class TezWork extends AbstractOperatorDesc {
 
   public enum VertexType {
@@ -73,8 +74,8 @@ public class TezWork extends AbstractOperatorDesc {
   private static final AtomicInteger counter = new AtomicInteger(1);
   private final String dagId;
   private final String queryName;
-  private final Set<BaseWork> roots = new HashSet<BaseWork>();
-  private final Set<BaseWork> leaves = new HashSet<BaseWork>();
+  private final Set<BaseWork> roots = new LinkedHashSet<BaseWork>();
+  private final Set<BaseWork> leaves = new LinkedHashSet<BaseWork>();
   private final Map<BaseWork, List<BaseWork>> workGraph = new HashMap<BaseWork, List<BaseWork>>();
   private final Map<BaseWork, List<BaseWork>> invertedWorkGraph = new HashMap<BaseWork, List<BaseWork>>();
   private final Map<Pair<BaseWork, BaseWork>, TezEdgeProperty> edgeProperties =
@@ -107,7 +108,8 @@ public class TezWork extends AbstractOperatorDesc {
   /**
    * getWorkMap returns a map of "vertex name" to BaseWork
    */
-  @Explain(displayName = "Vertices", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "Vertices", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED },
+      vectorization = Vectorization.SUMMARY_PATH)
   public Map<String, BaseWork> getWorkMap() {
     Map<String, BaseWork> result = new LinkedHashMap<String, BaseWork>();
     for (BaseWork w: getAllWork()) {
@@ -306,7 +308,8 @@ public class TezWork extends AbstractOperatorDesc {
     }
   }
 
-  @Explain(displayName = "Edges", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "Edges", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED },
+      vectorization = Vectorization.SUMMARY_PATH)
   public Map<String, List<Dependency>> getDependencyMap() {
     Map<String, List<Dependency>> result = new LinkedHashMap<String, List<Dependency>>();
     for (Map.Entry<BaseWork, List<BaseWork>> entry: invertedWorkGraph.entrySet()) {
@@ -367,7 +370,6 @@ public class TezWork extends AbstractOperatorDesc {
   /**
    * connect adds an edge between a and b. Both nodes have
    * to be added prior to calling connect.
-   * @param
    */
   public void connect(BaseWork a, BaseWork b,
       TezEdgeProperty edgeProp) {

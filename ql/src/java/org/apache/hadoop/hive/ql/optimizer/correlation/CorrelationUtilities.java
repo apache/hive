@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,8 +29,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.ForwardOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
@@ -43,16 +43,15 @@ import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.Utilities.ReduceField;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkDeDuplication.ReduceSinkDeduplicateProcCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.plan.GroupByDesc.Mode;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -98,7 +97,7 @@ public final class CorrelationUtilities {
    * @param throwException if throw a exception when the input operator has multiple parents
    * @return the single parent or null when the input operator has multiple parents and
    *         throwException is false;
-   * @throws HiveException
+   * @throws SemanticException
    */
   protected static Operator<?> getSingleParent(Operator<?> operator,
       boolean throwException) throws SemanticException {
@@ -128,7 +127,7 @@ public final class CorrelationUtilities {
    * @param throwException if throw a exception when the input operator has multiple children
    * @return the single child or null when the input operator has multiple children and
    *         throwException is false;
-   * @throws HiveException
+   * @throws SemanticException
    */
   protected static Operator<?> getSingleChild(Operator<?> operator,
       boolean throwException) throws SemanticException {
@@ -271,6 +270,52 @@ public final class CorrelationUtilities {
     return result;
   }
 
+  protected static <T extends Operator<?>> T findFirstPossibleParent(
+      Operator<?> start, Class<T> target, boolean trustScript) throws SemanticException {
+    // Preserve only partitioning
+    return findFirstPossibleParent(start, target, trustScript, false);
+  }
+
+  protected static <T extends Operator<?>> T findFirstPossibleParentPreserveSortOrder(
+      Operator<?> start, Class<T> target, boolean trustScript) throws SemanticException {
+    // Preserve partitioning and ordering
+    return findFirstPossibleParent(start, target, trustScript, true);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static <T extends Operator<?>> T findFirstPossibleParent(
+      Operator<?> start, Class<T> target, boolean trustScript, boolean preserveSortOrder)
+          throws SemanticException {
+    Operator<?> cursor = CorrelationUtilities.getSingleParent(start);
+    for (; cursor != null; cursor = CorrelationUtilities.getSingleParent(cursor)) {
+      if (target.isAssignableFrom(cursor.getClass())) {
+        return (T) cursor;
+      }
+      if (cursor instanceof CommonJoinOperator) {
+        for (Operator<?> op : ((CommonJoinOperator<?>) cursor).getParentOperators()) {
+          if (target.isAssignableFrom(op.getClass())) {
+            return (T) op;
+          }
+        }
+        return null;
+      }
+      if (cursor instanceof ScriptOperator && !trustScript) {
+        return null;
+      }
+      if (!(cursor instanceof SelectOperator
+          || cursor instanceof FilterOperator
+          || cursor instanceof ForwardOperator
+          || cursor instanceof ScriptOperator
+          || (cursor instanceof GroupByOperator
+              && (!preserveSortOrder
+                  || ((GroupByOperator) cursor).getConf().getMode() != Mode.HASH)) // Not order preserving
+          || cursor instanceof ReduceSinkOperator)) {
+        return null;
+      }
+    }
+    return null;
+  }
+
   /**
    * Search the query plan tree from startPoint to the bottom. If there is no ReduceSinkOperator
    * between startPoint and the corresponding TableScanOperator, return the corresponding
@@ -342,7 +387,7 @@ public final class CorrelationUtilities {
     SelectDesc select = new SelectDesc(childRS.getConf().getValueCols(), childRS.getConf().getOutputValueColumnNames());
 
     Operator<?> parent = getSingleParent(childRS);
-    parent.getChildOperators().clear();
+    parent.removeChild(childRS);
 
     SelectOperator sel = (SelectOperator) OperatorFactory.getAndMakeChild(
             select, new RowSchema(inputRS.getSignature()), parent);
@@ -432,8 +477,7 @@ public final class CorrelationUtilities {
    * @param newOperator the operator will be inserted between child and parent
    * @param child
    * @param parent
-   * @param context
-   * @throws HiveException
+   * @throws SemanticException
    */
   protected static void insertOperatorBetween(
       Operator<?> newOperator, Operator<?> parent, Operator<?> child)

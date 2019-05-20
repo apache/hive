@@ -1,3 +1,4 @@
+--! qt:dataset:part
 -- 1. testLeadUDAF
 select p_mfgr, p_retailprice,
 lead(p_retailprice) over (partition by p_mfgr order by p_name) as l1,

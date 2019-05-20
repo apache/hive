@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,22 +29,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import junit.framework.TestCase;
 import org.apache.pig.parser.AliasMasker;
 
@@ -170,9 +170,9 @@ public class TestDefaultHCatRecord extends TestCase {
     rlist.add(new byte[]{1, 2, 3});
 
     Map<Short, String> mapcol = new HashMap<Short, String>(3);
-    mapcol.put(new Short("2"), "hcat is cool");
-    mapcol.put(new Short("3"), "is it?");
-    mapcol.put(new Short("4"), "or is it not?");
+    mapcol.put(Short.valueOf("2"), "hcat is cool");
+    mapcol.put(Short.valueOf("3"), "is it?");
+    mapcol.put(Short.valueOf("4"), "or is it not?");
     rlist.add(mapcol);
 
     List<Integer> listcol = new ArrayList<Integer>();
@@ -186,66 +186,66 @@ public class TestDefaultHCatRecord extends TestCase {
   private HCatRecord[] getHCatRecords() {
 
     List<Object> rec_1 = new ArrayList<Object>(8);
-    rec_1.add(new Byte("123"));
-    rec_1.add(new Short("456"));
-    rec_1.add(new Integer(789));
-    rec_1.add(new Long(1000L));
-    rec_1.add(new Float(5.3F));
-    rec_1.add(new Double(5.3D));
-    rec_1.add(new Boolean(true));
-    rec_1.add(new String("hcat and hadoop"));
+    rec_1.add(Byte.valueOf("123"));
+    rec_1.add(Short.valueOf("456"));
+    rec_1.add(Integer.valueOf(789));
+    rec_1.add(Long.valueOf(1000L));
+    rec_1.add(Float.valueOf(5.3F));
+    rec_1.add(Double.valueOf(5.3D));
+    rec_1.add(Boolean.TRUE);
+    rec_1.add("hcat and hadoop");
     rec_1.add(null);
     rec_1.add("null");
 
     HCatRecord tup_1 = new DefaultHCatRecord(rec_1);
 
     List<Object> rec_2 = new ArrayList<Object>(8);
-    rec_2.add(new Byte("123"));
-    rec_2.add(new Short("456"));
-    rec_2.add(new Integer(789));
-    rec_2.add(new Long(1000L));
-    rec_2.add(new Float(5.3F));
-    rec_2.add(new Double(5.3D));
-    rec_2.add(new Boolean(true));
-    rec_2.add(new String("hcat and hadoop"));
+    rec_2.add(Byte.valueOf("123"));
+    rec_2.add(Short.valueOf("456"));
+    rec_2.add(Integer.valueOf(789));
+    rec_2.add(Long.valueOf(1000L));
+    rec_2.add(Float.valueOf(5.3F));
+    rec_2.add(Double.valueOf(5.3D));
+    rec_2.add(Boolean.TRUE);
+    rec_2.add("hcat and hadoop");
     rec_2.add(null);
     rec_2.add("null");
     HCatRecord tup_2 = new DefaultHCatRecord(rec_2);
 
     List<Object> rec_3 = new ArrayList<Object>(10);
-    rec_3.add(new Byte("123"));
-    rec_3.add(new Short("456"));
-    rec_3.add(new Integer(789));
-    rec_3.add(new Long(1000L));
-    rec_3.add(new Double(5.3D));
-    rec_3.add(new String("hcat and hadoop"));
+    rec_3.add(Byte.valueOf("123"));
+    rec_3.add(Short.valueOf("456"));
+    rec_3.add(Integer.valueOf(789));
+    rec_3.add(Long.valueOf(1000L));
+    rec_3.add(Double.valueOf(5.3D));
+    rec_3.add("hcat and hadoop");
     rec_3.add(null);
     List<Integer> innerList = new ArrayList<Integer>();
     innerList.add(314);
     innerList.add(007);
     rec_3.add(innerList);
     Map<Short, String> map = new HashMap<Short, String>(3);
-    map.put(new Short("2"), "hcat is cool");
-    map.put(new Short("3"), "is it?");
-    map.put(new Short("4"), "or is it not?");
+    map.put(Short.valueOf("2"), "hcat is cool");
+    map.put(Short.valueOf("3"), "is it?");
+    map.put(Short.valueOf("4"), "or is it not?");
     rec_3.add(map);
 
     HCatRecord tup_3 = new DefaultHCatRecord(rec_3);
 
     List<Object> rec_4 = new ArrayList<Object>(8);
-    rec_4.add(new Byte("123"));
-    rec_4.add(new Short("456"));
-    rec_4.add(new Integer(789));
-    rec_4.add(new Long(1000L));
-    rec_4.add(new Double(5.3D));
-    rec_4.add(new String("hcat and hadoop"));
+    rec_4.add(Byte.valueOf("123"));
+    rec_4.add(Short.valueOf("456"));
+    rec_4.add(Integer.valueOf(789));
+    rec_4.add(Long.valueOf(1000L));
+    rec_4.add(Double.valueOf(5.3D));
+    rec_4.add("hcat and hadoop");
     rec_4.add(null);
     rec_4.add("null");
 
     Map<Short, String> map2 = new HashMap<Short, String>(3);
-    map2.put(new Short("2"), "hcat is cool");
-    map2.put(new Short("3"), "is it?");
-    map2.put(new Short("4"), "or is it not?");
+    map2.put(Short.valueOf("2"), "hcat is cool");
+    map2.put(Short.valueOf("3"), "is it?");
+    map2.put(Short.valueOf("4"), "or is it not?");
     rec_4.add(map2);
     List<Integer> innerList2 = new ArrayList<Integer>();
     innerList2.add(314);
@@ -276,7 +276,7 @@ public class TestDefaultHCatRecord extends TestCase {
     rec_hcat13types.add(new HiveChar("hive_char", 10));
     rec_hcat13types.add(new HiveVarchar("hive_varchar", 20));
     rec_hcat13types.add(Date.valueOf("2014-01-06"));
-    rec_hcat13types.add(new Timestamp(System.currentTimeMillis()));
+    rec_hcat13types.add(Timestamp.ofEpochMilli(System.currentTimeMillis()));
     return new DefaultHCatRecord(rec_hcat13types);
   }
   private static HCatRecord getHCat13TypesComplexRecord() {
@@ -290,7 +290,7 @@ public class TestDefaultHCatRecord extends TestCase {
     List<Object> list = new ArrayList<Object>();
     list.add(Date.valueOf("2014-01-05"));
     list.add(new HashMap<HiveDecimal, String>(m));
-    m2.put(new Timestamp(System.currentTimeMillis()), list);
+    m2.put(Timestamp.ofEpochMilli(System.currentTimeMillis()), list);
     rec_hcat13ComplexTypes.add(m2);
     return new DefaultHCatRecord(rec_hcat13ComplexTypes);
   }
@@ -305,8 +305,8 @@ public class TestDefaultHCatRecord extends TestCase {
 
   private List<?> getStruct() {
     List<Object> struct = new ArrayList<Object>();
-    struct.add(new Integer(1));
-    struct.add(new String("x"));
+    struct.add(Integer.valueOf(1));
+    struct.add("x");
     return struct;
   }
 }

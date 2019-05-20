@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -33,6 +33,23 @@ public interface DirSearch extends Closeable {
    * @throws NamingException
    */
   String findUserDn(String user) throws NamingException;
+
+  /**
+   * Finds group's distinguished name.
+   * @param group group name or unique identifier
+   * @return DN for the specified group name
+   * @throws NamingException
+   */
+  String findGroupDn(String group) throws NamingException;
+
+  /**
+   * Verifies that specified user is a member of specified group.
+   * @param user user id or distinguished name
+   * @param groupDn group's DN
+   * @return {@code true} if the user is a member of the group, {@code false} - otherwise.
+   * @throws NamingException
+   */
+  boolean isUserMemberOfGroup(String user, String groupDn) throws NamingException;
 
   /**
    * Finds groups that contain the specified user.

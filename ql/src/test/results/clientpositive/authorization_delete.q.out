@@ -1,21 +1,15 @@
-PREHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
-
-CREATE TABLE t_auth_del(i int) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: query: CREATE TABLE t_auth_del(i int) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t_auth_del
-POSTHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
-
-CREATE TABLE t_auth_del(i int) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: query: CREATE TABLE t_auth_del(i int) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_auth_del
-PREHOOK: query: -- grant update privilege to another user
-GRANT DELETE ON t_auth_del TO USER userWIns
+PREHOOK: query: GRANT DELETE ON t_auth_del TO USER userWIns
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@t_auth_del
-POSTHOOK: query: -- grant update privilege to another user
-GRANT DELETE ON t_auth_del TO USER userWIns
+POSTHOOK: query: GRANT DELETE ON t_auth_del TO USER userWIns
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@t_auth_del
 PREHOOK: query: GRANT SELECT ON t_auth_del TO USER userWIns

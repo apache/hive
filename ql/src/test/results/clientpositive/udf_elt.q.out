@@ -11,6 +11,8 @@ elt(n, str1, str2, ...) - returns the n-th string
 Example:
   > SELECT elt(1, 'face', 'book') FROM src LIMIT 1;
   'face'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFElt
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN
 SELECT elt(2, 'abc', 'defg'),
        elt(3, 'aa', 'bb', 'cc', 'dd', 'ee', 'ff', 'gg'),
@@ -25,6 +27,8 @@ SELECT elt(2, 'abc', 'defg'),
        elt(3, 'abc', 'defg')
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT elt(2, 'abc', 'defg'),
        elt(3, 'aa', 'bb', 'cc', 'dd', 'ee', 'ff', 'gg'),
@@ -39,6 +43,8 @@ SELECT elt(2, 'abc', 'defg'),
        elt(3, 'abc', 'defg')
 FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
