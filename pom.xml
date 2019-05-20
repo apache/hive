@@ -1562,11 +1562,6 @@
     </profile>
     <profile>
       <id>spark-test</id>
-      <activation>
-	<property>
-          <name>!skipSparkTests</name>
-	</property>
-      </activation>
       <properties>
         <skip.spark.files>
           **/ql/exec/spark/session/TestSparkSessionManagerImpl.java,**/TestMultiSessionsHS2WithLocalClusterSpark.java,**/TestJdbcWithLocalClusterSpark.java

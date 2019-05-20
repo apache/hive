@@ -489,11 +489,6 @@
   <profiles>
     <profile>
       <id>spark-test</id>
-      <activation>
-        <property>
-          <name>!skipSparkTests</name>
-        </property>
-      </activation>
       <dependencies>
         <dependency>
           <groupId>org.apache.spark</groupId>
