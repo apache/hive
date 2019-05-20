@@ -242,23 +242,15 @@ STAGE PLANS:
                     isSamplingPred: false
                     predicate: col_24 is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-<<<<<<< HEAD
-                    Reduce Output Operator
-                      bucketingVersion: 2
-                      key expressions: _col0 (type: string)
-                      null sort order: a
-                      numBuckets: -1
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
-=======
                     Select Operator
                       expressions: col_24 (type: string), col_21 (type: string)
                       outputColumnNames: _col0, _col1
->>>>>>> asf/master
                       Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        bucketingVersion: 2
                         key expressions: _col0 (type: string)
                         null sort order: a
+                        numBuckets: -1
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
@@ -331,23 +323,15 @@ STAGE PLANS:
                     isSamplingPred: false
                     predicate: col_1 is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
-<<<<<<< HEAD
-                    Reduce Output Operator
-                      bucketingVersion: 2
-                      key expressions: _col0 (type: string)
-                      null sort order: a
-                      numBuckets: -1
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
-=======
                     Select Operator
                       expressions: col_1 (type: string), col_22 (type: string), col_23 (type: int)
                       outputColumnNames: _col0, _col1, _col2
->>>>>>> asf/master
                       Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+                        bucketingVersion: 2
                         key expressions: _col0 (type: string)
                         null sort order: a
+                        numBuckets: -1
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
