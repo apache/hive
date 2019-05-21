@@ -17,6 +17,10 @@
  */
 package org.apache.hadoop.hive.llap.daemon.impl;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.Test;
 
@@ -29,7 +33,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class TestLlapLoadGeneratorService {
   @Test
-  public void testLoadGenerator() throws InterruptedException, UnknownHostException {
+  public void testLoadGeneratorStops() throws InterruptedException, UnknownHostException {
     LlapLoadGeneratorService service = new LlapLoadGeneratorService();
 
     HiveConf conf = new HiveConf();
@@ -40,7 +44,32 @@ public class TestLlapLoadGeneratorService {
 
     service.init(conf);
     service.start();
-    Thread.sleep(10000);
+    Thread.sleep(5000);
+    assertEquals("The number of threads is not correct",
+        Runtime.getRuntime().availableProcessors(), service.threads.length);
+    for(int i = 0; i < service.threads.length; i++) {
+      assertTrue("The thread [" + i + "] should be alive", service.threads[i].isAlive());
+    }
+    service.stop();
+    Thread.sleep(5000);
+    for(int i = 0; i < service.threads.length; i++) {
+      Thread.State state = service.threads[i].getState();
+      assertFalse("The thread [" + i + "] should be terminated", service.threads[i].isAlive());
+    }
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testLoadGeneratorFails() throws InterruptedException, UnknownHostException {
+    LlapLoadGeneratorService service = new LlapLoadGeneratorService();
+
+    HiveConf conf = new HiveConf();
+    HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_HOSTNAMES,
+        InetAddress.getLocalHost().getHostName() + ",???");
+    HiveConf.setFloatVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_UTILIZATION, 1.2f);
+    HiveConf.setTimeVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_INTERVAL, 5, TimeUnit.MILLISECONDS);
+
+    service.init(conf);
+    service.start();
     service.stop();
   }
 }

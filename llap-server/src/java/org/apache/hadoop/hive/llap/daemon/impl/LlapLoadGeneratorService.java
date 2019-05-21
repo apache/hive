@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.llap.daemon.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.service.AbstractService;
@@ -36,7 +37,8 @@ public class LlapLoadGeneratorService extends AbstractService {
   private long interval;
   private float threshold;
   private String[] victimsHostName;
-  private Thread[] threads;
+  @VisibleForTesting
+  Thread[] threads;
 
   public LlapLoadGeneratorService() {
     super("LlapLoadGeneratorService");
@@ -46,6 +48,10 @@ public class LlapLoadGeneratorService extends AbstractService {
   protected void serviceInit(Configuration conf) throws Exception {
     super.serviceInit(conf);
     threshold = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_UTILIZATION);
+    if (threshold < 0 || threshold > 1.0) {
+      throw new RuntimeException(HiveConf.ConfVars.HIVE_TEST_LOAD_UTILIZATION.varname + " should " +
+        "be between 0.0 and 1.0. The configuration specified [" + threshold + "]");
+    }
     victimsHostName = HiveConf.getTrimmedStringsVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_HOSTNAMES);
     interval = HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_INTERVAL, TimeUnit.MILLISECONDS);
     LOG.info("LlapLoadGeneratorService init with {} {} {}", interval, threshold, victimsHostName);
@@ -69,7 +75,10 @@ public class LlapLoadGeneratorService extends AbstractService {
                   // Keep it busy
                   long startTime = System.currentTimeMillis();
                   while (System.currentTimeMillis() - startTime < interval) {
-                    // active loop, do nothing
+                    // active loop, do nothing, just check interrupt status
+                    if (Thread.currentThread().isInterrupted()) {
+                      break;
+                    }
                   }
                 } else {
                   // Keep it idle

@@ -631,10 +631,11 @@ public class HiveConf extends Configuration {
         "Specify host names for load testing. (e.g., \"host1,host2,host3\"). Leave it empty if no " +
         "load generation is needed (eg. for production)."),
     HIVE_TEST_LOAD_INTERVAL("hive.test.load.interval", "10ms", new TimeValidator(TimeUnit.MILLISECONDS),
-        "The interval length used for load generation in milliseconds"),
+        "The interval length used for load and idle periods in milliseconds."),
     HIVE_TEST_LOAD_UTILIZATION("hive.test.load.utilization", 0.2f,
-        "Specify processor load utilization for between 0.0 (not loaded on all threads) and 1.0 " +
-        "(fully loaded on all threads)."),
+        "Specify processor load utilization between 0.0 (not loaded on all threads) and 1.0 " +
+        "(fully loaded on all threads). Comparing this with a random value the load generator creates " +
+        "hive.test.load.interval length active loops or idle periods"),
 
     HIVE_IN_TEZ_TEST("hive.in.tez.test", false, "internal use only, true when in testing tez",
         true),
