@@ -19,6 +19,9 @@ package org.apache.hadoop.hive.ql.schq;
 
 import static org.junit.Assert.assertEquals;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.DriverFactory;
@@ -35,6 +38,8 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
+
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class TestScheduledQuery {
 
@@ -81,8 +86,14 @@ public class TestScheduledQuery {
   }
 
   @Test
-  public void testScheduled() throws ParseException {
+  public void testScheduledQ() throws ParseException {
     IDriver driver = createDriver();
+
+    ExecutorService executor =
+        Executors.newCachedThreadPool(
+        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("SchQ %d").build());
+    ScheduledQueryExecutionService sQ = new ScheduledQueryExecutionService(executor);
+
     String query = "select 1 from tu";
 
     PlanMapper pm = getMapperForQuery(driver, query);
