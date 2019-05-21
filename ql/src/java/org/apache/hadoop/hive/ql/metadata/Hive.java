@@ -120,6 +120,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionTask;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils.TableSnapshot;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
@@ -3007,13 +3008,18 @@ private void constructOneLBLocationMap(FileStatus fSta,
     List<org.apache.hadoop.hive.metastore.api.Partition> in =
         new ArrayList<org.apache.hadoop.hive.metastore.api.Partition>(size);
     long writeId;
+    Long replWriteId = ReplUtils.getMigrationCurrentTblWriteId(conf);
     String validWriteIdList;
 
     // In case of replication, get the writeId from the source and use valid write Id list
     // for replication.
     if (addPartitionDesc.getReplicationSpec().isInReplicationScope() &&
-        addPartitionDesc.getPartition(0).getWriteId() > 0) {
+          (addPartitionDesc.getPartition(0).getWriteId() > 0 ||  (replWriteId != null && replWriteId > 0))) {
       writeId = addPartitionDesc.getPartition(0).getWriteId();
+      if (writeId <= 0) {
+        writeId = replWriteId;
+      }
+
       // We need a valid writeId list for a transactional change. During replication we do not
       // have a valid writeId list which was used for this on the source. But we know for sure
       // that the writeId associated with it was valid then (otherwise the change would have

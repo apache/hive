@@ -28,6 +28,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.NodeUtils;
 import org.apache.hadoop.hive.ql.exec.NodeUtils.Function;
@@ -36,6 +37,9 @@ import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.lockmgr.LockException;
+import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
@@ -64,6 +68,8 @@ public class DriverContext {
   private boolean shutdown;
 
   final Map<String, StatsTask> statsTasks = new HashMap<>(1);
+
+  private HiveTxnManager replTxnManager = null;
 
   public DriverContext() {
   }
@@ -232,6 +238,26 @@ public class DriverContext {
       } else {
         LOG.debug("There is no correspoing statTask for: " + statKey);
       }
+    }
+  }
+
+  // Create a transaction manager for replication flow. In case user has provided a different config for REPL load,
+  // this transaction manager will be used to do the transaction operation. This is specifically useful when REPL load
+  // is called with different hive metastore uri expecting the transaction information to be stored in the specified
+  // metastore.
+  public synchronized HiveTxnManager getReplTxnManager(HiveConf hiveConf) throws LockException {
+    if (replTxnManager == null) {
+      replTxnManager = TxnManagerFactory.getTxnManagerFactory().getTxnManager(hiveConf);
+      LOG.debug("Created a new replTxnManager : " + replTxnManager);
+    }
+    return replTxnManager;
+  }
+
+  public synchronized void destroyReplTxnManager() {
+    if (replTxnManager != null) {
+      replTxnManager.closeTxnManager();
+      LOG.debug("Destroyed current replTxnManager : " + replTxnManager);
+      replTxnManager = null;
     }
   }
 }

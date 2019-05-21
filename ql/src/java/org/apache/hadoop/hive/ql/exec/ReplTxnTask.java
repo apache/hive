@@ -85,7 +85,7 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
     }
 
     try {
-      HiveTxnManager txnManager = driverContext.getCtx().getHiveTxnManager();
+      HiveTxnManager txnManager = driverContext.getReplTxnManager(conf);
       String user = UserGroupInformation.getCurrentUser().getUserName();
       switch(work.getOperationType()) {
       case REPL_OPEN_TXN:

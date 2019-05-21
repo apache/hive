@@ -2807,6 +2807,7 @@ public class Driver implements IDriver {
     lDrvState.stateLock.lock();
     try {
       if (driverCxt != null) {
+        driverCxt.destroyReplTxnManager();
         driverCxt.shutdown();
         driverCxt = null;
       }
