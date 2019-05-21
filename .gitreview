@@ -1,0 +1,7 @@
+[gerrit]
+host=gerrit.sjc.cloudera.com
+port=29418
+project=cdh/hive.git
+defaultbranch=cdpd-master
+defaultremote=cdh
+

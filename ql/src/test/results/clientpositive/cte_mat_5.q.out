@@ -138,7 +138,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: colnum is not null (type: boolean)
+              predicate: UDFToDouble(colnum) is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: colnum (type: int)
@@ -154,7 +154,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: key is not null (type: boolean)
+              predicate: UDFToDouble(key) is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: string)

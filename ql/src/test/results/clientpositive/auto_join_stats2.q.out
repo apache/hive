@@ -46,7 +46,7 @@ STAGE PLANS:
             alias: src1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: key is not null (type: boolean)
+              predicate: (UDFToDouble(key) is not null and key is not null) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -61,7 +61,7 @@ STAGE PLANS:
             alias: smalltable
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: key is not null (type: boolean)
+              predicate: UDFToDouble(key) is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -79,7 +79,7 @@ STAGE PLANS:
             alias: src2
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: key is not null (type: boolean)
+              predicate: (UDFToDouble(key) is not null and key is not null) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -198,7 +198,7 @@ STAGE PLANS:
             alias: smalltable
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: key is not null (type: boolean)
+              predicate: UDFToDouble(key) is not null (type: boolean)
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -214,7 +214,7 @@ STAGE PLANS:
             alias: src1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: key is not null (type: boolean)
+              predicate: (UDFToDouble(key) is not null and key is not null) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -229,7 +229,7 @@ STAGE PLANS:
             alias: smalltable2
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: key is not null (type: boolean)
+              predicate: UDFToDouble(key) is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -248,7 +248,7 @@ STAGE PLANS:
             alias: src2
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: key is not null (type: boolean)
+              predicate: (UDFToDouble(key) is not null and key is not null) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)

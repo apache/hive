@@ -137,7 +137,7 @@ STAGE PLANS:
             alias: t
             Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((a * a) < 101) and ((a > 5) or null) and a is not null) (type: boolean)
+              predicate: (((a * a) < 101) and (a > 5)) (type: boolean)
               Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: a (type: int)
@@ -152,7 +152,7 @@ STAGE PLANS:
             alias: t2
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (((b * b) < 101) and ((b > 5) or null) and b is not null) (type: boolean)
+              predicate: (((b * b) < 101) and (b > 5)) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: b (type: int)
@@ -167,7 +167,7 @@ STAGE PLANS:
             alias: t3
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (((c * c) < 101) and ((c > 5) or null) and c is not null) (type: boolean)
+              predicate: (((c * c) < 101) and (c > 5)) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: c (type: int)

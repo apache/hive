@@ -367,7 +367,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@list_bucketing_static_part_n1
 POSTHOOK: Input: default@list_bucketing_static_part_n1@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST('484' AS VARCHAR(65536)) AS `key`, `value`
+OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `key`, `value`
 FROM `default`.`list_bucketing_static_part_n1`
 WHERE `ds` = '2008-04-08' AND `hr` = '11' AND `key` = '484'
 STAGE DEPENDENCIES:

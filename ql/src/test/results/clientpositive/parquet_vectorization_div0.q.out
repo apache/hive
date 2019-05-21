@@ -212,7 +212,7 @@ STAGE PLANS:
               predicate: ((cbigint < 100000000L) and (cbigint > 0L)) (type: boolean)
               Statistics: Num rows: 1365 Data size: 16380 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: (cbigint - 988888) (type: bigint), (cdouble / UDFToDouble((cbigint - 988888))) (type: double), (1.2 / CAST( (cbigint - 988888) AS decimal(19,0))) (type: decimal(22,21))
+                expressions: (cbigint - 988888L) (type: bigint), (cdouble / UDFToDouble((cbigint - 988888L))) (type: double), (1.2 / CAST( (cbigint - 988888L) AS decimal(19,0))) (type: decimal(22,21))
                 outputColumnNames: _col0, _col1, _col2
                 Select Vectorization:
                     className: VectorSelectOperator

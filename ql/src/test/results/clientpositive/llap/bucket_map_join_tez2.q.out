@@ -484,7 +484,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 242 Data size: 22990 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: key is not null (type: boolean)
+                    predicate: UDFToDouble(key) is not null (type: boolean)
                     Statistics: Num rows: 242 Data size: 22990 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string)
@@ -504,7 +504,7 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: key is not null (type: boolean)
+                    predicate: UDFToDouble(key) is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -572,7 +572,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 242 Data size: 22990 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: key is not null (type: boolean)
+                    predicate: UDFToDouble(key) is not null (type: boolean)
                     Statistics: Num rows: 242 Data size: 22990 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string)
@@ -592,7 +592,7 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: key is not null (type: boolean)
+                    predicate: UDFToDouble(key) is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -1347,7 +1347,7 @@ STAGE PLANS:
                   alias: tab_n10
                   Statistics: Num rows: 242 Data size: 22022 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: value is not null (type: boolean)
+                    predicate: UDFToDouble(value) is not null (type: boolean)
                     Statistics: Num rows: 242 Data size: 22022 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: value (type: string)
@@ -1368,7 +1368,7 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 242 Data size: 22990 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: key is not null (type: boolean)
+                    predicate: UDFToDouble(key) is not null (type: boolean)
                     Statistics: Num rows: 242 Data size: 22990 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string)
@@ -1454,7 +1454,7 @@ STAGE PLANS:
                   alias: tab_n10
                   Statistics: Num rows: 242 Data size: 22022 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: value is not null (type: boolean)
+                    predicate: UDFToDouble(value) is not null (type: boolean)
                     Statistics: Num rows: 242 Data size: 22022 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: value (type: string)
@@ -1475,7 +1475,7 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 242 Data size: 22990 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: key is not null (type: boolean)
+                    predicate: UDFToDouble(key) is not null (type: boolean)
                     Statistics: Num rows: 242 Data size: 22990 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string)
@@ -2318,7 +2318,7 @@ POSTHOOK: Input: default@my_dim
 POSTHOOK: Input: default@my_fact
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t0`.`bucket_col`, `t2`.`join_col` AS `account1`, `t0`.`accounting_period`
-FROM (SELECT `bucket_col`, `join_col`, CAST('2015' AS VARCHAR(65536)) AS `fiscal_year`, `accounting_period`
+FROM (SELECT `bucket_col`, `join_col`, CAST('2015' AS STRING) AS `fiscal_year`, `accounting_period`
 FROM `default`.`my_fact`
 WHERE `fiscal_year` = '2015' AND `accounting_period` = 10 AND `join_col` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `join_col`, `filter_col`

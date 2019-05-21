@@ -155,7 +155,7 @@ STAGE PLANS:
             alias: d1
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: d_date is not null (type: boolean)
+              predicate: CAST( d_date AS DATE) is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: d_week_seq (type: int), d_date (type: string)
@@ -169,7 +169,7 @@ STAGE PLANS:
             alias: d3
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: d_date is not null (type: boolean)
+              predicate: (CAST( CAST( d_date AS DATE) AS TIMESTAMP) is not null and CAST( d_date AS DATE) is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: d_date (type: string)

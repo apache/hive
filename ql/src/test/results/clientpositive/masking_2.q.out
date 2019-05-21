@@ -228,7 +228,7 @@ STAGE PLANS:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10)) (type: boolean)
+              predicate: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and UDFToDouble(UDFToInteger(key)) is not null) (type: boolean)
               Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: UDFToInteger(key) (type: int), reverse(value) (type: string)
@@ -246,7 +246,7 @@ STAGE PLANS:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and (UDFToInteger(key) > 0) and reverse(value) is not null) (type: boolean)
+              predicate: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and (UDFToInteger(key) > 0) and UDFToDouble(reverse(value)) is not null) (type: boolean)
               Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: UDFToInteger(key) (type: int), reverse(value) (type: string)

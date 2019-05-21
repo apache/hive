@@ -150,7 +150,7 @@ STAGE PLANS:
             alias: agg1
             Statistics: Num rows: 1 Data size: 17 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (col0 = col0) (type: boolean)
+              predicate: col0 is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 17 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: '42' (type: string), col0 (type: int)
@@ -173,7 +173,7 @@ STAGE PLANS:
             alias: agg1
             Statistics: Num rows: 1 Data size: 17 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (col0 = col0) (type: boolean)
+              predicate: col0 is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 17 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: '41' (type: string), col0 (type: int)

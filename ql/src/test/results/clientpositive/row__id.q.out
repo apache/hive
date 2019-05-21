@@ -146,7 +146,7 @@ STAGE PLANS:
             alias: hello_acid
             Statistics: Num rows: 3 Data size: 19860 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (ROW__ID.writeid = 3) (type: boolean)
+              predicate: (ROW__ID.writeid = 3L) (type: boolean)
               Statistics: Num rows: 1 Data size: 6620 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ROW__ID.writeid (type: bigint)

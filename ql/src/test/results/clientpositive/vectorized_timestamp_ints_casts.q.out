@@ -60,7 +60,7 @@ STAGE PLANS:
                   className: VectorFilterOperator
                   native: true
                   predicateExpression: FilterLongColEqualLongScalar(col 13:bigint, val 0)(children: LongColModuloLongScalar(col 3:bigint, val 250) -> 13:bigint)
-              predicate: ((cbigint % 250) = 0) (type: boolean)
+              predicate: ((cbigint % 250L) = 0L) (type: boolean)
               Statistics: Num rows: 6144 Data size: 1453997 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: CAST( ctinyint AS TIMESTAMP) (type: timestamp), CAST( csmallint AS TIMESTAMP) (type: timestamp), CAST( cint AS TIMESTAMP) (type: timestamp), CAST( cbigint AS TIMESTAMP) (type: timestamp), CAST( cfloat AS TIMESTAMP) (type: timestamp), CAST( cdouble AS TIMESTAMP) (type: timestamp), CAST( cboolean1 AS TIMESTAMP) (type: timestamp), CAST( (cbigint * 0L) AS TIMESTAMP) (type: timestamp), ctimestamp1 (type: timestamp), CAST( cstring1 AS TIMESTAMP) (type: timestamp), CAST( substr(cstring1, 1, 1) AS TIMESTAMP) (type: timestamp)
@@ -224,7 +224,7 @@ STAGE PLANS:
                   className: VectorFilterOperator
                   native: true
                   predicateExpression: FilterLongColEqualLongScalar(col 13:bigint, val 0)(children: LongColModuloLongScalar(col 3:bigint, val 250) -> 13:bigint)
-              predicate: ((cbigint % 250) = 0) (type: boolean)
+              predicate: ((cbigint % 250L) = 0L) (type: boolean)
               Statistics: Num rows: 6144 Data size: 1453997 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: CAST( ctinyint AS TIMESTAMP) (type: timestamp), CAST( csmallint AS TIMESTAMP) (type: timestamp), CAST( cint AS TIMESTAMP) (type: timestamp), CAST( cbigint AS TIMESTAMP) (type: timestamp), CAST( cfloat AS TIMESTAMP) (type: timestamp), CAST( cdouble AS TIMESTAMP) (type: timestamp), CAST( cboolean1 AS TIMESTAMP) (type: timestamp), CAST( (cbigint * 0L) AS TIMESTAMP) (type: timestamp), ctimestamp1 (type: timestamp), CAST( cstring1 AS TIMESTAMP) (type: timestamp), CAST( substr(cstring1, 1, 1) AS TIMESTAMP) (type: timestamp)

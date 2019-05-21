@@ -196,7 +196,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily_n3
 POSTHOOK: Input: default@fact_daily_n3@ds=1/hr=1
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST('145' AS VARCHAR(65536)) AS `key`, `value`, CAST('1' AS VARCHAR(65536)) AS `ds`, CAST('1' AS VARCHAR(65536)) AS `hr`
+OPTIMIZED SQL: SELECT CAST('145' AS STRING) AS `key`, `value`, CAST('1' AS STRING) AS `ds`, CAST('1' AS STRING) AS `hr`
 FROM `default`.`fact_daily_n3`
 WHERE `ds` = '1' AND `hr` = '1' AND `key` = '145'
 STAGE DEPENDENCIES:
@@ -324,7 +324,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily_n3
 POSTHOOK: Input: default@fact_daily_n3@ds=1/hr=2
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST('484' AS VARCHAR(65536)) AS `$f0`, CAST('val_484' AS VARCHAR(65536)) AS `$f1`, CAST('1' AS VARCHAR(65536)) AS `$f2`, CAST('2' AS VARCHAR(65536)) AS `$f3`
+OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `$f0`, CAST('val_484' AS STRING) AS `$f1`, CAST('1' AS STRING) AS `$f2`, CAST('2' AS STRING) AS `$f3`
 FROM `default`.`fact_daily_n3`
 WHERE `ds` = '1' AND `hr` = '2' AND `key` = '484' AND `value` = 'val_484'
 STAGE DEPENDENCIES:
@@ -420,7 +420,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily_n3
 POSTHOOK: Input: default@fact_daily_n3@ds=1/hr=3
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST('327' AS VARCHAR(65536)) AS `$f0`, CAST('val_327' AS VARCHAR(65536)) AS `$f1`, CAST('1' AS VARCHAR(65536)) AS `$f2`, CAST('3' AS VARCHAR(65536)) AS `$f3`
+OPTIMIZED SQL: SELECT CAST('327' AS STRING) AS `$f0`, CAST('val_327' AS STRING) AS `$f1`, CAST('1' AS STRING) AS `$f2`, CAST('3' AS STRING) AS `$f3`
 FROM `default`.`fact_daily_n3`
 WHERE `ds` = '1' AND `hr` = '3' AND `key` = '327' AND `value` = 'val_327'
 STAGE DEPENDENCIES:

@@ -50,7 +50,7 @@ STAGE PLANS:
             alias: src_orc
             Statistics: Num rows: 1000 Data size: 266000 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: if((bool0 is true or (null and bool0 is not true and bool0 is not false)), key0, if(((bool0 is false and bool0 is not true) or (null and bool0 is not true and bool0 is not false)), key1, key2)) (type: string)
+              expressions: if((bool0 is true or (null and bool0 is not true and bool0 is not false)), key0, if((((not bool0) is true and bool0 is not true) or (null and bool0 is not true and bool0 is not false)), key1, key2)) (type: string)
               outputColumnNames: _col0
               Statistics: Num rows: 1000 Data size: 266000 Basic stats: COMPLETE Column stats: NONE
               File Output Operator

@@ -618,7 +618,7 @@ STAGE PLANS:
                   alias: src_txn
                   Statistics: Num rows: 501 Data size: 90180 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ROW__ID.writeid > 1) and (UDFToDouble(key) < 250.0D) and (UDFToDouble(key) > 200.0D)) (type: boolean)
+                    predicate: ((ROW__ID.writeid > 1L) and (UDFToDouble(key) < 250.0D) and (UDFToDouble(key) > 200.0D)) (type: boolean)
                     Statistics: Num rows: 18 Data size: 3240 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: value (type: string), key (type: string)
@@ -934,7 +934,7 @@ STAGE PLANS:
                   alias: src_txn
                   Statistics: Num rows: 502 Data size: 90862 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ROW__ID.writeid > 2) and (UDFToDouble(key) < 250.0D) and (UDFToDouble(key) > 200.0D)) (type: boolean)
+                    predicate: ((ROW__ID.writeid > 2L) and (UDFToDouble(key) < 250.0D) and (UDFToDouble(key) > 200.0D)) (type: boolean)
                     Statistics: Num rows: 18 Data size: 3258 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)

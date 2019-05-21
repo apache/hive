@@ -1276,9 +1276,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcs_t1
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `ds`
+OPTIMIZED SQL: SELECT CAST('2000-04-08' AS STRING) AS `$f0`
 FROM `default`.`pcs_t1`
-WHERE `ds` = '2000-04-08' IS TRUE
+WHERE `ds` = '2000-04-08'
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1339,7 +1339,7 @@ STAGE PLANS:
           Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Select Operator
-            expressions: ds (type: string)
+            expressions: '2000-04-08' (type: string)
             outputColumnNames: _col0
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             ListSink
@@ -1557,7 +1557,7 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ds`
 FROM `default`.`pcs_t1`
-WHERE ROW(`key`, `ds` = '2000-04-08' OR `key` = 2) IN (ROW(2, TRUE), ROW(3, FALSE))
+WHERE (`ds` = '2000-04-08' OR `key` IS NOT NULL) AND `key` = 2 OR `ds` <> '2000-04-08' AND `key` = 3
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1711,12 +1711,12 @@ STAGE PLANS:
           GatherStats: false
           Filter Operator
             isSamplingPred: false
-            predicate: (struct(key,((ds = '2000-04-08') or (key = 2)))) IN (const struct(2,true), const struct(3,false)) (type: boolean)
-            Statistics: Num rows: 30 Data size: 240 Basic stats: COMPLETE Column stats: NONE
+            predicate: ((((ds = '2000-04-08') or key is not null) and (key = 2)) or ((ds <> '2000-04-08') and (key = 3))) (type: boolean)
+            Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: ds (type: string)
               outputColumnNames: _col0
-              Statistics: Num rows: 30 Data size: 240 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: select ds from pcs_t1 where struct(ds='2000-04-08' or key = 2, key) in (struct(true,2), struct(false,3))
@@ -1752,7 +1752,7 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ds`
 FROM `default`.`pcs_t1`
-WHERE `key` = 3 OR ROW(`key`, `ds` = '2000-04-08' OR `key` = 2) IN (ROW(2, TRUE), ROW(3, FALSE)) AND `key` + 5 > 0
+WHERE `key` = 3 OR ((`ds` = '2000-04-08' OR `key` IS NOT NULL) AND `key` = 2 OR `ds` <> '2000-04-08' AND `key` = 3) AND `key` + 5 > 0
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1906,12 +1906,12 @@ STAGE PLANS:
           GatherStats: false
           Filter Operator
             isSamplingPred: false
-            predicate: (((struct(key,((ds = '2000-04-08') or (key = 2)))) IN (const struct(2,true), const struct(3,false)) and ((key + 5) > 0)) or (key = 3)) (type: boolean)
-            Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+            predicate: ((((((ds = '2000-04-08') or key is not null) and (key = 2)) or ((ds <> '2000-04-08') and (key = 3))) and ((key + 5) > 0)) or (key = 3)) (type: boolean)
+            Statistics: Num rows: 50 Data size: 400 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: ds (type: string)
               outputColumnNames: _col0
-              Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 50 Data size: 400 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: select ds from pcs_t1 where key = 3 or (struct(ds='2000-04-08' or key = 2, key) in (struct(true,2), struct(false,3)) and key+5 > 0)

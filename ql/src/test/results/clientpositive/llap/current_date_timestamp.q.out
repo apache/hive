@@ -20,7 +20,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject($f0=[CAST(2012-01-01 01:02:03):TIMESTAMP(9)])
+HiveProject($f0=[CAST(2012-01-01 01:02:03:TIMESTAMP(9)):TIMESTAMP(9)])
   HiveTableScan(table=[[default, alltypesorc]], table:alias=[alltypesorc])
 
 PREHOOK: query: select count(*) from (select current_timestamp() from alltypesorc union select current_timestamp() from src limit 5 ) subq

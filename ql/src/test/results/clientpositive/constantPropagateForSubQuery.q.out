@@ -11,8 +11,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST('429' AS VARCHAR(65536)) AS `ak`, `t0`.`value` AS `av`, `t1`.`key` AS `bk`, `t1`.`value` AS `bv`
-FROM (SELECT CAST('429' AS VARCHAR(65536)) AS `key`, `value`
+OPTIMIZED SQL: SELECT CAST('429' AS STRING) AS `ak`, `t0`.`value` AS `av`, `t1`.`key` AS `bk`, `t1`.`value` AS `bv`
+FROM (SELECT CAST('429' AS STRING) AS `key`, `value`
 FROM `default`.`src`
 WHERE `key` = '429') AS `t0`,
 (SELECT `key`, `value`

@@ -466,7 +466,7 @@ STAGE PLANS:
             alias: ss
             Statistics: Num rows: 1000 Data size: 3860 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ss_store_sk is not null (type: boolean)
+              predicate: UDFToLong(ss_store_sk) is not null (type: boolean)
               Statistics: Num rows: 964 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ss_store_sk (type: int)

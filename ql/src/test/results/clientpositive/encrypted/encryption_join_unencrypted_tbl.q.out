@@ -545,10 +545,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 OPTIMIZED SQL: SELECT *
 FROM (SELECT `key`, `value`
 FROM `default`.`src`
-WHERE `key` IS NOT NULL) AS `t0`
+WHERE CAST(`key` AS DOUBLE) IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`encrypted_table`
-WHERE `key` IS NOT NULL) AS `t2` ON CAST(`t0`.`key` AS DOUBLE) = CAST(`t2`.`key` AS DOUBLE)
+WHERE CAST(`key` AS DOUBLE) IS NOT NULL) AS `t2` ON CAST(`t0`.`key` AS DOUBLE) = CAST(`t2`.`key` AS DOUBLE)
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -563,7 +563,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: key is not null (type: boolean)
+              predicate: UDFToDouble(key) is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -584,7 +584,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: key is not null (type: boolean)
+              predicate: UDFToDouble(key) is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
