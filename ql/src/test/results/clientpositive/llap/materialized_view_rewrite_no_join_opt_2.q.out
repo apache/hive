@@ -224,7 +224,7 @@ STAGE PLANS:
                       Statistics: Num rows: 3 Data size: 291 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: int)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.6666666
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
@@ -388,7 +388,7 @@ STAGE PLANS:
                       Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: int)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.6666666
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
@@ -735,7 +735,7 @@ STAGE PLANS:
                     Statistics: Num rows: 4 Data size: 1376 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: name (type: varchar(256))
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.5
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 2 Data size: 680 Basic stats: COMPLETE Column stats: COMPLETE
@@ -858,7 +858,7 @@ STAGE PLANS:
                     Statistics: Num rows: 3 Data size: 1032 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: name (type: varchar(256))
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.6666666
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
@@ -992,7 +992,7 @@ STAGE PLANS:
                     Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: name (type: varchar(256))
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.5
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 2 Data size: 680 Basic stats: COMPLETE Column stats: COMPLETE

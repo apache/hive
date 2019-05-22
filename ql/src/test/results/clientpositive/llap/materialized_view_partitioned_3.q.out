@@ -64,7 +64,7 @@ STAGE PLANS:
                         Group By Operator
                           aggregations: compute_stats(col1, 'hll')
                           keys: col2 (type: string)
-                          minReductionHashAggr: 0.0
+                          minReductionHashAggr: 0.5090909
                           mode: hash
                           outputColumnNames: _col0, _col1
                           Statistics: Num rows: 27 Data size: 14229 Basic stats: COMPLETE Column stats: COMPLETE

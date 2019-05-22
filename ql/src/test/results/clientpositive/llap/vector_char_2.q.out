@@ -126,7 +126,7 @@ STAGE PLANS:
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: [0, 1]
                         keys: _col0 (type: char(20))
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.49900198
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 250 Data size: 26750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -336,7 +336,7 @@ STAGE PLANS:
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: [0, 1]
                         keys: _col0 (type: char(20))
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.49900198
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 250 Data size: 26750 Basic stats: COMPLETE Column stats: COMPLETE
