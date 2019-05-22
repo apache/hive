@@ -31,8 +31,8 @@ import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerIn
 import static org.apache.hadoop.metrics2.impl.MsInfo.ProcessName;
 import static org.apache.hadoop.metrics2.impl.MsInfo.SessionId;
 
-import com.codahale.metrics.ExponentiallyDecayingReservoir;
 import com.google.common.base.MoreObjects;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.hadoop.hive.common.JvmMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
@@ -61,8 +61,8 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
   private final JvmMetrics jvmMetrics;
   private final String sessionId;
   private final MetricsRegistry registry;
-  private final int decayMetricSampleSize;
-  private final double decayMetricAlphaFactor;
+  private final int latencyMetricWindowSize;
+  // Storing latency metrics for every active daemon Map<daemonId, latencyMetric>
   private Map<String, DaemonLatencyMetric> daemonTaskLatency = new ConcurrentHashMap<>();
   private String dagId = null;
   @Metric
@@ -103,23 +103,21 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
   MutableCounterInt wmGuaranteedCount;
 
   private LlapTaskSchedulerMetrics(String displayName, JvmMetrics jm, String sessionId,
-      int decayMetricSampleSize, double decayMetricAlphaFactor) {
+      int latencyMetricWindowSize) {
     this.name = displayName;
     this.jvmMetrics = jm;
     this.sessionId = sessionId;
     this.registry = new MetricsRegistry("LlapTaskSchedulerMetricsRegistry");
     this.registry.tag(ProcessName, MetricsUtils.METRICS_PROCESS_NAME).tag(SessionId, sessionId);
-    this.decayMetricSampleSize = decayMetricSampleSize;
-    this.decayMetricAlphaFactor = decayMetricAlphaFactor;
+    this.latencyMetricWindowSize = latencyMetricWindowSize;
   }
 
   public static LlapTaskSchedulerMetrics create(String displayName, String sessionId,
-      int decayMetricSampleSize, double decayMetricAlphaFactor) {
+      int latencyMetricWindowSize) {
     MetricsSystem ms = LlapMetricsSystem.instance();
     JvmMetrics jm = JvmMetrics.create(MetricsUtils.METRICS_PROCESS_NAME, sessionId, ms);
     return ms.register(displayName, "Llap Task Scheduler Metrics",
-        new LlapTaskSchedulerMetrics(displayName, jm, sessionId, decayMetricSampleSize,
-            decayMetricAlphaFactor));
+        new LlapTaskSchedulerMetrics(displayName, jm, sessionId, latencyMetricWindowSize));
   }
 
   public void removeDaemon(String identifier) {
@@ -272,9 +270,9 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
     wmUnusedGuaranteedCount.set(unusedGuaranteed);
   }
 
-  public void addTaskLatency(String key, long value) {
-    daemonTaskLatency.compute(key, (k, v) -> {
-      v = (v == null ? new DaemonLatencyMetric(key, decayMetricSampleSize, decayMetricAlphaFactor) : v);
+  public void addTaskLatency(String daemonId, long value) {
+    daemonTaskLatency.compute(daemonId, (k, v) -> {
+      v = (v == null ? new DaemonLatencyMetric(daemonId, latencyMetricWindowSize) : v);
       v.addValue(value);
       return v;
     });
@@ -302,17 +300,17 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
         .addCounter(SchedulerPendingPreemptionTaskCount, pendingPreemptionTasksCount.value())
         .addCounter(SchedulerPreemptedTaskCount, preemptedTasksCount.value())
         .addCounter(SchedulerCompletedDagCount, completedDagcount.value());
-    daemonTaskLatency.forEach((k, v) -> rb.addGauge(v, v.getMean()));
+    daemonTaskLatency.forEach((k, v) -> rb.addGauge(v, v.getAverage()));
   }
 
   static class DaemonLatencyMetric implements MetricsInfo {
     private String name;
-    private ExponentiallyDecayingReservoir reservoir;
+    private DescriptiveStatistics statistics;
     private static final String DESCRIPTION = "Sliding average of task latency / ioMillis";
 
-    DaemonLatencyMetric(String name, int decayMetricSampleSize, double decayMetricAlphaFactor) {
+    DaemonLatencyMetric(String name, int latencyMetricWindowSize) {
       this.name = name;
-      reservoir = new ExponentiallyDecayingReservoir(decayMetricSampleSize, decayMetricAlphaFactor);
+      statistics = new DescriptiveStatistics(latencyMetricWindowSize);
     }
 
     @Override
@@ -326,11 +324,11 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
     }
 
     public void addValue(long value) {
-      reservoir.update(value);
+      statistics.addValue(value);
     }
 
-    public double getMean() {
-      return reservoir.getSnapshot().getMean();
+    public double getAverage() {
+      return statistics.getSum() / statistics.getN();
     }
 
     @Override

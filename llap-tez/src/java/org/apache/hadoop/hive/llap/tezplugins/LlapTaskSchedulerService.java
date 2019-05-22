@@ -99,7 +99,6 @@ import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.util.Clock;
 import org.apache.hive.common.util.Ref;
 import org.apache.tez.common.TezUtils;
-import org.apache.tez.common.counters.TezCounter;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.common.security.JobTokenSecretManager;
 import org.apache.tez.dag.api.TezUncheckedException;
@@ -428,12 +427,10 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       this.pauseMonitor = new JvmPauseMonitor(conf);
       pauseMonitor.start();
       String displayName = "LlapTaskSchedulerMetrics-" + MetricsUtils.getHostName();
-      int decayMetricSampleSize = HiveConf.getIntVar(conf, ConfVars.LLAP_DECAY_METRIC_SIZE);
-      double decayMetricAlphaFactor = (double) HiveConf.getFloatVar(conf, ConfVars.LLAP_DECAY_METRIC_ALPHA);
+      int latencyMetricWindowSize = HiveConf.getIntVar(conf, ConfVars.LLAP_LATENCY_METRIC_WINDOW_SIZE);
       String sessionId = conf.get("llap.daemon.metrics.sessionid");
       // TODO: Not sure about the use of this. Should we instead use workerIdentity as sessionId?
-      this.metrics = LlapTaskSchedulerMetrics.create(displayName, sessionId, decayMetricSampleSize,
-          decayMetricAlphaFactor);
+      this.metrics = LlapTaskSchedulerMetrics.create(displayName, sessionId, latencyMetricWindowSize);
     } else {
       this.metrics = null;
       this.pauseMonitor = null;
@@ -3181,12 +3178,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   }
 
   private boolean isMapTask(TaskAttemptImpl taskAttempt) {
-    boolean isMapTask = false;
-    for(TezCounter counter : taskAttempt.getCounters().getGroup("HIVE")) {
-      if(counter.getName().startsWith("RECORDS_IN_Map")) {
-        isMapTask = true;
-      }
-    }
-    return isMapTask;
+    return taskAttempt.getCounters().getGroup("HIVE").findCounter("RECORDS_IN_Map") == null;
   }
 }

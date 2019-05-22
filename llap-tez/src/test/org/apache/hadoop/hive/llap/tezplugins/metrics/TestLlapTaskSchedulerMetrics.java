@@ -40,7 +40,7 @@ public class TestLlapTaskSchedulerMetrics {
 
   @Before
   public void setUp() {
-    metrics = LlapTaskSchedulerMetrics.create("TestMetrics", "TestSession", 1, 0);
+    metrics = LlapTaskSchedulerMetrics.create("TestMetrics", "TestSession", 1024);
   }
 
   /**
