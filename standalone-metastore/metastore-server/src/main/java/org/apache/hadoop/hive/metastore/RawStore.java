@@ -392,10 +392,11 @@ public interface RawStore extends Configurable {
    * @param dbName database to search in
    * @param pattern pattern to match
    * @param tableType type of table to look for
+   * @param limit Maximum number of tables to return (undeterministic set)
    * @return list of table names, if any
    * @throws MetaException failure in querying the RDBMS
    */
-  List<String> getTables(String catName, String dbName, String pattern, TableType tableType)
+  List<String> getTables(String catName, String dbName, String pattern, TableType tableType, int limit)
       throws MetaException;
 
   /**

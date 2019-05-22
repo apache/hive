@@ -3908,6 +3908,34 @@ public abstract class TestHiveMetaStore {
         assertEquals("Capability set size does not match", capabilities.size(), tableInfo.getProcessorCapabilities().size());
         assertTrue("AccessType expected to be set", tableInfo.getAccessType() > 0);
       }
+
+      extTables = client.getTablesExt(null, dbName, "*", requestedFields, (count - 3));
+      LOG.debug("Return list size=" + extTables.size() + ",bitValue=" + requestedFields);
+      assertEquals("Return list size does not match expected size", (count - 3), extTables.size());
+      for (ExtendedTableInfo tableInfo : extTables) {
+        assertEquals("Capability set size does not match", capabilities.size(), tableInfo.getProcessorCapabilities().size());
+        assertTrue("AccessType expected to be set", tableInfo.getAccessType() > 0);
+      }
+
+      extTables = client.getTablesExt(null, dbName, "*", requestedFields, -1);
+      LOG.debug("Return list size=" + extTables.size() + ",bitValue=" + requestedFields);
+      assertEquals("Return list size does not match expected size", count, extTables.size());
+
+      count = 300;
+      tProps.put("TBLNAME", "test_limit");
+      tProps.put("TABLECOUNT", count);
+      tables = createTables(tProps);
+      assertEquals("Unexpected number of tables created", count, tables.size());
+
+      extTables = client.getTablesExt(null, dbName, "test_limit*", requestedFields, count);
+      assertEquals("Unexpected number of tables returned", count, extTables.size());
+
+      extTables = client.getTablesExt(null, dbName, "test_limit*", requestedFields, (count/2));
+      assertEquals("Unexpected number of tables returned", (count/2), extTables.size());
+
+      extTables = client.getTablesExt(null, dbName, "test_limit*", requestedFields, 1);
+      assertEquals("Unexpected number of tables returned", 1, extTables.size());
+
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testGetTablesExt() failed.");

@@ -624,6 +624,10 @@ public class TestCachedStore {
     Assert.assertEquals(1, db1Tables.size());
     db1Tables = cachedStore.getTables(DEFAULT_CATALOG_NAME, db1.getName(), ".*tbl1");
     Assert.assertEquals(2, db1Tables.size());
+    db1Tables = cachedStore.getTables(DEFAULT_CATALOG_NAME, db1.getName(), ".*tbl1", TableType.MANAGED_TABLE, 1);
+    Assert.assertEquals(1, db1Tables.size());
+    db1Tables = cachedStore.getTables(DEFAULT_CATALOG_NAME, db1.getName(), ".*tbl1", TableType.MANAGED_TABLE, -1);
+    Assert.assertEquals(2, db1Tables.size());
     cachedStore.shutdown();
   }
 
