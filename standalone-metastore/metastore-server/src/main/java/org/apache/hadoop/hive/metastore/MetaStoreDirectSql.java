@@ -449,13 +449,14 @@ class MetaStoreDirectSql {
    * @param tableType Table type, or null if we want to get all tables
    * @return list of table names
    */
-  public List<String> getTables(String catName, String dbName, TableType tableType)
+  public List<String> getTables(String catName, String dbName, TableType tableType, int limit)
       throws MetaException {
     String queryText = "SELECT " + TBLS + ".\"TBL_NAME\""
       + " FROM " + TBLS + " "
       + " INNER JOIN " + DBS + " ON " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
       + " WHERE " + DBS + ".\"NAME\" = ? AND " + DBS + ".\"CTLG_NAME\" = ? "
       + (tableType == null ? "" : "AND " + TBLS + ".\"TBL_TYPE\" = ? ") ;
+
 
     List<String> pms = new ArrayList<>();
     pms.add(dbName);
@@ -466,7 +467,7 @@ class MetaStoreDirectSql {
 
     Query<?> queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
     return executeWithArray(
-        queryParams, pms.toArray(), queryText);
+        queryParams, pms.toArray(), queryText, limit);
   }
 
   /**
@@ -753,10 +754,7 @@ class MetaStoreDirectSql {
 
     long start = doTrace ? System.nanoTime() : 0;
     Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
-    if (max != null) {
-      query.setRange(0, max.shortValue());
-    }
-    List<Object> sqlResult = executeWithArray(query, params, queryText);
+    List<Object> sqlResult = executeWithArray(query, params, queryText, ((max == null)  ? -1 : max.intValue()));
     long queryTime = doTrace ? System.nanoTime() : 0;
     MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
     if (sqlResult.isEmpty()) {
@@ -1879,7 +1877,12 @@ class MetaStoreDirectSql {
 
   @SuppressWarnings("unchecked")
   private <T> T executeWithArray(Query query, Object[] params, String sql) throws MetaException {
-    return MetastoreDirectSqlUtils.executeWithArray(query, params, sql);
+    return executeWithArray(query, params, sql, -1);
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T> T executeWithArray(Query query, Object[] params, String sql, int limit) throws MetaException {
+    return MetastoreDirectSqlUtils.executeWithArray(query, params, sql, limit);
   }
 
   /**
