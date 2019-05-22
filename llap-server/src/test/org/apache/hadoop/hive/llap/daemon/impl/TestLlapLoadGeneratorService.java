@@ -39,19 +39,18 @@ public class TestLlapLoadGeneratorService {
     HiveConf conf = new HiveConf();
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_HOSTNAMES,
         InetAddress.getLocalHost().getHostName() + ",???");
-    HiveConf.setFloatVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_UTILIZATION, 0.2f);
+    HiveConf.setFloatVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_UTILIZATION, 0.5f);
     HiveConf.setTimeVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_INTERVAL, 5, TimeUnit.MILLISECONDS);
 
     service.init(conf);
     service.start();
-    Thread.sleep(5000);
     assertEquals("The number of threads is not correct",
         Runtime.getRuntime().availableProcessors(), service.threads.length);
     for(int i = 0; i < service.threads.length; i++) {
       assertTrue("The thread [" + i + "] should be alive", service.threads[i].isAlive());
     }
     service.stop();
-    Thread.sleep(5000);
+    Thread.sleep(1000);
     for(int i = 0; i < service.threads.length; i++) {
       Thread.State state = service.threads[i].getState();
       assertFalse("The thread [" + i + "] should be terminated", service.threads[i].isAlive());
