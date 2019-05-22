@@ -25,7 +25,7 @@ public class ITestOracle extends DbInstallBase {
 
   @Override
   protected String getDockerImageName() {
-    return "alexeiled/docker-oracle-xe-11g";
+    return "orangehrm/oracle-xe-11g";
   }
 
   @Override
