@@ -49,7 +49,7 @@ public class LlapLoadGeneratorService extends AbstractService {
     super.serviceInit(conf);
     threshold = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_UTILIZATION);
     if (threshold < 0 || threshold > 1.0) {
-      throw new RuntimeException(HiveConf.ConfVars.HIVE_TEST_LOAD_UTILIZATION.varname + " should " +
+      throw new IllegalArgumentException(HiveConf.ConfVars.HIVE_TEST_LOAD_UTILIZATION.varname + " should " +
         "be between 0.0 and 1.0. The configuration specified [" + threshold + "]");
     }
     victimsHostName = HiveConf.getTrimmedStringsVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_HOSTNAMES);

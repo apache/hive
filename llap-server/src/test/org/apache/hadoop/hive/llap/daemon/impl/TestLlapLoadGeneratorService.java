@@ -57,7 +57,7 @@ public class TestLlapLoadGeneratorService {
     }
   }
 
-  @Test(expected = RuntimeException.class)
+  @Test(expected = IllegalArgumentException.class)
   public void testLoadGeneratorFails() throws InterruptedException, UnknownHostException {
     LlapLoadGeneratorService service = new LlapLoadGeneratorService();
 
