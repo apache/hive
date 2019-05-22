@@ -10,9 +10,9 @@ public class ScheduledQueryExecutionContext {
   public ScheduledQueryX schedulerService;
   public HiveConf conf;
 
-  public ScheduledQueryExecutionContext(ExecutorService executor, HiveConf conf2) {
+  public ScheduledQueryExecutionContext(ExecutorService executor, HiveConf conf) {
     this.executor = executor;
-    //    this.conf = conf2;
+    this.conf = conf;
   }
 
   public long getIdleSleepTime() {

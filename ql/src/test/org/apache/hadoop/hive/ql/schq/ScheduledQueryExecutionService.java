@@ -14,6 +14,7 @@ public class ScheduledQueryExecutionService {
   class ScheduledQueryExecutor implements Runnable {
 
     private ScheduledQueryPollResp executing;
+    private String hiveQueryId;
 
     @Override
     public void run() {
@@ -37,6 +38,7 @@ public class ScheduledQueryExecutionService {
         executing = q;
         // FIXME: missing impersonation
         IDriver driver = DriverFactory.newDriver(context.conf);
+        hiveQueryId = driver.getQueryState().getQueryId();
         CommandProcessorResponse resp;
         resp = driver.run(q.queryString);
         if (resp.getResponseCode() != 0) {
@@ -50,8 +52,11 @@ public class ScheduledQueryExecutionService {
       }
     }
 
-    private void reportQueryState(String string, String errorStringForException) {
-      System.out.println("QueryState: " + string + " -- " + errorStringForException);
+    private synchronized void reportQueryState(String state, String errorMessage) {
+      //FIXME no progress message after FINISGH/ERRORED
+      //FIXME hivequeryid
+      System.out.println(hiveQueryId);
+      context.schedulerService.scheduledQueryProgress(executing.executionId, state, errorMessage);
     }
 
     private String getErrorStringForException(Throwable t) {
@@ -61,10 +66,6 @@ public class ScheduledQueryExecutionService {
       } else {
         return String.format("%s: %s", t.getClass().getName(), t.getMessage());
       }
-    }
-
-    public String getStatus() {
-      return "ok";
     }
   }
 
@@ -78,7 +79,7 @@ public class ScheduledQueryExecutionService {
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
         }
-        System.out.println(worker.getStatus());
+        worker.reportQueryState("RUNNING", null);
       }
     }
   }
