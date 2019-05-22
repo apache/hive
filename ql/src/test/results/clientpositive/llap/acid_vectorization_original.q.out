@@ -689,7 +689,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count()
                       keys: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.5
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1049 Data size: 88116 Basic stats: COMPLETE Column stats: COMPLETE

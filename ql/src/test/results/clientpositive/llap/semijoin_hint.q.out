@@ -536,7 +536,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4110 Data size: 715140 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=5000)
-                    minReductionHashAggr: 0.0
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
@@ -659,7 +659,7 @@ STAGE PLANS:
                         Statistics: Num rows: 9174 Data size: 1287800 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=3000)
-                          minReductionHashAggr: 0.0
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
@@ -824,7 +824,7 @@ STAGE PLANS:
                         Statistics: Num rows: 2000 Data size: 348000 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=5000)
-                          minReductionHashAggr: 0.0
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1090,7 +1090,7 @@ STAGE PLANS:
                         Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=5000)
-                          minReductionHashAggr: 0.0
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1649,7 +1649,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4110 Data size: 715140 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=5000)
-                    minReductionHashAggr: 0.0
+                    minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1770,7 +1770,7 @@ STAGE PLANS:
                         Statistics: Num rows: 9174 Data size: 643900 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=3000)
-                          minReductionHashAggr: 0.0
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1933,7 +1933,7 @@ STAGE PLANS:
                         Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=5000)
-                          minReductionHashAggr: 0.0
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2191,7 +2191,7 @@ STAGE PLANS:
                       Statistics: Num rows: 2000 Data size: 348000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=5000)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2660,7 +2660,7 @@ STAGE PLANS:
                       Statistics: Num rows: 2000 Data size: 348000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=5000)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2859,7 +2859,7 @@ STAGE PLANS:
                       Statistics: Num rows: 9174 Data size: 1287800 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=3000)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2978,7 +2978,7 @@ STAGE PLANS:
                       Statistics: Num rows: 2000 Data size: 348000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=5000)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE

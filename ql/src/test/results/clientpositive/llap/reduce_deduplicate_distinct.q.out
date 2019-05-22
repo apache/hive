@@ -53,7 +53,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count(DISTINCT key), count(DISTINCT name)
                       keys: id (type: int), key (type: int), name (type: int)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.6
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4
                       Statistics: Num rows: 2 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
@@ -136,7 +136,7 @@ STAGE PLANS:
                     Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: id (type: int), key (type: int), name (type: int)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.6
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
@@ -158,7 +158,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: count(DISTINCT _col1), count(DISTINCT _col2)
                   keys: _col0 (type: int), _col1 (type: int), _col2 (type: int)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.5
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4
                   Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
@@ -239,7 +239,7 @@ STAGE PLANS:
                     Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: id (type: int), key (type: int), name (type: int)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.6
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
@@ -261,7 +261,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: count(DISTINCT _col2), count(DISTINCT _col1)
                   keys: _col0 (type: int), _col2 (type: int), _col1 (type: int)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.5
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4
                   Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
@@ -342,7 +342,7 @@ STAGE PLANS:
                     Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: id (type: int), key (type: int), name (type: int)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.6
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
@@ -364,7 +364,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: count(DISTINCT _col1), count(DISTINCT _col2)
                   keys: _col0 (type: int), _col1 (type: int), _col2 (type: int)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.5
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4
                   Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
@@ -445,7 +445,7 @@ STAGE PLANS:
                     Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: id (type: int), key (type: int), name (type: int)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.6
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
@@ -467,7 +467,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: count(DISTINCT _col2), count(DISTINCT _col1)
                   keys: _col0 (type: int), _col2 (type: int), _col1 (type: int)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.5
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4
                   Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
