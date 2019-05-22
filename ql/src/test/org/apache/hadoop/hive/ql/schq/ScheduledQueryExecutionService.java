@@ -63,6 +63,9 @@ public class ScheduledQueryExecutionService {
       }
     }
 
+    public String getStatus() {
+      return "ok";
+    }
   }
 
   class ProgressReporter implements Runnable {
