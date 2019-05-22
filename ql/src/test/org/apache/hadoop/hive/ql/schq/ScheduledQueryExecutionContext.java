@@ -1,6 +1,18 @@
 package org.apache.hadoop.hive.ql.schq;
 
+import java.util.concurrent.ExecutorService;
+
+import org.apache.hadoop.hive.conf.HiveConf;
+
 public class ScheduledQueryExecutionContext {
+
+  public ExecutorService executor;
+  public ScheduledQueryX schedulerService;
+  public HiveConf conf;
+
+  public ScheduledQueryExecutionContext(ExecutorService executor) {
+    this.executor = executor;
+  }
 
   public long getIdleSleepTime() {
     // FIXME make this configurable?

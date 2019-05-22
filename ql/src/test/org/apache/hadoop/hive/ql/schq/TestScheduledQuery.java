@@ -90,9 +90,10 @@ public class TestScheduledQuery {
     IDriver driver = createDriver();
 
     ExecutorService executor =
-        Executors.newCachedThreadPool(
-        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("SchQ %d").build());
-    ScheduledQueryExecutionService sQ = new ScheduledQueryExecutionService(executor);
+        Executors.newCachedThreadPool(new ThreadFactoryBuilder().setDaemon(true).setNameFormat("SchQ %d").build());
+    ScheduledQueryExecutionContext ctx = new ScheduledQueryExecutionContext(executor);
+    ctx.schedulerService = new ScheduledQueryX();
+    ScheduledQueryExecutionService sQ = new ScheduledQueryExecutionService(ctx);
 
     String query = "select 1 from tu";
 
