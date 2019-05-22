@@ -1404,7 +1404,7 @@ public class SharedCache {
   }
 
   public List<String> listCachedTableNames(String catName, String dbName, String pattern,
-      short maxTables) {
+      int maxTables) {
     List<String> tableNames = new ArrayList<>();
     try {
       cacheLock.readLock().lock();
@@ -1424,15 +1424,18 @@ public class SharedCache {
   }
 
   public List<String> listCachedTableNames(String catName, String dbName, String pattern,
-      TableType tableType) {
+      TableType tableType, int limit) {
     List<String> tableNames = new ArrayList<>();
     try {
       cacheLock.readLock().lock();
+      int count = 0;
       for (TableWrapper wrapper : tableCache.values()) {
         if (wrapper.sameDatabase(catName, dbName)
             && CacheUtils.matches(wrapper.getTable().getTableName(), pattern)
-            && wrapper.getTable().getTableType().equals(tableType.toString())) {
+            && wrapper.getTable().getTableType().equals(tableType.toString())
+            && (limit == -1 || count < limit)) {
           tableNames.add(StringUtils.normalizeIdentifier(wrapper.getTable().getTableName()));
+          count++;
         }
       }
     } finally {

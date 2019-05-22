@@ -401,6 +401,14 @@ public class Hive {
     return (session == null) ? new HiveConf(Hive.class) : session.getConf();
   }
 
+  public void setHMSClientCapabilities(String[] capabilities) {
+    HiveMetaStoreClient.setProcessorCapabilities(capabilities);
+  }
+
+  public void setHMSClientIdentifier(final String id) {
+    HiveMetaStoreClient.setProcessorIdentifier(id);
+  }
+
   private static boolean isCompatible(Hive db, HiveConf c, boolean isFastCheck) {
     if (isFastCheck) {
       return (db.metaStoreClient == null || db.metaStoreClient.isSameConfObj(c))

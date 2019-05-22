@@ -263,6 +263,11 @@ public class TestCachedStore {
     Assert.assertTrue(!tblNames.contains(tblName1));
     Assert.assertTrue(tblNames.contains(tblName2));
 
+    List<String> db1Tables = cachedStore.getTables(DEFAULT_CATALOG_NAME, dbName, ".*tbl1", TableType.MANAGED_TABLE, 1);
+    Assert.assertEquals(1, db1Tables.size());
+    db1Tables = cachedStore.getTables(DEFAULT_CATALOG_NAME, dbName, ".*tbl1", TableType.MANAGED_TABLE, -1);
+    Assert.assertEquals(2, db1Tables.size());
+
     // Clean up
     objectStore.dropTable(DEFAULT_CATALOG_NAME, dbName, tblName);
     objectStore.dropTable(DEFAULT_CATALOG_NAME, dbName, tblName2);

@@ -1459,18 +1459,18 @@ public class CachedStore implements RawStore, Configurable {
       return rawStore.getTables(catName, dbName, pattern);
     }
     return sharedCache.listCachedTableNames(StringUtils.normalizeIdentifier(catName),
-        StringUtils.normalizeIdentifier(dbName), pattern, (short) -1);
+        StringUtils.normalizeIdentifier(dbName), pattern, -1);
   }
 
   @Override
-  public List<String> getTables(String catName, String dbName, String pattern, TableType tableType)
+  public List<String> getTables(String catName, String dbName, String pattern, TableType tableType, int limit)
       throws MetaException {
     if (!isBlacklistWhitelistEmpty(conf) || !isCachePrewarmed.get() || !isCachedAllMetadata.get()
             || (canUseEvents && rawStore.isActiveTransaction())) {
-      return rawStore.getTables(catName, dbName, pattern, tableType);
+      return rawStore.getTables(catName, dbName, pattern, tableType, limit);
     }
     return sharedCache.listCachedTableNames(StringUtils.normalizeIdentifier(catName),
-        StringUtils.normalizeIdentifier(dbName), pattern, tableType);
+        StringUtils.normalizeIdentifier(dbName), pattern, tableType, limit);
   }
 
   @Override

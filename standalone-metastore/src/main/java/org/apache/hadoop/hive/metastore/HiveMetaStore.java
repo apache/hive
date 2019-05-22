@@ -3130,13 +3130,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       String database = req.getDatabase();
       String pattern  = req.getTableNamePattern();
       List<String> processorCapabilities = req.getProcessorCapabilities();
+      int limit = req.getLimit();
       String processorId  = req.getProcessorIdentifier();
       List<Table> tObjects = new ArrayList<>();
 
       startTableFunction("get_tables_ext", catalog, database, pattern);
       Exception ex = null;
       try {
-        tables = getMS().getTables(catalog, database, pattern, null);
+        tables = getMS().getTables(catalog, database, pattern, null, limit);
         LOG.debug("get_tables_ext:getTables() returned " + tables.size());
 
         if (tables.size() > 0) {
@@ -5490,7 +5491,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Exception ex = null;
       String[] parsedDbName = parseDbName(dbname, conf);
       try {
-        ret = getMS().getTables(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], pattern, TableType.valueOf(tableType));
+        ret = getMS().getTables(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], pattern, TableType.valueOf(tableType), -1);
       } catch (Exception e) {
         ex = e;
         if (e instanceof MetaException) {
