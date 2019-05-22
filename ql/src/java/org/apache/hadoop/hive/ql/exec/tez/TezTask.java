@@ -639,6 +639,11 @@ public class TezTask extends Task<TezWork> {
   }
 
   @Override
+  public boolean canExecuteInParallel() {
+    return false;
+  }
+
+  @Override
   public Collection<MapWork> getMapWork() {
     List<MapWork> result = new LinkedList<MapWork>();
     TezWork work = getWork();
