@@ -120,7 +120,7 @@ STAGE PLANS:
                 HybridGraceHashJoin: true
                 Group By Operator
                   keys: _col0 (type: string)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.5
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 16 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
@@ -384,7 +384,7 @@ STAGE PLANS:
                 HybridGraceHashJoin: true
                 Group By Operator
                   keys: _col0 (type: string)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.5
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 16 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE

@@ -1793,7 +1793,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count(value)
                       keys: key (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.5
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1833,7 +1833,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: compute_stats(k1, 'hll'), compute_stats(k2, 'hll')
                       keys: day (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 935 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1970,7 +1970,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count(value)
                       keys: key (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.5
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2010,7 +2010,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: compute_stats(k1, 'hll'), compute_stats(k2, 'hll')
                       keys: day (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 935 Basic stats: COMPLETE Column stats: COMPLETE

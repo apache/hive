@@ -93,7 +93,7 @@ STAGE PLANS:
                 Statistics: Num rows: 791 Data size: 6328 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -292,7 +292,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: count()
                   keys: _col0 (type: string), _col1 (type: string)
-                  minReductionHashAggr: 0.536193
+                  minReductionHashAggr: 0.7680965
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 11936 Data size: 2220096 Basic stats: COMPLETE Column stats: COMPLETE

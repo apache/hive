@@ -129,7 +129,7 @@ STAGE PLANS:
                           Statistics: Num rows: 825 Data size: 156750 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: compute_stats(k1, 'hll'), compute_stats(v1, 'hll'), compute_stats(k2, 'hll'), compute_stats(v2, 'hll')
-                            minReductionHashAggr: 0.0
+                            minReductionHashAggr: 0.99
                             mode: hash
                             outputColumnNames: _col0, _col1, _col2, _col3
                             Statistics: Num rows: 1 Data size: 1728 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1334,7 +1334,7 @@ STAGE PLANS:
                           Statistics: Num rows: 825 Data size: 156750 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: compute_stats(k1, 'hll'), compute_stats(v1, 'hll'), compute_stats(k2, 'hll'), compute_stats(v2, 'hll')
-                            minReductionHashAggr: 0.0
+                            minReductionHashAggr: 0.99
                             mode: hash
                             outputColumnNames: _col0, _col1, _col2, _col3
                             Statistics: Num rows: 1 Data size: 1728 Basic stats: COMPLETE Column stats: COMPLETE

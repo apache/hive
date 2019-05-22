@@ -345,7 +345,7 @@ STAGE PLANS:
                     Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: max(year)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.75
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
@@ -417,7 +417,7 @@ STAGE PLANS:
                     Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: max(month)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.75
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
@@ -561,7 +561,7 @@ STAGE PLANS:
                     Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: max(month)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.75
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
@@ -951,7 +951,7 @@ STAGE PLANS:
                     Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: max(year)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.75
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE

@@ -151,7 +151,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
                       keys: t (type: tinyint), s (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.32999998
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1000 Data size: 97812 Basic stats: COMPLETE Column stats: COMPLETE
