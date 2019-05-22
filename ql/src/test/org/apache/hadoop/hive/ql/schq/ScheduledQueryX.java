@@ -2,14 +2,19 @@ package org.apache.hadoop.hive.ql.schq;
 
 public class ScheduledQueryX implements IScheduledQueryX {
   int id = 0;
+  private String stmt;
+
+  public ScheduledQueryX(String string) {
+    stmt = string;
+  }
 
   @Override
   public ScheduledQueryPollResp scheduledQueryPoll(String catalog) {
 
     ScheduledQueryPollResp r = new ScheduledQueryPollResp();
-    r.executionId = 1;
-    r.queryString = "select 1";
-    if (id == 0) {
+    r.executionId = id++;
+    r.queryString = stmt;
+    if (id >= 1) {
       return r;
     } else {
       return null;

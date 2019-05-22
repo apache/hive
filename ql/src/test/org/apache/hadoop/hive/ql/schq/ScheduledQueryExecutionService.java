@@ -4,6 +4,7 @@ import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.schq.IScheduledQueryX.ScheduledQueryPollResp;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 public class ScheduledQueryExecutionService {
 
@@ -31,9 +32,24 @@ public class ScheduledQueryExecutionService {
     }
 
     private void processQuery(ScheduledQueryPollResp q) {
-      executing = q;
-      IDriver driver = DriverFactory.newDriver(context.conf);
-      CommandProcessorResponse resp = driver.compileAndRespond(q.queryString);
+      try {
+        SessionState.start(context.conf);
+        executing = q;
+        IDriver driver = DriverFactory.newDriver(context.conf);
+        CommandProcessorResponse resp;
+        resp = driver.compileAndRespond(q.queryString);
+        if (resp.getResponseCode() != 0) {
+          System.out.println("err" + resp.getErrorMessage());
+        }
+        resp = driver.run();
+        if (resp.getResponseCode() != 0) {
+          System.out.println("err");
+        }
+      } catch (Throwable t) {
+        throw t;
+      } finally {
+        executing = null;
+      }
     }
 
     public String getStatus() {

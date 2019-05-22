@@ -18,15 +18,17 @@
 package org.apache.hadoop.hive.ql.schq;
 
 import static org.junit.Assert.assertEquals;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -85,22 +87,39 @@ public class TestScheduledQuery {
     return pm0;
   }
 
+  private int getNumRowsReturned(IDriver driver, String query) throws Exception {
+    int ret = driver.run(query).getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+    FetchTask ft = driver.getFetchTask();
+    List res = new ArrayList();
+    if (ft == null) {
+      return  0;
+    }
+    ft.fetch(res);
+    return res.size();
+  }
+
   @Test
-  public void testScheduledQ() throws ParseException {
+  public void testScheduledQ() throws ParseException, Exception {
     IDriver driver = createDriver();
 
     ExecutorService executor =
         Executors.newCachedThreadPool(new ThreadFactoryBuilder().setDaemon(true).setNameFormat("SchQ %d").build());
-    ScheduledQueryExecutionContext ctx = new ScheduledQueryExecutionContext(executor);
-    ctx.schedulerService = new ScheduledQueryX();
+    HiveConf conf = env_setup.getTestCtx().hiveConf;
+    ScheduledQueryExecutionContext ctx = new ScheduledQueryExecutionContext(executor, conf);
+    ctx.schedulerService = new ScheduledQueryX("insert into tu values(1),(2),(3),(4),(5)");
     ScheduledQueryExecutionService sQ = new ScheduledQueryExecutionService(ctx);
+
+    Thread.sleep(5000);
+    executor.shutdown();
+    executor.awaitTermination(2, TimeUnit.SECONDS);
 
     String query = "select 1 from tu";
 
-    PlanMapper pm = getMapperForQuery(driver, query);
-    List<FilterOperator> fos = pm.getAll(FilterOperator.class);
-    // the same operator is present 2 times
-    assertEquals(4, fos.size());
+    //    getNumRowsReturned(driver, "insert into tu values(1),(2),(3),(4),(5)");
+    int nr = getNumRowsReturned(driver, query);
+    assertEquals(5, nr);
+
 
 
   }
@@ -108,13 +127,6 @@ public class TestScheduledQuery {
   private static IDriver createDriver() {
     HiveConf conf = env_setup.getTestCtx().hiveConf;
 
-    conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ENABLED, true);
-    conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false);
-    conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS, true);
-    conf.setVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES, "reoptimize");
-    conf.set("zzz", "1");
-    conf.set("reexec.overlay.zzz", "2000");
-    //
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
