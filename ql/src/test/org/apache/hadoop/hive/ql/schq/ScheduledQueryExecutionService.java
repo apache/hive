@@ -35,26 +35,34 @@ public class ScheduledQueryExecutionService {
       try {
         SessionState.start(context.conf);
         executing = q;
+        // FIXME: missing impersonation
         IDriver driver = DriverFactory.newDriver(context.conf);
         CommandProcessorResponse resp;
-        resp = driver.compileAndRespond(q.queryString);
+        resp = driver.run(q.queryString);
         if (resp.getResponseCode() != 0) {
-          System.out.println("err" + resp.getErrorMessage());
+          throw resp;
         }
-        resp = driver.run();
-        if (resp.getResponseCode() != 0) {
-          System.out.println("err");
-        }
+        reportQueryState("FINISHED", null);
       } catch (Throwable t) {
-        throw t;
+        reportQueryState("ERROR", getErrorStringForException(t));
       } finally {
         executing = null;
       }
     }
 
-    public String getStatus() {
-      return "ok";
+    private void reportQueryState(String string, String errorStringForException) {
+      System.out.println("QueryState: " + string + " -- " + errorStringForException);
     }
+
+    private String getErrorStringForException(Throwable t) {
+      if (t instanceof CommandProcessorResponse) {
+        CommandProcessorResponse cpr = (CommandProcessorResponse) t;
+        return String.format("%s", cpr.getErrorMessage());
+      } else {
+        return String.format("%s: %s", t.getClass().getName(), t.getMessage());
+      }
+    }
+
   }
 
   class ProgressReporter implements Runnable {
