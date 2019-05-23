@@ -44,7 +44,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.hadoop.hive.llap.counters.FragmentCountersMap;
 import org.apache.hadoop.hive.llap.daemon.FinishableStateUpdateHandler;
 import org.apache.hadoop.hive.llap.daemon.SchedulerFragmentCompletingListener;
 import org.apache.hadoop.hive.llap.daemon.impl.comparator.LlapQueueComparatorBase;
@@ -54,7 +53,6 @@ import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.tezplugins.helpers.MonotonicClock;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.yarn.util.Clock;
-import org.apache.tez.common.counters.TezCounters;
 import org.apache.tez.runtime.task.EndReason;
 import org.apache.tez.runtime.task.TaskRunner2Result;
 import org.slf4j.Logger;
@@ -680,8 +678,8 @@ public class TaskExecutorService extends AbstractService
       LOG.info("Attempting to execute {}", taskWrapper);
     }
     TaskRunnerCallable task = taskWrapper.getTaskRunnerCallable();
-    task.setWmCountersRunning();
     ListenableFuture<TaskRunner2Result> future = executorService.submit(task);
+    task.setWmCountersRunning();
     runningFragmentCount.incrementAndGet();
     taskWrapper.setIsInWaitQueue(false);
 
