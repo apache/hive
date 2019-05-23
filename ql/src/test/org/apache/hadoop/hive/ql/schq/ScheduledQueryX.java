@@ -1,5 +1,6 @@
 package org.apache.hadoop.hive.ql.schq;
 
+// FIXME move this class to test
 public class ScheduledQueryX implements IScheduledQueryX {
   int id = 0;
   private String stmt;

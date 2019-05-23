@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.schq;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 import org.apache.hive.testutils.HiveTestEnvSetup;
+import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -93,7 +95,7 @@ public class TestScheduledQuery {
     FetchTask ft = driver.getFetchTask();
     List res = new ArrayList();
     if (ft == null) {
-      return  0;
+      return 0;
     }
     ft.fetch(res);
     return res.size();
@@ -116,11 +118,8 @@ public class TestScheduledQuery {
 
     String query = "select 1 from tu";
 
-    //    getNumRowsReturned(driver, "insert into tu values(1),(2),(3),(4),(5)");
     int nr = getNumRowsReturned(driver, query);
-    assertEquals(5, nr);
-
-
+    assertThat(nr, Matchers.greaterThan(10));
 
   }
 
