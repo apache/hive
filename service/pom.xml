@@ -296,6 +296,12 @@
       <artifactId>apacheds-server-integ</artifactId>
       <version>${apache-directory-server.version}</version>
       <scope>test</scope>
+        <exclusions>
+            <exclusion>
+                <groupId>org.apache.directory.client.ldap</groupId>
+                <artifactId>ldap-client-api</artifactId>
+            </exclusion>
+        </exclusions>
     </dependency>
 
     <dependency>
