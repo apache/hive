@@ -1374,21 +1374,21 @@ public class SharedWorkOptimizer extends Transform {
     // 1.1. None of the works that we are merging can contain a Union
     // operator. This is not supported yet as we might end up with cycles in
     // the Tez DAG.
-    // 1.2. There cannot be more than one DummyStore operator in the new resulting
-    // work when the operators are merged. This is due to an assumption in
-    // MergeJoinProc that needs to be further explored.
+    // 1.2. There cannot be any DummyStore operator in the works being merged.
+    //  This is due to an assumption in MergeJoinProc that needs to be further explored.
+    //  This is also due to some assumption in task generation
     // If any of these conditions are not met, we cannot merge.
     // TODO: Extend rule so it can be applied for these cases.
     final Set<Operator<?>> workOps1 = findWorkOperators(optimizerCache, op1);
     final Set<Operator<?>> workOps2 = findWorkOperators(optimizerCache, op2);
-    boolean foundDummyStoreOp = false;
     for (Operator<?> op : workOps1) {
       if (op instanceof UnionOperator) {
         // We cannot merge (1.1)
         return false;
       }
       if (op instanceof DummyStoreOperator) {
-        foundDummyStoreOp = true;
+        // We cannot merge (1.2)
+        return false;
       }
     }
     for (Operator<?> op : workOps2) {
@@ -1396,7 +1396,7 @@ public class SharedWorkOptimizer extends Transform {
         // We cannot merge (1.1)
         return false;
       }
-      if (foundDummyStoreOp && op instanceof DummyStoreOperator) {
+      if (op instanceof DummyStoreOperator) {
         // We cannot merge (1.2)
         return false;
       }

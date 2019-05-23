@@ -308,7 +308,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public List<String> getTables(String catName, String dbName, String pattern, TableType tableType) throws MetaException {
+  public List<String> getTables(String catName, String dbName, String pattern, TableType tableType, int limit) throws MetaException {
     return Collections.emptyList();
   }
 

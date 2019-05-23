@@ -1190,7 +1190,7 @@ STAGE PLANS:
                     Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: value (type: int)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.5
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1212,7 +1212,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: key (type: int)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.5
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1240,7 +1240,7 @@ STAGE PLANS:
                   Group By Operator
                     aggregations: count(_col1)
                     keys: _col0 (type: int)
-                    minReductionHashAggr: 0.0
+                    minReductionHashAggr: 0.6666666
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1290,7 +1290,7 @@ STAGE PLANS:
                   Group By Operator
                     aggregations: count(_col1)
                     keys: _col0 (type: int)
-                    minReductionHashAggr: 0.0
+                    minReductionHashAggr: 0.6666666
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
