@@ -264,6 +264,7 @@ TOK_DROP_MATERIALIZED_VIEW;
 TOK_ALTER_MATERIALIZED_VIEW;
 TOK_ALTER_MATERIALIZED_VIEW_REWRITE;
 TOK_ALTER_MATERIALIZED_VIEW_REBUILD;
+TOK_CREATE_SCHEDULED_QUERY;
 TOK_REWRITE_ENABLED;
 TOK_REWRITE_DISABLED;
 TOK_VIEWPARTCOLS;
@@ -975,6 +976,7 @@ ddlStatement
     | abortTransactionStatement
     | killQueryStatement
     | resourcePlanDdlStatements
+    | createScheduleQueryStatement
     ;
 
 ifExists
@@ -1989,6 +1991,24 @@ dropMaterializedViewStatement
 @after { popMsg(state); }
     : KW_DROP KW_MATERIALIZED KW_VIEW ifExists? viewName -> ^(TOK_DROP_MATERIALIZED_VIEW viewName ifExists?)
     ;
+
+createScheduleQueryStatement
+@init { pushMsg("create scheduled query statement", state); }
+@after { popMsg(state); }
+    : KW_CREATE KW_SCHEDULED KW_QUERY name=identifier
+        KW_CRON cronString=StringLiteral
+        (KW_EXECUTED KW_AS executedAs=StringLiteral)?
+        (disabled=KW_DISABLE)?
+        KW_AS selectStatementWithCTE
+    -> ^(TOK_CREATE_SCHEDULED_QUERY
+            $name
+            $cronString
+            $executedAs
+            $disabled
+            selectStatementWithCTE
+        )
+    ;
+
 
 showFunctionIdentifier
 @init { pushMsg("identifier for show function statement", state); }
