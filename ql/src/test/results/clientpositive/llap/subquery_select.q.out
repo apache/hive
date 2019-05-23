@@ -3943,10 +3943,14 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: int)
+                Select Operator
+                  expressions: UDFToDouble(_col0) (type: double)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: double)
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -3987,7 +3991,7 @@ STAGE PLANS:
                   0 
                   1 
                 outputColumnNames: _col1, _col2, _col3
-                Statistics: Num rows: 26 Data size: 416 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 26 Data size: 520 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: CASE WHEN (_col1) THEN (_col2) ELSE (_col3) END (type: double)
                   outputColumnNames: _col0
