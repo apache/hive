@@ -25,7 +25,7 @@
   <packaging>pom</packaging>
 
   <name>Hive</name>
-  <url>http://hive.apache.org</url>
+  <url>https://hive.apache.org</url>
   <prerequisites>
     <maven>2.2.1</maven>
   </prerequisites>
@@ -166,7 +166,7 @@
     <!-- Glassfish jersey is included for Spark client test only -->
     <glassfish.jersey.version>2.22.2</glassfish.jersey.version>
     <jline.version>2.12</jline.version>
-    <jms.version>1.1</jms.version>
+    <jms.version>2.0.2</jms.version>
     <joda.version>2.8.1</joda.version>
     <jodd.version>3.5.2</jodd.version>
     <json.version>1.8</json.version>
@@ -208,49 +208,15 @@
   </properties>
 
   <repositories>
-   <!-- This needs to be removed before checking in-->
     <repository>
-      <id>datanucleus</id>
-      <name>datanucleus maven repository</name>
-      <url>http://www.datanucleus.org/downloads/maven2</url>
+      <id>central</id>
+      <name>central</name>
+      <url>https://repo.maven.apache.org/maven2</url>
       <layout>default</layout>
       <releases>
         <enabled>true</enabled>
         <checksumPolicy>warn</checksumPolicy>
       </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>glassfish-repository</id>
-      <url>http://maven.glassfish.org/content/groups/glassfish</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>glassfish-repo-archive</id>
-      <url>http://maven.glassfish.org/content/groups/glassfish</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-     </repository>
-     <repository>
-       <id>sonatype-snapshot</id>
-       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-       <releases>
-         <enabled>false</enabled>
-       </releases>
-       <snapshots>
-         <enabled>false</enabled>
-       </snapshots>
     </repository>
   </repositories>
 
