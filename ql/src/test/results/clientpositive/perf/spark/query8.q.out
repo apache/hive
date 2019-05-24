@@ -234,33 +234,14 @@ STAGE PLANS:
   Stage: Stage-3
     Spark
       Edges:
-        Reducer 10 <- Map 13 (PARTITION-LEVEL SORT, 586), Map 9 (PARTITION-LEVEL SORT, 586)
-        Reducer 11 <- Reducer 10 (GROUP, 349)
-        Reducer 12 <- Reducer 11 (GROUP, 59)
-        Reducer 7 <- Map 6 (GROUP, 159)
-        Reducer 8 <- Reducer 12 (GROUP, 109), Reducer 7 (GROUP, 109)
+        Reducer 3 <- Map 2 (GROUP, 159)
+        Reducer 4 <- Reducer 3 (GROUP, 109), Reducer 8 (GROUP, 109)
+        Reducer 6 <- Map 5 (PARTITION-LEVEL SORT, 586), Map 9 (PARTITION-LEVEL SORT, 586)
+        Reducer 7 <- Reducer 6 (GROUP, 349)
+        Reducer 8 <- Reducer 7 (GROUP, 59)
 #### A masked pattern was here ####
       Vertices:
-        Map 13 
-            Map Operator Tree:
-                TableScan
-                  alias: customer
-                  filterExpr: ((c_preferred_cust_flag = 'Y') and c_current_addr_sk is not null) (type: boolean)
-                  Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: ((c_preferred_cust_flag = 'Y') and c_current_addr_sk is not null) (type: boolean)
-                    Statistics: Num rows: 40000000 Data size: 34400807926 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: c_current_addr_sk (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 40000000 Data size: 34400807926 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 40000000 Data size: 34400807926 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: vectorized
-        Map 6 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: customer_address
@@ -287,7 +268,7 @@ STAGE PLANS:
                           Statistics: Num rows: 20000000 Data size: 20297597642 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col1 (type: bigint)
             Execution mode: vectorized
-        Map 9 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: customer_address
@@ -307,7 +288,70 @@ STAGE PLANS:
                         Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string)
             Execution mode: vectorized
-        Reducer 10 
+        Map 9 
+            Map Operator Tree:
+                TableScan
+                  alias: customer
+                  filterExpr: ((c_preferred_cust_flag = 'Y') and c_current_addr_sk is not null) (type: boolean)
+                  Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((c_preferred_cust_flag = 'Y') and c_current_addr_sk is not null) (type: boolean)
+                    Statistics: Num rows: 40000000 Data size: 34400807926 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: c_current_addr_sk (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 40000000 Data size: 34400807926 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 40000000 Data size: 34400807926 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Reducer 3 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 10000000 Data size: 10148798821 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count(_col1)
+                  keys: _col0 (type: string)
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 13666666 Data size: 13870024459 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 13666666 Data size: 13870024459 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: bigint)
+        Reducer 4 
+            Execution mode: vectorized
+            Local Work:
+              Map Reduce Local Work
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 6833333 Data size: 6935012229 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: (_col1 = 2L) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 1014 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: substr(_col0, 1, 2) (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 1014 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 _col2 (type: string)
+                        1 _col0 (type: string)
+        Reducer 6 
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -330,7 +374,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 44000000 Data size: 44654715780 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: bigint)
-        Reducer 11 
+        Reducer 7 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -359,7 +403,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 7333333 Data size: 7442452291 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: bigint)
-        Reducer 12 
+        Reducer 8 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -381,56 +425,12 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 13666666 Data size: 13870024459 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: bigint)
-        Reducer 7 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                keys: KEY._col0 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 10000000 Data size: 10148798821 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(_col1)
-                  keys: _col0 (type: string)
-                  minReductionHashAggr: 0.99
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 13666666 Data size: 13870024459 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 13666666 Data size: 13870024459 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: bigint)
-        Reducer 8 
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                keys: KEY._col0 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 6833333 Data size: 6935012229 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: (_col1 = 2L) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 1014 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: substr(_col0, 1, 2) (type: string)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 1014 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 _col0 (type: string)
-                        1 _col2 (type: string)
 
   Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 14 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: store
@@ -447,15 +447,15 @@ STAGE PLANS:
                         condition map:
                              Inner Join 0 to 1
                         keys:
-                          0 _col0 (type: string)
-                          1 _col2 (type: string)
-                        outputColumnNames: _col1, _col2
+                          0 _col2 (type: string)
+                          1 _col0 (type: string)
+                        outputColumnNames: _col0, _col1
                         input vertices:
-                          0 Reducer 8
+                          1 Reducer 4
                         Statistics: Num rows: 1874 Data size: 3581903 Basic stats: COMPLETE Column stats: NONE
                         Spark HashTable Sink Operator
                           keys:
-                            0 _col1 (type: int)
+                            0 _col0 (type: int)
                             1 _col1 (type: int)
             Execution mode: vectorized
             Local Work:
@@ -464,12 +464,12 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 398), Map 5 (PARTITION-LEVEL SORT, 398)
-        Reducer 3 <- Reducer 2 (GROUP, 481)
-        Reducer 4 <- Reducer 3 (SORT, 1)
+        Reducer 11 <- Map 10 (PARTITION-LEVEL SORT, 398), Map 14 (PARTITION-LEVEL SORT, 398)
+        Reducer 12 <- Reducer 11 (GROUP, 481)
+        Reducer 13 <- Reducer 12 (SORT, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 10 
             Map Operator Tree:
                 TableScan
                   alias: store_sales
@@ -489,7 +489,7 @@ STAGE PLANS:
                         Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col2 (type: decimal(7,2))
             Execution mode: vectorized
-        Map 5 
+        Map 14 
             Map Operator Tree:
                 TableScan
                   alias: date_dim
@@ -508,7 +508,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
-        Reducer 2 
+        Reducer 11 
             Local Work:
               Map Reduce Local Work
             Reduce Operator Tree:
@@ -524,15 +524,15 @@ STAGE PLANS:
                   condition map:
                        Inner Join 0 to 1
                   keys:
-                    0 _col1 (type: int)
+                    0 _col0 (type: int)
                     1 _col1 (type: int)
-                  outputColumnNames: _col2, _col6
+                  outputColumnNames: _col1, _col6
                   input vertices:
-                    1 Map 14
+                    0 Map 1
                   Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    aggregations: sum(_col2)
-                    keys: _col6 (type: string)
+                    aggregations: sum(_col6)
+                    keys: _col1 (type: string)
                     minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0, _col1
@@ -544,7 +544,7 @@ STAGE PLANS:
                       Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
                       value expressions: _col1 (type: decimal(17,2))
-        Reducer 3 
+        Reducer 12 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -559,7 +559,7 @@ STAGE PLANS:
                   Statistics: Num rows: 348477374 Data size: 30742775095 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.1
                   value expressions: _col1 (type: decimal(17,2))
-        Reducer 4 
+        Reducer 13 
             Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
