@@ -488,7 +488,7 @@ STAGE PLANS:
                   alias: cmv_basetable_n2
                   Statistics: Num rows: 7 Data size: 1652 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ROW__ID.writeid > 1) and (a = 3)) (type: boolean)
+                    predicate: ((ROW__ID.writeid > 1L) and (a = 3)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 236 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: CAST( t AS timestamp with local time zone) (type: timestamp with local time zone), 3 (type: int), b (type: varchar(256)), c (type: double), userid (type: varchar(256))

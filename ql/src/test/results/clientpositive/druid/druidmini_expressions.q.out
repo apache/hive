@@ -195,7 +195,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames $f0,_o__c1,_o__c2,_o__c3,$f4,$f5
             druid.fieldTypes double,int,bigint,double,bigint,bigint
-            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table_n0","descending":false,"granularity":"all","filter":{"type":"and","fields":[{"type":"or","fields":[{"type":"expression","expression":"((floor(\"cdouble\") * 2) < 1000)"},{"type":"expression","expression":"((log(\"cdouble\") / 1.0) > 0)"},{"type":"expression","expression":"(sin(\"cdouble\") > 1)"}]},{"type":"or","fields":[{"type":"and","fields":[{"type":"expression","expression":"(ceil(\"cfloat\") > 0)"},{"type":"expression","expression":"((floor(\"cdouble\") * 2) < 1000)"}]},{"type":"and","fields":[{"type":"expression","expression":"((log(\"cdouble\") / 1.0) > 0)"},{"type":"expression","expression":"(cos(\"cint\") > 0)"}]},{"type":"expression","expression":"(sin(\"cdouble\") > 1)"}]}]},"aggregations":[{"type":"doubleSum","name":"$f0","expression":"(\"cfloat\" + CAST(1, 'DOUBLE'))"},{"type":"doubleSum","name":"$f1","expression":"(\"cdouble\" + CAST(\"ctinyint\", 'DOUBLE'))"},{"type":"longSum","name":"$f2","fieldName":"ctinyint"},{"type":"longSum","name":"$f3","fieldName":"csmallint"},{"type":"longSum","name":"$f4","fieldName":"cint"},{"type":"longSum","name":"$f5","fieldName":"cbigint"}],"postAggregations":[{"type":"expression","name":"_o__c1","expression":"CAST(\"$f1\", 'LONG')"},{"type":"expression","name":"_o__c2","expression":"(\"$f2\" + 1)"},{"type":"expression","name":"_o__c3","expression":"CAST((\"$f3\" + \"$f4\"), 'DOUBLE')"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":false}}
+            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table_n0","descending":false,"granularity":"all","filter":{"type":"and","fields":[{"type":"or","fields":[{"type":"expression","expression":"((floor(\"cdouble\") * 2) < 1000)"},{"type":"expression","expression":"((log(\"cdouble\") / 1.0) > 0)"},{"type":"expression","expression":"(sin(\"cdouble\") > 1)"}]},{"type":"or","fields":[{"type":"and","fields":[{"type":"expression","expression":"(ceil(\"cfloat\") > 0)"},{"type":"expression","expression":"((floor(\"cdouble\") * 2) < 1000)"}]},{"type":"and","fields":[{"type":"expression","expression":"((log(\"cdouble\") / 1.0) > 0)"},{"type":"expression","expression":"(cos(\"cint\") > 0)"}]},{"type":"expression","expression":"(sin(\"cdouble\") > 1)"}]}]},"aggregations":[{"type":"doubleSum","name":"$f0","expression":"(\"cfloat\" + 1)"},{"type":"doubleSum","name":"$f1","expression":"(\"cdouble\" + CAST(\"ctinyint\", 'DOUBLE'))"},{"type":"longSum","name":"$f2","fieldName":"ctinyint"},{"type":"longSum","name":"$f3","fieldName":"csmallint"},{"type":"longSum","name":"$f4","fieldName":"cint"},{"type":"longSum","name":"$f5","fieldName":"cbigint"}],"postAggregations":[{"type":"expression","name":"_o__c1","expression":"CAST(\"$f1\", 'LONG')"},{"type":"expression","name":"_o__c2","expression":"(\"$f2\" + 1)"},{"type":"expression","name":"_o__c3","expression":"CAST((\"$f3\" + \"$f4\"), 'DOUBLE')"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":false}}
             druid.query.type timeseries
           Select Operator
             expressions: $f0 (type: double), _o__c1 (type: int), _o__c2 (type: bigint), _o__c3 (type: double), $f4 (type: bigint), $f5 (type: bigint)
@@ -295,7 +295,6 @@ STAGE PLANS:
                     columns __time,cstring1,cstring2,cdouble,cfloat,ctinyint,csmallint,cint,cbigint,cboolean1,cboolean2
                     columns.comments 
                     columns.types timestamp with local time zone:string:string:double:float:tinyint:smallint:int:bigint:boolean:boolean
-                    discover.partitions true
                     druid.datasource default.druid_table_n0
                     druid.fieldNames vc
                     druid.fieldTypes int
@@ -328,7 +327,6 @@ STAGE PLANS:
                       columns __time,cstring1,cstring2,cdouble,cfloat,ctinyint,csmallint,cint,cbigint,cboolean1,cboolean2
                       columns.comments 
                       columns.types timestamp with local time zone:string:string:double:float:tinyint:smallint:int:bigint:boolean:boolean
-                      discover.partitions true
                       druid.datasource default.druid_table_n0
                       druid.fieldNames vc
                       druid.fieldTypes int
@@ -579,7 +577,7 @@ STAGE PLANS:
                   properties:
                     druid.fieldNames extract,cstring1,cstring2,$f3
                     druid.fieldTypes timestamp with local time zone,string,string,double
-                    druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n0","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"UTC"}},{"type":"default","dimension":"cstring1","outputName":"cstring1","outputType":"STRING"},{"type":"default","dimension":"cstring2","outputName":"cstring2","outputType":"STRING"}],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleSum","name":"$f3","expression":"(CAST(2, 'DOUBLE') * \"cdouble\")"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+                    druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n0","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"UTC"}},{"type":"default","dimension":"cstring1","outputName":"cstring1","outputType":"STRING"},{"type":"default","dimension":"cstring2","outputName":"cstring2","outputType":"STRING"}],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleSum","name":"$f3","expression":"(2 * \"cdouble\")"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
                     druid.query.type groupBy
                   Statistics: Num rows: 9173 Data size: 3625856 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
@@ -1307,7 +1305,7 @@ STAGE PLANS:
                   properties:
                     druid.fieldNames vc,vc0
                     druid.fieldTypes date,date
-                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n0","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_shift(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),null,'UTC'),'P1D','','UTC'),'P1D',CAST((\"cdouble\" / CAST(1000, 'DOUBLE')), 'LONG'),'UTC')","outputType":"LONG"},{"type":"expression","name":"vc0","expression":"timestamp_shift(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),null,'UTC'),'P1D','','UTC'),'P1D',-( CAST((\"cdouble\" / CAST(1000, 'DOUBLE')), 'LONG') ),'UTC')","outputType":"LONG"}],"columns":["vc","vc0"],"resultFormat":"compactedList"}
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n0","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_shift(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),null,'UTC'),'P1D','','UTC'),'P1D',CAST((\"cdouble\" / 1000), 'LONG'),'UTC')","outputType":"LONG"},{"type":"expression","name":"vc0","expression":"timestamp_shift(timestamp_floor(timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),null,'UTC'),'P1D','','UTC'),'P1D',-( CAST((\"cdouble\" / 1000), 'LONG') ),'UTC')","outputType":"LONG"}],"columns":["vc","vc0"],"resultFormat":"compactedList"}
                     druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 976192 Basic stats: COMPLETE Column stats: NONE
                   Select Operator

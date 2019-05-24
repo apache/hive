@@ -218,6 +218,7 @@ STAGE PLANS:
                         Statistics: Num rows: 69 Data size: 6969 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=69)
+                          minReductionHashAggr: 0.0
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
@@ -257,6 +258,7 @@ STAGE PLANS:
                 Statistics: Num rows: 10090 Data size: 1764118 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -368,6 +370,7 @@ STAGE PLANS:
                         Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=3)
+                          minReductionHashAggr: 0.0
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
@@ -407,6 +410,7 @@ STAGE PLANS:
                 Statistics: Num rows: 10090 Data size: 38350 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -518,6 +522,7 @@ STAGE PLANS:
                         Statistics: Num rows: 69 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=1)
+                          minReductionHashAggr: 0.0
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
@@ -557,6 +562,7 @@ STAGE PLANS:
                 Statistics: Num rows: 10090 Data size: 38350 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -668,6 +674,7 @@ STAGE PLANS:
                         Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=69)
+                          minReductionHashAggr: 0.0
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
@@ -707,6 +714,7 @@ STAGE PLANS:
                 Statistics: Num rows: 10090 Data size: 38350 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -818,6 +826,7 @@ STAGE PLANS:
                         Statistics: Num rows: 69 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=69)
+                          minReductionHashAggr: 0.0
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
@@ -857,6 +866,7 @@ STAGE PLANS:
                 Statistics: Num rows: 10090 Data size: 76700 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -968,6 +978,7 @@ STAGE PLANS:
                         Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=3)
+                          minReductionHashAggr: 0.0
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1007,6 +1018,7 @@ STAGE PLANS:
                 Statistics: Num rows: 10090 Data size: 38350 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -1118,6 +1130,7 @@ STAGE PLANS:
                         Statistics: Num rows: 69 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=1)
+                          minReductionHashAggr: 0.0
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1157,6 +1170,7 @@ STAGE PLANS:
                 Statistics: Num rows: 10090 Data size: 76700 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -1251,7 +1265,7 @@ STAGE PLANS:
                   alias: alltypesorc_small
                   Statistics: Num rows: 69 Data size: 2760 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ctimestamp1 is not null (type: boolean)
+                    predicate: CAST( ctimestamp1 AS timestamp with local time zone) is not null (type: boolean)
                     Statistics: Num rows: 69 Data size: 2760 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ctimestamp1 (type: timestamp)
@@ -1268,6 +1282,7 @@ STAGE PLANS:
                         Statistics: Num rows: 69 Data size: 2760 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=69)
+                          minReductionHashAggr: 0.0
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1305,6 +1320,7 @@ STAGE PLANS:
                 Statistics: Num rows: 10090 Data size: 383504 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -1415,6 +1431,7 @@ STAGE PLANS:
                         Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=1)
+                          minReductionHashAggr: 0.0
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1454,6 +1471,7 @@ STAGE PLANS:
                 Statistics: Num rows: 10090 Data size: 38350 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -1548,7 +1566,7 @@ STAGE PLANS:
                   alias: alltypesorc_small
                   Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: cint is not null (type: boolean)
+                    predicate: UDFToDouble(cint) is not null (type: boolean)
                     Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cint (type: int)
@@ -1565,6 +1583,7 @@ STAGE PLANS:
                         Statistics: Num rows: 69 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=69)
+                          minReductionHashAggr: 0.0
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1604,6 +1623,7 @@ STAGE PLANS:
                 Statistics: Num rows: 10090 Data size: 1764118 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -1715,6 +1735,7 @@ STAGE PLANS:
                         Statistics: Num rows: 69 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=1)
+                          minReductionHashAggr: 0.0
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1754,6 +1775,7 @@ STAGE PLANS:
                 Statistics: Num rows: 10090 Data size: 1764118 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -1848,7 +1870,7 @@ STAGE PLANS:
                   alias: alltypesorc_small
                   Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: cfloat is not null (type: boolean)
+                    predicate: UDFToDouble(cfloat) is not null (type: boolean)
                     Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cfloat (type: float)
@@ -1865,6 +1887,7 @@ STAGE PLANS:
                         Statistics: Num rows: 69 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=3)
+                          minReductionHashAggr: 0.0
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1904,6 +1927,7 @@ STAGE PLANS:
                 Statistics: Num rows: 10090 Data size: 1764118 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
