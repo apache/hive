@@ -91,7 +91,7 @@ public class TestSQLStdHiveAccessControllerHS2 {
         "hive.exec.dynamic.partition", "hive.exec.dynamic.partition.mode",
         "hive.exec.max.dynamic.partitions", "hive.exec.max.dynamic.partitions.pernode",
         "oozie.HadoopAccessorService.created", "tez.queue.name","hive.druid.select.distribute",
-        "distcp.options.px");
+        "distcp.options.px", "hive.materializedview.rewriting");
 
     // combine two lists
     List<String> varList = new ArrayList<String>();
