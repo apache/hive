@@ -35,11 +35,11 @@ limitations under the License.
     <repository>
       <id>spring-repository</id>
       <name>SpringSource Repository</name>
-      <url>http://repo.springsource.org/milestone</url>
+      <url>https://repo.springsource.org/milestone</url>
     </repository>
     <repository>
       <id>approvals-repository</id>
-      <url>http://people.apache.org/~brock/approvals-maven-repository/</url>
+      <url>https://people.apache.org/~brock/approvals-maven-repository/</url>
     </repository>
   </repositories>
 
