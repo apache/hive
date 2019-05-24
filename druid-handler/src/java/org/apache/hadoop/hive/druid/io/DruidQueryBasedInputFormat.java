@@ -45,6 +45,8 @@ import org.apache.hadoop.hive.druid.serde.DruidTimeseriesQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidTopNQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidWritable;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
@@ -74,7 +76,7 @@ import java.util.List;
  * and parse the results.
  */
 public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidWritable>
-        implements org.apache.hadoop.mapred.InputFormat<NullWritable, DruidWritable> {
+        implements org.apache.hadoop.mapred.InputFormat<NullWritable, DruidWritable>, VectorizedInputFormatInterface {
 
   protected static final Logger LOG = LoggerFactory.getLogger(DruidQueryBasedInputFormat.class);
 
@@ -302,6 +304,10 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
       throw new IOException("Druid query type " + druidQueryType + " not recognized");
     }
     reader.initialize((HiveDruidSplit) split, job);
+    if (Utilities.getIsVectorized(job)) {
+      //noinspection unchecked
+      return (org.apache.hadoop.mapred.RecordReader) new DruidVectorizedWrapper(reader, job);
+    }
     return reader;
   }
 
@@ -323,4 +329,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     return reader;
   }
 
+  @Override public VectorizedSupport.Support[] getSupportedFeatures() {
+    return new VectorizedSupport.Support[0];
+  }
 }

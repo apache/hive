@@ -871,6 +871,76 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: explain select count(DISTINCT cstring1) FROM druid_table_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select count(DISTINCT cstring1) FROM druid_table_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: druid_table_n0
+                  properties:
+                    druid.fieldNames cstring1
+                    druid.fieldTypes string
+                    druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n0","granularity":"all","dimensions":[{"type":"default","dimension":"cstring1","outputName":"cstring1","outputType":"STRING"}],"limitSpec":{"type":"default"},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+                    druid.query.type groupBy
+                  Statistics: Num rows: 9173 Data size: 1603744 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count(cstring1)
+                    minReductionHashAggr: 0.99
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(DISTINCT cstring1) FROM druid_table_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(DISTINCT cstring1) FROM druid_table_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3025
 PREHOOK: query: select count(DISTINCT cstring2), sum(cdouble) FROM druid_table_n0 GROUP  BY floor_year(`__time`)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table_n0
@@ -1675,3 +1745,247 @@ NULL	NULL
 2004-04-09	2004-04-09
 2004-04-11	2004-04-11
 2004-04-12	2004-04-12
+PREHOOK: query: EXPLAIN select count(*) from (select `__time` from druid_table_n1 limit 1025) as src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN select count(*) from (select `__time` from druid_table_n1 limit 1025) as src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: druid_table_n1
+                  properties:
+                    druid.fieldNames vc
+                    druid.fieldTypes int
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n1","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"0","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList","limit":1025}
+                    druid.query.type scan
+                  Statistics: Num rows: 5 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 5 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count()
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from (select `__time` from druid_table_n1 limit 1025) as src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from (select `__time` from druid_table_n1 limit 1025) as src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+5
+PREHOOK: query: explain select `timets` from (select `__time` as timets from druid_table_n1 order by timets limit 10)  as src order by `timets`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select `timets` from (select `__time` as timets from druid_table_n1 order by timets limit 10)  as src order by `timets`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: druid_table_n1
+                  properties:
+                    druid.fieldNames vc
+                    druid.fieldTypes timestamp with local time zone
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n1","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+                    druid.query.type scan
+                  Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: vc (type: timestamp with local time zone)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: timestamp with local time zone)
+                      sort order: +
+                      Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: timestamp with local time zone)
+                outputColumnNames: _col0
+                Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: timestamp with local time zone)
+                    sort order: +
+                    Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: timestamp with local time zone)
+                outputColumnNames: _col0
+                Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select `timets` from (select cast(`__time` as timestamp ) as timets from druid_table_n1 order by timets limit 10)  as src order by `timets`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select `timets` from (select cast(`__time` as timestamp ) as timets from druid_table_n1 order by timets limit 10)  as src order by `timets`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: druid_table_n1
+                  properties:
+                    druid.fieldNames vc
+                    druid.fieldTypes timestamp
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n1","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_parse(timestamp_format(\"__time\",'yyyy-MM-dd\\u0027T\\u0027HH:mm:ss.SSS\\u0027Z\\u0027','US/Pacific'),null,'UTC')","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+                    druid.query.type scan
+                  Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: vc (type: timestamp)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: timestamp)
+                      sort order: +
+                      Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: timestamp)
+                outputColumnNames: _col0
+                Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: timestamp)
+                    sort order: +
+                    Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: timestamp)
+                outputColumnNames: _col0
+                Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select `timets_with_tz` from (select `__time` as timets_with_tz from druid_table_n1 order by timets_with_tz limit 10)  as src order by `timets_with_tz`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `timets_with_tz` from (select `__time` as timets_with_tz from druid_table_n1 order by timets_with_tz limit 10)  as src order by `timets_with_tz`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2019-05-24 15:06:00.0 US/Pacific
+2019-05-24 15:06:00.0 US/Pacific
+2019-05-24 15:06:00.0 US/Pacific
+2019-05-24 15:06:00.0 US/Pacific
+2019-05-24 15:06:00.0 US/Pacific
+PREHOOK: query: select `timets` from (select cast(`__time` as timestamp ) as timets from druid_table_n1 order by timets limit 10)  as src order by `timets`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `timets` from (select cast(`__time` as timestamp ) as timets from druid_table_n1 order by timets limit 10)  as src order by `timets`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2019-05-24 15:06:00
+2019-05-24 15:06:00
+2019-05-24 15:06:00
+2019-05-24 15:06:00
+2019-05-24 15:06:00
