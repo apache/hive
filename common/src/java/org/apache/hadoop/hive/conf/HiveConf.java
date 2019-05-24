@@ -5707,6 +5707,7 @@ public class HiveConf extends Configuration {
     "hive\\.mapjoin\\..*",
     "hive\\.merge\\..*",
     "hive\\.optimize\\..*",
+    "hive\\.materializedview\\..*",
     "hive\\.orc\\..*",
     "hive\\.outerjoin\\..*",
     "hive\\.parquet\\..*",
