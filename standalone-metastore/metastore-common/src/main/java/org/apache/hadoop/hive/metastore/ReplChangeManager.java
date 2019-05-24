@@ -357,7 +357,7 @@ public class ReplChangeManager {
   public static String encodeFileUri(String fileUriStr, String fileChecksum, String encodedSubDir)
           throws IOException {
     if (instance == null) {
-      throw new IOException("Uninitialized ReplChangeManager instance.");
+      throw new IllegalStateException("Uninitialized ReplChangeManager instance.");
     }
     String encodedUri = fileUriStr;
     if ((fileChecksum != null) && (cmroot != null)) {
