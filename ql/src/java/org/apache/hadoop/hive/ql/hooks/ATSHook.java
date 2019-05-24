@@ -68,6 +68,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 public class ATSHook implements ExecuteWithHookContext {
 
   private static final Logger LOG = LoggerFactory.getLogger(ATSHook.class.getName());
+  private boolean isATSEnabled = false;
   private static final Object LOCK = new Object();
   private static final int VERSION = 2;
   private static ExecutorService executor;
@@ -143,7 +144,15 @@ public class ATSHook implements ExecuteWithHookContext {
   }
 
   public ATSHook() {
-    LOG.info("Created ATS Hook");
+    YarnConfiguration yarnConf = new YarnConfiguration();
+    if (yarnConf.getBoolean(YarnConfiguration.TIMELINE_SERVICE_ENABLED,
+            YarnConfiguration.DEFAULT_TIMELINE_SERVICE_ENABLED)) {
+      isATSEnabled = true;
+      LOG.info("Created ATS Hook");
+    } else {
+      isATSEnabled = false;
+      LOG.warn("ATSHook is disabled due to Timeline Service being disabled");
+    }
   }
 
   private void createTimelineDomain(String domainId, String readers, String writers) throws Exception {
@@ -219,6 +228,9 @@ public class ATSHook implements ExecuteWithHookContext {
   }
   @Override
   public void run(final HookContext hookContext) throws Exception {
+    if (!isATSEnabled) {
+      return;
+    }
     final long currentTime = System.currentTimeMillis();
 
     final HiveConf conf = new HiveConf(hookContext.getConf());
