@@ -2324,4 +2324,46 @@ public class AcidUtils {
     }
     return lockComponents;
   }
+
+  /**
+   * Safety check to make sure a file take from one acid table is not added into another acid table
+   * since the ROW__IDs embedded as part a write to one table won't make sense in different
+   * table/cluster.
+   */
+  public static void validateAcidFiles(Table table, FileStatus[] srcs, FileSystem fs) throws SemanticException {
+    if (!AcidUtils.isFullAcidTable(table)) {
+      return;
+    }
+    validateAcidFiles(srcs, fs);
+  }
+
+  private static void validateAcidFiles(FileStatus[] srcs, FileSystem fs) throws SemanticException {
+    try {
+      if (srcs == null) {
+        return;
+      }
+      for (FileStatus oneSrc : srcs) {
+        if (!AcidUtils.MetaDataFile.isRawFormatFile(oneSrc.getPath(), fs)) {
+          throw new SemanticException(ErrorMsg.LOAD_DATA_ACID_FILE, oneSrc.getPath().toString());
+        }
+      }
+    } catch (IOException ex) {
+      throw new SemanticException(ex);
+    }
+  }
+
+  /**
+   * Safety check to make sure the given location is not the location of acid table and
+   * all it's files  will be not added into another acid table
+   */
+  public static void validateAcidPartitionLocation(String location, Configuration conf) throws SemanticException {
+    try {
+      URI uri = new URI(location);
+      FileSystem fs = FileSystem.get(uri, conf);
+      FileStatus[] fileStatuses = LoadSemanticAnalyzer.matchFilesOrDir(fs, new Path(uri));
+      validateAcidFiles(fileStatuses, fs);
+    } catch (IOException | URISyntaxException ex) {
+      throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ex.getMessage()), ex);
+    }
+  }
 }
