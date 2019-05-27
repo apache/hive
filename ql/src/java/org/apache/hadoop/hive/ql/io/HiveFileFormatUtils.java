@@ -177,13 +177,17 @@ public final class HiveFileFormatUtils {
   }
 
   /**
-   * checks if files are in same format as the given input format.
+   * Checks if files are in same format as the given input format.
+   *
+   * Note: an empty set of files is considered compliant.
    */
   @SuppressWarnings("unchecked")
   public static boolean checkInputFormat(FileSystem fs, HiveConf conf,
       Class<? extends InputFormat> inputFormatCls, List<FileStatus> files)
       throws HiveException {
-    if (files.isEmpty()) return false;
+    if (files.isEmpty()) {
+      return true;
+    }
     Class<? extends InputFormatChecker> checkerCls = FileChecker.getInstance()
         .getInputFormatCheckerClass(inputFormatCls);
     if (checkerCls == null
