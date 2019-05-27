@@ -100,6 +100,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   private final AMReporter amReporter;
   private final LlapRegistryService registry;
   private final LlapWebServices webServices;
+  private final LlapLoadGeneratorService llapLoadGeneratorService;
   private final AtomicLong numSubmissions = new AtomicLong(0);
   private final JvmPauseMonitor pauseMonitor;
   private final ObjectName llapDaemonInfoBean;
@@ -322,6 +323,13 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     } else {
       this.webServices = new LlapWebServices(webPort, this, registry);
       addIfService(webServices);
+    }
+
+    if (HiveConf.getVar(daemonConf, ConfVars.HIVE_TEST_LOAD_HOSTNAMES).isEmpty()) {
+      this.llapLoadGeneratorService = null;
+    } else {
+      this.llapLoadGeneratorService = new LlapLoadGeneratorService();
+      addIfService(llapLoadGeneratorService);
     }
     // Bring up the server only after all other components have started.
     addIfService(server);
