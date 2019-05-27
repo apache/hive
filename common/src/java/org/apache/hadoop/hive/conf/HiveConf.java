@@ -623,6 +623,16 @@ public class HiveConf extends Configuration {
         "internal usage only, used only in test mode. If set false, the operation logs, and the " +
         "operation log directory will not be removed, so they can be found after the test runs."),
 
+    HIVE_TEST_LOAD_HOSTNAMES("hive.test.load.hostnames", "",
+        "Specify host names for load testing. (e.g., \"host1,host2,host3\"). Leave it empty if no " +
+        "load generation is needed (eg. for production)."),
+    HIVE_TEST_LOAD_INTERVAL("hive.test.load.interval", "10ms", new TimeValidator(TimeUnit.MILLISECONDS),
+        "The interval length used for load and idle periods in milliseconds."),
+    HIVE_TEST_LOAD_UTILIZATION("hive.test.load.utilization", 0.2f,
+        "Specify processor load utilization between 0.0 (not loaded on all threads) and 1.0 " +
+        "(fully loaded on all threads). Comparing this with a random value the load generator creates " +
+        "hive.test.load.interval length active loops or idle periods"),
+
     HIVE_IN_TEZ_TEST("hive.in.tez.test", false, "internal use only, true when in testing tez",
         true),
     HIVE_MAPJOIN_TESTING_NO_HASH_TABLE_LOAD("hive.mapjoin.testing.no.hash.table.load", false, "internal use only, true when in testing map join",
