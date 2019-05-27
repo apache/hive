@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.common.util.Ref;
 import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
 import java.io.IOException;
@@ -165,7 +166,7 @@ public class TezTask extends Task<TezWork> {
         userName = "anonymous";
       } else {
         try {
-          groups = UserGroupInformation.createRemoteUser(userName).getGroups();
+          groups = ShimLoader.getHadoopShims().getGroups(UserGroupInformation.createRemoteUser(userName));
         } catch (Exception ex) {
           LOG.warn("Cannot obtain groups for " + userName, ex);
         }

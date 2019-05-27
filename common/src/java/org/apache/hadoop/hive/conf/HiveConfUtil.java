@@ -203,7 +203,7 @@ public class HiveConfUtil {
         // if the execution engine is MR set the map/reduce env with the credential store password
 
         Collection<String> redactedProperties =
-            jobConf.getStringCollection(MRJobConfig.MR_JOB_REDACTED_PROPERTIES);
+            jobConf.getStringCollection("mapreduce.job.redacted-properties");
 
         Stream.of(
             JobConf.MAPRED_MAP_TASK_ENV,
@@ -217,7 +217,7 @@ public class HiveConfUtil {
             });
 
         // Hide sensitive configuration values from MR HistoryUI by telling MR to redact the following list.
-        jobConf.set(MRJobConfig.MR_JOB_REDACTED_PROPERTIES,
+        jobConf.set("mapreduce.job.redacted-properties",
             StringUtils.join(redactedProperties, COMMA));
       }
     }

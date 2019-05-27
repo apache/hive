@@ -66,8 +66,6 @@ import org.apache.hadoop.hdfs.MiniDFSNNTopology;
 import org.apache.hadoop.hdfs.client.HdfsAdmin;
 import org.apache.hadoop.hdfs.protocol.DirectoryListing;
 import org.apache.hadoop.hdfs.protocol.EncryptionZone;
-import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicy;
-import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicyInfo;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants;
 import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
 import org.apache.hadoop.io.LongWritable;
@@ -757,9 +755,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     @Override
     public Long getFileId() {
-      if (fileId == HdfsConstants.GRANDFATHER_INODE_ID) {
-        return null;
-      }
       return fileId;
     }
   }
@@ -1142,6 +1137,11 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   @Override
+  public List<String> getGroups(org.apache.hadoop.security.UserGroupInformation user) {
+    return new ArrayList<>();
+  }
+
+  @Override
   public boolean runDistCpAs(List<Path> srcPaths, Path dst, Configuration conf,
                              UserGroupInformation proxyUser) throws IOException {
     try {
@@ -1158,12 +1158,12 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   @Override
   public boolean runDistCp(List<Path> srcPaths, Path dst, Configuration conf) throws IOException {
-       DistCpOptions options = new DistCpOptions.Builder(srcPaths, dst)
-               .withSyncFolder(true)
-               .withDeleteMissing(true)
-               .preserve(FileAttribute.BLOCKSIZE)
-               .preserve(FileAttribute.XATTR)
-               .build();
+    DistCpOptions options = new DistCpOptions(srcPaths, dst);
+    options.setSyncFolder(true);
+    options.setSkipCRC(true);
+    options.preserve(FileAttribute.BLOCKSIZE);
+    options.setDeleteMissing(true);
+    options.preserve(FileAttribute.XATTR);
 
     // Creates the command-line parameters for distcp
     List<String> params = constructDistCpParams(srcPaths, dst, conf);
@@ -1494,6 +1494,11 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     return hdfsErasureCodingSupport;
   }
 
+  @Override
+  public boolean isErasureCoded(FileStatus file) {
+    return false;
+  }
+
   /**
    * Returns a new instance of the HdfsErasureCoding shim.
    *
@@ -1565,13 +1570,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
      */
     @Override
     public List<HdfsFileErasureCodingPolicy> getAllErasureCodingPolicies() throws IOException {
-      ErasureCodingPolicyInfo[] erasureCodingPolicies = hdfsAdmin.getErasureCodingPolicies();
-      List<HdfsFileErasureCodingPolicy> policies = new ArrayList<>(erasureCodingPolicies.length);
-      for (ErasureCodingPolicyInfo erasureCodingPolicy : erasureCodingPolicies) {
-        policies.add(new HdfsFileErasureCodingPolicyImpl(erasureCodingPolicy.getPolicy().getName(),
-            erasureCodingPolicy.getState().toString()));
-      }
-      return policies;
+      throw new IOException("ErasureCoding is not supported in hadoop-2");
     }
 
 
@@ -1581,7 +1580,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
      */
     @Override
     public void enableErasureCodingPolicy(String ecPolicyName)  throws IOException {
-      hdfsAdmin.enableErasureCodingPolicy(ecPolicyName);
+      throw new IOException("ErasureCoding is not supported in hadoop-2");
     }
 
     /**
@@ -1591,7 +1590,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
      */
     @Override
     public void setErasureCodingPolicy(Path path, String ecPolicyName) throws IOException {
-      hdfsAdmin.setErasureCodingPolicy(path, ecPolicyName);
+      throw new IOException("ErasureCoding is not supported in hadoop-2");
     }
 
     /**
@@ -1601,11 +1600,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
      */
     @Override
     public HdfsFileErasureCodingPolicy getErasureCodingPolicy(Path path) throws IOException {
-      ErasureCodingPolicy erasureCodingPolicy = hdfsAdmin.getErasureCodingPolicy(path);
-      if (erasureCodingPolicy == null) {
-        return null;
-      }
-      return new HdfsFileErasureCodingPolicyImpl(erasureCodingPolicy.getName());
+      throw new IOException("ErasureCoding is not supported in hadoop-2");
     }
 
     /**
@@ -1614,7 +1609,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
      */
     @Override
     public void unsetErasureCodingPolicy(Path path) throws IOException {
-      hdfsAdmin.unsetErasureCodingPolicy(path);
+      throw new IOException("ErasureCoding is not supported in hadoop-2");
     }
 
     /**
@@ -1623,7 +1618,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
      */
     @Override
     public void removeErasureCodingPolicy(String ecPolicyName) throws IOException {
-      hdfsAdmin.removeErasureCodingPolicy(ecPolicyName);
+      throw new IOException("ErasureCoding is not supported in hadoop-2");
     }
 
     /**
@@ -1632,7 +1627,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
      */
     @Override
     public void disableErasureCodingPolicy(String ecPolicyName) throws IOException {
-      hdfsAdmin.disableErasureCodingPolicy(ecPolicyName);
+      throw new IOException("ErasureCoding is not supported in hadoop-2");
     }
 
     /**

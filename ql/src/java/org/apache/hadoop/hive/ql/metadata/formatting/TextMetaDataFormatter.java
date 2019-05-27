@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -553,7 +554,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
         continue;
       }
       fd.numOfFiles++;
-      if (currentStatus.isErasureCoded()) {
+      if (ShimLoader.getHadoopShims().isErasureCoded(currentStatus)) {
         fd.numOfErasureCodedFiles++;
       }
       long fileLen = currentStatus.getLen();

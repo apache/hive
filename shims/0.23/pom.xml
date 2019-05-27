@@ -61,12 +61,6 @@
             <artifactId>commons-logging</artifactId>
           </exclusion>
         </exclusions>
-   </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-hdfs-client</artifactId>
-      <version>${hadoop.version}</version>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
@@ -223,8 +217,70 @@
      <scope>test</scope>
    </dependency>
   </dependencies>
+
   <build>
     <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
     <testSourceDirectory>${basedir}/src/main/test</testSourceDirectory>
   </build>
+
+  <profiles>
+    <profile>
+      <id>hadoop-2.7</id>
+      <build>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+          <excludes>
+            <exclude>**/hadoop-3/Hadoop23Shims.java</exclude>
+          </excludes>
+          <includes>
+            <include>**/hadoop-2.7/Hadoop23Shims.java</include>
+          </includes>
+          </configuration>
+        </plugin>
+      </plugins>
+    </build>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-client</artifactId>
+        <version>${hadoop.version}</version>
+        <optional>true</optional>
+      </dependency>
+    </dependencies>
+  </profile>
+  <profile>
+    <id>default</id>
+    <activation>
+      <activeByDefault>true</activeByDefault>
+    </activation>
+    <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>**/hadoop-2.7/Hadoop23Shims.java</exclude>
+          </excludes>
+          <includes>
+            <include>**/hadoop-3/Hadoop23Shims.java</include>
+          </includes>
+        </configuration>
+      </plugin>
+    </plugins>
+    </build>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-hdfs-client</artifactId>
+          <version>${hadoop.version}</version>
+          <optional>true</optional>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
+
 </project>
