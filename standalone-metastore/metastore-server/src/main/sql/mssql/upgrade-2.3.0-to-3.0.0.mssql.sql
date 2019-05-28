@@ -271,6 +271,9 @@ UPDATE DBS
 -- Add the not null constraint
 ALTER TABLE DBS ALTER COLUMN CTLG_NAME nvarchar(256) NOT NULL;
 
+-- Add the default as 'hive'
+ALTER TABLE DBS ADD DEFAULT 'hive' FOR CTLG_NAME;
+
 -- Put back the unique index
 CREATE UNIQUE INDEX UNIQUEDATABASE ON DBS ("NAME", "CTLG_NAME");
 
