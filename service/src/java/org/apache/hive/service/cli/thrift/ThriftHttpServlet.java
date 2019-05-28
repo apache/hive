@@ -52,6 +52,7 @@ import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.HttpAuthUtils;
 import org.apache.hive.service.auth.HttpAuthenticationException;
 import org.apache.hive.service.auth.PasswdAuthenticationProvider;
+import org.apache.hive.service.auth.PlainSaslHelper;
 import org.apache.hive.service.auth.ldap.HttpEmptyAuthenticationException;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.session.SessionManager;
@@ -137,32 +138,47 @@ public class ThriftHttpServlet extends TServlet {
           return;
         }
       }
-      // If the cookie based authentication is already enabled, parse the
-      // request and validate the request cookies.
-      if (isCookieAuthEnabled) {
-        clientUserName = validateCookie(request);
-        requireNewCookie = (clientUserName == null);
-        if (requireNewCookie) {
-          LOG.info("Could not validate cookie sent, will try to generate a new cookie");
-        }
-      }
-      // If the cookie based authentication is not enabled or the request does
-      // not have a valid cookie, use the kerberos or password based authentication
-      // depending on the server setup.
-      if (clientUserName == null) {
-        // For a kerberos setup
-        if (isKerberosAuthMode(authType)) {
-          String delegationToken = request.getHeader(HIVE_DELEGATION_TOKEN_HEADER);
-          // Each http request must have an Authorization header
-          if ((delegationToken != null) && (!delegationToken.isEmpty())) {
-            clientUserName = doTokenAuth(request, response);
-          } else {
-            clientUserName = doKerberosAuth(request);
+
+      clientIpAddress = request.getRemoteAddr();
+      LOG.debug("Client IP Address: " + clientIpAddress);
+      String trustedDomain = HiveConf.getVar(hiveConf, ConfVars.HIVE_SERVER2_TRUST_DOMAIN).trim();
+
+      // Skip authentication if the connection is from the trusted domain
+      if (!trustedDomain.isEmpty() &&
+              PlainSaslHelper.isHostFromTrustedDomain(request.getRemoteHost(), trustedDomain)) {
+        LOG.info("No authentication performed because the connecting host " + request.getRemoteHost() +
+                " is from the trusted domain " + trustedDomain);
+        // TODO: We need to get the user name somehow here. In this case, I think the incoming
+        //  connection should have proxy user set. How do we get it here is the question.
+        clientUserName = "xyz";
+      } else {
+        // If the cookie based authentication is already enabled, parse the
+        // request and validate the request cookies.
+        if (isCookieAuthEnabled) {
+          clientUserName = validateCookie(request);
+          requireNewCookie = (clientUserName == null);
+          if (requireNewCookie) {
+            LOG.info("Could not validate cookie sent, will try to generate a new cookie");
           }
         }
-        // For password based authentication
-        else {
-          clientUserName = doPasswdAuth(request, authType);
+        // If the cookie based authentication is not enabled or the request does
+        // not have a valid cookie, use the kerberos or password based authentication
+        // depending on the server setup.
+        if (clientUserName == null) {
+          // For a kerberos setup
+          if (isKerberosAuthMode(authType)) {
+            String delegationToken = request.getHeader(HIVE_DELEGATION_TOKEN_HEADER);
+            // Each http request must have an Authorization header
+            if ((delegationToken != null) && (!delegationToken.isEmpty())) {
+              clientUserName = doTokenAuth(request, response);
+            } else {
+              clientUserName = doKerberosAuth(request);
+            }
+          }
+          // For password based authentication
+          else {
+            clientUserName = doPasswdAuth(request, authType);
+          }
         }
       }
       LOG.debug("Client username: " + clientUserName);
@@ -176,8 +192,6 @@ public class ThriftHttpServlet extends TServlet {
         SessionManager.setProxyUserName(doAsQueryParam);
       }
 
-      clientIpAddress = request.getRemoteAddr();
-      LOG.debug("Client IP Address: " + clientIpAddress);
       // Set the thread local ip address
       SessionManager.setIpAddress(clientIpAddress);
 

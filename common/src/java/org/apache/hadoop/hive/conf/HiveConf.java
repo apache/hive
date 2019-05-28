@@ -3478,6 +3478,10 @@ public class HiveConf extends Configuration {
         "          (Use with property hive.server2.custom.authentication.class)\n" +
         "  PAM: Pluggable authentication module\n" +
         "  NOSASL:  Raw transport"),
+    HIVE_SERVER2_TRUST_DOMAIN("hive.server2.trust.domain", "",
+            "Specifies the host or a domain to trust connections from. Authentication is skipped " +
+                    "for any connection coming from this domain or the host. By default it is " +
+                    "empty, which means that all the connections to HiveServer2 are authenticated."),
     HIVE_SERVER2_ALLOW_USER_SUBSTITUTION("hive.server2.allow.user.substitution", true,
         "Allow alternate user to be specified as part of HiveServer2 open connection request."),
     HIVE_SERVER2_KERBEROS_KEYTAB("hive.server2.authentication.kerberos.keytab", "",
