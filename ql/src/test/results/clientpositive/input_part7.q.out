@@ -184,8 +184,8 @@ STAGE PLANS:
               name: default.srcpart
             name: default.srcpart
       Truncated Path -> Alias:
-        /srcpart/ds=2008-04-08/hr=11 [a:_u1-subquery1:x, a:_u1-subquery2:y]
-        /srcpart/ds=2008-04-08/hr=12 [a:_u1-subquery1:x, a:_u1-subquery2:y]
+        /srcpart/ds=2008-04-08/hr=11 [a:__u1-subquery1:x, a:__u1-subquery2:y]
+        /srcpart/ds=2008-04-08/hr=12 [a:__u1-subquery1:x, a:__u1-subquery2:y]
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator

@@ -749,7 +749,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
   // counter to generate unique union aliases
   private int aliasCounter;
   private String generateUnionAlias() {
-    return "_u" + (++aliasCounter);
+    return "__u" + (++aliasCounter);
   }
   private char [] excludedCharForColumnName = {'.', ':'};
   private boolean containExcludedCharForCreateTableColumnName(String input) {

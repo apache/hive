@@ -3201,4 +3201,15 @@ public class TestJdbcDriver2 {
   public void testConnectInvalidDatabase() throws SQLException {
     DriverManager.getConnection("jdbc:hive2:///databasedoesnotexist", "", "");
   }
+
+  @Test
+  public void testUnionUniqueColumnNames() throws Exception {
+    HiveStatement stmt = (HiveStatement) con.createStatement();
+    stmt.execute("SET hive.resultset.use.unique.column.names=true");
+    ResultSet rs = stmt.executeQuery("select 1 UNION ALL select 2");
+    ResultSetMetaData metaData = rs.getMetaData();
+    assertEquals("_c0", metaData.getColumnLabel(1));
+    assertTrue("There's no . for the UNION column name", !metaData.getColumnLabel(1).contains("."));
+    stmt.close();
+  }
 }
