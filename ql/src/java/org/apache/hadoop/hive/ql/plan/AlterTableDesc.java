@@ -21,14 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
-import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
-import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -58,10 +51,10 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
    *
    */
   public static enum AlterTableTypes {
-    RENAME("rename"), ADDCOLS("add columns"), REPLACECOLS("replace columns"),
+    RENAME("rename"), ADD_COLUMNS("add columns"), REPLACE_COLUMNS("replace columns"),
     ADDPROPS("add props"), DROPPROPS("drop props"), ADDSERDE("add serde"), ADDSERDEPROPS("add serde props"),
     ADDFILEFORMAT("add fileformat"), ADDCLUSTERSORTCOLUMN("add cluster sort column"),
-    RENAMECOLUMN("rename column"), ADDPARTITION("add partition"), TOUCH("touch"), ARCHIVE("archieve"),
+    RENAME_COLUMN("rename column"), ADDPARTITION("add partition"), TOUCH("touch"), ARCHIVE("archieve"),
     UNARCHIVE("unarchieve"), ALTERLOCATION("alter location"),
     DROPPARTITION("drop partition"),
     RENAMEPARTITION("rename partition"), // Note: used in RenamePartitionDesc, not here.
@@ -69,8 +62,9 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
     ALTERSKEWEDLOCATION("alter skew location"), ALTERBUCKETNUM("alter bucket number"),
     ALTERPARTITION("alter partition"), // Note: this is never used in AlterTableDesc.
     COMPACT("compact"),
-    TRUNCATE("truncate"), MERGEFILES("merge files"), DROPCONSTRAINT("drop constraint"), ADDCONSTRAINT("add constraint"),
-    UPDATECOLUMNS("update columns"), OWNER("set owner"),
+    TRUNCATE("truncate"), MERGEFILES("merge files"), DROP_CONSTRAINT("drop constraint"),
+    ADD_CONSTRAINT("add constraint"),
+    UPDATE_COLUMNS("update columns"), OWNER("set owner"),
     UPDATESTATS("update stats"); // Note: used in ColumnStatsUpdateWork, not here.
     ;
 
@@ -79,7 +73,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
     public String getName() { return name; }
 
     public static final List<AlterTableTypes> nonNativeTableAllowedTypes =
-        ImmutableList.of(ADDPROPS, DROPPROPS, ADDCOLS);
+        ImmutableList.of(ADDPROPS, DROPPROPS, ADD_COLUMNS);
   }
 
   public static enum ProtectModeType {
@@ -90,9 +84,9 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
       new HashSet<AlterTableDesc.AlterTableTypes>();
 
   static {
-    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.ADDCOLS);
-    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.REPLACECOLS);
-    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.RENAMECOLUMN);
+    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.ADD_COLUMNS);
+    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.REPLACE_COLUMNS);
+    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.RENAME_COLUMN);
     alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.ADDPROPS);
     alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.DROPPROPS);
     alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.ADDSERDE);
@@ -103,7 +97,6 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
   AlterTableTypes op;
   String oldName;
   String newName;
-  ArrayList<FieldSchema> newCols;
   String serdeName;
   Map<String, String> props;
   String inputFormat;
@@ -117,8 +110,6 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
   String newColName;
   String newColType;
   String newColComment;
-  boolean first;
-  String afterCol;
   boolean expectView;
   HashMap<String, String> partSpec;
   private String newLocation;
@@ -134,71 +125,12 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
   boolean isTurnOffSorting = false;
   boolean isCascade = false;
   EnvironmentContext environmentContext;
-  String dropConstraintName;
-  List<SQLPrimaryKey> primaryKeyCols;
-  List<SQLForeignKey> foreignKeyCols;
-  List<SQLUniqueConstraint> uniqueConstraintCols;
-  List<SQLNotNullConstraint> notNullConstraintCols;
-  List<SQLDefaultConstraint> defaultConstraintsCols;
-  List<SQLCheckConstraint> checkConstraintsCols;
   ReplicationSpec replicationSpec;
   private Long writeId = null;
   PrincipalDesc ownerPrincipal;
   private boolean isExplicitStatsUpdate, isFullAcidConversion;
 
   public AlterTableDesc() {
-  }
-
-  /**
-   * @param tblName
-   *          table name
-   * @param oldColName
-   *          old column name
-   * @param newColName
-   *          new column name
-   * @param newComment
-   * @param newType
-   * @throws SemanticException
-   */
-  public AlterTableDesc(String tblName, HashMap<String, String> partSpec,
-      String oldColName, String newColName, String newType, String newComment,
-      boolean first, String afterCol, boolean isCascade) throws SemanticException {
-    super();
-    setOldName(tblName);
-    this.partSpec = partSpec;
-    this.oldColName = oldColName;
-    this.newColName = newColName;
-    newColType = newType;
-    newColComment = newComment;
-    this.first = first;
-    this.afterCol = afterCol;
-    op = AlterTableTypes.RENAMECOLUMN;
-    this.isCascade = isCascade;
-  }
-
-  public AlterTableDesc(String tblName, HashMap<String, String> partSpec,
-      String oldColName, String newColName, String newType, String newComment,
-      boolean first, String afterCol, boolean isCascade, List<SQLPrimaryKey> primaryKeyCols,
-      List<SQLForeignKey> foreignKeyCols, List<SQLUniqueConstraint> uniqueConstraintCols,
-      List<SQLNotNullConstraint> notNullConstraintCols, List<SQLDefaultConstraint> defaultConstraints,
-                        List<SQLCheckConstraint> checkConstraints) throws SemanticException {
-    super();
-    setOldName(tblName);
-    this.partSpec = partSpec;
-    this.oldColName = oldColName;
-    this.newColName = newColName;
-    newColType = newType;
-    newColComment = newComment;
-    this.first = first;
-    this.afterCol = afterCol;
-    op = AlterTableTypes.RENAMECOLUMN;
-    this.isCascade = isCascade;
-    this.primaryKeyCols = primaryKeyCols;
-    this.foreignKeyCols = foreignKeyCols;
-    this.uniqueConstraintCols = uniqueConstraintCols;
-    this.notNullConstraintCols = notNullConstraintCols;
-    this.defaultConstraintsCols = defaultConstraints;
-    this.checkConstraintsCols = checkConstraints;
   }
 
   /**
@@ -218,22 +150,6 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
     this.newName = newName;
     this.expectView = expectView;
     this.replicationSpec = replicationSpec;
-  }
-
-  /**
-   * @param name
-   *          name of the table
-   * @param newCols
-   *          new columns to be added
-   * @throws SemanticException
-   */
-  public AlterTableDesc(String name, HashMap<String, String> partSpec, List<FieldSchema> newCols,
-      AlterTableTypes alterType, boolean isCascade) throws SemanticException {
-    op = alterType;
-    setOldName(name);
-    this.newCols = new ArrayList<FieldSchema>(newCols);
-    this.partSpec = partSpec;
-    this.isCascade = isCascade;
   }
 
   /**
@@ -341,39 +257,6 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
     this.numberBuckets = numBuckets;
   }
 
-  public AlterTableDesc(String tableName, String dropConstraintName, ReplicationSpec replicationSpec) throws SemanticException {
-    setOldName(tableName);
-    this.dropConstraintName = dropConstraintName;
-    this.replicationSpec = replicationSpec;
-    op = AlterTableTypes.DROPCONSTRAINT;
-  }
-
-  public AlterTableDesc(String tableName, List<SQLPrimaryKey> primaryKeyCols,
-          List<SQLForeignKey> foreignKeyCols, List<SQLUniqueConstraint> uniqueConstraintCols,
-          ReplicationSpec replicationSpec) throws SemanticException {
-    setOldName(tableName);
-    this.primaryKeyCols = primaryKeyCols;
-    this.foreignKeyCols = foreignKeyCols;
-    this.uniqueConstraintCols = uniqueConstraintCols;
-    this.replicationSpec = replicationSpec;
-    op = AlterTableTypes.ADDCONSTRAINT;
-  }
-
-  public AlterTableDesc(String tableName, List<SQLPrimaryKey> primaryKeyCols,
-      List<SQLForeignKey> foreignKeyCols, List<SQLUniqueConstraint> uniqueConstraintCols,
-      List<SQLNotNullConstraint> notNullConstraintCols, List<SQLDefaultConstraint> defaultConstraints,
-                        List<SQLCheckConstraint> checkConstraints, ReplicationSpec replicationSpec) throws SemanticException {
-    setOldName(tableName);
-    this.primaryKeyCols = primaryKeyCols;
-    this.foreignKeyCols = foreignKeyCols;
-    this.uniqueConstraintCols = uniqueConstraintCols;
-    this.notNullConstraintCols = notNullConstraintCols;
-    this.defaultConstraintsCols = defaultConstraints;
-    this.checkConstraintsCols = checkConstraints;
-    this.replicationSpec = replicationSpec;
-    op = AlterTableTypes.ADDCONSTRAINT;
-  }
-
   public AlterTableDesc(String tableName, PrincipalDesc ownerPrincipal) {
     op  = AlterTableTypes.OWNER;
     this.oldName = tableName;
@@ -390,11 +273,6 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
   @Explain(displayName="owner")
   public PrincipalDesc getOwnerPrincipal() {
     return this.ownerPrincipal;
-  }
-
-  @Explain(displayName = "new columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public List<String> getNewColsString() {
-    return Utilities.getFieldSchemaString(getNewCols());
   }
 
   @Explain(displayName = "type", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -448,21 +326,6 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
    */
   public void setOp(AlterTableTypes op) {
     this.op = op;
-  }
-
-  /**
-   * @return the newCols
-   */
-  public ArrayList<FieldSchema> getNewCols() {
-    return newCols;
-  }
-
-  /**
-   * @param newCols
-   *          the newCols to set
-   */
-  public void setNewCols(ArrayList<FieldSchema> newCols) {
-    this.newCols = newCols;
   }
 
   /**
@@ -535,78 +398,6 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
   @Explain(displayName = "storage handler", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getStorageHandler() {
     return storageHandler;
-  }
-
-  /**
-   * @param primaryKeyCols
-   *          the primary key cols to set
-   */
-  public void setPrimaryKeyCols(List<SQLPrimaryKey> primaryKeyCols) {
-    this.primaryKeyCols = primaryKeyCols;
-  }
-
-  /**
-   * @return the primary key cols
-   */
-  public List<SQLPrimaryKey> getPrimaryKeyCols() {
-    return primaryKeyCols;
-  }
-
-  /**
-   * @param foreignKeyCols
-   *          the foreign key cols to set
-   */
-  public void setForeignKeyCols(List<SQLForeignKey> foreignKeyCols) {
-    this.foreignKeyCols = foreignKeyCols;
-  }
-
-  /**
-   * @return the foreign key cols
-   */
-  public List<SQLForeignKey> getForeignKeyCols() {
-    return foreignKeyCols;
-  }
-
-  /**
-   * @return the unique constraint cols
-   */
-  public List<SQLUniqueConstraint> getUniqueConstraintCols() {
-    return uniqueConstraintCols;
-  }
-
-  /**
-   * @return the not null constraint cols
-   */
-  public List<SQLNotNullConstraint> getNotNullConstraintCols() {
-    return notNullConstraintCols;
-  }
-
-  /**
-   * @return the default constraint cols
-   */
-  public List<SQLDefaultConstraint> getDefaultConstraintCols() {
-    return defaultConstraintsCols;
-  }
-
-  /**
-   * @return the check constraint cols
-   */
-  public List<SQLCheckConstraint> getCheckConstraintCols() { return checkConstraintsCols; }
-
-  /**
-   * @return the drop constraint name of the table
-   */
-  @Explain(displayName = "drop constraint name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getConstraintName() {
-    return dropConstraintName;
-  }
-
-  /**
-   * @param constraintName
-   *          the dropConstraintName to set
-   */
-  public void setDropConstraintName(String constraintName) {
-    this.dropConstraintName = constraintName;
   }
 
   /**
@@ -720,36 +511,6 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
    */
   public void setNewColComment(String newComment) {
     newColComment = newComment;
-  }
-
-  /**
-   * @return if the column should be changed to position 0
-   */
-  public boolean getFirst() {
-    return first;
-  }
-
-  /**
-   * @param first
-   *          set the column to position 0
-   */
-  public void setFirst(boolean first) {
-    this.first = first;
-  }
-
-  /**
-   * @return the column's after position
-   */
-  public String getAfterCol() {
-    return afterCol;
-  }
-
-  /**
-   * @param afterCol
-   *          set the column's after position
-   */
-  public void setAfterCol(String afterCol) {
-    this.afterCol = afterCol;
   }
 
   /**
@@ -974,12 +735,12 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
     case DROPPROPS: return isExplicitStatsUpdate;
     // The check for the following ones is performed before setting AlterTableDesc into the acid field.
     // These need write ID and stuff because they invalidate column stats.
-    case RENAMECOLUMN:
+    case RENAME_COLUMN:
     case RENAME:
-    case REPLACECOLS:
-    case ADDCOLS:
+    case REPLACE_COLUMNS:
+    case ADD_COLUMNS:
     case ALTERLOCATION:
-    case UPDATECOLUMNS: return true;
+    case UPDATE_COLUMNS: return true;
     // RENAMEPARTITION is handled in RenamePartitionDesc
     default: return false;
     }

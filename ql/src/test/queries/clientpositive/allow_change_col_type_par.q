@@ -13,4 +13,5 @@ set hive.metastore.disallow.incompatible.col.type.changes;
 set metaconf:hive.metastore.disallow.incompatible.col.type.changes;
 
 -- Change int to small int now allowed.
+explain alter table t1_n14 change column c1 c1 smallint;
 alter table t1_n14 change column c1 c1 smallint;

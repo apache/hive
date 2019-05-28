@@ -10,4 +10,4 @@ PREHOOK: query: alter table src_orc replace columns (k int)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@src_orc
 PREHOOK: Output: default@src_orc
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Replacing columns cannot drop columns for table default.src_orc. SerDe may be incompatible
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Replacing columns cannot drop columns for table default.src_orc. SerDe may be incompatible

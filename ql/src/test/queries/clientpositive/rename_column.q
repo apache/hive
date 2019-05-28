@@ -7,15 +7,18 @@ set hive.metastore.disallow.incompatible.col.type.changes=false;
 ALTER TABLE kv_rename_test CHANGE a a1 INT;
 DESCRIBE kv_rename_test;
 
+EXPLAIN ALTER TABLE kv_rename_test CHANGE a1 a2 INT FIRST;
 ALTER TABLE kv_rename_test CHANGE a1 a2 INT FIRST;
 DESCRIBE kv_rename_test;
 
+EXPLAIN ALTER TABLE kv_rename_test CHANGE a2 a INT AFTER b;
 ALTER TABLE kv_rename_test CHANGE a2 a INT AFTER b;
 DESCRIBE kv_rename_test;
 
 ALTER TABLE kv_rename_test CHANGE a a1 INT COMMENT 'test comment1';
 DESCRIBE kv_rename_test;
 
+EXPLAIN ALTER TABLE kv_rename_test CHANGE a1 a2 INT COMMENT 'test comment2' FIRST;
 ALTER TABLE kv_rename_test CHANGE a1 a2 INT COMMENT 'test comment2' FIRST;
 DESCRIBE kv_rename_test;
 

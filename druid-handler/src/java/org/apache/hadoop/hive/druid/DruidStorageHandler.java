@@ -153,7 +153,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
 
   private static final HttpClient HTTP_CLIENT;
 
-  private static List<String> allowedAlterTypes = ImmutableList.of("ADDPROPS", "DROPPROPS", "ADDCOLS");
+  private static List<String> allowedAlterTypes = ImmutableList.of("ADDPROPS", "DROPPROPS", "ADD_COLUMNS");
 
   static {
     final Lifecycle lifecycle = new Lifecycle();

@@ -14,5 +14,5 @@ PREHOOK: query: alter table t1 change column c1 c1 smallint
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@t1
 PREHOOK: Output: default@t1
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to alter table. The following columns have types incompatible with the existing columns in their respective positions :
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Unable to alter table. The following columns have types incompatible with the existing columns in their respective positions :
 c1

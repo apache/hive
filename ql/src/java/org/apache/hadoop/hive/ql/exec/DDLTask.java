@@ -24,16 +24,11 @@ import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.google.common.collect.Lists;
 
@@ -54,17 +49,13 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -81,14 +72,11 @@ import org.apache.hadoop.hive.ql.io.merge.MergeFileTask;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
-import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
-import org.apache.hadoop.hive.ql.metadata.formatting.TextMetaDataTable;
 import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
 import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
@@ -109,18 +97,11 @@ import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.OrcFileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.RCFileMergeDesc;
-import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowConfDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
-import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
-import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
-import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
-import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hadoop.tools.HadoopArchives;
 import org.apache.hadoop.util.ToolRunner;
@@ -188,13 +169,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           LOG.debug("DDLTask: Alter Table is skipped as table {} is newer than update", alterTbl.getOldName());
           return 0;
         }
-        if (alterTbl.getOp() == AlterTableTypes.DROPCONSTRAINT ) {
-          return dropConstraint(db, alterTbl);
-        } else if (alterTbl.getOp() == AlterTableTypes.ADDCONSTRAINT) {
-          return addConstraints(db, alterTbl);
-        } else {
-          return alterTable(db, alterTbl);
-        }
+        return alterTable(db, alterTbl);
       }
 
       AlterTableSimpleDesc simpleDesc = work.getAlterTblSimpleDesc();
@@ -213,11 +188,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       MsckDesc msckDesc = work.getMsckDesc();
       if (msckDesc != null) {
         return msck(db, msckDesc);
-      }
-
-      ShowColumnsDesc showCols = work.getShowColumnsDesc();
-      if (showCols != null) {
-        return showColumns(db, showCols);
       }
 
       ShowConfDesc showConf = work.getShowConfDesc();
@@ -305,16 +275,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       output.close();
     }
     return 0;
-  }
-
-  private DataOutputStream getOutputStream(String resFile) throws HiveException {
-    try {
-      return getOutputStream(new Path(resFile));
-    } catch (HiveException e) {
-      throw e;
-    } catch (Exception e) {
-      throw new HiveException(e);
-    }
   }
 
   private DataOutputStream getOutputStream(Path outputFile) throws HiveException {
@@ -1124,80 +1084,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   /**
-   * Write a list of the columns in the table to a file.
-   *
-   * @param db
-   *          The database in context.
-   * @param showCols
-   *        A ShowColumnsDesc for columns we're interested in.
-   * @return Returns 0 when execution succeeds.
-   * @throws HiveException
-   *        Throws this exception if an unexpected error occurs.
-   */
-  public int showColumns(Hive db, ShowColumnsDesc showCols)
-      throws HiveException {
-
-    Table table = db.getTable(showCols.getTableName());
-
-    // write the results in the file
-    DataOutputStream outStream = getOutputStream(showCols.getResFile());
-    try {
-      List<FieldSchema> allCols = table.getCols();
-      allCols.addAll(table.getPartCols());
-      List<FieldSchema> cols = getColumnsByPattern(allCols,showCols.getPattern());
-      // In case the query is served by HiveServer2, don't pad it with spaces,
-      // as HiveServer2 output is consumed by JDBC/ODBC clients.
-      boolean isOutputPadded = !SessionState.get().isHiveServerQuery();
-      TextMetaDataTable tmd = new TextMetaDataTable();
-      for (FieldSchema fieldSchema : cols) {
-        tmd.addRow(MetaDataFormatUtils.extractColumnValues(fieldSchema));
-      }
-      outStream.writeBytes(tmd.renderTable(isOutputPadded));
-    } catch (IOException e) {
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
-    } finally {
-      IOUtils.closeStream(outStream);
-    }
-    return 0;
-  }
-
-  /**
-   * Returns a sorted list of columns matching a column pattern.
-   *
-   * @param cols
-   *        Columns of a table.
-   * @param columnPattern
-   *        we want to find columns similar to a column pattern.
-   * @return sorted list of columns.
-   */
-  private List<FieldSchema> getColumnsByPattern(List<FieldSchema> cols, String columnPattern) {
-
-    if(columnPattern == null) {
-      columnPattern = "*";
-    }
-    columnPattern = columnPattern.toLowerCase();
-    columnPattern = columnPattern.replaceAll("\\*", ".*");
-    Pattern pattern = Pattern.compile(columnPattern);
-    Matcher matcher = pattern.matcher("");
-
-    SortedSet<FieldSchema> sortedCol = new TreeSet<>( new Comparator<FieldSchema>() {
-      @Override
-      public int compare(FieldSchema f1, FieldSchema f2) {
-        return f1.getName().compareTo(f2.getName());
-      }
-    });
-
-    for(FieldSchema column : cols)  {
-      matcher.reset(column.getName());
-      if(matcher.matches()) {
-        sortedCol.add(column);
-      }
-    }
-
-    return new ArrayList<FieldSchema>(sortedCol);
-  }
-
-  /**
    * Alter a given table.
    *
    * @param db
@@ -1278,8 +1164,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         boolean isTxn = alterTbl.getPartSpec() != null && alterTbl.getOp() == AlterTableTypes.ADDPROPS;
         db.alterPartitions(Warehouse.getQualifiedName(tbl.getTTable()), allPartitions, environmentContext, isTxn);
       }
-      // Add constraints if necessary
-      addConstraints(db, alterTbl);
     } catch (InvalidOperationException e) {
       LOG.error("alter table: ", e);
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
@@ -1373,152 +1257,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.RENAME) {
       tbl.setDbName(Utilities.getDatabaseName(alterTbl.getNewName()));
       tbl.setTableName(Utilities.getTableName(alterTbl.getNewName()));
-    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDCOLS) {
-      StorageDescriptor sd = retrieveStorageDescriptor(tbl, part);
-      String serializationLib = sd.getSerdeInfo().getSerializationLib();
-      AvroSerdeUtils.handleAlterTableForAvro(conf, serializationLib, tbl.getTTable().getParameters());
-      List<FieldSchema> oldCols = (part == null
-          ? tbl.getColsForMetastore() : part.getColsForMetastore());
-      List<FieldSchema> newCols = alterTbl.getNewCols();
-      if (serializationLib.equals(
-          "org.apache.hadoop.hive.serde.thrift.columnsetSerDe")) {
-        console
-        .printInfo("Replacing columns for columnsetSerDe and changing to LazySimpleSerDe");
-        sd.getSerdeInfo().setSerializationLib(LazySimpleSerDe.class.getName());
-        sd.setCols(newCols);
-      } else {
-        // make sure the columns does not already exist
-        Iterator<FieldSchema> iterNewCols = newCols.iterator();
-        while (iterNewCols.hasNext()) {
-          FieldSchema newCol = iterNewCols.next();
-          String newColName = newCol.getName();
-          Iterator<FieldSchema> iterOldCols = oldCols.iterator();
-          while (iterOldCols.hasNext()) {
-            String oldColName = iterOldCols.next().getName();
-            if (oldColName.equalsIgnoreCase(newColName)) {
-              throw new HiveException(ErrorMsg.DUPLICATE_COLUMN_NAMES, newColName);
-            }
-          }
-          oldCols.add(newCol);
-        }
-        sd.setCols(oldCols);
-      }
-    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.RENAMECOLUMN) {
-      StorageDescriptor sd = retrieveStorageDescriptor(tbl, part);
-      String serializationLib = sd.getSerdeInfo().getSerializationLib();
-      AvroSerdeUtils.handleAlterTableForAvro(conf, serializationLib, tbl.getTTable().getParameters());
-      List<FieldSchema> oldCols = (part == null
-          ? tbl.getColsForMetastore() : part.getColsForMetastore());
-      List<FieldSchema> newCols = new ArrayList<FieldSchema>();
-      Iterator<FieldSchema> iterOldCols = oldCols.iterator();
-      String oldName = alterTbl.getOldColName();
-      String newName = alterTbl.getNewColName();
-      String type = alterTbl.getNewColType();
-      String comment = alterTbl.getNewColComment();
-      boolean first = alterTbl.getFirst();
-      String afterCol = alterTbl.getAfterCol();
-      // if orc table, restrict reordering columns as it will break schema evolution
-      boolean isOrcSchemaEvolution =
-          sd.getInputFormat().equals(OrcInputFormat.class.getName()) &&
-          isSchemaEvolutionEnabled(tbl);
-      if (isOrcSchemaEvolution && (first || (afterCol != null && !afterCol.trim().isEmpty()))) {
-        throw new HiveException(ErrorMsg.CANNOT_REORDER_COLUMNS, alterTbl.getOldName());
-      }
-      FieldSchema column = null;
-
-      boolean found = false;
-      int position = -1;
-      if (first) {
-        position = 0;
-      }
-
-      int i = 1;
-      while (iterOldCols.hasNext()) {
-        FieldSchema col = iterOldCols.next();
-        String oldColName = col.getName();
-        if (oldColName.equalsIgnoreCase(newName)
-            && !oldColName.equalsIgnoreCase(oldName)) {
-          throw new HiveException(ErrorMsg.DUPLICATE_COLUMN_NAMES, newName);
-        } else if (oldColName.equalsIgnoreCase(oldName)) {
-          col.setName(newName);
-          if (type != null && !type.trim().equals("")) {
-            col.setType(type);
-          }
-          if (comment != null) {
-            col.setComment(comment);
-          }
-          found = true;
-          if (first || (afterCol != null && !afterCol.trim().equals(""))) {
-            column = col;
-            continue;
-          }
-        }
-
-        if (afterCol != null && !afterCol.trim().equals("")
-            && oldColName.equalsIgnoreCase(afterCol)) {
-          position = i;
-        }
-
-        i++;
-        newCols.add(col);
-      }
-
-      // did not find the column
-      if (!found) {
-        throw new HiveException(ErrorMsg.INVALID_COLUMN, oldName);
-      }
-      // after column is not null, but we did not find it.
-      if ((afterCol != null && !afterCol.trim().equals("")) && position < 0) {
-        throw new HiveException(ErrorMsg.INVALID_COLUMN, afterCol);
-      }
-
-      if (position >= 0) {
-        newCols.add(position, column);
-      }
-
-      sd.setCols(newCols);
-    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.REPLACECOLS) {
-      StorageDescriptor sd = retrieveStorageDescriptor(tbl, part);
-      // change SerDe to LazySimpleSerDe if it is columnsetSerDe
-      String serializationLib = sd.getSerdeInfo().getSerializationLib();
-      if (serializationLib.equals(
-          "org.apache.hadoop.hive.serde.thrift.columnsetSerDe")) {
-        console
-        .printInfo("Replacing columns for columnsetSerDe and changing to LazySimpleSerDe");
-        sd.getSerdeInfo().setSerializationLib(LazySimpleSerDe.class.getName());
-      } else if (!serializationLib.equals(
-          MetadataTypedColumnsetSerDe.class.getName())
-          && !serializationLib.equals(LazySimpleSerDe.class.getName())
-          && !serializationLib.equals(ColumnarSerDe.class.getName())
-          && !serializationLib.equals(DynamicSerDe.class.getName())
-          && !serializationLib.equals(ParquetHiveSerDe.class.getName())
-          && !serializationLib.equals(OrcSerde.class.getName())) {
-        throw new HiveException(ErrorMsg.CANNOT_REPLACE_COLUMNS, alterTbl.getOldName());
-      }
-      final boolean isOrcSchemaEvolution =
-          serializationLib.equals(OrcSerde.class.getName()) &&
-          isSchemaEvolutionEnabled(tbl);
-      // adding columns and limited integer type promotion is supported for ORC schema evolution
-      if (isOrcSchemaEvolution) {
-        final List<FieldSchema> existingCols = sd.getCols();
-        final List<FieldSchema> replaceCols = alterTbl.getNewCols();
-
-        if (replaceCols.size() < existingCols.size()) {
-          throw new HiveException(ErrorMsg.REPLACE_CANNOT_DROP_COLUMNS, alterTbl.getOldName());
-        }
-      }
-
-      boolean partitioned = tbl.isPartitioned();
-      boolean droppingColumns = alterTbl.getNewCols().size() < sd.getCols().size();
-      if (ParquetHiveSerDe.isParquetTable(tbl) &&
-          isSchemaEvolutionEnabled(tbl) &&
-          !alterTbl.getIsCascade() &&
-          droppingColumns && partitioned) {
-        LOG.warn("Cannot drop columns from a partitioned parquet table without the CASCADE option");
-        throw new HiveException(ErrorMsg.REPLACE_CANNOT_DROP_COLUMNS,
-            alterTbl.getOldName());
-      }
-      sd.setCols(alterTbl.getNewCols());
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDPROPS) {
       return alterTableAddProps(alterTbl, tbl, part, environmentContext);
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.DROPPROPS) {
@@ -1675,8 +1413,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
         tbl.setNumBuckets(alterTbl.getNumberBuckets());
       }
-    } else if (alterTbl.getOp() == AlterTableTypes.UPDATECOLUMNS) {
-      updateColumns(tbl, part);
     } else {
       throw new HiveException(ErrorMsg.UNSUPPORTED_ALTER_TBL_OP, alterTbl.getOp().toString());
     }
@@ -1824,84 +1560,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       tbl.getTTable().getParameters().putAll(alterTbl.getProps());
     }
     return result;
-  }
-
-  private int dropConstraint(Hive db, AlterTableDesc alterTbl)
-          throws SemanticException, HiveException {
-    try {
-     db.dropConstraint(Utilities.getDatabaseName(alterTbl.getOldName()),
-       Utilities.getTableName(alterTbl.getOldName()),
-         alterTbl.getConstraintName());
-     } catch (NoSuchObjectException e) {
-       throw new HiveException(e);
-     }
-    return 0;
-  }
-
-  private int addConstraints(Hive db, AlterTableDesc alterTbl)
-           throws SemanticException, HiveException {
-    try {
-      // This is either an alter table add foreign key or add primary key command.
-      if (alterTbl.getPrimaryKeyCols() != null && !alterTbl.getPrimaryKeyCols().isEmpty()) {
-        db.addPrimaryKey(alterTbl.getPrimaryKeyCols());
-      }
-      if (alterTbl.getForeignKeyCols() != null && !alterTbl.getForeignKeyCols().isEmpty()) {
-        try {
-          db.addForeignKey(alterTbl.getForeignKeyCols());
-        } catch (HiveException e) {
-          if (e.getCause() instanceof InvalidObjectException
-              && alterTbl.getReplicationSpec()!= null && alterTbl.getReplicationSpec().isInReplicationScope()) {
-            // During repl load, NoSuchObjectException in foreign key shall
-            // ignore as the foreign table may not be part of the replication
-            LOG.debug("InvalidObjectException: ", e);
-          } else {
-            throw e;
-          }
-        }
-      }
-      if (alterTbl.getUniqueConstraintCols() != null
-              && !alterTbl.getUniqueConstraintCols().isEmpty()) {
-        db.addUniqueConstraint(alterTbl.getUniqueConstraintCols());
-      }
-      if (alterTbl.getNotNullConstraintCols() != null
-              && !alterTbl.getNotNullConstraintCols().isEmpty()) {
-        db.addNotNullConstraint(alterTbl.getNotNullConstraintCols());
-      }
-      if (alterTbl.getDefaultConstraintCols() != null
-          && !alterTbl.getDefaultConstraintCols().isEmpty()) {
-        db.addDefaultConstraint(alterTbl.getDefaultConstraintCols());
-      }
-      if (alterTbl.getCheckConstraintCols() != null
-          && !alterTbl.getCheckConstraintCols().isEmpty()) {
-        db.addCheckConstraint(alterTbl.getCheckConstraintCols());
-      }
-    } catch (NoSuchObjectException e) {
-      throw new HiveException(e);
-    }
-    return 0;
-  }
-
-  private int updateColumns(Table tbl, Partition part)
-          throws HiveException {
-    String serializationLib = tbl.getSd().getSerdeInfo().getSerializationLib();
-    if (MetastoreConf.getStringCollection(conf,
-            MetastoreConf.ConfVars.SERDES_USING_METASTORE_FOR_SCHEMA).contains(serializationLib)) {
-      throw new HiveException(tbl.getTableName() + " has serde " + serializationLib + " for which schema " +
-              "is already handled by HMS.");
-    }
-    Deserializer deserializer = tbl.getDeserializer(true);
-    try {
-      LOG.info("Updating metastore columns for table: {}", tbl.getTableName());
-      final List<FieldSchema> fields = HiveMetaStoreUtils.getFieldsFromDeserializer(
-              tbl.getTableName(), deserializer);
-      StorageDescriptor sd = retrieveStorageDescriptor(tbl, part);
-      sd.setCols(fields);
-    } catch (org.apache.hadoop.hive.serde2.SerDeException | MetaException e) {
-      LOG.error("alter table update columns: {}", e);
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
-    }
-
-    return 0;
   }
 
   /**
