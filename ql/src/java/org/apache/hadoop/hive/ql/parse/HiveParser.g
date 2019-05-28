@@ -949,6 +949,7 @@ ddlStatement
     | metastoreCheck
     | createViewStatement
     | createMaterializedViewStatement
+    | createScheduleQueryStatement
     | dropViewStatement
     | dropMaterializedViewStatement
     | createFunctionStatement
@@ -976,7 +977,6 @@ ddlStatement
     | abortTransactionStatement
     | killQueryStatement
     | resourcePlanDdlStatements
-    | createScheduleQueryStatement
     ;
 
 ifExists
@@ -1997,14 +1997,14 @@ createScheduleQueryStatement
 @after { popMsg(state); }
     : KW_CREATE KW_SCHEDULED KW_QUERY name=identifier
         KW_CRON cronString=StringLiteral
-        (KW_EXECUTED KW_AS executedAs=StringLiteral)?
-        (disabled=KW_DISABLE)?
+//        (KW_EXECUTED KW_AS executedAs=StringLiteral)?
+//        (disabled=KW_DISABLE)?
         KW_AS selectStatementWithCTE
     -> ^(TOK_CREATE_SCHEDULED_QUERY
             $name
             $cronString
-            $executedAs
-            $disabled
+//            $executedAs
+  //          $disabled
             selectStatementWithCTE
         )
     ;

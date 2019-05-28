@@ -214,4 +214,11 @@ public class TestParseDriver {
         "AS test_comp_exp");
   }
 
+  @Test
+  public void testParseScheduledQ() throws Exception {
+    // Expectation here is not to run into a timeout
+    parseDriver.parse("create scheduled query asd cron '123' as select 1");
+
+  }
+
 }
