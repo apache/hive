@@ -12,12 +12,15 @@ CREATE TABLE foo_n7(col1 INT, col2 INT, col3 INT, cola INT, colb INT, colc INT, 
 
 -- SHOW COLUMNS basic syntax tests
 USE test_db;
+EXPLAIN SHOW COLUMNS from foo_n7;
 SHOW COLUMNS from foo_n7;
+EXPLAIN SHOW COLUMNS in foo_n7;
 SHOW COLUMNS in foo_n7;
 SHOW COLUMNS in foo_n7 'col*';
 SHOW COLUMNS in foo_n7 "col*";
 SHOW COLUMNS from foo_n7 'col*';
 SHOW COLUMNS from foo_n7 "col*";
+EXPLAIN SHOW COLUMNS from foo_n7 "col1|cola";
 SHOW COLUMNS from foo_n7 "col1|cola";
 
 -- SHOW COLUMNS from a database with a name that requires escaping
@@ -33,7 +36,9 @@ SHOW COLUMNS in foo_n7 "col+";
 SHOW COLUMNS in foo_n7 "nomatch";
 
 use default;
+EXPLAIN SHOW COLUMNS from test_db.foo_n7;
 SHOW COLUMNS from test_db.foo_n7;
 SHOW COLUMNS from foo_n7 from test_db;
 SHOW COLUMNS from foo_n7 from test_db "col*";
+EXPLAIN SHOW COLUMNS from foo_n7 from test_db like 'col*';
 SHOW COLUMNS from foo_n7 from test_db like 'col*';

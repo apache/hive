@@ -35,7 +35,6 @@ public class DDLWork implements Serializable {
   // TODO: this can probably be replaced with much less code via dynamic dispatch and/or templates.
   private InsertCommitHookDesc insertCommitHookDesc;
   private AlterTableDesc alterTblDesc;
-  private ShowColumnsDesc showColumnsDesc;
   private AlterTableSimpleDesc alterTblSimpleDesc;
   private MsckDesc msckDesc;
 
@@ -78,16 +77,6 @@ public class DDLWork implements Serializable {
       AlterTableDesc alterTblDesc) {
     this(inputs, outputs);
     this.alterTblDesc = alterTblDesc;
-  }
-
-  /**
-   * @param showColumnsDesc
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      ShowColumnsDesc showColumnsDesc) {
-    this(inputs, outputs);
-
-    this.showColumnsDesc = showColumnsDesc;
   }
 
   /**
@@ -140,14 +129,6 @@ public class DDLWork implements Serializable {
   @Explain(displayName = "Alter Table Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public AlterTableDesc getAlterTblDesc() {
     return alterTblDesc;
-  }
-
-  /**
-   * @return the showColumnsDesc
-   */
-  @Explain(displayName = "Show Columns Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public ShowColumnsDesc getShowColumnsDesc() {
-    return showColumnsDesc;
   }
 
   /**
