@@ -10,5 +10,5 @@ PREHOOK: query: alter table src_orc change key key int
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@src_orc
 PREHOOK: Output: default@src_orc
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to alter table. The following columns have types incompatible with the existing columns in their respective positions :
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Unable to alter table. The following columns have types incompatible with the existing columns in their respective positions :
 key

@@ -50,4 +50,4 @@ favnumber int
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@myparquettable_parted
 PREHOOK: Output: default@myparquettable_parted
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Replacing columns cannot drop columns for table default.myparquettable_parted. SerDe may be incompatible
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Replacing columns cannot drop columns for table default.myparquettable_parted. SerDe may be incompatible

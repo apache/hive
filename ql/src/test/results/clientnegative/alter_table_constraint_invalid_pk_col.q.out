@@ -8,4 +8,4 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1
 PREHOOK: query: alter table table1 add constraint pk1  primary key (c) disable novalidate
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidObjectException(message:Parent column not found: c)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. InvalidObjectException(message:Parent column not found: c)

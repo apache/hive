@@ -22,18 +22,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
-import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.messaging.AddNotNullConstraintMessage;
+import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.table.constaint.AlterTableAddConstraintDesc;
+import org.apache.hadoop.hive.ql.ddl.table.constaint.Constraints;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
 
 public class AddNotNullConstraintHandler extends AbstractMessageHandler {
   @Override
@@ -65,18 +61,14 @@ public class AddNotNullConstraintHandler extends AbstractMessageHandler {
       nn.setTable_name(actualTblName);
     }
 
-    AlterTableDesc addConstraintsDesc = new AlterTableDesc(actualDbName + "." + actualTblName,
-                                                           new ArrayList<SQLPrimaryKey>(),
-                                                           new ArrayList<SQLForeignKey>(),
-                                                           new ArrayList<SQLUniqueConstraint>(),
-                                                           nns, new ArrayList<SQLDefaultConstraint>(),
-                                                           new ArrayList<SQLCheckConstraint>(),
-                                                           context.eventOnlyReplicationSpec());
-    Task<DDLWork> addConstraintsTask = TaskFactory.get(
-            new DDLWork(readEntitySet, writeEntitySet, addConstraintsDesc), context.hiveConf);
+    Constraints constraints = new Constraints(null, null, nns, null, null, null);
+    AlterTableAddConstraintDesc addConstraintsDesc = new AlterTableAddConstraintDesc(actualDbName + "." + actualTblName,
+        context.eventOnlyReplicationSpec(), constraints);
+    Task<DDLWork2> addConstraintsTask = TaskFactory.get(
+            new DDLWork2(readEntitySet, writeEntitySet, addConstraintsDesc), context.hiveConf);
     tasks.add(addConstraintsTask);
     context.log.debug("Added add constrains task : {}:{}", addConstraintsTask.getId(), actualTblName);
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, null);
-    return Collections.singletonList(addConstraintsTask);    
+    return Collections.singletonList(addConstraintsTask);
   }
 }

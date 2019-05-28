@@ -200,12 +200,12 @@ public class WriteEntity extends Entity implements Serializable {
    */
   public static WriteType determineAlterTableWriteType(AlterTableDesc.AlterTableTypes op) {
     switch (op) {
-      case RENAMECOLUMN:
+      case RENAME_COLUMN:
       case ADDCLUSTERSORTCOLUMN:
       case ADDFILEFORMAT:
       case ADDSERDE:
       case DROPPROPS:
-      case REPLACECOLS:
+      case REPLACE_COLUMNS:
       case ARCHIVE:
       case UNARCHIVE:
       case ALTERLOCATION:
@@ -215,11 +215,11 @@ public class WriteEntity extends Entity implements Serializable {
       case ALTERSKEWEDLOCATION:
       case ALTERBUCKETNUM:
       case ALTERPARTITION:
-      case ADDCOLS:
+      case ADD_COLUMNS:
       case RENAME:
       case TRUNCATE:
       case MERGEFILES:
-      case DROPCONSTRAINT: return WriteType.DDL_EXCLUSIVE;
+      case DROP_CONSTRAINT: return WriteType.DDL_EXCLUSIVE;
 
       case ADDPARTITION:
       case ADDSERDEPROPS:

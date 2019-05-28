@@ -34,6 +34,7 @@ ALTER TABLE avro_extschema_literal_n1 SET
   "fields": [
     { "name":"newCol", "type":"int" }
   ] }');
+EXPLAIN ALTER TABLE avro_extschema_literal_n1 UPDATE COLUMNS CASCADE;
 ALTER TABLE avro_extschema_literal_n1 UPDATE COLUMNS CASCADE;
 DESCRIBE avro_extschema_literal_n1;
 
@@ -85,6 +86,7 @@ DESCRIBE avro_extschema_url_parted;
 --case: partial partition spec
 ALTER TABLE avro_extschema_url_parted SET
  TBLPROPERTIES ('avro.schema.url'='${system:test.tmp.dir}/grad2.avsc');
+EXPLAIN ALTER TABLE avro_extschema_url_parted PARTITION (p1=2018) UPDATE COLUMNS;
 ALTER TABLE avro_extschema_url_parted PARTITION (p1=2018) UPDATE COLUMNS;
 ALTER TABLE avro_extschema_url_parted UNSET TBLPROPERTIES ('avro.schema.url');
 
