@@ -265,6 +265,7 @@ TOK_ALTER_MATERIALIZED_VIEW;
 TOK_ALTER_MATERIALIZED_VIEW_REWRITE;
 TOK_ALTER_MATERIALIZED_VIEW_REBUILD;
 TOK_CREATE_SCHEDULED_QUERY;
+TOK_ALTER_SCHEDULED_QUERY;
 TOK_REWRITE_ENABLED;
 TOK_REWRITE_DISABLED;
 TOK_VIEWPARTCOLS;
@@ -952,6 +953,7 @@ ddlStatement
     | createViewStatement
     | createMaterializedViewStatement
     | createScheduledQueryStatement
+    | alterScheduledQueryStatement
     | dropViewStatement
     | dropMaterializedViewStatement
     | createFunctionStatement
@@ -2010,6 +2012,24 @@ createScheduledQueryStatement
             definedAsSpec
         )
     ;
+    
+alterScheduledQueryStatement
+@init { pushMsg("alter scheduled query statement", state); }
+@after { popMsg(state); }
+    : KW_ALTER KW_SCHEDULED KW_QUERY name=identifier
+            mod=alterScheduledQueryChange
+    -> ^(TOK_ALTER_SCHEDULED_QUERY
+            $name
+            $mod
+        )
+    ;
+
+alterScheduledQueryChange
+@init { pushMsg("alter scheduled query change", state); }
+@after { popMsg(state); }
+    :   scheduleSpec
+    |executedAsSpec|enableSpecification|definedAsSpec
+    ;
 
 scheduleSpec
 @init { pushMsg("schedule specification", state); }
@@ -2028,22 +2048,6 @@ definedAsSpec
 @after { popMsg(state); }
         : KW_DEFINED? KW_AS selectStatementWithCTE -> ^(TOK_QUERY selectStatementWithCTE)
         ;
-
-/*
-alterScheduledQueryStatement
-@init { pushMsg("alter scheduled query statement", state); }
-@after { popMsg(state); }
-    : KW_ALTER KW_SCHEDULED KW_QUERY name=identifier
-            modification=(scheduleSpec|executedAsSpec|definedAsSpec)
-    -> ^(TOK_CREATE_SCHEDULED_QUERY
-            $name
-            $modification
-        )
-    ;
-
-
-
-*/
 
 showFunctionIdentifier
 @init { pushMsg("identifier for show function statement", state); }
