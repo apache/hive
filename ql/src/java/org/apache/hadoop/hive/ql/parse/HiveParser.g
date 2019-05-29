@@ -429,6 +429,8 @@ TOK_REPLACE;
 TOK_LIKERP;
 TOK_UNMANAGED;
 TOK_INPUTFORMAT;
+TOK_CRON;
+TOK_EXECUTED_AS;
 }
 
 
@@ -1992,23 +1994,55 @@ dropMaterializedViewStatement
     : KW_DROP KW_MATERIALIZED KW_VIEW ifExists? viewName -> ^(TOK_DROP_MATERIALIZED_VIEW viewName ifExists?)
     ;
 
+//FIXME missing d
 createScheduleQueryStatement
 @init { pushMsg("create scheduled query statement", state); }
 @after { popMsg(state); }
     : KW_CREATE KW_SCHEDULED KW_QUERY name=identifier
         KW_CRON cronString=StringLiteral
-//        (KW_EXECUTED KW_AS executedAs=StringLiteral)?
-//        (disabled=KW_DISABLE)?
-        KW_AS selectStatementWithCTE
+        (KW_EXECUTED KW_AS executedAs=StringLiteral)?
+        (disabled=KW_DISABLE)?
+        KW_DEFINED? KW_AS selectStatementWithCTE
     -> ^(TOK_CREATE_SCHEDULED_QUERY
             $name
             $cronString
-//            $executedAs
-  //          $disabled
+            $executedAs?
+            $disabled?
             selectStatementWithCTE
         )
     ;
 
+
+/*
+alterScheduledQueryStatement
+@init { pushMsg("alter scheduled query statement", state); }
+@after { popMsg(state); }
+    : KW_ALTER KW_SCHEDULED KW_QUERY name=identifier
+            modification=(scheduleSpec|executedAsSpec|definedAsSpec)
+    -> ^(TOK_CREATE_SCHEDULED_QUERY
+            $name
+            $modification
+        )
+    ;
+    
+scheduleSpec
+@init { pushMsg("schedule specification", state); }
+@after { popMsg(state); }
+        : KW_CRON cronString=StringLiteral -> ^(TOK_CRON $cronString)
+        ;
+
+executedAsSpec
+@init { pushMsg("executedAs specification", state); }
+@after { popMsg(state); }
+        : KW_EXECUTED KW_AS executedAs=StringLiteral -> ^(TOK_EXECUTED_AS $executedAs)
+        ;
+
+definedAsSpec
+@init { pushMsg("definedAs specification", state); }
+@after { popMsg(state); }
+        : KW_DEFINED? KW_AS selectStatementWithCTE -> ^(TOK_QUERY selectStatementWithCTE)
+        ;
+*/
 
 showFunctionIdentifier
 @init { pushMsg("identifier for show function statement", state); }
