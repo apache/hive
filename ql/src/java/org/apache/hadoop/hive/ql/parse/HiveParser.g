@@ -951,7 +951,7 @@ ddlStatement
     | metastoreCheck
     | createViewStatement
     | createMaterializedViewStatement
-    | createScheduleQueryStatement
+    | createScheduledQueryStatement
     | dropViewStatement
     | dropMaterializedViewStatement
     | createFunctionStatement
@@ -1994,8 +1994,7 @@ dropMaterializedViewStatement
     : KW_DROP KW_MATERIALIZED KW_VIEW ifExists? viewName -> ^(TOK_DROP_MATERIALIZED_VIEW viewName ifExists?)
     ;
 
-//FIXME missing d
-createScheduleQueryStatement
+createScheduledQueryStatement
 @init { pushMsg("create scheduled query statement", state); }
 @after { popMsg(state); }
     : KW_CREATE KW_SCHEDULED KW_QUERY name=identifier
