@@ -2027,8 +2027,10 @@ alterScheduledQueryStatement
 alterScheduledQueryChange
 @init { pushMsg("alter scheduled query change", state); }
 @after { popMsg(state); }
-    :   scheduleSpec
-    |executedAsSpec|enableSpecification|definedAsSpec
+    : scheduleSpec
+    | executedAsSpec
+    | enableSpecification
+    | definedAsSpec
     ;
 
 scheduleSpec
