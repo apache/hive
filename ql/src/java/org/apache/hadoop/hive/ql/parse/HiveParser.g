@@ -1999,18 +1999,24 @@ createScheduleQueryStatement
 @init { pushMsg("create scheduled query statement", state); }
 @after { popMsg(state); }
     : KW_CREATE KW_SCHEDULED KW_QUERY name=identifier
-        KW_CRON cronString=StringLiteral
+        scheduleSpec
         (KW_EXECUTED KW_AS executedAs=StringLiteral)?
         (disabled=KW_DISABLE)?
         KW_DEFINED? KW_AS selectStatementWithCTE
     -> ^(TOK_CREATE_SCHEDULED_QUERY
             $name
-            $cronString
+            scheduleSpec
             $executedAs?
             $disabled?
             selectStatementWithCTE
         )
     ;
+
+scheduleSpec
+@init { pushMsg("schedule specification", state); }
+@after { popMsg(state); }
+        : KW_CRON cronString=StringLiteral -> ^(TOK_CRON $cronString)
+        ;
 
 
 /*
@@ -2024,12 +2030,7 @@ alterScheduledQueryStatement
             $modification
         )
     ;
-    
-scheduleSpec
-@init { pushMsg("schedule specification", state); }
-@after { popMsg(state); }
-        : KW_CRON cronString=StringLiteral -> ^(TOK_CRON $cronString)
-        ;
+
 
 executedAsSpec
 @init { pushMsg("executedAs specification", state); }
