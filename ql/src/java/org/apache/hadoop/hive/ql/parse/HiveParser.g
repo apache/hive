@@ -266,6 +266,7 @@ TOK_ALTER_MATERIALIZED_VIEW_REWRITE;
 TOK_ALTER_MATERIALIZED_VIEW_REBUILD;
 TOK_CREATE_SCHEDULED_QUERY;
 TOK_ALTER_SCHEDULED_QUERY;
+TOK_DROP_SCHEDULED_QUERY;
 TOK_REWRITE_ENABLED;
 TOK_REWRITE_DISABLED;
 TOK_VIEWPARTCOLS;
@@ -954,6 +955,7 @@ ddlStatement
     | createMaterializedViewStatement
     | createScheduledQueryStatement
     | alterScheduledQueryStatement
+    | dropScheduledQueryStatement
     | dropViewStatement
     | dropMaterializedViewStatement
     | createFunctionStatement
@@ -2013,6 +2015,16 @@ createScheduledQueryStatement
         )
     ;
     
+dropScheduledQueryStatement
+@init { pushMsg("drop scheduled query statement", state); }
+@after { popMsg(state); }
+    : KW_DROP KW_SCHEDULED KW_QUERY name=identifier
+    -> ^(TOK_DROP_SCHEDULED_QUERY
+            $name
+        )
+    ;
+
+    
 alterScheduledQueryStatement
 @init { pushMsg("alter scheduled query statement", state); }
 @after { popMsg(state); }
@@ -2023,7 +2035,7 @@ alterScheduledQueryStatement
             $mod
         )
     ;
-
+    
 alterScheduledQueryChange
 @init { pushMsg("alter scheduled query change", state); }
 @after { popMsg(state); }

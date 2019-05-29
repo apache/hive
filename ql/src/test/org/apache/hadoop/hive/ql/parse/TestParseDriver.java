@@ -230,4 +230,9 @@ public class TestParseDriver {
     parseDriver.parse("alter scheduled query asd executed as 'joe'");
   }
 
+  @Test
+  public void testParseDropScheduledQuery() throws Exception {
+    parseDriver.parse("drop scheduled query asd");
+  }
+
 }
