@@ -219,6 +219,7 @@ public class TestParseDriver {
     parseDriver.parse("create scheduled query asd cron '123' as select 1");
     parseDriver.parse("create scheduled query asd cron '123' executed as 'x' as select 1");
     parseDriver.parse("create scheduled query asd cron '123' executed as 'x' defined as select 1");
+    parseDriver.parse("create scheduled query asd cron '123' executed as 'x' disabled defined as select 1");
   }
 
 }

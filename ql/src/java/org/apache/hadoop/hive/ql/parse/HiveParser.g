@@ -2001,15 +2001,14 @@ createScheduleQueryStatement
     : KW_CREATE KW_SCHEDULED KW_QUERY name=identifier
         scheduleSpec
         executedAsSpec?
-        (KW_EXECUTED KW_AS executedAs=StringLiteral)?
-        (disabled=KW_DISABLE)?
-        KW_DEFINED? KW_AS selectStatementWithCTE
+        enableSpecification?
+        definedAsSpec
     -> ^(TOK_CREATE_SCHEDULED_QUERY
             $name
             scheduleSpec
             executedAsSpec?
-            $disabled?
-            selectStatementWithCTE
+            enableSpecification?
+            definedAsSpec
         )
     ;
 
@@ -2023,6 +2022,12 @@ executedAsSpec
 @init { pushMsg("executedAs specification", state); }
 @after { popMsg(state); }
         : KW_EXECUTED KW_AS executedAs=StringLiteral -> ^(TOK_EXECUTED_AS $executedAs)
+        ;
+
+definedAsSpec
+@init { pushMsg("definedAs specification", state); }
+@after { popMsg(state); }
+        : KW_DEFINED? KW_AS selectStatementWithCTE -> ^(TOK_QUERY selectStatementWithCTE)
         ;
 
 /*
@@ -2039,11 +2044,6 @@ alterScheduledQueryStatement
 
 
 
-definedAsSpec
-@init { pushMsg("definedAs specification", state); }
-@after { popMsg(state); }
-        : KW_DEFINED? KW_AS selectStatementWithCTE -> ^(TOK_QUERY selectStatementWithCTE)
-        ;
 */
 
 showFunctionIdentifier
