@@ -277,8 +277,11 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
       UserGroupInformation fsTaskUgi = fsUgiFactory == null ? null : fsUgiFactory.createUgi();
       boolean isGuaranteed = request.hasIsGuaranteed() && request.getIsGuaranteed();
 
-      boolean addTaskTimes = callableConf.getBoolean(ConfVars.TEZ_EXEC_SUMMARY.varname, false)
-                             && callableConf.getBoolean(ConfVars.LLAP_TASK_TIME_SUMMARY.varname, false);
+      // enable the printing of (per daemon) LLAP task queue/run times via LLAP_TASK_TIME_SUMMARY
+      ConfVars tezSummary = ConfVars.TEZ_EXEC_SUMMARY;
+      ConfVars llapTasks = ConfVars.LLAP_TASK_TIME_SUMMARY;
+      boolean addTaskTimes = callableConf.getBoolean(tezSummary.varname, tezSummary.defaultBoolVal)
+                             && callableConf.getBoolean(llapTasks.varname, llapTasks.defaultBoolVal);
 
       // TODO: ideally we'd register TezCounters here, but it seems impossible before registerTask.
       WmFragmentCounters wmCounters = new WmFragmentCounters(addTaskTimes);

@@ -133,7 +133,7 @@ public class WmFragmentCounters {
       long running = fixedCounters.get(LlapWmCounters.GUARANTEED_RUNNING_NS.ordinal())
                      + fixedCounters.get(LlapWmCounters.SPECULATIVE_RUNNING_NS.ordinal());
 
-      CounterGroup cg =tezCounters.getGroup("LlapTaskRuntimeAgg by daemon");
+      CounterGroup cg = tezCounters.getGroup("LlapTaskRuntimeAgg by daemon");
       cg.findCounter("QueueTime-" + hostName).setValue(queued);
       cg.findCounter("RunTime-" + hostName).setValue(running);
       cg.findCounter("Count-" + hostName).setValue(1);
