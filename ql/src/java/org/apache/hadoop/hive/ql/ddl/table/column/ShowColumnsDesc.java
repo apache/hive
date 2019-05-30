@@ -15,109 +15,55 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.table.column;
 
 import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-public class ShowColumnsDesc extends DDLDesc implements Serializable {
+/**
+ * DDL task description for SHOW COLUMNS commands.
+ */
+@Explain(displayName = "Show Columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class ShowColumnsDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
-  String pattern;
-  String tableName;
-  String resFile;
-  /**
-   * table name for the result of show columns.
-   */
-  private static final String table = "show_columns";
-  /**
-   * thrift ddl for the result of show columns.
-   */
-  private static final String schema = "Field#string";
 
-  public String getTable() {
-    return table;
+  static {
+    DDLTask2.registerOperation(ShowColumnsDesc.class, ShowColumnsOperation.class);
   }
 
-  public String getSchema() {
-    return schema;
-  }
+  public static final String SCHEMA = "Field#string";
 
-  public ShowColumnsDesc() {
-  }
+  private final String resFile;
+  private final String tableName;
+  private final String pattern;
 
-  /**
-   * @param resFile
-   */
-  public ShowColumnsDesc(Path resFile) {
-    this.resFile = resFile.toString();
-    tableName = null;
-  }
-
-  /**
-   * @param tableName name of table to show columns of
-   */
   public ShowColumnsDesc(Path resFile, String tableName) {
-    this.resFile = resFile.toString();
-    this.tableName = tableName;
+    this(resFile, tableName, null);
   }
 
-  /**
-   * @param tableName name of table to show columns of
-   */
   public ShowColumnsDesc(Path resFile, String tableName, String pattern) {
     this.resFile = resFile.toString();
     this.pattern = pattern;
     this.tableName = tableName;
   }
 
-
-  /**
-   * @return the pattern
-   */
-  @Explain(displayName = "pattern")
+  @Explain(displayName = "pattern", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getPattern() {
     return pattern;
   }
 
-  /**
-   * @param pattern
-   *          the pattern to set
-   */
-  public void setPattern(String pattern) {
-    this.pattern = pattern;
-  }
-
-  /**
-   * @return the tableName
-   */
   @Explain(displayName = "table name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTableName() {
     return tableName;
   }
 
-  /**
-   * @param tableName
-   *          the tableName to set
-   */
-  public void setTableName(String tableName) {
-    this.tableName = tableName;
-  }
-
-  /**
-   * @return the resFile
-   */
   @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
   public String getResFile() {
     return resFile;
-  }
-
-  /**
-   * @param resFile
-   *          the resFile to set
-   */
-  public void setResFile(String resFile) {
-    this.resFile = resFile;
   }
 }

@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc.Mode;
+import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.slf4j.Logger;
@@ -65,14 +66,15 @@ public class SetHashGroupByMinReduction implements NodeProcessor {
       colStats.add(
           groupByOperator.getStatistics().getColumnStatisticsFromColName(ci.getInternalName()));
     }
+    Statistics parentStats = groupByOperator.getParentOperators().get(0).getStatistics();
     long ndvProduct = StatsUtils.computeNDVGroupingColumns(
-        colStats, groupByOperator.getParentOperators().get(0).getStatistics(), true);
+        colStats, parentStats, true);
     // if ndvProduct is 0 then column stats state must be partial and we are missing
     if (ndvProduct == 0) {
       return null;
     }
 
-    long numRows = groupByOperator.getStatistics().getNumRows();
+    long numRows = parentStats.getNumRows();
     if (ndvProduct > numRows) {
       ndvProduct = numRows;
     }

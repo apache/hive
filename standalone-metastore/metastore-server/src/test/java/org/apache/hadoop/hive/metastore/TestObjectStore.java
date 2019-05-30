@@ -60,11 +60,13 @@ import org.apache.hadoop.hive.metastore.client.builder.HiveObjectRefBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PrivilegeGrantInfoBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
 import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -90,6 +92,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
@@ -136,10 +139,21 @@ public class TestObjectStore {
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 
+    setupRandomObjectStoreUrl();
+    Deadline.registerIfNot(100000);
+
     objectStore = new ObjectStore();
     objectStore.setConf(conf);
-    dropAllStoreObjects(objectStore);
+
     HiveMetaStore.HMSHandler.createDefaultCatalog(objectStore, new Warehouse(conf));
+  }
+
+  private void setupRandomObjectStoreUrl(){
+    String currentUrl = MetastoreConf.getVar(conf, ConfVars.CONNECT_URL_KEY);
+    currentUrl = currentUrl.replace(MetaStoreServerUtils.JUNIT_DATABASE_PREFIX,
+        String.format("%s_%s", MetaStoreServerUtils.JUNIT_DATABASE_PREFIX, UUID.randomUUID().toString()));
+
+    MetastoreConf.setVar(conf, ConfVars.CONNECT_URL_KEY, currentUrl);
   }
 
   @After
@@ -759,6 +773,7 @@ public class TestObjectStore {
     Assert.assertEquals(1, directSqlErrors.getCount());
   }
 
+  @Deprecated
   private static void dropAllStoreObjects(RawStore store)
       throws MetaException, InvalidObjectException, InvalidInputException {
     try {

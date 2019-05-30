@@ -750,6 +750,12 @@ public class MetastoreConf {
       "metastore.partition.management.table.pattern", "*",
       "Automatic partition management will look for tables using the specified table pattern"),
 
+    METASTORE_METADATA_TRANSFORMER_CLASS("metastore.metadata.transformer.class", "metastore.metadata.transformer.class",
+        "org.apache.hadoop.hive.metastore.MetastoreDefaultTransformer",
+        "Fully qualified class name for the metastore metadata transformer class \n"
+            + "which is used by HMS Server to fetch the extended tables/partitions information \n"
+            + "based on the data processor capabilities \n"
+            + " This class should implement the IMetaStoreMetadataTransformer interface"),
     MULTITHREADED("javax.jdo.option.Multithreaded", "javax.jdo.option.Multithreaded", true,
         "Set this to true if multiple threads access metastore through JDO concurrently."),
     MAX_OPEN_TXNS("metastore.max.open.txns", "hive.max.open.txns", 100000,

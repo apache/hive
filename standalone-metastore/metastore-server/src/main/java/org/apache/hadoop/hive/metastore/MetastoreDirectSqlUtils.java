@@ -57,7 +57,14 @@ class MetastoreDirectSqlUtils {
   }
   @SuppressWarnings("unchecked")
   static <T> T executeWithArray(Query query, Object[] params, String sql) throws MetaException {
+    return (T)executeWithArray(query, params, sql, -1);
+  }
+
+  @SuppressWarnings("unchecked")
+  static <T> T executeWithArray(Query query, Object[] params, String sql, int limit) throws MetaException {
     try {
+      if (limit >= 0)
+        query.setRange(0, limit);
       return (T)((params == null) ? query.execute() : query.executeWithArray(params));
     } catch (Exception ex) {
       StringBuilder errorBuilder = new StringBuilder("Failed to execute [" + sql + "] with parameters [");

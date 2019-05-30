@@ -293,7 +293,7 @@ STAGE PLANS:
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.75
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
@@ -516,7 +516,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
                       keys: c1 (type: decimal(15,2)), c2 (type: decimal(15,2))
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.5
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
@@ -850,7 +850,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: sum(_col0)
                   keys: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.5
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1168,7 +1168,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: sum(_col0)
                   keys: _col1 (type: decimal(15,2)), _col2 (type: decimal(15,2))
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.5
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1487,7 +1487,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: corr(_col0, _col2)
                   keys: _col1 (type: decimal(15,2)), _col3 (type: decimal(15,2))
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.5
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 2 Data size: 704 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1628,7 +1628,7 @@ STAGE PLANS:
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.75
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1851,7 +1851,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
                       keys: c1 (type: decimal(7,2)), c2 (type: decimal(7,2))
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.5
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2185,7 +2185,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: sum(_col0)
                   keys: _col0 (type: decimal(7,2)), _col1 (type: decimal(7,2))
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.5
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2503,7 +2503,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: sum(_col0)
                   keys: _col1 (type: decimal(7,2)), _col2 (type: decimal(7,2))
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.5
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2822,7 +2822,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: corr(_col0, _col2)
                   keys: _col1 (type: decimal(7,2)), _col3 (type: decimal(7,2))
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.5
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 2 Data size: 704 Basic stats: COMPLETE Column stats: COMPLETE

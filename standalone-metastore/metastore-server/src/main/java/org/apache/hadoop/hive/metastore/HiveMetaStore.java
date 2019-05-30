@@ -33,6 +33,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependNotNu
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
@@ -278,6 +279,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private FileMetadataManager fileMetadataManager;
     private PartitionExpressionProxy expressionProxy;
     private StorageSchemaReader storageSchemaReader;
+    private IMetaStoreMetadataTransformer transformer;
 
     // Variables for metrics
     // Package visible so that HMSMetricsListener can see them.
@@ -629,6 +631,26 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       isServerFilterEnabled = getIfServerFilterenabled();
       filterHook = isServerFilterEnabled ? loadFilterHooks() : null;
+
+      String className = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS);
+      Class<?> clazz;
+      try {
+        clazz = conf.getClassByName(className);
+      } catch (ClassNotFoundException e) {
+        LOG.error("Unable to load class " + className, e);
+        throw new IllegalArgumentException(e);
+      }
+      Constructor<?> constructor;
+      try {
+        constructor = clazz.getConstructor(IHMSHandler.class);
+        if (Modifier.isPrivate(constructor.getModifiers()))
+          throw new IllegalArgumentException("Illegal implementation for metadata transformer. Constructor is private");
+        transformer = (IMetaStoreMetadataTransformer) constructor.newInstance(this);
+      } catch (NoSuchMethodException | InstantiationException | IllegalAccessException
+          | IllegalArgumentException | InvocationTargetException e) {
+        LOG.error("Unable to create instance of class " + className, e);
+        throw new IllegalArgumentException(e);
+      }
     }
 
     /**
@@ -3029,15 +3051,85 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public List<ExtendedTableInfo> get_tables_ext(final GetTablesExtRequest req) throws MetaException {
+      List<String> tables = new ArrayList<String>();
+      List<ExtendedTableInfo> ret = new ArrayList<ExtendedTableInfo>();
+      String catalog  = req.getCatalog();
+      String database = req.getDatabase();
+      String pattern  = req.getTableNamePattern();
+      List<String> processorCapabilities = req.getProcessorCapabilities();
+      int limit = req.getLimit();
+      String processorId  = req.getProcessorIdentifier();
+      List<Table> tObjects = new ArrayList<>();
+
+      startTableFunction("get_tables_ext", catalog, database, pattern);
+      Exception ex = null;
+      try {
+        tables = getMS().getTables(catalog, database, pattern, null, limit);
+        LOG.debug("get_tables_ext:getTables() returned " + tables.size());
+        tables = FilterUtils.filterTableNamesIfEnabled(isServerFilterEnabled, filterHook,
+                catalog, database, tables);
+
+        if (tables.size() > 0) {
+          tObjects = getMS().getTableObjectsByName(catalog, database, tables);
+          LOG.debug("get_tables_ext:getTableObjectsByName() returned " + tObjects.size());
+          if (processorCapabilities != null && processorCapabilities.size() > 0) {
+            if (transformer != null) {
+              Map<Table, List<String>> retMap = transformer.transform(tObjects, processorCapabilities, processorId);
+
+              for (Map.Entry<Table, List<String>> entry : retMap.entrySet())  {
+                ret.add(convertTableToExtendedTable(entry.getKey(), entry.getValue(), req.getRequestedFields()));
+              }
+            } else {
+              for (Table table : tObjects) {
+                ret.add(convertTableToExtendedTable(table, processorCapabilities, req.getRequestedFields()));
+              }
+            }
+          }
+        }
+      } catch (MetaException e) {
+        ex = e;
+        throw e;
+      } catch (Exception e) {
+        ex = e;
+        throw newMetaException(e);
+      } finally {
+        endFunction("get_tables_ext", ret != null, ex);
+      }
+      return ret;
+    }
+
+    private ExtendedTableInfo convertTableToExtendedTable (Table table,
+          List<String> processorCapabilities, int mask) {
+      ExtendedTableInfo extTable = new ExtendedTableInfo(table.getTableName());
+      if ((mask & GetTablesExtRequestFields.ACCESS_TYPE.getValue()) == GetTablesExtRequestFields.ACCESS_TYPE.getValue())
+        extTable.setAccessType(table.getAccessType());
+
+      if ((mask & GetTablesExtRequestFields.PROCESSOR_CAPABILITIES.getValue())
+             == GetTablesExtRequestFields.PROCESSOR_CAPABILITIES.getValue())
+        extTable.setProcessorCapabilities(processorCapabilities);
+
+      return extTable;
+    }
+
+    @Override
     public GetTableResult get_table_req(GetTableRequest req) throws MetaException,
         NoSuchObjectException {
       String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
       return new GetTableResult(getTableInternal(catName, req.getDbName(), req.getTblName(),
-          req.getCapabilities(), req.getValidWriteIdList(), req.isGetColumnStats()));
+          req.getCapabilities(), req.getValidWriteIdList(), req.isGetColumnStats(),
+          req.getProcessorCapabilities(), req.getProcessorIdentifier()));
     }
 
     private Table getTableInternal(String catName, String dbname, String name,
         ClientCapabilities capabilities, String writeIdList, boolean getColumnStats)
+        throws MetaException, NoSuchObjectException {
+      return getTableInternal(catName, dbname, name, capabilities, writeIdList, getColumnStats, null, null);
+    }
+
+    private Table getTableInternal(String catName, String dbname, String name,
+        ClientCapabilities capabilities, String writeIdList, boolean getColumnStats,
+        List<String> processorCapabilities, String processorId)
         throws MetaException, NoSuchObjectException {
       if (isInTest) {
         assertClientHasCapability(capabilities, ClientCapability.TEST_CAPABILITY,
@@ -3054,6 +3146,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               "insert-only tables", "get_table_req");
         }
 
+        if (processorCapabilities != null && processorCapabilities.size() > 0 && transformer != null) {
+          List<Table> tList = new ArrayList<>();
+          tList.add(t);
+          Map<Table, List<String>> ret = transformer.transform(tList, processorCapabilities, processorId);
+          if (ret.size() > 1) {
+            LOG.warn("Unexpected resultset size:" + ret.size());
+            throw new MetaException("Unexpected result from metadata transformer:return list size=" + ret.size());
+          }
+          t = (Table)(ret.keySet().iterator().next());
+        }
+
         firePreEvent(new PreReadTableEvent(t, this));
       } catch (MetaException | NoSuchObjectException e) {
         ex = e;
@@ -3063,7 +3166,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       return t;
     }
-
 
     @Override
     public List<TableMeta> get_table_meta(String dbnames, String tblNames, List<String> tblTypes)
@@ -4924,6 +5026,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         List<Partition> partitions = getMS()
             .getPartitionSpecsByFilterAndProjection(table, request.getProjectionSpec(),
                 request.getFilterSpec());
+        List<String> processorCapabilities = request.getProcessorCapabilities();
+        String processorId = request.getProcessorIdentifier();
+        if (processorCapabilities != null && processorCapabilities.size() > 0) {
+          if (transformer != null) {
+            partitions = transformer.transformPartitions(partitions, processorCapabilities, processorId);
+          }
+        }
         List<PartitionSpec> partitionSpecs =
             MetaStoreServerUtils.getPartitionspecsGroupedByStorageDescriptor(table, partitions);
         response = new GetPartitionsResponse();
@@ -5361,7 +5470,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       List<String> ret = null;
       Exception ex = null;
       try {
-        ret = getMS().getTables(catName, dbname, pattern, TableType.valueOf(tableType));
+        ret = getMS().getTables(catName, dbname, pattern, TableType.valueOf(tableType), -1);
       } catch (MetaException e) {
         ex = e;
         throw e;
@@ -6454,12 +6563,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             throws TException {
       List<Partition> partitions = get_partitions_by_names(gpbnr.getDb_name(),
               gpbnr.getTbl_name(), gpbnr.getNames(),
-              gpbnr.isSetGet_col_stats() && gpbnr.isGet_col_stats());
+              gpbnr.isSetGet_col_stats() && gpbnr.isGet_col_stats(), gpbnr.getProcessorCapabilities(),
+              gpbnr.getProcessorIdentifier());
       return new GetPartitionsByNamesResult(partitions);
     }
 
     public List<Partition> get_partitions_by_names(final String dbName, final String tblName,
            final List<String> partNames, boolean getColStats) throws TException {
+      return get_partitions_by_names(dbName, tblName, partNames, getColStats, null, null);
+    }
+ 
+    public List<Partition> get_partitions_by_names(final String dbName, final String tblName,
+           final List<String> partNames, boolean getColStats, List<String> processorCapabilities,
+           String processorId) throws TException {
 
       String[] dbNameParts = parseDbName(dbName, conf);
       String parsedCatName = dbNameParts[CAT_NAME];
@@ -6498,6 +6614,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         }
 
+        if (transformer != null) {
+          if (processorCapabilities != null && processorCapabilities.size() > 0) {
+            ret = transformer.transformPartitions(ret, processorCapabilities, processorId);
+          }
+        }
         success = getMS().commitTransaction();
       } catch (Exception e) {
         ex = e;

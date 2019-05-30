@@ -414,6 +414,18 @@ POSTHOOK: query: create table tmulti(url string NOT NULL ENABLE, userName string
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmulti
+PREHOOK: query: explain alter table tmulti add constraint un1 UNIQUE (userName, numClicks) DISABLE
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: explain alter table tmulti add constraint un1 UNIQUE (userName, numClicks) DISABLE
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Add Constraint
+      table name: default.tmulti
+
 PREHOOK: query: alter table tmulti add constraint un1 UNIQUE (userName, numClicks) DISABLE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: query: alter table tmulti add constraint un1 UNIQUE (userName, numClicks) DISABLE
@@ -2063,6 +2075,19 @@ POSTHOOK: query: select * from acid_uami_n0 order by de desc limit 15
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_uami_n0
 #### A masked pattern was here ####
+PREHOOK: query: explain ALTER table acid_uami_n0 drop constraint ch2
+PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: query: explain ALTER table acid_uami_n0 drop constraint ch2
+POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Drop Constraint
+      constraint name: ch2
+      table name: default.acid_uami_n0
+
 PREHOOK: query: ALTER table acid_uami_n0 drop constraint ch2
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
 POSTHOOK: query: ALTER table acid_uami_n0 drop constraint ch2

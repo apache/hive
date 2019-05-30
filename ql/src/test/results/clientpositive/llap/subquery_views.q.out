@@ -213,7 +213,7 @@ STAGE PLANS:
                     Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: key (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.5
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 83 Data size: 7221 Basic stats: COMPLETE Column stats: COMPLETE
@@ -387,7 +387,7 @@ STAGE PLANS:
                     Statistics: Num rows: 304 Data size: 26448 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.97039473
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 9 Data size: 783 Basic stats: COMPLETE Column stats: COMPLETE

@@ -142,6 +142,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   private int retries = 5;
   private long retryDelaySeconds = 0;
   private final ClientCapabilities version;
+  private static String[] processorCapabilities;
+  private static String processorIdentifier;
 
   //copied from ErrorMsg.java
   private static final String REPL_EVENTS_MISSING_IN_METASTORE = "Notification events are missing in the meta store.";
@@ -717,6 +719,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                 System.identityHashCode(this)));
       }
     }
+  }
+
+  public static void setProcessorCapabilities(final String[] capabilities) {
+    processorCapabilities = capabilities;
+  }
+
+  public static void setProcessorIdentifier(final String id) {
+    processorIdentifier = id;
   }
 
   @Override
@@ -1652,12 +1662,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<Partition> listPartitions(String db_name, String tbl_name, short max_parts)
       throws TException {
+    // TODO should we add capabilities here as well as it returns Partition objects
     return listPartitions(getDefaultCatalog(conf), db_name, tbl_name, max_parts);
   }
 
   @Override
   public List<Partition> listPartitions(String catName, String db_name, String tbl_name,
                                         int max_parts) throws TException {
+    // TODO should we add capabilities here as well as it returns Partition objects
     List<Partition> parts = client.get_partitions(prependCatalogToDbName(catName, db_name, conf),
         tbl_name, shrinkMaxtoShort(max_parts));
     return deepCopyPartitions(
@@ -1681,12 +1693,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<Partition> listPartitions(String db_name, String tbl_name,
                                         List<String> part_vals, short max_parts) throws TException {
+    // TODO should we add capabilities here as well as it returns Partition objects
     return listPartitions(getDefaultCatalog(conf), db_name, tbl_name, part_vals, max_parts);
   }
 
   @Override
   public List<Partition> listPartitions(String catName, String db_name, String tbl_name,
                                         List<String> part_vals, int max_parts) throws TException {
+    // TODO should we add capabilities here as well as it returns Partition objects
     List<Partition> parts = client.get_partitions_ps(prependCatalogToDbName(catName, db_name, conf),
         tbl_name, part_vals, shrinkMaxtoShort(max_parts));
     return deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
@@ -1696,6 +1710,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public List<Partition> listPartitionsWithAuthInfo(String db_name, String tbl_name,
                                                     short max_parts, String user_name,
                                                     List<String> group_names) throws TException {
+    // TODO should we add capabilities here as well as it returns Partition objects
     return listPartitionsWithAuthInfo(getDefaultCatalog(conf), db_name, tbl_name, max_parts, user_name,
         group_names);
   }
@@ -1704,6 +1719,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public List<Partition> listPartitionsWithAuthInfo(String catName, String dbName, String tableName,
                                                     int maxParts, String userName,
                                                     List<String> groupNames) throws TException {
+    // TODO should we add capabilities here as well as it returns Partition objects
     List<Partition> parts = client.get_partitions_with_auth(prependCatalogToDbName(catName,
         dbName, conf), tableName, shrinkMaxtoShort(maxParts), userName, groupNames);
     return deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
@@ -1714,6 +1730,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                                                     List<String> part_vals, short max_parts,
                                                     String user_name, List<String> group_names)
       throws TException {
+    // TODO should we add capabilities here as well as it returns Partition objects
     return listPartitionsWithAuthInfo(getDefaultCatalog(conf), db_name, tbl_name, part_vals, max_parts,
         user_name, group_names);
   }
@@ -1723,6 +1740,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                                                     List<String> partialPvals, int maxParts,
                                                     String userName, List<String> groupNames)
       throws TException {
+    // TODO should we add capabilities here as well as it returns Partition objects
     List<Partition> parts = client.get_partitions_ps_with_auth(prependCatalogToDbName(catName,
         dbName, conf), tableName, partialPvals, shrinkMaxtoShort(maxParts), userName, groupNames);
     return deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
@@ -1737,6 +1755,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<Partition> listPartitionsByFilter(String catName, String db_name, String tbl_name,
                                                 String filter, int max_parts) throws TException {
+    // TODO should we add capabilities here as well as it returns Partition objects
     List<Partition> parts =client.get_partitions_by_filter(prependCatalogToDbName(
         catName, db_name, conf), tbl_name, filter, shrinkMaxtoShort(max_parts));
     return deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
@@ -1852,6 +1871,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                     tbl_name);
     gpbnr.setNames(part_names);
     gpbnr.setGet_col_stats(getColStats);
+    if (processorCapabilities != null)
+      gpbnr.setProcessorCapabilities(Arrays.asList(processorCapabilities));
+    if (processorIdentifier != null)
+      gpbnr.setProcessorIdentifier(processorIdentifier);
+
     List<Partition> parts = client.get_partitions_by_names_req(gpbnr).getPartitions();
     return deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
   }
@@ -1908,6 +1932,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setCatName(catName);
     req.setCapabilities(version);
     req.setGetColumnStats(getColumnStats);
+    if (processorCapabilities != null)
+      req.setProcessorCapabilities(Arrays.asList(processorCapabilities));
+    if (processorIdentifier != null)
+      req.setProcessorIdentifier(processorIdentifier);
+
     Table t = client.get_table_req(req).getTable();
     return deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
   }
@@ -1926,6 +1955,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setCapabilities(version);
     req.setValidWriteIdList(validWriteIdList);
     req.setGetColumnStats(getColumnStats);
+    if (processorCapabilities != null)
+      req.setProcessorCapabilities(Arrays.asList(processorCapabilities));
+    if (processorIdentifier != null)
+      req.setProcessorIdentifier(processorIdentifier);
+
     Table t = client.get_table_req(req).getTable();
     return deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
   }
@@ -1943,6 +1977,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setCatName(catName);
     req.setTblNames(tableNames);
     req.setCapabilities(version);
+    if (processorCapabilities != null)
+      req.setProcessorCapabilities(Arrays.asList(processorCapabilities));
     List<Table> tabs = client.get_table_objects_by_name_req(req).getTables();
     return deepCopyTables(FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tabs));
   }
@@ -2029,6 +2065,21 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         client.get_tables_by_type(prependCatalogToDbName(catName, dbName, conf), tablePattern,
         tableType.toString());
     return FilterUtils.filterTableNamesIfEnabled(isClientFilterEnabled, filterHook, catName, dbName, tables);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<ExtendedTableInfo> getTablesExt(String catName, String dbName, String tablePattern,
+                 int requestedFields, int limit) throws MetaException, TException {
+    if (catName == null)
+      catName = getDefaultCatalog(conf);
+    GetTablesExtRequest req = new GetTablesExtRequest(catName, dbName, tablePattern, requestedFields);
+    req.setLimit(limit);
+    if (processorIdentifier != null)
+      req.setProcessorIdentifier(processorIdentifier);
+    if (processorCapabilities != null)
+      req.setProcessorCapabilities(Arrays.asList(processorCapabilities));
+    return client.get_tables_ext(req);
   }
 
   @Override
@@ -3813,6 +3864,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public GetPartitionsResponse getPartitionsWithSpecs(GetPartitionsRequest request)
       throws TException {
+    if (processorCapabilities != null)
+      request.setProcessorCapabilities(Arrays.asList(processorCapabilities));
+    if (processorIdentifier != null)
+      request.setProcessorIdentifier(processorIdentifier);
     return client.get_partitions_with_specs(request);
   }
 
@@ -3854,5 +3909,74 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public String getServerVersion() throws TException {
     return client.getVersion();
+  }
+
+  /**
+   * Builder for requiredFields bitmask to be sent via GetTablesExtRequest
+   */
+   public static class GetTablesRequestBuilder {
+    private int requestedFields = 0x0;
+    final static GetTablesExtRequestFields defValue = GetTablesExtRequestFields.ALL;
+
+    public GetTablesRequestBuilder() {
+    }
+
+    public GetTablesRequestBuilder with(GetTablesExtRequestFields type) {
+      switch (type) {
+      case ALL :
+          this.requestedFields |= Integer.MAX_VALUE;
+          break;
+      case PROCESSOR_CAPABILITIES :
+          this.requestedFields |= 0x2;
+          break;
+      case ACCESS_TYPE :
+          this.requestedFields |= 0x1;
+          break;
+      default:
+          this.requestedFields |= Integer.MAX_VALUE;
+          break;
+      }
+      return this;
+    }
+
+    public int bitValue() {
+      return this.requestedFields;
+    }
+
+    public static int defaultValue() {
+      return new GetTablesRequestBuilder().with(defValue).bitValue();
+    }
+  }
+
+  /**
+   * Builder for building table capabilities to be includes in TBLPROPERTIES
+   * during createTable
+   */
+   public static class TableCapabilityBuilder {
+    private String capabilitiesString = null;
+    public static final String KEY_CAPABILITIES = "OBJCAPABILITIES";
+
+    public TableCapabilityBuilder() {
+      capabilitiesString = new String();
+    }
+
+    public TableCapabilityBuilder add(String skill) {
+      if (skill != null) {
+        capabilitiesString += skill + ",";
+      }
+      return this;
+    }
+
+    public String build() {
+      return this.capabilitiesString.substring(0, capabilitiesString.length() - 1);
+    }
+
+    public String getDBValue() {
+      return KEY_CAPABILITIES + "=" + build();
+    }
+
+    public static String getKey() {
+      return KEY_CAPABILITIES;
+    }
   }
 }

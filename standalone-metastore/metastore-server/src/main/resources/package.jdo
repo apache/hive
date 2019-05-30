@@ -343,6 +343,7 @@
       </datastore-identity>
       <field name="cols" table="COLUMNS_V2" >
         <collection element-type="MFieldSchema"/>
+        <foreign-key name="COLUMNS_V2_FK" delete-action="cascade"/>
         <join>
           <primary-key name="COLUMNS_PK">
             <column name="COLUMN_NAME"/>

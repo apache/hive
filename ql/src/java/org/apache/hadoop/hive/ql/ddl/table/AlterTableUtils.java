@@ -20,6 +20,10 @@ package org.apache.hadoop.hive.ql.ddl.table;
 
 import java.util.Map;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -60,5 +64,10 @@ public final class AlterTableUtils {
     // The table is missing either due to drop/rename which follows the operation.
     // Or the existing table is newer than our update. So, don't allow the update.
     return false;
+  }
+
+  public static boolean isSchemaEvolutionEnabled(Table table, Configuration conf) {
+    return AcidUtils.isTablePropertyTransactional(table.getMetadata()) ||
+        HiveConf.getBoolVar(conf, ConfVars.HIVE_SCHEMA_EVOLUTION);
   }
 }

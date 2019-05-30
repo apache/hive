@@ -1481,7 +1481,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
                       keys: fl_date (type: date)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.91240877
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 12 Data size: 768 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2521,7 +2521,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
                       keys: fl_time (type: timestamp)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.91240877
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 12 Data size: 576 Basic stats: COMPLETE Column stats: COMPLETE
@@ -4085,7 +4085,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
                       keys: fl_date (type: date)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.91240877
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 12 Data size: 768 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5125,7 +5125,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
                       keys: fl_time (type: timestamp)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.91240877
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 12 Data size: 576 Basic stats: COMPLETE Column stats: COMPLETE

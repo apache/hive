@@ -49,6 +49,26 @@ POSTHOOK: Input: default@kv_rename_test
 a1                  	int                 	                    
 b                   	int                 	                    
 c                   	int                 	                    
+PREHOOK: query: EXPLAIN ALTER TABLE kv_rename_test CHANGE a1 a2 INT FIRST
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@kv_rename_test
+PREHOOK: Output: default@kv_rename_test
+POSTHOOK: query: EXPLAIN ALTER TABLE kv_rename_test CHANGE a1 a2 INT FIRST
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@kv_rename_test
+POSTHOOK: Output: default@kv_rename_test
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Change Column
+      new column name: a2
+      new column type: int
+      old column name: a1
+      table name: default.kv_rename_test
+      first: true
+
 PREHOOK: query: ALTER TABLE kv_rename_test CHANGE a1 a2 INT FIRST
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@kv_rename_test
@@ -66,6 +86,26 @@ POSTHOOK: Input: default@kv_rename_test
 a2                  	int                 	                    
 b                   	int                 	                    
 c                   	int                 	                    
+PREHOOK: query: EXPLAIN ALTER TABLE kv_rename_test CHANGE a2 a INT AFTER b
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@kv_rename_test
+PREHOOK: Output: default@kv_rename_test
+POSTHOOK: query: EXPLAIN ALTER TABLE kv_rename_test CHANGE a2 a INT AFTER b
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@kv_rename_test
+POSTHOOK: Output: default@kv_rename_test
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Change Column
+      after column: b
+      new column name: a
+      new column type: int
+      old column name: a2
+      table name: default.kv_rename_test
+
 PREHOOK: query: ALTER TABLE kv_rename_test CHANGE a2 a INT AFTER b
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@kv_rename_test
@@ -100,6 +140,27 @@ POSTHOOK: Input: default@kv_rename_test
 b                   	int                 	                    
 a1                  	int                 	test comment1       
 c                   	int                 	                    
+PREHOOK: query: EXPLAIN ALTER TABLE kv_rename_test CHANGE a1 a2 INT COMMENT 'test comment2' FIRST
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@kv_rename_test
+PREHOOK: Output: default@kv_rename_test
+POSTHOOK: query: EXPLAIN ALTER TABLE kv_rename_test CHANGE a1 a2 INT COMMENT 'test comment2' FIRST
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@kv_rename_test
+POSTHOOK: Output: default@kv_rename_test
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Change Column
+      new column comment: test comment2
+      new column name: a2
+      new column type: int
+      old column name: a1
+      table name: default.kv_rename_test
+      first: true
+
 PREHOOK: query: ALTER TABLE kv_rename_test CHANGE a1 a2 INT COMMENT 'test comment2' FIRST
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@kv_rename_test

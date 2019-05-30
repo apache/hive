@@ -58,7 +58,7 @@ STAGE PLANS:
                           Statistics: Num rows: 782315 Data size: 6244648 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: sum(_col3)
-                            minReductionHashAggr: 0.0
+                            minReductionHashAggr: 0.99
                             mode: hash
                             outputColumnNames: _col0
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -172,4 +172,4 @@ POSTHOOK: query: select sum(t1.td) from (select  v1.csmallint as tsi, v1.cdouble
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-6.065190932488632E11
+6.06519093248863E11

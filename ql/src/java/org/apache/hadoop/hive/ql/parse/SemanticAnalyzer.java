@@ -8013,16 +8013,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void setWriteIdForSurrogateKeys(LoadTableDesc ltd, Operator input) throws SemanticException {
-    Map<String, ExprNodeDesc> columnExprMap = input.getConf().getColumnExprMap();
-    if (ltd == null || columnExprMap == null) {
+    if (ltd == null) {
       return;
     }
 
-    for (ExprNodeDesc desc : columnExprMap.values()) {
-      if (desc instanceof ExprNodeGenericFuncDesc) {
-        GenericUDF genericUDF = ((ExprNodeGenericFuncDesc)desc).getGenericUDF();
-        if (genericUDF instanceof GenericUDFSurrogateKey) {
-          ((GenericUDFSurrogateKey)genericUDF).setWriteId(ltd.getWriteId());
+    Map<String, ExprNodeDesc> columnExprMap = input.getConf().getColumnExprMap();
+    if (columnExprMap != null) {
+      for (ExprNodeDesc desc : columnExprMap.values()) {
+        if (desc instanceof ExprNodeGenericFuncDesc) {
+          GenericUDF genericUDF = ((ExprNodeGenericFuncDesc)desc).getGenericUDF();
+          if (genericUDF instanceof GenericUDFSurrogateKey) {
+            ((GenericUDFSurrogateKey)genericUDF).setWriteId(ltd.getWriteId());
+          }
         }
       }
     }
@@ -12823,7 +12825,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       qualifiedColName = rr.reverseLookup(colInfo.getInternalName());
-      if (useTabAliasIfAvailable && qualifiedColName[0] != null && !qualifiedColName[0].isEmpty()) {
+      // __u<n> is a UNION ALL placeholder name
+      if (useTabAliasIfAvailable && qualifiedColName[0] != null && (!qualifiedColName[0].isEmpty()) && (!qualifiedColName[0].startsWith("__u"))) {
         colName = qualifiedColName[0] + "." + qualifiedColName[1];
       } else {
         colName = qualifiedColName[1];

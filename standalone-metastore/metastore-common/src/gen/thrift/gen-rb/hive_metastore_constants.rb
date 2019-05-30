@@ -9,6 +9,14 @@ require 'hive_metastore_types'
 
 DDL_TIME = %q"transient_lastDdlTime"
 
+ACCESSTYPE_NONE = 1
+
+ACCESSTYPE_READONLY = 2
+
+ACCESSTYPE_WRITEONLY = 4
+
+ACCESSTYPE_READWRITE = 8
+
 HIVE_FILTER_FIELD_OWNER = %q"hive_filter_field_owner__"
 
 HIVE_FILTER_FIELD_PARAMS = %q"hive_filter_field_params__"

@@ -627,6 +627,16 @@ public class HiveConf extends Configuration {
         "internal usage only, used only in test mode. If set false, the operation logs, and the " +
         "operation log directory will not be removed, so they can be found after the test runs."),
 
+    HIVE_TEST_LOAD_HOSTNAMES("hive.test.load.hostnames", "",
+        "Specify host names for load testing. (e.g., \"host1,host2,host3\"). Leave it empty if no " +
+        "load generation is needed (eg. for production)."),
+    HIVE_TEST_LOAD_INTERVAL("hive.test.load.interval", "10ms", new TimeValidator(TimeUnit.MILLISECONDS),
+        "The interval length used for load and idle periods in milliseconds."),
+    HIVE_TEST_LOAD_UTILIZATION("hive.test.load.utilization", 0.2f,
+        "Specify processor load utilization between 0.0 (not loaded on all threads) and 1.0 " +
+        "(fully loaded on all threads). Comparing this with a random value the load generator creates " +
+        "hive.test.load.interval length active loops or idle periods"),
+
     HIVE_IN_TEZ_TEST("hive.in.tez.test", false, "internal use only, true when in testing tez",
         true),
     HIVE_MAPJOIN_TESTING_NO_HASH_TABLE_LOAD("hive.mapjoin.testing.no.hash.table.load", false, "internal use only, true when in testing map join",
@@ -4053,6 +4063,10 @@ public class HiveConf extends Configuration {
     LLAP_ALLOCATOR_DEFRAG_HEADROOM("hive.llap.io.allocator.defrag.headroom", "1Mb",
         "How much of a headroom to leave to allow allocator more flexibility to defragment.\n" +
         "The allocator would further cap it to a fraction of total memory."),
+    LLAP_ALLOCATOR_MAX_FORCE_EVICTED("hive.llap.io.allocator.max.force.eviction", "16Mb",
+        "Fragmentation can lead to some cases where more eviction has to happen to accommodate allocations\n" +
+            " This configuration puts a limit on how many bytes to force evict before using Allocator Discard method."
+            + " Higher values will allow allocator more flexibility and will lead to better caching."),
     LLAP_TRACK_CACHE_USAGE("hive.llap.io.track.cache.usage", true,
          "Whether to tag LLAP cache contents, mapping them to Hive entities (paths for\n" +
          "partitions and tables) for reporting."),
@@ -5693,6 +5707,7 @@ public class HiveConf extends Configuration {
     "hive\\.mapjoin\\..*",
     "hive\\.merge\\..*",
     "hive\\.optimize\\..*",
+    "hive\\.materializedview\\..*",
     "hive\\.orc\\..*",
     "hive\\.outerjoin\\..*",
     "hive\\.parquet\\..*",
