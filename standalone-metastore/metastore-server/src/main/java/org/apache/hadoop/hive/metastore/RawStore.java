@@ -1752,4 +1752,13 @@ public interface RawStore extends Configurable {
    * @param tableName the name of the table for which the dump is being taken
    */
   List<WriteEventInfo> getAllWriteEventInfo(long txnId, String dbName, String tableName) throws MetaException;
+
+  // FIXME apidoc
+  ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request);
+
+  // FIXME apidoc
+  void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request);
+
+  // FIXME apidoc
+  void scheduledQueryProgress(ScheduledQueryProgressInfo info);
 }

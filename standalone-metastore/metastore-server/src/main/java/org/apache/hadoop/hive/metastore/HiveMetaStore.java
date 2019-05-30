@@ -9492,6 +9492,55 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         endFunction("get_runtime_stats", ex == null, ex);
       }
     }
+
+    @Override
+    public ScheduledQueryPollResponse scheduled_query_poll(ScheduledQueryPollRequest request)
+        throws MetaException, TException {
+      startFunction("scheduled_query_poll");
+      Exception ex = null;
+      try {
+        RawStore ms = getMS();
+        return ms.scheduledQueryPoll(request);
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("scheduled_query_poll", ex == null, ex);
+      }
+    }
+
+    @Override
+    public void scheduled_query_maintenance(ScheduledQueryMaintenanceRequest request) throws MetaException, TException {
+      startFunction("scheduled_query_poll");
+      Exception ex = null;
+      try {
+        RawStore ms = getMS();
+        ms.scheduledQueryMaintenance(request);
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("scheduled_query_poll", ex == null, ex);
+      }
+    }
+
+    @Override
+    public void scheduled_query_progress(ScheduledQueryProgressInfo info) throws MetaException, TException {
+      startFunction("scheduled_query_poll");
+      Exception ex = null;
+      try {
+        RawStore ms = getMS();
+        ms.scheduledQueryProgress(info);
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("scheduled_query_poll", ex == null, ex);
+      }
+    }
   }
 
   private static IHMSHandler newRetryingHMSHandler(IHMSHandler baseHandler, Configuration conf)

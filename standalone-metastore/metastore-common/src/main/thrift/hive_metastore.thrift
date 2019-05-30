@@ -1731,6 +1731,7 @@ struct ScheduledQueryPollRequest {
 }
 
 struct ScheduledQueryPollResponse {
+  // FIXME rename
   1: required string scheduleId,
   2: required i64 executionId,
   3: required string query
@@ -1744,6 +1745,7 @@ struct Schedule {
 
 struct ScheduledQueryMaintenanceRequest {
   1: required EventRequestType type,
+  // FIXME rename to scheduleName
   2: required string scheduleId,
   3: optional bool enabled,
   //FIXME: clusterId and/or catalog and/or namespace
@@ -1760,10 +1762,11 @@ enum QueryState {
 }
 
 struct ScheduledQueryProgressInfo{
+  // FIXME scheduleId is amigous? scheduledExecutionId
   1: required i64 scheduleId,
   2: required QueryState state
+  // FIXME hive-query id?!
 }
-
 
 struct AlterPartitionsRequest {
   1: optional string catName,

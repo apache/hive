@@ -12580,4 +12580,36 @@ public class ObjectStore implements RawStore, Configurable {
 
     return false;
   }
+
+  @Override
+  public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) {
+    // query&update next_execution of next scheduled_query 
+    //    openTransaction();
+    //    query=getNextScheduledQuery();
+    //    request.getClusterFuck();
+
+    return new ScheduledQueryPollResponse("sch1", 2, "X");
+  }
+
+  @Override
+  public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void scheduledQueryProgress(ScheduledQueryProgressInfo info) {
+    //    long scheduledExecutionId = info.getScheduleId();
+    //    switch(info.getState()) {
+    //    case EXECUTING:
+    //      updateScheduledExecutionDeadline(scheduledExecutionId);
+    //      break;
+    //    case ERRORED:
+    //    case FINISHED:
+    //      updateScheduledExecution
+    //    }
+    //
+    // TODO Auto-generated method stub
+
+  }
 }
