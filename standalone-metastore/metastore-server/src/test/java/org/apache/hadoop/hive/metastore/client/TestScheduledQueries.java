@@ -21,6 +21,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -33,9 +34,12 @@ public class TestScheduledQueries extends MetaStoreClientTest {
   private IMetaStoreClient client;
 
   public TestScheduledQueries(String name, AbstractMetaStoreService metaStore) throws Exception {
-    metaStore.getConf().set(ConfVars.SCHEMA_VERIFICATION.getVarname(), "false");
-
     this.metaStore = metaStore;
+  }
+
+  @Test
+  public void as() {
+
   }
 
 }
