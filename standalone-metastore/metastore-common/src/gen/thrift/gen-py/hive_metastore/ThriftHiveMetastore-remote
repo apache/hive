@@ -252,6 +252,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  ScheduledQueryPollResponse scheduled_query_poll(ScheduledQueryPollRequest request)')
   print('  void scheduled_query_maintenance(ScheduledQueryMaintenanceRequest request)')
   print('  void scheduled_query_progress(ScheduledQueryProgressInfo info)')
+  print('  ScheduledQuery get_scheduled_query(string scheduleName)')
   print('  string getName()')
   print('  string getVersion()')
   print('  fb_status getStatus()')
@@ -1688,6 +1689,12 @@ elif cmd == 'scheduled_query_progress':
     print('scheduled_query_progress requires 1 args')
     sys.exit(1)
   pp.pprint(client.scheduled_query_progress(eval(args[0]),))
+
+elif cmd == 'get_scheduled_query':
+  if len(args) != 1:
+    print('get_scheduled_query requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_scheduled_query(args[0],))
 
 elif cmd == 'getName':
   if len(args) != 0:

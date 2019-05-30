@@ -5464,18 +5464,16 @@ class Schedule
   ::Thrift::Struct.generate_accessors self
 end
 
-class ScheduledQueryMaintenanceRequest
+class ScheduledQuery
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  TYPE = 1
-  SCHEDULEID = 2
-  ENABLED = 3
-  CLUSTERFUCK = 4
-  SCHEDULE = 5
-  USER = 6
-  QUERY = 7
+  SCHEDULEID = 1
+  ENABLED = 2
+  CLUSTERFUCK = 3
+  SCHEDULE = 4
+  USER = 5
+  QUERY = 6
 
   FIELDS = {
-    TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::EventRequestType},
     SCHEDULEID => {:type => ::Thrift::Types::STRING, :name => 'scheduleId'},
     ENABLED => {:type => ::Thrift::Types::BOOL, :name => 'enabled', :optional => true},
     CLUSTERFUCK => {:type => ::Thrift::Types::STRING, :name => 'clusterFuck', :optional => true},
@@ -5487,8 +5485,27 @@ class ScheduledQueryMaintenanceRequest
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field type is unset!') unless @type
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field scheduleId is unset!') unless @scheduleId
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ScheduledQueryMaintenanceRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TYPE = 1
+  SCHEDULEDQUERY = 2
+
+  FIELDS = {
+    TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::EventRequestType},
+    SCHEDULEDQUERY => {:type => ::Thrift::Types::STRUCT, :name => 'scheduledQuery', :class => ::ScheduledQuery}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field type is unset!') unless @type
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field scheduledQuery is unset!') unless @scheduledQuery
     unless @type.nil? || ::EventRequestType::VALID_VALUES.include?(@type)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
     end

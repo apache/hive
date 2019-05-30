@@ -1743,16 +1743,20 @@ struct Schedule {
   1: optional string cron
 }
 
+struct ScheduledQuery {
+  // FIXME rename to scheduleName
+  1: required string scheduleId,
+  2: optional bool enabled,
+  //FIXME: clusterId and/or catalog and/or namespace
+  3: optional string clusterFuck,
+  4: optional Schedule schedule,
+  5: optional string user,
+  6: optional string query
+}
+
 struct ScheduledQueryMaintenanceRequest {
   1: required EventRequestType type,
-  // FIXME rename to scheduleName
-  2: required string scheduleId,
-  3: optional bool enabled,
-  //FIXME: clusterId and/or catalog and/or namespace
-  4: optional string clusterFuck,
-  5: optional Schedule schedule,
-  6: optional string user,
-  7: optional string query
+  2: required ScheduledQuery scheduledQuery,
 }
 
 enum QueryState {
@@ -2569,6 +2573,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   ScheduledQueryPollResponse scheduled_query_poll(1: ScheduledQueryPollRequest request) throws(1:MetaException o1)
   void scheduled_query_maintenance(1: ScheduledQueryMaintenanceRequest request) throws(1:MetaException o1)
   void scheduled_query_progress(1: ScheduledQueryProgressInfo info) throws(1:MetaException o1)
+  ScheduledQuery get_scheduled_query(1: string scheduleName)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

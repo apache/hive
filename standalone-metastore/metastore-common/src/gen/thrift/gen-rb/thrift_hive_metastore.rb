@@ -3791,6 +3791,21 @@ module ThriftHiveMetastore
       return
     end
 
+    def get_scheduled_query(scheduleName)
+      send_get_scheduled_query(scheduleName)
+      return recv_get_scheduled_query()
+    end
+
+    def send_get_scheduled_query(scheduleName)
+      send_message('get_scheduled_query', Get_scheduled_query_args, :scheduleName => scheduleName)
+    end
+
+    def recv_get_scheduled_query()
+      result = receive_message(Get_scheduled_query_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_scheduled_query failed: unknown result')
+    end
+
   end
 
   class Processor < ::FacebookService::Processor 
@@ -6620,6 +6635,13 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'scheduled_query_progress', seqid)
+    end
+
+    def process_get_scheduled_query(seqid, iprot, oprot)
+      args = read_args(iprot, Get_scheduled_query_args)
+      result = Get_scheduled_query_result.new()
+      result.success = @handler.get_scheduled_query(args.scheduleName)
+      write_result(result, oprot, 'get_scheduled_query', seqid)
     end
 
   end
@@ -14998,6 +15020,38 @@ module ThriftHiveMetastore
 
     FIELDS = {
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_scheduled_query_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SCHEDULENAME = 1
+
+    FIELDS = {
+      SCHEDULENAME => {:type => ::Thrift::Types::STRING, :name => 'scheduleName'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_scheduled_query_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ScheduledQuery}
     }
 
     def struct_fields; FIELDS; end
