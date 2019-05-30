@@ -59,14 +59,6 @@ public class TestLlapTaskSchedulerMetrics {
     metrics.getMetrics(tmc, true);
     metricMap = tmc.getRecords().get(0).getMetrics();
     verifyDaemonMetrics(metricMap, Arrays.asList("key1", "key2"));
-
-    // Remove a daemon
-    metrics.removeDaemon("key1");
-
-    tmc = new MockMetricsCollector();
-    metrics.getMetrics(tmc, true);
-    metricMap = tmc.getRecords().get(0).getMetrics();
-    verifyDaemonMetrics(metricMap, Arrays.asList("key2"));
   }
 
   private void verifyDaemonMetrics(Map<MetricsInfo, Number> metricsMap, List<String> expectedKeys) {

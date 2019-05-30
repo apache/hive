@@ -120,10 +120,6 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
         new LlapTaskSchedulerMetrics(displayName, jm, sessionId, latencyMetricWindowSize));
   }
 
-  public void removeDaemon(String identifier) {
-    daemonTaskLatency.remove(identifier);
-  }
-
   @Override
   public void getMetrics(MetricsCollector collector, boolean b) {
     MetricsRecordBuilder rb = collector.addRecord(SchedulerMetrics)

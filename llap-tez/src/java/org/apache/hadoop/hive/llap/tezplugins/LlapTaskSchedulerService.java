@@ -2596,9 +2596,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       if (delayTime > blacklistConf.maxDelay) {
         delayTime = blacklistConf.maxDelay;
       }
-      if (metrics != null) {
-        metrics.removeDaemon(shortStringBase);
-      }
       if (LOG.isInfoEnabled()) {
         LOG.info("Disabling instance {} for {} milli-seconds. commFailure={}",
             toShortString(),
