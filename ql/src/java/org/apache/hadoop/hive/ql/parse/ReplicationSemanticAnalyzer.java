@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -57,21 +58,24 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_ENABLE_MOVE_OPT
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_MOVE_OPTIMIZED_FILE_SCHEMES;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DBNAME;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_LIMIT;
+import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_NULL;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_CONFIG;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_DUMP;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_LOAD;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_STATUS;
+import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_TABLES;
+import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_TABLES_LIST;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_TABNAME;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_TO;
 
 public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
-  // Database name or pattern
-  private String dbNameOrPattern;
-  // Table name or pattern
-  private String tblNameOrPattern;
+  // Replication Scope
+  private ReplScope replScope = new ReplScope();
+
   private Long eventFrom;
   private Long eventTo;
   private Integer maxEventLimit;
+
   // Base path for REPL LOAD
   private String path;
   // Added conf member to set the REPL command specific config entries without affecting the configs
@@ -101,23 +105,16 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     switch (ast.getToken().getType()) {
       case TOK_REPL_DUMP: {
         LOG.debug("ReplicationSemanticAnalyzer: analyzeInternal: dump");
-        try {
-          initReplDump(ast);
-        } catch (HiveException e) {
-          throw new SemanticException(e.getMessage(), e);
-        }
         analyzeReplDump(ast);
         break;
       }
       case TOK_REPL_LOAD: {
         LOG.debug("ReplicationSemanticAnalyzer: analyzeInternal: load");
-        initReplLoad(ast);
         analyzeReplLoad(ast);
         break;
       }
       case TOK_REPL_STATUS: {
         LOG.debug("ReplicationSemanticAnalyzer: analyzeInternal: status");
-        initReplStatus(ast);
         analyzeReplStatus(ast);
         break;
       }
@@ -134,50 +131,110 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  private boolean isValidTablesList(Tree tablesListTree) {
+    if (tablesListTree.getChildCount() <= 1) {
+      // If one or zero child, then it is valid.
+      // For single table replication, the valid format is <db_name>.<table_name>.
+      // To include multiple tables (t1 and t2), then valid format is <db_name>.[t1, t2].
+      // So, single child is always valid either it is table_name or tables_list.
+      return true;
+    }
+    assert(tablesListTree.getChildCount() == 2);
+
+    // We don't allow input of format <db_name>.<table_name>.<table_name> or <db_name>.<table_name>.[<tables_list>].
+    // To include t1* and exclude t100, then valid format is <db_name>.[t1*].[t100].
+    // So, if 2 children are there, then both should be table_lists.
+    return ((tablesListTree.getChild(0).getType() == TOK_REPL_TABLES_LIST)
+            && (tablesListTree.getChild(1).getType() == TOK_REPL_TABLES_LIST));
+  }
+
   private void initReplDump(ASTNode ast) throws HiveException {
     int numChildren = ast.getChildCount();
     boolean isMetaDataOnly = false;
-    dbNameOrPattern = PlanUtils.stripQuotes(ast.getChild(0).getText());
 
-    // skip the first node, which is always required
-    int currNode = 1;
-    while (currNode < numChildren) {
-      if (ast.getChild(currNode).getType() == TOK_REPL_CONFIG) {
-        Map<String, String> replConfigs
-            = DDLSemanticAnalyzer.getProps((ASTNode) ast.getChild(currNode).getChild(0));
-        if (null != replConfigs) {
-          for (Map.Entry<String, String> config : replConfigs.entrySet()) {
-            conf.set(config.getKey(), config.getValue());
+    String dbNameOrPattern = PlanUtils.stripQuotes(ast.getChild(0).getText());
+    LOG.info("ReplScope: Set DB Name: {}", dbNameOrPattern);
+    replScope.setDbName(dbNameOrPattern);
+
+    // Skip the first node, which is always required
+    int childIdx = 1;
+    while (childIdx < numChildren) {
+      Tree currNode = ast.getChild(childIdx);
+      switch (currNode.getType()) {
+        case TOK_REPL_CONFIG: {
+          Map<String, String> replConfigs
+              = DDLSemanticAnalyzer.getProps((ASTNode) currNode.getChild(0));
+          if (null != replConfigs) {
+            for (Map.Entry<String, String> config : replConfigs.entrySet()) {
+              conf.set(config.getKey(), config.getValue());
+            }
+            isMetaDataOnly = HiveConf.getBoolVar(conf, REPL_DUMP_METADATA_ONLY);
           }
-          isMetaDataOnly = HiveConf.getBoolVar(conf, REPL_DUMP_METADATA_ONLY);
+          break;
         }
-      } else if (ast.getChild(currNode).getType() == TOK_TABNAME) {
-        // optional tblName was specified.
-        tblNameOrPattern = PlanUtils.stripQuotes(ast.getChild(currNode).getChild(0).getText());
-      } else {
-        // TOK_FROM subtree
-        Tree fromNode = ast.getChild(currNode);
-        eventFrom = Long.parseLong(PlanUtils.stripQuotes(fromNode.getChild(0).getText()));
-        // skip the first, which is always required
-        int numChild = 1;
-        while (numChild < fromNode.getChildCount()) {
-          if (fromNode.getChild(numChild).getType() == TOK_TO) {
-            eventTo =
-                Long.parseLong(PlanUtils.stripQuotes(fromNode.getChild(numChild + 1).getText()));
-            // skip the next child, since we already took care of it
-            numChild++;
-          } else if (fromNode.getChild(numChild).getType() == TOK_LIMIT) {
-            maxEventLimit =
-                Integer.parseInt(PlanUtils.stripQuotes(fromNode.getChild(numChild + 1).getText()));
-            // skip the next child, since we already took care of it
+        case TOK_REPL_TABLES: {
+          assert(currNode.getChildCount() <= 2);
+          if (!isValidTablesList(currNode)) {
+            LOG.error(ErrorMsg.REPL_INCORRECT_SYNTAX_FOR_REPL_POLICY.getMsg());
+            throw new SemanticException(ErrorMsg.REPL_INCORRECT_SYNTAX_FOR_REPL_POLICY.getMsg());
+          }
+
+          // Traverse the children which can be single table_name node or just include tables list
+          // or both include and exclude tables list.
+          for (int listIdx = 0; listIdx < currNode.getChildCount(); listIdx++) {
+            Tree tablesNode = currNode.getChild(listIdx);
+            if (tablesNode.getType() == TOK_TABNAME) {
+              String tableName = tablesNode.getChild(0).getText();
+              LOG.info("ReplScope: Set Table Name: {}", tableName);
+              replScope.setTableName(tableName);
+            } else {
+              List<String> tablesList = new ArrayList<>();
+              for (int child = 0; child < tablesNode.getChildCount(); child++) {
+                Tree tablePatternNode = tablesNode.getChild(child);
+                if (tablePatternNode.getType() == TOK_NULL) {
+                  LOG.error(ErrorMsg.REPL_INVALID_DB_OR_TABLE_PATTERN.getMsg());
+                  throw new SemanticException(ErrorMsg.REPL_INVALID_DB_OR_TABLE_PATTERN.getMsg());
+                }
+                tablesList.add(unescapeSQLString(tablePatternNode.getText()));
+              }
+              if (!tablesList.isEmpty()) {
+                if (listIdx == 0) {
+                  LOG.info("ReplScope: Set Included Tables List: {}", tablesList);
+                  replScope.setIncludedTablePatterns(tablesList);
+                } else {
+                  LOG.info("ReplScope: Set Excluded Tables List: {}", tablesList);
+                  replScope.setExcludedTablePatterns(tablesList);
+                }
+              }
+            }
+          }
+          break;
+        }
+        default: {
+          // TOK_FROM subtree
+          Tree fromNode = currNode;
+          eventFrom = Long.parseLong(PlanUtils.stripQuotes(fromNode.getChild(0).getText()));
+          // skip the first, which is always required
+          int numChild = 1;
+          while (numChild < fromNode.getChildCount()) {
+            if (fromNode.getChild(numChild).getType() == TOK_TO) {
+              eventTo =
+                      Long.parseLong(PlanUtils.stripQuotes(fromNode.getChild(numChild + 1).getText()));
+              // skip the next child, since we already took care of it
+              numChild++;
+            } else if (fromNode.getChild(numChild).getType() == TOK_LIMIT) {
+              maxEventLimit =
+                      Integer.parseInt(PlanUtils.stripQuotes(fromNode.getChild(numChild + 1).getText()));
+              // skip the next child, since we already took care of it
+              numChild++;
+            }
+            // move to the next child in FROM tree
             numChild++;
           }
-          // move to the next child in FROM tree
-          numChild++;
         }
       }
       // move to the next root node
-      currNode++;
+      childIdx++;
     }
 
     for (String dbName : Utils.matchesDb(db, dbNameOrPattern)) {
@@ -196,15 +253,17 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   // REPL DUMP
   private void analyzeReplDump(ASTNode ast) throws SemanticException {
-    LOG.debug("ReplicationSemanticAnalyzer.analyzeReplDump: " + String.valueOf(dbNameOrPattern)
-        + "." + String.valueOf(tblNameOrPattern) + " from " + String.valueOf(eventFrom) + " to "
-        + String.valueOf(eventTo) + " maxEventLimit " + String.valueOf(maxEventLimit));
+    try {
+      initReplDump(ast);
+    } catch (HiveException e) {
+      throw new SemanticException(e.getMessage(), e);
+    }
+
     try {
       ctx.setResFile(ctx.getLocalTmpPath());
       Task<ReplDumpWork> replDumpWorkTask = TaskFactory
           .get(new ReplDumpWork(
-              dbNameOrPattern,
-              tblNameOrPattern,
+              replScope,
               eventFrom,
               eventTo,
               ErrorMsg.INVALID_PATH.getMsg(ast),
@@ -212,15 +271,13 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
               ctx.getResFile().toUri().toString()
       ), conf);
       rootTasks.add(replDumpWorkTask);
-      if (dbNameOrPattern != null) {
-        for (String dbName : Utils.matchesDb(db, dbNameOrPattern)) {
-          if (tblNameOrPattern != null) {
-            for (String tblName : Utils.matchesTbl(db, dbName, tblNameOrPattern)) {
-              inputs.add(new ReadEntity(db.getTable(dbName, tblName)));
-            }
-          } else {
-            inputs.add(new ReadEntity(db.getDatabase(dbName)));
+      for (String dbName : Utils.matchesDb(db, replScope.getDbName())) {
+        if (!replScope.includeAllTables()) {
+          for (String tblName : Utils.matchesTbl(db, dbName, replScope)) {
+            inputs.add(new ReadEntity(db.getTable(dbName, tblName)));
           }
+        } else {
+          inputs.add(new ReadEntity(db.getDatabase(dbName)));
         }
       }
       setFetchTask(createFetchTask(dumpSchema));
@@ -262,10 +319,10 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode childNode = (ASTNode) ast.getChild(i);
       switch (childNode.getToken().getType()) {
         case TOK_DBNAME:
-          dbNameOrPattern = PlanUtils.stripQuotes(childNode.getChild(0).getText());
+          replScope.setDbName(PlanUtils.stripQuotes(childNode.getChild(0).getText()));
           break;
         case TOK_TABNAME:
-          tblNameOrPattern = PlanUtils.stripQuotes(childNode.getChild(0).getText());
+          replScope.setTableName(PlanUtils.stripQuotes(childNode.getChild(0).getText()));
           break;
         case TOK_REPL_CONFIG:
           setConfigs((ASTNode) childNode.getChild(0));
@@ -319,13 +376,11 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
    *    36/
    */
   private void analyzeReplLoad(ASTNode ast) throws SemanticException {
-    LOG.debug("ReplSemanticAnalyzer.analyzeReplLoad: " + String.valueOf(dbNameOrPattern) + "."
-        + String.valueOf(tblNameOrPattern) + " from " + String.valueOf(path));
+    initReplLoad(ast);
 
-    // for analyze repl load, we walk through the dir structure available in the path,
+    // For analyze repl load, we walk through the dir structure available in the path,
     // looking at each db, and then each table, and then setting up the appropriate
     // import job in its place.
-
     try {
       assert(path != null);
       Path loadPath = new Path(path);
@@ -377,8 +432,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       } else {
         LOG.debug("{} contains an bootstrap dump", loadPath);
       }
-      ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern,
-          tblNameOrPattern, queryState.getLineageState(), evDump, dmd.getEventTo(),
+      ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), replScope.getDbName(),
+              replScope.getTableName(), queryState.getLineageState(), evDump, dmd.getEventTo(),
           dirLocationsToCopy(loadPath, evDump));
       rootTasks.add(TaskFactory.get(replLoadWork, conf));
     } catch (Exception e) {
@@ -431,13 +486,13 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   // REPL STATUS
   private void initReplStatus(ASTNode ast) throws SemanticException{
-    dbNameOrPattern = PlanUtils.stripQuotes(ast.getChild(0).getText());
+    replScope.setDbName(PlanUtils.stripQuotes(ast.getChild(0).getText()));
     int numChildren = ast.getChildCount();
     for (int i = 1; i < numChildren; i++) {
       ASTNode childNode = (ASTNode) ast.getChild(i);
       switch (childNode.getToken().getType()) {
       case TOK_TABNAME:
-        tblNameOrPattern = PlanUtils.stripQuotes(childNode.getChild(0).getText());
+        replScope.setTableName(PlanUtils.stripQuotes(childNode.getChild(0).getText()));
         break;
       case TOK_REPL_CONFIG:
         setConfigs((ASTNode) childNode.getChild(0));
@@ -449,9 +504,10 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeReplStatus(ASTNode ast) throws SemanticException {
-    LOG.debug("ReplicationSemanticAnalyzer.analyzeReplStatus: " + String.valueOf(dbNameOrPattern)
-        + "." + String.valueOf(tblNameOrPattern));
+    initReplStatus(ast);
 
+    String dbNameOrPattern = replScope.getDbName();
+    String tblNameOrPattern = replScope.getTableName();
     String replLastId = null;
 
     try {
@@ -484,7 +540,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     prepareReturnValues(Collections.singletonList(replLastId), "last_repl_id#string");
     setFetchTask(createFetchTask("last_repl_id#string"));
     LOG.debug("ReplicationSemanticAnalyzer.analyzeReplStatus: writing repl.last.id={} out to {}",
-        String.valueOf(replLastId), ctx.getResFile(), conf);
+        replLastId, ctx.getResFile(), conf);
   }
 
   private void prepareReturnValues(List<String> values, String schema) throws SemanticException {

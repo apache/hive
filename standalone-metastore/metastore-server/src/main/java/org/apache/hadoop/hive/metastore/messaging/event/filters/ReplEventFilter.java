@@ -17,24 +17,25 @@
  */
 package org.apache.hadoop.hive.metastore.messaging.event.filters;
 
-import org.apache.hadoop.hive.metastore.IMetaStoreClient.NotificationFilter;
+import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 
-public abstract class BasicFilter implements NotificationFilter {
+/**
+ * Utility function that constructs a notification filter to check if table is accepted for replication.
+ */
+public class ReplEventFilter extends BasicFilter {
+  private final ReplScope replScope;
+
+  public ReplEventFilter(final ReplScope replScope) {
+    this.replScope = replScope;
+  }
+
   @Override
-  public boolean accept(final NotificationEvent event) {
-    if (event == null) {
-      return false; // get rid of trivial case first, so that we can safely assume non-null
-    }
-    return shouldAccept(event);
+  boolean shouldAccept(final NotificationEvent event) {
+    // All txn related events are global ones and should be always accepted.
+    // For other events, if the DB/table names are included as per replication scope, then should
+    // accept the event.
+    return (isTxnRelatedEvent(event)
+            || replScope.includedInReplScope(event.getDbName(), event.getTableName()));
   }
-
-  boolean isTxnRelatedEvent(final NotificationEvent event) {
-    return ((event.getEventType().equals(MessageBuilder.OPEN_TXN_EVENT)) ||
-            (event.getEventType().equals(MessageBuilder.COMMIT_TXN_EVENT)) ||
-            (event.getEventType().equals(MessageBuilder.ABORT_TXN_EVENT)));
-  }
-
-  abstract boolean shouldAccept(final NotificationEvent event);
 }

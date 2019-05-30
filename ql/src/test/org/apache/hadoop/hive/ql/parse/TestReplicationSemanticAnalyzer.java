@@ -75,9 +75,11 @@ public class TestReplicationSemanticAnalyzer {
 
   private static void assertTableName(ASTNode root) {
     ASTNode child = (ASTNode) root.getChild(1);
-    assertEquals("TOK_TABNAME", child.getText());
+    assertEquals("TOK_REPL_TABLES", child.getText());
     assertEquals(1, child.getChildCount());
-    assertEquals("test_table", child.getChild(0).getText());
+    assertEquals("TOK_TABNAME", child.getChild(0).getText());
+    assertEquals(1, child.getChild(0).getChildCount());
+    assertEquals("test_table", child.getChild(0).getChild(0).getText());
   }
 
   private static void assertDatabase(final int expectedNumberOfChildren, ASTNode root) {
