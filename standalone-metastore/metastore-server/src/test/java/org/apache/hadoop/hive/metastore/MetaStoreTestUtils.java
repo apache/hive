@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -154,7 +155,7 @@ public class MetaStoreTestUtils {
         if (!keepJdbcUri) {
           // Setting metastore instance specific jdbc url postfixed with port
           jdbcUrl = "jdbc:derby:;databaseName=" + TMP_DIR + File.separator
-              + "junit_metastore_db_" + metaStorePort + ";create=true";
+              + MetaStoreServerUtils.JUNIT_DATABASE_PREFIX + "_" + metaStorePort + ";create=true";
           MetastoreConf.setVar(conf, ConfVars.CONNECT_URL_KEY, jdbcUrl);
         }
 
