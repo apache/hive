@@ -1438,6 +1438,37 @@
         <column name="PAYLOAD" jdbc-type="BLOB" allows-null="true"/>
       </field>
    </class>
+    <class name="MScheduledQuery" identity-type="datastore" table="SCHEDULED_QUERIES" detachable="true">
+      <datastore-identity>
+        <column name="SQ_ID"/>
+      </datastore-identity>
+<!-- FIXME: need a create/update/etc ts? no functional use...
+      <field name="createTime">
+        <column name="CREATE_TIME" jdbc-type="integer"/>
+      </field> -->
+      <field name="scheduleName">
+        <column name="SCHEDULE_NAME" jdbc-type="varchar" length="256" allows-null="true"/>
+      </field>
+      <field name="enabled">
+        <column name="ENABLED"/> <!-- FIXME: any boolean type? -->
+      </field>
+      <field name="clusterFuck">
+        <column name="CLUSTER_FUCK" jdbc-type="varchar" length="256" allows-null="true"/>
+      </field>
+      <field name="schedule">
+        <column name="SCHEDULE" jdbc-type="varchar" length="256" allows-null="true"/>
+      </field>
+      <field name="user">
+        <column name="USER" jdbc-type="varchar" length="256" allows-null="true"/>
+      </field>
+      <field name="query">
+        <column name="QUERY" jdbc-type="varchar" length="256" allows-null="true"/>
+      </field>
+
+      <field name="nextExecution">
+        <column name="NEXT_EXECUTION" jdbc-type="bigint"/>
+      </field>
+   </class>
   </package>
 </jdo>
 
