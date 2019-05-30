@@ -200,6 +200,14 @@ module WMPoolSchedulingPolicy
   VALID_VALUES = Set.new([FAIR, FIFO]).freeze
 end
 
+module QueryState
+  EXECUTING = 0
+  ERRORED = 1
+  FINISHED = 2
+  VALUE_MAP = {0 => "EXECUTING", 1 => "ERRORED", 2 => "FINISHED"}
+  VALID_VALUES = Set.new([EXECUTING, ERRORED, FINISHED]).freeze
+end
+
 module PartitionFilterMode
   BY_NAMES = 0
   BY_VALUES = 1
@@ -5395,6 +5403,118 @@ class GetRuntimeStatsRequest
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field maxWeight is unset!') unless @maxWeight
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field maxCreateTime is unset!') unless @maxCreateTime
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ScheduledQueryPollRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CLUSTERFUCK = 1
+
+  FIELDS = {
+    CLUSTERFUCK => {:type => ::Thrift::Types::STRING, :name => 'clusterFuck'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field clusterFuck is unset!') unless @clusterFuck
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ScheduledQueryPollResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SCHEDULEID = 1
+  EXECUTIONID = 2
+  QUERY = 3
+
+  FIELDS = {
+    SCHEDULEID => {:type => ::Thrift::Types::STRING, :name => 'scheduleId'},
+    EXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'executionId'},
+    QUERY => {:type => ::Thrift::Types::STRING, :name => 'query'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field scheduleId is unset!') unless @scheduleId
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field executionId is unset!') unless @executionId
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field query is unset!') unless @query
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class Schedule
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CRON = 1
+
+  FIELDS = {
+    CRON => {:type => ::Thrift::Types::STRING, :name => 'cron', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ScheduledQueryMaintenanceRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TYPE = 1
+  SCHEDULEID = 2
+  ENABLED = 3
+  CLUSTERFUCK = 4
+  SCHEDULE = 5
+  USER = 6
+  QUERY = 7
+
+  FIELDS = {
+    TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::EventRequestType},
+    SCHEDULEID => {:type => ::Thrift::Types::STRING, :name => 'scheduleId'},
+    ENABLED => {:type => ::Thrift::Types::BOOL, :name => 'enabled', :optional => true},
+    CLUSTERFUCK => {:type => ::Thrift::Types::STRING, :name => 'clusterFuck', :optional => true},
+    SCHEDULE => {:type => ::Thrift::Types::STRUCT, :name => 'schedule', :class => ::Schedule, :optional => true},
+    USER => {:type => ::Thrift::Types::STRING, :name => 'user', :optional => true},
+    QUERY => {:type => ::Thrift::Types::STRING, :name => 'query', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field type is unset!') unless @type
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field scheduleId is unset!') unless @scheduleId
+    unless @type.nil? || ::EventRequestType::VALID_VALUES.include?(@type)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ScheduledQueryProgressInfo
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SCHEDULEID = 1
+  STATE = 2
+
+  FIELDS = {
+    SCHEDULEID => {:type => ::Thrift::Types::I64, :name => 'scheduleId'},
+    STATE => {:type => ::Thrift::Types::I32, :name => 'state', :enum_class => ::QueryState}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field scheduleId is unset!') unless @scheduleId
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field state is unset!') unless @state
+    unless @state.nil? || ::QueryState::VALID_VALUES.include?(@state)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field state!')
+    end
   end
 
   ::Thrift::Struct.generate_accessors self

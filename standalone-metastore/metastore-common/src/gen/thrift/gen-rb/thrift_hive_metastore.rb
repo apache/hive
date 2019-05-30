@@ -3745,6 +3745,52 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partitions_with_specs failed: unknown result')
     end
 
+    def scheduled_query_poll(request)
+      send_scheduled_query_poll(request)
+      return recv_scheduled_query_poll()
+    end
+
+    def send_scheduled_query_poll(request)
+      send_message('scheduled_query_poll', Scheduled_query_poll_args, :request => request)
+    end
+
+    def recv_scheduled_query_poll()
+      result = receive_message(Scheduled_query_poll_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'scheduled_query_poll failed: unknown result')
+    end
+
+    def scheduled_query_maintenance(request)
+      send_scheduled_query_maintenance(request)
+      recv_scheduled_query_maintenance()
+    end
+
+    def send_scheduled_query_maintenance(request)
+      send_message('scheduled_query_maintenance', Scheduled_query_maintenance_args, :request => request)
+    end
+
+    def recv_scheduled_query_maintenance()
+      result = receive_message(Scheduled_query_maintenance_result)
+      raise result.o1 unless result.o1.nil?
+      return
+    end
+
+    def scheduled_query_progress(info)
+      send_scheduled_query_progress(info)
+      recv_scheduled_query_progress()
+    end
+
+    def send_scheduled_query_progress(info)
+      send_message('scheduled_query_progress', Scheduled_query_progress_args, :info => info)
+    end
+
+    def recv_scheduled_query_progress()
+      result = receive_message(Scheduled_query_progress_result)
+      raise result.o1 unless result.o1.nil?
+      return
+    end
+
   end
 
   class Processor < ::FacebookService::Processor 
@@ -6541,6 +6587,39 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'get_partitions_with_specs', seqid)
+    end
+
+    def process_scheduled_query_poll(seqid, iprot, oprot)
+      args = read_args(iprot, Scheduled_query_poll_args)
+      result = Scheduled_query_poll_result.new()
+      begin
+        result.success = @handler.scheduled_query_poll(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'scheduled_query_poll', seqid)
+    end
+
+    def process_scheduled_query_maintenance(seqid, iprot, oprot)
+      args = read_args(iprot, Scheduled_query_maintenance_args)
+      result = Scheduled_query_maintenance_result.new()
+      begin
+        @handler.scheduled_query_maintenance(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'scheduled_query_maintenance', seqid)
+    end
+
+    def process_scheduled_query_progress(seqid, iprot, oprot)
+      args = read_args(iprot, Scheduled_query_progress_args)
+      result = Scheduled_query_progress_result.new()
+      begin
+        @handler.scheduled_query_progress(args.info)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'scheduled_query_progress', seqid)
     end
 
   end
@@ -14820,6 +14899,104 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetPartitionsResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Scheduled_query_poll_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::ScheduledQueryPollRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Scheduled_query_poll_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ScheduledQueryPollResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Scheduled_query_maintenance_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::ScheduledQueryMaintenanceRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Scheduled_query_maintenance_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Scheduled_query_progress_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    INFO = 1
+
+    FIELDS = {
+      INFO => {:type => ::Thrift::Types::STRUCT, :name => 'info', :class => ::ScheduledQueryProgressInfo}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Scheduled_query_progress_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+
+    FIELDS = {
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 

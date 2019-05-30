@@ -1726,6 +1726,45 @@ struct GetRuntimeStatsRequest {
   2: required i32 maxCreateTime
 }
 
+struct ScheduledQueryPollRequest {
+  1: required string clusterFuck
+}
+
+struct ScheduledQueryPollResponse {
+  1: required string scheduleId,
+  2: required i64 executionId,
+  3: required string query
+}
+
+
+// FIXME: consider using uninon? to support more ways
+struct Schedule {
+  1: optional string cron
+}
+
+struct ScheduledQueryMaintenanceRequest {
+  1: required EventRequestType type,
+  2: required string scheduleId,
+  3: optional bool enabled,
+  //FIXME: clusterId and/or catalog and/or namespace
+  4: optional string clusterFuck,
+  5: optional Schedule schedule,
+  6: optional string user,
+  7: optional string query
+}
+
+enum QueryState {
+   EXECUTING,
+   ERRORED,
+   FINISHED
+}
+
+struct ScheduledQueryProgressInfo{
+  1: required i64 scheduleId,
+  2: required QueryState state
+}
+
+
 struct AlterPartitionsRequest {
   1: optional string catName,
   2: required string dbName,
@@ -2523,6 +2562,10 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   // get_partitions with filter and projectspec
   GetPartitionsResponse get_partitions_with_specs(1: GetPartitionsRequest request) throws(1:MetaException o1)
+
+  ScheduledQueryPollResponse scheduled_query_poll(1: ScheduledQueryPollRequest request) throws(1:MetaException o1)
+  void scheduled_query_maintenance(1: ScheduledQueryMaintenanceRequest request) throws(1:MetaException o1)
+  void scheduled_query_progress(1: ScheduledQueryProgressInfo info) throws(1:MetaException o1)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

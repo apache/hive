@@ -281,6 +281,17 @@ final class WMPoolSchedulingPolicy {
   );
 }
 
+final class QueryState {
+  const EXECUTING = 0;
+  const ERRORED = 1;
+  const FINISHED = 2;
+  static public $__names = array(
+    0 => 'EXECUTING',
+    1 => 'ERRORED',
+    2 => 'FINISHED',
+  );
+}
+
 final class PartitionFilterMode {
   const BY_NAMES = 0;
   const BY_VALUES = 1;
@@ -33951,6 +33962,593 @@ class GetRuntimeStatsRequest {
     if ($this->maxCreateTime !== null) {
       $xfer += $output->writeFieldBegin('maxCreateTime', TType::I32, 2);
       $xfer += $output->writeI32($this->maxCreateTime);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class ScheduledQueryPollRequest {
+  static $_TSPEC;
+
+  /**
+   * @var string
+   */
+  public $clusterFuck = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'clusterFuck',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['clusterFuck'])) {
+        $this->clusterFuck = $vals['clusterFuck'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'ScheduledQueryPollRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->clusterFuck);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ScheduledQueryPollRequest');
+    if ($this->clusterFuck !== null) {
+      $xfer += $output->writeFieldBegin('clusterFuck', TType::STRING, 1);
+      $xfer += $output->writeString($this->clusterFuck);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class ScheduledQueryPollResponse {
+  static $_TSPEC;
+
+  /**
+   * @var string
+   */
+  public $scheduleId = null;
+  /**
+   * @var int
+   */
+  public $executionId = null;
+  /**
+   * @var string
+   */
+  public $query = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'scheduleId',
+          'type' => TType::STRING,
+          ),
+        2 => array(
+          'var' => 'executionId',
+          'type' => TType::I64,
+          ),
+        3 => array(
+          'var' => 'query',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['scheduleId'])) {
+        $this->scheduleId = $vals['scheduleId'];
+      }
+      if (isset($vals['executionId'])) {
+        $this->executionId = $vals['executionId'];
+      }
+      if (isset($vals['query'])) {
+        $this->query = $vals['query'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'ScheduledQueryPollResponse';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->scheduleId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->executionId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->query);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ScheduledQueryPollResponse');
+    if ($this->scheduleId !== null) {
+      $xfer += $output->writeFieldBegin('scheduleId', TType::STRING, 1);
+      $xfer += $output->writeString($this->scheduleId);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->executionId !== null) {
+      $xfer += $output->writeFieldBegin('executionId', TType::I64, 2);
+      $xfer += $output->writeI64($this->executionId);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->query !== null) {
+      $xfer += $output->writeFieldBegin('query', TType::STRING, 3);
+      $xfer += $output->writeString($this->query);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class Schedule {
+  static $_TSPEC;
+
+  /**
+   * @var string
+   */
+  public $cron = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'cron',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['cron'])) {
+        $this->cron = $vals['cron'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'Schedule';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->cron);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('Schedule');
+    if ($this->cron !== null) {
+      $xfer += $output->writeFieldBegin('cron', TType::STRING, 1);
+      $xfer += $output->writeString($this->cron);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class ScheduledQueryMaintenanceRequest {
+  static $_TSPEC;
+
+  /**
+   * @var int
+   */
+  public $type = null;
+  /**
+   * @var string
+   */
+  public $scheduleId = null;
+  /**
+   * @var bool
+   */
+  public $enabled = null;
+  /**
+   * @var string
+   */
+  public $clusterFuck = null;
+  /**
+   * @var \metastore\Schedule
+   */
+  public $schedule = null;
+  /**
+   * @var string
+   */
+  public $user = null;
+  /**
+   * @var string
+   */
+  public $query = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'type',
+          'type' => TType::I32,
+          ),
+        2 => array(
+          'var' => 'scheduleId',
+          'type' => TType::STRING,
+          ),
+        3 => array(
+          'var' => 'enabled',
+          'type' => TType::BOOL,
+          ),
+        4 => array(
+          'var' => 'clusterFuck',
+          'type' => TType::STRING,
+          ),
+        5 => array(
+          'var' => 'schedule',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\Schedule',
+          ),
+        6 => array(
+          'var' => 'user',
+          'type' => TType::STRING,
+          ),
+        7 => array(
+          'var' => 'query',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['type'])) {
+        $this->type = $vals['type'];
+      }
+      if (isset($vals['scheduleId'])) {
+        $this->scheduleId = $vals['scheduleId'];
+      }
+      if (isset($vals['enabled'])) {
+        $this->enabled = $vals['enabled'];
+      }
+      if (isset($vals['clusterFuck'])) {
+        $this->clusterFuck = $vals['clusterFuck'];
+      }
+      if (isset($vals['schedule'])) {
+        $this->schedule = $vals['schedule'];
+      }
+      if (isset($vals['user'])) {
+        $this->user = $vals['user'];
+      }
+      if (isset($vals['query'])) {
+        $this->query = $vals['query'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'ScheduledQueryMaintenanceRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->type);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->scheduleId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->enabled);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->clusterFuck);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::STRUCT) {
+            $this->schedule = new \metastore\Schedule();
+            $xfer += $this->schedule->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 6:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->user);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 7:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->query);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ScheduledQueryMaintenanceRequest');
+    if ($this->type !== null) {
+      $xfer += $output->writeFieldBegin('type', TType::I32, 1);
+      $xfer += $output->writeI32($this->type);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->scheduleId !== null) {
+      $xfer += $output->writeFieldBegin('scheduleId', TType::STRING, 2);
+      $xfer += $output->writeString($this->scheduleId);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->enabled !== null) {
+      $xfer += $output->writeFieldBegin('enabled', TType::BOOL, 3);
+      $xfer += $output->writeBool($this->enabled);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->clusterFuck !== null) {
+      $xfer += $output->writeFieldBegin('clusterFuck', TType::STRING, 4);
+      $xfer += $output->writeString($this->clusterFuck);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->schedule !== null) {
+      if (!is_object($this->schedule)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('schedule', TType::STRUCT, 5);
+      $xfer += $this->schedule->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->user !== null) {
+      $xfer += $output->writeFieldBegin('user', TType::STRING, 6);
+      $xfer += $output->writeString($this->user);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->query !== null) {
+      $xfer += $output->writeFieldBegin('query', TType::STRING, 7);
+      $xfer += $output->writeString($this->query);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class ScheduledQueryProgressInfo {
+  static $_TSPEC;
+
+  /**
+   * @var int
+   */
+  public $scheduleId = null;
+  /**
+   * @var int
+   */
+  public $state = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'scheduleId',
+          'type' => TType::I64,
+          ),
+        2 => array(
+          'var' => 'state',
+          'type' => TType::I32,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['scheduleId'])) {
+        $this->scheduleId = $vals['scheduleId'];
+      }
+      if (isset($vals['state'])) {
+        $this->state = $vals['state'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'ScheduledQueryProgressInfo';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->scheduleId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->state);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ScheduledQueryProgressInfo');
+    if ($this->scheduleId !== null) {
+      $xfer += $output->writeFieldBegin('scheduleId', TType::I64, 1);
+      $xfer += $output->writeI64($this->scheduleId);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->state !== null) {
+      $xfer += $output->writeFieldBegin('state', TType::I32, 2);
+      $xfer += $output->writeI32($this->state);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
