@@ -102,6 +102,7 @@ import org.apache.tez.common.TezUtils;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.common.security.JobTokenSecretManager;
 import org.apache.tez.dag.api.TezUncheckedException;
+import org.apache.tez.dag.api.oldrecords.TaskAttemptState;
 import org.apache.tez.dag.app.dag.DAG;
 import org.apache.tez.dag.app.dag.TaskAttempt;
 import org.apache.tez.dag.app.dag.Vertex;
@@ -3161,8 +3162,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   }
 
   private void updateMetrics(TaskAttemptImpl taskAttempt) {
-    // Only do it for map tasks
-    if (!isMapTask(taskAttempt)) {
+    // Only do it for successful map tasks
+    if (!TaskAttemptState.SUCCEEDED.equals(taskAttempt.getState()) || !isMapTask(taskAttempt)) {
       return;
     }
     // Check if this task was already assigned to a node
