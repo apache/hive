@@ -3100,22 +3100,22 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) {
+  public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) throws MetaException {
     return rawStore.scheduledQueryPoll(request);
   }
 
   @Override
-  public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) {
+  public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) throws MetaException, NoSuchObjectException {
     rawStore.scheduledQueryMaintenance(request);
   }
 
   @Override
-  public void scheduledQueryProgress(ScheduledQueryProgressInfo info) {
+  public void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws MetaException, NoSuchObjectException {
     rawStore.scheduledQueryProgress(info);
   }
 
   @Override
-  public ScheduledQuery getScheduledQuery(String scheduleName) {
+  public ScheduledQuery getScheduledQuery(String scheduleName) throws MetaException, NoSuchObjectException {
     return rawStore.getScheduledQuery(scheduleName);
   }
 }

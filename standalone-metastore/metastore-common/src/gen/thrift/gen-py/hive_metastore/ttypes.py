@@ -24307,6 +24307,7 @@ class ScheduledQuery:
    - schedule
    - user
    - query
+   - nextExecution
   """
 
   thrift_spec = (
@@ -24317,15 +24318,17 @@ class ScheduledQuery:
     (4, TType.STRUCT, 'schedule', (Schedule, Schedule.thrift_spec), None, ), # 4
     (5, TType.STRING, 'user', None, None, ), # 5
     (6, TType.STRING, 'query', None, None, ), # 6
+    (7, TType.I32, 'nextExecution', None, None, ), # 7
   )
 
-  def __init__(self, scheduleName=None, enabled=None, clusterFuck=None, schedule=None, user=None, query=None,):
+  def __init__(self, scheduleName=None, enabled=None, clusterFuck=None, schedule=None, user=None, query=None, nextExecution=None,):
     self.scheduleName = scheduleName
     self.enabled = enabled
     self.clusterFuck = clusterFuck
     self.schedule = schedule
     self.user = user
     self.query = query
+    self.nextExecution = nextExecution
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -24367,6 +24370,11 @@ class ScheduledQuery:
           self.query = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.I32:
+          self.nextExecution = iprot.readI32()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -24401,6 +24409,10 @@ class ScheduledQuery:
       oprot.writeFieldBegin('query', TType.STRING, 6)
       oprot.writeString(self.query)
       oprot.writeFieldEnd()
+    if self.nextExecution is not None:
+      oprot.writeFieldBegin('nextExecution', TType.I32, 7)
+      oprot.writeI32(self.nextExecution)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -24418,6 +24430,7 @@ class ScheduledQuery:
     value = (value * 31) ^ hash(self.schedule)
     value = (value * 31) ^ hash(self.user)
     value = (value * 31) ^ hash(self.query)
+    value = (value * 31) ^ hash(self.nextExecution)
     return value
 
   def __repr__(self):

@@ -17,11 +17,18 @@
  */
 package org.apache.hadoop.hive.metastore.client;
 
+import java.util.List;
+
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.RuntimeStat;
+import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -53,30 +60,9 @@ public class TestScheduledQueries extends MetaStoreClientTest {
     client = null;
   }
 
-  //  @Test
-  //  public void test() throws Exception {
-  //    List<RuntimeStat> rs0 = client
-  //    assertNotNull(rs0);
-  //    assertEquals(0, rs0.size());
-  //
-  //    RuntimeStat stat = createStat(1);
-  //    client.addRuntimeStat(stat);
-  //
-  //    List<RuntimeStat> rs1 = getRuntimeStats();
-  //    assertNotNull(rs1);
-  //    assertEquals(1, rs1.size());
-  //    assertArrayEquals(stat.getPayload(), rs1.get(0).getPayload());
-  //    assertEquals(stat.getWeight(), rs1.get(0).getWeight());
-  //    // server sets createtime
-  //    assertNotEquals(stat.getCreateTime(), rs1.get(0).getCreateTime());
-  //
-  //    client.addRuntimeStat(createStat(2));
-  //    client.addRuntimeStat(createStat(3));
-  //    client.addRuntimeStat(createStat(4));
-  //
-  //    List<RuntimeStat> rs2 = getRuntimeStats();
-  //    assertEquals(4, rs2.size());
-  //
-  //  }
+  @Test(expected = NoSuchObjectException.class)
+  public void test() throws Exception {
+    ScheduledQuery s = client.getScheduledQuery("asd");
+  }
 
 }

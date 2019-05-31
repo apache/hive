@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField SCHEDULE_FIELD_DESC = new org.apache.thrift.protocol.TField("schedule", org.apache.thrift.protocol.TType.STRUCT, (short)4);
   private static final org.apache.thrift.protocol.TField USER_FIELD_DESC = new org.apache.thrift.protocol.TField("user", org.apache.thrift.protocol.TType.STRING, (short)5);
   private static final org.apache.thrift.protocol.TField QUERY_FIELD_DESC = new org.apache.thrift.protocol.TField("query", org.apache.thrift.protocol.TType.STRING, (short)6);
+  private static final org.apache.thrift.protocol.TField NEXT_EXECUTION_FIELD_DESC = new org.apache.thrift.protocol.TField("nextExecution", org.apache.thrift.protocol.TType.I32, (short)7);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -57,6 +58,7 @@ import org.slf4j.LoggerFactory;
   private Schedule schedule; // optional
   private String user; // optional
   private String query; // optional
+  private int nextExecution; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -65,7 +67,8 @@ import org.slf4j.LoggerFactory;
     CLUSTER_FUCK((short)3, "clusterFuck"),
     SCHEDULE((short)4, "schedule"),
     USER((short)5, "user"),
-    QUERY((short)6, "query");
+    QUERY((short)6, "query"),
+    NEXT_EXECUTION((short)7, "nextExecution");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -92,6 +95,8 @@ import org.slf4j.LoggerFactory;
           return USER;
         case 6: // QUERY
           return QUERY;
+        case 7: // NEXT_EXECUTION
+          return NEXT_EXECUTION;
         default:
           return null;
       }
@@ -133,8 +138,9 @@ import org.slf4j.LoggerFactory;
 
   // isset id assignments
   private static final int __ENABLED_ISSET_ID = 0;
+  private static final int __NEXTEXECUTION_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.ENABLED,_Fields.CLUSTER_FUCK,_Fields.SCHEDULE,_Fields.USER,_Fields.QUERY};
+  private static final _Fields optionals[] = {_Fields.ENABLED,_Fields.CLUSTER_FUCK,_Fields.SCHEDULE,_Fields.USER,_Fields.QUERY,_Fields.NEXT_EXECUTION};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -150,6 +156,8 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.QUERY, new org.apache.thrift.meta_data.FieldMetaData("query", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.NEXT_EXECUTION, new org.apache.thrift.meta_data.FieldMetaData("nextExecution", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ScheduledQuery.class, metaDataMap);
   }
@@ -185,6 +193,7 @@ import org.slf4j.LoggerFactory;
     if (other.isSetQuery()) {
       this.query = other.query;
     }
+    this.nextExecution = other.nextExecution;
   }
 
   public ScheduledQuery deepCopy() {
@@ -200,6 +209,8 @@ import org.slf4j.LoggerFactory;
     this.schedule = null;
     this.user = null;
     this.query = null;
+    setNextExecutionIsSet(false);
+    this.nextExecution = 0;
   }
 
   public String getScheduleName() {
@@ -339,6 +350,28 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public int getNextExecution() {
+    return this.nextExecution;
+  }
+
+  public void setNextExecution(int nextExecution) {
+    this.nextExecution = nextExecution;
+    setNextExecutionIsSet(true);
+  }
+
+  public void unsetNextExecution() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __NEXTEXECUTION_ISSET_ID);
+  }
+
+  /** Returns true if field nextExecution is set (has been assigned a value) and false otherwise */
+  public boolean isSetNextExecution() {
+    return EncodingUtils.testBit(__isset_bitfield, __NEXTEXECUTION_ISSET_ID);
+  }
+
+  public void setNextExecutionIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __NEXTEXECUTION_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case SCHEDULE_NAME:
@@ -389,6 +422,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case NEXT_EXECUTION:
+      if (value == null) {
+        unsetNextExecution();
+      } else {
+        setNextExecution((Integer)value);
+      }
+      break;
+
     }
   }
 
@@ -411,6 +452,9 @@ import org.slf4j.LoggerFactory;
 
     case QUERY:
       return getQuery();
+
+    case NEXT_EXECUTION:
+      return getNextExecution();
 
     }
     throw new IllegalStateException();
@@ -435,6 +479,8 @@ import org.slf4j.LoggerFactory;
       return isSetUser();
     case QUERY:
       return isSetQuery();
+    case NEXT_EXECUTION:
+      return isSetNextExecution();
     }
     throw new IllegalStateException();
   }
@@ -506,6 +552,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_nextExecution = true && this.isSetNextExecution();
+    boolean that_present_nextExecution = true && that.isSetNextExecution();
+    if (this_present_nextExecution || that_present_nextExecution) {
+      if (!(this_present_nextExecution && that_present_nextExecution))
+        return false;
+      if (this.nextExecution != that.nextExecution)
+        return false;
+    }
+
     return true;
   }
 
@@ -542,6 +597,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_query);
     if (present_query)
       list.add(query);
+
+    boolean present_nextExecution = true && (isSetNextExecution());
+    list.add(present_nextExecution);
+    if (present_nextExecution)
+      list.add(nextExecution);
 
     return list.hashCode();
   }
@@ -610,6 +670,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetQuery()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.query, other.query);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetNextExecution()).compareTo(other.isSetNextExecution());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetNextExecution()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.nextExecution, other.nextExecution);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -685,6 +755,12 @@ import org.slf4j.LoggerFactory;
       } else {
         sb.append(this.query);
       }
+      first = false;
+    }
+    if (isSetNextExecution()) {
+      if (!first) sb.append(", ");
+      sb.append("nextExecution:");
+      sb.append(this.nextExecution);
       first = false;
     }
     sb.append(")");
@@ -788,6 +864,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 7: // NEXT_EXECUTION
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.nextExecution = iprot.readI32();
+              struct.setNextExecutionIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -839,6 +923,11 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.isSetNextExecution()) {
+        oprot.writeFieldBegin(NEXT_EXECUTION_FIELD_DESC);
+        oprot.writeI32(struct.nextExecution);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -873,7 +962,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetQuery()) {
         optionals.set(4);
       }
-      oprot.writeBitSet(optionals, 5);
+      if (struct.isSetNextExecution()) {
+        optionals.set(5);
+      }
+      oprot.writeBitSet(optionals, 6);
       if (struct.isSetEnabled()) {
         oprot.writeBool(struct.enabled);
       }
@@ -889,6 +981,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetQuery()) {
         oprot.writeString(struct.query);
       }
+      if (struct.isSetNextExecution()) {
+        oprot.writeI32(struct.nextExecution);
+      }
     }
 
     @Override
@@ -896,7 +991,7 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.scheduleName = iprot.readString();
       struct.setScheduleNameIsSet(true);
-      BitSet incoming = iprot.readBitSet(5);
+      BitSet incoming = iprot.readBitSet(6);
       if (incoming.get(0)) {
         struct.enabled = iprot.readBool();
         struct.setEnabledIsSet(true);
@@ -917,6 +1012,10 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(4)) {
         struct.query = iprot.readString();
         struct.setQueryIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.nextExecution = iprot.readI32();
+        struct.setNextExecutionIsSet(true);
       }
     }
   }

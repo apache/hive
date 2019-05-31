@@ -5472,6 +5472,7 @@ class ScheduledQuery
   SCHEDULE = 4
   USER = 5
   QUERY = 6
+  NEXTEXECUTION = 7
 
   FIELDS = {
     SCHEDULENAME => {:type => ::Thrift::Types::STRING, :name => 'scheduleName'},
@@ -5479,7 +5480,8 @@ class ScheduledQuery
     CLUSTERFUCK => {:type => ::Thrift::Types::STRING, :name => 'clusterFuck', :optional => true},
     SCHEDULE => {:type => ::Thrift::Types::STRUCT, :name => 'schedule', :class => ::Schedule, :optional => true},
     USER => {:type => ::Thrift::Types::STRING, :name => 'user', :optional => true},
-    QUERY => {:type => ::Thrift::Types::STRING, :name => 'query', :optional => true}
+    QUERY => {:type => ::Thrift::Types::STRING, :name => 'query', :optional => true},
+    NEXTEXECUTION => {:type => ::Thrift::Types::I32, :name => 'nextExecution', :optional => true}
   }
 
   def struct_fields; FIELDS; end

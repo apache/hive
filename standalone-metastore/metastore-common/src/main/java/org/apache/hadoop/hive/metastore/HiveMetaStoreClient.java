@@ -3911,6 +3911,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return client.getVersion();
   }
 
+  @Override
+  public ScheduledQuery getScheduledQuery(String scheduleName) throws TException {
+    return client.get_scheduled_query(scheduleName);
+  }
+
   /**
    * Builder for requiredFields bitmask to be sent via GetTablesExtRequest
    */

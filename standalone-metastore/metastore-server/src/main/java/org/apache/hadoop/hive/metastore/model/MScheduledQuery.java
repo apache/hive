@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.metastore.model;
 
 import org.apache.hadoop.hive.metastore.api.RuntimeStat;
+import org.apache.hadoop.hive.metastore.api.Schedule;
+import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
 
 /**
  * Represents a runtime stat query entry.
@@ -44,13 +46,23 @@ public class MScheduledQuery {
   //    return ret;
   //  }
   //
-  //  public static RuntimeStat toThrift(MRuntimeStat2 stat) {
-  //    RuntimeStat ret = new RuntimeStat();
-  //    ret.setWeight(stat.weight);
-  //    ret.setCreateTime(stat.createTime);
-  //    ret.setPayload(stat.payload);
-  //    return ret;
-  //  }
+  public static ScheduledQuery toThrift(MScheduledQuery s) {
+    ScheduledQuery ret = new ScheduledQuery();
+    ret.setScheduleName(s.scheduleName);
+    ret.setEnabled(s.enabled);
+    ret.setClusterFuck(s.clusterFuck);
+    Schedule sschedule = new Schedule();
+    sschedule.setCron(s.schedule);
+    ret.setSchedule(sschedule);
+    ret.setUser(s.user);
+    ret.setQuery(s.query);
+    ret.setNextExecution(s.nextExecution);
+    return ret;
+  }
+
+    public ScheduledQuery toThrift() {
+      return toThrift(this);
+    }
 
 
 }

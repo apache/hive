@@ -1750,6 +1750,7 @@ struct ScheduledQuery {
   4: optional Schedule schedule,
   5: optional string user,
   6: optional string query,
+  7: optional i32 nextExecution,
 }
 
 struct ScheduledQueryMaintenanceRequest {

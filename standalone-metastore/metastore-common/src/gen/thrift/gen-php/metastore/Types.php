@@ -34269,6 +34269,10 @@ class ScheduledQuery {
    * @var string
    */
   public $query = null;
+  /**
+   * @var int
+   */
+  public $nextExecution = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -34298,6 +34302,10 @@ class ScheduledQuery {
           'var' => 'query',
           'type' => TType::STRING,
           ),
+        7 => array(
+          'var' => 'nextExecution',
+          'type' => TType::I32,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -34318,6 +34326,9 @@ class ScheduledQuery {
       }
       if (isset($vals['query'])) {
         $this->query = $vals['query'];
+      }
+      if (isset($vals['nextExecution'])) {
+        $this->nextExecution = $vals['nextExecution'];
       }
     }
   }
@@ -34384,6 +34395,13 @@ class ScheduledQuery {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 7:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->nextExecution);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -34428,6 +34446,11 @@ class ScheduledQuery {
     if ($this->query !== null) {
       $xfer += $output->writeFieldBegin('query', TType::STRING, 6);
       $xfer += $output->writeString($this->query);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->nextExecution !== null) {
+      $xfer += $output->writeFieldBegin('nextExecution', TType::I32, 7);
+      $xfer += $output->writeI32($this->nextExecution);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

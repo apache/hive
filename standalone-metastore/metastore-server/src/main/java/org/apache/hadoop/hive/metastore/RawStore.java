@@ -1754,14 +1754,14 @@ public interface RawStore extends Configurable {
   List<WriteEventInfo> getAllWriteEventInfo(long txnId, String dbName, String tableName) throws MetaException;
 
   // FIXME apidoc
-  ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request);
+  ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) throws MetaException;
 
   // FIXME apidoc
-  void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request);
+  void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) throws MetaException, NoSuchObjectException;
 
   // FIXME apidoc
-  void scheduledQueryProgress(ScheduledQueryProgressInfo info);
+  void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws MetaException, NoSuchObjectException;
 
   // FIXME apidoc
-  ScheduledQuery getScheduledQuery(String scheduleName);
+  ScheduledQuery getScheduledQuery(String scheduleName) throws MetaException, NoSuchObjectException;
 }

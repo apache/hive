@@ -12624,7 +12624,29 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public ScheduledQuery getScheduledQuery(String scheduleName) {
-    throw new RuntimeException("unimplemented");
+  public ScheduledQuery getScheduledQuery(String scheduleName) throws NoSuchObjectException {
+    return getMScheduledQuery(scheduleName).toThrift();
+
+  }
+
+  public MScheduledQuery getMScheduledQuery(String scheduleName) throws NoSuchObjectException {
+    MScheduledQuery s = null;
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MScheduledQuery.class, "scheduleName == sName");
+      query.declareParameters("java.lang.String sName");
+      query.setUnique(true);
+      s = (MScheduledQuery) query.execute(scheduleName);
+      pm.retrieve(s);
+      commited = commitTransaction();
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+    if (s == null) {
+      throw new NoSuchObjectException("There is no scheduled query named: " + scheduleName);
+    }
+    return s;
   }
 }

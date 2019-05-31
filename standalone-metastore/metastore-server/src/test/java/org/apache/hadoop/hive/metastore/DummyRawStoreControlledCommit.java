@@ -1301,7 +1301,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public ScheduledQuery getScheduledQuery(String scheduleName) {
+  public ScheduledQuery getScheduledQuery(String scheduleName) throws NoSuchObjectException {
     return objectStore.getScheduledQuery(scheduleName);
   }
 }
