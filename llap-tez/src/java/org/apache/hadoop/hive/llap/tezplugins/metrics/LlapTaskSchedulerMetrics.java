@@ -267,11 +267,10 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
   }
 
   public void addTaskLatency(String daemonId, long value) {
-    daemonTaskLatency.compute(daemonId, (k, v) -> {
-      v = (v == null ? new DaemonLatencyMetric(daemonId, latencyMetricWindowSize) : v);
-      v.addValue(value);
-      return v;
-    });
+    if (latencyMetricWindowSize > 0) {
+      daemonTaskLatency.computeIfAbsent(daemonId,
+          k -> new DaemonLatencyMetric(daemonId, latencyMetricWindowSize)).addValue(value);
+    }
   }
 
   public void resetWmMetrics() {
@@ -296,7 +295,9 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
         .addCounter(SchedulerPendingPreemptionTaskCount, pendingPreemptionTasksCount.value())
         .addCounter(SchedulerPreemptedTaskCount, preemptedTasksCount.value())
         .addCounter(SchedulerCompletedDagCount, completedDagcount.value());
-    daemonTaskLatency.forEach((k, v) -> rb.addGauge(v, v.getAverage()));
+    if (latencyMetricWindowSize > 0) {
+      daemonTaskLatency.forEach((k, v) -> rb.addGauge(v, v.getAverage()));
+    }
   }
 
   static class DaemonLatencyMetric implements MetricsInfo {

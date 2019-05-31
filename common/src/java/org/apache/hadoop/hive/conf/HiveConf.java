@@ -4439,7 +4439,8 @@ public class HiveConf extends Configuration {
         "Whether lock metrics (wait times, counts) are collected for LLAP "
         + "related locks"),
     LLAP_LATENCY_METRIC_WINDOW_SIZE("hive.llap.metrics.latency.window.size", 2048,
-        "The number of samples to keep in the sampling reservoir"),
+        "The number of samples to keep in the sampling reservoir.\n " +
+        "If set to 0 or negative number then the latency metric is not collected."),
 
     HIVE_TRIGGER_VALIDATION_INTERVAL("hive.trigger.validation.interval", "500ms",
       new TimeValidator(TimeUnit.MILLISECONDS),

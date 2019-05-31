@@ -33,9 +33,8 @@ import java.util.Map;
 
 /**
  * Mock metrics collector for this test only.
- * This <code>MetricsCollector</code> implementation is used to get the actual
- * <code>MetricsSource</code> data, collected by the <code>
- * ReadWriteLockMetrics</code>.
+ * This {@code MetricsCollector} implementation is used to get the actual
+ * {@code MetricsSource} data, collected by the {@code ReadWriteLockMetrics}.
  */
 public class MockMetricsCollector implements MetricsCollector {
   private ArrayList<MockRecord> records = new ArrayList<>();

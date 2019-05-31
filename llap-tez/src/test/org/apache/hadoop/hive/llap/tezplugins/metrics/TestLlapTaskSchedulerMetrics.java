@@ -38,16 +38,12 @@ import java.util.Map;
 public class TestLlapTaskSchedulerMetrics {
   private LlapTaskSchedulerMetrics metrics = null;
 
-  @Before
-  public void setUp() {
-    metrics = LlapTaskSchedulerMetrics.create("TestMetrics", "TestSession", 1024);
-  }
-
   /**
    * Test if adding / removing daemons are working as excepted.
    */
-  @Test(timeout = 1000000000)
+  @Test(timeout = 1000)
   public void testDaemonCount() {
+    metrics = LlapTaskSchedulerMetrics.create("TestMetrics", "TestSession", 1024);
     metrics.addTaskLatency("key1", 10);
     metrics.addTaskLatency("key2", 20);
     metrics.addTaskLatency("key1", 15);
@@ -60,6 +56,41 @@ public class TestLlapTaskSchedulerMetrics {
     metricMap = tmc.getRecords().get(0).getMetrics();
     verifyDaemonMetrics(metricMap, Arrays.asList("key1", "key2"));
   }
+
+  /**
+   * Test if setting latencyMetrics to 0 turns off the collection of latency.
+   */
+  @Test(timeout = 1000)
+  public void testDisabledDaemonCount() {
+    metrics = LlapTaskSchedulerMetrics.create("TestMetrics", "TestSession", 0);
+    metrics.addTaskLatency("key1", 10);
+
+    MockMetricsCollector tmc = null;
+    Map<MetricsInfo, Number> metricMap = null;
+
+    tmc = new MockMetricsCollector();
+    metrics.getMetrics(tmc, true);
+    metricMap = tmc.getRecords().get(0).getMetrics();
+    verifyDaemonMetrics(metricMap, Collections.emptyList());
+  }
+
+  /**
+   * Test if setting latencyMetrics to -1 turns off the collection of latency.
+   */
+  @Test(timeout = 1000)
+  public void testDisabledDaemonCount2() {
+    metrics = LlapTaskSchedulerMetrics.create("TestMetrics", "TestSession", -1);
+    metrics.addTaskLatency("key1", 10);
+
+    MockMetricsCollector tmc = null;
+    Map<MetricsInfo, Number> metricMap = null;
+
+    tmc = new MockMetricsCollector();
+    metrics.getMetrics(tmc, true);
+    metricMap = tmc.getRecords().get(0).getMetrics();
+    verifyDaemonMetrics(metricMap, Collections.emptyList());
+  }
+
 
   private void verifyDaemonMetrics(Map<MetricsInfo, Number> metricsMap, List<String> expectedKeys) {
     List<String> foundKeys = new ArrayList<>(expectedKeys.size());
