@@ -175,9 +175,9 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
             break;
           default:
             table.setAccessType(ACCESSTYPE_NONE);
+            ret.put(table,generated);
             break;
         }
-        ret.put(table,generated);
         continue;
       }
 
@@ -291,7 +291,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       }
     }
 
-    LOG.info("Transformer return list of " + objects.size());
+    LOG.info("Transformer return list of " + ret.size());
     return ret;
   }
 
