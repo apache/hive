@@ -1023,7 +1023,7 @@ expr_atom :
      | timestamp_literal
      | bool_literal
      | ident 
-     | string
+     | char_string
      | dec_number
      | int_number
      | null_const
@@ -1175,18 +1175,18 @@ file_name :
      ;
      
 date_literal :                             // DATE 'YYYY-MM-DD' literal
-       T_DATE string
+       T_DATE char_string
      ;
 
 timestamp_literal :                       // TIMESTAMP 'YYYY-MM-DD HH:MI:SS.FFF' literal
-       T_TIMESTAMP string
+       T_TIMESTAMP char_string
      ;
      
 ident :
        '-'? (L_ID | non_reserved_words) ('.' (L_ID | non_reserved_words))*
      ;
      
-string :                                   // String literal (single or double quoted)
+char_string :                                   // String literal (single or double quoted)
        L_S_STRING                          # single_quotedString
      | L_D_STRING                          # double_quotedString
      ;
