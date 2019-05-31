@@ -61,8 +61,13 @@ public class TestScheduledQueries extends MetaStoreClientTest {
   }
 
   @Test(expected = NoSuchObjectException.class)
-  public void test() throws Exception {
-    ScheduledQuery s = client.getScheduledQuery("asd");
+  public void testNonExistent() throws Exception {
+    client.getScheduledQuery("asd");
   }
 
+  @Test(expected = NoSuchObjectException.class)
+  public void testCreate() throws Exception {
+
+    //    ScheduledQuery s = client.createScheduledQuery();
+  }
 }

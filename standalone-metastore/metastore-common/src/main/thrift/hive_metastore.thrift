@@ -2571,7 +2571,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   ScheduledQueryPollResponse scheduled_query_poll(1: ScheduledQueryPollRequest request) throws(1:MetaException o1)
   void scheduled_query_maintenance(1: ScheduledQueryMaintenanceRequest request) throws(1:MetaException o1)
   void scheduled_query_progress(1: ScheduledQueryProgressInfo info) throws(1:MetaException o1)
-  ScheduledQuery get_scheduled_query(1: string scheduleName)
+  ScheduledQuery get_scheduled_query(1: string scheduleName) throws(1:MetaException o1, 2:NoSuchObjectException o2)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

@@ -3916,9 +3916,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return client.get_scheduled_query(scheduleName);
   }
 
+  public void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws TException {
+    client.scheduled_query_progress(info);
+  }
+
+  public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request)
+      throws MetaException, TException {
+    return client.scheduled_query_poll(request);
+      }
+
+  public void scheduled_query_maintenance(ScheduledQueryMaintenanceRequest request) throws MetaException, TException {
+    client.scheduled_query_maintenance(request);
+      }
+
   /**
-   * Builder for requiredFields bitmask to be sent via GetTablesExtRequest
-   */
+  * Builder for requiredFields bitmask to be sent via GetTablesExtRequest
+  */
    public static class GetTablesRequestBuilder {
     private int requestedFields = 0x0;
     final static GetTablesExtRequestFields defValue = GetTablesExtRequestFields.ALL;
