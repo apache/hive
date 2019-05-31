@@ -127,22 +127,9 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
 
   @Override
   public void debugDumpShort(StringBuilder sb) {
-    sb.append("\nMetadata cache state: ")
-        .append(metadata.size())
-        .append(" files and stripes, ")
-        .append(metadata.values().parallelStream().mapToLong(value -> {
-          if (value.getSingleLlapBuffer() != null) {
-            return value.getSingleLlapBuffer().allocSize;
-          }
-          long sum = 0;
-          for (LlapAllocatorBuffer llapMetadataBuffer : value.getMultipleLlapBuffers()) {
-            sum += llapMetadataBuffer.allocSize;
-          }
-          return sum;
-        }).sum())
-        .append(" total used bytes, ")
-        .append(estimateErrors.size())
-        .append(" files w/ORC estimate");
+    // TODO: perhaps add counters for separate things and multiple buffer cases.
+    sb.append("\nMetadata cache state: ").append(metadata.size()).append(
+        " files and stripes, ").append(estimateErrors.size()).append(" files w/ORC estimate");
   }
 
   @Override
