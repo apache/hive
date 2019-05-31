@@ -206,7 +206,7 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
       LlapCacheableBuffer current = listTail;
       oldTail = listTail;
       while (current != null) {
-        boolean canEvict = LlapCacheableBuffer.INVALIDATE_OK == current.invalidate();
+        boolean canEvict = LlapCacheableBuffer.INVALIDATE_OK != current.invalidate();
         current.indexInHeap = LlapCacheableBuffer.NOT_IN_CACHE;
         if (canEvict) {
           current = current.prev;
