@@ -3674,4 +3674,20 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   public ScheduledQuery getScheduledQuery(String scheduleName) throws TException {
     return client.get_scheduled_query(scheduleName);
   }
+
+  @Override
+  public void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws TException {
+    client.scheduled_query_progress(info);
+  }
+
+  @Override
+  public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request)
+      throws MetaException, TException {
+    return client.scheduled_query_poll(request);
+  }
+
+  @Override
+  public void scheduled_query_maintenance(ScheduledQueryMaintenanceRequest request) throws MetaException, TException {
+    scheduled_query_maintenance(request);
+  }
 }

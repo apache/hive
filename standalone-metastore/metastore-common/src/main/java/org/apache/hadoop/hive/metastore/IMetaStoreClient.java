@@ -3885,5 +3885,13 @@ public interface IMetaStoreClient {
   // FIXME: apidoc
   ScheduledQuery getScheduledQuery(String scheduleName) throws TException;
 
+  // FIXME: apidoc
+  void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws TException;
+
+  // FIXME: apidoc
+  ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) throws MetaException, TException;
+
+  // FIXME: apidoc
+  void scheduled_query_maintenance(ScheduledQueryMaintenanceRequest request) throws MetaException, TException;
 
 }
