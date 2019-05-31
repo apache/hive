@@ -43,6 +43,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
@@ -12602,7 +12603,8 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) throws MetaException {
+  public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request)
+      throws MetaException, NoSuchObjectException, AlreadyExistsException {
     switch (request.getType()) {
     case INSERT:
       scheduledQueryInsert(request.getScheduledQuery());
@@ -12612,10 +12614,15 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  public void scheduledQueryInsert(ScheduledQuery scheduledQuery) {
+  public void scheduledQueryInsert(ScheduledQuery scheduledQuery) throws NoSuchObjectException, AlreadyExistsException {
     MScheduledQuery newSch = MScheduledQuery.fromThrift(scheduledQuery);
     boolean commited = false;
     try {
+      Optional<MScheduledQuery> existing = getMScheduledQuery(scheduledQuery.getScheduleName());
+      if (existing.isPresent()) {
+        throw new AlreadyExistsException(
+            "Scheduled query with name: " + scheduledQuery.getScheduleName() + " already exists.");
+      }
       openTransaction();
       pm.makePersistent(newSch);
       commited = commitTransaction();
@@ -12644,11 +12651,15 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public ScheduledQuery getScheduledQuery(String scheduleName) throws NoSuchObjectException {
-    return getMScheduledQuery(scheduleName).toThrift();
+    Optional<MScheduledQuery> mScheduledQuery = getMScheduledQuery(scheduleName);
+    if (!mScheduledQuery.isPresent()) {
+      throw new NoSuchObjectException("There is no scheduled query named: " + scheduleName);
+    }
+    return mScheduledQuery.get().toThrift();
 
   }
 
-  public MScheduledQuery getMScheduledQuery(String scheduleName) throws NoSuchObjectException {
+  public Optional<MScheduledQuery> getMScheduledQuery(String scheduleName) {
     MScheduledQuery s = null;
     boolean commited = false;
     Query query = null;
@@ -12663,9 +12674,6 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       rollbackAndCleanup(commited, query);
     }
-    if (s == null) {
-      throw new NoSuchObjectException("There is no scheduled query named: " + scheduleName);
-    }
-    return s;
+    return Optional.ofNullable(s);
   }
 }

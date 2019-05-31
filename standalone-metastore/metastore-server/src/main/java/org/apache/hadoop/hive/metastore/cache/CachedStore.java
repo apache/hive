@@ -3105,7 +3105,8 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) throws MetaException, NoSuchObjectException {
+  public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request)
+      throws MetaException, NoSuchObjectException, AlreadyExistsException {
     rawStore.scheduledQueryMaintenance(request);
   }
 

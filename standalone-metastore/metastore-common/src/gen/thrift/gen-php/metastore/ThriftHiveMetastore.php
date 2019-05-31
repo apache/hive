@@ -1677,6 +1677,8 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf {
   /**
    * @param \metastore\ScheduledQueryMaintenanceRequest $request
    * @throws \metastore\MetaException
+   * @throws \metastore\NoSuchObjectException
+   * @throws \metastore\AlreadyExistsException
    */
   public function scheduled_query_maintenance(\metastore\ScheduledQueryMaintenanceRequest $request);
   /**
@@ -14513,6 +14515,12 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     }
     if ($result->o1 !== null) {
       throw $result->o1;
+    }
+    if ($result->o2 !== null) {
+      throw $result->o2;
+    }
+    if ($result->o3 !== null) {
+      throw $result->o3;
     }
     return;
   }
@@ -64683,6 +64691,14 @@ class ThriftHiveMetastore_scheduled_query_maintenance_result {
    * @var \metastore\MetaException
    */
   public $o1 = null;
+  /**
+   * @var \metastore\NoSuchObjectException
+   */
+  public $o2 = null;
+  /**
+   * @var \metastore\AlreadyExistsException
+   */
+  public $o3 = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -64692,11 +64708,27 @@ class ThriftHiveMetastore_scheduled_query_maintenance_result {
           'type' => TType::STRUCT,
           'class' => '\metastore\MetaException',
           ),
+        2 => array(
+          'var' => 'o2',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\NoSuchObjectException',
+          ),
+        3 => array(
+          'var' => 'o3',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\AlreadyExistsException',
+          ),
         );
     }
     if (is_array($vals)) {
       if (isset($vals['o1'])) {
         $this->o1 = $vals['o1'];
+      }
+      if (isset($vals['o2'])) {
+        $this->o2 = $vals['o2'];
+      }
+      if (isset($vals['o3'])) {
+        $this->o3 = $vals['o3'];
       }
     }
   }
@@ -64728,6 +64760,22 @@ class ThriftHiveMetastore_scheduled_query_maintenance_result {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 2:
+          if ($ftype == TType::STRUCT) {
+            $this->o2 = new \metastore\NoSuchObjectException();
+            $xfer += $this->o2->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::STRUCT) {
+            $this->o3 = new \metastore\AlreadyExistsException();
+            $xfer += $this->o3->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -64744,6 +64792,16 @@ class ThriftHiveMetastore_scheduled_query_maintenance_result {
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->o2 !== null) {
+      $xfer += $output->writeFieldBegin('o2', TType::STRUCT, 2);
+      $xfer += $this->o2->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->o3 !== null) {
+      $xfer += $output->writeFieldBegin('o3', TType::STRUCT, 3);
+      $xfer += $this->o3->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

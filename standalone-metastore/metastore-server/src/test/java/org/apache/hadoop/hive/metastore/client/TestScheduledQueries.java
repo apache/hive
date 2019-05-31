@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.EventRequestType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -86,7 +87,7 @@ public class TestScheduledQueries extends MetaStoreClientTest {
     assertEquals(schq2, schq);
   }
 
-  @Test(expected = MetaException.class)
+  @Test(expected = AlreadyExistsException.class)
   public void testDuplicateCreate() throws Exception {
     ScheduledQuery schq = createScheduledQuery("duplicate");
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();

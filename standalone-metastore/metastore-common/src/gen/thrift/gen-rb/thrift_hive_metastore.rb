@@ -3773,6 +3773,8 @@ module ThriftHiveMetastore
     def recv_scheduled_query_maintenance()
       result = receive_message(Scheduled_query_maintenance_result)
       raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
       return
     end
 
@@ -6624,6 +6626,10 @@ module ThriftHiveMetastore
         @handler.scheduled_query_maintenance(args.request)
       rescue ::MetaException => o1
         result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      rescue ::AlreadyExistsException => o3
+        result.o3 = o3
       end
       write_result(result, oprot, 'scheduled_query_maintenance', seqid)
     end
@@ -14993,9 +14999,13 @@ module ThriftHiveMetastore
   class Scheduled_query_maintenance_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     O1 = 1
+    O2 = 2
+    O3 = 3
 
     FIELDS = {
-      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::AlreadyExistsException}
     }
 
     def struct_fields; FIELDS; end
