@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class ScheduledQuery implements org.apache.thrift.TBase<ScheduledQuery, ScheduledQuery._Fields>, java.io.Serializable, Cloneable, Comparable<ScheduledQuery> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ScheduledQuery");
 
-  private static final org.apache.thrift.protocol.TField SCHEDULE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("scheduleId", org.apache.thrift.protocol.TType.STRING, (short)1);
+  private static final org.apache.thrift.protocol.TField SCHEDULE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("scheduleName", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField ENABLED_FIELD_DESC = new org.apache.thrift.protocol.TField("enabled", org.apache.thrift.protocol.TType.BOOL, (short)2);
   private static final org.apache.thrift.protocol.TField CLUSTER_FUCK_FIELD_DESC = new org.apache.thrift.protocol.TField("clusterFuck", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField SCHEDULE_FIELD_DESC = new org.apache.thrift.protocol.TField("schedule", org.apache.thrift.protocol.TType.STRUCT, (short)4);
@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new ScheduledQueryTupleSchemeFactory());
   }
 
-  private String scheduleId; // required
+  private String scheduleName; // required
   private boolean enabled; // optional
   private String clusterFuck; // optional
   private Schedule schedule; // optional
@@ -60,7 +60,7 @@ import org.slf4j.LoggerFactory;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    SCHEDULE_ID((short)1, "scheduleId"),
+    SCHEDULE_NAME((short)1, "scheduleName"),
     ENABLED((short)2, "enabled"),
     CLUSTER_FUCK((short)3, "clusterFuck"),
     SCHEDULE((short)4, "schedule"),
@@ -80,8 +80,8 @@ import org.slf4j.LoggerFactory;
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // SCHEDULE_ID
-          return SCHEDULE_ID;
+        case 1: // SCHEDULE_NAME
+          return SCHEDULE_NAME;
         case 2: // ENABLED
           return ENABLED;
         case 3: // CLUSTER_FUCK
@@ -138,7 +138,7 @@ import org.slf4j.LoggerFactory;
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.SCHEDULE_ID, new org.apache.thrift.meta_data.FieldMetaData("scheduleId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.SCHEDULE_NAME, new org.apache.thrift.meta_data.FieldMetaData("scheduleName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.ENABLED, new org.apache.thrift.meta_data.FieldMetaData("enabled", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
@@ -158,10 +158,10 @@ import org.slf4j.LoggerFactory;
   }
 
   public ScheduledQuery(
-    String scheduleId)
+    String scheduleName)
   {
     this();
-    this.scheduleId = scheduleId;
+    this.scheduleName = scheduleName;
   }
 
   /**
@@ -169,8 +169,8 @@ import org.slf4j.LoggerFactory;
    */
   public ScheduledQuery(ScheduledQuery other) {
     __isset_bitfield = other.__isset_bitfield;
-    if (other.isSetScheduleId()) {
-      this.scheduleId = other.scheduleId;
+    if (other.isSetScheduleName()) {
+      this.scheduleName = other.scheduleName;
     }
     this.enabled = other.enabled;
     if (other.isSetClusterFuck()) {
@@ -193,7 +193,7 @@ import org.slf4j.LoggerFactory;
 
   @Override
   public void clear() {
-    this.scheduleId = null;
+    this.scheduleName = null;
     setEnabledIsSet(false);
     this.enabled = false;
     this.clusterFuck = null;
@@ -202,26 +202,26 @@ import org.slf4j.LoggerFactory;
     this.query = null;
   }
 
-  public String getScheduleId() {
-    return this.scheduleId;
+  public String getScheduleName() {
+    return this.scheduleName;
   }
 
-  public void setScheduleId(String scheduleId) {
-    this.scheduleId = scheduleId;
+  public void setScheduleName(String scheduleName) {
+    this.scheduleName = scheduleName;
   }
 
-  public void unsetScheduleId() {
-    this.scheduleId = null;
+  public void unsetScheduleName() {
+    this.scheduleName = null;
   }
 
-  /** Returns true if field scheduleId is set (has been assigned a value) and false otherwise */
-  public boolean isSetScheduleId() {
-    return this.scheduleId != null;
+  /** Returns true if field scheduleName is set (has been assigned a value) and false otherwise */
+  public boolean isSetScheduleName() {
+    return this.scheduleName != null;
   }
 
-  public void setScheduleIdIsSet(boolean value) {
+  public void setScheduleNameIsSet(boolean value) {
     if (!value) {
-      this.scheduleId = null;
+      this.scheduleName = null;
     }
   }
 
@@ -341,11 +341,11 @@ import org.slf4j.LoggerFactory;
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case SCHEDULE_ID:
+    case SCHEDULE_NAME:
       if (value == null) {
-        unsetScheduleId();
+        unsetScheduleName();
       } else {
-        setScheduleId((String)value);
+        setScheduleName((String)value);
       }
       break;
 
@@ -394,8 +394,8 @@ import org.slf4j.LoggerFactory;
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case SCHEDULE_ID:
-      return getScheduleId();
+    case SCHEDULE_NAME:
+      return getScheduleName();
 
     case ENABLED:
       return isEnabled();
@@ -423,8 +423,8 @@ import org.slf4j.LoggerFactory;
     }
 
     switch (field) {
-    case SCHEDULE_ID:
-      return isSetScheduleId();
+    case SCHEDULE_NAME:
+      return isSetScheduleName();
     case ENABLED:
       return isSetEnabled();
     case CLUSTER_FUCK:
@@ -452,12 +452,12 @@ import org.slf4j.LoggerFactory;
     if (that == null)
       return false;
 
-    boolean this_present_scheduleId = true && this.isSetScheduleId();
-    boolean that_present_scheduleId = true && that.isSetScheduleId();
-    if (this_present_scheduleId || that_present_scheduleId) {
-      if (!(this_present_scheduleId && that_present_scheduleId))
+    boolean this_present_scheduleName = true && this.isSetScheduleName();
+    boolean that_present_scheduleName = true && that.isSetScheduleName();
+    if (this_present_scheduleName || that_present_scheduleName) {
+      if (!(this_present_scheduleName && that_present_scheduleName))
         return false;
-      if (!this.scheduleId.equals(that.scheduleId))
+      if (!this.scheduleName.equals(that.scheduleName))
         return false;
     }
 
@@ -513,10 +513,10 @@ import org.slf4j.LoggerFactory;
   public int hashCode() {
     List<Object> list = new ArrayList<Object>();
 
-    boolean present_scheduleId = true && (isSetScheduleId());
-    list.add(present_scheduleId);
-    if (present_scheduleId)
-      list.add(scheduleId);
+    boolean present_scheduleName = true && (isSetScheduleName());
+    list.add(present_scheduleName);
+    if (present_scheduleName)
+      list.add(scheduleName);
 
     boolean present_enabled = true && (isSetEnabled());
     list.add(present_enabled);
@@ -554,12 +554,12 @@ import org.slf4j.LoggerFactory;
 
     int lastComparison = 0;
 
-    lastComparison = Boolean.valueOf(isSetScheduleId()).compareTo(other.isSetScheduleId());
+    lastComparison = Boolean.valueOf(isSetScheduleName()).compareTo(other.isSetScheduleName());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetScheduleId()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.scheduleId, other.scheduleId);
+    if (isSetScheduleName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.scheduleName, other.scheduleName);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -634,11 +634,11 @@ import org.slf4j.LoggerFactory;
     StringBuilder sb = new StringBuilder("ScheduledQuery(");
     boolean first = true;
 
-    sb.append("scheduleId:");
-    if (this.scheduleId == null) {
+    sb.append("scheduleName:");
+    if (this.scheduleName == null) {
       sb.append("null");
     } else {
-      sb.append(this.scheduleId);
+      sb.append(this.scheduleName);
     }
     first = false;
     if (isSetEnabled()) {
@@ -693,8 +693,8 @@ import org.slf4j.LoggerFactory;
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (!isSetScheduleId()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'scheduleId' is unset! Struct:" + toString());
+    if (!isSetScheduleName()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'scheduleName' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -739,10 +739,10 @@ import org.slf4j.LoggerFactory;
           break;
         }
         switch (schemeField.id) {
-          case 1: // SCHEDULE_ID
+          case 1: // SCHEDULE_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.scheduleId = iprot.readString();
-              struct.setScheduleIdIsSet(true);
+              struct.scheduleName = iprot.readString();
+              struct.setScheduleNameIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -801,9 +801,9 @@ import org.slf4j.LoggerFactory;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (struct.scheduleId != null) {
-        oprot.writeFieldBegin(SCHEDULE_ID_FIELD_DESC);
-        oprot.writeString(struct.scheduleId);
+      if (struct.scheduleName != null) {
+        oprot.writeFieldBegin(SCHEDULE_NAME_FIELD_DESC);
+        oprot.writeString(struct.scheduleName);
         oprot.writeFieldEnd();
       }
       if (struct.isSetEnabled()) {
@@ -856,7 +856,7 @@ import org.slf4j.LoggerFactory;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, ScheduledQuery struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
-      oprot.writeString(struct.scheduleId);
+      oprot.writeString(struct.scheduleName);
       BitSet optionals = new BitSet();
       if (struct.isSetEnabled()) {
         optionals.set(0);
@@ -894,8 +894,8 @@ import org.slf4j.LoggerFactory;
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, ScheduledQuery struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      struct.scheduleId = iprot.readString();
-      struct.setScheduleIdIsSet(true);
+      struct.scheduleName = iprot.readString();
+      struct.setScheduleNameIsSet(true);
       BitSet incoming = iprot.readBitSet(5);
       if (incoming.get(0)) {
         struct.enabled = iprot.readBool();

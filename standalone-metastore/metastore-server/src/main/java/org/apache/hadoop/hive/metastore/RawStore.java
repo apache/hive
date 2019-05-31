@@ -1761,4 +1761,7 @@ public interface RawStore extends Configurable {
 
   // FIXME apidoc
   void scheduledQueryProgress(ScheduledQueryProgressInfo info);
+
+  // FIXME apidoc
+  ScheduledQuery getScheduledQuery(String scheduleName);
 }

@@ -75,6 +75,7 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequest;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollRequest;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollResponse;
@@ -1279,5 +1280,10 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public void scheduledQueryProgress(ScheduledQueryProgressInfo info) {
+  }
+
+  @Override
+  public ScheduledQuery getScheduledQuery(String scheduleName) {
+    throw new RuntimeException("unimplemented");
   }
 }

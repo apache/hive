@@ -24139,20 +24139,20 @@ class ScheduledQueryPollRequest:
 class ScheduledQueryPollResponse:
   """
   Attributes:
-   - scheduleId
+   - scheduleName
    - executionId
    - query
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'scheduleId', None, None, ), # 1
+    (1, TType.STRING, 'scheduleName', None, None, ), # 1
     (2, TType.I64, 'executionId', None, None, ), # 2
     (3, TType.STRING, 'query', None, None, ), # 3
   )
 
-  def __init__(self, scheduleId=None, executionId=None, query=None,):
-    self.scheduleId = scheduleId
+  def __init__(self, scheduleName=None, executionId=None, query=None,):
+    self.scheduleName = scheduleName
     self.executionId = executionId
     self.query = query
 
@@ -24167,7 +24167,7 @@ class ScheduledQueryPollResponse:
         break
       if fid == 1:
         if ftype == TType.STRING:
-          self.scheduleId = iprot.readString()
+          self.scheduleName = iprot.readString()
         else:
           iprot.skip(ftype)
       elif fid == 2:
@@ -24190,9 +24190,9 @@ class ScheduledQueryPollResponse:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('ScheduledQueryPollResponse')
-    if self.scheduleId is not None:
-      oprot.writeFieldBegin('scheduleId', TType.STRING, 1)
-      oprot.writeString(self.scheduleId)
+    if self.scheduleName is not None:
+      oprot.writeFieldBegin('scheduleName', TType.STRING, 1)
+      oprot.writeString(self.scheduleName)
       oprot.writeFieldEnd()
     if self.executionId is not None:
       oprot.writeFieldBegin('executionId', TType.I64, 2)
@@ -24206,8 +24206,8 @@ class ScheduledQueryPollResponse:
     oprot.writeStructEnd()
 
   def validate(self):
-    if self.scheduleId is None:
-      raise TProtocol.TProtocolException(message='Required field scheduleId is unset!')
+    if self.scheduleName is None:
+      raise TProtocol.TProtocolException(message='Required field scheduleName is unset!')
     if self.executionId is None:
       raise TProtocol.TProtocolException(message='Required field executionId is unset!')
     if self.query is None:
@@ -24217,7 +24217,7 @@ class ScheduledQueryPollResponse:
 
   def __hash__(self):
     value = 17
-    value = (value * 31) ^ hash(self.scheduleId)
+    value = (value * 31) ^ hash(self.scheduleName)
     value = (value * 31) ^ hash(self.executionId)
     value = (value * 31) ^ hash(self.query)
     return value
@@ -24301,7 +24301,7 @@ class Schedule:
 class ScheduledQuery:
   """
   Attributes:
-   - scheduleId
+   - scheduleName
    - enabled
    - clusterFuck
    - schedule
@@ -24311,7 +24311,7 @@ class ScheduledQuery:
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'scheduleId', None, None, ), # 1
+    (1, TType.STRING, 'scheduleName', None, None, ), # 1
     (2, TType.BOOL, 'enabled', None, None, ), # 2
     (3, TType.STRING, 'clusterFuck', None, None, ), # 3
     (4, TType.STRUCT, 'schedule', (Schedule, Schedule.thrift_spec), None, ), # 4
@@ -24319,8 +24319,8 @@ class ScheduledQuery:
     (6, TType.STRING, 'query', None, None, ), # 6
   )
 
-  def __init__(self, scheduleId=None, enabled=None, clusterFuck=None, schedule=None, user=None, query=None,):
-    self.scheduleId = scheduleId
+  def __init__(self, scheduleName=None, enabled=None, clusterFuck=None, schedule=None, user=None, query=None,):
+    self.scheduleName = scheduleName
     self.enabled = enabled
     self.clusterFuck = clusterFuck
     self.schedule = schedule
@@ -24338,7 +24338,7 @@ class ScheduledQuery:
         break
       if fid == 1:
         if ftype == TType.STRING:
-          self.scheduleId = iprot.readString()
+          self.scheduleName = iprot.readString()
         else:
           iprot.skip(ftype)
       elif fid == 2:
@@ -24377,9 +24377,9 @@ class ScheduledQuery:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('ScheduledQuery')
-    if self.scheduleId is not None:
-      oprot.writeFieldBegin('scheduleId', TType.STRING, 1)
-      oprot.writeString(self.scheduleId)
+    if self.scheduleName is not None:
+      oprot.writeFieldBegin('scheduleName', TType.STRING, 1)
+      oprot.writeString(self.scheduleName)
       oprot.writeFieldEnd()
     if self.enabled is not None:
       oprot.writeFieldBegin('enabled', TType.BOOL, 2)
@@ -24405,14 +24405,14 @@ class ScheduledQuery:
     oprot.writeStructEnd()
 
   def validate(self):
-    if self.scheduleId is None:
-      raise TProtocol.TProtocolException(message='Required field scheduleId is unset!')
+    if self.scheduleName is None:
+      raise TProtocol.TProtocolException(message='Required field scheduleName is unset!')
     return
 
 
   def __hash__(self):
     value = 17
-    value = (value * 31) ^ hash(self.scheduleId)
+    value = (value * 31) ^ hash(self.scheduleName)
     value = (value * 31) ^ hash(self.enabled)
     value = (value * 31) ^ hash(self.clusterFuck)
     value = (value * 31) ^ hash(self.schedule)
@@ -24517,19 +24517,22 @@ class ScheduledQueryMaintenanceRequest:
 class ScheduledQueryProgressInfo:
   """
   Attributes:
-   - scheduleId
+   - scheduledExecutionId
    - state
+   - executorQueryId
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.I64, 'scheduleId', None, None, ), # 1
+    (1, TType.I64, 'scheduledExecutionId', None, None, ), # 1
     (2, TType.I32, 'state', None, None, ), # 2
+    (3, TType.STRING, 'executorQueryId', None, None, ), # 3
   )
 
-  def __init__(self, scheduleId=None, state=None,):
-    self.scheduleId = scheduleId
+  def __init__(self, scheduledExecutionId=None, state=None, executorQueryId=None,):
+    self.scheduledExecutionId = scheduledExecutionId
     self.state = state
+    self.executorQueryId = executorQueryId
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -24542,12 +24545,17 @@ class ScheduledQueryProgressInfo:
         break
       if fid == 1:
         if ftype == TType.I64:
-          self.scheduleId = iprot.readI64()
+          self.scheduledExecutionId = iprot.readI64()
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.I32:
           self.state = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.executorQueryId = iprot.readString()
         else:
           iprot.skip(ftype)
       else:
@@ -24560,29 +24568,36 @@ class ScheduledQueryProgressInfo:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('ScheduledQueryProgressInfo')
-    if self.scheduleId is not None:
-      oprot.writeFieldBegin('scheduleId', TType.I64, 1)
-      oprot.writeI64(self.scheduleId)
+    if self.scheduledExecutionId is not None:
+      oprot.writeFieldBegin('scheduledExecutionId', TType.I64, 1)
+      oprot.writeI64(self.scheduledExecutionId)
       oprot.writeFieldEnd()
     if self.state is not None:
       oprot.writeFieldBegin('state', TType.I32, 2)
       oprot.writeI32(self.state)
       oprot.writeFieldEnd()
+    if self.executorQueryId is not None:
+      oprot.writeFieldBegin('executorQueryId', TType.STRING, 3)
+      oprot.writeString(self.executorQueryId)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
   def validate(self):
-    if self.scheduleId is None:
-      raise TProtocol.TProtocolException(message='Required field scheduleId is unset!')
+    if self.scheduledExecutionId is None:
+      raise TProtocol.TProtocolException(message='Required field scheduledExecutionId is unset!')
     if self.state is None:
       raise TProtocol.TProtocolException(message='Required field state is unset!')
+    if self.executorQueryId is None:
+      raise TProtocol.TProtocolException(message='Required field executorQueryId is unset!')
     return
 
 
   def __hash__(self):
     value = 17
-    value = (value * 31) ^ hash(self.scheduleId)
+    value = (value * 31) ^ hash(self.scheduledExecutionId)
     value = (value * 31) ^ hash(self.state)
+    value = (value * 31) ^ hash(self.executorQueryId)
     return value
 
   def __repr__(self):

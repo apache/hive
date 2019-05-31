@@ -643,8 +643,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Constructor<?> constructor;
       try {
         constructor = clazz.getConstructor(IHMSHandler.class);
-        if (Modifier.isPrivate(constructor.getModifiers()))
+        if (Modifier.isPrivate(constructor.getModifiers())) {
           throw new IllegalArgumentException("Illegal implementation for metadata transformer. Constructor is private");
+        }
         transformer = (IMetaStoreMetadataTransformer) constructor.newInstance(this);
       } catch (NoSuchMethodException | InstantiationException | IllegalAccessException
           | IllegalArgumentException | InvocationTargetException e) {
@@ -2029,22 +2030,34 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         } else {
           // Check that constraints have catalog name properly set first
           if (primaryKeys != null && !primaryKeys.isEmpty() && !primaryKeys.get(0).isSetCatName()) {
-            for (SQLPrimaryKey pkcol : primaryKeys) pkcol.setCatName(tbl.getCatName());
+            for (SQLPrimaryKey pkcol : primaryKeys) {
+              pkcol.setCatName(tbl.getCatName());
+            }
           }
           if (foreignKeys != null && !foreignKeys.isEmpty() && !foreignKeys.get(0).isSetCatName()) {
-            for (SQLForeignKey fkcol : foreignKeys) fkcol.setCatName(tbl.getCatName());
+            for (SQLForeignKey fkcol : foreignKeys) {
+              fkcol.setCatName(tbl.getCatName());
+            }
           }
           if (uniqueConstraints != null && !uniqueConstraints.isEmpty() && !uniqueConstraints.get(0).isSetCatName()) {
-            for (SQLUniqueConstraint uccol : uniqueConstraints) uccol.setCatName(tbl.getCatName());
+            for (SQLUniqueConstraint uccol : uniqueConstraints) {
+              uccol.setCatName(tbl.getCatName());
+            }
           }
           if (notNullConstraints != null && !notNullConstraints.isEmpty() && !notNullConstraints.get(0).isSetCatName()) {
-            for (SQLNotNullConstraint nncol : notNullConstraints) nncol.setCatName(tbl.getCatName());
+            for (SQLNotNullConstraint nncol : notNullConstraints) {
+              nncol.setCatName(tbl.getCatName());
+            }
           }
           if (defaultConstraints != null && !defaultConstraints.isEmpty() && !defaultConstraints.get(0).isSetCatName()) {
-            for (SQLDefaultConstraint dccol : defaultConstraints) dccol.setCatName(tbl.getCatName());
+            for (SQLDefaultConstraint dccol : defaultConstraints) {
+              dccol.setCatName(tbl.getCatName());
+            }
           }
           if (checkConstraints != null && !checkConstraints.isEmpty() && !checkConstraints.get(0).isSetCatName()) {
-            for (SQLCheckConstraint cccol : checkConstraints) cccol.setCatName(tbl.getCatName());
+            for (SQLCheckConstraint cccol : checkConstraints) {
+              cccol.setCatName(tbl.getCatName());
+            }
           }
           // Set constraint name if null before sending to listener
           List<String> constraintNames = ms.createTableWithConstraints(tbl, primaryKeys, foreignKeys,
@@ -2056,7 +2069,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               if (primaryKeys.get(i).getPk_name() == null) {
                 primaryKeys.get(i).setPk_name(constraintNames.get(i));
               }
-              if (!primaryKeys.get(i).isSetCatName()) primaryKeys.get(i).setCatName(tbl.getCatName());
+              if (!primaryKeys.get(i).isSetCatName()) {
+                primaryKeys.get(i).setCatName(tbl.getCatName());
+              }
             }
           }
           int foreignKeySize = 0;
@@ -2066,7 +2081,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               if (foreignKeys.get(i).getFk_name() == null) {
                 foreignKeys.get(i).setFk_name(constraintNames.get(primaryKeySize + i));
               }
-              if (!foreignKeys.get(i).isSetCatName()) foreignKeys.get(i).setCatName(tbl.getCatName());
+              if (!foreignKeys.get(i).isSetCatName()) {
+                foreignKeys.get(i).setCatName(tbl.getCatName());
+              }
             }
           }
           int uniqueConstraintSize = 0;
@@ -2076,7 +2093,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               if (uniqueConstraints.get(i).getUk_name() == null) {
                 uniqueConstraints.get(i).setUk_name(constraintNames.get(primaryKeySize + foreignKeySize + i));
               }
-              if (!uniqueConstraints.get(i).isSetCatName()) uniqueConstraints.get(i).setCatName(tbl.getCatName());
+              if (!uniqueConstraints.get(i).isSetCatName()) {
+                uniqueConstraints.get(i).setCatName(tbl.getCatName());
+              }
             }
           }
           int notNullConstraintSize =  0;
@@ -2085,7 +2104,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               if (notNullConstraints.get(i).getNn_name() == null) {
                 notNullConstraints.get(i).setNn_name(constraintNames.get(primaryKeySize + foreignKeySize + uniqueConstraintSize + i));
               }
-              if (!notNullConstraints.get(i).isSetCatName()) notNullConstraints.get(i).setCatName(tbl.getCatName());
+              if (!notNullConstraints.get(i).isSetCatName()) {
+                notNullConstraints.get(i).setCatName(tbl.getCatName());
+              }
             }
           }
           int defaultConstraintSize =  0;
@@ -2095,7 +2116,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                 defaultConstraints.get(i).setDc_name(constraintNames.get(primaryKeySize + foreignKeySize
                     + uniqueConstraintSize + notNullConstraintSize + i));
               }
-              if (!defaultConstraints.get(i).isSetCatName()) defaultConstraints.get(i).setCatName(tbl.getCatName());
+              if (!defaultConstraints.get(i).isSetCatName()) {
+                defaultConstraints.get(i).setCatName(tbl.getCatName());
+              }
             }
           }
           if (checkConstraints!= null) {
@@ -2106,7 +2129,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                                              + defaultConstraintSize
                                                                            + notNullConstraintSize + i));
               }
-              if (!checkConstraints.get(i).isSetCatName()) checkConstraints.get(i).setCatName(tbl.getCatName());
+              if (!checkConstraints.get(i).isSetCatName()) {
+                checkConstraints.get(i).setCatName(tbl.getCatName());
+              }
             }
           }
         }
@@ -3101,12 +3126,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private ExtendedTableInfo convertTableToExtendedTable (Table table,
           List<String> processorCapabilities, int mask) {
       ExtendedTableInfo extTable = new ExtendedTableInfo(table.getTableName());
-      if ((mask & GetTablesExtRequestFields.ACCESS_TYPE.getValue()) == GetTablesExtRequestFields.ACCESS_TYPE.getValue())
+      if ((mask & GetTablesExtRequestFields.ACCESS_TYPE.getValue()) == GetTablesExtRequestFields.ACCESS_TYPE.getValue()) {
         extTable.setAccessType(table.getAccessType());
+      }
 
       if ((mask & GetTablesExtRequestFields.PROCESSOR_CAPABILITIES.getValue())
-             == GetTablesExtRequestFields.PROCESSOR_CAPABILITIES.getValue())
+             == GetTablesExtRequestFields.PROCESSOR_CAPABILITIES.getValue()) {
         extTable.setProcessorCapabilities(processorCapabilities);
+      }
 
       return extTable;
     }
@@ -3153,7 +3180,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             LOG.warn("Unexpected resultset size:" + ret.size());
             throw new MetaException("Unexpected result from metadata transformer:return list size=" + ret.size());
           }
-          t = (Table)(ret.keySet().iterator().next());
+          t = (ret.keySet().iterator().next());
         }
 
         firePreEvent(new PreReadTableEvent(t, this));
@@ -6003,7 +6030,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private String lowerCaseConvertPartName(String partName) throws MetaException {
-      if (partName == null) return partName;
+      if (partName == null) {
+        return partName;
+      }
       boolean isFirst = true;
       Map<String, String> partSpec = Warehouse.makeEscSpecFromName(partName);
       String convertedPartName = new String();
@@ -6142,7 +6171,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             //       is currently only done on metastore size (see set_aggr...).
             //       For some optimizations we might make use of incorrect stats that are "better than
             //       nothing", so this may change in future.
-            if (stat.isSetIsStatsCompliant() && !stat.isIsStatsCompliant()) continue;
+            if (stat.isSetIsStatsCompliant() && !stat.isIsStatsCompliant()) {
+              continue;
+            }
             map.put(stat.getStatsDesc().getPartName(), stat.getStatsObj());
           }
         }
@@ -6571,7 +6602,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
            final List<String> partNames, boolean getColStats) throws TException {
       return get_partitions_by_names(dbName, tblName, partNames, getColStats, null, null);
     }
- 
+
     public List<Partition> get_partitions_by_names(final String dbName, final String tblName,
            final List<String> partNames, boolean getColStats, List<String> processorCapabilities,
            String processorId) throws TException {
@@ -9541,6 +9572,21 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         endFunction("scheduled_query_poll", ex == null, ex);
       }
     }
+
+    @Override
+    public ScheduledQuery get_scheduled_query(String scheduleName) throws TException {
+      startFunction("get_scheduled_query");
+      Exception ex = null;
+      try {
+        return getMS().getScheduledQuery(scheduleName);
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_scheduled_query", ex == null, ex);
+      }
+    }
   }
 
   private static IHMSHandler newRetryingHMSHandler(IHMSHandler baseHandler, Configuration conf)
@@ -10107,7 +10153,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   protected static void startStatsUpdater(Configuration conf) throws Exception {
     StatsUpdateMode mode = StatsUpdateMode.valueOf(
         MetastoreConf.getVar(conf, ConfVars.STATS_AUTO_UPDATE).toUpperCase());
-    if (mode == StatsUpdateMode.NONE) return;
+    if (mode == StatsUpdateMode.NONE) {
+      return;
+    }
     MetaStoreThread t = instantiateThread("org.apache.hadoop.hive.ql.stats.StatsUpdaterThread");
     initializeAndStartThread(t, conf);
   }

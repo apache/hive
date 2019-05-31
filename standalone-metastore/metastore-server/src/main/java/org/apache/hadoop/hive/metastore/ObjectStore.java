@@ -4267,17 +4267,27 @@ public class ObjectStore implements RawStore, Configurable {
    */
   public static String verifyStatsChangeCtx(String fullTableName, Map<String, String> oldP, Map<String, String> newP,
                                             long writeId, String validWriteIds, boolean isColStatsChange) {
-    if (validWriteIds != null && writeId > 0) return null; // We have txn context.
+    if (validWriteIds != null && writeId > 0)
+     {
+      return null; // We have txn context.
+    }
     String oldVal = oldP == null ? null : oldP.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
     String newVal = newP == null ? null : newP.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
     // We don't need txn context is that stats state is not being changed.
-    if (StringUtils.isEmpty(oldVal) && StringUtils.isEmpty(newVal)) return null;
+    if (StringUtils.isEmpty(oldVal) && StringUtils.isEmpty(newVal)) {
+      return null;
+    }
     if (StringUtils.equalsIgnoreCase(oldVal, newVal)) {
-      if (!isColStatsChange) return null; // No change in col stats or parameters => assume no change.
+      if (!isColStatsChange)
+       {
+        return null; // No change in col stats or parameters => assume no change.
+      }
       // Col stats change while json stays "valid" implies stats change. If the new value is invalid,
       // then we don't care. This is super ugly and idiotic.
       // It will all become better when we get rid of JSON and store a flag and write ID per stats.
-      if (!StatsSetupConst.areBasicStatsUptoDate(newP)) return null;
+      if (!StatsSetupConst.areBasicStatsUptoDate(newP)) {
+        return null;
+      }
     }
     // Some change to the stats state is being made; it can only be made with a write ID.
     // Note - we could do this:  if (writeId > 0 && (validWriteIds != null || !StatsSetupConst.areBasicStatsUptoDate(newP))) { return null;
@@ -12583,7 +12593,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) {
-    // query&update next_execution of next scheduled_query 
+    // query&update next_execution of next scheduled_query
     //    openTransaction();
     //    query=getNextScheduledQuery();
     //    request.getClusterFuck();
@@ -12611,5 +12621,10 @@ public class ObjectStore implements RawStore, Configurable {
     //
     // TODO Auto-generated method stub
 
+  }
+
+  @Override
+  public ScheduledQuery getScheduledQuery(String scheduleName) {
+    throw new RuntimeException("unimplemented");
   }
 }

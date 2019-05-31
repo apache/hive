@@ -1731,27 +1731,25 @@ struct ScheduledQueryPollRequest {
 }
 
 struct ScheduledQueryPollResponse {
-  // FIXME rename
-  1: required string scheduleId,
+  1: required string scheduleName,
   2: required i64 executionId,
-  3: required string query
+  3: required string query,
 }
 
 
 // FIXME: consider using uninon? to support more ways
 struct Schedule {
-  1: optional string cron
+  1: optional string cron,
 }
 
 struct ScheduledQuery {
-  // FIXME rename to scheduleName
-  1: required string scheduleId,
+  1: required string scheduleName,
   2: optional bool enabled,
   //FIXME: clusterId and/or catalog and/or namespace
   3: optional string clusterFuck,
   4: optional Schedule schedule,
   5: optional string user,
-  6: optional string query
+  6: optional string query,
 }
 
 struct ScheduledQueryMaintenanceRequest {
@@ -1766,10 +1764,9 @@ enum QueryState {
 }
 
 struct ScheduledQueryProgressInfo{
-  // FIXME scheduleId is amigous? scheduledExecutionId
-  1: required i64 scheduleId,
-  2: required QueryState state
-  // FIXME hive-query id?!
+  1: required i64 scheduledExecutionId,
+  2: required QueryState state,
+  3: required string executorQueryId
 }
 
 struct AlterPartitionsRequest {

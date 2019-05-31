@@ -38,8 +38,9 @@ import org.slf4j.LoggerFactory;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class ScheduledQueryProgressInfo implements org.apache.thrift.TBase<ScheduledQueryProgressInfo, ScheduledQueryProgressInfo._Fields>, java.io.Serializable, Cloneable, Comparable<ScheduledQueryProgressInfo> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ScheduledQueryProgressInfo");
 
-  private static final org.apache.thrift.protocol.TField SCHEDULE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("scheduleId", org.apache.thrift.protocol.TType.I64, (short)1);
+  private static final org.apache.thrift.protocol.TField SCHEDULED_EXECUTION_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("scheduledExecutionId", org.apache.thrift.protocol.TType.I64, (short)1);
   private static final org.apache.thrift.protocol.TField STATE_FIELD_DESC = new org.apache.thrift.protocol.TField("state", org.apache.thrift.protocol.TType.I32, (short)2);
+  private static final org.apache.thrift.protocol.TField EXECUTOR_QUERY_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("executorQueryId", org.apache.thrift.protocol.TType.STRING, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -47,17 +48,19 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new ScheduledQueryProgressInfoTupleSchemeFactory());
   }
 
-  private long scheduleId; // required
+  private long scheduledExecutionId; // required
   private QueryState state; // required
+  private String executorQueryId; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    SCHEDULE_ID((short)1, "scheduleId"),
+    SCHEDULED_EXECUTION_ID((short)1, "scheduledExecutionId"),
     /**
      * 
      * @see QueryState
      */
-    STATE((short)2, "state");
+    STATE((short)2, "state"),
+    EXECUTOR_QUERY_ID((short)3, "executorQueryId");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -72,10 +75,12 @@ import org.slf4j.LoggerFactory;
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // SCHEDULE_ID
-          return SCHEDULE_ID;
+        case 1: // SCHEDULED_EXECUTION_ID
+          return SCHEDULED_EXECUTION_ID;
         case 2: // STATE
           return STATE;
+        case 3: // EXECUTOR_QUERY_ID
+          return EXECUTOR_QUERY_ID;
         default:
           return null;
       }
@@ -116,15 +121,17 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
-  private static final int __SCHEDULEID_ISSET_ID = 0;
+  private static final int __SCHEDULEDEXECUTIONID_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.SCHEDULE_ID, new org.apache.thrift.meta_data.FieldMetaData("scheduleId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.SCHEDULED_EXECUTION_ID, new org.apache.thrift.meta_data.FieldMetaData("scheduledExecutionId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.STATE, new org.apache.thrift.meta_data.FieldMetaData("state", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, QueryState.class)));
+    tmpMap.put(_Fields.EXECUTOR_QUERY_ID, new org.apache.thrift.meta_data.FieldMetaData("executorQueryId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ScheduledQueryProgressInfo.class, metaDataMap);
   }
@@ -133,13 +140,15 @@ import org.slf4j.LoggerFactory;
   }
 
   public ScheduledQueryProgressInfo(
-    long scheduleId,
-    QueryState state)
+    long scheduledExecutionId,
+    QueryState state,
+    String executorQueryId)
   {
     this();
-    this.scheduleId = scheduleId;
-    setScheduleIdIsSet(true);
+    this.scheduledExecutionId = scheduledExecutionId;
+    setScheduledExecutionIdIsSet(true);
     this.state = state;
+    this.executorQueryId = executorQueryId;
   }
 
   /**
@@ -147,9 +156,12 @@ import org.slf4j.LoggerFactory;
    */
   public ScheduledQueryProgressInfo(ScheduledQueryProgressInfo other) {
     __isset_bitfield = other.__isset_bitfield;
-    this.scheduleId = other.scheduleId;
+    this.scheduledExecutionId = other.scheduledExecutionId;
     if (other.isSetState()) {
       this.state = other.state;
+    }
+    if (other.isSetExecutorQueryId()) {
+      this.executorQueryId = other.executorQueryId;
     }
   }
 
@@ -159,31 +171,32 @@ import org.slf4j.LoggerFactory;
 
   @Override
   public void clear() {
-    setScheduleIdIsSet(false);
-    this.scheduleId = 0;
+    setScheduledExecutionIdIsSet(false);
+    this.scheduledExecutionId = 0;
     this.state = null;
+    this.executorQueryId = null;
   }
 
-  public long getScheduleId() {
-    return this.scheduleId;
+  public long getScheduledExecutionId() {
+    return this.scheduledExecutionId;
   }
 
-  public void setScheduleId(long scheduleId) {
-    this.scheduleId = scheduleId;
-    setScheduleIdIsSet(true);
+  public void setScheduledExecutionId(long scheduledExecutionId) {
+    this.scheduledExecutionId = scheduledExecutionId;
+    setScheduledExecutionIdIsSet(true);
   }
 
-  public void unsetScheduleId() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __SCHEDULEID_ISSET_ID);
+  public void unsetScheduledExecutionId() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __SCHEDULEDEXECUTIONID_ISSET_ID);
   }
 
-  /** Returns true if field scheduleId is set (has been assigned a value) and false otherwise */
-  public boolean isSetScheduleId() {
-    return EncodingUtils.testBit(__isset_bitfield, __SCHEDULEID_ISSET_ID);
+  /** Returns true if field scheduledExecutionId is set (has been assigned a value) and false otherwise */
+  public boolean isSetScheduledExecutionId() {
+    return EncodingUtils.testBit(__isset_bitfield, __SCHEDULEDEXECUTIONID_ISSET_ID);
   }
 
-  public void setScheduleIdIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SCHEDULEID_ISSET_ID, value);
+  public void setScheduledExecutionIdIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SCHEDULEDEXECUTIONID_ISSET_ID, value);
   }
 
   /**
@@ -217,13 +230,36 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public String getExecutorQueryId() {
+    return this.executorQueryId;
+  }
+
+  public void setExecutorQueryId(String executorQueryId) {
+    this.executorQueryId = executorQueryId;
+  }
+
+  public void unsetExecutorQueryId() {
+    this.executorQueryId = null;
+  }
+
+  /** Returns true if field executorQueryId is set (has been assigned a value) and false otherwise */
+  public boolean isSetExecutorQueryId() {
+    return this.executorQueryId != null;
+  }
+
+  public void setExecutorQueryIdIsSet(boolean value) {
+    if (!value) {
+      this.executorQueryId = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case SCHEDULE_ID:
+    case SCHEDULED_EXECUTION_ID:
       if (value == null) {
-        unsetScheduleId();
+        unsetScheduledExecutionId();
       } else {
-        setScheduleId((Long)value);
+        setScheduledExecutionId((Long)value);
       }
       break;
 
@@ -235,16 +271,27 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case EXECUTOR_QUERY_ID:
+      if (value == null) {
+        unsetExecutorQueryId();
+      } else {
+        setExecutorQueryId((String)value);
+      }
+      break;
+
     }
   }
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case SCHEDULE_ID:
-      return getScheduleId();
+    case SCHEDULED_EXECUTION_ID:
+      return getScheduledExecutionId();
 
     case STATE:
       return getState();
+
+    case EXECUTOR_QUERY_ID:
+      return getExecutorQueryId();
 
     }
     throw new IllegalStateException();
@@ -257,10 +304,12 @@ import org.slf4j.LoggerFactory;
     }
 
     switch (field) {
-    case SCHEDULE_ID:
-      return isSetScheduleId();
+    case SCHEDULED_EXECUTION_ID:
+      return isSetScheduledExecutionId();
     case STATE:
       return isSetState();
+    case EXECUTOR_QUERY_ID:
+      return isSetExecutorQueryId();
     }
     throw new IllegalStateException();
   }
@@ -278,12 +327,12 @@ import org.slf4j.LoggerFactory;
     if (that == null)
       return false;
 
-    boolean this_present_scheduleId = true;
-    boolean that_present_scheduleId = true;
-    if (this_present_scheduleId || that_present_scheduleId) {
-      if (!(this_present_scheduleId && that_present_scheduleId))
+    boolean this_present_scheduledExecutionId = true;
+    boolean that_present_scheduledExecutionId = true;
+    if (this_present_scheduledExecutionId || that_present_scheduledExecutionId) {
+      if (!(this_present_scheduledExecutionId && that_present_scheduledExecutionId))
         return false;
-      if (this.scheduleId != that.scheduleId)
+      if (this.scheduledExecutionId != that.scheduledExecutionId)
         return false;
     }
 
@@ -296,6 +345,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_executorQueryId = true && this.isSetExecutorQueryId();
+    boolean that_present_executorQueryId = true && that.isSetExecutorQueryId();
+    if (this_present_executorQueryId || that_present_executorQueryId) {
+      if (!(this_present_executorQueryId && that_present_executorQueryId))
+        return false;
+      if (!this.executorQueryId.equals(that.executorQueryId))
+        return false;
+    }
+
     return true;
   }
 
@@ -303,15 +361,20 @@ import org.slf4j.LoggerFactory;
   public int hashCode() {
     List<Object> list = new ArrayList<Object>();
 
-    boolean present_scheduleId = true;
-    list.add(present_scheduleId);
-    if (present_scheduleId)
-      list.add(scheduleId);
+    boolean present_scheduledExecutionId = true;
+    list.add(present_scheduledExecutionId);
+    if (present_scheduledExecutionId)
+      list.add(scheduledExecutionId);
 
     boolean present_state = true && (isSetState());
     list.add(present_state);
     if (present_state)
       list.add(state.getValue());
+
+    boolean present_executorQueryId = true && (isSetExecutorQueryId());
+    list.add(present_executorQueryId);
+    if (present_executorQueryId)
+      list.add(executorQueryId);
 
     return list.hashCode();
   }
@@ -324,12 +387,12 @@ import org.slf4j.LoggerFactory;
 
     int lastComparison = 0;
 
-    lastComparison = Boolean.valueOf(isSetScheduleId()).compareTo(other.isSetScheduleId());
+    lastComparison = Boolean.valueOf(isSetScheduledExecutionId()).compareTo(other.isSetScheduledExecutionId());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetScheduleId()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.scheduleId, other.scheduleId);
+    if (isSetScheduledExecutionId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.scheduledExecutionId, other.scheduledExecutionId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -340,6 +403,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetState()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.state, other.state);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetExecutorQueryId()).compareTo(other.isSetExecutorQueryId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetExecutorQueryId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.executorQueryId, other.executorQueryId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -364,8 +437,8 @@ import org.slf4j.LoggerFactory;
     StringBuilder sb = new StringBuilder("ScheduledQueryProgressInfo(");
     boolean first = true;
 
-    sb.append("scheduleId:");
-    sb.append(this.scheduleId);
+    sb.append("scheduledExecutionId:");
+    sb.append(this.scheduledExecutionId);
     first = false;
     if (!first) sb.append(", ");
     sb.append("state:");
@@ -375,18 +448,30 @@ import org.slf4j.LoggerFactory;
       sb.append(this.state);
     }
     first = false;
+    if (!first) sb.append(", ");
+    sb.append("executorQueryId:");
+    if (this.executorQueryId == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.executorQueryId);
+    }
+    first = false;
     sb.append(")");
     return sb.toString();
   }
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (!isSetScheduleId()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'scheduleId' is unset! Struct:" + toString());
+    if (!isSetScheduledExecutionId()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'scheduledExecutionId' is unset! Struct:" + toString());
     }
 
     if (!isSetState()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'state' is unset! Struct:" + toString());
+    }
+
+    if (!isSetExecutorQueryId()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'executorQueryId' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -428,10 +513,10 @@ import org.slf4j.LoggerFactory;
           break;
         }
         switch (schemeField.id) {
-          case 1: // SCHEDULE_ID
+          case 1: // SCHEDULED_EXECUTION_ID
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.scheduleId = iprot.readI64();
-              struct.setScheduleIdIsSet(true);
+              struct.scheduledExecutionId = iprot.readI64();
+              struct.setScheduledExecutionIdIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -440,6 +525,14 @@ import org.slf4j.LoggerFactory;
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
               struct.state = org.apache.hadoop.hive.metastore.api.QueryState.findByValue(iprot.readI32());
               struct.setStateIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 3: // EXECUTOR_QUERY_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.executorQueryId = iprot.readString();
+              struct.setExecutorQueryIdIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -457,12 +550,17 @@ import org.slf4j.LoggerFactory;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      oprot.writeFieldBegin(SCHEDULE_ID_FIELD_DESC);
-      oprot.writeI64(struct.scheduleId);
+      oprot.writeFieldBegin(SCHEDULED_EXECUTION_ID_FIELD_DESC);
+      oprot.writeI64(struct.scheduledExecutionId);
       oprot.writeFieldEnd();
       if (struct.state != null) {
         oprot.writeFieldBegin(STATE_FIELD_DESC);
         oprot.writeI32(struct.state.getValue());
+        oprot.writeFieldEnd();
+      }
+      if (struct.executorQueryId != null) {
+        oprot.writeFieldBegin(EXECUTOR_QUERY_ID_FIELD_DESC);
+        oprot.writeString(struct.executorQueryId);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -482,17 +580,20 @@ import org.slf4j.LoggerFactory;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, ScheduledQueryProgressInfo struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
-      oprot.writeI64(struct.scheduleId);
+      oprot.writeI64(struct.scheduledExecutionId);
       oprot.writeI32(struct.state.getValue());
+      oprot.writeString(struct.executorQueryId);
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, ScheduledQueryProgressInfo struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      struct.scheduleId = iprot.readI64();
-      struct.setScheduleIdIsSet(true);
+      struct.scheduledExecutionId = iprot.readI64();
+      struct.setScheduledExecutionIdIsSet(true);
       struct.state = org.apache.hadoop.hive.metastore.api.QueryState.findByValue(iprot.readI32());
       struct.setStateIsSet(true);
+      struct.executorQueryId = iprot.readString();
+      struct.setExecutorQueryIdIsSet(true);
     }
   }
 

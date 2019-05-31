@@ -34052,7 +34052,7 @@ class ScheduledQueryPollResponse {
   /**
    * @var string
    */
-  public $scheduleId = null;
+  public $scheduleName = null;
   /**
    * @var int
    */
@@ -34066,7 +34066,7 @@ class ScheduledQueryPollResponse {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
         1 => array(
-          'var' => 'scheduleId',
+          'var' => 'scheduleName',
           'type' => TType::STRING,
           ),
         2 => array(
@@ -34080,8 +34080,8 @@ class ScheduledQueryPollResponse {
         );
     }
     if (is_array($vals)) {
-      if (isset($vals['scheduleId'])) {
-        $this->scheduleId = $vals['scheduleId'];
+      if (isset($vals['scheduleName'])) {
+        $this->scheduleName = $vals['scheduleName'];
       }
       if (isset($vals['executionId'])) {
         $this->executionId = $vals['executionId'];
@@ -34113,7 +34113,7 @@ class ScheduledQueryPollResponse {
       {
         case 1:
           if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->scheduleId);
+            $xfer += $input->readString($this->scheduleName);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -34145,9 +34145,9 @@ class ScheduledQueryPollResponse {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ScheduledQueryPollResponse');
-    if ($this->scheduleId !== null) {
-      $xfer += $output->writeFieldBegin('scheduleId', TType::STRING, 1);
-      $xfer += $output->writeString($this->scheduleId);
+    if ($this->scheduleName !== null) {
+      $xfer += $output->writeFieldBegin('scheduleName', TType::STRING, 1);
+      $xfer += $output->writeString($this->scheduleName);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->executionId !== null) {
@@ -34248,7 +34248,7 @@ class ScheduledQuery {
   /**
    * @var string
    */
-  public $scheduleId = null;
+  public $scheduleName = null;
   /**
    * @var bool
    */
@@ -34274,7 +34274,7 @@ class ScheduledQuery {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
         1 => array(
-          'var' => 'scheduleId',
+          'var' => 'scheduleName',
           'type' => TType::STRING,
           ),
         2 => array(
@@ -34301,8 +34301,8 @@ class ScheduledQuery {
         );
     }
     if (is_array($vals)) {
-      if (isset($vals['scheduleId'])) {
-        $this->scheduleId = $vals['scheduleId'];
+      if (isset($vals['scheduleName'])) {
+        $this->scheduleName = $vals['scheduleName'];
       }
       if (isset($vals['enabled'])) {
         $this->enabled = $vals['enabled'];
@@ -34343,7 +34343,7 @@ class ScheduledQuery {
       {
         case 1:
           if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->scheduleId);
+            $xfer += $input->readString($this->scheduleName);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -34397,9 +34397,9 @@ class ScheduledQuery {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ScheduledQuery');
-    if ($this->scheduleId !== null) {
-      $xfer += $output->writeFieldBegin('scheduleId', TType::STRING, 1);
-      $xfer += $output->writeString($this->scheduleId);
+    if ($this->scheduleName !== null) {
+      $xfer += $output->writeFieldBegin('scheduleName', TType::STRING, 1);
+      $xfer += $output->writeString($this->scheduleName);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->enabled !== null) {
@@ -34546,31 +34546,42 @@ class ScheduledQueryProgressInfo {
   /**
    * @var int
    */
-  public $scheduleId = null;
+  public $scheduledExecutionId = null;
   /**
    * @var int
    */
   public $state = null;
+  /**
+   * @var string
+   */
+  public $executorQueryId = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
         1 => array(
-          'var' => 'scheduleId',
+          'var' => 'scheduledExecutionId',
           'type' => TType::I64,
           ),
         2 => array(
           'var' => 'state',
           'type' => TType::I32,
           ),
+        3 => array(
+          'var' => 'executorQueryId',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
-      if (isset($vals['scheduleId'])) {
-        $this->scheduleId = $vals['scheduleId'];
+      if (isset($vals['scheduledExecutionId'])) {
+        $this->scheduledExecutionId = $vals['scheduledExecutionId'];
       }
       if (isset($vals['state'])) {
         $this->state = $vals['state'];
+      }
+      if (isset($vals['executorQueryId'])) {
+        $this->executorQueryId = $vals['executorQueryId'];
       }
     }
   }
@@ -34596,7 +34607,7 @@ class ScheduledQueryProgressInfo {
       {
         case 1:
           if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->scheduleId);
+            $xfer += $input->readI64($this->scheduledExecutionId);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -34604,6 +34615,13 @@ class ScheduledQueryProgressInfo {
         case 2:
           if ($ftype == TType::I32) {
             $xfer += $input->readI32($this->state);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->executorQueryId);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -34621,14 +34639,19 @@ class ScheduledQueryProgressInfo {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ScheduledQueryProgressInfo');
-    if ($this->scheduleId !== null) {
-      $xfer += $output->writeFieldBegin('scheduleId', TType::I64, 1);
-      $xfer += $output->writeI64($this->scheduleId);
+    if ($this->scheduledExecutionId !== null) {
+      $xfer += $output->writeFieldBegin('scheduledExecutionId', TType::I64, 1);
+      $xfer += $output->writeI64($this->scheduledExecutionId);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->state !== null) {
       $xfer += $output->writeFieldBegin('state', TType::I32, 2);
       $xfer += $output->writeI32($this->state);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->executorQueryId !== null) {
+      $xfer += $output->writeFieldBegin('executorQueryId', TType::STRING, 3);
+      $xfer += $output->writeString($this->executorQueryId);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

@@ -52,7 +52,6 @@ import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.HiveAlterHandler;
-import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.cache.SharedCache.StatsType;
 import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregator;
@@ -659,7 +658,7 @@ public class CachedStore implements RawStore, Configurable {
         cacheUpdateMaster.scheduleAtFixedRate(new CacheUpdateMasterWork(conf, shouldRunPrewarm), 0,
             cacheRefreshPeriodMS, TimeUnit.MILLISECONDS);
       }
-    } 
+    }
     if (runOnlyOnce) {
       // Some tests control the execution of the background update thread
       cacheUpdateMaster.schedule(new CacheUpdateMasterWork(conf, shouldRunPrewarm), 0, TimeUnit.MILLISECONDS);
@@ -2047,7 +2046,10 @@ public class CachedStore implements RawStore, Configurable {
   // Note: ideally this should be above both CachedStore and ObjectStore.
   private Map<String, String> adjustStatsParamsForGet(Map<String, String> tableParams,
       Map<String, String> params, long statsWriteId, String validWriteIds) throws MetaException {
-    if (!TxnUtils.isTransactionalTable(tableParams)) return params; // Not a txn table.
+    if (!TxnUtils.isTransactionalTable(tableParams))
+     {
+      return params; // Not a txn table.
+    }
     if (areTxnStatsSupported && ((validWriteIds == null)
         || ObjectStore.isCurrentStatsValidForTheQuery(params, statsWriteId, validWriteIds, false))) {
       // Valid stats are supported for txn tables, and either no verification was requested by the
@@ -2066,7 +2068,10 @@ public class CachedStore implements RawStore, Configurable {
                                                ColumnStatistics colStat, long statsWriteId,
       String validWriteIds, boolean areTxnStatsSupported) throws MetaException {
     colStat.setIsStatsCompliant(true);
-    if (!TxnUtils.isTransactionalTable(tableParams)) return colStat; // Not a txn table.
+    if (!TxnUtils.isTransactionalTable(tableParams))
+     {
+      return colStat; // Not a txn table.
+    }
     if (areTxnStatsSupported && ((validWriteIds == null)
         || ObjectStore.isCurrentStatsValidForTheQuery(
             tableParams, statsWriteId, validWriteIds, false))) {
@@ -3107,5 +3112,10 @@ public class CachedStore implements RawStore, Configurable {
   @Override
   public void scheduledQueryProgress(ScheduledQueryProgressInfo info) {
     rawStore.scheduledQueryProgress(info);
+  }
+
+  @Override
+  public ScheduledQuery getScheduledQuery(String scheduleName) {
+    return rawStore.getScheduledQuery(scheduleName);
   }
 }

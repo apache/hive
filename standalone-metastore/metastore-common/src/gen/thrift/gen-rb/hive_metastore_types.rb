@@ -5427,12 +5427,12 @@ end
 
 class ScheduledQueryPollResponse
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  SCHEDULEID = 1
+  SCHEDULENAME = 1
   EXECUTIONID = 2
   QUERY = 3
 
   FIELDS = {
-    SCHEDULEID => {:type => ::Thrift::Types::STRING, :name => 'scheduleId'},
+    SCHEDULENAME => {:type => ::Thrift::Types::STRING, :name => 'scheduleName'},
     EXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'executionId'},
     QUERY => {:type => ::Thrift::Types::STRING, :name => 'query'}
   }
@@ -5440,7 +5440,7 @@ class ScheduledQueryPollResponse
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field scheduleId is unset!') unless @scheduleId
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field scheduleName is unset!') unless @scheduleName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field executionId is unset!') unless @executionId
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field query is unset!') unless @query
   end
@@ -5466,7 +5466,7 @@ end
 
 class ScheduledQuery
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  SCHEDULEID = 1
+  SCHEDULENAME = 1
   ENABLED = 2
   CLUSTERFUCK = 3
   SCHEDULE = 4
@@ -5474,7 +5474,7 @@ class ScheduledQuery
   QUERY = 6
 
   FIELDS = {
-    SCHEDULEID => {:type => ::Thrift::Types::STRING, :name => 'scheduleId'},
+    SCHEDULENAME => {:type => ::Thrift::Types::STRING, :name => 'scheduleName'},
     ENABLED => {:type => ::Thrift::Types::BOOL, :name => 'enabled', :optional => true},
     CLUSTERFUCK => {:type => ::Thrift::Types::STRING, :name => 'clusterFuck', :optional => true},
     SCHEDULE => {:type => ::Thrift::Types::STRUCT, :name => 'schedule', :class => ::Schedule, :optional => true},
@@ -5485,7 +5485,7 @@ class ScheduledQuery
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field scheduleId is unset!') unless @scheduleId
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field scheduleName is unset!') unless @scheduleName
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -5516,19 +5516,22 @@ end
 
 class ScheduledQueryProgressInfo
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  SCHEDULEID = 1
+  SCHEDULEDEXECUTIONID = 1
   STATE = 2
+  EXECUTORQUERYID = 3
 
   FIELDS = {
-    SCHEDULEID => {:type => ::Thrift::Types::I64, :name => 'scheduleId'},
-    STATE => {:type => ::Thrift::Types::I32, :name => 'state', :enum_class => ::QueryState}
+    SCHEDULEDEXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'scheduledExecutionId'},
+    STATE => {:type => ::Thrift::Types::I32, :name => 'state', :enum_class => ::QueryState},
+    EXECUTORQUERYID => {:type => ::Thrift::Types::STRING, :name => 'executorQueryId'}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field scheduleId is unset!') unless @scheduleId
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field scheduledExecutionId is unset!') unless @scheduledExecutionId
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field state is unset!') unless @state
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field executorQueryId is unset!') unless @executorQueryId
     unless @state.nil? || ::QueryState::VALID_VALUES.include?(@state)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field state!')
     end
