@@ -1448,6 +1448,7 @@
       </field> -->
       <field name="scheduleName">
         <column name="SCHEDULE_NAME" jdbc-type="varchar" length="256" allows-null="true"/>
+        <index name="UniqueScheduleName" unique="true"/>
       </field>
       <field name="enabled">
         <column name="ENABLED"/> <!-- FIXME: any boolean type? -->

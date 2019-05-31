@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.client;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -71,8 +73,52 @@ public class TestScheduledQueries extends MetaStoreClientTest {
   @Test
   public void testCreate() throws Exception {
 
+    ScheduledQuery schq = createScheduledQuery("create");
+    ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
+    r.setType(EventRequestType.INSERT);
+    r.setScheduledQuery(schq);
+    client.scheduledQueryMaintenance(r);
+
+    ScheduledQuery schq2 = client.getScheduledQuery("create");
+
+    // next execution is set by remote
+    schq.setNextExecution(schq2.getNextExecution());
+    assertEquals(schq2, schq);
+  }
+
+  @Test(expected = MetaException.class)
+  public void testDuplicateCreate() throws Exception {
+    ScheduledQuery schq = createScheduledQuery("duplicate");
+    ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
+    r.setType(EventRequestType.INSERT);
+    r.setScheduledQuery(schq);
+    client.scheduledQueryMaintenance(r);
+    client.scheduledQueryMaintenance(r);
+
+  }
+
+  @Test(expected = MetaException.class)
+  public void testUpdate() throws Exception {
+    ScheduledQuery schq = createScheduledQuery("update");
+    ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
+    r.setType(EventRequestType.INSERT);
+    r.setScheduledQuery(schq);
+    client.scheduledQueryMaintenance(r);
+
+    r.setType(EventRequestType.UPDATE);
+    ScheduledQuery schq2 = createScheduledQuery2("update");
+    r.setScheduledQuery(schq2);
+    client.scheduledQueryMaintenance(r);
+
+    ScheduledQuery schq3 = client.getScheduledQuery(schq.getScheduleName());
+
+    assertEquals(schq2, schq3);
+
+  }
+
+  private ScheduledQuery createScheduledQuery(String name) {
     ScheduledQuery schq = new ScheduledQuery();
-    schq.setScheduleName("sch1");
+    schq.setScheduleName(name);
     schq.setClusterFuck("c1");
     schq.setEnabled(true);
     Schedule schedule = new Schedule();
@@ -80,11 +126,20 @@ public class TestScheduledQueries extends MetaStoreClientTest {
     schq.setSchedule(schedule);
     schq.setUser("user");
     schq.setQuery("select 1");
-    ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
-    r.setType(EventRequestType.INSERT);
-    r.setScheduledQuery(schq);
-    client.scheduledQueryMaintenance(r);
-
-    client.getScheduledQuery("sch1");
+    return schq;
   }
+
+  private ScheduledQuery createScheduledQuery2(String name) {
+    ScheduledQuery schq = new ScheduledQuery();
+    schq.setScheduleName(name);
+    schq.setClusterFuck("c222");
+    schq.setEnabled(true);
+    Schedule schedule = new Schedule();
+    schedule.setCron("* 22 * * *");
+    schq.setSchedule(schedule);
+    schq.setUser("user22");
+    schq.setQuery("select 12");
+    return schq;
+  }
+
 }

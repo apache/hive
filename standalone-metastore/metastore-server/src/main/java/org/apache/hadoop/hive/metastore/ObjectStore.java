@@ -12602,9 +12602,28 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) {
-    // TODO Auto-generated method stub
+  public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) throws MetaException {
+    switch (request.getType()) {
+    case INSERT:
+      scheduledQueryInsert(request.getScheduledQuery());
+      break;
+    default:
+      throw new MetaException("invalid request");
+    }
+  }
 
+  public void scheduledQueryInsert(ScheduledQuery scheduledQuery) {
+    MScheduledQuery newSch = MScheduledQuery.fromThrift(scheduledQuery);
+    boolean commited = false;
+    try {
+      openTransaction();
+      pm.makePersistent(newSch);
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
   }
 
   @Override

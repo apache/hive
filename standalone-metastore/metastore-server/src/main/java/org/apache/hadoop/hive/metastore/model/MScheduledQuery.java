@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.metastore.model;
 
-import org.apache.hadoop.hive.metastore.api.RuntimeStat;
 import org.apache.hadoop.hive.metastore.api.Schedule;
 import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
 
@@ -38,14 +37,20 @@ public class MScheduledQuery {
   private String query;
   private int nextExecution;
 
-  //  public static MRuntimeStat2 fromThrift(RuntimeStat stat) {
-  //    MRuntimeStat2 ret = new MRuntimeStat2();
-  //    ret.weight = stat.getWeight();
-  //    ret.payload = stat.getPayload();
-  //    ret.createTime = (int) (System.currentTimeMillis() / 1000);
-  //    return ret;
-  //  }
-  //
+  public MScheduledQuery(ScheduledQuery s) {
+    scheduleName = s.getScheduleName();
+    enabled = s.isEnabled();
+    clusterFuck = s.getClusterFuck();
+    schedule = s.getSchedule().getCron();
+    user = s.getUser();
+    query = s.getQuery();
+    nextExecution = s.getNextExecution();
+  }
+
+  public static MScheduledQuery fromThrift(ScheduledQuery s) {
+    return new MScheduledQuery(s);
+  }
+
   public static ScheduledQuery toThrift(MScheduledQuery s) {
     ScheduledQuery ret = new ScheduledQuery();
     ret.setScheduleName(s.scheduleName);
@@ -60,9 +65,8 @@ public class MScheduledQuery {
     return ret;
   }
 
-    public ScheduledQuery toThrift() {
-      return toThrift(this);
-    }
-
+  public ScheduledQuery toThrift() {
+    return toThrift(this);
+  }
 
 }

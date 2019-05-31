@@ -1291,7 +1291,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) {
+  public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) throws MetaException {
     objectStore.scheduledQueryMaintenance(request);
   }
 
