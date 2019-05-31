@@ -21,10 +21,13 @@ import java.util.List;
 
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hadoop.hive.metastore.api.EventRequestType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.RuntimeStat;
+import org.apache.hadoop.hive.metastore.api.Schedule;
 import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequest;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.junit.After;
 import org.junit.Before;
@@ -62,12 +65,26 @@ public class TestScheduledQueries extends MetaStoreClientTest {
 
   @Test(expected = NoSuchObjectException.class)
   public void testNonExistent() throws Exception {
-    client.getScheduledQuery("asd");
+    client.getScheduledQuery("nonExistent");
   }
 
-  @Test(expected = NoSuchObjectException.class)
+  @Test
   public void testCreate() throws Exception {
 
-    //    ScheduledQuery s = client.createScheduledQuery();
+    ScheduledQuery schq = new ScheduledQuery();
+    schq.setScheduleName("sch1");
+    schq.setClusterFuck("c1");
+    schq.setEnabled(true);
+    Schedule schedule = new Schedule();
+    schedule.setCron("* * * * *");
+    schq.setSchedule(schedule);
+    schq.setUser("user");
+    schq.setQuery("select 1");
+    ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
+    r.setType(EventRequestType.INSERT);
+    r.setScheduledQuery(schq);
+    client.scheduledQueryMaintenance(r);
+
+    client.getScheduledQuery("sch1");
   }
 }

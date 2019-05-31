@@ -3892,6 +3892,6 @@ public interface IMetaStoreClient {
   ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) throws MetaException, TException;
 
   // FIXME: apidoc
-  void scheduled_query_maintenance(ScheduledQueryMaintenanceRequest request) throws MetaException, TException;
+  void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) throws MetaException, TException;
 
 }
