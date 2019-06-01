@@ -2236,7 +2236,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   @Override 
   public Integer visitDate_literal(HplsqlParser.Date_literalContext ctx) { 
     if (!exec.buildSql) {
-      String str = evalPop(ctx.string()).toString();
+      String str = evalPop(ctx.char_string()).toString();
       stackPush(new Var(Var.Type.DATE, Utils.toDate(str)));
     }
     else {
