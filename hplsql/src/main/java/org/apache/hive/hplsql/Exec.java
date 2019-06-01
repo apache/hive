@@ -2251,7 +2251,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   @Override 
   public Integer visitTimestamp_literal(HplsqlParser.Timestamp_literalContext ctx) { 
     if (!exec.buildSql) {
-      String str = evalPop(ctx.string()).toString();
+      String str = evalPop(ctx.char_string()).toString();
       int len = str.length();
       int precision = 0;
       if (len > 19 && len <= 29) {
