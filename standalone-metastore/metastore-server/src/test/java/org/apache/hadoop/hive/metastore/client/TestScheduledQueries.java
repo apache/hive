@@ -99,7 +99,7 @@ public class TestScheduledQueries extends MetaStoreClientTest {
 
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   public void testUpdate() throws Exception {
     ScheduledQuery schq = createScheduledQuery("update");
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
@@ -115,8 +115,18 @@ public class TestScheduledQueries extends MetaStoreClientTest {
     ScheduledQuery schq3 = client.getScheduledQuery(schq.getScheduleName());
 
     assertEquals(schq2, schq3);
-
   }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void testDeleteNonExistent() throws Exception {
+    ScheduledQuery schq = createScheduledQuery("delnonexist");
+    ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
+    r.setType(ScheduledQueryMaintenanceRequestType.DELETE);
+    r.setScheduledQuery(schq);
+    client.scheduledQueryMaintenance(r);
+  }
+
+
 
   private ScheduledQuery createScheduledQuery(String name) {
     ScheduledQuery schq = new ScheduledQuery();
