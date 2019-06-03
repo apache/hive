@@ -121,7 +121,7 @@ public class TestScheduledQueries extends MetaStoreClientTest {
   private ScheduledQuery createScheduledQuery(String name) {
     ScheduledQuery schq = new ScheduledQuery();
     schq.setScheduleName(name);
-    schq.setClusterFuck("c1");
+    schq.setClusterNamespace("c1");
     schq.setEnabled(true);
     Schedule schedule = new Schedule();
     schedule.setCron("* * * * *");
@@ -134,7 +134,7 @@ public class TestScheduledQueries extends MetaStoreClientTest {
   private ScheduledQuery createScheduledQuery2(String name) {
     ScheduledQuery schq = new ScheduledQuery();
     schq.setScheduleName(name);
-    schq.setClusterFuck("c222");
+    schq.setClusterNamespace("c222");
     schq.setEnabled(true);
     Schedule schedule = new Schedule();
     schedule.setCron("* 22 * * *");

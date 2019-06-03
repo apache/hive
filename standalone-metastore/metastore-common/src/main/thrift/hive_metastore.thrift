@@ -1727,7 +1727,7 @@ struct GetRuntimeStatsRequest {
 }
 
 struct ScheduledQueryPollRequest {
-  1: required string clusterFuck
+  1: required string clusterNamespace
 }
 
 struct ScheduledQueryPollResponse {
@@ -1746,7 +1746,7 @@ struct ScheduledQuery {
   1: required string scheduleName,
   2: optional bool enabled,
   //FIXME: clusterId and/or catalog and/or namespace
-  3: optional string clusterFuck,
+  3: optional string clusterNamespace,
   4: optional Schedule schedule,
   5: optional string user,
   6: optional string query,

@@ -24089,16 +24089,16 @@ class GetRuntimeStatsRequest:
 class ScheduledQueryPollRequest:
   """
   Attributes:
-   - clusterFuck
+   - clusterNamespace
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'clusterFuck', None, None, ), # 1
+    (1, TType.STRING, 'clusterNamespace', None, None, ), # 1
   )
 
-  def __init__(self, clusterFuck=None,):
-    self.clusterFuck = clusterFuck
+  def __init__(self, clusterNamespace=None,):
+    self.clusterNamespace = clusterNamespace
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -24111,7 +24111,7 @@ class ScheduledQueryPollRequest:
         break
       if fid == 1:
         if ftype == TType.STRING:
-          self.clusterFuck = iprot.readString()
+          self.clusterNamespace = iprot.readString()
         else:
           iprot.skip(ftype)
       else:
@@ -24124,22 +24124,22 @@ class ScheduledQueryPollRequest:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('ScheduledQueryPollRequest')
-    if self.clusterFuck is not None:
-      oprot.writeFieldBegin('clusterFuck', TType.STRING, 1)
-      oprot.writeString(self.clusterFuck)
+    if self.clusterNamespace is not None:
+      oprot.writeFieldBegin('clusterNamespace', TType.STRING, 1)
+      oprot.writeString(self.clusterNamespace)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
   def validate(self):
-    if self.clusterFuck is None:
-      raise TProtocol.TProtocolException(message='Required field clusterFuck is unset!')
+    if self.clusterNamespace is None:
+      raise TProtocol.TProtocolException(message='Required field clusterNamespace is unset!')
     return
 
 
   def __hash__(self):
     value = 17
-    value = (value * 31) ^ hash(self.clusterFuck)
+    value = (value * 31) ^ hash(self.clusterNamespace)
     return value
 
   def __repr__(self):
@@ -24320,7 +24320,7 @@ class ScheduledQuery:
   Attributes:
    - scheduleName
    - enabled
-   - clusterFuck
+   - clusterNamespace
    - schedule
    - user
    - query
@@ -24331,17 +24331,17 @@ class ScheduledQuery:
     None, # 0
     (1, TType.STRING, 'scheduleName', None, None, ), # 1
     (2, TType.BOOL, 'enabled', None, None, ), # 2
-    (3, TType.STRING, 'clusterFuck', None, None, ), # 3
+    (3, TType.STRING, 'clusterNamespace', None, None, ), # 3
     (4, TType.STRUCT, 'schedule', (Schedule, Schedule.thrift_spec), None, ), # 4
     (5, TType.STRING, 'user', None, None, ), # 5
     (6, TType.STRING, 'query', None, None, ), # 6
     (7, TType.I32, 'nextExecution', None, None, ), # 7
   )
 
-  def __init__(self, scheduleName=None, enabled=None, clusterFuck=None, schedule=None, user=None, query=None, nextExecution=None,):
+  def __init__(self, scheduleName=None, enabled=None, clusterNamespace=None, schedule=None, user=None, query=None, nextExecution=None,):
     self.scheduleName = scheduleName
     self.enabled = enabled
-    self.clusterFuck = clusterFuck
+    self.clusterNamespace = clusterNamespace
     self.schedule = schedule
     self.user = user
     self.query = query
@@ -24368,7 +24368,7 @@ class ScheduledQuery:
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.STRING:
-          self.clusterFuck = iprot.readString()
+          self.clusterNamespace = iprot.readString()
         else:
           iprot.skip(ftype)
       elif fid == 4:
@@ -24410,9 +24410,9 @@ class ScheduledQuery:
       oprot.writeFieldBegin('enabled', TType.BOOL, 2)
       oprot.writeBool(self.enabled)
       oprot.writeFieldEnd()
-    if self.clusterFuck is not None:
-      oprot.writeFieldBegin('clusterFuck', TType.STRING, 3)
-      oprot.writeString(self.clusterFuck)
+    if self.clusterNamespace is not None:
+      oprot.writeFieldBegin('clusterNamespace', TType.STRING, 3)
+      oprot.writeString(self.clusterNamespace)
       oprot.writeFieldEnd()
     if self.schedule is not None:
       oprot.writeFieldBegin('schedule', TType.STRUCT, 4)
@@ -24443,7 +24443,7 @@ class ScheduledQuery:
     value = 17
     value = (value * 31) ^ hash(self.scheduleName)
     value = (value * 31) ^ hash(self.enabled)
-    value = (value * 31) ^ hash(self.clusterFuck)
+    value = (value * 31) ^ hash(self.clusterNamespace)
     value = (value * 31) ^ hash(self.schedule)
     value = (value * 31) ^ hash(self.user)
     value = (value * 31) ^ hash(self.query)

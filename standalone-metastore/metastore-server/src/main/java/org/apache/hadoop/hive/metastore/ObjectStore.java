@@ -12597,7 +12597,7 @@ public class ObjectStore implements RawStore, Configurable {
     // query&update next_execution of next scheduled_query
     //    openTransaction();
     //    query=getNextScheduledQuery();
-    //    request.getClusterFuck();
+    //    request.getClusterNamespace();
 
     return new ScheduledQueryPollResponse("sch1", 2, "X");
   }

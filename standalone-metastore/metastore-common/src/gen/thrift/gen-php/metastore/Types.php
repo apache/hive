@@ -33988,20 +33988,20 @@ class ScheduledQueryPollRequest {
   /**
    * @var string
    */
-  public $clusterFuck = null;
+  public $clusterNamespace = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
         1 => array(
-          'var' => 'clusterFuck',
+          'var' => 'clusterNamespace',
           'type' => TType::STRING,
           ),
         );
     }
     if (is_array($vals)) {
-      if (isset($vals['clusterFuck'])) {
-        $this->clusterFuck = $vals['clusterFuck'];
+      if (isset($vals['clusterNamespace'])) {
+        $this->clusterNamespace = $vals['clusterNamespace'];
       }
     }
   }
@@ -34027,7 +34027,7 @@ class ScheduledQueryPollRequest {
       {
         case 1:
           if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->clusterFuck);
+            $xfer += $input->readString($this->clusterNamespace);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -34045,9 +34045,9 @@ class ScheduledQueryPollRequest {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ScheduledQueryPollRequest');
-    if ($this->clusterFuck !== null) {
-      $xfer += $output->writeFieldBegin('clusterFuck', TType::STRING, 1);
-      $xfer += $output->writeString($this->clusterFuck);
+    if ($this->clusterNamespace !== null) {
+      $xfer += $output->writeFieldBegin('clusterNamespace', TType::STRING, 1);
+      $xfer += $output->writeString($this->clusterNamespace);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -34267,7 +34267,7 @@ class ScheduledQuery {
   /**
    * @var string
    */
-  public $clusterFuck = null;
+  public $clusterNamespace = null;
   /**
    * @var \metastore\Schedule
    */
@@ -34297,7 +34297,7 @@ class ScheduledQuery {
           'type' => TType::BOOL,
           ),
         3 => array(
-          'var' => 'clusterFuck',
+          'var' => 'clusterNamespace',
           'type' => TType::STRING,
           ),
         4 => array(
@@ -34326,8 +34326,8 @@ class ScheduledQuery {
       if (isset($vals['enabled'])) {
         $this->enabled = $vals['enabled'];
       }
-      if (isset($vals['clusterFuck'])) {
-        $this->clusterFuck = $vals['clusterFuck'];
+      if (isset($vals['clusterNamespace'])) {
+        $this->clusterNamespace = $vals['clusterNamespace'];
       }
       if (isset($vals['schedule'])) {
         $this->schedule = $vals['schedule'];
@@ -34379,7 +34379,7 @@ class ScheduledQuery {
           break;
         case 3:
           if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->clusterFuck);
+            $xfer += $input->readString($this->clusterNamespace);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -34436,9 +34436,9 @@ class ScheduledQuery {
       $xfer += $output->writeBool($this->enabled);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->clusterFuck !== null) {
-      $xfer += $output->writeFieldBegin('clusterFuck', TType::STRING, 3);
-      $xfer += $output->writeString($this->clusterFuck);
+    if ($this->clusterNamespace !== null) {
+      $xfer += $output->writeFieldBegin('clusterNamespace', TType::STRING, 3);
+      $xfer += $output->writeString($this->clusterNamespace);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->schedule !== null) {

@@ -1453,8 +1453,8 @@
       <field name="enabled">
         <column name="ENABLED"/> <!-- FIXME: any boolean type? -->
       </field>
-      <field name="clusterFuck">
-        <column name="CLUSTER_FUCK" jdbc-type="varchar" length="256" allows-null="true"/>
+      <field name="clusterNamespace">
+        <column name="CLUSTER_NAMESPACE" jdbc-type="varchar" length="256" allows-null="true"/>
       </field>
       <field name="schedule">
         <column name="SCHEDULE" jdbc-type="varchar" length="256" allows-null="true"/>

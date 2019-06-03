@@ -31,7 +31,7 @@ public class MScheduledQuery {
 
   private String scheduleName;
   private boolean enabled;
-  private String clusterFuck;
+  private String clusterNamespace;
   private String schedule;
   private String user;
   private String query;
@@ -40,7 +40,7 @@ public class MScheduledQuery {
   public MScheduledQuery(ScheduledQuery s) {
     scheduleName = s.getScheduleName();
     enabled = s.isEnabled();
-    clusterFuck = s.getClusterFuck();
+    clusterNamespace = s.getClusterNamespace();
     schedule = s.getSchedule().getCron();
     user = s.getUser();
     query = s.getQuery();
@@ -55,7 +55,7 @@ public class MScheduledQuery {
     ScheduledQuery ret = new ScheduledQuery();
     ret.setScheduleName(s.scheduleName);
     ret.setEnabled(s.enabled);
-    ret.setClusterFuck(s.clusterFuck);
+    ret.setClusterNamespace(s.clusterNamespace);
     Schedule sschedule = new Schedule();
     sschedule.setCron(s.schedule);
     ret.setSchedule(sschedule);

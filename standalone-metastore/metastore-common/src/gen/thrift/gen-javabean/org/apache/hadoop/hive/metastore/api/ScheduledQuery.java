@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 
   private static final org.apache.thrift.protocol.TField SCHEDULE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("scheduleName", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField ENABLED_FIELD_DESC = new org.apache.thrift.protocol.TField("enabled", org.apache.thrift.protocol.TType.BOOL, (short)2);
-  private static final org.apache.thrift.protocol.TField CLUSTER_FUCK_FIELD_DESC = new org.apache.thrift.protocol.TField("clusterFuck", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField CLUSTER_NAMESPACE_FIELD_DESC = new org.apache.thrift.protocol.TField("clusterNamespace", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField SCHEDULE_FIELD_DESC = new org.apache.thrift.protocol.TField("schedule", org.apache.thrift.protocol.TType.STRUCT, (short)4);
   private static final org.apache.thrift.protocol.TField USER_FIELD_DESC = new org.apache.thrift.protocol.TField("user", org.apache.thrift.protocol.TType.STRING, (short)5);
   private static final org.apache.thrift.protocol.TField QUERY_FIELD_DESC = new org.apache.thrift.protocol.TField("query", org.apache.thrift.protocol.TType.STRING, (short)6);
@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
 
   private String scheduleName; // required
   private boolean enabled; // optional
-  private String clusterFuck; // optional
+  private String clusterNamespace; // optional
   private Schedule schedule; // optional
   private String user; // optional
   private String query; // optional
@@ -64,7 +64,7 @@ import org.slf4j.LoggerFactory;
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     SCHEDULE_NAME((short)1, "scheduleName"),
     ENABLED((short)2, "enabled"),
-    CLUSTER_FUCK((short)3, "clusterFuck"),
+    CLUSTER_NAMESPACE((short)3, "clusterNamespace"),
     SCHEDULE((short)4, "schedule"),
     USER((short)5, "user"),
     QUERY((short)6, "query"),
@@ -87,8 +87,8 @@ import org.slf4j.LoggerFactory;
           return SCHEDULE_NAME;
         case 2: // ENABLED
           return ENABLED;
-        case 3: // CLUSTER_FUCK
-          return CLUSTER_FUCK;
+        case 3: // CLUSTER_NAMESPACE
+          return CLUSTER_NAMESPACE;
         case 4: // SCHEDULE
           return SCHEDULE;
         case 5: // USER
@@ -140,7 +140,7 @@ import org.slf4j.LoggerFactory;
   private static final int __ENABLED_ISSET_ID = 0;
   private static final int __NEXTEXECUTION_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.ENABLED,_Fields.CLUSTER_FUCK,_Fields.SCHEDULE,_Fields.USER,_Fields.QUERY,_Fields.NEXT_EXECUTION};
+  private static final _Fields optionals[] = {_Fields.ENABLED,_Fields.CLUSTER_NAMESPACE,_Fields.SCHEDULE,_Fields.USER,_Fields.QUERY,_Fields.NEXT_EXECUTION};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -148,7 +148,7 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.ENABLED, new org.apache.thrift.meta_data.FieldMetaData("enabled", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.CLUSTER_FUCK, new org.apache.thrift.meta_data.FieldMetaData("clusterFuck", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.CLUSTER_NAMESPACE, new org.apache.thrift.meta_data.FieldMetaData("clusterNamespace", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.SCHEDULE, new org.apache.thrift.meta_data.FieldMetaData("schedule", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Schedule.class)));
@@ -181,8 +181,8 @@ import org.slf4j.LoggerFactory;
       this.scheduleName = other.scheduleName;
     }
     this.enabled = other.enabled;
-    if (other.isSetClusterFuck()) {
-      this.clusterFuck = other.clusterFuck;
+    if (other.isSetClusterNamespace()) {
+      this.clusterNamespace = other.clusterNamespace;
     }
     if (other.isSetSchedule()) {
       this.schedule = new Schedule(other.schedule);
@@ -205,7 +205,7 @@ import org.slf4j.LoggerFactory;
     this.scheduleName = null;
     setEnabledIsSet(false);
     this.enabled = false;
-    this.clusterFuck = null;
+    this.clusterNamespace = null;
     this.schedule = null;
     this.user = null;
     this.query = null;
@@ -258,26 +258,26 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ENABLED_ISSET_ID, value);
   }
 
-  public String getClusterFuck() {
-    return this.clusterFuck;
+  public String getClusterNamespace() {
+    return this.clusterNamespace;
   }
 
-  public void setClusterFuck(String clusterFuck) {
-    this.clusterFuck = clusterFuck;
+  public void setClusterNamespace(String clusterNamespace) {
+    this.clusterNamespace = clusterNamespace;
   }
 
-  public void unsetClusterFuck() {
-    this.clusterFuck = null;
+  public void unsetClusterNamespace() {
+    this.clusterNamespace = null;
   }
 
-  /** Returns true if field clusterFuck is set (has been assigned a value) and false otherwise */
-  public boolean isSetClusterFuck() {
-    return this.clusterFuck != null;
+  /** Returns true if field clusterNamespace is set (has been assigned a value) and false otherwise */
+  public boolean isSetClusterNamespace() {
+    return this.clusterNamespace != null;
   }
 
-  public void setClusterFuckIsSet(boolean value) {
+  public void setClusterNamespaceIsSet(boolean value) {
     if (!value) {
-      this.clusterFuck = null;
+      this.clusterNamespace = null;
     }
   }
 
@@ -390,11 +390,11 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
-    case CLUSTER_FUCK:
+    case CLUSTER_NAMESPACE:
       if (value == null) {
-        unsetClusterFuck();
+        unsetClusterNamespace();
       } else {
-        setClusterFuck((String)value);
+        setClusterNamespace((String)value);
       }
       break;
 
@@ -441,8 +441,8 @@ import org.slf4j.LoggerFactory;
     case ENABLED:
       return isEnabled();
 
-    case CLUSTER_FUCK:
-      return getClusterFuck();
+    case CLUSTER_NAMESPACE:
+      return getClusterNamespace();
 
     case SCHEDULE:
       return getSchedule();
@@ -471,8 +471,8 @@ import org.slf4j.LoggerFactory;
       return isSetScheduleName();
     case ENABLED:
       return isSetEnabled();
-    case CLUSTER_FUCK:
-      return isSetClusterFuck();
+    case CLUSTER_NAMESPACE:
+      return isSetClusterNamespace();
     case SCHEDULE:
       return isSetSchedule();
     case USER:
@@ -516,12 +516,12 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
-    boolean this_present_clusterFuck = true && this.isSetClusterFuck();
-    boolean that_present_clusterFuck = true && that.isSetClusterFuck();
-    if (this_present_clusterFuck || that_present_clusterFuck) {
-      if (!(this_present_clusterFuck && that_present_clusterFuck))
+    boolean this_present_clusterNamespace = true && this.isSetClusterNamespace();
+    boolean that_present_clusterNamespace = true && that.isSetClusterNamespace();
+    if (this_present_clusterNamespace || that_present_clusterNamespace) {
+      if (!(this_present_clusterNamespace && that_present_clusterNamespace))
         return false;
-      if (!this.clusterFuck.equals(that.clusterFuck))
+      if (!this.clusterNamespace.equals(that.clusterNamespace))
         return false;
     }
 
@@ -578,10 +578,10 @@ import org.slf4j.LoggerFactory;
     if (present_enabled)
       list.add(enabled);
 
-    boolean present_clusterFuck = true && (isSetClusterFuck());
-    list.add(present_clusterFuck);
-    if (present_clusterFuck)
-      list.add(clusterFuck);
+    boolean present_clusterNamespace = true && (isSetClusterNamespace());
+    list.add(present_clusterNamespace);
+    if (present_clusterNamespace)
+      list.add(clusterNamespace);
 
     boolean present_schedule = true && (isSetSchedule());
     list.add(present_schedule);
@@ -634,12 +634,12 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetClusterFuck()).compareTo(other.isSetClusterFuck());
+    lastComparison = Boolean.valueOf(isSetClusterNamespace()).compareTo(other.isSetClusterNamespace());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetClusterFuck()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.clusterFuck, other.clusterFuck);
+    if (isSetClusterNamespace()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.clusterNamespace, other.clusterNamespace);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -717,13 +717,13 @@ import org.slf4j.LoggerFactory;
       sb.append(this.enabled);
       first = false;
     }
-    if (isSetClusterFuck()) {
+    if (isSetClusterNamespace()) {
       if (!first) sb.append(", ");
-      sb.append("clusterFuck:");
-      if (this.clusterFuck == null) {
+      sb.append("clusterNamespace:");
+      if (this.clusterNamespace == null) {
         sb.append("null");
       } else {
-        sb.append(this.clusterFuck);
+        sb.append(this.clusterNamespace);
       }
       first = false;
     }
@@ -831,10 +831,10 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // CLUSTER_FUCK
+          case 3: // CLUSTER_NAMESPACE
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.clusterFuck = iprot.readString();
-              struct.setClusterFuckIsSet(true);
+              struct.clusterNamespace = iprot.readString();
+              struct.setClusterNamespaceIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -895,10 +895,10 @@ import org.slf4j.LoggerFactory;
         oprot.writeBool(struct.enabled);
         oprot.writeFieldEnd();
       }
-      if (struct.clusterFuck != null) {
-        if (struct.isSetClusterFuck()) {
-          oprot.writeFieldBegin(CLUSTER_FUCK_FIELD_DESC);
-          oprot.writeString(struct.clusterFuck);
+      if (struct.clusterNamespace != null) {
+        if (struct.isSetClusterNamespace()) {
+          oprot.writeFieldBegin(CLUSTER_NAMESPACE_FIELD_DESC);
+          oprot.writeString(struct.clusterNamespace);
           oprot.writeFieldEnd();
         }
       }
@@ -950,7 +950,7 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetEnabled()) {
         optionals.set(0);
       }
-      if (struct.isSetClusterFuck()) {
+      if (struct.isSetClusterNamespace()) {
         optionals.set(1);
       }
       if (struct.isSetSchedule()) {
@@ -969,8 +969,8 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetEnabled()) {
         oprot.writeBool(struct.enabled);
       }
-      if (struct.isSetClusterFuck()) {
-        oprot.writeString(struct.clusterFuck);
+      if (struct.isSetClusterNamespace()) {
+        oprot.writeString(struct.clusterNamespace);
       }
       if (struct.isSetSchedule()) {
         struct.schedule.write(oprot);
@@ -997,8 +997,8 @@ import org.slf4j.LoggerFactory;
         struct.setEnabledIsSet(true);
       }
       if (incoming.get(1)) {
-        struct.clusterFuck = iprot.readString();
-        struct.setClusterFuckIsSet(true);
+        struct.clusterNamespace = iprot.readString();
+        struct.setClusterNamespaceIsSet(true);
       }
       if (incoming.get(2)) {
         struct.schedule = new Schedule();

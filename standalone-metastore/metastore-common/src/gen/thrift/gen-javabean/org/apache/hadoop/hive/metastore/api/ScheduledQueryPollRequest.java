@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class ScheduledQueryPollRequest implements org.apache.thrift.TBase<ScheduledQueryPollRequest, ScheduledQueryPollRequest._Fields>, java.io.Serializable, Cloneable, Comparable<ScheduledQueryPollRequest> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ScheduledQueryPollRequest");
 
-  private static final org.apache.thrift.protocol.TField CLUSTER_FUCK_FIELD_DESC = new org.apache.thrift.protocol.TField("clusterFuck", org.apache.thrift.protocol.TType.STRING, (short)1);
+  private static final org.apache.thrift.protocol.TField CLUSTER_NAMESPACE_FIELD_DESC = new org.apache.thrift.protocol.TField("clusterNamespace", org.apache.thrift.protocol.TType.STRING, (short)1);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -46,11 +46,11 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new ScheduledQueryPollRequestTupleSchemeFactory());
   }
 
-  private String clusterFuck; // required
+  private String clusterNamespace; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    CLUSTER_FUCK((short)1, "clusterFuck");
+    CLUSTER_NAMESPACE((short)1, "clusterNamespace");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -65,8 +65,8 @@ import org.slf4j.LoggerFactory;
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // CLUSTER_FUCK
-          return CLUSTER_FUCK;
+        case 1: // CLUSTER_NAMESPACE
+          return CLUSTER_NAMESPACE;
         default:
           return null;
       }
@@ -110,7 +110,7 @@ import org.slf4j.LoggerFactory;
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.CLUSTER_FUCK, new org.apache.thrift.meta_data.FieldMetaData("clusterFuck", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.CLUSTER_NAMESPACE, new org.apache.thrift.meta_data.FieldMetaData("clusterNamespace", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ScheduledQueryPollRequest.class, metaDataMap);
@@ -120,18 +120,18 @@ import org.slf4j.LoggerFactory;
   }
 
   public ScheduledQueryPollRequest(
-    String clusterFuck)
+    String clusterNamespace)
   {
     this();
-    this.clusterFuck = clusterFuck;
+    this.clusterNamespace = clusterNamespace;
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
   public ScheduledQueryPollRequest(ScheduledQueryPollRequest other) {
-    if (other.isSetClusterFuck()) {
-      this.clusterFuck = other.clusterFuck;
+    if (other.isSetClusterNamespace()) {
+      this.clusterNamespace = other.clusterNamespace;
     }
   }
 
@@ -141,39 +141,39 @@ import org.slf4j.LoggerFactory;
 
   @Override
   public void clear() {
-    this.clusterFuck = null;
+    this.clusterNamespace = null;
   }
 
-  public String getClusterFuck() {
-    return this.clusterFuck;
+  public String getClusterNamespace() {
+    return this.clusterNamespace;
   }
 
-  public void setClusterFuck(String clusterFuck) {
-    this.clusterFuck = clusterFuck;
+  public void setClusterNamespace(String clusterNamespace) {
+    this.clusterNamespace = clusterNamespace;
   }
 
-  public void unsetClusterFuck() {
-    this.clusterFuck = null;
+  public void unsetClusterNamespace() {
+    this.clusterNamespace = null;
   }
 
-  /** Returns true if field clusterFuck is set (has been assigned a value) and false otherwise */
-  public boolean isSetClusterFuck() {
-    return this.clusterFuck != null;
+  /** Returns true if field clusterNamespace is set (has been assigned a value) and false otherwise */
+  public boolean isSetClusterNamespace() {
+    return this.clusterNamespace != null;
   }
 
-  public void setClusterFuckIsSet(boolean value) {
+  public void setClusterNamespaceIsSet(boolean value) {
     if (!value) {
-      this.clusterFuck = null;
+      this.clusterNamespace = null;
     }
   }
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case CLUSTER_FUCK:
+    case CLUSTER_NAMESPACE:
       if (value == null) {
-        unsetClusterFuck();
+        unsetClusterNamespace();
       } else {
-        setClusterFuck((String)value);
+        setClusterNamespace((String)value);
       }
       break;
 
@@ -182,8 +182,8 @@ import org.slf4j.LoggerFactory;
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case CLUSTER_FUCK:
-      return getClusterFuck();
+    case CLUSTER_NAMESPACE:
+      return getClusterNamespace();
 
     }
     throw new IllegalStateException();
@@ -196,8 +196,8 @@ import org.slf4j.LoggerFactory;
     }
 
     switch (field) {
-    case CLUSTER_FUCK:
-      return isSetClusterFuck();
+    case CLUSTER_NAMESPACE:
+      return isSetClusterNamespace();
     }
     throw new IllegalStateException();
   }
@@ -215,12 +215,12 @@ import org.slf4j.LoggerFactory;
     if (that == null)
       return false;
 
-    boolean this_present_clusterFuck = true && this.isSetClusterFuck();
-    boolean that_present_clusterFuck = true && that.isSetClusterFuck();
-    if (this_present_clusterFuck || that_present_clusterFuck) {
-      if (!(this_present_clusterFuck && that_present_clusterFuck))
+    boolean this_present_clusterNamespace = true && this.isSetClusterNamespace();
+    boolean that_present_clusterNamespace = true && that.isSetClusterNamespace();
+    if (this_present_clusterNamespace || that_present_clusterNamespace) {
+      if (!(this_present_clusterNamespace && that_present_clusterNamespace))
         return false;
-      if (!this.clusterFuck.equals(that.clusterFuck))
+      if (!this.clusterNamespace.equals(that.clusterNamespace))
         return false;
     }
 
@@ -231,10 +231,10 @@ import org.slf4j.LoggerFactory;
   public int hashCode() {
     List<Object> list = new ArrayList<Object>();
 
-    boolean present_clusterFuck = true && (isSetClusterFuck());
-    list.add(present_clusterFuck);
-    if (present_clusterFuck)
-      list.add(clusterFuck);
+    boolean present_clusterNamespace = true && (isSetClusterNamespace());
+    list.add(present_clusterNamespace);
+    if (present_clusterNamespace)
+      list.add(clusterNamespace);
 
     return list.hashCode();
   }
@@ -247,12 +247,12 @@ import org.slf4j.LoggerFactory;
 
     int lastComparison = 0;
 
-    lastComparison = Boolean.valueOf(isSetClusterFuck()).compareTo(other.isSetClusterFuck());
+    lastComparison = Boolean.valueOf(isSetClusterNamespace()).compareTo(other.isSetClusterNamespace());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetClusterFuck()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.clusterFuck, other.clusterFuck);
+    if (isSetClusterNamespace()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.clusterNamespace, other.clusterNamespace);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -277,11 +277,11 @@ import org.slf4j.LoggerFactory;
     StringBuilder sb = new StringBuilder("ScheduledQueryPollRequest(");
     boolean first = true;
 
-    sb.append("clusterFuck:");
-    if (this.clusterFuck == null) {
+    sb.append("clusterNamespace:");
+    if (this.clusterNamespace == null) {
       sb.append("null");
     } else {
-      sb.append(this.clusterFuck);
+      sb.append(this.clusterNamespace);
     }
     first = false;
     sb.append(")");
@@ -290,8 +290,8 @@ import org.slf4j.LoggerFactory;
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (!isSetClusterFuck()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'clusterFuck' is unset! Struct:" + toString());
+    if (!isSetClusterNamespace()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'clusterNamespace' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -331,10 +331,10 @@ import org.slf4j.LoggerFactory;
           break;
         }
         switch (schemeField.id) {
-          case 1: // CLUSTER_FUCK
+          case 1: // CLUSTER_NAMESPACE
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.clusterFuck = iprot.readString();
-              struct.setClusterFuckIsSet(true);
+              struct.clusterNamespace = iprot.readString();
+              struct.setClusterNamespaceIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -352,9 +352,9 @@ import org.slf4j.LoggerFactory;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (struct.clusterFuck != null) {
-        oprot.writeFieldBegin(CLUSTER_FUCK_FIELD_DESC);
-        oprot.writeString(struct.clusterFuck);
+      if (struct.clusterNamespace != null) {
+        oprot.writeFieldBegin(CLUSTER_NAMESPACE_FIELD_DESC);
+        oprot.writeString(struct.clusterNamespace);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -374,14 +374,14 @@ import org.slf4j.LoggerFactory;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, ScheduledQueryPollRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
-      oprot.writeString(struct.clusterFuck);
+      oprot.writeString(struct.clusterNamespace);
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, ScheduledQueryPollRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      struct.clusterFuck = iprot.readString();
-      struct.setClusterFuckIsSet(true);
+      struct.clusterNamespace = iprot.readString();
+      struct.setClusterNamespaceIsSet(true);
     }
   }
 
