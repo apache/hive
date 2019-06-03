@@ -162,7 +162,7 @@ public class HiveAuthFactory {
       throw new LoginException("Unsupported authentication type " + authTypeStr);
     }
 
-    String trustedDomain = HiveConf.getVar(conf, ConfVars.HIVE_SERVER2_TRUST_DOMAIN).trim();
+    String trustedDomain = HiveConf.getVar(conf, ConfVars.HIVE_SERVER2_TRUSTED_DOMAIN).trim();
     if (!trustedDomain.isEmpty()) {
       transportFactory = PlainSaslHelper.getDualPlainTransportFactory(transportFactory, trustedDomain);
     }

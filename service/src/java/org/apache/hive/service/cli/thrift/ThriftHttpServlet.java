@@ -141,30 +141,30 @@ public class ThriftHttpServlet extends TServlet {
 
       clientIpAddress = request.getRemoteAddr();
       LOG.debug("Client IP Address: " + clientIpAddress);
-      String trustedDomain = HiveConf.getVar(hiveConf, ConfVars.HIVE_SERVER2_TRUST_DOMAIN).trim();
-
-      // Skip authentication if the connection is from the trusted domain
-      if (!trustedDomain.isEmpty() &&
-              PlainSaslHelper.isHostFromTrustedDomain(request.getRemoteHost(), trustedDomain)) {
-        LOG.info("No authentication performed because the connecting host " + request.getRemoteHost() +
-                " is from the trusted domain " + trustedDomain);
-        // TODO: We need to get the user name somehow here. In this case, I think the incoming
-        //  connection should have proxy user set. How do we get it here is the question.
-        clientUserName = "xyz";
-      } else {
-        // If the cookie based authentication is already enabled, parse the
-        // request and validate the request cookies.
-        if (isCookieAuthEnabled) {
-          clientUserName = validateCookie(request);
-          requireNewCookie = (clientUserName == null);
-          if (requireNewCookie) {
-            LOG.info("Could not validate cookie sent, will try to generate a new cookie");
-          }
+      // If the cookie based authentication is already enabled, parse the
+      // request and validate the request cookies.
+      if (isCookieAuthEnabled) {
+        clientUserName = validateCookie(request);
+        requireNewCookie = (clientUserName == null);
+        if (requireNewCookie) {
+          LOG.info("Could not validate cookie sent, will try to generate a new cookie");
         }
-        // If the cookie based authentication is not enabled or the request does
-        // not have a valid cookie, use the kerberos or password based authentication
-        // depending on the server setup.
-        if (clientUserName == null) {
+      }
+      // If the cookie based authentication is not enabled or the request does not have a valid
+      // cookie, use authentication depending on the server setup.
+      if (clientUserName == null) {
+        String trustedDomain = HiveConf.getVar(hiveConf, ConfVars.HIVE_SERVER2_TRUSTED_DOMAIN).trim();
+
+        // Skip authentication if the connection is from the trusted domain, if specified.
+        if (!trustedDomain.isEmpty() &&
+                PlainSaslHelper.isHostFromTrustedDomain(request.getRemoteHost(), trustedDomain)) {
+          LOG.info("No authentication performed because the connecting host " + request.getRemoteHost() +
+                  " is from the trusted domain " + trustedDomain);
+          // In order to skip authentication, we use auth type NOSASL to be consistent with the
+          // HiveAuthFactory defaults. In HTTP mode, it will also get us the user name from the
+          // HTTP request header.
+          clientUserName = doPasswdAuth(request, HiveAuthConstants.AuthTypes.NOSASL.getAuthName());
+        } else {
           // For a kerberos setup
           if (isKerberosAuthMode(authType)) {
             String delegationToken = request.getHeader(HIVE_DELEGATION_TOKEN_HEADER);
@@ -181,6 +181,7 @@ public class ThriftHttpServlet extends TServlet {
           }
         }
       }
+      assert (clientUserName != null);
       LOG.debug("Client username: " + clientUserName);
 
       // Set the thread local username to be used for doAs if true
