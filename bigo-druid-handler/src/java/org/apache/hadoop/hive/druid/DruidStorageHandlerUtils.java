@@ -24,8 +24,7 @@ import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.google.common.base.Throwables;
 import com.google.common.collect.*;
-import org.apache.druid.data.input.impl.DimensionSchema;
-import org.apache.druid.data.input.impl.StringDimensionSchema;
+import org.apache.druid.data.input.impl.*;
 import org.apache.druid.jackson.DefaultObjectMapper;
 import org.apache.druid.java.util.common.JodaUtils;
 import org.apache.druid.java.util.common.MapUtils;
@@ -44,10 +43,7 @@ import org.apache.druid.metadata.MetadataStorageTablesConfig;
 import org.apache.druid.metadata.SQLMetadataConnector;
 import org.apache.druid.metadata.storage.mysql.MySQLConnector;
 import org.apache.druid.query.DruidProcessingConfig;
-import org.apache.druid.query.aggregation.AggregatorFactory;
-import org.apache.druid.query.aggregation.DoubleSumAggregatorFactory;
-import org.apache.druid.query.aggregation.FloatSumAggregatorFactory;
-import org.apache.druid.query.aggregation.LongSumAggregatorFactory;
+import org.apache.druid.query.aggregation.*;
 import org.apache.druid.query.aggregation.datasketches.hll.HllSketchAggregatorFactory;
 import org.apache.druid.query.aggregation.datasketches.hll.HllSketchBuildAggregatorFactory;
 import org.apache.druid.query.aggregation.datasketches.hll.HllSketchModule;
@@ -86,6 +82,7 @@ import org.apache.hadoop.hive.druid.json.AvroParseSpec;
 import org.apache.hadoop.hive.druid.json.AvroStreamInputRowParser;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -99,8 +96,10 @@ import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 import org.joda.time.Period;
+import org.joda.time.chrono.GregorianChronology;
 import org.joda.time.chrono.ISOChronology;
 import org.skife.jdbi.v2.*;
 import org.skife.jdbi.v2.exceptions.CallbackFailedException;
@@ -121,6 +120,8 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -131,6 +132,7 @@ public final class DruidStorageHandlerUtils {
   }
 
   private static final Logger LOG = LoggerFactory.getLogger(DruidStorageHandlerUtils.class);
+  private static final SessionState.LogHelper CONSOLE = new SessionState.LogHelper(LOG);
 
   private static final int NUM_RETRIES = 8;
   private static final int SECONDS_BETWEEN_RETRIES = 2;
@@ -378,17 +380,71 @@ public final class DruidStorageHandlerUtils {
     return true;
   }
 
-  /**
-   * First computes the segments timeline to accommodate new segments for insert into case.
-   * Then moves segments to druid deep storage with updated metadata/version.
-   * ALL IS DONE IN ONE TRANSACTION
-   *
-   * @param connector                   DBI connector to commit
-   * @param metadataStorageTablesConfig Druid metadata tables definitions
-   * @param dataSource                  Druid datasource name
-   * @param segments                    List of segments to move and commit to metadata
-   * @param overwrite                   if it is an insert overwrite
-   * @param conf                        Configuration
+  public static List<Interval> getIntervalsToOverWrite(List<DataSegment> segmentsToOverWrite) {
+
+    Map<Long, Long> intervalPoints = new TreeMap<>();
+    List<Interval> intervals = new ArrayList<>();
+
+    segmentsToOverWrite.stream().forEach(dataSegment ->
+            intervalPoints.put(dataSegment.getInterval().getStartMillis(),
+            dataSegment.getInterval().getEndMillis()));
+
+    AtomicReference<Interval> interval = new AtomicReference<>();
+
+    intervalPoints.forEach((k, v) -> {
+      if (interval.get() == null) {
+        interval.set(new Interval(k, v).withChronology(GregorianChronology.getInstance(DateTimeZone.UTC)));
+      }
+      interval.set(interval.get().withEndMillis(v));
+      if (!intervalPoints.containsKey(v)) {
+        intervals.add(interval.get());
+        interval.set(null);
+      }
+    });
+    return intervals;
+  }
+
+  public static void disableOverLappedSegment(
+          List<DataSegment> segmentsToOverWrite, final Handle handle, String tableName) {
+
+    String dataSource = null;
+    for (DataSegment dataSegment: segmentsToOverWrite) {
+      if (dataSource == null) {
+        dataSource = dataSegment.getDataSource();
+      }
+      if (dataSource != null) {
+        break;
+      }
+    }
+    List<Interval> intervals = getIntervalsToOverWrite(segmentsToOverWrite);
+    String sqlTemplate = String.format(
+            "UPDATE %1$s SET used=false WHERE dataSource=:dataSource AND start>=:start AND end<=:end",
+            tableName);
+    LOG.info("disable overlapped segments:" + sqlTemplate);
+    final PreparedBatch batch = handle.prepareBatch(sqlTemplate);
+
+    for (Interval interval: intervals) {
+      batch.add(new ImmutableMap.Builder<String, Object>().put("dataSource", dataSource)
+              .put("start", interval.getStart().toString())
+              .put("end", interval.getEnd().toString())
+              .build());
+      LOG.info("Disabled {}---->{}::{}----{}", interval.getStart(), interval.getEnd(),
+              interval.getStartMillis(), interval.getEndMillis());
+    }
+    batch.execute();
+  }
+
+   /**
+   *    * First computes the segments timeline to accommodate new segments for insert into case.
+   *    * Then moves segments to druid deep storage with updated metadata/version.
+   *    * ALL IS DONE IN ONE TRANSACTION
+   *    *
+   *    * @param connector                   DBI connector to commit
+   *    * @param metadataStorageTablesConfig Druid metadata tables definitions
+   *    * @param dataSource                  Druid datasource name
+   *    * @param segments                    List of segments to move and commit to metadata
+   *    * @param overwrite                   if it is an insert overwrite
+   *    * @param conf                       Configuration
    * @param dataSegmentPusher           segment pusher
    * @return List of successfully published Druid segments.
    * This list has the updated versions and metadata about segments after move and timeline sorting
@@ -479,6 +535,9 @@ public final class DruidStorageHandlerUtils {
 
       }
 
+      // Disabled overlapped segement
+      disableOverLappedSegment(finalSegmentsToPublish, handle, metadataStorageTablesConfig.getSegmentsTable());
+
       // Publish new segments to metadata storage
       final PreparedBatch
           batch =
@@ -502,7 +561,10 @@ public final class DruidStorageHandlerUtils {
             .put("payload", JSON_MAPPER.writeValueAsBytes(segment))
             .build());
 
-        LOG.info("Published {}", segment.getId().toString());
+        LOG.info("Published {}:{}---->{}:{}---{}", segment.getId().toString(),
+                segment.getInterval().getStart(), segment.getInterval().getEnd(),
+                segment.getInterval().getStartMillis(),
+                segment.getInterval().getEndMillis());
       }
       batch.execute();
 
@@ -783,7 +845,7 @@ public final class DruidStorageHandlerUtils {
         rollup =
         tableProperties.getProperty(DruidConstants.DRUID_ROLLUP) != null ?
             Boolean.parseBoolean(tableProperties.getProperty(DruidConstants.DRUID_ROLLUP)) :
-            false;
+            true;
     return new UniformGranularitySpec(Granularity.fromString(segmentGranularity),
         Granularity.fromString(tableProperties.getProperty(DruidConstants.DRUID_QUERY_GRANULARITY) == null ?
             "NONE" :
@@ -820,6 +882,31 @@ public final class DruidStorageHandlerUtils {
     return tableProperties.getProperty(key) == null
             ? jc.get(key)
             : tableProperties.getProperty(key);
+  }
+
+  public static FieldTypeEnum getFieldType(String fieldName) {
+
+    if (fieldName == null || fieldName.equals("") || !fieldName.contains("_")) {
+      return FieldTypeEnum.OTHER;
+    }
+    String end = fieldName.substring(fieldName.lastIndexOf("_"));
+    if (end.equals("_hll")) {
+      return FieldTypeEnum.HLL;
+    } else if (end.equals("_theta")) {
+      return FieldTypeEnum.THETA;
+    } else if (end.equals("_sum")) {
+      return FieldTypeEnum.SUM;
+    } else if (end.equals("_dim")) {
+      return FieldTypeEnum.DIM;
+    } else if (end.equals("_cnt")) {
+      return FieldTypeEnum.CNT;
+    } else if (end.equals("_max")) {
+      return FieldTypeEnum.MAX;
+    } else if (end.equals("_min")) {
+      return FieldTypeEnum.MIN;
+    } else {
+      return FieldTypeEnum.OTHER;
+    }
   }
 
   public static Pair<List<DimensionSchema>, AggregatorFactory[]>
@@ -900,6 +987,8 @@ public final class DruidStorageHandlerUtils {
 
     for (int i = 0; i < columnTypes.size(); i++) {
       String dColumnName = columnNames.get(i);
+      FieldTypeEnum fieldTypeEnum = getFieldType(dColumnName);
+
       if (excludedDimensions.contains(dColumnName)) {
         continue;
       }
@@ -910,13 +999,13 @@ public final class DruidStorageHandlerUtils {
       } else if (typeInfo instanceof PrimitiveTypeInfo) {
         LOG.info("column type is: " + typeInfo + ", column name is: " + dColumnName);
         // count distinct algorithm for druid
-        if (hllFields.contains(dColumnName)) {
+        if (fieldTypeEnum == FieldTypeEnum.HLL || hllFields.contains(dColumnName)) {
           LOG.info("column " + dColumnName + " treat as hll metric");
           aggregatorFactoryBuilder.add(new HllSketchBuildAggregatorFactory(dColumnName,
                   dColumnName, lgk,
                   druidHllTgtType));
           continue;
-        } else if (thetaFields.contains(dColumnName)) {
+        } else if (fieldTypeEnum == FieldTypeEnum.THETA || thetaFields.contains(dColumnName)) {
           LOG.info("column " + dColumnName + " treat as sketch metric");
           aggregatorFactoryBuilder.add(new OldSketchBuildAggregatorFactory(dColumnName,
                   dColumnName, size));
@@ -926,22 +1015,49 @@ public final class DruidStorageHandlerUtils {
         final PrimitiveObjectInspector.PrimitiveCategory
                 primitiveCategory =
                 ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
-        AggregatorFactory af;
+        AggregatorFactory af = null;
         switch (primitiveCategory) {
           case BYTE:
           case SHORT:
           case INT:
           case LONG:
-            LOG.info("column " + dColumnName + " treat as long metric");
-            af = new LongSumAggregatorFactory(dColumnName, dColumnName);
+            if (fieldTypeEnum == FieldTypeEnum.DIM) {
+              dimensions.add(new LongDimensionSchema(dColumnName));
+            } else if (fieldTypeEnum == FieldTypeEnum.MAX) {
+              af = new LongMaxAggregatorFactory(dColumnName, dColumnName);
+            } else if (fieldTypeEnum == FieldTypeEnum.MIN) {
+                af = new LongMinAggregatorFactory(dColumnName, dColumnName);
+            } else if (fieldTypeEnum == FieldTypeEnum.CNT) {
+                af = new CountAggregatorFactory(dColumnName);
+            } else {
+              af = new LongSumAggregatorFactory(dColumnName, dColumnName);
+            }
             break;
           case FLOAT:
-            LOG.info("column " + dColumnName + " treat as float metric");
-            af = new FloatSumAggregatorFactory(dColumnName, dColumnName);
+            if (fieldTypeEnum == FieldTypeEnum.DIM) {
+              dimensions.add(new FloatDimensionSchema(dColumnName));
+            } else if (fieldTypeEnum == FieldTypeEnum.MAX) {
+              af = new FloatMaxAggregatorFactory(dColumnName, dColumnName);
+            } else if (fieldTypeEnum == FieldTypeEnum.MIN) {
+              af = new FloatMinAggregatorFactory(dColumnName, dColumnName);
+            } else if (fieldTypeEnum == FieldTypeEnum.CNT) {
+                af = new CountAggregatorFactory(dColumnName);
+            } else {
+              af = new FloatSumAggregatorFactory(dColumnName, dColumnName);
+            }
             break;
           case DOUBLE:
-            LOG.info("column " + dColumnName + " treat as double metric");
-            af = new DoubleSumAggregatorFactory(dColumnName, dColumnName);
+            if (fieldTypeEnum == FieldTypeEnum.DIM) {
+              dimensions.add(new DoubleDimensionSchema(dColumnName));
+            } else if (fieldTypeEnum == FieldTypeEnum.MAX) {
+              af = new DoubleMaxAggregatorFactory(dColumnName, dColumnName);
+            } else if (fieldTypeEnum == FieldTypeEnum.MIN) {
+              af = new DoubleMinAggregatorFactory(dColumnName, dColumnName);
+            } else if (fieldTypeEnum == FieldTypeEnum.CNT) {
+                af = new CountAggregatorFactory(dColumnName);
+            } else {
+              af = new DoubleSumAggregatorFactory(dColumnName, dColumnName);
+            }
             break;
           case DECIMAL:
             throw new UnsupportedOperationException(String.format("Druid does not support decimal column type cast column "
@@ -969,6 +1085,9 @@ public final class DruidStorageHandlerUtils {
             LOG.info("add " + dColumnName + " as normal dim");
             dimensions.add(new StringDimensionSchema(dColumnName));
             continue;
+        }
+        if (af == null) {
+          continue;
         }
         aggregatorFactoryBuilder.add(af);
       }

@@ -1,4 +1,4 @@
-package org.apache.hadoop.hive.transform;
+package org.apache.hadoop.hive.druid.transform;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

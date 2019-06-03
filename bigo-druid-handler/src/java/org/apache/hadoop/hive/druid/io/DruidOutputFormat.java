@@ -47,7 +47,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.transform.HiveListTransform;
+import org.apache.hadoop.hive.druid.transform.HiveListTransform;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
@@ -80,8 +80,12 @@ public class DruidOutputFormat implements HiveOutputFormat<NullWritable, DruidWr
   ) throws IOException {
 
 
-    final int targetNumShardsPerGranularity = Integer.parseUnsignedInt(
+    int targetNumShardsPerGranularity = Integer.parseUnsignedInt(
         tableProperties.getProperty(DruidConstants.DRUID_TARGET_SHARDS_PER_GRANULARITY, "0"));
+    targetNumShardsPerGranularity = HiveConf.getIntVar(jc,
+            HiveConf.ConfVars.HIVE_DRUID_TARGET_SHARDS_PER_GRANULARITY) > 0?HiveConf.getIntVar(jc,
+            HiveConf.ConfVars.HIVE_DRUID_TARGET_SHARDS_PER_GRANULARITY): targetNumShardsPerGranularity;
+
     final int maxPartitionSize = targetNumShardsPerGranularity > 0 ? -1 : HiveConf
         .getIntVar(jc, HiveConf.ConfVars.HIVE_DRUID_MAX_PARTITION_SIZE);
     // If datasource is in the table properties, it is an INSERT/INSERT OVERWRITE as the datasource

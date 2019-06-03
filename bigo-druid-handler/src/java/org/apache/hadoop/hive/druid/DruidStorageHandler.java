@@ -22,6 +22,7 @@ import com.google.common.base.*;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import com.ibm.icu.impl.IllegalIcuArgumentException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.druid.java.util.common.RetryUtils;
 import org.apache.druid.java.util.common.lifecycle.Lifecycle;
@@ -420,6 +421,10 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
 
   @Override public void commitInsertTable(Table table, boolean overwrite) throws MetaException {
     LOG.debug("commit insert into table {} overwrite {}", table.getTableName(), overwrite);
+    if (overwrite) {
+      throw new IllegalArgumentException("insert overwrite is prohibit by druid handler," +
+              " because it's a dangerous action");
+    }
     try {
       // Check if there segments to load
       final Path segmentDescriptorDir = getSegmentDescriptorDir();

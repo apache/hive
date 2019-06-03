@@ -53,7 +53,7 @@ public final class DruidConstants {
   // site for details. In general, We recommend just sticking to default size.
   public static final String DRUID_SKETCH_THETA_SIZE = "druid.sketch.theta.size";
 
-  public static final String DRUID_QUERY_GRANULARITY = "druid.query.granularity";
+  public static final String DRUID_QUERY_GRANULARITY = "druid.segment.granularity";
 
   public static final String DRUID_SEGMENT_DIRECTORY = "druid.storage.storageDirectory";
 
