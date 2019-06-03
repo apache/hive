@@ -69,4 +69,14 @@ public class MScheduledQuery {
     return toThrift(this);
   }
 
+  public void doUpdate(MScheduledQuery schq) {
+    // may not change scheduleName
+    enabled = schq.enabled;
+    clusterNamespace = schq.clusterNamespace;
+    schedule = schq.schedule;
+    user = schq.user;
+    query = schq.query;
+    // may not change nextExecution
+  }
+
 }

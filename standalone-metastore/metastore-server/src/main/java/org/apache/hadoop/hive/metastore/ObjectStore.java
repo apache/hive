@@ -12609,6 +12609,12 @@ public class ObjectStore implements RawStore, Configurable {
     case INSERT:
       scheduledQueryInsert(request.getScheduledQuery());
       break;
+    case UPDATE:
+      scheduledQueryUpdate(request.getScheduledQuery());
+      break;
+    case DELETE:
+      scheduledQueryDelete(request.getScheduledQuery());
+      break;
     default:
       throw new MetaException("invalid request");
     }
@@ -12625,6 +12631,46 @@ public class ObjectStore implements RawStore, Configurable {
       }
       openTransaction();
       pm.makePersistent(newSch);
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  public void scheduledQueryDelete(ScheduledQuery scheduledQuery) throws NoSuchObjectException, AlreadyExistsException {
+    MScheduledQuery schq = MScheduledQuery.fromThrift(scheduledQuery);
+    boolean commited = false;
+    try {
+      Optional<MScheduledQuery> existing = getMScheduledQuery(scheduledQuery.getScheduleName());
+      if (!existing.isPresent()) {
+        throw new NoSuchObjectException(
+            "Scheduled query with name: " + scheduledQuery.getScheduleName() + " doesn't exists.");
+      }
+      openTransaction();
+      pm.deletePersistent(schq);
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  public void scheduledQueryUpdate(ScheduledQuery scheduledQuery) throws NoSuchObjectException, AlreadyExistsException {
+    MScheduledQuery schq = MScheduledQuery.fromThrift(scheduledQuery);
+    boolean commited = false;
+    try {
+      Optional<MScheduledQuery> existing = getMScheduledQuery(scheduledQuery.getScheduleName());
+      if (!existing.isPresent()) {
+        throw new NoSuchObjectException(
+            "Scheduled query with name: " + scheduledQuery.getScheduleName() + " doesn't exists.");
+      }
+      openTransaction();
+      MScheduledQuery persisted = existing.get();
+      persisted.doUpdate(schq);
+      pm.makePersistent(persisted);
       commited = commitTransaction();
     } finally {
       if (!commited) {

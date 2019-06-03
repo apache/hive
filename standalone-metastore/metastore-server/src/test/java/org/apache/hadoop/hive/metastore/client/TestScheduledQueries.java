@@ -114,6 +114,8 @@ public class TestScheduledQueries extends MetaStoreClientTest {
 
     ScheduledQuery schq3 = client.getScheduledQuery(schq.getScheduleName());
 
+    // next execution is set by remote
+    schq2.setNextExecution(schq3.getNextExecution());
     assertEquals(schq2, schq3);
   }
 
