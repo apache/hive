@@ -89,4 +89,14 @@ public class LlapManagementProtocolClientImpl implements LlapManagementProtocolP
       throw new ServiceException(e);
     }
   }
+
+  @Override
+  public LlapDaemonProtocolProtos.GetLoadMetricsResponseProto getLoadMetrics(final RpcController controller,
+      final LlapDaemonProtocolProtos.GetLoadMetricsRequestProto request) throws ServiceException {
+    try {
+      return getProxy().getLoadMetrics(null, request);
+    } catch (IOException e) {
+      throw new ServiceException(e);
+    }
+  }
 }

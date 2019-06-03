@@ -28,6 +28,7 @@ import com.google.protobuf.ServiceException;
 
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
+import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -79,11 +80,13 @@ public class LlapProtocolServerImpl extends AbstractService
   private String clusterUser = null;
   private boolean isRestrictedToClusterUser = false;
   private final DaemonId daemonId;
+  private final LlapDaemonExecutorMetrics executorMetrics;
   private TokenRequiresSigning isSigningRequiredConfig = TokenRequiresSigning.TRUE;
 
   public LlapProtocolServerImpl(SecretManager secretManager, int numHandlers,
       ContainerRunner containerRunner, AtomicReference<InetSocketAddress> srvAddress,
-      AtomicReference<InetSocketAddress> mngAddress, int srvPort, int mngPort, DaemonId daemonId) {
+      AtomicReference<InetSocketAddress> mngAddress, int srvPort, int mngPort, DaemonId daemonId,
+      LlapDaemonExecutorMetrics executorMetrics) {
     super("LlapDaemonProtocolServerImpl");
     this.numHandlers = numHandlers;
     this.containerRunner = containerRunner;
@@ -93,6 +96,7 @@ public class LlapProtocolServerImpl extends AbstractService
     this.mngAddress = mngAddress;
     this.mngPort = mngPort;
     this.daemonId = daemonId;
+    this.executorMetrics = executorMetrics;
     LOG.info("Creating: " + LlapProtocolServerImpl.class.getSimpleName() +
         " with port configured to: " + srvPort);
   }
@@ -298,6 +302,18 @@ public class LlapProtocolServerImpl extends AbstractService
       responseProtoBuilder.setPurgedMemoryBytes(llapIo.purge());
     } else {
       responseProtoBuilder.setPurgedMemoryBytes(0);
+    }
+    return responseProtoBuilder.build();
+  }
+
+  @Override
+  public LlapDaemonProtocolProtos.GetLoadMetricsResponseProto getLoadMetrics(final RpcController controller,
+      final LlapDaemonProtocolProtos.GetLoadMetricsRequestProto request) throws ServiceException {
+    LlapDaemonProtocolProtos.GetLoadMetricsResponseProto.Builder responseProtoBuilder =
+        LlapDaemonProtocolProtos.GetLoadMetricsResponseProto.newBuilder();
+    if (executorMetrics != null) {
+      responseProtoBuilder.setNumExecutorsAvailable(executorMetrics.getNumExecutorsAvailable());
+      responseProtoBuilder.setWaitQueueSize(executorMetrics.getWaitQueueSize());
     }
     return responseProtoBuilder.build();
   }

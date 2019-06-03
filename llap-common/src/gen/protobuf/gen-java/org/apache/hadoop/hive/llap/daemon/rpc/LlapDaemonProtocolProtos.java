@@ -20050,6 +20050,868 @@ public final class LlapDaemonProtocolProtos {
     // @@protoc_insertion_point(class_scope:PurgeCacheResponseProto)
   }
 
+  public interface GetLoadMetricsRequestProtoOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+  }
+  /**
+   * Protobuf type {@code GetLoadMetricsRequestProto}
+   */
+  public static final class GetLoadMetricsRequestProto extends
+      com.google.protobuf.GeneratedMessage
+      implements GetLoadMetricsRequestProtoOrBuilder {
+    // Use GetLoadMetricsRequestProto.newBuilder() to construct.
+    private GetLoadMetricsRequestProto(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private GetLoadMetricsRequestProto(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final GetLoadMetricsRequestProto defaultInstance;
+    public static GetLoadMetricsRequestProto getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public GetLoadMetricsRequestProto getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private GetLoadMetricsRequestProto(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.internal_static_GetLoadMetricsRequestProto_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.internal_static_GetLoadMetricsRequestProto_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto.class, org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<GetLoadMetricsRequestProto> PARSER =
+        new com.google.protobuf.AbstractParser<GetLoadMetricsRequestProto>() {
+      public GetLoadMetricsRequestProto parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new GetLoadMetricsRequestProto(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<GetLoadMetricsRequestProto> getParserForType() {
+      return PARSER;
+    }
+
+    private void initFields() {
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto)) {
+        return super.equals(obj);
+      }
+      org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto other = (org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto) obj;
+
+      boolean result = true;
+      result = result &&
+          getUnknownFields().equals(other.getUnknownFields());
+      return result;
+    }
+
+    private int memoizedHashCode = 0;
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code GetLoadMetricsRequestProto}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProtoOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.internal_static_GetLoadMetricsRequestProto_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.internal_static_GetLoadMetricsRequestProto_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto.class, org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto.Builder.class);
+      }
+
+      // Construct using org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.internal_static_GetLoadMetricsRequestProto_descriptor;
+      }
+
+      public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto getDefaultInstanceForType() {
+        return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto.getDefaultInstance();
+      }
+
+      public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto build() {
+        org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto buildPartial() {
+        org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto result = new org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto(this);
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto) {
+          return mergeFrom((org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto other) {
+        if (other == org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto.getDefaultInstance()) return this;
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:GetLoadMetricsRequestProto)
+    }
+
+    static {
+      defaultInstance = new GetLoadMetricsRequestProto(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:GetLoadMetricsRequestProto)
+  }
+
+  public interface GetLoadMetricsResponseProtoOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional int64 num_executors_available = 1;
+    /**
+     * <code>optional int64 num_executors_available = 1;</code>
+     */
+    boolean hasNumExecutorsAvailable();
+    /**
+     * <code>optional int64 num_executors_available = 1;</code>
+     */
+    long getNumExecutorsAvailable();
+
+    // optional int64 wait_queue_size = 2;
+    /**
+     * <code>optional int64 wait_queue_size = 2;</code>
+     */
+    boolean hasWaitQueueSize();
+    /**
+     * <code>optional int64 wait_queue_size = 2;</code>
+     */
+    long getWaitQueueSize();
+  }
+  /**
+   * Protobuf type {@code GetLoadMetricsResponseProto}
+   */
+  public static final class GetLoadMetricsResponseProto extends
+      com.google.protobuf.GeneratedMessage
+      implements GetLoadMetricsResponseProtoOrBuilder {
+    // Use GetLoadMetricsResponseProto.newBuilder() to construct.
+    private GetLoadMetricsResponseProto(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private GetLoadMetricsResponseProto(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final GetLoadMetricsResponseProto defaultInstance;
+    public static GetLoadMetricsResponseProto getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public GetLoadMetricsResponseProto getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private GetLoadMetricsResponseProto(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              bitField0_ |= 0x00000001;
+              numExecutorsAvailable_ = input.readInt64();
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              waitQueueSize_ = input.readInt64();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.internal_static_GetLoadMetricsResponseProto_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.internal_static_GetLoadMetricsResponseProto_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto.class, org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<GetLoadMetricsResponseProto> PARSER =
+        new com.google.protobuf.AbstractParser<GetLoadMetricsResponseProto>() {
+      public GetLoadMetricsResponseProto parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new GetLoadMetricsResponseProto(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<GetLoadMetricsResponseProto> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional int64 num_executors_available = 1;
+    public static final int NUM_EXECUTORS_AVAILABLE_FIELD_NUMBER = 1;
+    private long numExecutorsAvailable_;
+    /**
+     * <code>optional int64 num_executors_available = 1;</code>
+     */
+    public boolean hasNumExecutorsAvailable() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional int64 num_executors_available = 1;</code>
+     */
+    public long getNumExecutorsAvailable() {
+      return numExecutorsAvailable_;
+    }
+
+    // optional int64 wait_queue_size = 2;
+    public static final int WAIT_QUEUE_SIZE_FIELD_NUMBER = 2;
+    private long waitQueueSize_;
+    /**
+     * <code>optional int64 wait_queue_size = 2;</code>
+     */
+    public boolean hasWaitQueueSize() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional int64 wait_queue_size = 2;</code>
+     */
+    public long getWaitQueueSize() {
+      return waitQueueSize_;
+    }
+
+    private void initFields() {
+      numExecutorsAvailable_ = 0L;
+      waitQueueSize_ = 0L;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeInt64(1, numExecutorsAvailable_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeInt64(2, waitQueueSize_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(1, numExecutorsAvailable_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(2, waitQueueSize_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto)) {
+        return super.equals(obj);
+      }
+      org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto other = (org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto) obj;
+
+      boolean result = true;
+      result = result && (hasNumExecutorsAvailable() == other.hasNumExecutorsAvailable());
+      if (hasNumExecutorsAvailable()) {
+        result = result && (getNumExecutorsAvailable()
+            == other.getNumExecutorsAvailable());
+      }
+      result = result && (hasWaitQueueSize() == other.hasWaitQueueSize());
+      if (hasWaitQueueSize()) {
+        result = result && (getWaitQueueSize()
+            == other.getWaitQueueSize());
+      }
+      result = result &&
+          getUnknownFields().equals(other.getUnknownFields());
+      return result;
+    }
+
+    private int memoizedHashCode = 0;
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasNumExecutorsAvailable()) {
+        hash = (37 * hash) + NUM_EXECUTORS_AVAILABLE_FIELD_NUMBER;
+        hash = (53 * hash) + hashLong(getNumExecutorsAvailable());
+      }
+      if (hasWaitQueueSize()) {
+        hash = (37 * hash) + WAIT_QUEUE_SIZE_FIELD_NUMBER;
+        hash = (53 * hash) + hashLong(getWaitQueueSize());
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code GetLoadMetricsResponseProto}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProtoOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.internal_static_GetLoadMetricsResponseProto_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.internal_static_GetLoadMetricsResponseProto_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto.class, org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto.Builder.class);
+      }
+
+      // Construct using org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        numExecutorsAvailable_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        waitQueueSize_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.internal_static_GetLoadMetricsResponseProto_descriptor;
+      }
+
+      public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto getDefaultInstanceForType() {
+        return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto.getDefaultInstance();
+      }
+
+      public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto build() {
+        org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto buildPartial() {
+        org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto result = new org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.numExecutorsAvailable_ = numExecutorsAvailable_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.waitQueueSize_ = waitQueueSize_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto) {
+          return mergeFrom((org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto other) {
+        if (other == org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto.getDefaultInstance()) return this;
+        if (other.hasNumExecutorsAvailable()) {
+          setNumExecutorsAvailable(other.getNumExecutorsAvailable());
+        }
+        if (other.hasWaitQueueSize()) {
+          setWaitQueueSize(other.getWaitQueueSize());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional int64 num_executors_available = 1;
+      private long numExecutorsAvailable_ ;
+      /**
+       * <code>optional int64 num_executors_available = 1;</code>
+       */
+      public boolean hasNumExecutorsAvailable() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional int64 num_executors_available = 1;</code>
+       */
+      public long getNumExecutorsAvailable() {
+        return numExecutorsAvailable_;
+      }
+      /**
+       * <code>optional int64 num_executors_available = 1;</code>
+       */
+      public Builder setNumExecutorsAvailable(long value) {
+        bitField0_ |= 0x00000001;
+        numExecutorsAvailable_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 num_executors_available = 1;</code>
+       */
+      public Builder clearNumExecutorsAvailable() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        numExecutorsAvailable_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // optional int64 wait_queue_size = 2;
+      private long waitQueueSize_ ;
+      /**
+       * <code>optional int64 wait_queue_size = 2;</code>
+       */
+      public boolean hasWaitQueueSize() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional int64 wait_queue_size = 2;</code>
+       */
+      public long getWaitQueueSize() {
+        return waitQueueSize_;
+      }
+      /**
+       * <code>optional int64 wait_queue_size = 2;</code>
+       */
+      public Builder setWaitQueueSize(long value) {
+        bitField0_ |= 0x00000002;
+        waitQueueSize_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 wait_queue_size = 2;</code>
+       */
+      public Builder clearWaitQueueSize() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        waitQueueSize_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:GetLoadMetricsResponseProto)
+    }
+
+    static {
+      defaultInstance = new GetLoadMetricsResponseProto(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:GetLoadMetricsResponseProto)
+  }
+
   /**
    * Protobuf service {@code LlapDaemonProtocol}
    */
@@ -20661,6 +21523,14 @@ public final class LlapDaemonProtocolProtos {
           org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.PurgeCacheRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.PurgeCacheResponseProto> done);
 
+      /**
+       * <code>rpc getLoadMetrics(.GetLoadMetricsRequestProto) returns (.GetLoadMetricsResponseProto);</code>
+       */
+      public abstract void getLoadMetrics(
+          com.google.protobuf.RpcController controller,
+          org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto request,
+          com.google.protobuf.RpcCallback<org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto> done);
+
     }
 
     public static com.google.protobuf.Service newReflectiveService(
@@ -20680,6 +21550,14 @@ public final class LlapDaemonProtocolProtos {
             org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.PurgeCacheRequestProto request,
             com.google.protobuf.RpcCallback<org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.PurgeCacheResponseProto> done) {
           impl.purgeCache(controller, request, done);
+        }
+
+        @java.lang.Override
+        public  void getLoadMetrics(
+            com.google.protobuf.RpcController controller,
+            org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto request,
+            com.google.protobuf.RpcCallback<org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto> done) {
+          impl.getLoadMetrics(controller, request, done);
         }
 
       };
@@ -20708,6 +21586,8 @@ public final class LlapDaemonProtocolProtos {
               return impl.getDelegationToken(controller, (org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetTokenRequestProto)request);
             case 1:
               return impl.purgeCache(controller, (org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.PurgeCacheRequestProto)request);
+            case 2:
+              return impl.getLoadMetrics(controller, (org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto)request);
             default:
               throw new java.lang.AssertionError("Can't get here.");
           }
@@ -20726,6 +21606,8 @@ public final class LlapDaemonProtocolProtos {
               return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetTokenRequestProto.getDefaultInstance();
             case 1:
               return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.PurgeCacheRequestProto.getDefaultInstance();
+            case 2:
+              return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto.getDefaultInstance();
             default:
               throw new java.lang.AssertionError("Can't get here.");
           }
@@ -20744,6 +21626,8 @@ public final class LlapDaemonProtocolProtos {
               return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetTokenResponseProto.getDefaultInstance();
             case 1:
               return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.PurgeCacheResponseProto.getDefaultInstance();
+            case 2:
+              return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto.getDefaultInstance();
             default:
               throw new java.lang.AssertionError("Can't get here.");
           }
@@ -20767,6 +21651,14 @@ public final class LlapDaemonProtocolProtos {
         com.google.protobuf.RpcController controller,
         org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.PurgeCacheRequestProto request,
         com.google.protobuf.RpcCallback<org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.PurgeCacheResponseProto> done);
+
+    /**
+     * <code>rpc getLoadMetrics(.GetLoadMetricsRequestProto) returns (.GetLoadMetricsResponseProto);</code>
+     */
+    public abstract void getLoadMetrics(
+        com.google.protobuf.RpcController controller,
+        org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto request,
+        com.google.protobuf.RpcCallback<org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto> done);
 
     public static final
         com.google.protobuf.Descriptors.ServiceDescriptor
@@ -20800,6 +21692,11 @@ public final class LlapDaemonProtocolProtos {
             com.google.protobuf.RpcUtil.<org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.PurgeCacheResponseProto>specializeCallback(
               done));
           return;
+        case 2:
+          this.getLoadMetrics(controller, (org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto)request,
+            com.google.protobuf.RpcUtil.<org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto>specializeCallback(
+              done));
+          return;
         default:
           throw new java.lang.AssertionError("Can't get here.");
       }
@@ -20818,6 +21715,8 @@ public final class LlapDaemonProtocolProtos {
           return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetTokenRequestProto.getDefaultInstance();
         case 1:
           return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.PurgeCacheRequestProto.getDefaultInstance();
+        case 2:
+          return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto.getDefaultInstance();
         default:
           throw new java.lang.AssertionError("Can't get here.");
       }
@@ -20836,6 +21735,8 @@ public final class LlapDaemonProtocolProtos {
           return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetTokenResponseProto.getDefaultInstance();
         case 1:
           return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.PurgeCacheResponseProto.getDefaultInstance();
+        case 2:
+          return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto.getDefaultInstance();
         default:
           throw new java.lang.AssertionError("Can't get here.");
       }
@@ -20886,6 +21787,21 @@ public final class LlapDaemonProtocolProtos {
             org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.PurgeCacheResponseProto.class,
             org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.PurgeCacheResponseProto.getDefaultInstance()));
       }
+
+      public  void getLoadMetrics(
+          com.google.protobuf.RpcController controller,
+          org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto request,
+          com.google.protobuf.RpcCallback<org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto> done) {
+        channel.callMethod(
+          getDescriptor().getMethods().get(2),
+          controller,
+          request,
+          org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto.getDefaultInstance(),
+          com.google.protobuf.RpcUtil.generalizeCallback(
+            done,
+            org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto.class,
+            org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto.getDefaultInstance()));
+      }
     }
 
     public static BlockingInterface newBlockingStub(
@@ -20902,6 +21818,11 @@ public final class LlapDaemonProtocolProtos {
       public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.PurgeCacheResponseProto purgeCache(
           com.google.protobuf.RpcController controller,
           org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.PurgeCacheRequestProto request)
+          throws com.google.protobuf.ServiceException;
+
+      public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto getLoadMetrics(
+          com.google.protobuf.RpcController controller,
+          org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto request)
           throws com.google.protobuf.ServiceException;
     }
 
@@ -20933,6 +21854,18 @@ public final class LlapDaemonProtocolProtos {
           controller,
           request,
           org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.PurgeCacheResponseProto.getDefaultInstance());
+      }
+
+
+      public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto getLoadMetrics(
+          com.google.protobuf.RpcController controller,
+          org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto request)
+          throws com.google.protobuf.ServiceException {
+        return (org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto) channel.callBlockingMethod(
+          getDescriptor().getMethods().get(2),
+          controller,
+          request,
+          org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto.getDefaultInstance());
       }
 
     }
@@ -21070,6 +22003,16 @@ public final class LlapDaemonProtocolProtos {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_PurgeCacheResponseProto_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_GetLoadMetricsRequestProto_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_GetLoadMetricsRequestProto_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_GetLoadMetricsResponseProto_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_GetLoadMetricsResponseProto_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -21152,28 +22095,33 @@ public final class LlapDaemonProtocolProtos {
       "tputSocketInitMessage\022\023\n\013fragment_id\030\001 \002" +
       "(\t\022\r\n\005token\030\002 \001(\014\"\030\n\026PurgeCacheRequestPr" +
       "oto\"6\n\027PurgeCacheResponseProto\022\033\n\023purged" +
-      "_memory_bytes\030\001 \001(\003*2\n\020SourceStateProto\022" +
-      "\017\n\013S_SUCCEEDED\020\001\022\r\n\tS_RUNNING\020\002*E\n\024Submi" +
-      "ssionStateProto\022\014\n\010ACCEPTED\020\001\022\014\n\010REJECTE" +
-      "D\020\002\022\021\n\rEVICTED_OTHER\020\0032\337\003\n\022LlapDaemonPro" +
-      "tocol\022B\n\013registerDag\022\030.RegisterDagReques" +
-      "tProto\032\031.RegisterDagResponseProto\022?\n\nsub" +
-      "mitWork\022\027.SubmitWorkRequestProto\032\030.Submi",
-      "tWorkResponseProto\022W\n\022sourceStateUpdated" +
-      "\022\037.SourceStateUpdatedRequestProto\032 .Sour" +
-      "ceStateUpdatedResponseProto\022H\n\rqueryComp" +
-      "lete\022\032.QueryCompleteRequestProto\032\033.Query" +
-      "CompleteResponseProto\022T\n\021terminateFragme" +
-      "nt\022\036.TerminateFragmentRequestProto\032\037.Ter" +
-      "minateFragmentResponseProto\022K\n\016updateFra" +
-      "gment\022\033.UpdateFragmentRequestProto\032\034.Upd" +
-      "ateFragmentResponseProto2\236\001\n\026LlapManagem" +
-      "entProtocol\022C\n\022getDelegationToken\022\025.GetT",
-      "okenRequestProto\032\026.GetTokenResponseProto" +
-      "\022?\n\npurgeCache\022\027.PurgeCacheRequestProto\032" +
-      "\030.PurgeCacheResponseProtoBH\n&org.apache." +
-      "hadoop.hive.llap.daemon.rpcB\030LlapDaemonP" +
-      "rotocolProtos\210\001\001\240\001\001"
+      "_memory_bytes\030\001 \001(\003\"\034\n\032GetLoadMetricsReq" +
+      "uestProto\"W\n\033GetLoadMetricsResponseProto" +
+      "\022\037\n\027num_executors_available\030\001 \001(\003\022\027\n\017wai" +
+      "t_queue_size\030\002 \001(\003*2\n\020SourceStateProto\022\017" +
+      "\n\013S_SUCCEEDED\020\001\022\r\n\tS_RUNNING\020\002*E\n\024Submis" +
+      "sionStateProto\022\014\n\010ACCEPTED\020\001\022\014\n\010REJECTED" +
+      "\020\002\022\021\n\rEVICTED_OTHER\020\0032\337\003\n\022LlapDaemonProt",
+      "ocol\022B\n\013registerDag\022\030.RegisterDagRequest" +
+      "Proto\032\031.RegisterDagResponseProto\022?\n\nsubm" +
+      "itWork\022\027.SubmitWorkRequestProto\032\030.Submit" +
+      "WorkResponseProto\022W\n\022sourceStateUpdated\022" +
+      "\037.SourceStateUpdatedRequestProto\032 .Sourc" +
+      "eStateUpdatedResponseProto\022H\n\rqueryCompl" +
+      "ete\022\032.QueryCompleteRequestProto\032\033.QueryC" +
+      "ompleteResponseProto\022T\n\021terminateFragmen" +
+      "t\022\036.TerminateFragmentRequestProto\032\037.Term" +
+      "inateFragmentResponseProto\022K\n\016updateFrag",
+      "ment\022\033.UpdateFragmentRequestProto\032\034.Upda" +
+      "teFragmentResponseProto2\353\001\n\026LlapManageme" +
+      "ntProtocol\022C\n\022getDelegationToken\022\025.GetTo" +
+      "kenRequestProto\032\026.GetTokenResponseProto\022" +
+      "?\n\npurgeCache\022\027.PurgeCacheRequestProto\032\030" +
+      ".PurgeCacheResponseProto\022K\n\016getLoadMetri" +
+      "cs\022\033.GetLoadMetricsRequestProto\032\034.GetLoa" +
+      "dMetricsResponseProtoBH\n&org.apache.hado" +
+      "op.hive.llap.daemon.rpcB\030LlapDaemonProto" +
+      "colProtos\210\001\001\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -21336,6 +22284,18 @@ public final class LlapDaemonProtocolProtos {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_PurgeCacheResponseProto_descriptor,
               new java.lang.String[] { "PurgedMemoryBytes", });
+          internal_static_GetLoadMetricsRequestProto_descriptor =
+            getDescriptor().getMessageTypes().get(26);
+          internal_static_GetLoadMetricsRequestProto_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_GetLoadMetricsRequestProto_descriptor,
+              new java.lang.String[] { });
+          internal_static_GetLoadMetricsResponseProto_descriptor =
+            getDescriptor().getMessageTypes().get(27);
+          internal_static_GetLoadMetricsResponseProto_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_GetLoadMetricsResponseProto_descriptor,
+              new java.lang.String[] { "NumExecutorsAvailable", "WaitQueueSize", });
           return null;
         }
       };
