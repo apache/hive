@@ -123,9 +123,9 @@ public final class PlainSaslHelper {
         LOG.info("No authentication performed because the connecting host " + remoteHost + " is " +
                 "from the trusted domain " + trustedDomain);
         return noAuthFactory.getTransport(trans);
-      } else {
-        return otherFactory.getTransport(trans);
       }
+
+      return otherFactory.getTransport(trans);
     }
   }
 
