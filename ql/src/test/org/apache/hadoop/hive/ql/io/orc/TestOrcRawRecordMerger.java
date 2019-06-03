@@ -538,7 +538,7 @@ public class TestOrcRawRecordMerger {
     Configuration conf = new Configuration();
     FileSystem fs = FileSystem.getLocal(conf);
     OrcOutputFormat of = new OrcOutputFormat();
-    Path root = new Path(tmpDir, "testEmpty").makeQualified(fs);
+    Path root = new Path(tmpDir, "testLogicalEmpty").makeQualified(fs);
     fs.delete(root, true);
     ObjectInspector inspector;
     synchronized (TestOrcFile.class) {
@@ -592,16 +592,6 @@ public class TestOrcRawRecordMerger {
         .inspector(inspector).bucket(BUCKET).writingBase(true)
         .maximumWriteId(100).finalDestination(root);
     of.getRecordUpdater(root, options).close(false);
-    {
-      /*OrcRecordUpdater is inconsistent about when it creates empty files and when it does not.
-      This creates an empty bucket. HIVE-17138*/
-      OrcFile.WriterOptions wo = OrcFile.writerOptions(conf);
-      wo.inspector(inspector);
-      wo.callback(new OrcRecordUpdater.KeyIndexBuilder("testEmpty"));
-      Writer w = OrcFile.createWriter(AcidUtils.createBucketFile(new Path(root,
-        AcidUtils.baseDir(100)), BUCKET), wo);
-      w.close();
-    }
     conf.set(ValidTxnList.VALID_TXNS_KEY,
         new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
     ValidWriteIdList writeIdList = new ValidReaderWriteIdList("testEmpty:200:" + Long.MAX_VALUE);
