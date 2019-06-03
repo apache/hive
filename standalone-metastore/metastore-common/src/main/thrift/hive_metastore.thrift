@@ -1753,8 +1753,14 @@ struct ScheduledQuery {
   7: optional i32 nextExecution,
 }
 
+enum ScheduledQueryMaintenanceRequestType {
+    INSERT = 1,
+    UPDATE = 2,
+    DELETE = 3,
+}
+
 struct ScheduledQueryMaintenanceRequest {
-  1: required EventRequestType type,
+  1: required ScheduledQueryMaintenanceRequestType type,
   2: required ScheduledQuery scheduledQuery,
 }
 
