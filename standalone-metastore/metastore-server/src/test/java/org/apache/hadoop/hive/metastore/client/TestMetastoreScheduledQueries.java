@@ -75,7 +75,7 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
   @Test
   public void testCreate() throws Exception {
 
-    ScheduledQuery schq = createScheduledQuery("create");
+    ScheduledQuery schq = createScheduledQuery(createKey("create", "c1"));
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
     r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
     r.setScheduledQuery(schq);
@@ -90,7 +90,7 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
 
   @Test(expected = InvalidInputException.class)
   public void testCreateWithInvalidSchedule() throws Exception {
-    ScheduledQuery schq = createScheduledQuery("createInvalidSch");
+    ScheduledQuery schq = createScheduledQuery(createKey("createInvalidSch", "c1"));
     schq.setSchedule("asd asd");
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
     r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
@@ -100,7 +100,7 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
 
   @Test(expected = AlreadyExistsException.class)
   public void testDuplicateCreate() throws Exception {
-    ScheduledQuery schq = createScheduledQuery("duplicate");
+    ScheduledQuery schq = createScheduledQuery(createKey("duplicate", "c1"));
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
     r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
     r.setScheduledQuery(schq);
@@ -111,20 +111,19 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
 
   @Test
   public void testUpdate() throws Exception {
-    ScheduledQuery schq = createScheduledQuery("update");
-    schq.getScheduleKey().setClusterNamespace("ns1");
+    ScheduledQuery schq = createScheduledQuery(createKey("update", "ns1"));
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
     r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
     r.setScheduledQuery(schq);
     client.scheduledQueryMaintenance(r);
 
     r.setType(ScheduledQueryMaintenanceRequestType.UPDATE);
-    ScheduledQuery schq2 = createScheduledQuery2("update");
+    ScheduledQuery schq2 = createScheduledQuery2(createKey("update", "ns1"));
     schq2.getScheduleKey().setClusterNamespace("ns1");
     r.setScheduledQuery(schq2);
     client.scheduledQueryMaintenance(r);
 
-    ScheduledQuery schq3 = client.getScheduledQuery(new ScheduledQueryKey("update", "c1"));
+    ScheduledQuery schq3 = client.getScheduledQuery(new ScheduledQueryKey("update", "ns1"));
 
     // next execution is set by remote
     schq2.setNextExecution(schq3.getNextExecution());
@@ -133,7 +132,7 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
 
   @Test(expected = NoSuchObjectException.class)
   public void testDeleteNonExistent() throws Exception {
-    ScheduledQuery schq = createScheduledQuery("delnonexist");
+    ScheduledQuery schq = createScheduledQuery(createKey("delnonexist", "c1"));
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
     r.setType(ScheduledQueryMaintenanceRequestType.DELETE);
     r.setScheduledQuery(schq);
@@ -174,10 +173,6 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
 
   }
 
-  private ScheduledQuery createScheduledQuery(String name) {
-    return createScheduledQuery(createKey(name, "c1"));
-  }
-
   private ScheduledQuery createScheduledQuery(ScheduledQueryKey key) {
     ScheduledQuery schq = new ScheduledQuery();
     schq.setScheduleKey(key);
@@ -195,11 +190,11 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
     return ret;
   }
 
-  private ScheduledQuery createScheduledQuery2(String name) {
+  private ScheduledQuery createScheduledQuery2(ScheduledQueryKey key) {
     ScheduledQuery schq = new ScheduledQuery();
-    schq.setScheduleKey(createKey(name, "c222"));
+    schq.setScheduleKey(key);
     schq.setEnabled(true);
-    schq.setSchedule("* * * 22 * * *");
+    schq.setSchedule("* * * 22 * ? *");
     schq.setUser("user22");
     schq.setQuery("select 12");
     return schq;
