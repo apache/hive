@@ -24,7 +24,7 @@ public class Sch1 {
     Optional<ZonedDateTime> lastExecution = executionTime.lastExecution(now);
     System.out.println(lastExecution);
 
-    long es = lastExecution.get().toEpochSecond() - 1;
+    long es = lastExecution.get().toEpochSecond();
     Instant ii = Instant.ofEpochSecond(es);
     ZonedDateTime z2 = ZonedDateTime.ofInstant(ii, lastExecution.get().getZone());
 

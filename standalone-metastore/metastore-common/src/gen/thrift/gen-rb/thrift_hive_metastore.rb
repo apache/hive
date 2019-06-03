@@ -3775,6 +3775,7 @@ module ThriftHiveMetastore
       raise result.o1 unless result.o1.nil?
       raise result.o2 unless result.o2.nil?
       raise result.o3 unless result.o3.nil?
+      raise result.o4 unless result.o4.nil?
       return
     end
 
@@ -6630,6 +6631,8 @@ module ThriftHiveMetastore
         result.o2 = o2
       rescue ::AlreadyExistsException => o3
         result.o3 = o3
+      rescue ::InvalidInputException => o4
+        result.o4 = o4
       end
       write_result(result, oprot, 'scheduled_query_maintenance', seqid)
     end
@@ -15001,11 +15004,13 @@ module ThriftHiveMetastore
     O1 = 1
     O2 = 2
     O3 = 3
+    O4 = 4
 
     FIELDS = {
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException},
-      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::AlreadyExistsException}
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::AlreadyExistsException},
+      O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => ::InvalidInputException}
     }
 
     def struct_fields; FIELDS; end

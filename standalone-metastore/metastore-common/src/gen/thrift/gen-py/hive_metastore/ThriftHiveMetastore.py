@@ -9814,6 +9814,8 @@ class Client(fb303.FacebookService.Client, Iface):
       raise result.o2
     if result.o3 is not None:
       raise result.o3
+    if result.o4 is not None:
+      raise result.o4
     return
 
   def scheduled_query_progress(self, info):
@@ -15695,6 +15697,9 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     except AlreadyExistsException as o3:
       msg_type = TMessageType.REPLY
       result.o3 = o3
+    except InvalidInputException as o4:
+      msg_type = TMessageType.REPLY
+      result.o4 = o4
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -53034,6 +53039,7 @@ class scheduled_query_maintenance_result:
    - o1
    - o2
    - o3
+   - o4
   """
 
   thrift_spec = (
@@ -53041,12 +53047,14 @@ class scheduled_query_maintenance_result:
     (1, TType.STRUCT, 'o1', (MetaException, MetaException.thrift_spec), None, ), # 1
     (2, TType.STRUCT, 'o2', (NoSuchObjectException, NoSuchObjectException.thrift_spec), None, ), # 2
     (3, TType.STRUCT, 'o3', (AlreadyExistsException, AlreadyExistsException.thrift_spec), None, ), # 3
+    (4, TType.STRUCT, 'o4', (InvalidInputException, InvalidInputException.thrift_spec), None, ), # 4
   )
 
-  def __init__(self, o1=None, o2=None, o3=None,):
+  def __init__(self, o1=None, o2=None, o3=None, o4=None,):
     self.o1 = o1
     self.o2 = o2
     self.o3 = o3
+    self.o4 = o4
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -53075,6 +53083,12 @@ class scheduled_query_maintenance_result:
           self.o3.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRUCT:
+          self.o4 = InvalidInputException()
+          self.o4.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -53097,6 +53111,10 @@ class scheduled_query_maintenance_result:
       oprot.writeFieldBegin('o3', TType.STRUCT, 3)
       self.o3.write(oprot)
       oprot.writeFieldEnd()
+    if self.o4 is not None:
+      oprot.writeFieldBegin('o4', TType.STRUCT, 4)
+      self.o4.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -53109,6 +53127,7 @@ class scheduled_query_maintenance_result:
     value = (value * 31) ^ hash(self.o1)
     value = (value * 31) ^ hash(self.o2)
     value = (value * 31) ^ hash(self.o3)
+    value = (value * 31) ^ hash(self.o4)
     return value
 
   def __repr__(self):

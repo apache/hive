@@ -5440,17 +5440,14 @@ class ScheduledQueryPollResponse
   QUERY = 3
 
   FIELDS = {
-    SCHEDULENAME => {:type => ::Thrift::Types::STRING, :name => 'scheduleName'},
-    EXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'executionId'},
-    QUERY => {:type => ::Thrift::Types::STRING, :name => 'query'}
+    SCHEDULENAME => {:type => ::Thrift::Types::STRING, :name => 'scheduleName', :optional => true},
+    EXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'executionId', :optional => true},
+    QUERY => {:type => ::Thrift::Types::STRING, :name => 'query', :optional => true}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field scheduleName is unset!') unless @scheduleName
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field executionId is unset!') unless @executionId
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field query is unset!') unless @query
   end
 
   ::Thrift::Struct.generate_accessors self

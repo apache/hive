@@ -1679,6 +1679,7 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf {
    * @throws \metastore\MetaException
    * @throws \metastore\NoSuchObjectException
    * @throws \metastore\AlreadyExistsException
+   * @throws \metastore\InvalidInputException
    */
   public function scheduled_query_maintenance(\metastore\ScheduledQueryMaintenanceRequest $request);
   /**
@@ -14521,6 +14522,9 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     }
     if ($result->o3 !== null) {
       throw $result->o3;
+    }
+    if ($result->o4 !== null) {
+      throw $result->o4;
     }
     return;
   }
@@ -64699,6 +64703,10 @@ class ThriftHiveMetastore_scheduled_query_maintenance_result {
    * @var \metastore\AlreadyExistsException
    */
   public $o3 = null;
+  /**
+   * @var \metastore\InvalidInputException
+   */
+  public $o4 = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -64718,6 +64726,11 @@ class ThriftHiveMetastore_scheduled_query_maintenance_result {
           'type' => TType::STRUCT,
           'class' => '\metastore\AlreadyExistsException',
           ),
+        4 => array(
+          'var' => 'o4',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\InvalidInputException',
+          ),
         );
     }
     if (is_array($vals)) {
@@ -64729,6 +64742,9 @@ class ThriftHiveMetastore_scheduled_query_maintenance_result {
       }
       if (isset($vals['o3'])) {
         $this->o3 = $vals['o3'];
+      }
+      if (isset($vals['o4'])) {
+        $this->o4 = $vals['o4'];
       }
     }
   }
@@ -64776,6 +64792,14 @@ class ThriftHiveMetastore_scheduled_query_maintenance_result {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 4:
+          if ($ftype == TType::STRUCT) {
+            $this->o4 = new \metastore\InvalidInputException();
+            $xfer += $this->o4->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -64802,6 +64826,11 @@ class ThriftHiveMetastore_scheduled_query_maintenance_result {
     if ($this->o3 !== null) {
       $xfer += $output->writeFieldBegin('o3', TType::STRUCT, 3);
       $xfer += $this->o3->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->o4 !== null) {
+      $xfer += $output->writeFieldBegin('o4', TType::STRUCT, 4);
+      $xfer += $this->o4->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

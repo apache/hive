@@ -24223,12 +24223,6 @@ class ScheduledQueryPollResponse:
     oprot.writeStructEnd()
 
   def validate(self):
-    if self.scheduleName is None:
-      raise TProtocol.TProtocolException(message='Required field scheduleName is unset!')
-    if self.executionId is None:
-      raise TProtocol.TProtocolException(message='Required field executionId is unset!')
-    if self.query is None:
-      raise TProtocol.TProtocolException(message='Required field query is unset!')
     return
 
 

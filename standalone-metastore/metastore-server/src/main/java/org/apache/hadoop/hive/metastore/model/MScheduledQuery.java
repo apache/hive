@@ -35,7 +35,7 @@ public class MScheduledQuery {
   private String schedule;
   private String user;
   private String query;
-  private int nextExecution;
+  private Integer nextExecution;
 
   public MScheduledQuery(ScheduledQuery s) {
     scheduleName = s.getScheduleName();
@@ -77,6 +77,26 @@ public class MScheduledQuery {
     user = schq.user;
     query = schq.query;
     // may not change nextExecution
+  }
+
+  public String getSchedule() {
+    return schedule;
+  }
+
+  public Integer getNextExecution() {
+    return nextExecution;
+  }
+
+  public void setNextExecution(Integer nextExec) {
+    nextExecution = nextExec;
+  }
+
+  public String getQuery() {
+    return query;
+  }
+
+  public String getScheduleName() {
+    return scheduleName;
   }
 
 }

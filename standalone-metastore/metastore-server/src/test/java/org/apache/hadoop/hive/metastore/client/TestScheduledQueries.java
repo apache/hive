@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.metastore.client;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
@@ -32,6 +34,8 @@ import org.apache.hadoop.hive.metastore.api.Schedule;
 import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequest;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequestType;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollRequest;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollResponse;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.junit.After;
 import org.junit.Before;
@@ -128,7 +132,32 @@ public class TestScheduledQueries extends MetaStoreClientTest {
     client.scheduledQueryMaintenance(r);
   }
 
+  @Test
+  public void testPoll() throws Exception {
+    ScheduledQuery schq = createScheduledQuery("q1");
+    schq.setClusterNamespace("polltest");
+    ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
+    r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
+    r.setScheduledQuery(schq);
+    client.scheduledQueryMaintenance(r);
 
+    ScheduledQueryPollRequest request = new ScheduledQueryPollRequest();
+    request.setClusterNamespace("polltest");
+
+    ScheduledQueryPollResponse pollResult = null;
+    for (int i = 0; i < 63; i++) {
+      pollResult = client.scheduledQueryPoll(request);
+      if (pollResult.isSetQuery()) {
+        break;
+      }
+      System.out.println(pollResult);
+      Thread.sleep(1000);
+    }
+    assertTrue(pollResult.isSetQuery());
+    assertTrue(pollResult.isSetScheduleName());
+    //      assertTrue(pollResult.isSetExecutionId());
+
+  }
 
   private ScheduledQuery createScheduledQuery(String name) {
     ScheduledQuery schq = new ScheduledQuery();

@@ -30,7 +30,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -99,11 +101,17 @@ import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
+import com.cronutils.model.CronType;
+import com.cronutils.model.definition.CronDefinition;
+import com.cronutils.model.definition.CronDefinitionBuilder;
+import com.cronutils.model.time.ExecutionTime;
+import com.cronutils.parser.CronParser;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.sun.org.apache.xml.internal.utils.NameSpace;
 
 
 /**
@@ -12594,17 +12602,57 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) {
-    // query&update next_execution of next scheduled_query
-    //    openTransaction();
-    //    query=getNextScheduledQuery();
-    //    request.getClusterNamespace();
+    String namespace = request.getClusterNamespace();
+    boolean commited = false;
+    ScheduledQueryPollResponse ret = new ScheduledQueryPollResponse();
+    try {
+      openTransaction();
+      // query&update next_execution of next scheduled_query
 
-    return new ScheduledQueryPollResponse("sch1", 2, "X");
+      // FIXME: datanucleus doesn't seem to be liking my more complex queries
+      Query q = pm.newQuery(MScheduledQuery.class,
+          "nextExecution <= now && scheduleName == ns");
+      q.declareParameters("java.lang.Long now, java.lang.String ns");
+      q.setOrdering("nextExecution");
+      q.setUnique(true);
+      int now = (int) (System.currentTimeMillis() / 1000);
+      MScheduledQuery schq = (MScheduledQuery) q.execute(now, request.getClusterNamespace());
+      if (schq == null) {
+        return new ScheduledQueryPollResponse();
+      }
+      schq.setNextExecution(computeNextExecutionTime(schq.getSchedule()));
+      pm.makePersistent(schq);
+      ret.setScheduleName(schq.getScheduleName());
+      ret.setQuery(schq.getQuery());
+      commited = commitTransaction();
+    } finally {
+      if (commited) {
+        return ret;
+      } else {
+        rollbackTransaction();
+        return new ScheduledQueryPollResponse();
+      }
+    }
+  }
+
+  private Integer computeNextExecutionTime(String schedule) {
+    CronDefinition cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(CronType.UNIX);
+    CronParser parser = new CronParser(cronDefinition);
+
+    // Get date for last execution
+    ZonedDateTime now = ZonedDateTime.now();
+    ExecutionTime executionTime = ExecutionTime.forCron(parser.parse(schedule));
+    Optional<ZonedDateTime> nextExecution = executionTime.nextExecution(now);
+    if(!nextExecution.isPresent()) {
+      // no valid next execution time.
+      return null;
+    }
+    return (int) nextExecution.get().toEpochSecond();
   }
 
   @Override
   public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request)
-      throws MetaException, NoSuchObjectException, AlreadyExistsException {
+      throws MetaException, NoSuchObjectException, AlreadyExistsException, InvalidInputException {
     switch (request.getType()) {
     case INSERT:
       scheduledQueryInsert(request.getScheduledQuery());
@@ -12620,8 +12668,9 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  public void scheduledQueryInsert(ScheduledQuery scheduledQuery) throws NoSuchObjectException, AlreadyExistsException {
-    MScheduledQuery newSch = MScheduledQuery.fromThrift(scheduledQuery);
+  public void scheduledQueryInsert(ScheduledQuery scheduledQuery)
+      throws NoSuchObjectException, AlreadyExistsException, InvalidInputException {
+    MScheduledQuery schq = MScheduledQuery.fromThrift(scheduledQuery);
     boolean commited = false;
     try {
       Optional<MScheduledQuery> existing = getMScheduledQuery(scheduledQuery.getScheduleName());
@@ -12630,7 +12679,12 @@ public class ObjectStore implements RawStore, Configurable {
             "Scheduled query with name: " + scheduledQuery.getScheduleName() + " already exists.");
       }
       openTransaction();
-      pm.makePersistent(newSch);
+      Integer nextExecutionTime = computeNextExecutionTime(schq.getSchedule());
+      if (nextExecutionTime == null) {
+        throw new InvalidInputException("Invalid schedule: " + schq.getSchedule());
+      }
+      schq.setNextExecution(nextExecutionTime);
+      pm.makePersistent(schq);
       commited = commitTransaction();
     } finally {
       if (!commited) {
@@ -12658,7 +12712,8 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  public void scheduledQueryUpdate(ScheduledQuery scheduledQuery) throws NoSuchObjectException, AlreadyExistsException {
+  public void scheduledQueryUpdate(ScheduledQuery scheduledQuery)
+      throws NoSuchObjectException, AlreadyExistsException, InvalidInputException {
     MScheduledQuery schq = MScheduledQuery.fromThrift(scheduledQuery);
     boolean commited = false;
     try {
@@ -12670,6 +12725,11 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       MScheduledQuery persisted = existing.get();
       persisted.doUpdate(schq);
+      Integer nextExecutionTime = computeNextExecutionTime(schq.getSchedule());
+      if (nextExecutionTime == null) {
+        throw new InvalidInputException("Invalid schedule: " + schq.getSchedule());
+      }
+      persisted.setNextExecution(nextExecutionTime);
       pm.makePersistent(persisted);
       commited = commitTransaction();
     } finally {

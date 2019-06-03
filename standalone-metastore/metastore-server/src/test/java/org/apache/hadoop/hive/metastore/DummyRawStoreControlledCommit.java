@@ -1292,7 +1292,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request)
-      throws MetaException, NoSuchObjectException, AlreadyExistsException {
+      throws MetaException, NoSuchObjectException, AlreadyExistsException, InvalidInputException {
     objectStore.scheduledQueryMaintenance(request);
   }
 
