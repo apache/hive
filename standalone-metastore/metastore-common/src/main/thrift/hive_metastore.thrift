@@ -1731,23 +1731,20 @@ struct ScheduledQueryPollRequest {
 }
 
 struct ScheduledQueryPollResponse {
-  1: optional string scheduleName,
+  1: optional ScheduledQueryKey scheduleKey,
   2: optional i64 executionId,
   3: optional string query,
 }
 
-
-// FIXME: consider using uninon? to support more ways
-struct Schedule {
-  1: optional string cron,
+struct ScheduledQueryKey {
+  1: required string scheduleName,
+  2: required string clusterNamespace,
 }
 
 struct ScheduledQuery {
-  1: required string scheduleName,
+  1: required ScheduledQueryKey scheduleKey,
   2: optional bool enabled,
-  //FIXME: clusterId and/or catalog and/or namespace
-  3: optional string clusterNamespace,
-  4: optional Schedule schedule,
+  4: optional string schedule,
   5: optional string user,
   6: optional string query,
   7: optional i32 nextExecution,
@@ -2577,7 +2574,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   ScheduledQueryPollResponse scheduled_query_poll(1: ScheduledQueryPollRequest request) throws(1:MetaException o1)
   void scheduled_query_maintenance(1: ScheduledQueryMaintenanceRequest request) throws(1:MetaException o1, 2:NoSuchObjectException o2, 3:AlreadyExistsException o3, 4:InvalidInputException o4)
   void scheduled_query_progress(1: ScheduledQueryProgressInfo info) throws(1:MetaException o1)
-  ScheduledQuery get_scheduled_query(1: string scheduleName) throws(1:MetaException o1, 2:NoSuchObjectException o2)
+  ScheduledQuery get_scheduled_query(1: ScheduledQueryKey scheduleKey) throws(1:MetaException o1, 2:NoSuchObjectException o2)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

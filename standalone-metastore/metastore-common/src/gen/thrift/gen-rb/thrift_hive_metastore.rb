@@ -3794,13 +3794,13 @@ module ThriftHiveMetastore
       return
     end
 
-    def get_scheduled_query(scheduleName)
-      send_get_scheduled_query(scheduleName)
+    def get_scheduled_query(scheduleKey)
+      send_get_scheduled_query(scheduleKey)
       return recv_get_scheduled_query()
     end
 
-    def send_get_scheduled_query(scheduleName)
-      send_message('get_scheduled_query', Get_scheduled_query_args, :scheduleName => scheduleName)
+    def send_get_scheduled_query(scheduleKey)
+      send_message('get_scheduled_query', Get_scheduled_query_args, :scheduleKey => scheduleKey)
     end
 
     def recv_get_scheduled_query()
@@ -6652,7 +6652,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Get_scheduled_query_args)
       result = Get_scheduled_query_result.new()
       begin
-        result.success = @handler.get_scheduled_query(args.scheduleName)
+        result.success = @handler.get_scheduled_query(args.scheduleKey)
       rescue ::MetaException => o1
         result.o1 = o1
       rescue ::NoSuchObjectException => o2
@@ -15055,10 +15055,10 @@ module ThriftHiveMetastore
 
   class Get_scheduled_query_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    SCHEDULENAME = 1
+    SCHEDULEKEY = 1
 
     FIELDS = {
-      SCHEDULENAME => {:type => ::Thrift::Types::STRING, :name => 'scheduleName'}
+      SCHEDULEKEY => {:type => ::Thrift::Types::STRUCT, :name => 'scheduleKey', :class => ::ScheduledQueryKey}
     }
 
     def struct_fields; FIELDS; end

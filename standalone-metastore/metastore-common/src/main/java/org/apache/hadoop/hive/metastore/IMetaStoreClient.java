@@ -3883,7 +3883,7 @@ public interface IMetaStoreClient {
   String getServerVersion() throws TException;
 
   // FIXME: apidoc
-  ScheduledQuery getScheduledQuery(String scheduleName) throws TException;
+  ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) throws TException;
 
   // FIXME: apidoc
   void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws TException;
@@ -3893,5 +3893,6 @@ public interface IMetaStoreClient {
 
   // FIXME: apidoc
   void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) throws MetaException, TException;
+
 
 }

@@ -9574,11 +9574,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public ScheduledQuery get_scheduled_query(String scheduleName) throws TException {
+    public ScheduledQuery get_scheduled_query(ScheduledQueryKey scheduleKey) throws TException {
       startFunction("get_scheduled_query");
       Exception ex = null;
       try {
-        return getMS().getScheduledQuery(scheduleName);
+        return getMS().getScheduledQuery(scheduleKey);
       } catch (Exception e) {
         LOG.error("Caught exception", e);
         ex = e;

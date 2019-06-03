@@ -18,21 +18,16 @@
 package org.apache.hadoop.hive.metastore.client;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-
-import java.util.List;
 
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.EventRequestType;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.RuntimeStat;
-import org.apache.hadoop.hive.metastore.api.Schedule;
 import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequest;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequestType;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollRequest;
@@ -45,8 +40,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import jdk.nashorn.internal.ir.annotations.Ignore;
-
 //FIXME rename/etc?
 @RunWith(Parameterized.class)
 @Category(MetastoreUnitTest.class)
@@ -55,6 +48,7 @@ public class TestScheduledQueries extends MetaStoreClientTest {
   private IMetaStoreClient client;
 
   public TestScheduledQueries(String name, AbstractMetaStoreService metaStore) throws Exception {
+    metaStore.getConf().set("scheduled.queries.cron.syntax", "QUARTZ");
     this.metaStore = metaStore;
   }
 
@@ -76,7 +70,7 @@ public class TestScheduledQueries extends MetaStoreClientTest {
 
   @Test(expected = NoSuchObjectException.class)
   public void testNonExistent() throws Exception {
-    client.getScheduledQuery("nonExistent");
+    client.getScheduledQuery(new ScheduledQueryKey("nonExistent", "x"));
   }
 
   @Test
@@ -88,7 +82,7 @@ public class TestScheduledQueries extends MetaStoreClientTest {
     r.setScheduledQuery(schq);
     client.scheduledQueryMaintenance(r);
 
-    ScheduledQuery schq2 = client.getScheduledQuery("create");
+    ScheduledQuery schq2 = client.getScheduledQuery(new ScheduledQueryKey("create", "c1"));
 
     // next execution is set by remote
     schq.setNextExecution(schq2.getNextExecution());
@@ -97,19 +91,12 @@ public class TestScheduledQueries extends MetaStoreClientTest {
 
   @Test(expected = InvalidInputException.class)
   public void testCreateWithInvalidSchedule() throws Exception {
-
     ScheduledQuery schq = createScheduledQuery("createInvalidSch");
-    schq.getSchedule().setCron("asd asd");
+    schq.setSchedule("asd asd");
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
     r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
     r.setScheduledQuery(schq);
     client.scheduledQueryMaintenance(r);
-
-    ScheduledQuery schq2 = client.getScheduledQuery("create");
-
-    // next execution is set by remote
-    schq.setNextExecution(schq2.getNextExecution());
-    assertEquals(schq2, schq);
   }
 
   @Test(expected = AlreadyExistsException.class)
@@ -136,7 +123,7 @@ public class TestScheduledQueries extends MetaStoreClientTest {
     r.setScheduledQuery(schq2);
     client.scheduledQueryMaintenance(r);
 
-    ScheduledQuery schq3 = client.getScheduledQuery(schq.getScheduleName());
+    ScheduledQuery schq3 = client.getScheduledQuery(new ScheduledQueryKey("update", "c1"));
 
     // next execution is set by remote
     schq2.setNextExecution(schq3.getNextExecution());
@@ -154,18 +141,20 @@ public class TestScheduledQueries extends MetaStoreClientTest {
 
   @Test
   public void testPoll() throws Exception {
-    ScheduledQuery schq = createScheduledQuery("q1");
-    schq.setClusterNamespace("polltest");
+    ScheduledQuery schq = createScheduledQuery(new ScheduledQueryKey("q1", "polltest"));
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
     r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
     r.setScheduledQuery(schq);
+    client.scheduledQueryMaintenance(r);
+
+    schq.setScheduleKey(new ScheduledQueryKey("q1", "polltestOther"));
     client.scheduledQueryMaintenance(r);
 
     ScheduledQueryPollRequest request = new ScheduledQueryPollRequest();
     request.setClusterNamespace("polltest");
 
     ScheduledQueryPollResponse pollResult = null;
-    for (int i = 0; i < 63; i++) {
+    for (int i = 0; i < 10; i++) {
       pollResult = client.scheduledQueryPoll(request);
       if (pollResult.isSetQuery()) {
         break;
@@ -174,32 +163,42 @@ public class TestScheduledQueries extends MetaStoreClientTest {
       Thread.sleep(1000);
     }
     assertTrue(pollResult.isSetQuery());
-    assertTrue(pollResult.isSetScheduleName());
-    assertTrue(pollResult.isSetExecutionId());
+    assertTrue(pollResult.isSetScheduleKey());
+
+    request.setClusterNamespace("polltestSomethingElse");
+    pollResult = client.scheduledQueryPoll(request);
+    assertFalse(pollResult.isSetQuery());
+
+    //    assertTrue(pollResult.isSetExecutionId());
 
   }
 
   private ScheduledQuery createScheduledQuery(String name) {
+    return createScheduledQuery(createKey(name, "c1"));
+  }
+
+  private ScheduledQuery createScheduledQuery(ScheduledQueryKey key) {
     ScheduledQuery schq = new ScheduledQuery();
-    schq.setScheduleName(name);
-    schq.setClusterNamespace("c1");
+    schq.setScheduleKey(key);
     schq.setEnabled(true);
-    Schedule schedule = new Schedule();
-    schedule.setCron("* * * * *");
-    schq.setSchedule(schedule);
+    schq.setSchedule("* * * * * ? *");
     schq.setUser("user");
     schq.setQuery("select 1");
     return schq;
   }
 
+  private ScheduledQueryKey createKey(String name, String string) {
+    ScheduledQueryKey ret = new ScheduledQueryKey();
+    ret.setScheduleName(name);
+    ret.setClusterNamespace(string);
+    return ret;
+  }
+
   private ScheduledQuery createScheduledQuery2(String name) {
     ScheduledQuery schq = new ScheduledQuery();
-    schq.setScheduleName(name);
-    schq.setClusterNamespace("c222");
+    schq.setScheduleKey(createKey(name, "c222"));
     schq.setEnabled(true);
-    Schedule schedule = new Schedule();
-    schedule.setCron("* 22 * * *");
-    schq.setSchedule(schedule);
+    schq.setSchedule("* * * 22 * * *");
     schq.setUser("user22");
     schq.setQuery("select 12");
     return schq;

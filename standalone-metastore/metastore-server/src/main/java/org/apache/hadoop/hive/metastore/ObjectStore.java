@@ -12620,7 +12620,7 @@ public class ObjectStore implements RawStore, Configurable {
       Integer plannedExecutionTime = schq.getNextExecution();
       schq.setNextExecution(computeNextExecutionTime(schq.getSchedule()));
       pm.makePersistent(schq);
-      ret.setScheduleName(schq.getScheduleName());
+      ret.setScheduleKey(schq.getScheduleKey());
       ret.setQuery(schq.getQuery());
       commited = commitTransaction();
     } finally {
@@ -12634,7 +12634,9 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private Integer computeNextExecutionTime(String schedule) throws InvalidInputException {
-    CronDefinition cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(CronType.UNIX);
+    CronType cronType = CronType.valueOf(MetastoreConf.getVar(this.conf, ConfVars.SCHEDULED_QUERIES_CRON_SYNTAX));
+
+    CronDefinition cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(cronType);
     CronParser parser = new CronParser(cronDefinition);
 
     // Get date for last execution
@@ -12648,7 +12650,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       return (int) nextExecution.get().toEpochSecond();
     } catch (IllegalArgumentException iae) {
-      String message = "Invalid schedule expression: " + schedule;
+      String message = "Invalid " + cronType + " schedule expression: '" + schedule + "'";
       LOG.error(message, iae);
       throw new InvalidInputException(message);
     }
@@ -12677,10 +12679,10 @@ public class ObjectStore implements RawStore, Configurable {
     MScheduledQuery schq = MScheduledQuery.fromThrift(scheduledQuery);
     boolean commited = false;
     try {
-      Optional<MScheduledQuery> existing = getMScheduledQuery(scheduledQuery.getScheduleName());
+      Optional<MScheduledQuery> existing = getMScheduledQuery(scheduledQuery.getScheduleKey());
       if (existing.isPresent()) {
         throw new AlreadyExistsException(
-            "Scheduled query with name: " + scheduledQuery.getScheduleName() + " already exists.");
+            "Scheduled query with name: " + scheduledQueryKeyRef(scheduledQuery.getScheduleKey()) + " already exists.");
       }
       openTransaction();
       Integer nextExecutionTime = computeNextExecutionTime(schq.getSchedule());
@@ -12701,10 +12703,10 @@ public class ObjectStore implements RawStore, Configurable {
     MScheduledQuery schq = MScheduledQuery.fromThrift(scheduledQuery);
     boolean commited = false;
     try {
-      Optional<MScheduledQuery> existing = getMScheduledQuery(scheduledQuery.getScheduleName());
+      Optional<MScheduledQuery> existing = getMScheduledQuery(scheduledQuery.getScheduleKey());
       if (!existing.isPresent()) {
         throw new NoSuchObjectException(
-            "Scheduled query with name: " + scheduledQuery.getScheduleName() + " doesn't exists.");
+            "Scheduled query with name: " + scheduledQueryKeyRef(schq.getScheduleKey()) + " doesn't exists.");
       }
       openTransaction();
       pm.deletePersistent(schq);
@@ -12721,10 +12723,10 @@ public class ObjectStore implements RawStore, Configurable {
     MScheduledQuery schq = MScheduledQuery.fromThrift(scheduledQuery);
     boolean commited = false;
     try {
-      Optional<MScheduledQuery> existing = getMScheduledQuery(scheduledQuery.getScheduleName());
+      Optional<MScheduledQuery> existing = getMScheduledQuery(scheduledQuery.getScheduleKey());
       if (!existing.isPresent()) {
         throw new NoSuchObjectException(
-            "Scheduled query with name: " + scheduledQuery.getScheduleName() + " doesn't exists.");
+            "Scheduled query with name: " + scheduledQueryKeyRef(scheduledQuery.getScheduleKey()) + " doesn't exists.");
       }
       openTransaction();
       MScheduledQuery persisted = existing.get();
@@ -12760,25 +12762,30 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public ScheduledQuery getScheduledQuery(String scheduleName) throws NoSuchObjectException {
-    Optional<MScheduledQuery> mScheduledQuery = getMScheduledQuery(scheduleName);
+  public ScheduledQuery getScheduledQuery(ScheduledQueryKey key) throws NoSuchObjectException {
+    Optional<MScheduledQuery> mScheduledQuery = getMScheduledQuery(key);
     if (!mScheduledQuery.isPresent()) {
-      throw new NoSuchObjectException("There is no scheduled query named: " + scheduleName);
+      throw new NoSuchObjectException(
+          "There is no scheduled query for: " + scheduledQueryKeyRef(key));
     }
     return mScheduledQuery.get().toThrift();
 
   }
 
-  public Optional<MScheduledQuery> getMScheduledQuery(String scheduleName) {
+  private String scheduledQueryKeyRef(ScheduledQueryKey key) {
+    return key.getScheduleName() + "@" + key.getClusterNamespace();
+  }
+
+  public Optional<MScheduledQuery> getMScheduledQuery(ScheduledQueryKey key) {
     MScheduledQuery s = null;
     boolean commited = false;
     Query query = null;
     try {
       openTransaction();
-      query = pm.newQuery(MScheduledQuery.class, "scheduleName == sName");
-      query.declareParameters("java.lang.String sName");
+      query = pm.newQuery(MScheduledQuery.class, "scheduleName == sName && clusterNamespace == ns");
+      query.declareParameters("java.lang.String sName, java.lang.String ns");
       query.setUnique(true);
-      s = (MScheduledQuery) query.execute(scheduleName);
+      s = (MScheduledQuery) query.execute(key.getScheduleName(), key.getClusterNamespace());
       pm.retrieve(s);
       commited = commitTransaction();
     } finally {

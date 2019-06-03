@@ -3671,8 +3671,8 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public ScheduledQuery getScheduledQuery(String scheduleName) throws TException {
-    return client.get_scheduled_query(scheduleName);
+  public ScheduledQuery getScheduledQuery(ScheduledQueryKey key) throws TException {
+    return client.get_scheduled_query(key);
   }
 
   @Override

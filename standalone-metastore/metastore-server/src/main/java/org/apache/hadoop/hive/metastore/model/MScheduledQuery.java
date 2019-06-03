@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.metastore.model;
 
-import org.apache.hadoop.hive.metastore.api.Schedule;
 import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 
 /**
  * Represents a runtime stat query entry.
@@ -38,10 +38,10 @@ public class MScheduledQuery {
   private Integer nextExecution;
 
   public MScheduledQuery(ScheduledQuery s) {
-    scheduleName = s.getScheduleName();
+    scheduleName = s.getScheduleKey().getScheduleName();
     enabled = s.isEnabled();
-    clusterNamespace = s.getClusterNamespace();
-    schedule = s.getSchedule().getCron();
+    clusterNamespace = s.getScheduleKey().getClusterNamespace();
+    schedule = s.getSchedule();
     user = s.getUser();
     query = s.getQuery();
     nextExecution = s.getNextExecution();
@@ -53,12 +53,9 @@ public class MScheduledQuery {
 
   public static ScheduledQuery toThrift(MScheduledQuery s) {
     ScheduledQuery ret = new ScheduledQuery();
-    ret.setScheduleName(s.scheduleName);
+    ret.setScheduleKey(new ScheduledQueryKey(s.scheduleName, s.clusterNamespace));
     ret.setEnabled(s.enabled);
-    ret.setClusterNamespace(s.clusterNamespace);
-    Schedule sschedule = new Schedule();
-    sschedule.setCron(s.schedule);
-    ret.setSchedule(sschedule);
+    ret.setSchedule(s.schedule);
     ret.setUser(s.user);
     ret.setQuery(s.query);
     ret.setNextExecution(s.nextExecution);
@@ -97,6 +94,10 @@ public class MScheduledQuery {
 
   public String getScheduleName() {
     return scheduleName;
+  }
+
+  public ScheduledQueryKey getScheduleKey() {
+    return new ScheduledQueryKey(scheduleName, clusterNamespace);
   }
 
 }

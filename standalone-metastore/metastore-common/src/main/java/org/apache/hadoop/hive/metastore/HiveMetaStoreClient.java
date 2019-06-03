@@ -3912,8 +3912,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public ScheduledQuery getScheduledQuery(String scheduleName) throws TException {
-    return client.get_scheduled_query(scheduleName);
+  public ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) throws TException {
+    return client.get_scheduled_query(scheduleKey);
   }
 
   @Override

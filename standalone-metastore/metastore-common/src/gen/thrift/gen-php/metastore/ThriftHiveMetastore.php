@@ -1688,12 +1688,12 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf {
    */
   public function scheduled_query_progress(\metastore\ScheduledQueryProgressInfo $info);
   /**
-   * @param string $scheduleName
+   * @param \metastore\ScheduledQueryKey $scheduleKey
    * @return \metastore\ScheduledQuery
    * @throws \metastore\MetaException
    * @throws \metastore\NoSuchObjectException
    */
-  public function get_scheduled_query($scheduleName);
+  public function get_scheduled_query(\metastore\ScheduledQueryKey $scheduleKey);
 }
 
 class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metastore\ThriftHiveMetastoreIf {
@@ -14580,16 +14580,16 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     return;
   }
 
-  public function get_scheduled_query($scheduleName)
+  public function get_scheduled_query(\metastore\ScheduledQueryKey $scheduleKey)
   {
-    $this->send_get_scheduled_query($scheduleName);
+    $this->send_get_scheduled_query($scheduleKey);
     return $this->recv_get_scheduled_query();
   }
 
-  public function send_get_scheduled_query($scheduleName)
+  public function send_get_scheduled_query(\metastore\ScheduledQueryKey $scheduleKey)
   {
     $args = new \metastore\ThriftHiveMetastore_get_scheduled_query_args();
-    $args->scheduleName = $scheduleName;
+    $args->scheduleKey = $scheduleKey;
     $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
@@ -65001,22 +65001,23 @@ class ThriftHiveMetastore_get_scheduled_query_args {
   static $_TSPEC;
 
   /**
-   * @var string
+   * @var \metastore\ScheduledQueryKey
    */
-  public $scheduleName = null;
+  public $scheduleKey = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
         1 => array(
-          'var' => 'scheduleName',
-          'type' => TType::STRING,
+          'var' => 'scheduleKey',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\ScheduledQueryKey',
           ),
         );
     }
     if (is_array($vals)) {
-      if (isset($vals['scheduleName'])) {
-        $this->scheduleName = $vals['scheduleName'];
+      if (isset($vals['scheduleKey'])) {
+        $this->scheduleKey = $vals['scheduleKey'];
       }
     }
   }
@@ -65041,8 +65042,9 @@ class ThriftHiveMetastore_get_scheduled_query_args {
       switch ($fid)
       {
         case 1:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->scheduleName);
+          if ($ftype == TType::STRUCT) {
+            $this->scheduleKey = new \metastore\ScheduledQueryKey();
+            $xfer += $this->scheduleKey->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -65060,9 +65062,12 @@ class ThriftHiveMetastore_get_scheduled_query_args {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_scheduled_query_args');
-    if ($this->scheduleName !== null) {
-      $xfer += $output->writeFieldBegin('scheduleName', TType::STRING, 1);
-      $xfer += $output->writeString($this->scheduleName);
+    if ($this->scheduleKey !== null) {
+      if (!is_object($this->scheduleKey)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('scheduleKey', TType::STRUCT, 1);
+      $xfer += $this->scheduleKey->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

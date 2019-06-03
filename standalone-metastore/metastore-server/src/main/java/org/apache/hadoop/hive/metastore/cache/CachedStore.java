@@ -3116,7 +3116,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public ScheduledQuery getScheduledQuery(String scheduleName) throws MetaException, NoSuchObjectException {
-    return rawStore.getScheduledQuery(scheduleName);
+  public ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) throws MetaException, NoSuchObjectException {
+    return rawStore.getScheduledQuery(scheduleKey);
   }
 }

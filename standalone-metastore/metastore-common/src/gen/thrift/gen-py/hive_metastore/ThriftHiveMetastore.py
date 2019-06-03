@@ -1748,10 +1748,10 @@ class Iface(fb303.FacebookService.Iface):
     """
     pass
 
-  def get_scheduled_query(self, scheduleName):
+  def get_scheduled_query(self, scheduleKey):
     """
     Parameters:
-     - scheduleName
+     - scheduleKey
     """
     pass
 
@@ -9849,18 +9849,18 @@ class Client(fb303.FacebookService.Client, Iface):
       raise result.o1
     return
 
-  def get_scheduled_query(self, scheduleName):
+  def get_scheduled_query(self, scheduleKey):
     """
     Parameters:
-     - scheduleName
+     - scheduleKey
     """
-    self.send_get_scheduled_query(scheduleName)
+    self.send_get_scheduled_query(scheduleKey)
     return self.recv_get_scheduled_query()
 
-  def send_get_scheduled_query(self, scheduleName):
+  def send_get_scheduled_query(self, scheduleKey):
     self._oprot.writeMessageBegin('get_scheduled_query', TMessageType.CALL, self._seqid)
     args = get_scheduled_query_args()
-    args.scheduleName = scheduleName
+    args.scheduleKey = scheduleKey
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -15737,7 +15737,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     iprot.readMessageEnd()
     result = get_scheduled_query_result()
     try:
-      result.success = self._handler.get_scheduled_query(args.scheduleName)
+      result.success = self._handler.get_scheduled_query(args.scheduleKey)
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
@@ -53276,16 +53276,16 @@ class scheduled_query_progress_result:
 class get_scheduled_query_args:
   """
   Attributes:
-   - scheduleName
+   - scheduleKey
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'scheduleName', None, None, ), # 1
+    (1, TType.STRUCT, 'scheduleKey', (ScheduledQueryKey, ScheduledQueryKey.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, scheduleName=None,):
-    self.scheduleName = scheduleName
+  def __init__(self, scheduleKey=None,):
+    self.scheduleKey = scheduleKey
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -53297,8 +53297,9 @@ class get_scheduled_query_args:
       if ftype == TType.STOP:
         break
       if fid == 1:
-        if ftype == TType.STRING:
-          self.scheduleName = iprot.readString()
+        if ftype == TType.STRUCT:
+          self.scheduleKey = ScheduledQueryKey()
+          self.scheduleKey.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -53311,9 +53312,9 @@ class get_scheduled_query_args:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('get_scheduled_query_args')
-    if self.scheduleName is not None:
-      oprot.writeFieldBegin('scheduleName', TType.STRING, 1)
-      oprot.writeString(self.scheduleName)
+    if self.scheduleKey is not None:
+      oprot.writeFieldBegin('scheduleKey', TType.STRUCT, 1)
+      self.scheduleKey.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -53324,7 +53325,7 @@ class get_scheduled_query_args:
 
   def __hash__(self):
     value = 17
-    value = (value * 31) ^ hash(self.scheduleName)
+    value = (value * 31) ^ hash(self.scheduleKey)
     return value
 
   def __repr__(self):

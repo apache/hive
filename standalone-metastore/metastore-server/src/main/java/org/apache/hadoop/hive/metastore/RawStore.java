@@ -1764,5 +1764,5 @@ public interface RawStore extends Configurable {
   void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws MetaException, NoSuchObjectException;
 
   // FIXME apidoc
-  ScheduledQuery getScheduledQuery(String scheduleName) throws MetaException, NoSuchObjectException;
+  ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) throws MetaException, NoSuchObjectException;
 }
