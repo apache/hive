@@ -426,6 +426,23 @@ class WMPoolSchedulingPolicy:
     "FIFO": 2,
   }
 
+class ScheduledQueryMaintenanceRequestType:
+  INSERT = 1
+  UPDATE = 2
+  DELETE = 3
+
+  _VALUES_TO_NAMES = {
+    1: "INSERT",
+    2: "UPDATE",
+    3: "DELETE",
+  }
+
+  _NAMES_TO_VALUES = {
+    "INSERT": 1,
+    "UPDATE": 2,
+    "DELETE": 3,
+  }
+
 class QueryState:
   EXECUTING = 0
   ERRORED = 1

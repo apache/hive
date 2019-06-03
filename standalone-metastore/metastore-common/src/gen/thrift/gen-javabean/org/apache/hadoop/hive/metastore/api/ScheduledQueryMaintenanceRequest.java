@@ -47,14 +47,14 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new ScheduledQueryMaintenanceRequestTupleSchemeFactory());
   }
 
-  private EventRequestType type; // required
+  private ScheduledQueryMaintenanceRequestType type; // required
   private ScheduledQuery scheduledQuery; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     /**
      * 
-     * @see EventRequestType
+     * @see ScheduledQueryMaintenanceRequestType
      */
     TYPE((short)1, "type"),
     SCHEDULED_QUERY((short)2, "scheduledQuery");
@@ -120,7 +120,7 @@ import org.slf4j.LoggerFactory;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.TYPE, new org.apache.thrift.meta_data.FieldMetaData("type", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, EventRequestType.class)));
+        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, ScheduledQueryMaintenanceRequestType.class)));
     tmpMap.put(_Fields.SCHEDULED_QUERY, new org.apache.thrift.meta_data.FieldMetaData("scheduledQuery", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ScheduledQuery.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -131,7 +131,7 @@ import org.slf4j.LoggerFactory;
   }
 
   public ScheduledQueryMaintenanceRequest(
-    EventRequestType type,
+    ScheduledQueryMaintenanceRequestType type,
     ScheduledQuery scheduledQuery)
   {
     this();
@@ -163,17 +163,17 @@ import org.slf4j.LoggerFactory;
 
   /**
    * 
-   * @see EventRequestType
+   * @see ScheduledQueryMaintenanceRequestType
    */
-  public EventRequestType getType() {
+  public ScheduledQueryMaintenanceRequestType getType() {
     return this.type;
   }
 
   /**
    * 
-   * @see EventRequestType
+   * @see ScheduledQueryMaintenanceRequestType
    */
-  public void setType(EventRequestType type) {
+  public void setType(ScheduledQueryMaintenanceRequestType type) {
     this.type = type;
   }
 
@@ -221,7 +221,7 @@ import org.slf4j.LoggerFactory;
       if (value == null) {
         unsetType();
       } else {
-        setType((EventRequestType)value);
+        setType((ScheduledQueryMaintenanceRequestType)value);
       }
       break;
 
@@ -433,7 +433,7 @@ import org.slf4j.LoggerFactory;
         switch (schemeField.id) {
           case 1: // TYPE
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-              struct.type = org.apache.hadoop.hive.metastore.api.EventRequestType.findByValue(iprot.readI32());
+              struct.type = org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequestType.findByValue(iprot.readI32());
               struct.setTypeIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -495,7 +495,7 @@ import org.slf4j.LoggerFactory;
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, ScheduledQueryMaintenanceRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      struct.type = org.apache.hadoop.hive.metastore.api.EventRequestType.findByValue(iprot.readI32());
+      struct.type = org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequestType.findByValue(iprot.readI32());
       struct.setTypeIsSet(true);
       struct.scheduledQuery = new ScheduledQuery();
       struct.scheduledQuery.read(iprot);

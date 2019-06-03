@@ -281,6 +281,17 @@ final class WMPoolSchedulingPolicy {
   );
 }
 
+final class ScheduledQueryMaintenanceRequestType {
+  const INSERT = 1;
+  const UPDATE = 2;
+  const DELETE = 3;
+  static public $__names = array(
+    1 => 'INSERT',
+    2 => 'UPDATE',
+    3 => 'DELETE',
+  );
+}
+
 final class QueryState {
   const EXECUTING = 0;
   const ERRORED = 1;

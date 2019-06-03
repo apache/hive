@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.metastore.api.RuntimeStat;
 import org.apache.hadoop.hive.metastore.api.Schedule;
 import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequest;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequestType;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.junit.After;
 import org.junit.Before;
@@ -76,7 +77,7 @@ public class TestScheduledQueries extends MetaStoreClientTest {
 
     ScheduledQuery schq = createScheduledQuery("create");
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
-    r.setType(EventRequestType.INSERT);
+    r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
     r.setScheduledQuery(schq);
     client.scheduledQueryMaintenance(r);
 
@@ -91,7 +92,7 @@ public class TestScheduledQueries extends MetaStoreClientTest {
   public void testDuplicateCreate() throws Exception {
     ScheduledQuery schq = createScheduledQuery("duplicate");
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
-    r.setType(EventRequestType.INSERT);
+    r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
     r.setScheduledQuery(schq);
     client.scheduledQueryMaintenance(r);
     client.scheduledQueryMaintenance(r);
@@ -102,11 +103,11 @@ public class TestScheduledQueries extends MetaStoreClientTest {
   public void testUpdate() throws Exception {
     ScheduledQuery schq = createScheduledQuery("update");
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
-    r.setType(EventRequestType.INSERT);
+    r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
     r.setScheduledQuery(schq);
     client.scheduledQueryMaintenance(r);
 
-    r.setType(EventRequestType.UPDATE);
+    r.setType(ScheduledQueryMaintenanceRequestType.UPDATE);
     ScheduledQuery schq2 = createScheduledQuery2("update");
     r.setScheduledQuery(schq2);
     client.scheduledQueryMaintenance(r);

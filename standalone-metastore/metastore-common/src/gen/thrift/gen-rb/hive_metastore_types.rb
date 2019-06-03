@@ -200,6 +200,14 @@ module WMPoolSchedulingPolicy
   VALID_VALUES = Set.new([FAIR, FIFO]).freeze
 end
 
+module ScheduledQueryMaintenanceRequestType
+  INSERT = 1
+  UPDATE = 2
+  DELETE = 3
+  VALUE_MAP = {1 => "INSERT", 2 => "UPDATE", 3 => "DELETE"}
+  VALID_VALUES = Set.new([INSERT, UPDATE, DELETE]).freeze
+end
+
 module QueryState
   EXECUTING = 0
   ERRORED = 1
@@ -5499,7 +5507,7 @@ class ScheduledQueryMaintenanceRequest
   SCHEDULEDQUERY = 2
 
   FIELDS = {
-    TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::EventRequestType},
+    TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::ScheduledQueryMaintenanceRequestType},
     SCHEDULEDQUERY => {:type => ::Thrift::Types::STRUCT, :name => 'scheduledQuery', :class => ::ScheduledQuery}
   }
 
@@ -5508,7 +5516,7 @@ class ScheduledQueryMaintenanceRequest
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field type is unset!') unless @type
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field scheduledQuery is unset!') unless @scheduledQuery
-    unless @type.nil? || ::EventRequestType::VALID_VALUES.include?(@type)
+    unless @type.nil? || ::ScheduledQueryMaintenanceRequestType::VALID_VALUES.include?(@type)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
     end
   end
