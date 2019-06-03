@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.optimizer;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -44,25 +43,12 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.modified.Constants;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
-import org.apache.hadoop.hive.ql.plan.SelectDesc;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.udf.UDFDateFloorDay;
-import org.apache.hadoop.hive.ql.udf.UDFDateFloorHour;
-import org.apache.hadoop.hive.ql.udf.UDFDateFloorMinute;
-import org.apache.hadoop.hive.ql.udf.UDFDateFloorMonth;
-import org.apache.hadoop.hive.ql.udf.UDFDateFloorSecond;
-import org.apache.hadoop.hive.ql.udf.UDFDateFloorWeek;
-import org.apache.hadoop.hive.ql.udf.UDFDateFloorYear;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.plan.*;
+import org.apache.hadoop.hive.ql.udf.*;
+import org.apache.hadoop.hive.ql.udf.generic.*;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -112,6 +98,7 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
 
     private final Logger LOG = LoggerFactory.getLogger(SortedDynPartitionTimeGranularityOptimizer.class);
     protected ParseContext parseCtx;
+    private int targetShardsPerGranularity = 0;
 
     public SortedDynamicPartitionProc(ParseContext pCtx) {
       this.parseCtx = pCtx;
@@ -129,21 +116,34 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
         // Bail out, nothing to do
         return null;
       }
+      String targetShardsProperty = null;
       String segmentGranularity = null;
       final Table table = fsOp.getConf().getTable();
       if (table != null) {
         // case the statement is an INSERT
         segmentGranularity = table.getParameters().get(Constants.DRUID_SEGMENT_GRANULARITY);
+        targetShardsProperty =
+                table.getParameters().get(Constants.DRUID_TARGET_SHARDS_PER_GRANULARITY);
+
       } else {
         // case the statement is a CREATE TABLE AS
-       segmentGranularity = parseCtx.getCreateTable().getTblProps()
+        segmentGranularity = parseCtx.getCreateTable().getTblProps()
                 .get(Constants.DRUID_SEGMENT_GRANULARITY);
+        targetShardsProperty = parseCtx.getCreateTable().getTblProps()
+                .get(Constants.DRUID_TARGET_SHARDS_PER_GRANULARITY);
       }
       segmentGranularity = !Strings.isNullOrEmpty(segmentGranularity)
               ? segmentGranularity
               : HiveConf.getVar(parseCtx.getConf(),
                       HiveConf.ConfVars.HIVE_DRUID_INDEXING_GRANULARITY
               );
+
+      final int maxPartitionSize = HiveConf.getIntVar(parseCtx.getConf(),
+              HiveConf.ConfVars.HIVE_DRUID_TARGET_SHARDS_PER_GRANULARITY);
+      targetShardsPerGranularity = maxPartitionSize > 0? maxPartitionSize:
+              Integer.parseInt(targetShardsProperty);
+      targetShardsPerGranularity = targetShardsPerGranularity < 1?1:targetShardsPerGranularity;
+
       LOG.info("Sorted dynamic partitioning on time granularity optimization kicked in...");
 
       // unlink connection between FS and its parent
@@ -283,6 +283,33 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
       ColumnInfo ci = new ColumnInfo(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME, TypeInfoFactory.timestampTypeInfo,
               selRS.getSignature().get(0).getTabAlias(), false, false);
       selRS.getSignature().add(ci);
+
+      if (targetShardsPerGranularity > 0 ) {
+        // add another partitioning key based on floor(1/rand) % targetShardsPerGranularity
+        // now the partitioning key optimized as floor(targetShardsPerGranularity * rand) % targetShardsPerGranularity
+        final ColumnInfo partitionKeyCi =
+                new ColumnInfo(Constants.DRUID_SHARD_KEY_COL_NAME, TypeInfoFactory.longTypeInfo,
+                        selRS.getSignature().get(0).getTabAlias(), false, false
+                );
+        final ExprNodeDesc targetNumShardDescNode =
+                new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo, targetShardsPerGranularity);
+        final ExprNodeGenericFuncDesc randomFn = ExprNodeGenericFuncDesc
+                .newInstance(new GenericUDFBridge("rand", false, UDFRand.class.getName()),
+                        Lists.<ExprNodeDesc>newArrayList()
+                );
+        final ExprNodeGenericFuncDesc random = ExprNodeGenericFuncDesc.newInstance(
+                new GenericUDFFloor(), Lists.<ExprNodeDesc>newArrayList(ExprNodeGenericFuncDesc
+                        .newInstance(new GenericUDFOPMultiply(),
+                                Lists.newArrayList(new ExprNodeConstantDesc(TypeInfoFactory.doubleTypeInfo, (double)targetShardsPerGranularity), randomFn)
+                        )));
+        final ExprNodeGenericFuncDesc randModMax = ExprNodeGenericFuncDesc
+                .newInstance(new GenericUDFOPMod(),
+                        Lists.newArrayList(random, targetNumShardDescNode)
+                );
+        descs.add(randModMax);
+        colNames.add(Constants.DRUID_SHARD_KEY_COL_NAME);
+        selRS.getSignature().add(partitionKeyCi);
+      }
 
       // Create SelectDesc
       SelectDesc selConf = new SelectDesc(descs, colNames);
