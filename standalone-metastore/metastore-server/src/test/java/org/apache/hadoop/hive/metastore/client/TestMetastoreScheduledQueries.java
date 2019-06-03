@@ -112,6 +112,7 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
   @Test
   public void testUpdate() throws Exception {
     ScheduledQuery schq = createScheduledQuery("update");
+    schq.getScheduleKey().setClusterNamespace("ns1");
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
     r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
     r.setScheduledQuery(schq);
@@ -119,6 +120,7 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
 
     r.setType(ScheduledQueryMaintenanceRequestType.UPDATE);
     ScheduledQuery schq2 = createScheduledQuery2("update");
+    schq2.getScheduleKey().setClusterNamespace("ns1");
     r.setScheduledQuery(schq2);
     client.scheduledQueryMaintenance(r);
 
