@@ -12607,12 +12607,9 @@ public class ObjectStore implements RawStore, Configurable {
     ScheduledQueryPollResponse ret = new ScheduledQueryPollResponse();
     try {
       openTransaction();
-      // query&update next_execution of next scheduled_query
-
-      // FIXME: datanucleus doesn't seem to be liking my more complex queries
       Query q = pm.newQuery(MScheduledQuery.class,
-          "nextExecution <= now && scheduleName == ns");
-      q.declareParameters("java.lang.Long now, java.lang.String ns");
+          "nextExecution <= now && enabled && clusterNamespace == ns");
+      q.declareParameters("java.lang.Integer now, java.lang.String ns");
       q.setOrdering("nextExecution");
       q.setUnique(true);
       int now = (int) (System.currentTimeMillis() / 1000);
@@ -12620,6 +12617,7 @@ public class ObjectStore implements RawStore, Configurable {
       if (schq == null) {
         return new ScheduledQueryPollResponse();
       }
+      Integer plannedExecutionTime = schq.getNextExecution();
       schq.setNextExecution(computeNextExecutionTime(schq.getSchedule()));
       pm.makePersistent(schq);
       ret.setScheduleName(schq.getScheduleName());
@@ -12635,19 +12633,25 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private Integer computeNextExecutionTime(String schedule) {
+  private Integer computeNextExecutionTime(String schedule) throws InvalidInputException {
     CronDefinition cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(CronType.UNIX);
     CronParser parser = new CronParser(cronDefinition);
 
     // Get date for last execution
-    ZonedDateTime now = ZonedDateTime.now();
-    ExecutionTime executionTime = ExecutionTime.forCron(parser.parse(schedule));
-    Optional<ZonedDateTime> nextExecution = executionTime.nextExecution(now);
-    if(!nextExecution.isPresent()) {
-      // no valid next execution time.
-      return null;
+    try {
+      ZonedDateTime now = ZonedDateTime.now();
+      ExecutionTime executionTime = ExecutionTime.forCron(parser.parse(schedule));
+      Optional<ZonedDateTime> nextExecution = executionTime.nextExecution(now);
+      if (!nextExecution.isPresent()) {
+        // no valid next execution time.
+        return null;
+      }
+      return (int) nextExecution.get().toEpochSecond();
+    } catch (IllegalArgumentException iae) {
+      String message = "Invalid schedule expression: " + schedule;
+      LOG.error(message, iae);
+      throw new InvalidInputException(message);
     }
-    return (int) nextExecution.get().toEpochSecond();
   }
 
   @Override

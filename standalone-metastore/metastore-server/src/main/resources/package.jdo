@@ -1466,7 +1466,7 @@
         <column name="QUERY" jdbc-type="varchar" length="256" allows-null="true"/>
       </field>
       <field name="nextExecution">
-        <column name="NEXT_EXECUTION" jdbc-type="bigint" allows-null="true"/>
+        <column name="NEXT_EXECUTION" jdbc-type="integer" allows-null="true"/>
       </field>
    </class>
   </package>

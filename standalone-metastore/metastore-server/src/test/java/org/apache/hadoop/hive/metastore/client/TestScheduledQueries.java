@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.EventRequestType;
+import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.RuntimeStat;
@@ -43,6 +44,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+
+import jdk.nashorn.internal.ir.annotations.Ignore;
 
 //FIXME rename/etc?
 @RunWith(Parameterized.class)
@@ -80,6 +83,23 @@ public class TestScheduledQueries extends MetaStoreClientTest {
   public void testCreate() throws Exception {
 
     ScheduledQuery schq = createScheduledQuery("create");
+    ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
+    r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
+    r.setScheduledQuery(schq);
+    client.scheduledQueryMaintenance(r);
+
+    ScheduledQuery schq2 = client.getScheduledQuery("create");
+
+    // next execution is set by remote
+    schq.setNextExecution(schq2.getNextExecution());
+    assertEquals(schq2, schq);
+  }
+
+  @Test(expected = InvalidInputException.class)
+  public void testCreateWithInvalidSchedule() throws Exception {
+
+    ScheduledQuery schq = createScheduledQuery("createInvalidSch");
+    schq.getSchedule().setCron("asd asd");
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
     r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
     r.setScheduledQuery(schq);
@@ -155,7 +175,7 @@ public class TestScheduledQueries extends MetaStoreClientTest {
     }
     assertTrue(pollResult.isSetQuery());
     assertTrue(pollResult.isSetScheduleName());
-    //      assertTrue(pollResult.isSetExecutionId());
+    assertTrue(pollResult.isSetExecutionId());
 
   }
 
