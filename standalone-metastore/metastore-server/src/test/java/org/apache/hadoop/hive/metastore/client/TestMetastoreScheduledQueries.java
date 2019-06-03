@@ -169,10 +169,11 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
     }
     assertTrue(pollResult.isSetQuery());
     assertTrue(pollResult.isSetScheduleKey());
-    //        assertTrue(pollResult.isSetExecutionId());
+    assertTrue(pollResult.isSetExecutionId());
     // after reading the only scheduled query; there are no more queries to run (for 1 sec)
-    pollResult = client.scheduledQueryPoll(request);
-    assertTrue(!pollResult.isSetQuery());
+    ScheduledQueryPollResponse pollResult2 = client.scheduledQueryPoll(request);
+    assertTrue(!pollResult2.isSetQuery());
+
 
     Thread.sleep(1000);
     // clustername is taken into account; this should be empty

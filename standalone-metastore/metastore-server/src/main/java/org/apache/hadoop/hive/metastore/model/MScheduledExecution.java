@@ -23,13 +23,20 @@ import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 
 public class MScheduledExecution {
 
-  private ScheduledQuery scheduledQuery;
+  public MScheduledExecution(MScheduledQuery schq, int now) {
+    scheduledQuery = schq;
+    startTime = now;
+    state = "INITED";
+  }
+
+  private int scheduledExecutionId;
+  private MScheduledQuery scheduledQuery;
   private String executorQueryId;
   private String state;
-  private int startTime;
-  private int endTime;
+  private Integer startTime;
+  private Integer endTime;
   private String errorString;
-  private int nextDeadline;
+  private Integer nextDeadline;
 
   //  public MScheduledQuery2(ScheduledQuery s) {
   //    scheduleName = s.getScheduleKey().getScheduleName();

@@ -12619,10 +12619,16 @@ public class ObjectStore implements RawStore, Configurable {
       }
       Integer plannedExecutionTime = schq.getNextExecution();
       schq.setNextExecution(computeNextExecutionTime(schq.getSchedule()));
+      MScheduledExecution execution = new MScheduledExecution(schq, now);
+      pm.makePersistent(execution);
       pm.makePersistent(schq);
+      commited = commitTransaction();
       ret.setScheduleKey(schq.getScheduleKey());
       ret.setQuery(schq.getQuery());
-      commited = commitTransaction();
+      int executionId = ((IntIdentity) pm.getObjectId(execution)).getKey();
+      ret.setExecutionId(executionId);
+    } catch (Throwable t) {
+      throw t;
     } finally {
       if (commited) {
         return ret;

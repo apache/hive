@@ -1473,10 +1473,13 @@
       </index>
       <!-- FIXME: index cluster_ns, nextExec; -->
    </class>
-    <class name="MScheduledExecution" identity-type="datastore" table="SCHEDULED_QUERIES" detachable="true">
-      <datastore-identity>
+    <class name="MScheduledExecution" identity-type="application" table="SCHEDULED_EXECUTIONS" detachable="true">
+<!--      <datastore-identity>
         <column name="SCHEDULED_EXECUTION_ID"/>
-      </datastore-identity>
+      </datastore-identity> -->
+      <field name="scheduledExecutionId" primary-key="true" value-strategy="native">
+        <column name="SCHEDULED_EXECUTION_ID" jdbc-type="integer" />
+      </field>
       <field name="scheduledQuery" dependent="true">
         <column name="SCHEDULED_QUERY_ID"/>
       </field>
@@ -1487,16 +1490,16 @@
         <column name="STATE" jdbc-type="varchar" length="256" allows-null="true"/>
       </field>
       <field name="startTime">
-        <column name="START_TIME" jdbc-type="integer"/>
+        <column name="START_TIME" jdbc-type="integer" allows-null="true"/>
       </field>
       <field name="endTime">
-        <column name="END_TIME" jdbc-type="integer"/>
+        <column name="END_TIME" jdbc-type="integer" allows-null="true"/>
       </field>
       <field name="errorString">
         <column name="ERROR_STRING" jdbc-type="varchar" length="2000" allows-null="true"/>
       </field>
       <field name="nextDeadline">
-        <column name="NEXT_DEADLINE" jdbc-type="integer"/>
+        <column name="NEXT_DEADLINE" jdbc-type="integer" allows-null="true"/>
       </field>
       <!-- FIXME: index state,nextDeadline where state = RUNNING -->
    </class>
