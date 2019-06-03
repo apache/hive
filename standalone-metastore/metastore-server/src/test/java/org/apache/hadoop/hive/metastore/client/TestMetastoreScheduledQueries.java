@@ -40,14 +40,13 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-//FIXME rename/etc?
 @RunWith(Parameterized.class)
 @Category(MetastoreUnitTest.class)
-public class TestScheduledQueries extends MetaStoreClientTest {
+public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
   private final AbstractMetaStoreService metaStore;
   private IMetaStoreClient client;
 
-  public TestScheduledQueries(String name, AbstractMetaStoreService metaStore) throws Exception {
+  public TestMetastoreScheduledQueries(String name, AbstractMetaStoreService metaStore) throws Exception {
     metaStore.getConf().set("scheduled.queries.cron.syntax", "QUARTZ");
     this.metaStore = metaStore;
   }
