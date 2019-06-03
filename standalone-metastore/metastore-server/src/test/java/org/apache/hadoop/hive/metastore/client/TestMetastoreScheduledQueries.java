@@ -150,27 +150,35 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
     schq.setScheduleKey(new ScheduledQueryKey("q1", "polltestOther"));
     client.scheduledQueryMaintenance(r);
 
+    // disabled queries are not considered
+    schq.setScheduleKey(new ScheduledQueryKey("q2disabled", "polltest"));
+    schq.setEnabled(false);
+    client.scheduledQueryMaintenance(r);
+
+    // do some poll requests; and wait for q1's execution
     ScheduledQueryPollRequest request = new ScheduledQueryPollRequest();
     request.setClusterNamespace("polltest");
-
     ScheduledQueryPollResponse pollResult = null;
-    for (int i = 0; i < 10; i++) {
+    // wait for poll to hit
+    for (int i = 0; i < 30; i++) {
       pollResult = client.scheduledQueryPoll(request);
       if (pollResult.isSetQuery()) {
         break;
       }
-      System.out.println(pollResult);
-      Thread.sleep(1000);
+      Thread.sleep(100);
     }
     assertTrue(pollResult.isSetQuery());
     assertTrue(pollResult.isSetScheduleKey());
+    //        assertTrue(pollResult.isSetExecutionId());
+    // after reading the only scheduled query; there are no more queries to run (for 1 sec)
+    pollResult = client.scheduledQueryPoll(request);
+    assertTrue(!pollResult.isSetQuery());
 
+    Thread.sleep(1000);
+    // clustername is taken into account; this should be empty
     request.setClusterNamespace("polltestSomethingElse");
     pollResult = client.scheduledQueryPoll(request);
     assertFalse(pollResult.isSetQuery());
-
-    //    assertTrue(pollResult.isSetExecutionId());
-
   }
 
   private ScheduledQuery createScheduledQuery(ScheduledQueryKey key) {
