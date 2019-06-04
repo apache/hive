@@ -12609,6 +12609,7 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       Query q = pm.newQuery(MScheduledQuery.class,
           "nextExecution <= now && enabled && clusterNamespace == ns");
+      q.setSerializeRead(true);
       q.declareParameters("java.lang.Integer now, java.lang.String ns");
       q.setOrdering("nextExecution");
       q.setUnique(true);
@@ -12619,6 +12620,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       Integer plannedExecutionTime = schq.getNextExecution();
       schq.setNextExecution(computeNextExecutionTime(schq.getSchedule()));
+
       MScheduledExecution execution = new MScheduledExecution();
       execution.setScheduledQuery(schq);
       execution.setState(QueryState.INITED);
@@ -12626,11 +12628,15 @@ public class ObjectStore implements RawStore, Configurable {
       execution.setLastUpdateTime(now);
       pm.makePersistent(execution);
       pm.makePersistent(schq);
+      ObjectStoreTestHook.onScheduledQueryPoll();
       commited = commitTransaction();
       ret.setScheduleKey(schq.getScheduleKey());
       ret.setQuery(schq.getQuery());
       int executionId = ((IntIdentity) pm.getObjectId(execution)).getKey();
       ret.setExecutionId(executionId);
+    } catch (JDOException e) {
+      LOG.debug("Caught jdo exception; exclusive", e);
+      commited = false;
     } catch (Throwable t) {
       //FIXME remove this
       throw t;

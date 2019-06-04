@@ -23,13 +23,16 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import javax.jdo.PersistenceManager;
 
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.ObjectStoreTestHook;
 import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
@@ -153,50 +156,75 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
   }
 
   @Test
-  public void testPoll() throws Exception {
-    ScheduledQuery schq = createScheduledQuery(new ScheduledQueryKey("q1", "polltestX"));
-    ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
-    r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
-    r.setScheduledQuery(schq);
-    client.scheduledQueryMaintenance(r);
-    
-    ExecutorService pool = Executors.newCachedThreadPool();
-    pool.submit(new X());
-    pool.submit(new X());
-    
-    pool.awaitTermination(1, TimeUnit.HOURS);
-    pool.shutdown();
+  public void testExclusivePoll() throws Exception {
+    try {
+      ObjectStoreTestHook.instance = new ObjectStoreTestHook() {
+
+        @Override
+        public void scheduledQueryPoll() {
+          try {
+            Thread.sleep(1000);
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+        }
+      };
+      ScheduledQuery schq = createScheduledQuery(new ScheduledQueryKey("q1", "exclusive"));
+      ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
+      r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
+      r.setScheduledQuery(schq);
+      client.scheduledQueryMaintenance(r);
+      // wait 1 sec for next execution
+      Thread.sleep(1000);
+
+      ExecutorService pool = Executors.newCachedThreadPool();
+      Future<ScheduledQueryPollResponse> f1 = pool.submit(new AsyncPollCall("exclusive"));
+      Future<ScheduledQueryPollResponse> f2 = pool.submit(new AsyncPollCall("exclusive"));
+
+      ScheduledQueryPollResponse resp1 = f1.get();
+      ScheduledQueryPollResponse resp2 = f2.get();
+      
+      assertTrue(resp1.isSetQuery() ^ resp2.isSetQuery());
+
+      pool.shutdown();
+    } finally {
+      ObjectStoreTestHook.instance = null;
+    }
 
   }
 
-  class X implements Runnable {
+  class AsyncPollCall implements Callable<ScheduledQueryPollResponse> {
 
-    public void run() {
+    private String ns;
+
+    public AsyncPollCall(String string) {
+      ns = string;
+    }
+
+    @Override
+    public ScheduledQueryPollResponse call() throws Exception {
+      IMetaStoreClient client1 = null;
       try {
+        client1 = metaStore.getClient();
         ScheduledQueryPollRequest request = new ScheduledQueryPollRequest();
-        request.setClusterNamespace("polltestX");
+        request.setClusterNamespace(ns);
         ScheduledQueryPollResponse pollResult = null;
-
-        for (int i = 0; i < 30; i++) {
-          pollResult = client.scheduledQueryPoll(request);
-          if (pollResult.isSetQuery()) {
-            break;
-          }
-          Thread.sleep(100);
-        }
+        pollResult = client1.scheduledQueryPoll(request);
+        return pollResult;
       } catch (TException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      } catch (InterruptedException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        throw new RuntimeException(e);
+      } finally {
+        if (client1 != null) {
+          client1.close();
+        }
       }
 
     }
+
   }
 
   @Test
-  public void testPoll1() throws Exception {
+  public void testPoll() throws Exception {
     ScheduledQuery schq = createScheduledQuery(new ScheduledQueryKey("q1", "polltest"));
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
     r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
