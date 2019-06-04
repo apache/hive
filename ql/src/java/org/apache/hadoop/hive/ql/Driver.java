@@ -24,16 +24,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -51,15 +42,7 @@ import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
-import org.apache.hadoop.hive.ql.exec.ConditionalTask;
-import org.apache.hadoop.hive.ql.exec.ExplainTask;
-import org.apache.hadoop.hive.ql.exec.FetchTask;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.TaskResult;
-import org.apache.hadoop.hive.ql.exec.TaskRunner;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
@@ -103,6 +86,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
+import org.apache.hadoop.hive.ql.plan.InsertTableDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -1830,8 +1814,35 @@ public class Driver implements CommandProcessor {
       }
 
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.RUN_TASKS);
+
+      // this is a workaround to fix inserting into druid data source
+      DDLTask insertDDLTask = null;
+
+      // test if this is inserting data into druid
+      boolean isInsertingIntoDruid = false;
+      if (this.plan.getOutputs() != null) {
+        // only considering insert into 1 data source
+        if (this.plan.getOutputs().size() == 1) {
+          Iterator<WriteEntity> iter = this.plan.getOutputs().iterator();
+          WriteEntity writeEntity = iter.next();
+          if (writeEntity.getTable() != null) {
+            if ("org.apache.hadoop.hive.druid.DruidStorageHandler".equals(writeEntity.getTable().getProperty("storage_handler"))) {
+              isInsertingIntoDruid = true;
+              LOG.info("Found a task inserting into druid.");
+            }
+          }
+        }
+      }
+
       // Loop while you either have tasks running, or tasks queued up
-      while (driverCxt.isRunning()) {
+      while (driverCxt.isRunning() || insertDDLTask != null) {
+
+        // make sure the rest of stage already finished, then add insert operator back
+        if (!driverCxt.isRunning() && insertDDLTask != null) {
+          LOG.info("Add insertDDLTask back to runnable.");
+          driverCxt.addToRunnable(insertDDLTask);
+          insertDDLTask = null;
+        }
 
         // Launch upto maxthreads tasks
         Task<? extends Serializable> task;
@@ -1903,6 +1914,17 @@ public class Driver implements CommandProcessor {
         if (tsk.getChildTasks() != null) {
           for (Task<? extends Serializable> child : tsk.getChildTasks()) {
             if (DriverContext.isLaunchable(child)) {
+              if (isInsertingIntoDruid && child instanceof DDLTask) {
+                DDLTask ddlTask = (DDLTask) child;
+                InsertTableDesc insertTableDesc = ddlTask.getWork().getInsertTableDesc();
+                if (insertTableDesc != null) {
+                  LOG.info("Found a insertDDLTask: " + ddlTask);
+
+                  insertDDLTask = ddlTask;
+
+                  continue;
+                }
+              }
               driverCxt.addToRunnable(child);
             }
           }

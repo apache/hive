@@ -1206,6 +1206,10 @@ public final class ConstantPropagateProcFactory {
               ((ExprNodeConstantDesc)newCol).setFoldedFromCol(colName);
             } else {
               // If it was internal column, lets try to get name from columnExprMap
+              if (columnExprMap == null) {
+                LOG.info("skip transform column: " + colName + " as columnExprMap is null.");
+                continue;
+              }
               ExprNodeDesc desc = columnExprMap.get(colName);
               if (desc instanceof ExprNodeConstantDesc) {
                 ((ExprNodeConstantDesc)newCol).setFoldedFromCol(((ExprNodeConstantDesc)desc).getFoldedFromCol());
