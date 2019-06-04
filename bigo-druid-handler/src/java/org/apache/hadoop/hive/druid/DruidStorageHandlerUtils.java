@@ -1026,9 +1026,9 @@ public final class DruidStorageHandlerUtils {
             } else if (fieldTypeEnum == FieldTypeEnum.MAX) {
               af = new LongMaxAggregatorFactory(dColumnName, dColumnName);
             } else if (fieldTypeEnum == FieldTypeEnum.MIN) {
-                af = new LongMinAggregatorFactory(dColumnName, dColumnName);
+              af = new LongMinAggregatorFactory(dColumnName, dColumnName);
             } else if (fieldTypeEnum == FieldTypeEnum.CNT) {
-                af = new CountAggregatorFactory(dColumnName);
+              af = new CountAggregatorFactory(dColumnName);
             } else {
               af = new LongSumAggregatorFactory(dColumnName, dColumnName);
             }
@@ -1041,7 +1041,7 @@ public final class DruidStorageHandlerUtils {
             } else if (fieldTypeEnum == FieldTypeEnum.MIN) {
               af = new FloatMinAggregatorFactory(dColumnName, dColumnName);
             } else if (fieldTypeEnum == FieldTypeEnum.CNT) {
-                af = new CountAggregatorFactory(dColumnName);
+              af = new CountAggregatorFactory(dColumnName);
             } else {
               af = new FloatSumAggregatorFactory(dColumnName, dColumnName);
             }
@@ -1054,7 +1054,7 @@ public final class DruidStorageHandlerUtils {
             } else if (fieldTypeEnum == FieldTypeEnum.MIN) {
               af = new DoubleMinAggregatorFactory(dColumnName, dColumnName);
             } else if (fieldTypeEnum == FieldTypeEnum.CNT) {
-                af = new CountAggregatorFactory(dColumnName);
+              af = new CountAggregatorFactory(dColumnName);
             } else {
               af = new DoubleSumAggregatorFactory(dColumnName, dColumnName);
             }
@@ -1081,6 +1081,10 @@ public final class DruidStorageHandlerUtils {
                       + dColumnName
                       + " does not have STRING type: "
                       + primitiveCategory);
+            }
+            if (fieldTypeEnum == FieldTypeEnum.CNT) {
+              af = new CountAggregatorFactory(dColumnName);
+              break;
             }
             LOG.info("add " + dColumnName + " as normal dim");
             dimensions.add(new StringDimensionSchema(dColumnName));
