@@ -112,6 +112,12 @@ public class Table implements Serializable {
    * a materialization is up-to-date or not. */
   private transient Boolean outdatedForRewritingMaterializedView;
 
+  /** Constraint related objects */
+  private transient PrimaryKeyInfo pki;
+  private transient ForeignKeyInfo fki;
+  private transient UniqueConstraint uki;
+  private transient NotNullConstraint nnc;
+
   /**
    * Used only for serialization.
    */
@@ -1108,6 +1114,40 @@ public class Table implements Serializable {
   public Boolean isOutdatedForRewriting() {
     return outdatedForRewritingMaterializedView;
   }
+
+  /* These are only populated during optimization */
+  public PrimaryKeyInfo getPrimaryKeyInfo() {
+    return pki;
+  }
+
+  public void setPrimaryKeyInfo(PrimaryKeyInfo pki) {
+    this.pki = pki;
+  }
+
+  public ForeignKeyInfo getForeignKeyInfo() {
+    return fki;
+  }
+
+  public void setForeignKeyInfo(ForeignKeyInfo fki) {
+    this.fki = fki;
+  }
+
+  public UniqueConstraint getUniqueKeyInfo() {
+    return uki;
+  }
+
+  public void setUniqueKeyInfo(UniqueConstraint uki) {
+    this.uki = uki;
+  }
+
+  public NotNullConstraint getNotNullConstraint() {
+    return nnc;
+  }
+
+  public void setNotNullConstraint(NotNullConstraint nnc) {
+    this.nnc = nnc;
+  }
+
 
   public ColumnStatistics getColStats() {
     return tTable.isSetColStats() ? tTable.getColStats() : null;
