@@ -45,7 +45,7 @@ public class AlterTableReplaceColumnsDesc extends AbstractAlterTableDesc impleme
 
   public AlterTableReplaceColumnsDesc(String tableName, Map<String, String> partitionSpec, boolean isCascade,
       List<FieldSchema> newColumns) throws SemanticException {
-    super(AlterTableTypes.REPLACE_COLUMNS, tableName, partitionSpec, null, isCascade, false);
+    super(AlterTableTypes.REPLACE_COLUMNS, tableName, partitionSpec, null, isCascade, false, null);
     this.newColumns = newColumns;
   }
 

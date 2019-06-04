@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.column;
+package org.apache.hadoop.hive.ql.ddl.table.storage;
 
 import java.util.Map;
 
@@ -24,28 +24,35 @@ import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
-import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * DDL task description for ALTER TABLE ... UPDATE COLUMNS ... commands.
+ * DDL task description for ALTER TABLE ... INTO ... BUCKETS commands.
  */
-@Explain(displayName = "Update Columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterTableUpdateColumnsDesc extends AbstractAlterTableDesc implements DDLDescWithWriteId {
+@Explain(displayName = "Into Buckets", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class AlterTableIntoBucketsDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
 
   static {
-    DDLTask2.registerOperation(AlterTableUpdateColumnsDesc.class, AlterTableUpdateColumnsOperation.class);
+    DDLTask2.registerOperation(AlterTableIntoBucketsDesc.class, AlterTableIntoBucketsOperation.class);
   }
 
-  public AlterTableUpdateColumnsDesc(String tableName, Map<String, String> partitionSpec, boolean isCascade)
+  private final int numberOfBuckets;
+
+  public AlterTableIntoBucketsDesc(String tableName, Map<String, String> partitionSpec, int numberOfBuckets)
       throws SemanticException {
-    super(AlterTableTypes.UPDATE_COLUMNS, tableName, partitionSpec, null, isCascade, false, null);
+    super(AlterTableTypes.INTO_BUCKETS, tableName, partitionSpec, null, false, false, null);
+    this.numberOfBuckets = numberOfBuckets;
+  }
+
+  @Explain(displayName = "number of buckets", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public int getNumberOfBuckets() {
+    return numberOfBuckets;
   }
 
   @Override
   public boolean mayNeedWriteId() {
-    return true;
+    return false;
   }
 }

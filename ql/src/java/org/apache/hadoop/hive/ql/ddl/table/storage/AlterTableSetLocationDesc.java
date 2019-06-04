@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.column;
+package org.apache.hadoop.hive.ql.ddl.table.storage;
 
 import java.util.Map;
 
@@ -24,24 +24,31 @@ import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
-import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * DDL task description for ALTER TABLE ... UPDATE COLUMNS ... commands.
+ * DDL task description for ALTER TABLE ... SET LOCATION ... commands.
  */
-@Explain(displayName = "Update Columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterTableUpdateColumnsDesc extends AbstractAlterTableDesc implements DDLDescWithWriteId {
+@Explain(displayName = "Set Location", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class AlterTableSetLocationDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
 
   static {
-    DDLTask2.registerOperation(AlterTableUpdateColumnsDesc.class, AlterTableUpdateColumnsOperation.class);
+    DDLTask2.registerOperation(AlterTableSetLocationDesc.class, AlterTableSetLocationOperation.class);
   }
 
-  public AlterTableUpdateColumnsDesc(String tableName, Map<String, String> partitionSpec, boolean isCascade)
+  private final String location;
+
+  public AlterTableSetLocationDesc(String tableName, Map<String, String> partitionSpec, String location)
       throws SemanticException {
-    super(AlterTableTypes.UPDATE_COLUMNS, tableName, partitionSpec, null, isCascade, false, null);
+    super(AlterTableTypes.SET_LOCATION, tableName, partitionSpec, null, false, false, null);
+    this.location = location;
+  }
+
+  @Explain(displayName = "location", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getLocation() {
+    return location;
   }
 
   @Override

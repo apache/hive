@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.ddl.table.info.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.ddl.table.info.ShowTablesDesc;
 import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableDropPartitionDesc;
 import org.apache.hadoop.hive.ql.ddl.table.partition.ShowPartitionsDesc;
+import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableSetLocationDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -41,8 +42,6 @@ import org.apache.hadoop.hive.ql.parse.AbstractSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -334,44 +333,32 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
       ShowPartitionsDesc showParts = (ShowPartitionsDesc)ddlDesc;
       String tableName = extractTableName(showParts.getTabName());
       authorizeTable(cntxt.getHive(), tableName, Privilege.SELECT);
-    }
-  }
-
-  @Override
-  protected void authorizeDDLWork(HiveSemanticAnalyzerHookContext cntxt, Hive hive, DDLWork work)
-    throws HiveException {
-    // TODO: add alter database support in HCat
-
-    // Table operations.
-    AlterTableDesc alterTable = work.getAlterTblDesc();
-    if (alterTable != null) {
+    } else if (ddlDesc instanceof AlterTableSetLocationDesc) {
+      AlterTableSetLocationDesc alterTable = (AlterTableSetLocationDesc)ddlDesc;
       Table table = hive.getTable(SessionState.get().getCurrentDatabase(),
-          Utilities.getDbTableName(alterTable.getOldName())[1], false);
+          Utilities.getDbTableName(alterTable.getTableName())[1], false);
 
       Partition part = null;
-      if (alterTable.getPartSpec() != null) {
-        part = hive.getPartition(table, alterTable.getPartSpec(), false);
+      if (alterTable.getPartitionSpec() != null) {
+        part = hive.getPartition(table, alterTable.getPartitionSpec(), false);
       }
 
-      String newLocation = alterTable.getNewLocation();
+      String newLocation = alterTable.getLocation();
 
       /* Hcat requires ALTER_DATA privileges for ALTER TABLE LOCATION statements
       * for the old table/partition location and the new location.
       */
-      if (alterTable.getOp() == AlterTableDesc.AlterTableTypes.ALTERLOCATION) {
-        if (part != null) {
-          authorize(part, Privilege.ALTER_DATA); // authorize for the old
-          // location, and new location
-          part.setLocation(newLocation);
-          authorize(part, Privilege.ALTER_DATA);
-        } else {
-          authorize(table, Privilege.ALTER_DATA); // authorize for the old
-          // location, and new location
-          table.getTTable().getSd().setLocation(newLocation);
-          authorize(table, Privilege.ALTER_DATA);
-        }
+      if (part != null) {
+        authorize(part, Privilege.ALTER_DATA); // authorize for the old
+        // location, and new location
+        part.setLocation(newLocation);
+        authorize(part, Privilege.ALTER_DATA);
+      } else {
+        authorize(table, Privilege.ALTER_DATA); // authorize for the old
+        // location, and new location
+        table.getTTable().getSd().setLocation(newLocation);
+        authorize(table, Privilege.ALTER_DATA);
       }
-      //other alter operations are already supported by Hive
     }
   }
 }

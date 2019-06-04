@@ -92,6 +92,7 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -142,11 +143,6 @@ public abstract class BaseSemanticAnalyzer {
   protected boolean transactionalInQuery;
 
   protected HiveTxnManager txnManager;
-
-  public static final int HIVE_COLUMN_ORDER_ASC = 1;
-  public static final int HIVE_COLUMN_ORDER_DESC = 0;
-  public static final int HIVE_COLUMN_NULLS_FIRST = 0;
-  public static final int HIVE_COLUMN_NULLS_LAST = 1;
 
   /**
    * ReadEntities that are passed to the hooks.
@@ -1342,20 +1338,12 @@ public abstract class BaseSemanticAnalyzer {
     int numCh = ast.getChildCount();
     for (int i = 0; i < numCh; i++) {
       ASTNode child = (ASTNode) ast.getChild(i);
-      if (child.getToken().getType() == HiveParser.TOK_TABSORTCOLNAMEASC) {
-        child = (ASTNode) child.getChild(0);
-        colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
-            HIVE_COLUMN_ORDER_ASC));
-      } else {
-        child = (ASTNode) child.getChild(0);
-        if (child.getToken().getType() == HiveParser.TOK_NULLS_LAST) {
-          colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
-              HIVE_COLUMN_ORDER_DESC));
-        } else {
-          throw new SemanticException("create/alter table: "
-                  + "not supported NULLS FIRST for ORDER BY in DESC order");
-        }
+      int directionCode = DirectionUtils.tokenToCode(child.getToken().getType());
+      child = (ASTNode) child.getChild(0);
+      if (child.getToken().getType() != HiveParser.TOK_NULLS_LAST && directionCode == DirectionUtils.DESCENDING_CODE) {
+        throw new SemanticException("create/alter table: not supported NULLS FIRST for ORDER BY in DESC order");
       }
+      colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(), directionCode));
     }
     return colList;
   }
