@@ -12698,13 +12698,6 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  @Deprecated
-  private int getNewScheduledQueryDeadline() {
-    int now = (int) (System.currentTimeMillis() / 1000);
-    int interval = MetastoreConf.getIntVar(conf, ConfVars.SCHEDULED_QUERIES_PROGRESS_TIMEOUT);
-    return now + interval;
-  }
-
   private Integer computeNextExecutionTime(String schedule) throws InvalidInputException {
     CronType cronType = CronType.valueOf(MetastoreConf.getVar(this.conf, ConfVars.SCHEDULED_QUERIES_CRON_SYNTAX));
 
