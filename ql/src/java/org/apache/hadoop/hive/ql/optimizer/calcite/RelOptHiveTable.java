@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.ql.metadata.UniqueConstraint.UniqueConstraintCol;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ExprNodeConverter;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
@@ -75,6 +74,7 @@ import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
+import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -389,15 +389,9 @@ public class RelOptHiveTable implements RelOptTable {
       for (int i=0; i<this.hiveTblMetadata.getSd().getCols().size(); i++) {
         FieldSchema field = this.hiveTblMetadata.getSd().getCols().get(i);
         if (field.getName().equals(sortColumn.getCol())) {
-          Direction direction;
-          NullDirection nullDirection;
-          if (sortColumn.getOrder() == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC) {
-            direction = Direction.ASCENDING;
-            nullDirection = NullDirection.FIRST;
-          } else {
-            direction = Direction.DESCENDING;
-            nullDirection = NullDirection.LAST;
-          }
+          Direction direction = DirectionUtils.codeToDirection(sortColumn.getOrder());
+          NullDirection nullDirection = sortColumn.getOrder() == DirectionUtils.ASCENDING_CODE ?
+              NullDirection.FIRST : NullDirection.LAST;
           collationList.add(new RelFieldCollation(i, direction, nullDirection));
           break;
         }

@@ -16,36 +16,51 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.column;
+package org.apache.hadoop.hive.ql.ddl.table.storage;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
-import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * DDL task description for ALTER TABLE ... UPDATE COLUMNS ... commands.
+ * DDL task description for ALTER TABLE ... SET SKEWED LOCATION commands.
  */
-@Explain(displayName = "Update Columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterTableUpdateColumnsDesc extends AbstractAlterTableDesc implements DDLDescWithWriteId {
+@Explain(displayName = "Set Skewed Location", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class AlterTableSetSkewedLocationDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
 
   static {
-    DDLTask2.registerOperation(AlterTableUpdateColumnsDesc.class, AlterTableUpdateColumnsOperation.class);
+    DDLTask2.registerOperation(AlterTableSetSkewedLocationDesc.class, AlterTableSetSkewedLocationOperation.class);
   }
 
-  public AlterTableUpdateColumnsDesc(String tableName, Map<String, String> partitionSpec, boolean isCascade)
-      throws SemanticException {
-    super(AlterTableTypes.UPDATE_COLUMNS, tableName, partitionSpec, null, isCascade, false, null);
+  private final Map<List<String>, String> skewedLocations;
+
+  public AlterTableSetSkewedLocationDesc(String tableName, Map<String, String> partitionSpec,
+      Map<List<String>, String> skewedLocations) throws SemanticException {
+    super(AlterTableTypes.SET_SKEWED_LOCATION, tableName, partitionSpec, null, false, false, null);
+    this.skewedLocations = skewedLocations;
+  }
+
+  public Map<List<String>, String> getSkewedLocations() {
+    return skewedLocations;
+  }
+
+  // for Explain only
+  @Explain(displayName = "skewed locations", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public List<String> getSkewedLocationsExplain() {
+    return skewedLocations.entrySet().stream()
+        .map(e -> "(" + e.getKey() + ": " + e.getValue() + ")").collect(Collectors.toList());
   }
 
   @Override
   public boolean mayNeedWriteId() {
-    return true;
+    return false;
   }
 }

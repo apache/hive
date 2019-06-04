@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
@@ -34,8 +32,7 @@ import java.io.Serializable;
  * object may be a table, partition, dfs directory or a local directory.
  */
 public class WriteEntity extends Entity implements Serializable {
-
-  private static final Logger LOG = LoggerFactory.getLogger(WriteEntity.class);
+  private static final long serialVersionUID = 1L;
 
   private boolean isTempURI = false;
   private transient boolean isDynamicPartitionWrite = false;
@@ -200,38 +197,42 @@ public class WriteEntity extends Entity implements Serializable {
    */
   public static WriteType determineAlterTableWriteType(AlterTableDesc.AlterTableTypes op) {
     switch (op) {
-      case RENAME_COLUMN:
-      case ADDCLUSTERSORTCOLUMN:
-      case ADDFILEFORMAT:
-      case ADDSERDE:
-      case DROPPROPS:
-      case REPLACE_COLUMNS:
-      case ARCHIVE:
-      case UNARCHIVE:
-      case ALTERLOCATION:
-      case DROPPARTITION:
-      case RENAMEPARTITION:
-      case ADDSKEWEDBY:
-      case ALTERSKEWEDLOCATION:
-      case ALTERBUCKETNUM:
-      case ALTERPARTITION:
-      case ADD_COLUMNS:
-      case RENAME:
-      case TRUNCATE:
-      case MERGEFILES:
-      case DROP_CONSTRAINT: return WriteType.DDL_EXCLUSIVE;
+    case RENAME_COLUMN:
+    case CLUSTERED_BY:
+    case NOT_SORTED:
+    case NOT_CLUSTERED:
+    case SET_FILE_FORMAT:
+    case SET_SERDE:
+    case DROPPROPS:
+    case REPLACE_COLUMNS:
+    case ARCHIVE:
+    case UNARCHIVE:
+    case SET_LOCATION:
+    case DROPPARTITION:
+    case RENAMEPARTITION:
+    case SKEWED_BY:
+    case SET_SKEWED_LOCATION:
+    case INTO_BUCKETS:
+    case ALTERPARTITION:
+    case ADD_COLUMNS:
+    case RENAME:
+    case TRUNCATE:
+    case MERGEFILES:
+    case DROP_CONSTRAINT:
+      return WriteType.DDL_EXCLUSIVE;
 
-      case ADDPARTITION:
-      case ADDSERDEPROPS:
-      case ADDPROPS:
-      case UPDATESTATS:
-        return WriteType.DDL_SHARED;
+    case ADDPARTITION:
+    case SET_SERDE_PROPS:
+    case ADDPROPS:
+    case UPDATESTATS:
+      return WriteType.DDL_SHARED;
 
-      case COMPACT:
-      case TOUCH: return WriteType.DDL_NO_LOCK;
+    case COMPACT:
+    case TOUCH:
+      return WriteType.DDL_NO_LOCK;
 
-      default:
-        throw new RuntimeException("Unknown operation " + op.toString());
+    default:
+      throw new RuntimeException("Unknown operation " + op.toString());
     }
   }
   public boolean isDynamicPartitionWrite() {
