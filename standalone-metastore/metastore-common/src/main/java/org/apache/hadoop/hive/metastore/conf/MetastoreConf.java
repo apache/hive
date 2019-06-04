@@ -667,8 +667,8 @@ public class MetastoreConf {
         "If a scheduled query is not making progress for this amount of time it will be considered TIMED_OUT"),
     // FIXME: implement
     SCHEDULED_QUERIES_EXECUTION_MAX_AGE("scheduled.queries.execution.max.age",
-        "hive.metastore.scheduled.queries.progress.timeout", 3 * 86400, TimeUnit.SECONDS,
-        "If a scheduled query is not making progress for this amount of time it will be considered TIMED_OUT"),
+        "hive.metastore.scheduled.queries.execution.max.age", 3 * 86400, TimeUnit.SECONDS,
+        "FIXME"),
 
     // Parameters for exporting metadata on table drop (requires the use of the)
     // org.apache.hadoop.hive.ql.parse.MetaDataExportListener preevent listener
