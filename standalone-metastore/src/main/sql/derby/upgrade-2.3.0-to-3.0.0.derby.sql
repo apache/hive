@@ -192,7 +192,10 @@ UPDATE "APP"."DBS"
 -- Add the not null constraint
 ALTER TABLE "APP"."DBS" ALTER COLUMN "CTLG_NAME" NOT NULL;
 
--- Put back the unique index 
+-- Add default value to ctlg name
+ALTER TABLE "APP"."DBS" ALTER COLUMN "CTLG_NAME" SET DEFAULT 'hive';
+
+-- Put back the unique index
 CREATE UNIQUE INDEX "APP"."UNIQUE_DATABASE" ON "APP"."DBS" ("NAME", "CTLG_NAME");
 
 -- Add the foreign key
