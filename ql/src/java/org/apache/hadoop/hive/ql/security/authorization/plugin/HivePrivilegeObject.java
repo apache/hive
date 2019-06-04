@@ -118,6 +118,7 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   private final List<String> columns;
   private final HivePrivObjectActionType actionType;
   private final String className;
+  private final String ownerName;
   // cellValueTransformers is corresponding to the columns.
   // Its size should be the same as columns.
   // For example, if a table has two columns, "key" and "value"
@@ -175,6 +176,20 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     this.actionType = actionType;
     this.commandParams = commandParams;
     this.className = className;
+    this.ownerName = null;
+  }
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
+      List<String> partKeys, List<String> columns, HivePrivObjectActionType actionType,
+      List<String> commandParams, String className, String ownerName) {
+    this.type = type;
+    this.dbname = dbname;
+    this.objectName = objectName;
+    this.partKeys = partKeys;
+    this.columns = columns;
+    this.actionType = actionType;
+    this.commandParams = commandParams;
+    this.className = className;
+    this.ownerName = ownerName;
   }
 
   public HivePrivilegeObjectType getType() {
