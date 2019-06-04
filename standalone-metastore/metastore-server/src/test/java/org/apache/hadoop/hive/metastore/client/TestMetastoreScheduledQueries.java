@@ -19,20 +19,27 @@ package org.apache.hadoop.hive.metastore.client;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import javax.jdo.PersistenceManager;
+
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.QueryState;
 import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequest;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequestType;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollRequest;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollResponse;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryProgressInfo;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
+import org.apache.hadoop.hive.metastore.model.MScheduledExecution;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -173,6 +180,31 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
     // after reading the only scheduled query; there are no more queries to run (for 1 sec)
     ScheduledQueryPollResponse pollResult2 = client.scheduledQueryPoll(request);
     assertTrue(!pollResult2.isSetQuery());
+
+    try (PersistenceManager pm = PersistenceManagerProvider.getPersistenceManager()) {
+      MScheduledExecution q = pm.getObjectById(MScheduledExecution.class, pollResult.getExecutionId());
+      assertNotNull(q);
+      assertEquals("INITED", q.getState());
+      //      assertTrue(q.getNextDeadline() > getEpochSeconds() + 60 ); 
+    }
+    
+    ScheduledQueryProgressInfo info;
+    info = new ScheduledQueryProgressInfo(
+        pollResult.getExecutionId(), QueryState.EXECUTING, "executor-query-id");
+    client.scheduledQueryProgress(info);
+    
+    try (PersistenceManager pm = PersistenceManagerProvider.getPersistenceManager()) {
+      MScheduledExecution q = pm.getObjectById(MScheduledExecution.class, pollResult.getExecutionId());
+      assertEquals("EXECUTING", q.getState());
+      assertEquals("executor-query-id", q.getExecutorQueryId());
+      //      q.getNextDeadline() > 
+      //      assertEquals("hive-query-id", q.getExecutorQueryId());
+    }
+
+    info = new ScheduledQueryProgressInfo(
+        pollResult.getExecutionId(), QueryState.ERRORED, "executor-query-id");
+    //    info.set
+    client.scheduledQueryProgress(info);
 
 
     Thread.sleep(1000);

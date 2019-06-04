@@ -12628,6 +12628,7 @@ public class ObjectStore implements RawStore, Configurable {
       int executionId = ((IntIdentity) pm.getObjectId(execution)).getKey();
       ret.setExecutionId(executionId);
     } catch (Throwable t) {
+      //FIXME remove this
       throw t;
     } finally {
       if (commited) {
@@ -12753,6 +12754,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void scheduledQueryProgress(ScheduledQueryProgressInfo info) {
+
     //    long scheduledExecutionId = info.getScheduleId();
     //    switch(info.getState()) {
     //    case EXECUTING:

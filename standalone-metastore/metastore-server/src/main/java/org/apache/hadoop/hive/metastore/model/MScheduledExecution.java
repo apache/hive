@@ -38,6 +38,12 @@ public class MScheduledExecution {
   private String errorString;
   private Integer nextDeadline;
 
+  @Override
+  public String toString() {
+    return String.format("state: %s, scheduledQuery: %s, execId: %d", state, scheduledQuery.getScheduleName(),
+        executorQueryId);
+  }
+
   //  public MScheduledQuery2(ScheduledQuery s) {
   //    scheduleName = s.getScheduleKey().getScheduleName();
   //    enabled = s.isEnabled();
@@ -101,4 +107,37 @@ public class MScheduledExecution {
   //    return new ScheduledQueryKey(scheduleName, clusterNamespace);
   //  }
   //
+
+  public int getScheduledExecutionId() {
+    return scheduledExecutionId;
+  }
+
+  public MScheduledQuery getScheduledQuery() {
+    return scheduledQuery;
+  }
+
+  public String getExecutorQueryId() {
+    return executorQueryId;
+  }
+
+  public String getState() {
+    return state;
+  }
+
+  public Integer getStartTime() {
+    return startTime;
+  }
+
+  public Integer getEndTime() {
+    return endTime;
+  }
+
+  public String getErrorString() {
+    return errorString;
+  }
+
+  public Integer getNextDeadline() {
+    return nextDeadline;
+  }
+
 }

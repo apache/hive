@@ -1762,6 +1762,7 @@ struct ScheduledQueryMaintenanceRequest {
 }
 
 enum QueryState {
+   INITED,
    EXECUTING,
    ERRORED,
    FINISHED
@@ -1770,7 +1771,8 @@ enum QueryState {
 struct ScheduledQueryProgressInfo{
   1: required i64 scheduledExecutionId,
   2: required QueryState state,
-  3: required string executorQueryId
+  3: required string executorQueryId,
+  4: optional string errorMessage,
 }
 
 struct AlterPartitionsRequest {
