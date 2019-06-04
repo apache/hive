@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.apache.hadoop.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
 
 /**
  * Represents the object on which privilege is being granted/revoked, and objects
@@ -119,6 +120,7 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   private final HivePrivObjectActionType actionType;
   private final String className;
   private final String ownerName;
+  private final PrincipalType ownerType;
   // cellValueTransformers is corresponding to the columns.
   // Its size should be the same as columns.
   // For example, if a table has two columns, "key" and "value"
@@ -177,10 +179,11 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     this.commandParams = commandParams;
     this.className = className;
     this.ownerName = null;
+    this.ownerType = null;
   }
   public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
       List<String> partKeys, List<String> columns, HivePrivObjectActionType actionType,
-      List<String> commandParams, String className, String ownerName) {
+      List<String> commandParams, String className, String ownerName, PrincipalType ownerType) {
     this.type = type;
     this.dbname = dbname;
     this.objectName = objectName;
@@ -190,6 +193,7 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     this.commandParams = commandParams;
     this.className = className;
     this.ownerName = ownerName;
+    this.ownerType = ownerType;
   }
 
   public HivePrivilegeObjectType getType() {

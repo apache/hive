@@ -1397,10 +1397,12 @@ public class Driver implements IDriver {
       List<String> columns = null;
       String className = null;
       String ownerName = null;
+      PrincipalType ownerType = null;
       switch(privObject.getType()){
       case DATABASE:
         dbname = privObject.getDatabase().getName();
         ownerName = privObject.getDatabase().getOwnerName();
+        ownerType = privObject.getDatabase().getOwnerType();
         break;
       case TABLE:
         dbname = privObject.getTable().getDbName();
@@ -1408,6 +1410,7 @@ public class Driver implements IDriver {
         columns = tableName2Cols == null ? null :
             tableName2Cols.get(Table.getCompleteName(dbname, objName));
         ownerName = privObject.getTable().getOwner();
+        ownerType = privObject.getTable().getOwnerType();
         break;
       case DFS_DIR:
       case LOCAL_DIR:
@@ -1432,7 +1435,7 @@ public class Driver implements IDriver {
       }
       HivePrivObjectActionType actionType = AuthorizationUtils.getActionType(privObject);
       HivePrivilegeObject hPrivObject = new HivePrivilegeObject(privObjType, dbname, objName,
-          partKeys, columns, actionType, null, className, ownerName);
+          partKeys, columns, actionType, null, className, ownerName, ownerType);
       hivePrivobjs.add(hPrivObject);
     }
     return hivePrivobjs;
