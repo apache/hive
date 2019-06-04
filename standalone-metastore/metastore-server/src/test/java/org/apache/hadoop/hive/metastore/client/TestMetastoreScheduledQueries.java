@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.client;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import javax.jdo.PersistenceManager;
@@ -184,9 +185,15 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
     try (PersistenceManager pm = PersistenceManagerProvider.getPersistenceManager()) {
       MScheduledExecution q = pm.getObjectById(MScheduledExecution.class, pollResult.getExecutionId());
       assertNotNull(q);
-      assertEquals("INITED", q.getState());
-      //      assertTrue(q.getNextDeadline() > getEpochSeconds() + 60 ); 
+      assertEquals(QueryState.INITED, q.getState());
+      assertTrue(q.getStartTime() <= getEpochSeconds());
+      assertTrue(q.getStartTime() >= getEpochSeconds() - 1);
+      assertTrue(q.getEndTime() == null);
+      assertTrue(q.getLastUpdateTime() <= getEpochSeconds());
+      assertTrue(q.getLastUpdateTime() >= getEpochSeconds() - 1);
     }
+    // wait 1 sec
+    Thread.sleep(1000);
     
     ScheduledQueryProgressInfo info;
     info = new ScheduledQueryProgressInfo(
@@ -195,23 +202,37 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
     
     try (PersistenceManager pm = PersistenceManagerProvider.getPersistenceManager()) {
       MScheduledExecution q = pm.getObjectById(MScheduledExecution.class, pollResult.getExecutionId());
-      assertEquals("EXECUTING", q.getState());
+      assertEquals(QueryState.EXECUTING, q.getState());
       assertEquals("executor-query-id", q.getExecutorQueryId());
-      //      q.getNextDeadline() > 
-      //      assertEquals("hive-query-id", q.getExecutorQueryId());
+      assertTrue(q.getLastUpdateTime() <= getEpochSeconds());
+      assertTrue(q.getLastUpdateTime() >= getEpochSeconds() - 1);
     }
+
+    // wait 1 sec
+    Thread.sleep(1000);
 
     info = new ScheduledQueryProgressInfo(
         pollResult.getExecutionId(), QueryState.ERRORED, "executor-query-id");
     //    info.set
     client.scheduledQueryProgress(info);
 
+    try (PersistenceManager pm = PersistenceManagerProvider.getPersistenceManager()) {
+      MScheduledExecution q = pm.getObjectById(MScheduledExecution.class, pollResult.getExecutionId());
+      assertEquals(QueryState.ERRORED, q.getState());
+      assertEquals("executor-query-id", q.getExecutorQueryId());
+      assertNull(q.getLastUpdateTime());
+      assertTrue(q.getEndTime() <= getEpochSeconds());
+      assertTrue(q.getEndTime() >= getEpochSeconds() - 1);
+    }
 
-    Thread.sleep(1000);
     // clustername is taken into account; this should be empty
     request.setClusterNamespace("polltestSomethingElse");
     pollResult = client.scheduledQueryPoll(request);
     assertFalse(pollResult.isSetQuery());
+  }
+
+  private int getEpochSeconds() {
+    return (int) (System.currentTimeMillis() / 1000);
   }
 
   private ScheduledQuery createScheduledQuery(ScheduledQueryKey key) {

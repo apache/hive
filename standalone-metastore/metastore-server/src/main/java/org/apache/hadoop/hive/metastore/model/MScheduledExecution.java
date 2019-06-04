@@ -24,10 +24,7 @@ import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 
 public class MScheduledExecution {
 
-  public MScheduledExecution(MScheduledQuery schq, int now) {
-    scheduledQuery = schq;
-    startTime = now;
-    state = "INITED";
+  public MScheduledExecution() {
   }
 
   private int scheduledExecutionId;
@@ -36,8 +33,7 @@ public class MScheduledExecution {
   private String state;
   private Integer startTime;
   private Integer endTime;
-  private String errorString;
-  // FIXME rename to lastUpdateTime
+  private String errorMessage;
   private Integer lastUpdateTime;
 
   @Override
@@ -134,8 +130,8 @@ public class MScheduledExecution {
     return endTime;
   }
 
-  public String getErrorString() {
-    return errorString;
+  public String getErrorMessage() {
+    return errorMessage;
   }
 
   public Integer getLastUpdateTime() {
@@ -156,6 +152,19 @@ public class MScheduledExecution {
 
   public void setEndTime(Integer endTime) {
     this.endTime = endTime;
+  }
+
+  public void setScheduledQuery(MScheduledQuery scheduledQuery) {
+    this.scheduledQuery = scheduledQuery;
+  }
+
+  public void setStartTime(Integer startTime) {
+    this.startTime = startTime;
+  }
+
+  public void setErrorMessage(String errorMessage) {
+    this.errorMessage = errorMessage;
+
   }
 
 }

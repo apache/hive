@@ -12619,7 +12619,11 @@ public class ObjectStore implements RawStore, Configurable {
       }
       Integer plannedExecutionTime = schq.getNextExecution();
       schq.setNextExecution(computeNextExecutionTime(schq.getSchedule()));
-      MScheduledExecution execution = new MScheduledExecution(schq, now);
+      MScheduledExecution execution = new MScheduledExecution();
+      execution.setScheduledQuery(schq);
+      execution.setState(QueryState.INITED);
+      execution.setStartTime(now);
+      execution.setLastUpdateTime(now);
       pm.makePersistent(execution);
       pm.makePersistent(schq);
       commited = commitTransaction();
@@ -12646,10 +12650,13 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       MScheduledExecution execution = pm.getObjectById(MScheduledExecution.class, info.getScheduledExecutionId());
-      execution.setState(info.getState());
-      execution.setExecutorQueryId(info.getExecutorQueryId());
       if (!validateStateChange(execution.getState(), info.getState())) {
         throw new InvalidOperationException("Invalid state change: " + execution.getState() + "=>" + info.getState());
+      }
+      execution.setState(info.getState());
+      execution.setExecutorQueryId(info.getExecutorQueryId());
+      if (info.isSetErrorMessage()) {
+        execution.setErrorMessage(info.getErrorMessage());
       }
 
       switch (info.getState()) {
@@ -12671,19 +12678,6 @@ public class ObjectStore implements RawStore, Configurable {
         rollbackTransaction();
       }
     }
-
-    //    long scheduledExecutionId = info.getScheduleId();
-    //    switch(info.getState()) {
-    //    case EXECUTING:
-    //      updateScheduledExecutionDeadline(scheduledExecutionId);
-    //      break;
-    //    case ERRORED:
-    //    case FINISHED:
-    //      updateScheduledExecution
-    //    }
-    //
-    // TODO Auto-generated method stub
-
   }
 
   private boolean validateStateChange(QueryState from, QueryState to) {
@@ -12692,6 +12686,7 @@ public class ObjectStore implements RawStore, Configurable {
       return to != QueryState.INITED;
     case EXECUTING:
       return to == QueryState.FINISHED
+          || to == QueryState.EXECUTING
           || to == QueryState.ERRORED;
     default:
       return false;

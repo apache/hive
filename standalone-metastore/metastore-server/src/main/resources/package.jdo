@@ -1496,8 +1496,8 @@
       <field name="endTime">
         <column name="END_TIME" jdbc-type="integer" allows-null="true"/>
       </field>
-      <field name="errorString">
-        <column name="ERROR_STRING" jdbc-type="varchar" length="2000" allows-null="true"/>
+      <field name="errorMessage">
+        <column name="ERROR_MESSAGE" jdbc-type="varchar" length="2000" allows-null="true"/>
       </field>
       <field name="lastUpdateTime">
         <column name="LAST_UPDATE_TIME" jdbc-type="integer" allows-null="true"/>
