@@ -21,17 +21,13 @@ package org.apache.hadoop.hive.ql.plan;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
-import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -52,14 +48,15 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
    */
   public static enum AlterTableTypes {
     RENAME("rename"), ADD_COLUMNS("add columns"), REPLACE_COLUMNS("replace columns"),
-    ADDPROPS("add props"), DROPPROPS("drop props"), ADDSERDE("add serde"), ADDSERDEPROPS("add serde props"),
-    ADDFILEFORMAT("add fileformat"), ADDCLUSTERSORTCOLUMN("add cluster sort column"),
+    ADDPROPS("add props"), DROPPROPS("drop props"), SET_SERDE("set serde"), SET_SERDE_PROPS("set serde props"),
+    SET_FILE_FORMAT("add fileformat"), CLUSTERED_BY("clustered by"), NOT_SORTED("not sorted"),
+    NOT_CLUSTERED("not clustered"),
     RENAME_COLUMN("rename column"), ADDPARTITION("add partition"), TOUCH("touch"), ARCHIVE("archieve"),
-    UNARCHIVE("unarchieve"), ALTERLOCATION("alter location"),
+    UNARCHIVE("unarchieve"), SET_LOCATION("set location"),
     DROPPARTITION("drop partition"),
     RENAMEPARTITION("rename partition"), // Note: used in RenamePartitionDesc, not here.
-    ADDSKEWEDBY("add skew column"),
-    ALTERSKEWEDLOCATION("alter skew location"), ALTERBUCKETNUM("alter bucket number"),
+    SKEWED_BY("skewed by"), NOT_SKEWED("not skewed"),
+    SET_SKEWED_LOCATION("alter skew location"), INTO_BUCKETS("alter bucket number"),
     ALTERPARTITION("alter partition"), // Note: this is never used in AlterTableDesc.
     COMPACT("compact"),
     TRUNCATE("truncate"), MERGEFILES("merge files"), DROP_CONSTRAINT("drop constraint"),
@@ -89,40 +86,22 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
     alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.RENAME_COLUMN);
     alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.ADDPROPS);
     alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.DROPPROPS);
-    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.ADDSERDE);
-    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.ADDSERDEPROPS);
-    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.ADDFILEFORMAT);
+    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.SET_SERDE);
+    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.SET_SERDE_PROPS);
+    alterTableTypesWithPartialSpec.add(AlterTableDesc.AlterTableTypes.SET_FILE_FORMAT);
   }
 
   AlterTableTypes op;
   String oldName;
   String newName;
-  String serdeName;
   Map<String, String> props;
-  String inputFormat;
-  String outputFormat;
-  String storageHandler;
-  int numberBuckets;
-  ArrayList<String> bucketColumns;
-  ArrayList<Order> sortColumns;
 
-  String oldColName;
-  String newColName;
-  String newColType;
-  String newColComment;
   boolean expectView;
   HashMap<String, String> partSpec;
-  private String newLocation;
   boolean protectModeEnable;
   ProtectModeType protectModeType;
-  Map<List<String>, String> skewedLocations;
   boolean isTurnOffSkewed = false;
-  boolean isStoredAsSubDirectories = false;
-  List<String> skewedColNames;
-  List<List<String>> skewedColValues;
-  Table tableForSkewedColValidation;
   boolean isDropIfExists = false;
-  boolean isTurnOffSorting = false;
   boolean isCascade = false;
   EnvironmentContext environmentContext;
   ReplicationSpec replicationSpec;
@@ -183,78 +162,6 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
     op = alterType;
     this.partSpec = partSpec;
     this.expectView = expectView;
-  }
-
-  /**
-   *
-   * @param name
-   *          name of the table
-   * @param inputFormat
-   *          new table input format
-   * @param outputFormat
-   *          new table output format
-   * @param partSpec
-   * @throws SemanticException
-   */
-  public AlterTableDesc(String name, String inputFormat, String outputFormat,
-      String serdeName, String storageHandler, HashMap<String, String> partSpec) throws SemanticException {
-    super();
-    op = AlterTableTypes.ADDFILEFORMAT;
-    setOldName(name);
-    this.inputFormat = inputFormat;
-    this.outputFormat = outputFormat;
-    this.serdeName = serdeName;
-    this.storageHandler = storageHandler;
-    this.partSpec = partSpec;
-  }
-
-  public AlterTableDesc(String tableName, int numBuckets,
-      List<String> bucketCols, List<Order> sortCols, HashMap<String, String> partSpec) throws SemanticException {
-    setOldName(tableName);
-    op = AlterTableTypes.ADDCLUSTERSORTCOLUMN;
-    numberBuckets = numBuckets;
-    bucketColumns = new ArrayList<String>(bucketCols);
-    sortColumns = new ArrayList<Order>(sortCols);
-    this.partSpec = partSpec;
-  }
-
-  public AlterTableDesc(String tableName, boolean sortingOff, HashMap<String, String> partSpec) throws SemanticException {
-    setOldName(tableName);
-    op = AlterTableTypes.ADDCLUSTERSORTCOLUMN;
-    isTurnOffSorting = sortingOff;
-    this.partSpec = partSpec;
-  }
-
-  public AlterTableDesc(String tableName, String newLocation,
-      HashMap<String, String> partSpec) throws SemanticException {
-    op = AlterTableTypes.ALTERLOCATION;
-    setOldName(tableName);
-    this.newLocation = newLocation;
-    this.partSpec = partSpec;
-  }
-
-  public AlterTableDesc(String tableName, Map<List<String>, String> locations,
-      HashMap<String, String> partSpec) throws SemanticException {
-    op = AlterTableTypes.ALTERSKEWEDLOCATION;
-    setOldName(tableName);
-    this.skewedLocations = locations;
-    this.partSpec = partSpec;
-  }
-
-  public AlterTableDesc(String tableName, boolean turnOffSkewed,
-      List<String> skewedColNames, List<List<String>> skewedColValues) throws SemanticException {
-    setOldName(tableName);
-    op = AlterTableTypes.ADDSKEWEDBY;
-    this.isTurnOffSkewed = turnOffSkewed;
-    this.skewedColNames = new ArrayList<String>(skewedColNames);
-    this.skewedColValues = new ArrayList<List<String>>(skewedColValues);
-  }
-
-  public AlterTableDesc(String tableName, HashMap<String, String> partSpec, int numBuckets) throws SemanticException {
-    op = AlterTableTypes.ALTERBUCKETNUM;
-    setOldName(tableName);
-    this.partSpec = partSpec;
-    this.numberBuckets = numBuckets;
   }
 
   public AlterTableDesc(String tableName, PrincipalDesc ownerPrincipal) {
@@ -329,22 +236,6 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
   }
 
   /**
-   * @return the serdeName
-   */
-  @Explain(displayName = "deserializer library")
-  public String getSerdeName() {
-    return serdeName;
-  }
-
-  /**
-   * @param serdeName
-   *          the serdeName to set
-   */
-  public void setSerdeName(String serdeName) {
-    this.serdeName = serdeName;
-  }
-
-  /**
    * @return the props
    */
   @Explain(displayName = "properties")
@@ -358,159 +249,6 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
    */
   public void setProps(Map<String, String> props) {
     this.props = props;
-  }
-
-  /**
-   * @return the input format
-   */
-  @Explain(displayName = "input format", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getInputFormat() {
-    return inputFormat;
-  }
-
-  /**
-   * @param inputFormat
-   *          the input format to set
-   */
-  public void setInputFormat(String inputFormat) {
-    this.inputFormat = inputFormat;
-  }
-
-  /**
-   * @return the output format
-   */
-  @Explain(displayName = "output format", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getOutputFormat() {
-    return outputFormat;
-  }
-
-  /**
-   * @param outputFormat
-   *          the output format to set
-   */
-  public void setOutputFormat(String outputFormat) {
-    this.outputFormat = outputFormat;
-  }
-
-  /**
-   * @return the storage handler
-   */
-  @Explain(displayName = "storage handler", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getStorageHandler() {
-    return storageHandler;
-  }
-
-  /**
-   * @param storageHandler
-   *          the storage handler to set
-   */
-  public void setStorageHandler(String storageHandler) {
-    this.storageHandler = storageHandler;
-  }
-
-  /**
-   * @return the number of buckets
-   */
-  public int getNumberBuckets() {
-    return numberBuckets;
-  }
-
-  /**
-   * @param numberBuckets
-   *          the number of buckets to set
-   */
-  public void setNumberBuckets(int numberBuckets) {
-    this.numberBuckets = numberBuckets;
-  }
-
-  /**
-   * @return the bucket columns
-   */
-  public ArrayList<String> getBucketColumns() {
-    return bucketColumns;
-  }
-
-  /**
-   * @param bucketColumns
-   *          the bucket columns to set
-   */
-  public void setBucketColumns(ArrayList<String> bucketColumns) {
-    this.bucketColumns = bucketColumns;
-  }
-
-  /**
-   * @return the sort columns
-   */
-  public ArrayList<Order> getSortColumns() {
-    return sortColumns;
-  }
-
-  /**
-   * @param sortColumns
-   *          the sort columns to set
-   */
-  public void setSortColumns(ArrayList<Order> sortColumns) {
-    this.sortColumns = sortColumns;
-  }
-
-  /**
-   * @return old column name
-   */
-  public String getOldColName() {
-    return oldColName;
-  }
-
-  /**
-   * @param oldColName
-   *          the old column name
-   */
-  public void setOldColName(String oldColName) {
-    this.oldColName = oldColName;
-  }
-
-  /**
-   * @return new column name
-   */
-  public String getNewColName() {
-    return newColName;
-  }
-
-  /**
-   * @param newColName
-   *          the new column name
-   */
-  public void setNewColName(String newColName) {
-    this.newColName = newColName;
-  }
-
-  /**
-   * @return new column type
-   */
-  public String getNewColType() {
-    return newColType;
-  }
-
-  /**
-   * @param newType
-   *          new column's type
-   */
-  public void setNewColType(String newType) {
-    newColType = newType;
-  }
-
-  /**
-   * @return new column's comment
-   */
-  public String getNewColComment() {
-    return newColComment;
-  }
-
-  /**
-   * @param newComment
-   *          new column's comment
-   */
-  public void setNewColComment(String newComment) {
-    newColComment = newComment;
   }
 
   /**
@@ -542,20 +280,6 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
     this.partSpec = partSpec;
   }
 
-  /**
-   * @return new location
-   */
-  public String getNewLocation() {
-    return newLocation;
-  }
-
-  /**
-   * @param newLocation new location
-   */
-  public void setNewLocation(String newLocation) {
-    this.newLocation = newLocation;
-  }
-
   public boolean isProtectModeEnable() {
     return protectModeEnable;
   }
@@ -571,26 +295,6 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
   public void setProtectModeType(ProtectModeType protectModeType) {
     this.protectModeType = protectModeType;
   }
-  /**
-   * @return the skewedLocations
-   */
-  public Map<List<String>, String> getSkewedLocations() {
-    return skewedLocations;
-  }
-
-  /**
-   * @param skewedLocations the skewedLocations to set
-   */
-  public void setSkewedLocations(Map<List<String>, String> skewedLocations) {
-    this.skewedLocations = skewedLocations;
-  }
-
-  /**
-   * @return isTurnOffSorting
-   */
-  public boolean isTurnOffSorting() {
-    return isTurnOffSorting;
-  }
 
   /**
    * @return the turnOffSkewed
@@ -604,69 +308,6 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
    */
   public void setTurnOffSkewed(boolean turnOffSkewed) {
     this.isTurnOffSkewed = turnOffSkewed;
-  }
-
-  /**
-   * @return the skewedColNames
-   */
-  public List<String> getSkewedColNames() {
-    return skewedColNames;
-  }
-
-  /**
-   * @param skewedColNames the skewedColNames to set
-   */
-  public void setSkewedColNames(List<String> skewedColNames) {
-    this.skewedColNames = skewedColNames;
-  }
-
-  /**
-   * @return the skewedColValues
-   */
-  public List<List<String>> getSkewedColValues() {
-    return skewedColValues;
-  }
-
-  /**
-   * @param skewedColValues the skewedColValues to set
-   */
-  public void setSkewedColValues(List<List<String>> skewedColValues) {
-    this.skewedColValues = skewedColValues;
-  }
-
-  /**
-   * Validate alter table description.
-   *
-   * @throws SemanticException
-   */
-  public void validate() throws SemanticException {
-    if (null != tableForSkewedColValidation) {
-      /* Validate skewed information. */
-      ValidationUtility.validateSkewedInformation(
-          ParseUtils.validateColumnNameUniqueness(tableForSkewedColValidation.getCols()),
-          this.getSkewedColNames(), this.getSkewedColValues());
-    }
-  }
-
-  /**
-   * @param table the table to set
-   */
-  public void setTable(Table table) {
-    this.tableForSkewedColValidation = table;
-  }
-
-  /**
-   * @return the isStoredAsSubDirectories
-   */
-  public boolean isStoredAsSubDirectories() {
-    return isStoredAsSubDirectories;
-  }
-
-  /**
-   * @param isStoredAsSubDirectories the isStoredAsSubDirectories to set
-   */
-  public void setStoredAsSubDirectories(boolean isStoredAsSubDirectories) {
-    this.isStoredAsSubDirectories = isStoredAsSubDirectories;
   }
 
   /**
@@ -739,7 +380,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
     case RENAME:
     case REPLACE_COLUMNS:
     case ADD_COLUMNS:
-    case ALTERLOCATION:
+    case SET_LOCATION:
     case UPDATE_COLUMNS: return true;
     // RENAMEPARTITION is handled in RenamePartitionDesc
     default: return false;

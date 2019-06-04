@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Msck;
 import org.apache.hadoop.hive.metastore.MsckInfo;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -51,10 +50,8 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
-import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -70,8 +67,6 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileTask;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
-import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
-import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -1261,157 +1256,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       return alterTableAddProps(alterTbl, tbl, part, environmentContext);
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.DROPPROPS) {
       return alterTableDropProps(alterTbl, tbl, part, environmentContext);
-    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSERDEPROPS) {
-      StorageDescriptor sd = retrieveStorageDescriptor(tbl, part);
-      sd.getSerdeInfo().getParameters().putAll(alterTbl.getProps());
-    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSERDE) {
-      StorageDescriptor sd = retrieveStorageDescriptor(tbl, part);
-      String serdeName = alterTbl.getSerdeName();
-      String oldSerdeName = sd.getSerdeInfo().getSerializationLib();
-      // if orc table, restrict changing the serde as it can break schema evolution
-      if (isSchemaEvolutionEnabled(tbl) &&
-          oldSerdeName.equalsIgnoreCase(OrcSerde.class.getName()) &&
-          !serdeName.equalsIgnoreCase(OrcSerde.class.getName())) {
-        throw new HiveException(ErrorMsg.CANNOT_CHANGE_SERDE, OrcSerde.class.getSimpleName(),
-            alterTbl.getOldName());
-      }
-      sd.getSerdeInfo().setSerializationLib(serdeName);
-      if ((alterTbl.getProps() != null) && (alterTbl.getProps().size() > 0)) {
-        sd.getSerdeInfo().getParameters().putAll(alterTbl.getProps());
-      }
-      if (part != null) {
-        // TODO: wtf? This doesn't do anything.
-        part.getTPartition().getSd().setCols(part.getTPartition().getSd().getCols());
-      } else {
-        if (Table.shouldStoreFieldsInMetastore(conf, serdeName, tbl.getParameters())
-            && !Table.hasMetastoreBasedSchema(conf, oldSerdeName)) {
-          // If new SerDe needs to store fields in metastore, but the old serde doesn't, save
-          // the fields so that new SerDe could operate. Note that this may fail if some fields
-          // from old SerDe are too long to be stored in metastore, but there's nothing we can do.
-          try {
-            Deserializer oldSerde = HiveMetaStoreUtils.getDeserializer(
-                conf, tbl.getTTable(), false, oldSerdeName);
-            tbl.setFields(Hive.getFieldsFromDeserializer(tbl.getTableName(), oldSerde));
-          } catch (MetaException ex) {
-            throw new HiveException(ex);
-          }
-        }
-      }
-    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDFILEFORMAT) {
-      StorageDescriptor sd = retrieveStorageDescriptor(tbl, part);
-      // if orc table, restrict changing the file format as it can break schema evolution
-      if (isSchemaEvolutionEnabled(tbl) &&
-          sd.getInputFormat().equals(OrcInputFormat.class.getName())
-          && !alterTbl.getInputFormat().equals(OrcInputFormat.class.getName())) {
-        throw new HiveException(ErrorMsg.CANNOT_CHANGE_FILEFORMAT, "ORC", alterTbl.getOldName());
-      }
-      sd.setInputFormat(alterTbl.getInputFormat());
-      sd.setOutputFormat(alterTbl.getOutputFormat());
-      if (alterTbl.getSerdeName() != null) {
-        sd.getSerdeInfo().setSerializationLib(alterTbl.getSerdeName());
-      }
-    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDCLUSTERSORTCOLUMN) {
-      StorageDescriptor sd = retrieveStorageDescriptor(tbl, part);
-      // validate sort columns and bucket columns
-      List<String> columns = Utilities.getColumnNamesFromFieldSchema(tbl
-          .getCols());
-      if (!alterTbl.isTurnOffSorting()) {
-        Utilities.validateColumnNames(columns, alterTbl.getBucketColumns());
-      }
-      if (alterTbl.getSortColumns() != null) {
-        Utilities.validateColumnNames(columns, Utilities
-            .getColumnNamesFromSortCols(alterTbl.getSortColumns()));
-      }
-
-      if (alterTbl.isTurnOffSorting()) {
-        sd.setSortCols(new ArrayList<Order>());
-      } else if (alterTbl.getNumberBuckets() == -1) {
-        // -1 buckets means to turn off bucketing
-        sd.setBucketCols(new ArrayList<String>());
-        sd.setNumBuckets(-1);
-        sd.setSortCols(new ArrayList<Order>());
-      } else {
-        sd.setBucketCols(alterTbl.getBucketColumns());
-        sd.setNumBuckets(alterTbl.getNumberBuckets());
-        sd.setSortCols(alterTbl.getSortColumns());
-      }
-    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ALTERLOCATION) {
-      StorageDescriptor sd = retrieveStorageDescriptor(tbl, part);
-      String newLocation = alterTbl.getNewLocation();
-      try {
-        URI locUri = new URI(newLocation);
-        if (!new Path(locUri).isAbsolute()) {
-          throw new HiveException(ErrorMsg.BAD_LOCATION_VALUE, newLocation);
-        }
-        sd.setLocation(newLocation);
-      } catch (URISyntaxException e) {
-        throw new HiveException(e);
-      }
-      environmentContext.getProperties().remove(StatsSetupConst.DO_NOT_UPDATE_STATS);
-
-    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSKEWEDBY) {
-      // Validation's been done at compile time. no validation is needed here.
-      List<String> skewedColNames = null;
-      List<List<String>> skewedValues = null;
-
-      if (alterTbl.isTurnOffSkewed()) {
-        // Convert skewed table to non-skewed table.
-        skewedColNames = new ArrayList<String>();
-        skewedValues = new ArrayList<List<String>>();
-      } else {
-        skewedColNames = alterTbl.getSkewedColNames();
-        skewedValues = alterTbl.getSkewedColValues();
-      }
-
-      if ( null == tbl.getSkewedInfo()) {
-        // Convert non-skewed table to skewed table.
-        SkewedInfo skewedInfo = new SkewedInfo();
-        skewedInfo.setSkewedColNames(skewedColNames);
-        skewedInfo.setSkewedColValues(skewedValues);
-        tbl.setSkewedInfo(skewedInfo);
-      } else {
-        tbl.setSkewedColNames(skewedColNames);
-        tbl.setSkewedColValues(skewedValues);
-      }
-
-      tbl.setStoredAsSubDirectories(alterTbl.isStoredAsSubDirectories());
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.OWNER) {
       if (alterTbl.getOwnerPrincipal() != null) {
         tbl.setOwner(alterTbl.getOwnerPrincipal().getName());
         tbl.setOwnerType(alterTbl.getOwnerPrincipal().getType());
-      }
-    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ALTERSKEWEDLOCATION) {
-      // process location one-by-one
-      Map<List<String>,String> locMaps = alterTbl.getSkewedLocations();
-      Set<List<String>> keys = locMaps.keySet();
-      for(List<String> key:keys){
-        String newLocation = locMaps.get(key);
-        try {
-          URI locUri = new URI(newLocation);
-          if (part != null) {
-            List<String> slk = new ArrayList<String>(key);
-            part.setSkewedValueLocationMap(slk, locUri.toString());
-          } else {
-            List<String> slk = new ArrayList<String>(key);
-            tbl.setSkewedValueLocationMap(slk, locUri.toString());
-          }
-        } catch (URISyntaxException e) {
-          throw new HiveException(e);
-        }
-      }
-
-      environmentContext.getProperties().remove(StatsSetupConst.DO_NOT_UPDATE_STATS);
-    } else if (alterTbl.getOp() == AlterTableTypes.ALTERBUCKETNUM) {
-      if (part != null) {
-        if (part.getBucketCount() == alterTbl.getNumberBuckets()) {
-          return null;
-        }
-        part.setBucketCount(alterTbl.getNumberBuckets());
-      } else {
-        if (tbl.getNumBuckets() == alterTbl.getNumberBuckets()) {
-          return null;
-        }
-        tbl.setNumBuckets(alterTbl.getNumberBuckets());
       }
     } else {
       throw new HiveException(ErrorMsg.UNSUPPORTED_ALTER_TBL_OP, alterTbl.getOp().toString());

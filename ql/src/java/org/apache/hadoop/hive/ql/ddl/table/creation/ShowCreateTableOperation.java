@@ -46,7 +46,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.stringtemplate.v4.ST;
@@ -179,12 +179,7 @@ public class ShowCreateTableOperation extends DDLOperation {
           // Order
           List<String> sortKeys = new ArrayList<String>();
           for (Order sortCol : sortCols) {
-            String sortKeyDesc = "  " + sortCol.getCol() + " ";
-            if (sortCol.getOrder() == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC) {
-              sortKeyDesc = sortKeyDesc + "ASC";
-            } else if (sortCol.getOrder() == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_DESC) {
-              sortKeyDesc = sortKeyDesc + "DESC";
-            }
+            String sortKeyDesc = "  " + sortCol.getCol() + " " + DirectionUtils.codeToText(sortCol.getOrder());
             sortKeys.add(sortKeyDesc);
           }
           tblSortBucket += StringUtils.join(sortKeys, ", \n");

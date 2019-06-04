@@ -55,6 +55,8 @@ public abstract class AbstractAlterTableOperation extends DDLOperation {
     this.desc = desc;
   }
 
+  protected EnvironmentContext environmentContext;
+
   @Override
   public int execute() throws HiveException {
     if (!AlterTableUtils.allowOperationInReplicationScope(context.getDb(), desc.getTableName(), null,
@@ -71,7 +73,7 @@ public abstract class AbstractAlterTableOperation extends DDLOperation {
     // Don't change the table object returned by the metastore, as we'll mess with it's caches.
     Table table = oldTable.copy();
 
-    EnvironmentContext environmentContext = initializeEnvironmentContext(null);
+    environmentContext = initializeEnvironmentContext(null);
 
     if (partitions == null) {
       doAlteration(table, null);

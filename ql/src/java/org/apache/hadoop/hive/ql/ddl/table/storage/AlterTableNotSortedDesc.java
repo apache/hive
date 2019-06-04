@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.column;
+package org.apache.hadoop.hive.ql.ddl.table.storage;
 
 import java.util.Map;
 
@@ -24,28 +24,26 @@ import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
-import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * DDL task description for ALTER TABLE ... UPDATE COLUMNS ... commands.
+ * DDL task description for ALTER TABLE ... NOT SORTED commands.
  */
-@Explain(displayName = "Update Columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterTableUpdateColumnsDesc extends AbstractAlterTableDesc implements DDLDescWithWriteId {
+@Explain(displayName = "Not Sorted", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class AlterTableNotSortedDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
 
   static {
-    DDLTask2.registerOperation(AlterTableUpdateColumnsDesc.class, AlterTableUpdateColumnsOperation.class);
+    DDLTask2.registerOperation(AlterTableNotSortedDesc.class, AlterTableNotSortedOperation.class);
   }
 
-  public AlterTableUpdateColumnsDesc(String tableName, Map<String, String> partitionSpec, boolean isCascade)
-      throws SemanticException {
-    super(AlterTableTypes.UPDATE_COLUMNS, tableName, partitionSpec, null, isCascade, false, null);
+  public AlterTableNotSortedDesc(String tableName, Map<String, String> partitionSpec) throws SemanticException {
+    super(AlterTableTypes.NOT_SORTED, tableName, partitionSpec, null, false, false, null);
   }
 
   @Override
   public boolean mayNeedWriteId() {
-    return true;
+    return false;
   }
 }
