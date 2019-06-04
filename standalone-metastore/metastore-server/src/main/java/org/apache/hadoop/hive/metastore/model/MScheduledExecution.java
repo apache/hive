@@ -140,4 +140,17 @@ public class MScheduledExecution {
     return nextDeadline;
   }
 
+  public void setState(String state) {
+    this.state = state;
+  }
+
+  public void setExecutorQueryId(String executorQueryId) {
+    this.executorQueryId = executorQueryId;
+  }
+
+  public void setDeadline(Integer newScheduledQueryDeadline) {
+    nextDeadline = newScheduledQueryDeadline;
+
+  }
+
 }

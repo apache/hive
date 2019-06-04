@@ -1055,7 +1055,7 @@ public class ObjectStore implements RawStore, Configurable {
       PrincipalPrivilegeSet principalPrivs = tbl.getPrivileges();
       List<Object> toPersistPrivObjs = new ArrayList<>();
       if (principalPrivs != null) {
-        int now = (int)(System.currentTimeMillis()/1000);
+        int now = (int) (System.currentTimeMillis() / 1000);
 
         Map<String, List<PrivilegeGrantInfo>> userPrivs = principalPrivs.getUserPrivileges();
         putPersistentPrivObjects(mtbl, toPersistPrivObjs, now, userPrivs, PrincipalType.USER, "SQL");
@@ -2144,7 +2144,7 @@ public class ObjectStore implements RawStore, Configurable {
         MPartition mpart = convertToMPart(part, table, true);
 
         toPersist.add(mpart);
-        int now = (int)(System.currentTimeMillis()/1000);
+        int now = (int) (System.currentTimeMillis() / 1000);
         if (tabGrants != null) {
           for (MTablePrivilege tab: tabGrants) {
             toPersist.add(new MPartitionPrivilege(tab.getPrincipalName(),
@@ -2211,7 +2211,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       PartitionSpecProxy.PartitionIterator iterator = partitionSpec.getPartitionIterator();
 
-      int now = (int)(System.currentTimeMillis()/1000);
+      int now = (int) (System.currentTimeMillis() / 1000);
 
       List<FieldSchema> partitionKeys = convertToFieldSchemas(table.getPartitionKeys());
       while (iterator.hasNext()) {
@@ -2269,7 +2269,7 @@ public class ObjectStore implements RawStore, Configurable {
       MPartition mpart = convertToMPart(part, table, true);
       pm.makePersistent(mpart);
 
-      int now = (int)(System.currentTimeMillis()/1000);
+      int now = (int) (System.currentTimeMillis() / 1000);
       List<Object> toPersist = new ArrayList<>();
       if (tabGrants != null) {
         for (MTablePrivilege tab: tabGrants) {
@@ -5274,7 +5274,7 @@ public class ObjectStore implements RawStore, Configurable {
       if (nameCheck != null) {
         throw new InvalidObjectException("Role " + roleName + " already exists.");
       }
-      int now = (int)(System.currentTimeMillis()/1000);
+      int now = (int) (System.currentTimeMillis() / 1000);
       MRole mRole = new MRole(roleName, now, ownerName);
       pm.makePersistent(mRole);
       commited = commitTransaction();
@@ -12640,6 +12640,53 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  @Override
+  public void scheduledQueryProgress(ScheduledQueryProgressInfo info) {
+    boolean commited = false;
+    try {
+      openTransaction();
+      MScheduledExecution execution = pm.getObjectById(MScheduledExecution.class, info.getScheduledExecutionId());
+      execution.setState(info.getState().toString());
+      execution.setExecutorQueryId(info.getExecutorQueryId());
+      switch (info.getState()) {
+      case INITED:
+      case EXECUTING:
+        execution.setDeadline(getNewScheduledQueryDeadline());
+        break;
+      case ERRORED:
+      case FINISHED:
+      case TIMED_OUT:
+        execution.setDeadline(null);
+      }
+      pm.makePersistent(execution);
+      commited = commitTransaction();
+    } finally {
+      if (commited) {
+      } else {
+        rollbackTransaction();
+      }
+    }
+
+    //    long scheduledExecutionId = info.getScheduleId();
+    //    switch(info.getState()) {
+    //    case EXECUTING:
+    //      updateScheduledExecutionDeadline(scheduledExecutionId);
+    //      break;
+    //    case ERRORED:
+    //    case FINISHED:
+    //      updateScheduledExecution
+    //    }
+    //
+    // TODO Auto-generated method stub
+
+  }
+
+  private int getNewScheduledQueryDeadline() {
+    int now = (int) (System.currentTimeMillis() / 1000);
+    int interval = MetastoreConf.getIntVar(conf, ConfVars.SCHEDULED_QUERIES_PROGRESS_INTERVAL);
+    return now + interval;
+  }
+
   private Integer computeNextExecutionTime(String schedule) throws InvalidInputException {
     CronType cronType = CronType.valueOf(MetastoreConf.getVar(this.conf, ConfVars.SCHEDULED_QUERIES_CRON_SYNTAX));
 
@@ -12750,23 +12797,6 @@ public class ObjectStore implements RawStore, Configurable {
         rollbackTransaction();
       }
     }
-  }
-
-  @Override
-  public void scheduledQueryProgress(ScheduledQueryProgressInfo info) {
-
-    //    long scheduledExecutionId = info.getScheduleId();
-    //    switch(info.getState()) {
-    //    case EXECUTING:
-    //      updateScheduledExecutionDeadline(scheduledExecutionId);
-    //      break;
-    //    case ERRORED:
-    //    case FINISHED:
-    //      updateScheduledExecution
-    //    }
-    //
-    // TODO Auto-generated method stub
-
   }
 
   @Override

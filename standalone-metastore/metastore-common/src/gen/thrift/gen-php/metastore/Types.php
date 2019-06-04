@@ -293,13 +293,17 @@ final class ScheduledQueryMaintenanceRequestType {
 }
 
 final class QueryState {
-  const EXECUTING = 0;
-  const ERRORED = 1;
-  const FINISHED = 2;
+  const INITED = 0;
+  const EXECUTING = 1;
+  const ERRORED = 2;
+  const FINISHED = 3;
+  const TIMED_OUT = 4;
   static public $__names = array(
-    0 => 'EXECUTING',
-    1 => 'ERRORED',
-    2 => 'FINISHED',
+    0 => 'INITED',
+    1 => 'EXECUTING',
+    2 => 'ERRORED',
+    3 => 'FINISHED',
+    4 => 'TIMED_OUT',
   );
 }
 
@@ -34594,6 +34598,10 @@ class ScheduledQueryProgressInfo {
    * @var string
    */
   public $executorQueryId = null;
+  /**
+   * @var string
+   */
+  public $errorMessage = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -34610,6 +34618,10 @@ class ScheduledQueryProgressInfo {
           'var' => 'executorQueryId',
           'type' => TType::STRING,
           ),
+        4 => array(
+          'var' => 'errorMessage',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -34621,6 +34633,9 @@ class ScheduledQueryProgressInfo {
       }
       if (isset($vals['executorQueryId'])) {
         $this->executorQueryId = $vals['executorQueryId'];
+      }
+      if (isset($vals['errorMessage'])) {
+        $this->errorMessage = $vals['errorMessage'];
       }
     }
   }
@@ -34665,6 +34680,13 @@ class ScheduledQueryProgressInfo {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->errorMessage);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -34691,6 +34713,11 @@ class ScheduledQueryProgressInfo {
     if ($this->executorQueryId !== null) {
       $xfer += $output->writeFieldBegin('executorQueryId', TType::STRING, 3);
       $xfer += $output->writeString($this->executorQueryId);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->errorMessage !== null) {
+      $xfer += $output->writeFieldBegin('errorMessage', TType::STRING, 4);
+      $xfer += $output->writeString($this->errorMessage);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

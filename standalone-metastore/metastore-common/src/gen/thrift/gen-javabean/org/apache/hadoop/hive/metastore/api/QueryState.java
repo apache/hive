@@ -12,9 +12,11 @@ import java.util.HashMap;
 import org.apache.thrift.TEnum;
 
 public enum QueryState implements org.apache.thrift.TEnum {
-  EXECUTING(0),
-  ERRORED(1),
-  FINISHED(2);
+  INITED(0),
+  EXECUTING(1),
+  ERRORED(2),
+  FINISHED(3),
+  TIMED_OUT(4);
 
   private final int value;
 
@@ -36,11 +38,15 @@ public enum QueryState implements org.apache.thrift.TEnum {
   public static QueryState findByValue(int value) { 
     switch (value) {
       case 0:
-        return EXECUTING;
+        return INITED;
       case 1:
-        return ERRORED;
+        return EXECUTING;
       case 2:
+        return ERRORED;
+      case 3:
         return FINISHED;
+      case 4:
+        return TIMED_OUT;
       default:
         return null;
     }

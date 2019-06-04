@@ -661,6 +661,9 @@ public class MetastoreConf {
     SCHEDULED_QUERIES_CRON_SYNTAX("scheduled.queries.cron.syntax", "hive.metastore.scheduled.queries.cron.syntax",
         "UNIX", new StringSetValidator("UNIX", "QUARTZ", "CRON4J", "SPRING"),
         "Defines the format of the schedule expressions to be used in scheduled queries."),
+    SCHEDULED_QUERIES_PROGRESS_INTERVAL("scheduled.queries.progress.interval",
+        "hive.metastore.scheduled.queries.progress.interval", 120, TimeUnit.SECONDS,
+        "If a scheduled query is not making progress for this amount of time it will be considered TIMED_OUT"),
 
     // Parameters for exporting metadata on table drop (requires the use of the)
     // org.apache.hadoop.hive.ql.parse.MetaDataExportListener preevent listener

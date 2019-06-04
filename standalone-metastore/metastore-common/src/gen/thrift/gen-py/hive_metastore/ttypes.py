@@ -444,20 +444,26 @@ class ScheduledQueryMaintenanceRequestType:
   }
 
 class QueryState:
-  EXECUTING = 0
-  ERRORED = 1
-  FINISHED = 2
+  INITED = 0
+  EXECUTING = 1
+  ERRORED = 2
+  FINISHED = 3
+  TIMED_OUT = 4
 
   _VALUES_TO_NAMES = {
-    0: "EXECUTING",
-    1: "ERRORED",
-    2: "FINISHED",
+    0: "INITED",
+    1: "EXECUTING",
+    2: "ERRORED",
+    3: "FINISHED",
+    4: "TIMED_OUT",
   }
 
   _NAMES_TO_VALUES = {
-    "EXECUTING": 0,
-    "ERRORED": 1,
-    "FINISHED": 2,
+    "INITED": 0,
+    "EXECUTING": 1,
+    "ERRORED": 2,
+    "FINISHED": 3,
+    "TIMED_OUT": 4,
   }
 
 class PartitionFilterMode:
@@ -24550,6 +24556,7 @@ class ScheduledQueryProgressInfo:
    - scheduledExecutionId
    - state
    - executorQueryId
+   - errorMessage
   """
 
   thrift_spec = (
@@ -24557,12 +24564,14 @@ class ScheduledQueryProgressInfo:
     (1, TType.I64, 'scheduledExecutionId', None, None, ), # 1
     (2, TType.I32, 'state', None, None, ), # 2
     (3, TType.STRING, 'executorQueryId', None, None, ), # 3
+    (4, TType.STRING, 'errorMessage', None, None, ), # 4
   )
 
-  def __init__(self, scheduledExecutionId=None, state=None, executorQueryId=None,):
+  def __init__(self, scheduledExecutionId=None, state=None, executorQueryId=None, errorMessage=None,):
     self.scheduledExecutionId = scheduledExecutionId
     self.state = state
     self.executorQueryId = executorQueryId
+    self.errorMessage = errorMessage
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -24588,6 +24597,11 @@ class ScheduledQueryProgressInfo:
           self.executorQueryId = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.errorMessage = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -24610,6 +24624,10 @@ class ScheduledQueryProgressInfo:
       oprot.writeFieldBegin('executorQueryId', TType.STRING, 3)
       oprot.writeString(self.executorQueryId)
       oprot.writeFieldEnd()
+    if self.errorMessage is not None:
+      oprot.writeFieldBegin('errorMessage', TType.STRING, 4)
+      oprot.writeString(self.errorMessage)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -24628,6 +24646,7 @@ class ScheduledQueryProgressInfo:
     value = (value * 31) ^ hash(self.scheduledExecutionId)
     value = (value * 31) ^ hash(self.state)
     value = (value * 31) ^ hash(self.executorQueryId)
+    value = (value * 31) ^ hash(self.errorMessage)
     return value
 
   def __repr__(self):

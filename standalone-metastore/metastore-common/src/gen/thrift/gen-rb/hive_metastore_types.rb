@@ -209,11 +209,13 @@ module ScheduledQueryMaintenanceRequestType
 end
 
 module QueryState
-  EXECUTING = 0
-  ERRORED = 1
-  FINISHED = 2
-  VALUE_MAP = {0 => "EXECUTING", 1 => "ERRORED", 2 => "FINISHED"}
-  VALID_VALUES = Set.new([EXECUTING, ERRORED, FINISHED]).freeze
+  INITED = 0
+  EXECUTING = 1
+  ERRORED = 2
+  FINISHED = 3
+  TIMED_OUT = 4
+  VALUE_MAP = {0 => "INITED", 1 => "EXECUTING", 2 => "ERRORED", 3 => "FINISHED", 4 => "TIMED_OUT"}
+  VALID_VALUES = Set.new([INITED, EXECUTING, ERRORED, FINISHED, TIMED_OUT]).freeze
 end
 
 module PartitionFilterMode
@@ -5528,11 +5530,13 @@ class ScheduledQueryProgressInfo
   SCHEDULEDEXECUTIONID = 1
   STATE = 2
   EXECUTORQUERYID = 3
+  ERRORMESSAGE = 4
 
   FIELDS = {
     SCHEDULEDEXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'scheduledExecutionId'},
     STATE => {:type => ::Thrift::Types::I32, :name => 'state', :enum_class => ::QueryState},
-    EXECUTORQUERYID => {:type => ::Thrift::Types::STRING, :name => 'executorQueryId'}
+    EXECUTORQUERYID => {:type => ::Thrift::Types::STRING, :name => 'executorQueryId'},
+    ERRORMESSAGE => {:type => ::Thrift::Types::STRING, :name => 'errorMessage', :optional => true}
   }
 
   def struct_fields; FIELDS; end

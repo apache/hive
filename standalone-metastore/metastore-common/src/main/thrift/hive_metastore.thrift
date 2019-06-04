@@ -1765,7 +1765,8 @@ enum QueryState {
    INITED,
    EXECUTING,
    ERRORED,
-   FINISHED
+   FINISHED,
+   TIMED_OUT,
 }
 
 struct ScheduledQueryProgressInfo{
