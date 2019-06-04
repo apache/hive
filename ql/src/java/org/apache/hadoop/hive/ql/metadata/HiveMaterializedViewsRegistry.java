@@ -378,9 +378,12 @@ public final class HiveMaterializedViewsRegistry {
 
       List<Interval> intervals = Arrays.asList(DruidTable.DEFAULT_INTERVAL);
       rowType = dtFactory.createStructType(druidColTypes, druidColNames);
+      // We can pass null for Hive object because it is only used to retrieve tables
+      // if constraints on a table object are existing, but constraints cannot be defined
+      // for materialized views.
       RelOptHiveTable optTable = new RelOptHiveTable(null, cluster.getTypeFactory(), fullyQualifiedTabName,
           rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
-          conf, new HashMap<>(), new HashMap<>(), new AtomicInteger());
+          conf, null, new HashMap<>(), new HashMap<>(), new HashMap<>(), new AtomicInteger());
       DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
           dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
           intervals, null, null);
@@ -389,10 +392,13 @@ public final class HiveMaterializedViewsRegistry {
       tableRel = DruidQuery.create(cluster, cluster.traitSetOf(BindableConvention.INSTANCE),
           optTable, druidTable, ImmutableList.<RelNode>of(scan), ImmutableMap.of());
     } else {
-      // Build Hive Table Scan Rel
+      // Build Hive Table Scan Rel.
+      // We can pass null for Hive object because it is only used to retrieve tables
+      // if constraints on a table object are existing, but constraints cannot be defined
+      // for materialized views.
       RelOptHiveTable optTable = new RelOptHiveTable(null, cluster.getTypeFactory(), fullyQualifiedTabName,
           rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
-          conf, new HashMap<>(), new HashMap<>(), new AtomicInteger());
+          conf, null, new HashMap<>(), new HashMap<>(), new HashMap<>(), new AtomicInteger());
       tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
           viewTable.getTableName(), null, false, false);
     }
