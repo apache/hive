@@ -23,6 +23,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 import javax.jdo.PersistenceManager;
 
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -41,6 +45,7 @@ import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollResponse;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryProgressInfo;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.hadoop.hive.metastore.model.MScheduledExecution;
+import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -149,6 +154,49 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
 
   @Test
   public void testPoll() throws Exception {
+    ScheduledQuery schq = createScheduledQuery(new ScheduledQueryKey("q1", "polltestX"));
+    ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
+    r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
+    r.setScheduledQuery(schq);
+    client.scheduledQueryMaintenance(r);
+    
+    ExecutorService pool = Executors.newCachedThreadPool();
+    pool.submit(new X());
+    pool.submit(new X());
+    
+    pool.awaitTermination(1, TimeUnit.HOURS);
+    pool.shutdown();
+
+  }
+
+  class X implements Runnable {
+
+    public void run() {
+      try {
+        ScheduledQueryPollRequest request = new ScheduledQueryPollRequest();
+        request.setClusterNamespace("polltestX");
+        ScheduledQueryPollResponse pollResult = null;
+
+        for (int i = 0; i < 30; i++) {
+          pollResult = client.scheduledQueryPoll(request);
+          if (pollResult.isSetQuery()) {
+            break;
+          }
+          Thread.sleep(100);
+        }
+      } catch (TException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      } catch (InterruptedException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+
+    }
+  }
+
+  @Test
+  public void testPoll1() throws Exception {
     ScheduledQuery schq = createScheduledQuery(new ScheduledQueryKey("q1", "polltest"));
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
     r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
