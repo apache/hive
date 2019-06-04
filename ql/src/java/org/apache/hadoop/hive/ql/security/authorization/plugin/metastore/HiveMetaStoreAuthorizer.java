@@ -145,13 +145,13 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener {
           }
           break;
         case ALTER_TABLE:
-          authzEvent = new CreateTableEvent(preEventContext);
+          authzEvent = new AlterTableEvent(preEventContext);
           if (isViewOperation(preEventContext) && (!isSuperUser(getCurrentUser(authzEvent)))) {
             throw new MetaException(getErrorMessage("ALTER_VIEW", getCurrentUser(authzEvent)));
           }
           break;
         case DROP_TABLE:
-          authzEvent = new CreateTableEvent(preEventContext);
+          authzEvent = new DropTableEvent(preEventContext);
           if (isViewOperation(preEventContext) && (!isSuperUser(getCurrentUser(authzEvent)))) {
             throw new MetaException(getErrorMessage("DROP_VIEW", getCurrentUser(authzEvent)));
           }
