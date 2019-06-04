@@ -12683,7 +12683,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   private int getNewScheduledQueryDeadline() {
     int now = (int) (System.currentTimeMillis() / 1000);
-    int interval = MetastoreConf.getIntVar(conf, ConfVars.SCHEDULED_QUERIES_PROGRESS_INTERVAL);
+    int interval = MetastoreConf.getIntVar(conf, ConfVars.SCHEDULED_QUERIES_PROGRESS_TIMEOUT);
     return now + interval;
   }
 
