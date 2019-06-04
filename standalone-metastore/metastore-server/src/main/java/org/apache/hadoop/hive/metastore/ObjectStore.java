@@ -12641,21 +12641,26 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void scheduledQueryProgress(ScheduledQueryProgressInfo info) {
+  public void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws InvalidOperationException {
     boolean commited = false;
     try {
       openTransaction();
       MScheduledExecution execution = pm.getObjectById(MScheduledExecution.class, info.getScheduledExecutionId());
-      execution.setState(info.getState().toString());
+      execution.setState(info.getState());
       execution.setExecutorQueryId(info.getExecutorQueryId());
+      if (!validateStateChange(execution.getState(), info.getState())) {
+        throw new InvalidOperationException("Invalid state change: " + execution.getState() + "=>" + info.getState());
+      }
+
       switch (info.getState()) {
       case INITED:
       case EXECUTING:
-        execution.setDeadline(getNewScheduledQueryDeadline());
+        execution.setDeadline((int) (System.currentTimeMillis() / 1000));
         break;
       case ERRORED:
       case FINISHED:
       case TIMED_OUT:
+        execution.setEndTime((int) (System.currentTimeMillis() / 1000));
         execution.setDeadline(null);
       }
       pm.makePersistent(execution);
@@ -12681,6 +12686,19 @@ public class ObjectStore implements RawStore, Configurable {
 
   }
 
+  private boolean validateStateChange(QueryState from, QueryState to) {
+    switch (from) {
+    case INITED:
+      return to != QueryState.INITED;
+    case EXECUTING:
+      return to == QueryState.FINISHED
+          || to == QueryState.ERRORED;
+    default:
+      return false;
+    }
+  }
+
+  @Deprecated
   private int getNewScheduledQueryDeadline() {
     int now = (int) (System.currentTimeMillis() / 1000);
     int interval = MetastoreConf.getIntVar(conf, ConfVars.SCHEDULED_QUERIES_PROGRESS_TIMEOUT);

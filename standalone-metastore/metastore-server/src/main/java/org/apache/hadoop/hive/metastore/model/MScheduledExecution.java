@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore.model;
 
+import org.apache.hadoop.hive.metastore.api.QueryState;
 import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 
@@ -121,8 +122,8 @@ public class MScheduledExecution {
     return executorQueryId;
   }
 
-  public String getState() {
-    return state;
+  public QueryState getState() {
+    return QueryState.valueOf(state);
   }
 
   public Integer getStartTime() {
@@ -141,8 +142,8 @@ public class MScheduledExecution {
     return nextDeadline;
   }
 
-  public void setState(String state) {
-    this.state = state;
+  public void setState(QueryState state) {
+    this.state = state.name();
   }
 
   public void setExecutorQueryId(String executorQueryId) {
@@ -152,6 +153,10 @@ public class MScheduledExecution {
   public void setDeadline(Integer newScheduledQueryDeadline) {
     nextDeadline = newScheduledQueryDeadline;
 
+  }
+
+  public void setEndTime(Integer endTime) {
+    this.endTime = endTime;
   }
 
 }

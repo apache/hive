@@ -3791,6 +3791,7 @@ module ThriftHiveMetastore
     def recv_scheduled_query_progress()
       result = receive_message(Scheduled_query_progress_result)
       raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
       return
     end
 
@@ -6644,6 +6645,8 @@ module ThriftHiveMetastore
         @handler.scheduled_query_progress(args.info)
       rescue ::MetaException => o1
         result.o1 = o1
+      rescue ::InvalidOperationException => o2
+        result.o2 = o2
       end
       write_result(result, oprot, 'scheduled_query_progress', seqid)
     end
@@ -15040,9 +15043,11 @@ module ThriftHiveMetastore
   class Scheduled_query_progress_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     O1 = 1
+    O2 = 2
 
     FIELDS = {
-      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidOperationException}
     }
 
     def struct_fields; FIELDS; end

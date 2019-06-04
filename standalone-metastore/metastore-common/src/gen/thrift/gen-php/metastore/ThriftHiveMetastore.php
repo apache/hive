@@ -1685,6 +1685,7 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf {
   /**
    * @param \metastore\ScheduledQueryProgressInfo $info
    * @throws \metastore\MetaException
+   * @throws \metastore\InvalidOperationException
    */
   public function scheduled_query_progress(\metastore\ScheduledQueryProgressInfo $info);
   /**
@@ -14576,6 +14577,9 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     }
     if ($result->o1 !== null) {
       throw $result->o1;
+    }
+    if ($result->o2 !== null) {
+      throw $result->o2;
     }
     return;
   }
@@ -64927,6 +64931,10 @@ class ThriftHiveMetastore_scheduled_query_progress_result {
    * @var \metastore\MetaException
    */
   public $o1 = null;
+  /**
+   * @var \metastore\InvalidOperationException
+   */
+  public $o2 = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -64936,11 +64944,19 @@ class ThriftHiveMetastore_scheduled_query_progress_result {
           'type' => TType::STRUCT,
           'class' => '\metastore\MetaException',
           ),
+        2 => array(
+          'var' => 'o2',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\InvalidOperationException',
+          ),
         );
     }
     if (is_array($vals)) {
       if (isset($vals['o1'])) {
         $this->o1 = $vals['o1'];
+      }
+      if (isset($vals['o2'])) {
+        $this->o2 = $vals['o2'];
       }
     }
   }
@@ -64972,6 +64988,14 @@ class ThriftHiveMetastore_scheduled_query_progress_result {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 2:
+          if ($ftype == TType::STRUCT) {
+            $this->o2 = new \metastore\InvalidOperationException();
+            $xfer += $this->o2->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -64988,6 +65012,11 @@ class ThriftHiveMetastore_scheduled_query_progress_result {
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->o2 !== null) {
+      $xfer += $output->writeFieldBegin('o2', TType::STRUCT, 2);
+      $xfer += $this->o2->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

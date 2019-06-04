@@ -3111,7 +3111,8 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws MetaException, NoSuchObjectException {
+  public void scheduledQueryProgress(ScheduledQueryProgressInfo info)
+      throws MetaException, NoSuchObjectException, InvalidOperationException {
     rawStore.scheduledQueryProgress(info);
   }
 

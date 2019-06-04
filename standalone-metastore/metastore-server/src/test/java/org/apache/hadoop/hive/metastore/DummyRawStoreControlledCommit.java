@@ -1298,7 +1298,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public void scheduledQueryProgress(ScheduledQueryProgressInfo info) {
+  public void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws InvalidOperationException {
     objectStore.scheduledQueryProgress(info);
   }
 

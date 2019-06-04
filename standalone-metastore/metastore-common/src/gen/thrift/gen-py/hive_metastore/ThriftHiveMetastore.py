@@ -9847,6 +9847,8 @@ class Client(fb303.FacebookService.Client, Iface):
     iprot.readMessageEnd()
     if result.o1 is not None:
       raise result.o1
+    if result.o2 is not None:
+      raise result.o2
     return
 
   def get_scheduled_query(self, scheduleKey):
@@ -15722,6 +15724,9 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     except MetaException as o1:
       msg_type = TMessageType.REPLY
       result.o1 = o1
+    except InvalidOperationException as o2:
+      msg_type = TMessageType.REPLY
+      result.o2 = o2
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -53211,15 +53216,18 @@ class scheduled_query_progress_result:
   """
   Attributes:
    - o1
+   - o2
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRUCT, 'o1', (MetaException, MetaException.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'o2', (InvalidOperationException, InvalidOperationException.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, o1=None,):
+  def __init__(self, o1=None, o2=None,):
     self.o1 = o1
+    self.o2 = o2
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -53236,6 +53244,12 @@ class scheduled_query_progress_result:
           self.o1.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.o2 = InvalidOperationException()
+          self.o2.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -53250,6 +53264,10 @@ class scheduled_query_progress_result:
       oprot.writeFieldBegin('o1', TType.STRUCT, 1)
       self.o1.write(oprot)
       oprot.writeFieldEnd()
+    if self.o2 is not None:
+      oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+      self.o2.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -53260,6 +53278,7 @@ class scheduled_query_progress_result:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.o1)
+    value = (value * 31) ^ hash(self.o2)
     return value
 
   def __repr__(self):
