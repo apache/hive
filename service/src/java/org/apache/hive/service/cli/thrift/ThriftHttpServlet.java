@@ -156,9 +156,13 @@ public class ThriftHttpServlet extends TServlet {
         String trustedDomain = HiveConf.getVar(hiveConf, ConfVars.HIVE_SERVER2_TRUSTED_DOMAIN).trim();
 
         // Skip authentication if the connection is from the trusted domain, if specified.
+        // getRemoteHost may or may not return the FQDN of the remote host depending upon the
+        // HTTP server configuration. So, force a reverse DNS lookup.
+        String remoteHostName =
+                InetAddress.getByName(request.getRemoteHost()).getCanonicalHostName();
         if (!trustedDomain.isEmpty() &&
-                PlainSaslHelper.isHostFromTrustedDomain(request.getRemoteHost(), trustedDomain)) {
-          LOG.info("No authentication performed because the connecting host " + request.getRemoteHost() +
+                PlainSaslHelper.isHostFromTrustedDomain(remoteHostName, trustedDomain)) {
+          LOG.info("No authentication performed because the connecting host " + remoteHostName +
                   " is from the trusted domain " + trustedDomain);
           // In order to skip authentication, we use auth type NOSASL to be consistent with the
           // HiveAuthFactory defaults. In HTTP mode, it will also get us the user name from the
