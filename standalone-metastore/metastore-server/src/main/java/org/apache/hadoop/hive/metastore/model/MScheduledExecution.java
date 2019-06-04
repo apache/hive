@@ -36,6 +36,7 @@ public class MScheduledExecution {
   private Integer startTime;
   private Integer endTime;
   private String errorString;
+  // FIXME rename to lastUpdateTime
   private Integer nextDeadline;
 
   @Override
