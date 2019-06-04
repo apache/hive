@@ -235,7 +235,27 @@ public class TestHiveMetaStoreAuthorizer {
   }
 
   @Test
-  public void testJ_DropTable_authorizedUser() throws Exception {
+  public void testJ_AlterTable_AuthorizedUser() throws Exception {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+    try {
+      Table table = new TableBuilder()
+              .setTableName(tblName)
+              .addCol("name", ColumnType.STRING_TYPE_NAME)
+              .setOwner(authorizedUser)
+              .build(conf);
+      hmsHandler.create_table(table);
+
+      Table alteredTable = new TableBuilder()
+              .addCol("dep", ColumnType.STRING_TYPE_NAME)
+              .build(conf);
+      hmsHandler.alter_table("default",tblName,alteredTable);
+    } catch (Exception e) {
+      // No Exception for create table for authorized user
+    }
+  }
+
+  @Test
+  public void testK_DropTable_authorizedUser() throws Exception {
     UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
     try {
       hmsHandler.drop_table(dbName,tblName,true);
@@ -245,7 +265,7 @@ public class TestHiveMetaStoreAuthorizer {
   }
 
   @Test
-  public void testK_DropDatabase_authorizedUser() throws Exception {
+  public void testL_DropDatabase_authorizedUser() throws Exception {
     UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
     try {
       hmsHandler.drop_database(dbName,true,true);
@@ -255,7 +275,7 @@ public class TestHiveMetaStoreAuthorizer {
   }
 
   @Test
-  public void testL_DropCatalog_SuperUser() throws Exception {
+  public void testM_DropCatalog_SuperUser() throws Exception {
     UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(superUser));
     try {
       hmsHandler.drop_catalog(new DropCatalogRequest(catalogName));
