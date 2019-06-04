@@ -63,6 +63,7 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
 
   public TestMetastoreScheduledQueries(String name, AbstractMetaStoreService metaStore) throws Exception {
     metaStore.getConf().set("scheduled.queries.cron.syntax", "QUARTZ");
+    metaStore.getConf().set("scheduled.queries.progress.timeout", "3");
     this.metaStore = metaStore;
   }
 
