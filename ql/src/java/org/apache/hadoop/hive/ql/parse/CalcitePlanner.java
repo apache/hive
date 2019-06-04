@@ -72,7 +72,6 @@ import org.apache.calcite.rel.core.SetOp;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.metadata.CachingRelMetadataProvider;
 import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
-import org.apache.calcite.rel.metadata.DefaultRelMetadataProvider;
 import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
@@ -135,7 +134,6 @@ import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
@@ -2996,7 +2994,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 intervals, null, null);
             optTable = new RelOptHiveTable(relOptSchema, relOptSchema.getTypeFactory(), fullyQualifiedTabName,
                 rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
-                partitionCache, colStatsCache, noColsMissingStats);
+                db, tabNameToTabObject, partitionCache, colStatsCache, noColsMissingStats);
             final TableScan scan = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
                 optTable, null == tableAlias ? tabMetaData.getTableName() : tableAlias,
                 getAliasId(tableAlias, qb), HiveConf.getBoolVar(conf,
@@ -3007,7 +3005,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           } else {
             optTable = new RelOptHiveTable(relOptSchema, relOptSchema.getTypeFactory(), fullyQualifiedTabName,
                   rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
-                  partitionCache, colStatsCache, noColsMissingStats);
+                  db, tabNameToTabObject, partitionCache, colStatsCache, noColsMissingStats);
             final HiveTableScan hts = new HiveTableScan(cluster,
                   cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
                   null == tableAlias ? tabMetaData.getTableName() : tableAlias,
@@ -3053,7 +3051,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           fullyQualifiedTabName.add(tabMetaData.getTableName());
           optTable = new RelOptHiveTable(relOptSchema, relOptSchema.getTypeFactory(), fullyQualifiedTabName,
               rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
-              partitionCache, colStatsCache, noColsMissingStats);
+              db, tabNameToTabObject, partitionCache, colStatsCache, noColsMissingStats);
           // Build Hive Table Scan Rel
           tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
               null == tableAlias ? tabMetaData.getTableName() : tableAlias,
@@ -3083,45 +3081,46 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     private RelDataType inferNotNullableColumns(Table tabMetaData, RelDataType rowType)
         throws HiveException {
-      // Retrieve not null constraints
-      final NotNullConstraint nnc = Hive.get().getReliableNotNullConstraints(
-          tabMetaData.getDbName(), tabMetaData.getTableName());
-      // Retrieve primary key constraints (cannot be null)
-      final PrimaryKeyInfo pkc = Hive.get().getReliablePrimaryKeys(
-          tabMetaData.getDbName(), tabMetaData.getTableName());
-      if (nnc.getNotNullConstraints().isEmpty() && pkc.getColNames().isEmpty()) {
+      final NotNullConstraint nnc = tabMetaData.getNotNullConstraint();
+      final PrimaryKeyInfo pkc = tabMetaData.getPrimaryKeyInfo();
+      if ((nnc == null || nnc.getNotNullConstraints().isEmpty()) &&
+          (pkc == null || pkc.getColNames().isEmpty())) {
         return rowType;
       }
 
       // Build the bitset with not null columns
       ImmutableBitSet.Builder builder = ImmutableBitSet.builder();
-      for (String nnCol : nnc.getNotNullConstraints().values()) {
-        int nnPos = -1;
-        for (int i = 0; i < rowType.getFieldNames().size(); i++) {
-          if (rowType.getFieldNames().get(i).equals(nnCol)) {
-            nnPos = i;
-            break;
+      if (nnc != null) {
+        for (String nnCol : nnc.getNotNullConstraints().values()) {
+          int nnPos = -1;
+          for (int i = 0; i < rowType.getFieldNames().size(); i++) {
+            if (rowType.getFieldNames().get(i).equals(nnCol)) {
+              nnPos = i;
+              break;
+            }
           }
+          if (nnPos == -1) {
+            LOG.error("Column for not null constraint definition " + nnCol + " not found");
+            return rowType;
+          }
+          builder.set(nnPos);
         }
-        if (nnPos == -1) {
-          LOG.error("Column for not null constraint definition " + nnCol + " not found");
-          return rowType;
-        }
-        builder.set(nnPos);
       }
-      for (String pkCol : pkc.getColNames().values()) {
-        int pkPos = -1;
-        for (int i = 0; i < rowType.getFieldNames().size(); i++) {
-          if (rowType.getFieldNames().get(i).equals(pkCol)) {
-            pkPos = i;
-            break;
+      if (pkc != null) {
+        for (String pkCol : pkc.getColNames().values()) {
+          int pkPos = -1;
+          for (int i = 0; i < rowType.getFieldNames().size(); i++) {
+            if (rowType.getFieldNames().get(i).equals(pkCol)) {
+              pkPos = i;
+              break;
+            }
           }
+          if (pkPos == -1) {
+            LOG.error("Column for not null constraint definition " + pkCol + " not found");
+            return rowType;
+          }
+          builder.set(pkPos);
         }
-        if (pkPos == -1) {
-          LOG.error("Column for not null constraint definition " + pkCol + " not found");
-          return rowType;
-        }
-        builder.set(pkPos);
       }
       ImmutableBitSet bitSet = builder.build();
 
@@ -5170,6 +5169,27 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private QBParseInfo getQBParseInfo(QB qb) throws CalciteSemanticException {
       return qb.getParseInfo();
     }
+  }
+
+  @Override
+  protected Table getTableObjectByName(String tableName, boolean throwException) throws HiveException {
+    if (!tabNameToTabObject.containsKey(tableName)) {
+      // TODO: The code below should be a single HMS call and possibly unified with method in SemanticAnalyzer
+      Table table = db.getTable(tableName, throwException);
+      if (table != null) {
+        table.setPrimaryKeyInfo(db.getReliablePrimaryKeys(
+            table.getDbName(), table.getTableName()));
+        table.setForeignKeyInfo(db.getReliableForeignKeys(
+            table.getDbName(), table.getTableName()));
+        table.setUniqueKeyInfo(db.getReliableUniqueConstraints(
+            table.getDbName(), table.getTableName()));
+        table.setNotNullConstraint(db.getReliableNotNullConstraints(
+            table.getDbName(), table.getTableName()));
+        tabNameToTabObject.put(tableName, table);
+      }
+      return table;
+    }
+    return tabNameToTabObject.get(tableName);
   }
 
   /**

@@ -1825,7 +1825,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           Table table = null;
           try {
-            table = this.getTableObjectByName(tableName);
+            table = getTableObjectByName(tableName);
           } catch (HiveException ex) {
             throw new SemanticException(ex);
           }
@@ -2104,8 +2104,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Get table details from tabNameToTabObject cache
       Table tab = getTableObjectByName(tabName, false);
       if (tab != null) {
-        // do a deep copy, in case downstream changes it.
-        tab = new Table(tab.getTTable().deepCopy());
+        // copy table object in case downstream changes it
+        Table newTab = new Table(tab.getTTable().deepCopy());
+        // copy constraints, we do not need deep copy as
+        // they should not be changed
+        newTab.setPrimaryKeyInfo(tab.getPrimaryKeyInfo());
+        newTab.setForeignKeyInfo(tab.getForeignKeyInfo());
+        newTab.setUniqueKeyInfo(tab.getUniqueKeyInfo());
+        newTab.setNotNullConstraint(tab.getNotNullConstraint());
+        tab = newTab;
       }
       if (tab == null ||
           tab.getDbName().equals(SessionState.get().getCurrentDatabase())) {
@@ -11996,8 +12003,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return rewrittenQuery;
   }
 
-  private static void walkASTMarkTABREF(TableMask tableMask, ASTNode ast, Set<String> cteAlias,
-                                        Context ctx, Hive db, Map<String, Table> tabNameToTabObject, Set<Integer> ignoredTokens)
+  private void walkASTMarkTABREF(TableMask tableMask, ASTNode ast, Set<String> cteAlias,
+      Context ctx, Hive db, Map<String, Table> tabNameToTabObject, Set<Integer> ignoredTokens)
       throws SemanticException {
     Queue<Node> queue = new LinkedList<>();
     queue.add(ast);
@@ -12039,9 +12046,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           continue;
         }
 
-        Table table = getTable(db, tabIdName, tabNameToTabObject);
+        Table table = null;
+        try {
+          table = getTableObjectByName(tabIdName, false);
+        } catch (HiveException e) {
+          // This should not happen.
+          throw new SemanticException("Got exception though getTableObjectByName method should ignore it");
+        }
         if (table == null) {
           // Table may not be found when materialization of CTE is on.
+          STATIC_LOG.debug("Table " + tabIdName + " is not found in walkASTMarkTABREF.");
           continue;
         }
 
@@ -12049,9 +12063,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // When we are querying a materialized view directly, we check whether the source tables
           // do not apply any policies.
           for (String qName : table.getCreationMetadata().getTablesUsed()) {
-            table = getTable(db, qName, tabNameToTabObject);
-            if (table == null) {
-              // This should not happen
+            try {
+              table = getTableObjectByName(qName, true);
+            } catch (HiveException e) {
+              // This should not happen.
               throw new SemanticException("Table " + qName + " not found when trying to obtain it to check masking/filtering " +
                   "policies");
             }
@@ -12106,22 +12121,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private static Table getTable(Hive db, String tabIdName, Map<String, Table> tabNameToTabObject) {
-    Table table = null;
-    try {
-      if (!tabNameToTabObject.containsKey(tabIdName)) {
-        table = db.getTable(tabIdName, true);
-        tabNameToTabObject.put(tabIdName, table);
-      } else {
-        table = tabNameToTabObject.get(tabIdName);
-      }
-    } catch (HiveException e) {
-      // Table may not be found when materialization of CTE is on.
-      STATIC_LOG.debug("Table " + tabIdName + " is not found in walkASTMarkTABREF.");
-    }
-    return table;
-  }
-
   private static void extractColumnInfos(Table table, List<String> colNames, List<String> colTypes) {
     for (FieldSchema col : table.getAllCols()) {
       colNames.add(col.getName());
@@ -12134,8 +12133,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // the table needs to be masked or filtered.
   // For the replacement, we leverage the methods that are used for
   // unparseTranslator.
-  protected static ASTNode rewriteASTWithMaskAndFilter(TableMask tableMask, ASTNode ast, TokenRewriteStream tokenRewriteStream,
-                                                       Context ctx, Hive db, Map<String, Table> tabNameToTabObject, Set<Integer> ignoredTokens)
+  protected ASTNode rewriteASTWithMaskAndFilter(TableMask tableMask, ASTNode ast, TokenRewriteStream tokenRewriteStream,
+      Context ctx, Hive db, Map<String, Table> tabNameToTabObject, Set<Integer> ignoredTokens)
       throws SemanticException {
     // 1. collect information about CTE if there is any.
     // The base table of CTE should be masked.
@@ -13809,7 +13808,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (DUMMY_TABLE.equals(alias)) {
             continue;
           }
-          Table table = this.getTableObjectByName(qb.getTabNameForAlias(alias));
+          Table table = getTableObjectByName(qb.getTabNameForAlias(alias));
           if (table.isTemporary()) {
             throw new SemanticException("View definition references temporary table " + alias);
           }
@@ -14039,7 +14038,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String tableName = getUnescapedName((ASTNode) tree.getChild(0).getChild(0));
     Table tbl;
     try {
-      tbl = this.getTableObjectByName(tableName);
+      tbl = getTableObjectByName(tableName);
     } catch (InvalidTableException e) {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName), e);
     }
