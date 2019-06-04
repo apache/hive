@@ -12655,13 +12655,13 @@ public class ObjectStore implements RawStore, Configurable {
       switch (info.getState()) {
       case INITED:
       case EXECUTING:
-        execution.setDeadline((int) (System.currentTimeMillis() / 1000));
+        execution.setLastUpdateTime((int) (System.currentTimeMillis() / 1000));
         break;
       case ERRORED:
       case FINISHED:
       case TIMED_OUT:
         execution.setEndTime((int) (System.currentTimeMillis() / 1000));
-        execution.setDeadline(null);
+        execution.setLastUpdateTime(null);
       }
       pm.makePersistent(execution);
       commited = commitTransaction();

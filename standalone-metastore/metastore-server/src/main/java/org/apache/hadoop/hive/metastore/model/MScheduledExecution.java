@@ -38,7 +38,7 @@ public class MScheduledExecution {
   private Integer endTime;
   private String errorString;
   // FIXME rename to lastUpdateTime
-  private Integer nextDeadline;
+  private Integer lastUpdateTime;
 
   @Override
   public String toString() {
@@ -138,8 +138,8 @@ public class MScheduledExecution {
     return errorString;
   }
 
-  public Integer getNextDeadline() {
-    return nextDeadline;
+  public Integer getLastUpdateTime() {
+    return lastUpdateTime;
   }
 
   public void setState(QueryState state) {
@@ -150,9 +150,8 @@ public class MScheduledExecution {
     this.executorQueryId = executorQueryId;
   }
 
-  public void setDeadline(Integer newScheduledQueryDeadline) {
-    nextDeadline = newScheduledQueryDeadline;
-
+  public void setLastUpdateTime(Integer newUpdateTime) {
+    lastUpdateTime = newUpdateTime;
   }
 
   public void setEndTime(Integer endTime) {
