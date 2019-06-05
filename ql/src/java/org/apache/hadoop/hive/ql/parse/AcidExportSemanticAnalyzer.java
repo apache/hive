@@ -265,8 +265,10 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
       // Save child tasks to be added directly to the parent task.
       List<Task<? extends Serializable>> children = statsTask.getChildTasks();
-      for (Task<? extends Serializable> child : children) {
-        statsTask.removeDependentTask(child);
+      if (children != null) {
+        for (Task<? extends Serializable> child : children) {
+          statsTask.removeDependentTask(child);
+        }
       }
       for (Task<? extends Serializable> parent : new ArrayList<>(statsTask.getParentTasks())) {
         parent.removeDependentTask(statsTask);
