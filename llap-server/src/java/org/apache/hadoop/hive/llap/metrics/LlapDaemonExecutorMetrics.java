@@ -444,7 +444,7 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
      * @param windowTimeSize The time window used to generate the average in nanoseconds
      */
     TimedAverageMetrics(int windowDataSize, long windowTimeSize) {
-      this(windowDataSize, windowTimeSize, System.nanoTime());
+      this(windowDataSize, windowTimeSize, System.nanoTime() - windowTimeSize - 1);
     }
 
     @VisibleForTesting
@@ -491,8 +491,7 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
       long lastTime = time;
       long minTime = lastTime - windowTimeSize;
       int pos = nextPos - 1;
-      boolean firstRound = true;
-      while (firstRound || pos != nextPos - 1) {
+      do {
         // Loop the window
         if (pos < 0) {
           pos = windowDataSize - 1;
@@ -504,12 +503,11 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
         }
         sum += (lastTime - data[pos].nanoTime) * data[pos].value;
         lastTime = data[pos].nanoTime;
-        firstRound = false;
         pos--;
-      }
+      } while (pos != nextPos - 1);
       // If we exited the loop and we did not have enough data point estimate the data with the last
       // known point
-      if (!firstRound && pos == nextPos - 1) {
+      if (pos == nextPos - 1 && data[nextPos].nanoTime > minTime) {
         sum += (lastTime - minTime) * data[nextPos].value;
       }
       return Math.round((double)sum / (double)windowTimeSize);
