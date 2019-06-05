@@ -92,8 +92,8 @@ public class HiveRelBuilder extends RelBuilder {
 
   @Override
   public RelBuilder filter(Iterable<? extends RexNode> predicates) {
-    final RexNode x = RexUtil.simplify(cluster.getRexBuilder(),
-            RexUtil.composeConjunction(cluster.getRexBuilder(), predicates, false));
+    final RexNode x = RexUtil.composeConjunction(
+        cluster.getRexBuilder(), predicates, false);
     if (!x.isAlwaysTrue()) {
       final RelNode input = build();
       final RelNode filter = HiveRelFactories.HIVE_FILTER_FACTORY.createFilter(input, x);
