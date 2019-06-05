@@ -1014,7 +1014,7 @@
           </execution>
           <execution>
             <id>add-test-sources</id>
-            <phase>generate-test-sources</phase>
+            <phase>generate-sources</phase>
             <goals>
               <goal>add-test-source</goal>
             </goals>
