@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.llap.counters;
 
 import java.util.concurrent.atomic.AtomicLongArray;
 
+import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
+import org.apache.tez.common.counters.CounterGroup;
 import org.apache.tez.common.counters.TezCounters;
 
 /**
@@ -31,10 +33,12 @@ public class WmFragmentCounters {
   private LlapWmCounters currentCounter = null;
   private long currentCounterStartTime = 0;
   private final AtomicLongArray fixedCounters;
+  private final boolean addTaskTimeCounters;
 
-  public WmFragmentCounters() {
+  public WmFragmentCounters(boolean addTaskTimeCounters) {
     // Note: WmFragmentCounters are created before Tez counters are created.
     this.fixedCounters = new AtomicLongArray(LlapWmCounters.values().length);
+    this.addTaskTimeCounters = addTaskTimeCounters;
   }
 
   public void changeStateQueued(boolean isGuaranteed) {
@@ -118,6 +122,21 @@ public class WmFragmentCounters {
     }
     for (int i = 0; i < fixedCounters.length(); ++i) {
       tezCounters.findCounter(LlapWmCounters.values()[i]).setValue(fixedCounters.get(i));
+    }
+
+    // add queue and runtime (together with task count) on a "per daemon" level
+    // to the Tez counters.
+    if (addTaskTimeCounters) {
+      String hostName = MetricsUtils.getHostName();
+      long queued = fixedCounters.get(LlapWmCounters.GUARANTEED_QUEUED_NS.ordinal())
+                    + fixedCounters.get(LlapWmCounters.SPECULATIVE_QUEUED_NS.ordinal());
+      long running = fixedCounters.get(LlapWmCounters.GUARANTEED_RUNNING_NS.ordinal())
+                     + fixedCounters.get(LlapWmCounters.SPECULATIVE_RUNNING_NS.ordinal());
+
+      CounterGroup cg = tezCounters.getGroup("LlapTaskRuntimeAgg by daemon");
+      cg.findCounter("QueueTime-" + hostName).setValue(queued);
+      cg.findCounter("RunTime-" + hostName).setValue(running);
+      cg.findCounter("Count-" + hostName).setValue(1);
     }
   }
 
