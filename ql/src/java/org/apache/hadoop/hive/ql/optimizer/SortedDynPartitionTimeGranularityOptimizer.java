@@ -101,6 +101,7 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
     private int targetShardsPerGranularity = -1;
     private int granularityKeyPos = -1;
     private int partitionKeyPos = -1;
+    boolean distributeByDim = false;
 
     public SortedDynamicPartitionProc(ParseContext pCtx) {
       this.parseCtx = pCtx;
@@ -149,13 +150,18 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
               Integer.parseInt(targetShardsProperty);
       targetShardsPerGranularity = targetShardsPerGranularity < 1?-1:targetShardsPerGranularity;
 
+      distributeByDim = HiveConf.getBoolVar(parseCtx.getConf(),
+              HiveConf.ConfVars.HIVE_DRUID_INDEX_DISTRIBUTE_BY_DIM);
+      if (distributeByDim) {
+        targetShardsPerGranularity = -1;
+      }
       LOG.info("Sorted dynamic partitioning on time granularity optimization kicked in...");
 
       // unlink connection between FS and its parent
-      Operator<? extends OperatorDesc> fsParent = fsOp.getParentOperators().get(0);
+      Operator<? extends OperatorDesc> fsParent;
       fsParent = fsOp.getParentOperators().get(0);
       fsParent.getChildOperators().clear();
-      if (targetShardsPerGranularity > 0) {
+      if (distributeByDim || targetShardsPerGranularity > 0) {
         partitionKeyPos = fsParent.getSchema().getSignature().size() + 1;
       }
       granularityKeyPos = fsParent.getSchema().getSignature().size();
@@ -175,7 +181,7 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
       final List<Integer> sortOrder;
       final List<Integer> sortNullOrder;
       //Order matters, assuming later that __time_granularity comes first then __druidPartitionKey
-      if (targetShardsPerGranularity > 0) {
+      if (distributeByDim || targetShardsPerGranularity > 0) {
         keyPositions = Lists.newArrayList(granularityKeyPos, partitionKeyPos);
         sortOrder = Lists.newArrayList(1, 1); // asc
         sortNullOrder = Lists.newArrayList(0, 0); // nulls first
@@ -301,6 +307,41 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
               selRS.getSignature().get(0).getTabAlias(), false, false);
       selRS.getSignature().add(ci);
 
+      if (distributeByDim) {
+        List<String> columns = selRS.getColumnNames();
+
+        List<ExprNodeDesc> dimColumns = new ArrayList<>();
+        for (String c: columns) {
+
+          String typeName = selRS.getColumnInfo(c).getType().getTypeName();
+          if (c.endsWith("_dim") || (typeName.equals("string") && !c.endsWith("_hll") &&
+                  !c.endsWith("_theta") && !c.endsWith("_cnt"))) {
+            dimColumns.add(new ExprNodeColumnDesc(selRS.getColumnInfo(c)));
+          }
+        }
+        final ColumnInfo partitionKeyCi =
+                new ColumnInfo(Constants.DRUID_DISTRBUTE_KEY_COL_NAME, TypeInfoFactory.intTypeInfo,
+                        selRS.getSignature().get(0).getTabAlias(), false, false
+                );
+
+        final ExprNodeGenericFuncDesc hash = ExprNodeGenericFuncDesc.newInstance(
+                new GenericUDFHash(), dimColumns
+        );
+
+//        final ExprNodeGenericFuncDesc abs = ExprNodeGenericFuncDesc.newInstance(
+//                new GenericUDFAbs(), Lists.<ExprNodeDesc>newArrayList(hash)
+//        );
+//
+//        final ExprNodeGenericFuncDesc mod = ExprNodeGenericFuncDesc.newInstance(
+//                new GenericUDFOPMod(), Lists.newArrayList(abs,
+//                        new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo, 10000))
+//        );
+
+        descs.add(hash);
+        colNames.add(Constants.DRUID_DISTRBUTE_KEY_COL_NAME);
+        selRS.getSignature().add(partitionKeyCi);
+
+      }
       if (targetShardsPerGranularity > 0 ) {
         // add another partitioning key based on floor(1/rand) % targetShardsPerGranularity
         // now the partitioning key optimized as floor(targetShardsPerGranularity * rand) % targetShardsPerGranularity

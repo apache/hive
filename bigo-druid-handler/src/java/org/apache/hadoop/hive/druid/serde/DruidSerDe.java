@@ -321,13 +321,20 @@ import java.util.*;
     if (values.size() == columns.length + 2) {
       // Then partition number if any.
       final int partitionNumPos = granularityFieldIndex + 1;
-      Preconditions.checkArgument(fields.get(partitionNumPos).getFieldName().equals(DruidConstants.DRUID_SHARD_KEY_COL_NAME),
+      Preconditions.checkArgument(fields.get(partitionNumPos).getFieldName().equals(DruidConstants.DRUID_SHARD_KEY_COL_NAME)
+              || fields.get(partitionNumPos).getFieldName().equals(DruidConstants.DRUID_DISTRBUTE_KEY_COL_NAME),
               String.format("expecting to encounter %s but was %s",
                       DruidConstants.DRUID_SHARD_KEY_COL_NAME,
                       fields.get(partitionNumPos).getFieldName()));
-      value.put(DruidConstants.DRUID_SHARD_KEY_COL_NAME,
-              ((LongObjectInspector) fields.get(partitionNumPos)
-                      .getFieldObjectInspector()).get(values.get(partitionNumPos)));
+      if (fields.get(partitionNumPos).getFieldName().equals(DruidConstants.DRUID_SHARD_KEY_COL_NAME)) {
+        value.put(DruidConstants.DRUID_SHARD_KEY_COL_NAME,
+                ((LongObjectInspector) fields.get(partitionNumPos)
+                        .getFieldObjectInspector()).get(values.get(partitionNumPos)));
+      } else {
+        value.put(DruidConstants.DRUID_DISTRBUTE_KEY_COL_NAME,
+                ((IntObjectInspector) fields.get(partitionNumPos)
+                        .getFieldObjectInspector()).get(values.get(partitionNumPos)));
+      }
     }
 
     return new DruidWritable(value);

@@ -37,6 +37,7 @@ public class Constants {
             "druid.segment.targetShardsPerGranularity";
     public static final String DRUID_TIMESTAMP_GRANULARITY_COL_NAME = "__time_granularity";
     public static final String DRUID_SHARD_KEY_COL_NAME = "__druid_extra_partition_key";
+    public static final String DRUID_DISTRBUTE_KEY_COL_NAME = "__druid_distribute_key";
     public static final String DRUID_QUERY_JSON = "druid.query.json";
     public static final String DRUID_QUERY_FIELD_NAMES = "druid.fieldNames";
     public static final String DRUID_QUERY_FIELD_TYPES = "druid.fieldTypes";
