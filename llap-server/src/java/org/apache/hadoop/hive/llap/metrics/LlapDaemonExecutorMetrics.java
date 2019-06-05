@@ -517,7 +517,7 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
   /**
    * Single sample data.
    */
-  static private class Data {
+  private static class Data {
     private long nanoTime;
     private long value;
     Data(long nanoTime, long value) {
