@@ -571,7 +571,9 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
   protected ValidWriteIdList getMmValidWriteIds(
       JobConf conf, TableDesc table, ValidWriteIdList validWriteIdList) throws IOException {
-    if (!AcidUtils.isInsertOnlyTable(table.getProperties())) return null;
+    if (!AcidUtils.isInsertOnlyTable(table.getProperties())) {
+      return null;
+    }
     if (validWriteIdList == null) {
       validWriteIdList = AcidUtils.getTableValidWriteIdList( conf, table.getTableName());
       if (validWriteIdList == null) {
@@ -660,7 +662,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       }
     }
   }
- 
+
 
   Path[] getInputPaths(JobConf job) throws IOException {
     Path[] dirs;
@@ -844,7 +846,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     Utilities.setColumnNameList(jobConf, tableScan);
     Utilities.setColumnTypeList(jobConf, tableScan);
     // push down filters
-    ExprNodeGenericFuncDesc filterExpr = (ExprNodeGenericFuncDesc)scanDesc.getFilterExpr();
+    ExprNodeGenericFuncDesc filterExpr = scanDesc.getFilterExpr();
     if (filterExpr == null) {
       return;
     }
