@@ -320,10 +320,11 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
           ColumnInfo columnInfo = selRS.getColumnInfo(c);
           String typeName = columnInfo.getType().getTypeName();
           String atlas = columnInfo.getAlias();
+          LOG.info("added as hasher input: {}, {}, {}",
+                  c, atlas, typeName);
           if (atlas.endsWith("_dim") || (typeName.equals("string") && !atlas.endsWith("_hll") &&
                   !atlas.endsWith("_theta") && !atlas.endsWith("_cnt"))) {
-            LOG.info("added as hasher input: {}, {}, {}, {}",
-                    c, columnInfo.getInternalName(), atlas, typeName);
+            LOG.info("treat as dim {}", atlas);
             dimColumns.add(new ExprNodeColumnDesc(columnInfo));
           }
         }
