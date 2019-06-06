@@ -52,6 +52,8 @@ public class TestScheduledQuery2 {
     String cmds[] = {
         // @formatter:off
         "create table tu(c int)",
+        "create database asd",
+        "create table asd.tasd(c int)",
         // @formatter:on
     };
     for (String cmd : cmds) {
@@ -93,17 +95,46 @@ public class TestScheduledQuery2 {
     return res.size();
   }
 
-  @Test
-  public void testScheduledQ() throws ParseException, Exception {
+  @Test(expected = CommandProcessorResponse.class)
+  public void testNonExistentTable1() throws ParseException, Exception {
+    IDriver driver = createDriver();
+    CommandProcessorResponse ret = driver.run("create scheduled query a1 cron '1 * * * *' as select 1 from nonexist");
+    if (ret.getResponseCode() != 0) {
+      throw ret;
+    }
+  }
+
+  @Test(expected = CommandProcessorResponse.class)
+  public void testNonExistentTable2() throws ParseException, Exception {
     IDriver driver = createDriver();
 
-    CommandProcessorResponse ret = driver.run("create scheduled query a1 cron '1 * * * *' as select 1");
+    CommandProcessorResponse ret;
+    ret = driver.run("use asd");
+    if (ret.getResponseCode() != 0) {
+      throw ret;
+    }
 
-    throw ret;
+    ret = driver.run("create scheduled query a1 cron '1 * * * *' as select 1 from tu");
+    if (ret.getResponseCode() != 0) {
+      throw ret;
+    }
+  }
 
-    //    System.out.println(ret.getErrorMessage());
-    //    assertEquals(0, ret.getResponseCode());
+  @Test
+  public void testExistentTable3() throws ParseException, Exception {
+    IDriver driver = createDriver();
 
+    CommandProcessorResponse ret;
+    ret = driver.run("use asd");
+    if (ret.getResponseCode() != 0) {
+      throw ret;
+    }
+
+    ret = driver.run("create view default.a1 as select 1 from tasd");
+    //    ret = driver.run("create scheduled query a1 cron '1 * * * *' as select 1 from tasd");
+    if (ret.getResponseCode() != 0) {
+      throw ret;
+    }
   }
 
   private static IDriver createDriver() {
