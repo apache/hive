@@ -391,6 +391,27 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
     checkResult(expected, testQuery, isVectorized, "import existing table");
   }
 
+  @Test
+  public void testImportPartitionedOrc() throws Exception {
+    runStatementOnDriver("drop table if exists T");
+    runStatementOnDriver("drop table if exists Tstage");
+    runStatementOnDriver("create table T (a int, b int) partitioned by (p int) stored" +
+        " as orc tblproperties('transactional'='true')");
+    //Tstage is the target table
+    runStatementOnDriver("create table Tstage (a int, b int) partitioned by (p int) stored" +
+        " as orc tblproperties('transactional'='true')");
+    //this creates an ORC data file with correct schema under table root
+    runStatementOnDriver("insert into Tstage values(1,2,10),(3,4,11),(5,6,12)");
+    final int[][] rows = {{3}};
+    //now we have an archive with 3 partitions
+    runStatementOnDriver("export table Tstage to '" + getWarehouseDir() + "/1'");
+
+    //load T
+    runStatementOnDriver("import table T from '" + getWarehouseDir() + "/1'");
+    List<String> rs = runStatementOnDriver("select count(*) from T");
+    Assert.assertEquals("Rowcount of imported table", TestTxnCommands2.stringifyValues(rows), rs);
+  }
+
   /**
    * test selective partitioned import where target table needs to be created.
    * export is made from acid table so that target table is created as acid
