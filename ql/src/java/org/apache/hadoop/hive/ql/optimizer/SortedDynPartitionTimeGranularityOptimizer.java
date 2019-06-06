@@ -152,7 +152,7 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
 
       distributeByDim = HiveConf.getBoolVar(parseCtx.getConf(),
               HiveConf.ConfVars.HIVE_DRUID_INDEX_DISTRIBUTE_BY_DIM);
-      int maxSgetmentNum = HiveConf.getIntVar(parseCtx.getConf(), HiveConf.ConfVars.HIVE_DRUID_MAX_SEGMENT_NUM_PER_GRANULARITY);
+      maxSgetmentNum = HiveConf.getIntVar(parseCtx.getConf(), HiveConf.ConfVars.HIVE_DRUID_MAX_SEGMENT_NUM_PER_GRANULARITY);
       if (maxSgetmentNum < 0) {
         maxSgetmentNum = targetShardsPerGranularity;
       }
