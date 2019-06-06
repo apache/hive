@@ -35,7 +35,9 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
+import org.apache.hadoop.hive.metastore.api.ScheduledQuery._Fields;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequestType;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -51,8 +53,10 @@ import org.apache.hadoop.hive.ql.plan.DropMacroDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.schq.ScheduledQueryMaintWork;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,24 +72,58 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
   @Override
   public void analyzeInternal(ASTNode ast) throws SemanticException {
     ScheduledQueryMaintWork work;
-    switch (ast.getToken().getType()) {
-    case HiveParser.TOK_CREATE_SCHEDULED_QUERY:
-    case HiveParser.TOK_ALTER_SCHEDULED_QUERY:
-    case HiveParser.TOK_DROP_SCHEDULED_QUERY:
-      ScheduledQuery schq = interpretAstNode(ast);
+    ScheduledQueryMaintenanceRequestType type = translateAstType(ast.getToken().getType());
+    ScheduledQuery schq = interpretAstNode(ast);
+    fillScheduledQuery(type, schq);
+    work = new ScheduledQueryMaintWork(type, schq);
+    rootTasks.add(TaskFactory.get(work));
+  }
 
-      work = new ScheduledQueryMaintWork(ast.getToken().getType(), schq);
-      rootTasks.add(TaskFactory.get(work));
-
-      //      analyzeCreateScheduledQuery(ast);
-      break;
-    default:
-      throw new SemanticException("Can't handle: " + ast.getToken().getType());
+  private void fillScheduledQuery(ScheduledQueryMaintenanceRequestType type, ScheduledQuery schq)
+      throws SemanticException {
+    if (type == ScheduledQueryMaintenanceRequestType.INSERT) {
+      populateUnfilled(schq, buildEmptySchq());
+    } else {
+      try {
+        ScheduledQuery oldSchq = db.getMSC().getScheduledQuery(schq.getScheduleKey());
+        populateUnfilled(schq, oldSchq);
+      } catch (TException e) {
+        throw new SemanticException("unable to get Scheduled query" + e);
+      }
     }
   }
 
-  private void analyzeCreateScheduledQuery(ASTNode ast) throws SemanticException {
-    interpretAstNode(ast);
+  private ScheduledQuery buildEmptySchq() {
+    ScheduledQuery ret = new ScheduledQuery();
+    // ret.setScheduleKey() -- not populated
+    // ret.setSchedule(schedule);
+    // ret.setQuery(query);
+    ret.setEnabled(true);
+    ret.setUser(SessionState.get().getUserName());
+    return ret;
+  }
+
+  private void populateUnfilled(ScheduledQuery schq, ScheduledQuery def) {
+    _Fields[] q = ScheduledQuery._Fields.values();
+    for (_Fields field : q) {
+      if (!schq.isSet(field) && def.isSet(field)) {
+        schq.setFieldValue(field, def.getFieldValue(field));
+      }
+    }
+  }
+
+  private ScheduledQueryMaintenanceRequestType translateAstType(int type) throws SemanticException {
+    switch (type) {
+    case HiveParser.TOK_CREATE_SCHEDULED_QUERY:
+      return ScheduledQueryMaintenanceRequestType.INSERT;
+    case HiveParser.TOK_ALTER_SCHEDULED_QUERY:
+      return ScheduledQueryMaintenanceRequestType.UPDATE;
+    case HiveParser.TOK_DROP_SCHEDULED_QUERY:
+      return ScheduledQueryMaintenanceRequestType.DELETE;
+    default:
+      throw new SemanticException("Can't handle: " + type);
+    }
+
   }
 
   private ScheduledQuery interpretAstNode(ASTNode ast) throws SemanticException {
@@ -104,8 +142,9 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     return ret;
   }
 
-  private void processSS(ScheduledQuery schq, ASTNode child) throws SemanticException {
-    switch (child.getType()) {
+  //FIXME remove
+  private void processSS(ScheduledQuery schq, ASTNode node) throws SemanticException {
+    switch (node.getType()) {
     case HiveParser.TOK_ENABLE:
       schq.setEnabled(true);
       return;
@@ -113,16 +152,16 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
       schq.setEnabled(false);
       return;
     case HiveParser.TOK_CRON:
-      schq.setSchedule(child.getText());
+      schq.setSchedule(unescapeSQLString(node.getChild(0).getText()));
       return;
     case HiveParser.TOK_EXECUTED_AS:
-      schq.setUser(schq.getUser());
+      schq.setUser(unescapeSQLString(node.getChild(0).getText()));
       return;
     case HiveParser.TOK_QUERY:
-      schq.setQuery(unparseQuery(child.getChild(0)));
+      schq.setQuery(unparseQuery(node.getChild(0)));
       return;
     default:
-      throw new SemanticException("Unexpected token: " + child.getType());
+      throw new SemanticException("Unexpected token: " + node.getType());
     }
   }
 

@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.ql.schq;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -121,20 +123,25 @@ public class TestScheduledQuery2 {
   }
 
   @Test
-  public void testExistentTable3() throws ParseException, Exception {
+  public void testDoubleCreate() throws ParseException, Exception {
     IDriver driver = createDriver();
 
     CommandProcessorResponse ret;
-    ret = driver.run("use asd");
-    if (ret.getResponseCode() != 0) {
-      throw ret;
-    }
+    ret = driver.run("create scheduled query a2 cron '1 * * * *' as select 1 from tu");
+    assertEquals(0, ret.getResponseCode());
+    ret = driver.run("create scheduled query a2 cron '1 * * * *' as select 1 from tu");
+    assertNotEquals("expected to fail", 0, ret.getResponseCode());
+  }
 
-    ret = driver.run("create view default.a1 as select 1 from tasd");
-    //    ret = driver.run("create scheduled query a1 cron '1 * * * *' as select 1 from tasd");
-    if (ret.getResponseCode() != 0) {
-      throw ret;
-    }
+  @Test
+  public void testAlter() throws ParseException, Exception {
+    IDriver driver = createDriver();
+
+    CommandProcessorResponse ret;
+    ret = driver.run("create scheduled query a2 cron '1 * * * *' as select 1 from tu");
+    assertEquals(0, ret.getResponseCode());
+    ret = driver.run("create scheduled query a2 cron '1 * * * *' as select 1 from tu");
+    assertNotEquals("expected to fail", 0, ret.getResponseCode());
   }
 
   private static IDriver createDriver() {
