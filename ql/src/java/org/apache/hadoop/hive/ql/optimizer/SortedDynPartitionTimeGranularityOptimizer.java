@@ -322,6 +322,9 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
           String atlas = columnInfo.getAlias();
           LOG.info("added as hasher input: {}, {}, {}",
                   c, atlas, typeName);
+          if (atlas == null) {
+            continue;
+          }
           if (atlas.endsWith("_dim") || (typeName.equals("string") && !atlas.endsWith("_hll") &&
                   !atlas.endsWith("_theta") && !atlas.endsWith("_cnt"))) {
             LOG.info("treat as dim {}", atlas);
