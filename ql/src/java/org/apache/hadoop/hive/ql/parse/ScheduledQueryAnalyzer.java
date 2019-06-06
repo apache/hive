@@ -136,9 +136,9 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     // Now expand the view definition with extras such as explicit column
     // references; this expanded form is what we'll re-parse when the view is
     // referenced later.
-    String expandedText = sem.unparse(input);
+    unparseTranslator.applyTranslations(ctx.getTokenRewriteStream());
+    String expandedText = ctx.getTokenRewriteStream().toString(input.getTokenStartIndex(), input.getTokenStopIndex());
 
-    
     return expandedText;
   }
 
