@@ -2104,9 +2104,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Get table details from tabNameToTabObject cache
       Table tab = getTableObjectByName(tabName, false);
       if (tab != null) {
-        // do a deep copy, in case downstream changes it.
+        // copy table object in case downstream changes it
         Table newTab = new Table(tab.getTTable().deepCopy());
-        // copy constraints
+        // copy constraints, we do not need deep copy as
+        // they should not be changed
         newTab.setPrimaryKeyInfo(tab.getPrimaryKeyInfo());
         newTab.setForeignKeyInfo(tab.getForeignKeyInfo());
         newTab.setUniqueKeyInfo(tab.getUniqueKeyInfo());

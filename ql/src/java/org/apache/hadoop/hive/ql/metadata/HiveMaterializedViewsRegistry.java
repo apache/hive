@@ -378,6 +378,9 @@ public final class HiveMaterializedViewsRegistry {
 
       List<Interval> intervals = Arrays.asList(DruidTable.DEFAULT_INTERVAL);
       rowType = dtFactory.createStructType(druidColTypes, druidColNames);
+      // We can pass null for Hive object because it is only used to retrieve tables
+      // if constraints on a table object are existing, but constraints cannot be defined
+      // for materialized views.
       RelOptHiveTable optTable = new RelOptHiveTable(null, cluster.getTypeFactory(), fullyQualifiedTabName,
           rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
           conf, null, new HashMap<>(), new HashMap<>(), new HashMap<>(), new AtomicInteger());
@@ -389,7 +392,10 @@ public final class HiveMaterializedViewsRegistry {
       tableRel = DruidQuery.create(cluster, cluster.traitSetOf(BindableConvention.INSTANCE),
           optTable, druidTable, ImmutableList.<RelNode>of(scan), ImmutableMap.of());
     } else {
-      // Build Hive Table Scan Rel
+      // Build Hive Table Scan Rel.
+      // We can pass null for Hive object because it is only used to retrieve tables
+      // if constraints on a table object are existing, but constraints cannot be defined
+      // for materialized views.
       RelOptHiveTable optTable = new RelOptHiveTable(null, cluster.getTypeFactory(), fullyQualifiedTabName,
           rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
           conf, null, new HashMap<>(), new HashMap<>(), new HashMap<>(), new AtomicInteger());
