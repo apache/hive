@@ -322,7 +322,8 @@ public class LlapProtocolServerImpl extends AbstractService
       Map<String, Long> data = new HashMap<>();
       DumpingMetricsCollector dmc = new DumpingMetricsCollector(data);
       executorMetrics.getMetrics(dmc, true);
-      data.forEach((k,v) -> responseProtoBuilder.addMetrics(LlapDaemonProtocolProtos.MapEntry.newBuilder().setKey(k).setValue(v).build()));
+      data.forEach((key, value) -> responseProtoBuilder.addMetrics(
+          LlapDaemonProtocolProtos.MapEntry.newBuilder().setKey(key).setValue(value).build()));
     }
     return responseProtoBuilder.build();
   }
@@ -339,7 +340,7 @@ public class LlapProtocolServerImpl extends AbstractService
     }
   }
 
-  private class DumpingMetricsRecordBuilder extends MetricsRecordBuilder {
+  private final class DumpingMetricsRecordBuilder extends MetricsRecordBuilder {
     private Map<String, Long> data;
 
     private DumpingMetricsRecordBuilder(Map<String, Long> data) {
@@ -408,7 +409,7 @@ public class LlapProtocolServerImpl extends AbstractService
     }
   }
 
-  private class DumpingMetricsCollector implements MetricsCollector {
+  private final class DumpingMetricsCollector implements MetricsCollector {
     private MetricsRecordBuilder mrb;
 
     DumpingMetricsCollector(Map<String, Long> data) {
