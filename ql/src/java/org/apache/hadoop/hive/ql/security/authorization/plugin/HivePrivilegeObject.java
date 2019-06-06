@@ -167,23 +167,14 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     this(HivePrivilegeObjectType.TABLE_OR_VIEW, dbname, objectName, null, columns, null);
   }
 
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
-      List<String> partKeys, List<String> columns, HivePrivObjectActionType actionType,
-      List<String> commandParams, String className) {
-    this.type = type;
-    this.dbname = dbname;
-    this.objectName = objectName;
-    this.partKeys = partKeys;
-    this.columns = columns;
-    this.actionType = actionType;
-    this.commandParams = commandParams;
-    this.className = className;
-    this.ownerName = null;
-    this.ownerType = null;
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName, List<String> partKeys,
+      List<String> columns, HivePrivObjectActionType actionType, List<String> commandParams, String className) {
+    this(type, dbname, objectName, partKeys, columns, actionType, commandParams, className, null, null);
   }
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
-      List<String> partKeys, List<String> columns, HivePrivObjectActionType actionType,
-      List<String> commandParams, String className, String ownerName, PrincipalType ownerType) {
+
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName, List<String> partKeys,
+      List<String> columns, HivePrivObjectActionType actionType, List<String> commandParams, String className,
+      String ownerName, PrincipalType ownerType) {
     this.type = type;
     this.dbname = dbname;
     this.objectName = objectName;
@@ -292,6 +283,20 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     }
 
     return "Object [type=" + type + ", name=" + name + actionTypeStr + "]";
+  }
+
+  /**
+   * @return ownerName of the object
+   */
+  public String getOwnerName() {
+    return this.ownerName;
+  }
+
+  /**
+   * @return principal type of the owner
+   */
+  public PrincipalType getOwnerType() {
+    return this.ownerType;
   }
 
   private String getDbObjectName(String dbname2, String objectName2) {
