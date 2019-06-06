@@ -317,10 +317,14 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
         List<ExprNodeDesc> dimColumns = new ArrayList<>();
         for (String c: columns) {
 
-          String typeName = selRS.getColumnInfo(c).getType().getTypeName();
-          if (c.endsWith("_dim") || (typeName.equals("string") && !c.endsWith("_hll") &&
-                  !c.endsWith("_theta") && !c.endsWith("_cnt"))) {
-            dimColumns.add(new ExprNodeColumnDesc(selRS.getColumnInfo(c)));
+          ColumnInfo columnInfo = selRS.getColumnInfo(c);
+          String typeName = columnInfo.getType().getTypeName();
+          String atlas = columnInfo.getAlias();
+          if (atlas.endsWith("_dim") || (typeName.equals("string") && !atlas.endsWith("_hll") &&
+                  !atlas.endsWith("_theta") && !atlas.endsWith("_cnt"))) {
+            LOG.info("added as hasher input: {}, {}, {}, {}",
+                    c, columnInfo.getInternalName(), atlas, typeName);
+            dimColumns.add(new ExprNodeColumnDesc(columnInfo));
           }
         }
         final ColumnInfo partitionKeyCi =
