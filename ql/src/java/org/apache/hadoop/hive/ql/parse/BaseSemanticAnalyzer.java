@@ -128,7 +128,6 @@ public abstract class BaseSemanticAnalyzer {
   protected Context ctx;
   protected HashMap<String, String> idToTableNameMap;
   protected QueryProperties queryProperties;
-  protected final UnparseTranslator unparseTranslator;
 
   /**
    * A set of FileSinkOperators being written to in an ACID compliant way.  We need to remember
@@ -258,7 +257,6 @@ public abstract class BaseSemanticAnalyzer {
       inputs = new LinkedHashSet<ReadEntity>();
       outputs = new LinkedHashSet<WriteEntity>();
       txnManager = queryState.getTxnManager();
-      unparseTranslator = new UnparseTranslator(conf);
     } catch (Exception e) {
       throw new SemanticException(e);
     }
@@ -2324,13 +2322,5 @@ public abstract class BaseSemanticAnalyzer {
         throw new SemanticException(e);
       }
     }
-  }
-
-  protected String unparse(ASTNode input) {
-    unparseTranslator.applyTranslations(ctx.getTokenRewriteStream());
-    String expandedText =
-        ctx.getTokenRewriteStream().toString(input.getTokenStartIndex(), input.getTokenStopIndex());
-    return expandedText;
-
   }
 }
