@@ -121,6 +121,7 @@ public final class TaskFactory {
     taskvec.add(new TaskTuple<ExportWork>(ExportWork.class, ExportTask.class));
     taskvec.add(new TaskTuple<ReplTxnWork>(ReplTxnWork.class, ReplTxnTask.class));
     taskvec.add(new TaskTuple<DirCopyWork>(DirCopyWork.class, DirCopyTask.class));
+    taskvec.add(new TaskTuple<ScheduledQueryMaintWork>(ScheduledQueryMaintWork.class, ScheduledQueryMaintTask.class));
   }
 
   private static ThreadLocal<Integer> tid = new ThreadLocal<Integer>() {

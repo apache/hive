@@ -69,14 +69,20 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void analyzeInternal(ASTNode ast) throws SemanticException {
+    ScheduledQueryMaintWork work;
     switch (ast.getToken().getType()) {
     case HiveParser.TOK_CREATE_SCHEDULED_QUERY:
-      analyzeCreateScheduledQuery(ast);
-      break;
     case HiveParser.TOK_ALTER_SCHEDULED_QUERY:
-      break;
     case HiveParser.TOK_DROP_SCHEDULED_QUERY:
+      ScheduledQuery schq = interpretAstNode(ast);
+
+      work = new ScheduledQueryMaintWork(ast.getToken().getType(), schq);
+      rootTasks.add(TaskFactory.get(work));
+
+      //      analyzeCreateScheduledQuery(ast);
       break;
+    default:
+      throw new SemanticException("Can't handle: " + ast.getToken().getType());
     }
   }
 
