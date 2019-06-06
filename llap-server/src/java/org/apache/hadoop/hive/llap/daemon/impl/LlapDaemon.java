@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -180,6 +181,17 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         daemonConf, ConfVars.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE);
     boolean enablePreemption = HiveConf.getBoolVar(
         daemonConf, ConfVars.LLAP_DAEMON_TASK_SCHEDULER_ENABLE_PREEMPTION);
+    int averageWindowDataSize = HiveConf.getIntVar(
+        daemonConf, ConfVars.LLAP_DAEMON_METRICS_AVERAGE_DATA_SIZE);
+    long averageWindowTimeSize = HiveConf.getTimeVar(
+        daemonConf, ConfVars.LLAP_DAEMON_METRICS_AVERAGE_TIME_WINDOW, TimeUnit.NANOSECONDS);
+
+    Preconditions.checkArgument(averageWindowDataSize >= 0,
+        "hive.llap.daemon.metrics.average.data.size should be greater or equal to 0");
+    Preconditions.checkArgument(averageWindowDataSize == 0 || averageWindowTimeSize > 0,
+        "hive.llap.daemon.metrics.average.time.window should be greater than 0 if " +
+            "hive.llap.daemon.metrics.average.data.size is set");
+
     final String logMsg = "Attempting to start LlapDaemon with the following configuration: " +
       "maxJvmMemory=" + maxJvmMemory + " ("
       + LlapUtil.humanReadableByteCount(maxJvmMemory) + ")" +
@@ -202,11 +214,14 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       ", shufflePort=" + shufflePort +
       ", waitQueueSize= " + waitQueueSize +
       ", enablePreemption= " + enablePreemption +
+      ", averageWindowDataSize= " + averageWindowDataSize +
+      ", averageWindowTimeSize= " + averageWindowTimeSize +
       ", versionInfo= (" + HiveVersionInfo.getBuildVersion() + ")";
     LOG.info(logMsg);
     final String currTSISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date());
     // Time based log retrieval may not fetch the above log line so logging to stderr for debugging purpose.
     System.err.println(currTSISO8601 + " " + logMsg);
+
 
 
     long memRequired =
@@ -264,7 +279,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       }
     }
     this.metrics = LlapDaemonExecutorMetrics.create(displayName, sessionId, numExecutors,
-        Ints.toArray(intervalList));
+        Ints.toArray(intervalList), averageWindowDataSize, averageWindowTimeSize);
     this.metrics.setMemoryPerInstance(executorMemoryPerInstance);
     this.metrics.setCacheMemoryPerInstance(ioMemoryBytes);
     this.metrics.setJvmMaxMemory(maxJvmMemory);
