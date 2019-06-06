@@ -1956,6 +1956,9 @@ public class HiveConf extends Configuration {
     HIVE_DRUID_MAX_PARTITION_SIZE("hive.druid.indexer.partition.size.max", 5000000,
             "Maximum number of records per segment partition"
     ),
+    HIVE_DRUID_MAX_SEGMENT_NUM_PER_GRANULARITY("hive.druid.max.segment.num.per.granularity", -1,
+            "Maximum number of  segment partition per granularity"
+    ),
     HIVE_DRUID_MAX_ROW_IN_MEMORY("hive.druid.indexer.memory.rownum.max", 75000,
             "Maximum number of records in memory while storing data in Druid"
     ),

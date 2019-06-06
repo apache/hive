@@ -102,6 +102,7 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
     private int granularityKeyPos = -1;
     private int partitionKeyPos = -1;
     boolean distributeByDim = false;
+    int maxSgetmentNum = -1;
 
     public SortedDynamicPartitionProc(ParseContext pCtx) {
       this.parseCtx = pCtx;
@@ -140,7 +141,6 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
               : HiveConf.getVar(parseCtx.getConf(),
                       HiveConf.ConfVars.HIVE_DRUID_INDEXING_GRANULARITY
               );
-
       if (targetShardsProperty == null) {
         targetShardsProperty = "-1";
       }
@@ -152,6 +152,10 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
 
       distributeByDim = HiveConf.getBoolVar(parseCtx.getConf(),
               HiveConf.ConfVars.HIVE_DRUID_INDEX_DISTRIBUTE_BY_DIM);
+      int maxSgetmentNum = HiveConf.getIntVar(parseCtx.getConf(), HiveConf.ConfVars.HIVE_DRUID_MAX_SEGMENT_NUM_PER_GRANULARITY);
+      if (maxSgetmentNum < 0) {
+        maxSgetmentNum = targetShardsPerGranularity;
+      }
       if (distributeByDim) {
         targetShardsPerGranularity = -1;
       }
@@ -328,19 +332,21 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
                 new GenericUDFHash(), dimColumns
         );
 
-//        final ExprNodeGenericFuncDesc abs = ExprNodeGenericFuncDesc.newInstance(
-//                new GenericUDFAbs(), Lists.<ExprNodeDesc>newArrayList(hash)
-//        );
-//
-//        final ExprNodeGenericFuncDesc mod = ExprNodeGenericFuncDesc.newInstance(
-//                new GenericUDFOPMod(), Lists.newArrayList(abs,
-//                        new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo, 10000))
-//        );
+        if (maxSgetmentNum > 0) {
+          final ExprNodeGenericFuncDesc abs = ExprNodeGenericFuncDesc.newInstance(
+                  new GenericUDFAbs(), Lists.<ExprNodeDesc>newArrayList(hash)
+          );
 
-        descs.add(hash);
+          final ExprNodeGenericFuncDesc mod = ExprNodeGenericFuncDesc.newInstance(
+                  new GenericUDFOPMod(), Lists.newArrayList(abs,
+                          new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo, maxSgetmentNum))
+          );
+          descs.add(mod);
+        } else {
+          descs.add(hash);
+        }
         colNames.add(Constants.DRUID_DISTRBUTE_KEY_COL_NAME);
         selRS.getSignature().add(partitionKeyCi);
-
       }
       if (targetShardsPerGranularity > 0 ) {
         // add another partitioning key based on floor(1/rand) % targetShardsPerGranularity
