@@ -15,10 +15,13 @@
 package org.apache.hadoop.hive.llap.daemon.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.protobuf.ServiceException;
@@ -36,6 +39,8 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWor
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmissionStateProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetDaemonMetricsRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetDaemonMetricsResponseProto;
 import org.apache.hadoop.hive.llap.impl.LlapProtocolClientImpl;
 import org.junit.Test;
 
@@ -77,7 +82,7 @@ public class TestLlapDaemonProtocolServerImpl {
   }
 
   @Test(timeout = 10000)
-  public void testGetMetrics() throws ServiceException, IOException {
+  public void testGetLoadMetrics() throws ServiceException, IOException {
     LlapDaemonConfiguration daemonConf = new LlapDaemonConfiguration();
     int numHandlers = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_RPC_NUM_HANDLERS);
     LlapDaemonExecutorMetrics executorMetricsMock = mock(LlapDaemonExecutorMetrics.class);
@@ -105,4 +110,71 @@ public class TestLlapDaemonProtocolServerImpl {
       server.stop();
     }
   }
+
+  @Test(timeout = 10000000)
+  public void testGetDaemonMetrics() throws ServiceException, IOException {
+    LlapDaemonConfiguration daemonConf = new LlapDaemonConfiguration();
+    int numHandlers = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_RPC_NUM_HANDLERS);
+    LlapDaemonExecutorMetrics executorMetrics =
+        LlapDaemonExecutorMetrics.create("LLAP", "SessionId", numHandlers, new int[] {30, 60, 300});
+    LlapProtocolServerImpl server =
+        new LlapProtocolServerImpl(null, numHandlers, null,
+            new AtomicReference<InetSocketAddress>(), new AtomicReference<InetSocketAddress>(),
+            0, 0, null, executorMetrics);
+    executorMetrics.addMetricsFallOffFailedTimeLost(10);
+    executorMetrics.addMetricsFallOffKilledTimeLost(11);
+    executorMetrics.addMetricsFallOffSuccessTimeLost(12);
+    executorMetrics.addMetricsPreemptionTimeLost(13);
+    executorMetrics.addMetricsPreemptionTimeToKill(14);
+    executorMetrics.incrExecutorTotalExecutionFailed();
+    executorMetrics.incrExecutorTotalKilled();
+    executorMetrics.incrExecutorTotalRequestsHandled();
+    executorMetrics.incrExecutorTotalSuccess();
+    executorMetrics.incrTotalEvictedFromWaitQueue();
+    executorMetrics.incrTotalRejectedRequests();
+    executorMetrics.setCacheMemoryPerInstance(15);
+    executorMetrics.setExecutorNumPreemptableRequests(16);
+    executorMetrics.setExecutorNumQueuedRequests(17);
+    executorMetrics.setJvmMaxMemory(18);
+    executorMetrics.setMemoryPerInstance(19);
+    executorMetrics.setNumExecutorsAvailable(20);
+    executorMetrics.setWaitQueueSize(21);
+
+    try {
+      server.init(new Configuration());
+      server.start();
+      InetSocketAddress serverAddr = server.getManagementBindAddress();
+
+      LlapManagementProtocolPB client =
+          new LlapManagementProtocolClientImpl(new Configuration(), serverAddr.getHostName(),
+              serverAddr.getPort(), null, null);
+      GetDaemonMetricsResponseProto responseProto = client.getDaemonMetrics(null,
+          GetDaemonMetricsRequestProto.newBuilder().build());
+      Map<String, Long> result = new HashMap<>(responseProto.getMetricsCount());
+      responseProto.getMetricsList().forEach(me -> result.put(me.getKey(), me.getValue()));
+
+      assertTrue("Checking ExecutorFallOffFailedTimeLost", result.get("ExecutorFallOffFailedTimeLost") == 10);
+      assertTrue("Checking ExecutorFallOffKilledTimeLost", result.get("ExecutorFallOffKilledTimeLost") == 11);
+      assertTrue("Checking ExecutorFallOffSuccessTimeLost", result.get("ExecutorFallOffSuccessTimeLost") == 12);
+      assertTrue("Checking ExecutorTotalPreemptionTimeLost", result.get("ExecutorTotalPreemptionTimeLost") == 13);
+      assertTrue("Checking ExecutorTotalPreemptionTimeToKill", result.get("ExecutorTotalPreemptionTimeToKill") == 14);
+      assertTrue("Checking ExecutorTotalFailed", result.get("ExecutorTotalFailed") == 1);
+      assertTrue("Checking ExecutorTotalKilled", result.get("ExecutorTotalKilled") == 1);
+      assertTrue("Checking ExecutorTotalRequestsHandled", result.get("ExecutorTotalRequestsHandled") == 1);
+      assertTrue("Checking ExecutorTotalSuccess", result.get("ExecutorTotalSuccess") == 1);
+      assertTrue("Checking ExecutorTotalEvictedFromWaitQueue", result.get("ExecutorTotalEvictedFromWaitQueue") == 1);
+      assertTrue("Checking ExecutorTotalRejectedRequests", result.get("ExecutorTotalRejectedRequests") == 1);
+      assertTrue("Checking ExecutorCacheMemoryPerInstance", result.get("ExecutorCacheMemoryPerInstance") == 15);
+      assertTrue("Checking ExecutorNumPreemptableRequests", result.get("ExecutorNumPreemptableRequests") == 16);
+      assertTrue("Checking ExecutorNumQueuedRequests", result.get("ExecutorNumQueuedRequests") == 17);
+      assertTrue("Checking ExecutorJvmMaxMemory", result.get("ExecutorJvmMaxMemory") == 18);
+      assertTrue("Checking ExecutorMemoryPerInstance", result.get("ExecutorMemoryPerInstance") == 19);
+      assertTrue("Checking ExecutorNumExecutorsAvailable", result.get("ExecutorNumExecutorsAvailable") == 20);
+      assertTrue("Checking ExecutorWaitQueueSize", result.get("ExecutorWaitQueueSize") == 21);
+
+    } finally {
+      server.stop();
+    }
+  }
+
 }
