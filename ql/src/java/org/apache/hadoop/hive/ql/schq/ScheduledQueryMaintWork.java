@@ -1,4 +1,4 @@
-package org.apache.hadoop.hive.ql.parse;
+package org.apache.hadoop.hive.ql.schq;
 
 import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
 import org.apache.hadoop.hive.ql.plan.DropMacroDesc;

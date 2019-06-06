@@ -1,11 +1,9 @@
-package org.apache.hadoop.hive.ql.exec;
-
-import java.io.Serializable;
+package org.apache.hadoop.hive.ql.exec.schq;
 
 import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.exec.repl.ExternalTableCopyTaskBuilder.DirCopyWork;
-import org.apache.hadoop.hive.ql.parse.ScheduledQueryMaintWork;
+import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.hive.ql.schq.ScheduledQueryMaintWork;
 
 public class ScheduledQueryMaintTask extends Task<ScheduledQueryMaintWork> {
 
@@ -18,7 +16,6 @@ public class ScheduledQueryMaintTask extends Task<ScheduledQueryMaintWork> {
 
   @Override
   protected int execute(DriverContext driverContext) {
-    // TODO Auto-generated method stub
     return 0;
   }
 

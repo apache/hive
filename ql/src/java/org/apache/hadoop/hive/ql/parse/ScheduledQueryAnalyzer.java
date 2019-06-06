@@ -22,21 +22,16 @@ import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_IFEXISTS;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
-import java.util.function.Function;
-import java.util.LinkedHashSet;
 
-import org.apache.hadoop.hive.metastore.Warehouse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
@@ -55,8 +50,11 @@ import org.apache.hadoop.hive.ql.plan.CreateMacroDesc;
 import org.apache.hadoop.hive.ql.plan.DropMacroDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FunctionWork;
+import org.apache.hadoop.hive.ql.schq.ScheduledQueryMaintWork;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
   private static final Logger LOG = LoggerFactory.getLogger(ScheduledQueryAnalyzer.class);
