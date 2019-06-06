@@ -211,14 +211,6 @@ message PurgeCacheResponseProto {
   optional int64 purged_memory_bytes = 1;
 }
 
-message GetLoadMetricsRequestProto {
-}
-
-message GetLoadMetricsResponseProto {
-  optional int64 num_executors_available = 1;
-  optional int64 wait_queue_size = 2;
-}
-
 message MapEntry {
   optional string key = 1;
   optional int64 value = 2;
@@ -243,6 +235,5 @@ service LlapDaemonProtocol {
 service LlapManagementProtocol {
   rpc getDelegationToken(GetTokenRequestProto) returns (GetTokenResponseProto);
   rpc purgeCache(PurgeCacheRequestProto) returns (PurgeCacheResponseProto);
-  rpc getLoadMetrics(GetLoadMetricsRequestProto) returns (GetLoadMetricsResponseProto);
   rpc getDaemonMetrics(GetDaemonMetricsRequestProto) returns (GetDaemonMetricsResponseProto);
 }

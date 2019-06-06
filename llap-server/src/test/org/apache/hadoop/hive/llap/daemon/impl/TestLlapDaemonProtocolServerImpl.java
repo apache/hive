@@ -37,8 +37,6 @@ import org.apache.hadoop.hive.llap.protocol.LlapProtocolBlockingPB;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmissionStateProto;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsRequestProto;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetLoadMetricsResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetDaemonMetricsRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetDaemonMetricsResponseProto;
 import org.apache.hadoop.hive.llap.impl.LlapProtocolClientImpl;
@@ -82,36 +80,6 @@ public class TestLlapDaemonProtocolServerImpl {
   }
 
   @Test(timeout = 10000)
-  public void testGetLoadMetrics() throws ServiceException, IOException {
-    LlapDaemonConfiguration daemonConf = new LlapDaemonConfiguration();
-    int numHandlers = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_RPC_NUM_HANDLERS);
-    LlapDaemonExecutorMetrics executorMetricsMock = mock(LlapDaemonExecutorMetrics.class);
-    LlapProtocolServerImpl server =
-        new LlapProtocolServerImpl(null, numHandlers, null,
-            new AtomicReference<InetSocketAddress>(), new AtomicReference<InetSocketAddress>(),
-            0, 0, null, executorMetricsMock);
-    when(executorMetricsMock.getNumExecutorsAvailable()).thenReturn(10);
-    when(executorMetricsMock.getWaitQueueSize()).thenReturn(11);
-
-    try {
-      server.init(new Configuration());
-      server.start();
-      InetSocketAddress serverAddr = server.getManagementBindAddress();
-
-      LlapManagementProtocolPB client =
-          new LlapManagementProtocolClientImpl(new Configuration(), serverAddr.getHostName(),
-              serverAddr.getPort(), null, null);
-      GetLoadMetricsResponseProto responseProto = client.getLoadMetrics(null,
-          GetLoadMetricsRequestProto.newBuilder().build());
-      assertEquals("Checking executor num", responseProto.getNumExecutorsAvailable(), 10);
-      assertEquals("Checking wait queue size", responseProto.getWaitQueueSize(), 11);
-
-    } finally {
-      server.stop();
-    }
-  }
-
-  @Test(timeout = 10000000)
   public void testGetDaemonMetrics() throws ServiceException, IOException {
     LlapDaemonConfiguration daemonConf = new LlapDaemonConfiguration();
     int numHandlers = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_RPC_NUM_HANDLERS);

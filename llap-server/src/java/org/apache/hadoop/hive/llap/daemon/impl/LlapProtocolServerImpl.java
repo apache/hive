@@ -314,18 +314,6 @@ public class LlapProtocolServerImpl extends AbstractService
   }
 
   @Override
-  public LlapDaemonProtocolProtos.GetLoadMetricsResponseProto getLoadMetrics(final RpcController controller,
-      final LlapDaemonProtocolProtos.GetLoadMetricsRequestProto request) throws ServiceException {
-    LlapDaemonProtocolProtos.GetLoadMetricsResponseProto.Builder responseProtoBuilder =
-        LlapDaemonProtocolProtos.GetLoadMetricsResponseProto.newBuilder();
-    if (executorMetrics != null) {
-      responseProtoBuilder.setNumExecutorsAvailable(executorMetrics.getNumExecutorsAvailable());
-      responseProtoBuilder.setWaitQueueSize(executorMetrics.getWaitQueueSize());
-    }
-    return responseProtoBuilder.build();
-  }
-
-  @Override
   public LlapDaemonProtocolProtos.GetDaemonMetricsResponseProto getDaemonMetrics(final RpcController controller,
       final LlapDaemonProtocolProtos.GetDaemonMetricsRequestProto request) throws ServiceException {
     LlapDaemonProtocolProtos.GetDaemonMetricsResponseProto.Builder responseProtoBuilder =
