@@ -4,6 +4,35 @@ CREATE DATABASE IF NOT EXISTS SYS;
 
 USE SYS;
 
+CREATE EXTERNAL TABLE IF NOT EXISTS `SCHEDULED_QUERIES` (
+  `SCHEDULED_QUERY_ID` bigint,
+  `SCHEDULE_NAME` string,
+  `ENABLED` boolean,
+  `CLUSTER_NAMESPACE` string,
+  `SCHEDULE` string,
+  `USER` string,
+  `QUERY` string,
+  `NEXT_EXECUTION` bigint,
+  CONSTRAINT `SYS_PK_SCHEDULED_QUERIES` PRIMARY KEY (`SCHEDULED_QUERY_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SCHEDULED_QUERY_ID\",
+  \"SCHEDULE_NAME\",
+  \"ENABLED\",
+  \"CLUSTER_NAMESPACE\",
+  \"SCHEDULE\",
+  \"USER\",
+  \"QUERY\",
+  \"NEXT_EXECUTION\"
+FROM
+  \"SCHEDULED_QUERIES\""
+);
+
+
 CREATE EXTERNAL TABLE IF NOT EXISTS `BUCKETING_COLS` (
   `SD_ID` bigint,
   `BUCKET_COL_NAME` string,
@@ -1190,6 +1219,9 @@ SELECT
   CQ_RUN_AS,
   CQ_HIGHEST_WRITE_ID
 FROM COMPACTION_QUEUE;
+
+
+-- FIXME missing create table stmts for specific databases!!!
 
 
 CREATE DATABASE IF NOT EXISTS INFORMATION_SCHEMA;

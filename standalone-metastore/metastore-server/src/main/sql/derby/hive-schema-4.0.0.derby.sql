@@ -718,6 +718,20 @@ CREATE TABLE TXN_WRITE_NOTIFICATION_LOG (
 );
 INSERT INTO SEQUENCE_TABLE (SEQUENCE_NAME, NEXT_VAL) VALUES ('org.apache.hadoop.hive.metastore.model.MTxnWriteNotificationLog', 1);
 
+CREATE TABLE "APP"."SCHEDULED_QUERIES" (
+  "SCHEDULED_QUERY_ID" bigint primary key not null,
+  "SCHEDULE_NAME" varchar(128) not null,
+  "ENABLED" SMALLINT not null
+  "CLUSTER_NAMESPACE" varchar(128) not null,
+  "SCHEDULE" varchar(128) not null,
+  "USER" varchar(128) not null,
+  -- FIXME varchar 256???
+  "QUERY" varchar(256) not null,
+  "NEXT_EXECUTION" integer not null
+);
+
+
+
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
 -- -----------------------------------------------------------------
