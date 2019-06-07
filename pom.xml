@@ -66,7 +66,7 @@
   </modules>
 
   <properties>
-    <hive.version.shortname>3.1.0</hive.version.shortname>
+    <hive.version.shortname>3.2.0</hive.version.shortname>
 
     <!-- Build Properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
