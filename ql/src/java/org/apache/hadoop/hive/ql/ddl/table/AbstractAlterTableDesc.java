@@ -42,19 +42,20 @@ public abstract class AbstractAlterTableDesc implements DDLDesc, DDLDescWithWrit
   private final ReplicationSpec replicationSpec;
   private final boolean isCascade;
   private final boolean expectView;
-
-  private Map<String, String> props;
+  private final Map<String, String> props;
 
   private Long writeId;
 
   public AbstractAlterTableDesc(AlterTableTypes type, String tableName, Map<String, String> partitionSpec,
-      ReplicationSpec replicationSpec, boolean isCascade, boolean expectView) throws SemanticException {
+      ReplicationSpec replicationSpec, boolean isCascade, boolean expectView, Map<String, String> props)
+      throws SemanticException {
     this.type = type;
     this.tableName = String.join(".", Utilities.getDbTableName(tableName));
     this.partitionSpec = partitionSpec;
     this.replicationSpec = replicationSpec;
     this.isCascade = isCascade;
     this.expectView = expectView;
+    this.props = props;
   }
 
   public AlterTableTypes getType() {
@@ -85,6 +86,7 @@ public abstract class AbstractAlterTableDesc implements DDLDesc, DDLDescWithWrit
     return expectView;
   }
 
+  @Explain(displayName = "props", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Map<String, String> getProps() {
     return props;
   }

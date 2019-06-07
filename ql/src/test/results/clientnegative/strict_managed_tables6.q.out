@@ -27,4 +27,4 @@ PREHOOK: type: ALTERTABLE_LOCATION
 PREHOOK: Input: smt6@strict_managed_tables1_tab1
 #### A masked pattern was here ####
 PREHOOK: Output: smt6@strict_managed_tables1_tab1
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to alter table. Cannot change location of a managed table hive.smt6.strict_managed_tables1_tab1 as it is enabled for replication.
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Unable to alter table. Cannot change location of a managed table hive.smt6.strict_managed_tables1_tab1 as it is enabled for replication.

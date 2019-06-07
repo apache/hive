@@ -49,7 +49,7 @@ public class AlterTableChangeColumnDesc extends AbstractAlterTableWithConstraint
   public AlterTableChangeColumnDesc(String tableName, Map<String, String> partitionSpec, boolean isCascade,
       Constraints constraints, String oldColumnName, String newColumnName, String newColumnType,
       String newColumnComment, boolean first, String afterColumn) throws SemanticException {
-    super(AlterTableTypes.RENAME_COLUMN, tableName, partitionSpec, null, isCascade, false, constraints);
+    super(AlterTableTypes.RENAME_COLUMN, tableName, partitionSpec, null, isCascade, false, null, constraints);
 
     this.oldColumnName = oldColumnName;
     this.newColumnName = newColumnName;

@@ -41,7 +41,7 @@ public class AlterTableUpdateColumnsDesc extends AbstractAlterTableDesc implemen
 
   public AlterTableUpdateColumnsDesc(String tableName, Map<String, String> partitionSpec, boolean isCascade)
       throws SemanticException {
-    super(AlterTableTypes.UPDATE_COLUMNS, tableName, partitionSpec, null, isCascade, false);
+    super(AlterTableTypes.UPDATE_COLUMNS, tableName, partitionSpec, null, isCascade, false, null);
   }
 
   @Override

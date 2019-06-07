@@ -27,12 +27,11 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.UgiFactory;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DaemonId;
 import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.NotTezEventHelper;
-import org.apache.hadoop.hive.llap.counters.FragmentCountersMap;
-import org.apache.hadoop.hive.llap.counters.LlapWmCounters;
 import org.apache.hadoop.hive.llap.counters.WmFragmentCounters;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
@@ -65,7 +64,6 @@ import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.security.LlapSignerImpl;
 import org.apache.hadoop.hive.llap.tez.Converters;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
-import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
@@ -73,7 +71,6 @@ import org.apache.hadoop.service.CompositeService;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.util.AuxiliaryServiceHelper;
 import org.apache.log4j.NDC;
-import org.apache.tez.common.counters.TezCounters;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.common.security.TokenCache;
 import org.apache.tez.dag.api.TezConfiguration;
@@ -141,7 +138,6 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     this.queryTracker = queryTracker;
     this.executorService = executorService;
     completionListener = (SchedulerFragmentCompletingListener) executorService;
-
 
     // Distribute the available memory between the tasks.
     this.memoryPerExecutor = (long)(totalMemoryAvailableBytes / (float) numExecutors);
@@ -280,8 +276,15 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
       Configuration callableConf = new Configuration(getConfig());
       UserGroupInformation fsTaskUgi = fsUgiFactory == null ? null : fsUgiFactory.createUgi();
       boolean isGuaranteed = request.hasIsGuaranteed() && request.getIsGuaranteed();
+
+      // enable the printing of (per daemon) LLAP task queue/run times via LLAP_TASK_TIME_SUMMARY
+      ConfVars tezSummary = ConfVars.TEZ_EXEC_SUMMARY;
+      ConfVars llapTasks = ConfVars.LLAP_TASK_TIME_SUMMARY;
+      boolean addTaskTimes = callableConf.getBoolean(tezSummary.varname, tezSummary.defaultBoolVal)
+                             && callableConf.getBoolean(llapTasks.varname, llapTasks.defaultBoolVal);
+
       // TODO: ideally we'd register TezCounters here, but it seems impossible before registerTask.
-      WmFragmentCounters wmCounters = new WmFragmentCounters();
+      WmFragmentCounters wmCounters = new WmFragmentCounters(addTaskTimes);
       TaskRunnerCallable callable = new TaskRunnerCallable(request, fragmentInfo, callableConf,
           new ExecutionContextImpl(localAddress.get().getHostName()), env,
           credentials, memoryPerExecutor, amReporter, confParams, metrics, killedTaskHandler,

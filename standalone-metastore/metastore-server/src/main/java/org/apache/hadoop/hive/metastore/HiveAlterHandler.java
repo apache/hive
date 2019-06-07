@@ -63,7 +63,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import static org.apache.hadoop.hive.metastore.HiveMetaHook.ALTERLOCATION;
+import static org.apache.hadoop.hive.metastore.HiveMetaHook.SET_LOCATION;
 import static org.apache.hadoop.hive.metastore.HiveMetaHook.ALTER_TABLE_OPERATION_TYPE;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
@@ -823,13 +823,13 @@ public class HiveAlterHandler implements AlterHandler {
 
     // Do not allow changing location of a managed table as alter event doesn't capture the
     // new files list. So, it may cause data inconsistency.
-    if (ec.isSetProperties()) {
+    if ((ec != null) && ec.isSetProperties()) {
       String alterType = ec.getProperties().get(ALTER_TABLE_OPERATION_TYPE);
-      if (alterType != null && alterType.equalsIgnoreCase(ALTERLOCATION) &&
-              tbl.getTableType().equalsIgnoreCase(TableType.MANAGED_TABLE.name())) {
-        throw new InvalidOperationException("Cannot change location of a managed table " +
-                TableName.getQualified(tbl.getCatName(),
-                        tbl.getDbName(), tbl.getTableName()) + " as it is enabled for replication.");
+      if (alterType != null && alterType.equalsIgnoreCase(SET_LOCATION) &&
+          tbl.getTableType().equalsIgnoreCase(TableType.MANAGED_TABLE.name())) {
+        String tableName = TableName.getQualified(tbl.getCatName(), tbl.getDbName(), tbl.getTableName());
+        throw new InvalidOperationException(
+            "Cannot change location of a managed table " + tableName + " as it is enabled for replication.");
       }
     }
   }
@@ -846,13 +846,13 @@ public class HiveAlterHandler implements AlterHandler {
     // Do not allow changing location of a managed table as alter event doesn't capture the
     // new files list. So, it may cause data inconsistency. We do this whether or not strict
     // managed is true on the source cluster.
-    if (ec.isSetProperties()) {
-        String alterType = ec.getProperties().get(ALTER_TABLE_OPERATION_TYPE);
-        if (alterType != null && alterType.equalsIgnoreCase(ALTERLOCATION) &&
-            oldTbl.getTableType().equalsIgnoreCase(TableType.MANAGED_TABLE.name())) {
-          throw new InvalidOperationException("Cannot change location of a managed table " +
-                  TableName.getQualified(oldTbl.getCatName(),
-                          oldTbl.getDbName(), oldTbl.getTableName()) + " as it is enabled for replication.");
+    if ((ec != null) && ec.isSetProperties()) {
+      String alterType = ec.getProperties().get(ALTER_TABLE_OPERATION_TYPE);
+      if (alterType != null && alterType.equalsIgnoreCase(SET_LOCATION) &&
+          oldTbl.getTableType().equalsIgnoreCase(TableType.MANAGED_TABLE.name())) {
+        String tableName = TableName.getQualified(oldTbl.getCatName(), oldTbl.getDbName(), oldTbl.getTableName());
+        throw new InvalidOperationException(
+            "Cannot change location of a managed table " + tableName + " as it is enabled for replication.");
         }
     }
 

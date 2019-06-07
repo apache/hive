@@ -38,7 +38,7 @@ public class AlterTableAddConstraintDesc extends AbstractAlterTableWithConstrain
 
   public AlterTableAddConstraintDesc(String tableName, ReplicationSpec replicationSpec, Constraints constraints)
       throws SemanticException {
-    super(AlterTableTypes.ADD_CONSTRAINT, tableName, null, replicationSpec, false, false, constraints);
+    super(AlterTableTypes.ADD_CONSTRAINT, tableName, null, replicationSpec, false, false, null, constraints);
   }
 
   @Override

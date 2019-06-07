@@ -49,6 +49,7 @@ import org.apache.calcite.schema.ColumnStrategy;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.mapping.IntPair;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -65,7 +66,6 @@ import org.apache.hadoop.hive.ql.metadata.UniqueConstraint.UniqueConstraintCol;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ExprNodeConverter;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
@@ -75,6 +75,7 @@ import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
+import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,14 +87,15 @@ public class RelOptHiveTable implements RelOptTable {
 
   //~ Instance fields --------------------------------------------------------
 
-  private final RelOptSchema schema;
-  private final RelDataTypeFactory typeFactory;
-  private final RelDataType rowType;
-  private final List<String> qualifiedTblName;
-  private final String name;
+  private final RelOptSchema                      schema;
+  private final RelDataTypeFactory                typeFactory;
+  private final RelDataType                       rowType;
+  private final List<String>                      qualifiedTblName;
+  private final String                            name;
   private final Table                             hiveTblMetadata;
   private final ImmutableList<ColumnInfo>         hiveNonPartitionCols;
   private final ImmutableList<ColumnInfo>         hivePartitionCols;
+  private final Map<Integer, ColStatistics>       hiveColStatsMap;
   private final ImmutableMap<Integer, ColumnInfo> hiveNonPartitionColsMap;
   private final ImmutableMap<Integer, ColumnInfo> hivePartitionColsMap;
   private final ImmutableList<VirtualColumn>      hiveVirtualCols;
@@ -101,20 +103,23 @@ public class RelOptHiveTable implements RelOptTable {
   private final List<ImmutableBitSet>             keys;
   private final List<ImmutableBitSet>             nonNullablekeys;
   private final List<RelReferentialConstraint>    referentialConstraints;
-  final HiveConf                                  hiveConf;
+  private final HiveConf                          hiveConf;
+
+  private final Hive                              db;
+  private final Map<String, Table>                tablesCache;
+  private final Map<String, PrunedPartitionList>  partitionCache;
+  private final Map<String, ColumnStatsList>      colStatsCache;
+  private final AtomicInteger                     noColsMissingStats;
 
   private double                                  rowCount        = -1;
-  Map<Integer, ColStatistics>                     hiveColStatsMap = new HashMap<>();
   PrunedPartitionList                             partitionList;
-  Map<String, PrunedPartitionList>                partitionCache;
-  Map<String, ColumnStatsList>                    colStatsCache;
-  AtomicInteger                                   noColsMissingStats;
 
   protected static final Logger LOG = LoggerFactory.getLogger(RelOptHiveTable.class.getName());
 
+
   public RelOptHiveTable(RelOptSchema calciteSchema, RelDataTypeFactory typeFactory, List<String> qualifiedTblName,
-      RelDataType rowType, Table hiveTblMetadata, List<ColumnInfo> hiveNonPartitionCols,
-      List<ColumnInfo> hivePartitionCols, List<VirtualColumn> hiveVirtualCols, HiveConf hconf,
+      RelDataType rowType, Table hiveTblMetadata, List<ColumnInfo> hiveNonPartitionCols, List<ColumnInfo> hivePartitionCols,
+      List<VirtualColumn> hiveVirtualCols, HiveConf hconf, Hive db, Map<String, Table> tabNameToTabObject,
       Map<String, PrunedPartitionList> partitionCache, Map<String, ColumnStatsList> colStatsCache,
       AtomicInteger noColsMissingStats) {
     this.schema = calciteSchema;
@@ -123,6 +128,7 @@ public class RelOptHiveTable implements RelOptTable {
     this.name = this.qualifiedTblName.stream().collect(Collectors.joining("."));
     this.rowType = rowType;
     this.hiveTblMetadata = hiveTblMetadata;
+    this.hiveColStatsMap = new HashMap<>();
     this.hiveNonPartitionCols = ImmutableList.copyOf(hiveNonPartitionCols);
     this.hiveNonPartitionColsMap = HiveCalciteUtil.getColInfoMap(hiveNonPartitionCols, 0);
     this.hivePartitionCols = ImmutableList.copyOf(hivePartitionCols);
@@ -130,6 +136,8 @@ public class RelOptHiveTable implements RelOptTable {
     this.noOfNonVirtualCols = hiveNonPartitionCols.size() + hivePartitionCols.size();
     this.hiveVirtualCols = ImmutableList.copyOf(hiveVirtualCols);
     this.hiveConf = hconf;
+    this.db = db;
+    this.tablesCache = tabNameToTabObject;
     this.partitionCache = partitionCache;
     this.colStatsCache = colStatsCache;
     this.noColsMissingStats = noColsMissingStats;
@@ -216,7 +224,8 @@ public class RelOptHiveTable implements RelOptTable {
     // 3. Build new Table
     return new RelOptHiveTable(this.schema, this.typeFactory, this.qualifiedTblName, newRowType,
         this.hiveTblMetadata, newHiveNonPartitionCols, newHivePartitionCols, newHiveVirtualCols,
-        this.hiveConf, this.partitionCache, this.colStatsCache, this.noColsMissingStats);
+        this.hiveConf, this.db, this.tablesCache, this.partitionCache, this.colStatsCache,
+        this.noColsMissingStats);
   }
 
   // Given a key this method returns true if all of the columns in the key are not nullable
@@ -245,19 +254,14 @@ public class RelOptHiveTable implements RelOptTable {
   }
 
   private Pair<List<ImmutableBitSet>, List<ImmutableBitSet>> generateKeys() {
+    final PrimaryKeyInfo primaryKeyInfo = hiveTblMetadata.getPrimaryKeyInfo();
+    final UniqueConstraint uniqueKeyInfo = hiveTblMetadata.getUniqueKeyInfo();
     ImmutableList.Builder<ImmutableBitSet> builder = ImmutableList.builder();
     ImmutableList.Builder<ImmutableBitSet> nonNullbuilder = ImmutableList.builder();
     // First PK
-    final PrimaryKeyInfo pki;
-    try {
-      pki = Hive.get().getReliablePrimaryKeys(
-          hiveTblMetadata.getDbName(), hiveTblMetadata.getTableName());
-    } catch (HiveException e) {
-      throw new RuntimeException(e);
-    }
-    if (!pki.getColNames().isEmpty()) {
+    if (primaryKeyInfo != null && !primaryKeyInfo.getColNames().isEmpty()) {
       ImmutableBitSet.Builder keys = ImmutableBitSet.builder();
-      for (String pkColName : pki.getColNames().values()) {
+      for (String pkColName : primaryKeyInfo.getColNames().values()) {
         int pkPos;
         for (pkPos = 0; pkPos < rowType.getFieldNames().size(); pkPos++) {
           String colName = rowType.getFieldNames().get(pkPos);
@@ -275,101 +279,105 @@ public class RelOptHiveTable implements RelOptTable {
       nonNullbuilder.add(key);
     }
     // Then UKs
-    final UniqueConstraint uki;
-    try {
-      uki = Hive.get().getReliableUniqueConstraints(
-          hiveTblMetadata.getDbName(), hiveTblMetadata.getTableName());
-    } catch (HiveException e) {
-      throw new RuntimeException(e);
-    }
-    for (List<UniqueConstraintCol> ukCols : uki.getUniqueConstraints().values()) {
-      ImmutableBitSet.Builder keys = ImmutableBitSet.builder();
-      boolean isNonNullable = true;
-      for (UniqueConstraintCol ukCol : ukCols) {
-        int ukPos;
-        for (ukPos = 0; ukPos < rowType.getFieldNames().size(); ukPos++) {
-          String colName = rowType.getFieldNames().get(ukPos);
-          if (ukCol.colName.equals(colName)) {
-            if(rowType.getFieldList().get(ukPos).getType().isNullable()) {
-              // they should all be nullable
-              isNonNullable = false;
+    if (uniqueKeyInfo != null && !uniqueKeyInfo.getUniqueConstraints().isEmpty()) {
+      for (List<UniqueConstraintCol> ukCols : uniqueKeyInfo.getUniqueConstraints().values()) {
+        ImmutableBitSet.Builder keys = ImmutableBitSet.builder();
+        boolean isNonNullable = true;
+        for (UniqueConstraintCol ukCol : ukCols) {
+          int ukPos;
+          for (ukPos = 0; ukPos < rowType.getFieldNames().size(); ukPos++) {
+            String colName = rowType.getFieldNames().get(ukPos);
+            if (ukCol.colName.equals(colName)) {
+              if (rowType.getFieldList().get(ukPos).getType().isNullable()) {
+                // they should all be nullable
+                isNonNullable = false;
+              }
+              break;
             }
-            break;
           }
+          if (ukPos == rowType.getFieldNames().size()) {
+            LOG.error("Column for unique constraint definition " + ukCol.colName + " not found");
+          }
+          keys.set(ukPos);
         }
-        if (ukPos == rowType.getFieldNames().size()) {
-          LOG.error("Column for unique constraint definition " + ukCol.colName + " not found");
+        ImmutableBitSet key = keys.build();
+        builder.add(key);
+        if (isNonNullable) {
+          nonNullbuilder.add(key);
         }
-        keys.set(ukPos);
-      }
-      ImmutableBitSet key = keys.build();
-      builder.add(key);
-      if(isNonNullable) {
-        nonNullbuilder.add(key);
       }
     }
     return new Pair<>(builder.build(), nonNullbuilder.build());
   }
 
   private List<RelReferentialConstraint> generateReferentialConstraints() {
-    final ForeignKeyInfo fki;
-    try {
-      fki = Hive.get().getReliableForeignKeys(
-          hiveTblMetadata.getDbName(), hiveTblMetadata.getTableName());
-    } catch (HiveException e) {
-      throw new RuntimeException(e);
-    }
+    final ForeignKeyInfo foreignKeyInfo = hiveTblMetadata.getForeignKeyInfo();
     ImmutableList.Builder<RelReferentialConstraint> builder = ImmutableList.builder();
-    for (List<ForeignKeyCol> fkCols : fki.getForeignKeys().values()) {
-      List<String> foreignKeyTableQualifiedName = qualifiedTblName;
-      String parentDatabaseName = fkCols.get(0).parentDatabaseName;
-      String parentTableName = fkCols.get(0).parentTableName;
-      List<String> parentTableQualifiedName = new ArrayList<>();
-      if (parentDatabaseName != null && !parentDatabaseName.isEmpty()) {
-        parentTableQualifiedName.add(parentDatabaseName);
+    if (foreignKeyInfo != null && !foreignKeyInfo.getForeignKeys().isEmpty()) {
+      for (List<ForeignKeyCol> fkCols : foreignKeyInfo.getForeignKeys().values()) {
+        String parentDatabaseName = fkCols.get(0).parentDatabaseName;
+        String parentTableName = fkCols.get(0).parentTableName;
+        String qualifiedName;
+        List<String> parentTableQualifiedName = new ArrayList<>();
+        if (parentDatabaseName != null && !parentDatabaseName.isEmpty()) {
+          parentTableQualifiedName.add(parentDatabaseName);
+          parentTableQualifiedName.add(parentTableName);
+          qualifiedName = TableName.getDbTable(
+              parentDatabaseName, parentTableName);
+        } else {
+          parentTableQualifiedName.add(parentTableName);
+          qualifiedName = parentTableName;
+        }
+        Table parentTab = getTable(qualifiedName);
+        if (parentTab == null) {
+          LOG.error("Table for primary key not found: "
+              + "databaseName: " + parentDatabaseName + ", "
+              + "tableName: " + parentTableName);
+          return ImmutableList.of();
+        }
+        ImmutableList.Builder<IntPair> keys = ImmutableList.builder();
+        for (ForeignKeyCol fkCol : fkCols) {
+          int fkPos;
+          for (fkPos = 0; fkPos < rowType.getFieldNames().size(); fkPos++) {
+            String fkColName = rowType.getFieldNames().get(fkPos);
+            if (fkColName.equals(fkCol.childColName)) {
+              break;
+            }
+          }
+          int pkPos;
+          for (pkPos = 0; pkPos < parentTab.getAllCols().size(); pkPos++) {
+            String pkColName = parentTab.getAllCols().get(pkPos).getName();
+            if (pkColName.equals(fkCol.parentColName)) {
+              break;
+            }
+          }
+          if (fkPos == rowType.getFieldNames().size()
+              || pkPos == parentTab.getAllCols().size()) {
+            LOG.error("Column for foreign key definition " + fkCol + " not found");
+            return ImmutableList.of();
+          }
+          keys.add(IntPair.of(fkPos, pkPos));
+        }
+        builder.add(RelReferentialConstraintImpl.of(qualifiedTblName,
+            parentTableQualifiedName, keys.build()));
       }
-      parentTableQualifiedName.add(parentTableName);
-      Table parentTab = null;
+    }
+    return builder.build();
+  }
+
+  private Table getTable(String tableName) {
+    if (!tablesCache.containsKey(tableName)) {
       try {
-        // TODO: We have a cache for Table objects in SemanticAnalyzer::getTableObjectByName()
-        // We need to move that cache elsewhere and use it from places like this.
-        parentTab = Hive.get().getTable(parentDatabaseName, parentTableName);
+        Table table = db.getTable(tableName);
+        if (table != null) {
+          tablesCache.put(tableName, table);
+        }
+        return table;
       } catch (HiveException e) {
         throw new RuntimeException(e);
       }
-      if (parentTab == null) {
-        LOG.error("Table for primary key not found: "
-              + "databaseName: " + parentDatabaseName+ ", "
-              + "tableName: " + parentTableName);
-        return ImmutableList.of();
-      }
-      ImmutableList.Builder<IntPair> keys = ImmutableList.builder();
-      for (ForeignKeyCol fkCol : fkCols) {
-        int fkPos;
-        for (fkPos = 0; fkPos < rowType.getFieldNames().size(); fkPos++) {
-          String fkColName = rowType.getFieldNames().get(fkPos);
-          if (fkColName.equals(fkCol.childColName)) {
-            break;
-          }
-        }
-        int pkPos;
-        for (pkPos = 0; pkPos < parentTab.getAllCols().size(); pkPos++) {
-          String pkColName = parentTab.getAllCols().get(pkPos).getName();
-          if (pkColName.equals(fkCol.parentColName)) {
-            break;
-          }
-        }
-        if (fkPos == rowType.getFieldNames().size()
-            || pkPos == parentTab.getAllCols().size()) {
-          LOG.error("Column for foreign key definition " + fkCol + " not found");
-          return ImmutableList.of();
-        }
-        keys.add(IntPair.of(fkPos, pkPos));
-      }
-      builder.add(RelReferentialConstraintImpl.of(foreignKeyTableQualifiedName,
-              parentTableQualifiedName, keys.build()));
     }
-    return builder.build();
+    return tablesCache.get(tableName);
   }
 
   @Override
@@ -389,15 +397,9 @@ public class RelOptHiveTable implements RelOptTable {
       for (int i=0; i<this.hiveTblMetadata.getSd().getCols().size(); i++) {
         FieldSchema field = this.hiveTblMetadata.getSd().getCols().get(i);
         if (field.getName().equals(sortColumn.getCol())) {
-          Direction direction;
-          NullDirection nullDirection;
-          if (sortColumn.getOrder() == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC) {
-            direction = Direction.ASCENDING;
-            nullDirection = NullDirection.FIRST;
-          } else {
-            direction = Direction.DESCENDING;
-            nullDirection = NullDirection.LAST;
-          }
+          Direction direction = DirectionUtils.codeToDirection(sortColumn.getOrder());
+          NullDirection nullDirection = sortColumn.getOrder() == DirectionUtils.ASCENDING_CODE ?
+              NullDirection.FIRST : NullDirection.LAST;
           collationList.add(new RelFieldCollation(i, direction, nullDirection));
           break;
         }

@@ -36,8 +36,8 @@ public abstract class AbstractAlterTableWithConstraintsDesc extends AbstractAlte
 
   public AbstractAlterTableWithConstraintsDesc(AlterTableTypes type, String tableName,
       Map<String, String> partitionSpec, ReplicationSpec replicationSpec, boolean isCascade, boolean expectView,
-      Constraints constraints) throws SemanticException {
-    super(type, tableName, partitionSpec, replicationSpec, isCascade, expectView);
+      Map<String, String> props, Constraints constraints) throws SemanticException {
+    super(type, tableName, partitionSpec, replicationSpec, isCascade, expectView, props);
     this.constraints = constraints;
   }
 

@@ -44,7 +44,7 @@ public class AlterTableAddColumnsDesc extends AbstractAlterTableDesc {
 
   public AlterTableAddColumnsDesc(String tableName, Map<String, String> partitionSpec, boolean isCascade,
       List<FieldSchema> newColumns) throws SemanticException {
-    super(AlterTableTypes.ADD_COLUMNS, tableName, partitionSpec, null, isCascade, false);
+    super(AlterTableTypes.ADD_COLUMNS, tableName, partitionSpec, null, isCascade, false, null);
     this.newColumns = newColumns;
   }
 
