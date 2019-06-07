@@ -19,7 +19,7 @@ SELECT
   CAST(to_utc_timestamp(ctimestamp1, 'America/Los_Angeles') AS STRING) as cst,
   ctimestamp2
 FROM alltypesorc
-ORDER BY toutc, cst
+ORDER BY toutc NULLS LAST, cst NULLS LAST
 LIMIT 40;
 INSERT INTO TABLE alltypesorc_string values (false, '2021-09-24 03:18:32.4', '1978-08-05 14:41:05.501', '1999-10-03 16:59:10.396903939');
 INSERT INTO TABLE alltypesorc_string values (false, null, '2013-04-10 00:43:46.8547315', null);
