@@ -250,6 +250,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFSurrogateKey;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFInline;
+import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.ql.util.ResourceDownloader;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -847,13 +848,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (isInsertInto(qbp, dest)) {
       ASTNode tblAst = qbp.getDestForClause(dest);
       String tableName = getUnescapedName((ASTNode) tblAst.getChild(0));
-      Table targetTable = null;
+      Table targetTable;
       try {
         if (isValueClause(selectExpr)) {
-          targetTable = db.getTable(tableName, false);
+          targetTable = getTableObjectByName(tableName);
           replaceDefaultKeyword((ASTNode) selectExpr.getChild(0).getChild(0).getChild(1), targetTable, qbp.getDestSchemaForClause(dest));
         } else if (updating(dest)) {
-          targetTable = db.getTable(tableName, false);
+          targetTable = getTableObjectByName(tableName);
           replaceDefaultKeywordForUpdate(selectExpr, targetTable);
         }
       } catch (Exception e) {
@@ -1914,11 +1915,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(generateErrorMessage(tabColName,
             "Duplicate column name detected in " + fullTableName + " table schema specification"));
       }
-      Table targetTable = null;
+      Table targetTable;
       try {
-        targetTable = db.getTable(fullTableName, false);
-      }
-      catch (HiveException ex) {
+        targetTable = getTableObjectByName(fullTableName);
+      } catch (HiveException ex) {
         LOG.error("Error processing HiveParser.TOK_DESTINATION: " + ex.getMessage(), ex);
         throw new SemanticException(ex);
       }
@@ -6896,8 +6896,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       StringBuilder order = new StringBuilder();
       StringBuilder nullOrder = new StringBuilder();
       for (int sortOrder : sortOrders) {
-        order.append(sortOrder == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC ? '+' : '-');
-        nullOrder.append(sortOrder == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC ? 'a' : 'z');
+        order.append(DirectionUtils.codeToSign(sortOrder));
+        nullOrder.append(sortOrder == DirectionUtils.ASCENDING_CODE ? 'a' : 'z');
       }
       input = genReduceSinkPlan(input, partnCols, sortCols, order.toString(), nullOrder.toString(),
           maxReducers, (AcidUtils.isFullAcidTable(dest_tab) ?
@@ -8013,16 +8013,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void setWriteIdForSurrogateKeys(LoadTableDesc ltd, Operator input) throws SemanticException {
-    Map<String, ExprNodeDesc> columnExprMap = input.getConf().getColumnExprMap();
-    if (ltd == null || columnExprMap == null) {
+    if (ltd == null) {
       return;
     }
 
-    for (ExprNodeDesc desc : columnExprMap.values()) {
-      if (desc instanceof ExprNodeGenericFuncDesc) {
-        GenericUDF genericUDF = ((ExprNodeGenericFuncDesc)desc).getGenericUDF();
-        if (genericUDF instanceof GenericUDFSurrogateKey) {
-          ((GenericUDFSurrogateKey)genericUDF).setWriteId(ltd.getWriteId());
+    Map<String, ExprNodeDesc> columnExprMap = input.getConf().getColumnExprMap();
+    if (columnExprMap != null) {
+      for (ExprNodeDesc desc : columnExprMap.values()) {
+        if (desc instanceof ExprNodeGenericFuncDesc) {
+          GenericUDF genericUDF = ((ExprNodeGenericFuncDesc)desc).getGenericUDF();
+          if (genericUDF instanceof GenericUDFSurrogateKey) {
+            ((GenericUDFSurrogateKey)genericUDF).setWriteId(ltd.getWriteId());
+          }
         }
       }
     }
@@ -12823,7 +12825,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       qualifiedColName = rr.reverseLookup(colInfo.getInternalName());
-      if (useTabAliasIfAvailable && qualifiedColName[0] != null && !qualifiedColName[0].isEmpty()) {
+      // __u<n> is a UNION ALL placeholder name
+      if (useTabAliasIfAvailable && qualifiedColName[0] != null && (!qualifiedColName[0].isEmpty()) && (!qualifiedColName[0].startsWith("__u"))) {
         colName = qualifiedColName[0] + "." + qualifiedColName[1];
       } else {
         colName = qualifiedColName[1];

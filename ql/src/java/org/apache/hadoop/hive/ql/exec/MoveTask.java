@@ -51,7 +51,6 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.BucketCol;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.SortCol;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
@@ -63,6 +62,7 @@ import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -818,9 +818,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       for (SortCol sortCol : sortCols) {
         if (sortCol.getIndexes().get(0) < partn.getCols().size()) {
           newSortCols.add(new Order(
-            partn.getCols().get(sortCol.getIndexes().get(0)).getName(),
-            sortCol.getSortOrder() == '+' ? BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC :
-              BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_DESC));
+              partn.getCols().get(sortCol.getIndexes().get(0)).getName(),
+              DirectionUtils.signToCode(sortCol.getSortOrder())));
         } else {
           // If the table is sorted on a partition column, not valid for sorting
           updateSortCols = false;

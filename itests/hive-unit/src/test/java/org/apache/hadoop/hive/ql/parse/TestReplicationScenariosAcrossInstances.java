@@ -256,6 +256,40 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     assertThat(jars, containsInAnyOrder(expectedDependenciesNames.toArray()));
   }
 
+  @Test
+  public void testIncrementalCreateFunctionWithFunctionBinaryJarsOnHDFS() throws Throwable {
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(bootStrapDump.lastReplicationId);
+
+    Dependencies dependencies = dependencies("ivy://io.github.myui:hivemall:0.4.0-2", primary);
+    String jarSubString = dependencies.toJarSubSql();
+
+    primary.run("CREATE FUNCTION " + primaryDbName
+            + ".anotherFunction as 'hivemall.tools.string.StopwordUDF' "
+            + "using " + jarSubString);
+
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
+
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "*'")
+            .verifyResult(replicatedDbName + ".anotherFunction");
+
+    FileStatus[] fileStatuses = replica.miniDFSCluster.getFileSystem().globStatus(
+            new Path(
+                    replica.functionsRoot + "/" + replicatedDbName.toLowerCase() + "/anotherfunction/*/*")
+            , path -> path.toString().endsWith("jar"));
+    List<String> expectedDependenciesNames = dependencies.jarNames();
+    assertThat(fileStatuses.length, is(equalTo(expectedDependenciesNames.size())));
+    List<String> jars = Arrays.stream(fileStatuses).map(f -> {
+        String[] splits = f.getPath().toString().split("/");
+        return splits[splits.length - 1];
+    }).collect(Collectors.toList());
+
+    assertThat(jars, containsInAnyOrder(expectedDependenciesNames.toArray()));
+  }
+
   static class Dependencies {
     private final List<Path> fullQualifiedJarPaths;
 

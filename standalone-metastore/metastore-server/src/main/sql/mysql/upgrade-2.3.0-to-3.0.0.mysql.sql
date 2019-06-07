@@ -235,8 +235,8 @@ ALTER TABLE `DBS` ADD COLUMN `CTLG_NAME` VARCHAR(256);
 UPDATE `DBS` 
   SET `CTLG_NAME` = 'hive';
 
--- Add the not null constraint
-ALTER TABLE `DBS` CHANGE COLUMN `CTLG_NAME` `CTLG_NAME` varchar(256) NOT NULL;
+-- Add the not null constraint and default value
+ALTER TABLE `DBS` CHANGE COLUMN `CTLG_NAME` `CTLG_NAME` varchar(256) NOT NULL DEFAULT 'hive';
 
 -- Put back the unique index 
 ALTER TABLE `DBS` ADD UNIQUE KEY `UNIQUE_DATABASE` (`NAME`, `CTLG_NAME`);

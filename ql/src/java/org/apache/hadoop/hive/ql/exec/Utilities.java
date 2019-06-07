@@ -1617,9 +1617,8 @@ public final class Utilities {
 
     for (Path path : paths) {
       Utilities.FILE_OP_LOGGER.trace("creating empty bucket for {}", path);
-      RecordWriter writer = HiveFileFormatUtils.getRecordWriter(
-          jc, hiveOutputFormat, outputClass, isCompressed,
-          tableInfo.getProperties(), path, reporter);
+      RecordWriter writer = hiveOutputFormat.getHiveRecordWriter(jc, path, outputClass, isCompressed,
+          tableInfo.getProperties(), reporter);
       writer.close(false);
       LOG.info("created empty bucket for enforcing bucketing at {}", path);
     }

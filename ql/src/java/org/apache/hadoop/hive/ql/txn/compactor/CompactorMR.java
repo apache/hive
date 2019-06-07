@@ -73,8 +73,8 @@ import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -634,19 +634,13 @@ public class CompactorMR {
       List<Order> sortCols = t.getSd().getSortCols();
       if (sortCols.size() > 0) {
         query.append("SORTED BY (");
-        List<String> sortKeys = new ArrayList<String>();
         isFirst = true;
         for (Order sortCol : sortCols) {
           if (!isFirst) {
             query.append(", ");
           }
           isFirst = false;
-          query.append(sortCol.getCol()).append(" ");
-          if (sortCol.getOrder() == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC) {
-            query.append("ASC");
-          } else if (sortCol.getOrder() == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_DESC) {
-            query.append("DESC");
-          }
+          query.append(sortCol.getCol()).append(" ").append(DirectionUtils.codeToText(sortCol.getOrder()));
         }
         query.append(") ");
       }

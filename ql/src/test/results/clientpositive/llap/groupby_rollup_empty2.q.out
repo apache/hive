@@ -1,0 +1,207 @@
+PREHOOK: query: drop table if exists store_sales_s0
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists store_sales_s0
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists store_s0
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists store_s0
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE store_sales_s0 (ss_item_sk int,payload string,payload2 string,payload3 string) PARTITIONED BY (ss_store_sk int) stored as orc TBLPROPERTIES( 'transactional'='false')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store_sales_s0
+POSTHOOK: query: CREATE TABLE store_sales_s0 (ss_item_sk int,payload string,payload2 string,payload3 string) PARTITIONED BY (ss_store_sk int) stored as orc TBLPROPERTIES( 'transactional'='false')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store_sales_s0
+PREHOOK: query: CREATE TABLE store_s0 (s_item_sk int,s_store_sk int,s_state string) stored as orc TBLPROPERTIES( 'transactional'='false')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store_s0
+POSTHOOK: query: CREATE TABLE store_s0 (s_item_sk int,s_store_sk int,s_state string) stored as orc TBLPROPERTIES( 'transactional'='false')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store_s0
+PREHOOK: query: insert into store_s0 values
+    (1,10,'XX'),
+    (2,20,'AA'),
+    (3,30,'ZZ')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@store_s0
+POSTHOOK: query: insert into store_s0 values
+    (1,10,'XX'),
+    (2,20,'AA'),
+    (3,30,'ZZ')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@store_s0
+POSTHOOK: Lineage: store_s0.s_item_sk SCRIPT []
+POSTHOOK: Lineage: store_s0.s_state SCRIPT []
+POSTHOOK: Lineage: store_s0.s_store_sk SCRIPT []
+PREHOOK: query: insert into store_sales_s0 partition(ss_store_sk=9) values (1,'xxx','xxx','xxx'),(2,'xxx','xxx','xxx'),(3,'xxx','xxx','xxx'),(4,'xxx','xxx','xxx'),(5,'xxx','xxx','xxx')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@store_sales_s0@ss_store_sk=9
+POSTHOOK: query: insert into store_sales_s0 partition(ss_store_sk=9) values (1,'xxx','xxx','xxx'),(2,'xxx','xxx','xxx'),(3,'xxx','xxx','xxx'),(4,'xxx','xxx','xxx'),(5,'xxx','xxx','xxx')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@store_sales_s0@ss_store_sk=9
+POSTHOOK: Lineage: store_sales_s0 PARTITION(ss_store_sk=9).payload SCRIPT []
+POSTHOOK: Lineage: store_sales_s0 PARTITION(ss_store_sk=9).payload2 SCRIPT []
+POSTHOOK: Lineage: store_sales_s0 PARTITION(ss_store_sk=9).payload3 SCRIPT []
+POSTHOOK: Lineage: store_sales_s0 PARTITION(ss_store_sk=9).ss_item_sk SCRIPT []
+PREHOOK: query: insert into store_sales_s0 partition(ss_store_sk=39) values (1,'xxx','xxx','xxx'),(2,'xxx','xxx','xxx'),(3,'xxx','xxx','xxx'),(4,'xxx','xxx','xxx'),(5,'xxx','xxx','xxx')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@store_sales_s0@ss_store_sk=39
+POSTHOOK: query: insert into store_sales_s0 partition(ss_store_sk=39) values (1,'xxx','xxx','xxx'),(2,'xxx','xxx','xxx'),(3,'xxx','xxx','xxx'),(4,'xxx','xxx','xxx'),(5,'xxx','xxx','xxx')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@store_sales_s0@ss_store_sk=39
+POSTHOOK: Lineage: store_sales_s0 PARTITION(ss_store_sk=39).payload SCRIPT []
+POSTHOOK: Lineage: store_sales_s0 PARTITION(ss_store_sk=39).payload2 SCRIPT []
+POSTHOOK: Lineage: store_sales_s0 PARTITION(ss_store_sk=39).payload3 SCRIPT []
+POSTHOOK: Lineage: store_sales_s0 PARTITION(ss_store_sk=39).ss_item_sk SCRIPT []
+PREHOOK: query: explain select grouping(s_state) from store_s0, store_sales_s0 where ss_store_sk = s_store_sk and s_state in ('SD','FL', 'MI', 'LA', 'MO', 'SC') group by rollup(ss_item_sk, s_state)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@store_s0
+PREHOOK: Input: default@store_sales_s0
+PREHOOK: Input: default@store_sales_s0@ss_store_sk=39
+PREHOOK: Input: default@store_sales_s0@ss_store_sk=9
+#### A masked pattern was here ####
+POSTHOOK: query: explain select grouping(s_state) from store_s0, store_sales_s0 where ss_store_sk = s_store_sk and s_state in ('SD','FL', 'MI', 'LA', 'MO', 'SC') group by rollup(ss_item_sk, s_state)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_s0
+POSTHOOK: Input: default@store_sales_s0
+POSTHOOK: Input: default@store_sales_s0@ss_store_sk=39
+POSTHOOK: Input: default@store_sales_s0@ss_store_sk=9
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 2 <- Map 1 (BROADCAST_EDGE)
+        Reducer 3 <- Map 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: store_s0
+                  filterExpr: ((s_state) IN ('SD', 'FL', 'MI', 'LA', 'MO', 'SC') and s_store_sk is not null) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 270 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((s_state) IN ('SD', 'FL', 'MI', 'LA', 'MO', 'SC') and s_store_sk is not null) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 270 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: s_store_sk (type: int), s_state (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 3 Data size: 270 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 3 Data size: 270 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string)
+                      Select Operator
+                        expressions: _col0 (type: int)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 3 Data size: 270 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          keys: _col0 (type: int)
+                          minReductionHashAggr: 0.6666666
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                          Dynamic Partitioning Event Operator
+                            Target column: ss_store_sk (int)
+                            Target Input: store_sales_s0
+                            Partition key expr: ss_store_sk
+                            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                            Target Vertex: Map 2
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales_s0
+                  filterExpr: ss_store_sk is not null (type: boolean)
+                  Statistics: Num rows: 10 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: ss_item_sk (type: int), ss_store_sk (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 10 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 _col0 (type: int)
+                        1 _col1 (type: int)
+                      outputColumnNames: _col1, _col2
+                      input vertices:
+                        0 Map 1
+                      Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: _col2 (type: int), _col1 (type: string)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          keys: _col0 (type: int), _col1 (type: string), 0L (type: bigint)
+                          minReductionHashAggr: 0.19999999
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 15 Data size: 1470 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: bigint)
+                            sort order: +++
+                            Map-reduce partition columns: _col0 (type: int), _col1 (type: string), _col2 (type: bigint)
+                            Statistics: Num rows: 15 Data size: 1470 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int), KEY._col1 (type: string), KEY._col2 (type: bigint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 15 Data size: 1470 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: grouping(_col2, 0L) (type: bigint)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select grouping(s_state) from store_s0, store_sales_s0 where ss_store_sk = s_store_sk and s_state in ('SD','FL', 'MI', 'LA', 'MO', 'SC') group by rollup(ss_item_sk, s_state)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@store_s0
+PREHOOK: Input: default@store_sales_s0
+PREHOOK: Input: default@store_sales_s0@ss_store_sk=39
+PREHOOK: Input: default@store_sales_s0@ss_store_sk=9
+#### A masked pattern was here ####
+POSTHOOK: query: select grouping(s_state) from store_s0, store_sales_s0 where ss_store_sk = s_store_sk and s_state in ('SD','FL', 'MI', 'LA', 'MO', 'SC') group by rollup(ss_item_sk, s_state)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_s0
+POSTHOOK: Input: default@store_sales_s0
+POSTHOOK: Input: default@store_sales_s0@ss_store_sk=39
+POSTHOOK: Input: default@store_sales_s0@ss_store_sk=9
+#### A masked pattern was here ####
+1

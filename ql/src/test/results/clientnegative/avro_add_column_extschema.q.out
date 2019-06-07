@@ -40,4 +40,4 @@ CHANGE COLUMN number number bigint
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@avro_extschema
 PREHOOK: Output: default@avro_extschema
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Not allowed to alter schema of Avro stored table having external schema. Consider removing avro.schema.literal or avro.schema.url from table properties.
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Not allowed to alter schema of Avro stored table having external schema. Consider removing avro.schema.literal or avro.schema.url from table properties.

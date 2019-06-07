@@ -356,6 +356,9 @@ public class ReplChangeManager {
   // Currently using fileuri#checksum#cmrooturi#subdirs as the format
   public static String encodeFileUri(String fileUriStr, String fileChecksum, String encodedSubDir)
           throws IOException {
+    if (instance == null) {
+      throw new IllegalStateException("Uninitialized ReplChangeManager instance.");
+    }
     String encodedUri = fileUriStr;
     if ((fileChecksum != null) && (cmroot != null)) {
       encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + fileChecksum

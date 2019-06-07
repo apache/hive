@@ -17,4 +17,4 @@ PREHOOK: query: alter table alter_partition_change_col_nonexist change c3 c4 dec
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@alter_partition_change_col_nonexist
 PREHOOK: Output: default@alter_partition_change_col_nonexist
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Invalid column reference c3
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Invalid column reference c3

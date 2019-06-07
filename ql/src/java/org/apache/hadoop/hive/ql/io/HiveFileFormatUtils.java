@@ -177,13 +177,17 @@ public final class HiveFileFormatUtils {
   }
 
   /**
-   * checks if files are in same format as the given input format.
+   * Checks if files are in same format as the given input format.
+   *
+   * Note: an empty set of files is considered compliant.
    */
   @SuppressWarnings("unchecked")
   public static boolean checkInputFormat(FileSystem fs, HiveConf conf,
       Class<? extends InputFormat> inputFormatCls, List<FileStatus> files)
       throws HiveException {
-    if (files.isEmpty()) return false;
+    if (files.isEmpty()) {
+      return true;
+    }
     Class<? extends InputFormatChecker> checkerCls = FileChecker.getInstance()
         .getInputFormatCheckerClass(inputFormatCls);
     if (checkerCls == null
@@ -270,7 +274,7 @@ public final class HiveFileFormatUtils {
         String codecStr = conf.getCompressCodec();
         if (codecStr != null && !codecStr.trim().equals("")) {
           Class<? extends CompressionCodec> codec = 
-              (Class<? extends CompressionCodec>) JavaUtils.loadClass(codecStr);
+              JavaUtils.loadClass(codecStr);
           FileOutputFormat.setOutputCompressorClass(jc_output, codec);
         }
         String type = conf.getCompressType();
@@ -279,23 +283,11 @@ public final class HiveFileFormatUtils {
           SequenceFileOutputFormat.setOutputCompressionType(jc, style);
         }
       }
-      return getRecordWriter(jc_output, hiveOutputFormat, outputClass,
-          isCompressed, tableInfo.getProperties(), outPath, reporter);
+      return hiveOutputFormat.getHiveRecordWriter(jc_output, outPath, outputClass, isCompressed,
+          tableInfo.getProperties(), reporter);
     } catch (Exception e) {
       throw new HiveException(e);
     }
-  }
-
-  public static RecordWriter getRecordWriter(JobConf jc,
-      OutputFormat<?, ?> outputFormat,
-      Class<? extends Writable> valueClass, boolean isCompressed,
-      Properties tableProp, Path outPath, Reporter reporter
-      ) throws IOException, HiveException {
-    if (!(outputFormat instanceof HiveOutputFormat)) {
-      outputFormat = new HivePassThroughOutputFormat(outputFormat);
-    }
-    return ((HiveOutputFormat)outputFormat).getHiveRecordWriter(
-        jc, outPath, valueClass, isCompressed, tableProp, reporter);
   }
 
   public static HiveOutputFormat<?, ?> getHiveOutputFormat(Configuration conf, TableDesc tableDesc)
