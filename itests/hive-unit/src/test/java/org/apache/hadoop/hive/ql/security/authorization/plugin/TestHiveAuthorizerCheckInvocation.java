@@ -538,6 +538,16 @@ public class TestHiveAuthorizerCheckInvocation {
     assertEquals(0, status);
 
     Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> io = getHivePrivilegeObjectInputs();
+
+  }
+
+  @Test
+  public void testOwnerNames() throws Exception {
+    reset(mockedAuthorizer);
+    int status = driver.compile("create table default.t1 (name string)");
+    assertEquals(0, status);
+
+    Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> io = getHivePrivilegeObjectInputs();
     List<HivePrivilegeObject> inputs = io.getLeft();
     assertEquals(1, inputs.size());
     HivePrivilegeObject dbObj = inputs.get(0);
