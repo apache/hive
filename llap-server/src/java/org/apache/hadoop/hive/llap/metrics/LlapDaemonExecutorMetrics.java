@@ -162,8 +162,8 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
 
 
   private LlapDaemonExecutorMetrics(String displayName, JvmMetrics jm, String sessionId,
-      int numExecutors, final int[] intervals, int averageWindowDataSize,
-      long averageWindowTimeSize) {
+      int numExecutors, final int[] intervals, int timedWindowAverageDataPoints,
+      long timedWindowAverageWindowLength) {
     this.name = displayName;
     this.jvmMetrics = jm;
     this.sessionId = sessionId;
@@ -203,22 +203,22 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
       this.executorThreadUserTime[i] = registry.newGauge(miu, 0L);
       this.executorNames.put(ContainerRunnerImpl.THREAD_NAME_FORMAT_PREFIX + i, i);
     }
-    if (averageWindowDataSize > 0) {
-      this.executorNumQueuedRequestsAverage = new TimedAverageMetrics(averageWindowDataSize,
-          averageWindowTimeSize);
-      this.numExecutorsAvailableAverage = new TimedAverageMetrics(averageWindowDataSize,
-          averageWindowTimeSize);
+    if (timedWindowAverageDataPoints > 0) {
+      this.executorNumQueuedRequestsAverage = new TimedAverageMetrics(timedWindowAverageDataPoints,
+          timedWindowAverageWindowLength);
+      this.numExecutorsAvailableAverage = new TimedAverageMetrics(timedWindowAverageDataPoints,
+          timedWindowAverageWindowLength);
     }
   }
 
   public static LlapDaemonExecutorMetrics create(String displayName, String sessionId,
-      int numExecutors, final int[] intervals, int averageWindowDataSize,
-      long averageWindowTimeSize) {
+      int numExecutors, final int[] intervals, int timedWindowAverageDataPoints,
+      long timedWindowAverageWindowLength) {
     MetricsSystem ms = LlapMetricsSystem.instance();
     JvmMetrics jm = JvmMetrics.create(MetricsUtils.METRICS_PROCESS_NAME, sessionId, ms);
     return ms.register(displayName, "LlapDaemon Executor Metrics",
         new LlapDaemonExecutorMetrics(displayName, jm, sessionId, numExecutors, intervals,
-            averageWindowDataSize, averageWindowTimeSize));
+            timedWindowAverageDataPoints, timedWindowAverageWindowLength));
   }
 
   @Override

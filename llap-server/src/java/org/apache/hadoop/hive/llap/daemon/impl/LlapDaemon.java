@@ -181,16 +181,16 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         daemonConf, ConfVars.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE);
     boolean enablePreemption = HiveConf.getBoolVar(
         daemonConf, ConfVars.LLAP_DAEMON_TASK_SCHEDULER_ENABLE_PREEMPTION);
-    int averageWindowDataSize = HiveConf.getIntVar(
-        daemonConf, ConfVars.LLAP_DAEMON_METRICS_AVERAGE_DATA_SIZE);
-    long averageWindowTimeSize = HiveConf.getTimeVar(
-        daemonConf, ConfVars.LLAP_DAEMON_METRICS_AVERAGE_TIME_WINDOW, TimeUnit.NANOSECONDS);
+    int timedWindowAverageDataPoints = HiveConf.getIntVar(
+        daemonConf, ConfVars.LLAP_DAEMON_METRICS_TIMED_WINDOW_AVERAGE_DATA_POINTS);
+    long timedWindowAverageWindowLength = HiveConf.getTimeVar(
+        daemonConf, ConfVars.LLAP_DAEMON_METRICS_TIMED_WINDOW_AVERAGE_WINDOW_LENGTH, TimeUnit.NANOSECONDS);
 
-    Preconditions.checkArgument(averageWindowDataSize >= 0,
-        "hive.llap.daemon.metrics.average.data.size should be greater or equal to 0");
-    Preconditions.checkArgument(averageWindowDataSize == 0 || averageWindowTimeSize > 0,
-        "hive.llap.daemon.metrics.average.time.window should be greater than 0 if " +
-            "hive.llap.daemon.metrics.average.data.size is set");
+    Preconditions.checkArgument(timedWindowAverageDataPoints >= 0,
+        "hive.llap.daemon.metrics.timed.window.average.data.points should be greater or equal to 0");
+    Preconditions.checkArgument(timedWindowAverageDataPoints == 0 || timedWindowAverageWindowLength > 0,
+        "hive.llap.daemon.metrics.timed.window.average.window.length should be greater than 0 if " +
+            "hive.llap.daemon.metrics.average.timed.window.data.points is set fo greater than 0");
 
     final String logMsg = "Attempting to start LlapDaemon with the following configuration: " +
       "maxJvmMemory=" + maxJvmMemory + " ("
@@ -214,8 +214,8 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       ", shufflePort=" + shufflePort +
       ", waitQueueSize= " + waitQueueSize +
       ", enablePreemption= " + enablePreemption +
-      ", averageWindowDataSize= " + averageWindowDataSize +
-      ", averageWindowTimeSize= " + averageWindowTimeSize +
+      ", timedWindowAverageDataPoints= " + timedWindowAverageDataPoints +
+      ", timedWindowAverageWindowLength= " + timedWindowAverageWindowLength +
       ", versionInfo= (" + HiveVersionInfo.getBuildVersion() + ")";
     LOG.info(logMsg);
     final String currTSISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date());
@@ -278,7 +278,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       }
     }
     this.metrics = LlapDaemonExecutorMetrics.create(displayName, sessionId, numExecutors,
-        Ints.toArray(intervalList), averageWindowDataSize, averageWindowTimeSize);
+        Ints.toArray(intervalList), timedWindowAverageDataPoints, timedWindowAverageWindowLength);
     this.metrics.setMemoryPerInstance(executorMemoryPerInstance);
     this.metrics.setCacheMemoryPerInstance(ioMemoryBytes);
     this.metrics.setJvmMaxMemory(maxJvmMemory);

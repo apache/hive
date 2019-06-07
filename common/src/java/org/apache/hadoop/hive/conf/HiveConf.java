@@ -4384,14 +4384,16 @@ public class HiveConf extends Configuration {
       "Whether non-finishable running tasks (e.g. a reducer waiting for inputs) should be\n" +
       "preempted by finishable tasks inside LLAP scheduler.",
       "llap.daemon.task.scheduler.enable.preemption"),
-    LLAP_DAEMON_METRICS_AVERAGE_DATA_SIZE(
-      "hive.llap.daemon.metrics.average.data.size", 0,
-      "The number of data points stored for calculating executor metrics averages.\n" +
+    LLAP_DAEMON_METRICS_TIMED_WINDOW_AVERAGE_DATA_POINTS(
+      "hive.llap.daemon.metrics.timed.window.average.data.points", 0,
+      "The number of data points stored for calculating executor metrics timed averages.\n" +
+      "Currently used for ExecutorNumExecutorsAvailableAverage and ExecutorNumQueuedRequestsAverage\n" +
       "0 means that average calculation is turned off"),
-    LLAP_DAEMON_METRICS_AVERAGE_TIME_WINDOW(
-      "hive.llap.daemon.metrics.average.time.window", "1m",
+    LLAP_DAEMON_METRICS_TIMED_WINDOW_AVERAGE_WINDOW_LENGTH(
+      "hive.llap.daemon.metrics.timed.window.average.window.length", "1m",
       new TimeValidator(TimeUnit.NANOSECONDS),
-      "The length of the window used for calculating executor metrics averages.\n"),
+      "The length of the time window used for calculating executor metrics timed averages.\n" +
+      "Currently used for ExecutorNumExecutorsAvailableAverage and ExecutorNumQueuedRequestsAverage\n"),
     LLAP_TASK_COMMUNICATOR_CONNECTION_TIMEOUT_MS(
       "hive.llap.task.communicator.connection.timeout.ms", "16000ms",
       new TimeValidator(TimeUnit.MILLISECONDS),
