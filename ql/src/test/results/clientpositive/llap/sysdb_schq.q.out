@@ -10,6 +10,66 @@ PREHOOK: Input: database:sys
 POSTHOOK: query: USE SYS
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SCHEDULED_QUERIES` (
+  `SCHEDULED_QUERY_ID` bigint,
+  `SCHEDULE_NAME` string,
+  `ENABLED` boolean,
+  `CLUSTER_NAMESPACE` string,
+  `SCHEDULE` string,
+  `USER` string,
+  `QUERY` string,
+  `NEXT_EXECUTION` bigint,
+  CONSTRAINT `SYS_PK_SCHEDULED_QUERIES` PRIMARY KEY (`SCHEDULED_QUERY_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SCHEDULED_QUERY_ID\",
+  \"SCHEDULE_NAME\",
+  \"ENABLED\",
+  \"CLUSTER_NAMESPACE\",
+  \"SCHEDULE\",
+  \"USER\",
+  \"QUERY\",
+  \"NEXT_EXECUTION\"
+FROM
+  \"SCHEDULED_QUERIES\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@SCHEDULED_QUERIES
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SCHEDULED_QUERIES` (
+  `SCHEDULED_QUERY_ID` bigint,
+  `SCHEDULE_NAME` string,
+  `ENABLED` boolean,
+  `CLUSTER_NAMESPACE` string,
+  `SCHEDULE` string,
+  `USER` string,
+  `QUERY` string,
+  `NEXT_EXECUTION` bigint,
+  CONSTRAINT `SYS_PK_SCHEDULED_QUERIES` PRIMARY KEY (`SCHEDULED_QUERY_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SCHEDULED_QUERY_ID\",
+  \"SCHEDULE_NAME\",
+  \"ENABLED\",
+  \"CLUSTER_NAMESPACE\",
+  \"SCHEDULE\",
+  \"USER\",
+  \"QUERY\",
+  \"NEXT_EXECUTION\"
+FROM
+  \"SCHEDULED_QUERIES\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@SCHEDULED_QUERIES
+POSTHOOK: Output: database:sys
 PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `BUCKETING_COLS` (
   `SD_ID` bigint,
   `BUCKET_COL_NAME` string,
@@ -2591,66 +2651,6 @@ POSTHOOK: Lineage: COMPACTIONS.c_state EXPRESSION [(completed_compactions)comple
 POSTHOOK: Lineage: COMPACTIONS.c_table EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_table, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_table, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COMPACTIONS.c_type EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_type, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_type, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COMPACTIONS.c_worker_id EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_worker_id, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_worker_id, type:string, comment:from deserializer), ]
-PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SCHEDULED_QUERIES` (
-  `SCHEDULED_QUERY_ID` bigint,
-  `SCHEDULE_NAME` string,
-  `ENABLED` boolean,
-  `CLUSTER_NAMESPACE` string,
-  `SCHEDULE` string,
-  `USER` string,
-  `QUERY` string,
-  `NEXT_EXECUTION` bigint,
-  CONSTRAINT `SYS_PK_SCHEDULED_QUERIES` PRIMARY KEY (`SCHEDULED_QUERY_ID`) DISABLE
-)
-STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
-TBLPROPERTIES (
-"hive.sql.database.type" = "METASTORE",
-"hive.sql.query" =
-"SELECT
-  \"SCHEDULED_QUERY_ID\",
-  \"SCHEDULE_NAME\",
-  \"ENABLED\",
-  \"CLUSTER_NAMESPACE\",
-  \"SCHEDULE\",
-  \"USER\",
-  \"QUERY\",
-  \"NEXT_EXECUTION\"
-FROM
-  \"RUNTIME_STATS\""
-)
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: SYS@SCHEDULED_QUERIES
-PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `SCHEDULED_QUERIES` (
-  `SCHEDULED_QUERY_ID` bigint,
-  `SCHEDULE_NAME` string,
-  `ENABLED` boolean,
-  `CLUSTER_NAMESPACE` string,
-  `SCHEDULE` string,
-  `USER` string,
-  `QUERY` string,
-  `NEXT_EXECUTION` bigint,
-  CONSTRAINT `SYS_PK_SCHEDULED_QUERIES` PRIMARY KEY (`SCHEDULED_QUERY_ID`) DISABLE
-)
-STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
-TBLPROPERTIES (
-"hive.sql.database.type" = "METASTORE",
-"hive.sql.query" =
-"SELECT
-  \"SCHEDULED_QUERY_ID\",
-  \"SCHEDULE_NAME\",
-  \"ENABLED\",
-  \"CLUSTER_NAMESPACE\",
-  \"SCHEDULE\",
-  \"USER\",
-  \"QUERY\",
-  \"NEXT_EXECUTION\"
-FROM
-  \"RUNTIME_STATS\""
-)
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: SYS@SCHEDULED_QUERIES
-POSTHOOK: Output: database:sys
 PREHOOK: query: CREATE DATABASE IF NOT EXISTS INFORMATION_SCHEMA
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:INFORMATION_SCHEMA
@@ -3573,3 +3573,16 @@ POSTHOOK: query: select bucket_col_name, integer_idx from bucketing_cols order b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@bucketing_cols
 #### A masked pattern was here ####
+PREHOOK: query: create scheduled query asd cron '1 * * * *' defined as select 1
+PREHOOK: type: QUERY
+POSTHOOK: query: create scheduled query asd cron '1 * * * *' defined as select 1
+POSTHOOK: type: QUERY
+PREHOOK: query: select * from scheduled_queries
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@scheduled_queries
+#### A masked pattern was here ####
+POSTHOOK: query: select * from scheduled_queries
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@scheduled_queries
+#### A masked pattern was here ####
+1	asd	false	default	1 * * * *	NULL	select 1	1559905260
