@@ -182,7 +182,7 @@ STAGE PLANS:
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(48)
             Statistics: Num rows: 1 Data size: 212 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: 498 (type: int), (_col7 + UDFToInteger(_col5)) (type: int), floor(_col3) (type: bigint), CASE WHEN (sum_window_0 is not null) THEN (sum_window_0) ELSE (704) END (type: bigint)
+              expressions: 498 (type: int), (_col7 + UDFToInteger(_col5)) (type: int), floor(_col3) (type: bigint), CASE WHEN (sum_window_0 is not null) THEN (sum_window_0) ELSE (704L) END (type: bigint)
               outputColumnNames: _col0, _col1, _col2, _col3
               Statistics: Num rows: 1 Data size: 212 Basic stats: COMPLETE Column stats: NONE
               File Output Operator

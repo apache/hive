@@ -68,7 +68,7 @@ CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
   HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3])
     HiveAggregate(group=[{0, 1}], agg#0=[sum($2)], agg#1=[sum($3)])
-      HiveProject($f0=[$1], $f1=[$14], $f2=[CASE($11, -($6, CASE(IS NOT NULL($9), $9, 0)), 0)], $f3=[CASE($12, -($6, CASE(IS NOT NULL($9), $9, 0)), 0)])
+      HiveProject($f0=[$1], $f1=[$14], $f2=[CASE($11, -($6, CASE(IS NOT NULL($9), $9, 0:DECIMAL(12, 2))), 0:DECIMAL(13, 2))], $f3=[CASE($12, -($6, CASE(IS NOT NULL($9), $9, 0:DECIMAL(12, 2))), 0:DECIMAL(13, 2))])
         HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
           HiveProject(w_warehouse_sk=[$0], w_state=[$10])
             HiveFilter(condition=[IS NOT NULL($0)])
