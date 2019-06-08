@@ -4020,7 +4020,7 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col3
                 Statistics: Num rows: 26 Data size: 520 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: CASE WHEN ((_col1 > 409437L)) THEN (_col2) ELSE (_col3) END (type: double)
+                  expressions: CASE WHEN ((_col1 > 409437L)) THEN (_col2) ELSE (UDFToDouble(_col3)) END (type: double)
                   outputColumnNames: _col0
                   Statistics: Num rows: 26 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
