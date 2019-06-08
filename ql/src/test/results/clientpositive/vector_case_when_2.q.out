@@ -839,3 +839,231 @@ ctimestamp1	ctimestamp2	ctimestamp2_description	ctimestamp2_description_2	ctimes
 9209-11-11 04:08:58.223768453	9209-11-10 02:05:54.223768453	Unknown	NULL	NULL	9209	2018-03-08 23:04:59	8	NULL	9209-11-12
 9403-01-09 18:12:33.547	9403-01-08 16:09:29.547	Unknown	NULL	NULL	9403	2018-03-08 23:04:59	12	NULL	9404-01-09
 NULL	NULL	Unknown	NULL	NULL	NULL	2018-03-08 23:04:59	NULL	NULL	NULL
+PREHOOK: query: create temporary table foo(q548284 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@foo
+POSTHOOK: query: create temporary table foo(q548284 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@foo
+PREHOOK: query: insert into foo values(1),(2),(3),(4),(5),(6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@foo
+POSTHOOK: query: insert into foo values(1),(2),(3),(4),(5),(6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@foo
+POSTHOOK: Lineage: foo.q548284 SCRIPT []
+col1
+PREHOOK: query: explain vectorization detail select q548284, CASE WHEN ((q548284 = 1)) THEN (0.2)
+    WHEN ((q548284 = 2)) THEN (0.4) WHEN ((q548284 = 3)) THEN (0.6) WHEN ((q548284 = 4))
+    THEN (0.8) WHEN ((q548284 = 5)) THEN (1) ELSE (null) END from foo order by q548284 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail select q548284, CASE WHEN ((q548284 = 1)) THEN (0.2)
+    WHEN ((q548284 = 2)) THEN (0.4) WHEN ((q548284 = 3)) THEN (0.6) WHEN ((q548284 = 4))
+    THEN (0.8) WHEN ((q548284 = 5)) THEN (1) ELSE (null) END from foo order by q548284 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: foo
+            Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:q548284:int, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+            Select Operator
+              expressions: q548284 (type: int), CASE WHEN ((q548284 = 1)) THEN (0.2) WHEN ((q548284 = 2)) THEN (0.4) WHEN ((q548284 = 3)) THEN (0.6) WHEN ((q548284 = 4)) THEN (0.8) WHEN ((q548284 = 5)) THEN (1) ELSE (null) END (type: decimal(11,1))
+              outputColumnNames: _col0, _col1
+              Select Vectorization:
+                  className: VectorSelectOperator
+                  native: true
+                  projectedOutputColumnNums: [0, 16]
+                  selectExpressions: IfExprCondExprCondExpr(col 2:boolean, col 3:decimal(11,1)col 15:decimal(11,1))(children: LongColEqualLongScalar(col 0:int, val 1) -> 2:boolean, ConstantVectorExpression(val 0.2) -> 3:decimal(11,1), IfExprCondExprCondExpr(col 4:boolean, col 5:decimal(11,1)col 14:decimal(11,1))(children: LongColEqualLongScalar(col 0:int, val 2) -> 4:boolean, ConstantVectorExpression(val 0.4) -> 5:decimal(11,1), IfExprCondExprCondExpr(col 6:boolean, col 7:decimal(11,1)col 13:decimal(11,1))(children: LongColEqualLongScalar(col 0:int, val 3) -> 6:boolean, ConstantVectorExpression(val 0.6) -> 7:decimal(11,1), IfExprCondExprCondExpr(col 8:boolean, col 9:decimal(11,1)col 12:decimal(11,1))(children: LongColEqualLongScalar(col 0:int, val 4) -> 8:boolean, ConstantVectorExpression(val 0.8) -> 9:decimal(11,1), IfExprCondExprNull(col 10:boolean, col 11:decimal(11,1), null)(children: LongColEqualLongScalar(col 0:int, val 5) -> 10:boolean, ConstantVectorExpression(val 1) -> 11:decimal(11,1)) -> 12:decimal(11,1)) -> 13:decimal(11,1)) -> 14:decimal(11,1)) -> 15:decimal(11,1)) -> 16:decimal(11,1)
+              Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col0 (type: int)
+                sort order: +
+                Reduce Sink Vectorization:
+                    className: VectorReduceSinkOperator
+                    native: false
+                    nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                    nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+                Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                TopN Hash Memory Usage: 0.1
+                value expressions: _col1 (type: decimal(11,1))
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
+          inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 1
+              includeColumns: [0]
+              dataColumns: q548284:int
+              partitionColumnCount: 0
+              scratchColumnTypeNames: [bigint, decimal(11,1), bigint, decimal(11,1), bigint, decimal(11,1), bigint, decimal(11,1), bigint, decimal(11,1), decimal(11,1), decimal(11,1), decimal(11,1), decimal(11,1), decimal(11,1)]
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: decimal(11,1))
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+          Limit
+            Number of rows: 1
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select q548284, CASE WHEN ((q548284 = 1)) THEN (0.2)
+    WHEN ((q548284 = 2)) THEN (0.4) WHEN ((q548284 = 3)) THEN (0.6) WHEN ((q548284 = 4))
+    THEN (0.8) WHEN ((q548284 = 5)) THEN (1) ELSE (null) END from foo order by q548284 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
+POSTHOOK: query: select q548284, CASE WHEN ((q548284 = 1)) THEN (0.2)
+    WHEN ((q548284 = 2)) THEN (0.4) WHEN ((q548284 = 3)) THEN (0.6) WHEN ((q548284 = 4))
+    THEN (0.8) WHEN ((q548284 = 5)) THEN (1) ELSE (null) END from foo order by q548284 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
+q548284	_c1
+1	0.2
+PREHOOK: query: explain vectorization detail select q548284, CASE WHEN  ((q548284 = 4)) THEN (0.8)
+    WHEN ((q548284 = 5)) THEN (1) ELSE (8) END from foo order by q548284 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail select q548284, CASE WHEN  ((q548284 = 4)) THEN (0.8)
+    WHEN ((q548284 = 5)) THEN (1) ELSE (8) END from foo order by q548284 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: foo
+            Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:q548284:int, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+            Select Operator
+              expressions: q548284 (type: int), CASE WHEN ((q548284 = 4)) THEN (0.8) WHEN ((q548284 = 5)) THEN (1) ELSE (8) END (type: decimal(2,1))
+              outputColumnNames: _col0, _col1
+              Select Vectorization:
+                  className: VectorSelectOperator
+                  native: true
+                  projectedOutputColumnNums: [0, 8]
+                  selectExpressions: IfExprCondExprCondExpr(col 2:boolean, col 3:decimal(2,1)col 7:decimal(2,1))(children: LongColEqualLongScalar(col 0:int, val 4) -> 2:boolean, ConstantVectorExpression(val 0.8) -> 3:decimal(2,1), IfExprCondExprCondExpr(col 4:boolean, col 5:decimal(2,1)col 6:decimal(2,1))(children: LongColEqualLongScalar(col 0:int, val 5) -> 4:boolean, ConstantVectorExpression(val 1) -> 5:decimal(2,1), ConstantVectorExpression(val 8) -> 6:decimal(2,1)) -> 7:decimal(2,1)) -> 8:decimal(2,1)
+              Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col0 (type: int)
+                sort order: +
+                Reduce Sink Vectorization:
+                    className: VectorReduceSinkOperator
+                    native: false
+                    nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                    nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+                Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                TopN Hash Memory Usage: 0.1
+                value expressions: _col1 (type: decimal(2,1))
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
+          inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 1
+              includeColumns: [0]
+              dataColumns: q548284:int
+              partitionColumnCount: 0
+              scratchColumnTypeNames: [bigint, decimal(2,1), bigint, decimal(2,1), decimal(2,1), decimal(2,1), decimal(2,1)]
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: decimal(2,1))
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+          Limit
+            Number of rows: 1
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select q548284, CASE WHEN  ((q548284 = 4)) THEN (0.8) WHEN ((q548284 = 5)) THEN (1) ELSE (8) END
+    from foo order by q548284 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
+POSTHOOK: query: select q548284, CASE WHEN  ((q548284 = 4)) THEN (0.8) WHEN ((q548284 = 5)) THEN (1) ELSE (8) END
+    from foo order by q548284 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
+q548284	_c1
+1	8.0
