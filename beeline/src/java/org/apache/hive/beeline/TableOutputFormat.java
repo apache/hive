@@ -116,6 +116,10 @@ class TableOutputFormat implements OutputFormat {
       if (buf.getVisibleLength() > 0) {
         buf.green(delim);
       }
+ 
+      if (row.values[i] == null) {
+        continue;
+      }
 
       ColorBuffer v;
 
