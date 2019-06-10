@@ -78,6 +78,9 @@ final class ColorBuffer implements Comparable<Object> {
   }
 
   ColorBuffer center(String str, int len) {
+    if (str == null) {
+      str = "";
+    }
     StringBuilder buf = new StringBuilder(str);
     while (buf.length() < len) {
       buf.append(" ");
