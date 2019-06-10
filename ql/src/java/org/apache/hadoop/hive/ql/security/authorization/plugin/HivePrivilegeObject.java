@@ -66,6 +66,16 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
           (o.className != null ? className.compareTo(o.className) : 1) :
           (o.className != null ? -1 : 0);
     }
+    if (compare == 0) {
+      compare = ownerName != null?
+          (o.ownerName != null ? ownerName.compareTo(o.ownerName) : 1) :
+          (o.ownerName != null ? -1 : 0);
+    }
+    if (compare == 0) {
+      compare = ownerType != null?
+          (o.ownerType != null ? ownerType.compareTo(o.ownerType) : 1) :
+          (o.ownerType != null ? -1 : 0);
+    }
 
     return compare;
   }
@@ -281,8 +291,16 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
       default:
       }
     }
-
-    return "Object [type=" + type + ", name=" + name + actionTypeStr + "]";
+    StringBuilder sb = new StringBuilder();
+    sb.append("Object [type=" + type + ", name=" + name + actionTypeStr + ",");
+    if (ownerName != null){
+      sb.append(" ownername=" + ownerName + ",");
+    }
+    if (ownerType != null){
+      sb.append(" ownertype=" + ownerType);
+    }
+    sb.append("]");
+    return sb.toString();
   }
 
   /**

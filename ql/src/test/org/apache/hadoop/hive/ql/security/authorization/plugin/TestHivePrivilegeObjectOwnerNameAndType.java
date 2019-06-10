@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -35,8 +34,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -46,13 +43,12 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
 /**
- * Test HiveAuthorizer api invocation
+ * Test HiveAuthorizer api invocation.
  */
 public class TestHivePrivilegeObjectOwnerNameAndType {
-  private final Logger LOG = LoggerFactory.getLogger(this.getClass().getName());
   protected static HiveConf conf;
   protected static Driver driver;
-  private static final String tableName = TestHivePrivilegeObjectOwnerNameAndType.class.getSimpleName() + "Table";
+  private static final String TABLE_NAME = TestHivePrivilegeObjectOwnerNameAndType.class.getSimpleName() + "Table";
   static HiveAuthorizer mockedAuthorizer;
 
   /**
@@ -60,7 +56,8 @@ public class TestHivePrivilegeObjectOwnerNameAndType {
    * capture the argument passed to it in the test case.
    */
   static class MockedHiveAuthorizerFactory implements HiveAuthorizerFactory {
-    @Override public HiveAuthorizer createHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory,
+    @Override
+    public HiveAuthorizer createHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory,
         HiveConf conf, HiveAuthenticationProvider authenticator, HiveAuthzSessionContext ctx) {
       TestHivePrivilegeObjectOwnerNameAndType.mockedAuthorizer = Mockito.mock(HiveAuthorizer.class);
       return TestHivePrivilegeObjectOwnerNameAndType.mockedAuthorizer;
@@ -68,7 +65,8 @@ public class TestHivePrivilegeObjectOwnerNameAndType {
 
   }
 
-  @BeforeClass public static void beforeTest() throws Exception {
+  @BeforeClass
+  public static void beforeTest() throws Exception {
     UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser("hive"));
     conf = new HiveConf();
 
@@ -83,7 +81,7 @@ public class TestHivePrivilegeObjectOwnerNameAndType {
 
     SessionState.start(conf);
     driver = new Driver(conf);
-    runCmd("create table " + tableName + " (i int, j int, k string) partitioned by (city string, `date` string) ");
+    runCmd("create table " + TABLE_NAME + " (i int, j int, k string) partitioned by (city string, `date` string) ");
   }
 
   private static void runCmd(String cmd) throws Exception {
@@ -91,13 +89,15 @@ public class TestHivePrivilegeObjectOwnerNameAndType {
     assertEquals(0, resp.getResponseCode());
   }
 
-  @AfterClass public static void afterTests() throws Exception {
+  @AfterClass
+  public static void afterTests() throws Exception {
     // Drop the tables when we're done.  This makes the test work inside an IDE
-    runCmd("drop table if exists " + tableName);
+    runCmd("drop table if exists " + TABLE_NAME);
     driver.close();
   }
 
-  @Test public void testOwnerNames() throws Exception {
+  @Test
+  public void testOwnerNames() throws Exception {
     reset(mockedAuthorizer);
     driver.compile("create table default.t1 (name string)");
 
@@ -126,7 +126,8 @@ public class TestHivePrivilegeObjectOwnerNameAndType {
     }
   }
 
-  @Test public void testOwnerType() throws Exception {
+  @Test
+  public void testOwnerType() throws Exception {
     reset(mockedAuthorizer);
     driver.compile("create table default.t1 (name string)");
 
@@ -155,9 +156,9 @@ public class TestHivePrivilegeObjectOwnerNameAndType {
       throws HiveAuthzPluginException, HiveAccessControlException {
     // Create argument capturer
     // a class variable cast to this generic of generic class
-    Class<List<HivePrivilegeObject>> class_listPrivObjects = (Class) List.class;
-    ArgumentCaptor<List<HivePrivilegeObject>> inputsCapturer = ArgumentCaptor.forClass(class_listPrivObjects);
-    ArgumentCaptor<List<HivePrivilegeObject>> outputsCapturer = ArgumentCaptor.forClass(class_listPrivObjects);
+    Class<List<HivePrivilegeObject>> classListPrivObjects = (Class) List.class;
+    ArgumentCaptor<List<HivePrivilegeObject>> inputsCapturer = ArgumentCaptor.forClass(classListPrivObjects);
+    ArgumentCaptor<List<HivePrivilegeObject>> outputsCapturer = ArgumentCaptor.forClass(classListPrivObjects);
 
     verify(mockedAuthorizer)
         .checkPrivileges(any(HiveOperationType.class), inputsCapturer.capture(), outputsCapturer.capture(),
