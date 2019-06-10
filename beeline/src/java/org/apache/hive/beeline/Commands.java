@@ -1052,7 +1052,9 @@ public class Commands {
             logThread.interrupt();
           }
           logThread.join(DEFAULT_QUERY_PROGRESS_THREAD_TIMEOUT);
-          showRemainingLogsIfAny(stmnt);
+          if (stmnt != null) {
+            showRemainingLogsIfAny(stmnt);
+          }
         }
         if (stmnt != null) {
           stmnt.close();
