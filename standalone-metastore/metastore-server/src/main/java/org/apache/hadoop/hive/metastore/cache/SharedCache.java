@@ -80,6 +80,7 @@ import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdenti
 
 public class SharedCache {
   private static ReentrantReadWriteLock cacheLock = new ReentrantReadWriteLock(true);
+  private static final long MAX_DEFAULT_CACHE_SIZE = 1024 * 1024;
   private boolean isCatalogCachePrewarmed = false;
   private Map<String, Catalog> catalogCache = new TreeMap<>();
   private HashSet<String> catalogsDeletedDuringPrewarm = new HashSet<>();
@@ -212,15 +213,15 @@ public class SharedCache {
 
     if (tableCache == null) {
       CacheBuilder<String, TableWrapper> b = CacheBuilder.newBuilder()
-          .maximumWeight(maxCacheSizeInBytes > 0 ? maxCacheSizeInBytes : 1024 * 1024)
+          .maximumWeight(maxCacheSizeInBytes > 0 ? maxCacheSizeInBytes : MAX_DEFAULT_CACHE_SIZE)
           .weigher(new Weigher<String, TableWrapper>() {
             @Override public int weigh(String key, TableWrapper value) {
               return value.getSize();
             }
           }).removalListener(new RemovalListener<String, TableWrapper>() {
             @Override public void onRemoval(RemovalNotification<String, TableWrapper> notification) {
-              LOG.info("Evication happened for table " + notification.getKey());
-              LOG.info("current table cache contains " + tableCache.size() + "entries");
+              LOG.debug("Evication happened for table " + notification.getKey());
+              LOG.debug("current table cache contains " + tableCache.size() + "entries");
             }
           });
 

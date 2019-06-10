@@ -407,7 +407,8 @@ public class CachedStore implements RawStore, Configurable {
   /**
    * This initializes the caches in SharedCache by getting the objects from Metastore DB via
    * ObjectStore and populating the respective caches
-   */ static void prewarm(RawStore rawStore) {
+   */
+  static void prewarm(RawStore rawStore) {
     if (isCachePrewarmed.get()) {
       return;
     }
@@ -568,7 +569,13 @@ public class CachedStore implements RawStore, Configurable {
     }
   }
 
-  @VisibleForTesting static void clearSharedCache() {
+  /**
+   * This method is only used for testing. Test method will init a new cache and use the new handle to query the cache
+   * to get content in the cache. In production, no code would/should call this method, because SharedCache should be
+   * a singleton.
+   */
+  @VisibleForTesting
+  static void clearSharedCache() {
     synchronized (lock) {
       sharedCacheInited = false;
     }
