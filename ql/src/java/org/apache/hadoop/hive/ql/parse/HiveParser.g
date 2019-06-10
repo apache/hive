@@ -906,10 +906,10 @@ replLoadStatement
 @init { pushMsg("replication load statement", state); }
 @after { popMsg(state); }
       : KW_REPL KW_LOAD
-        ((dbName=identifier) (DOT tblName=identifier)?)?
+        (dbName=identifier)?
         KW_FROM (path=StringLiteral)
         (KW_WITH replConf=replConfigs)?
-      -> ^(TOK_REPL_LOAD $path ^(TOK_DBNAME $dbName)? ^(TOK_TABNAME $tblName)? $replConf?)
+      -> ^(TOK_REPL_LOAD $path ^(TOK_DBNAME $dbName)? $replConf?)
       ;
 
 replConfigs
@@ -938,8 +938,6 @@ replTablesList
 @init { pushMsg("replication table name or comma separated table names pattern list", state); }
 @after { popMsg(state); }
     :
-      (replTable=identifier) -> ^(TOK_TABNAME $replTable)
-      |
       (LSQUARE (tablePattern (COMMA tablePattern)*)? RSQUARE) -> ^(TOK_REPL_TABLES_LIST tablePattern*)
     ;
 
@@ -956,9 +954,9 @@ replStatusStatement
 @init { pushMsg("replication status statement", state); }
 @after { popMsg(state); }
       : KW_REPL KW_STATUS
-        (dbName=identifier) (DOT tblName=identifier)?
+        (dbName=identifier)
         (KW_WITH replConf=replConfigs)?
-      -> ^(TOK_REPL_STATUS $dbName ^(TOK_TABNAME $tblName)? $replConf?)
+      -> ^(TOK_REPL_STATUS $dbName $replConf?)
       ;
 
 ddlStatement

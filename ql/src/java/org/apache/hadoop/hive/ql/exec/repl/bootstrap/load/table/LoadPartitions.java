@@ -97,7 +97,7 @@ public class LoadPartitions {
     this.lastReplicatedPartition = lastReplicatedPartition;
     this.tableContext = tableContext;
 
-    this.tableDesc = tableContext.overrideProperties(event.tableDesc(dbNameToLoadIn));
+    this.tableDesc = event.tableDesc(dbNameToLoadIn);
     this.table = ImportSemanticAnalyzer.tableIfExists(tableDesc, context.hiveDb);
   }
 

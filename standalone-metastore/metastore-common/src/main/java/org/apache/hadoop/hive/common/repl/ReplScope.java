@@ -28,8 +28,6 @@ import java.util.regex.Pattern;
  */
 public class ReplScope implements Serializable {
   private String dbName;
-  private String tableName;
-
   private Pattern dbNamePattern;
   private List<Pattern> includedTableNamePatterns; // Only for REPL DUMP and exist only if tableName == null.
   private List<Pattern> excludedTableNamePatterns; // Only for REPL DUMP and exist only if tableName == null.
@@ -51,14 +49,6 @@ public class ReplScope implements Serializable {
     return dbName;
   }
 
-  public void setTableName(String tableName) {
-    this.tableName = tableName;
-  }
-
-  public String getTableName() {
-    return tableName;
-  }
-
   public void setIncludedTablePatterns(List<String> includedTableNamePatterns) {
     this.includedTableNamePatterns = compilePatterns(includedTableNamePatterns);
   }
@@ -68,8 +58,7 @@ public class ReplScope implements Serializable {
   }
 
   public boolean includeAllTables() {
-    return ((tableName == null)
-            && (includedTableNamePatterns == null)
+    return ((includedTableNamePatterns == null)
             && (excludedTableNamePatterns == null));
   }
 
@@ -82,10 +71,6 @@ public class ReplScope implements Serializable {
   }
 
   public boolean tableIncludedInReplScope(final String tableName) {
-    if (this.tableName != null) {
-      // For single table replication, table name should match to be included.
-      return this.tableName.equalsIgnoreCase(tableName);
-    }
     if (tableName == null) {
       // If input tableName is empty, it means, DB level event. It should be always included as
       // this is DB level replication with list of included/excluded tables.
@@ -118,8 +103,8 @@ public class ReplScope implements Serializable {
 
   private boolean inTableIncludedList(final String tableName) {
     if (includedTableNamePatterns == null) {
-      // If included list is empty, repl policy should be db.[].[a,b]. It is equivalent to db.[*].[a,b]
-      // So, all tables must be accepted.
+      // If included list is empty, repl policy should be full db replication.
+      // So, all tables must be included.
       return true;
     }
     return tableMatchAnyPattern(tableName, includedTableNamePatterns);

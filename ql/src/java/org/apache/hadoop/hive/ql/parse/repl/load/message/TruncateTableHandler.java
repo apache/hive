@@ -33,7 +33,7 @@ public class TruncateTableHandler extends AbstractMessageHandler {
   public List<Task<? extends Serializable>> handle(Context context) throws SemanticException {
     AlterTableMessage msg = deserializer.getAlterTableMessage(context.dmd.getPayload());
     String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
-    String actualTblName = context.isTableNameEmpty() ? msg.getTable() : context.tableName;
+    String actualTblName = msg.getTable();
 
     TruncateTableDesc truncateTableDesc = new TruncateTableDesc(
             actualDbName + "." + actualTblName,

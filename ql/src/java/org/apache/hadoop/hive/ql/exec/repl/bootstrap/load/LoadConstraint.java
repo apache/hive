@@ -94,7 +94,7 @@ public class LoadConstraint {
         pkDumpMetaData.setPayload(pksString);
         tasks.addAll(pkHandler.handle(
             new MessageHandler.Context(
-                dbNameToLoadIn, null, fromPath.toString(), null, pkDumpMetaData, context.hiveConf,
+                dbNameToLoadIn, fromPath.toString(), null, pkDumpMetaData, context.hiveConf,
                 context.hiveDb, context.nestedContext, LOG)));
       }
 
@@ -105,7 +105,7 @@ public class LoadConstraint {
         ukDumpMetaData.setPayload(uksString);
         tasks.addAll(ukHandler.handle(
             new MessageHandler.Context(
-                dbNameToLoadIn, null, fromPath.toString(), null, ukDumpMetaData, context.hiveConf,
+                dbNameToLoadIn, fromPath.toString(), null, ukDumpMetaData, context.hiveConf,
                 context.hiveDb, context.nestedContext, LOG)));
       }
 
@@ -116,7 +116,7 @@ public class LoadConstraint {
         nnDumpMetaData.setPayload(nnsString);
         tasks.addAll(nnHandler.handle(
             new MessageHandler.Context(
-                dbNameToLoadIn, null, fromPath.toString(), null, nnDumpMetaData, context.hiveConf,
+                dbNameToLoadIn, fromPath.toString(), null, nnDumpMetaData, context.hiveConf,
                 context.hiveDb, context.nestedContext, LOG)));
       }
 
@@ -127,7 +127,7 @@ public class LoadConstraint {
         fkDumpMetaData.setPayload(fksString);
         tasks.addAll(fkHandler.handle(
             new MessageHandler.Context(
-                dbNameToLoadIn, null, fromPath.toString(), null, fkDumpMetaData, context.hiveConf,
+                dbNameToLoadIn, fromPath.toString(), null, fkDumpMetaData, context.hiveConf,
                 context.hiveDb, context.nestedContext, LOG)));
       }
 

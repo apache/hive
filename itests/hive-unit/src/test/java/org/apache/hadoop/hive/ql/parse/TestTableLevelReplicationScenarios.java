@@ -192,32 +192,16 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     String[] originalTables = new String[] {"t1", "t11", "t2", "t3", "t111" };
     createTables(originalTables, CreateTableType.NON_ACID);
 
-    // Repl dump should fail with SemanticException as repl policy syntax is incorrect.
+    // Invalid repl policy where abrubtly placed DOT which causes ParseException during REPL dump.
     String[] replicatedTables = new String[]{};
     boolean failed;
     String[] invalidReplPolicies = new String[] {
             primaryDbName + ".t1.t2", // Two explicit table names not allowed.
             primaryDbName + ".['t1'].t2", // Table name and include list not allowed.
             primaryDbName + ".t1.['t2']", // Table name and exclude list not allowed.
-            primaryDbName + ".[t1].t2" // Table name and include list not allowed.
-    };
-    for (String replPolicy : invalidReplPolicies) {
-      failed = false;
-      try {
-        replicateAndVerify(replPolicy, null, null, null, replicatedTables);
-      } catch (Exception ex) {
-        LOG.info("Got exception: {}", ex.getMessage());
-        Assert.assertTrue(ex instanceof SemanticException);
-        Assert.assertTrue(ex.getMessage().equals(ErrorMsg.REPL_INCORRECT_SYNTAX_FOR_REPL_POLICY.getMsg()));
-        failed = true;
-      }
-      Assert.assertTrue(failed);
-    }
-
-    // Invalid repl policy where abrubtly placed DOT which causes ParseException during REPL dump.
-    invalidReplPolicies = new String[]{
-            primaryDbName + ".['t1+'].",
-            primaryDbName + "..[]"
+            primaryDbName + ".[t1].t2", // Table name and include list not allowed.
+            primaryDbName + ".['t1+'].", // Abrubtly ended dot.
+            primaryDbName + "..[]" // Multiple dots
     };
     for (String replPolicy : invalidReplPolicies) {
       failed = false;
@@ -252,7 +236,6 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
     // List of repl policy formats that leads to Full DB replication.
     String[] fullDbReplPolicies = new String[] {
-            primaryDbName + ".[].[]",
             primaryDbName + ".['.*?']",
             primaryDbName + ".['.*?'].[]"
     };

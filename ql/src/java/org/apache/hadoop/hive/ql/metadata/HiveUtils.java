@@ -430,13 +430,11 @@ public final class HiveUtils {
     return null;
   }
 
-  public static String getReplPolicy(String dbName, String tableName) {
+  public static String getReplPolicy(String dbName) {
     if ((dbName == null) || (dbName.isEmpty())) {
       return "*.*";
-    } else if ((tableName == null) || (tableName.isEmpty())) {
-      return dbName.toLowerCase() + ".*";
     } else {
-      return dbName.toLowerCase() + "." + tableName.toLowerCase();
+      return dbName.toLowerCase() + ".*";
     }
   }
 

@@ -42,7 +42,6 @@ import static org.apache.hadoop.hive.ql.exec.repl.ExternalTableCopyTaskBuilder.D
     Explain.Level.EXTENDED })
 public class ReplLoadWork implements Serializable {
   final String dbNameToLoadIn;
-  final String tableNameToLoadIn;
   final String dumpDirectory;
   final String bootstrapDumpToCleanTables;
   boolean needCleanTablesFromBootstrap;
@@ -63,9 +62,8 @@ public class ReplLoadWork implements Serializable {
   final LineageState sessionStateLineageState;
 
   public ReplLoadWork(HiveConf hiveConf, String dumpDirectory, String dbNameToLoadIn,
-      String tableNameToLoadIn, LineageState lineageState, boolean isIncrementalDump, Long eventTo,
+      LineageState lineageState, boolean isIncrementalDump, Long eventTo,
       List<DirCopyWork> pathsToCopyIterator) throws IOException {
-    this.tableNameToLoadIn = tableNameToLoadIn;
     sessionStateLineageState = lineageState;
     this.dumpDirectory = dumpDirectory;
     this.dbNameToLoadIn = dbNameToLoadIn;
@@ -74,8 +72,7 @@ public class ReplLoadWork implements Serializable {
 
     rootTask = null;
     if (isIncrementalDump) {
-      incrementalLoadTasksBuilder =
-          new IncrementalLoadTasksBuilder(dbNameToLoadIn, tableNameToLoadIn, dumpDirectory,
+      incrementalLoadTasksBuilder = new IncrementalLoadTasksBuilder(dbNameToLoadIn, dumpDirectory,
                   new IncrementalLoadEventsIterator(dumpDirectory, hiveConf), hiveConf, eventTo);
 
       /*

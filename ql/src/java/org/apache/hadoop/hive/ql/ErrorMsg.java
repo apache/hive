@@ -514,14 +514,7 @@ public enum ErrorMsg {
   REPL_LOAD_PATH_NOT_FOUND(20019, "Load path does not exist."),
   REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION(20020,
           "Source of replication (repl.source.for) is not set in the database properties."),
-  REPL_INCORRECT_SYNTAX_FOR_REPL_POLICY(20021,
-          "Incorrect syntax for the replication policy. These are the supported formats. "
-                  + "1) <db_name>, "
-                  + "2) <db_name>.<table_name>, "
-                  + "3) <db_name>.[<include_tables_regex_list>], "
-                  + "4) <db_name>.[<include_tables_regex_list>].[<exclude_tables_regex_list>], "
-                  + "5) <db_name>.[].[exclude_tables_regex_list]"),
-  REPL_INVALID_DB_OR_TABLE_PATTERN(20022,
+  REPL_INVALID_DB_OR_TABLE_PATTERN(20021,
           "Invalid pattern for the DB or table name in the replication policy. "
                   + "It should be a valid regex enclosed within single or double quotes."),
 

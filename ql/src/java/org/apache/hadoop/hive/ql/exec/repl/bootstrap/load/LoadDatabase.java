@@ -48,16 +48,12 @@ public class LoadDatabase {
 
   private final DatabaseEvent event;
   private final String dbNameToLoadIn;
-  private final boolean isTableLevelLoad;
 
-  public LoadDatabase(Context context, DatabaseEvent event, String dbNameToLoadIn, String tblNameToLoadIn,
-      TaskTracker loadTaskTracker) {
+  public LoadDatabase(Context context, DatabaseEvent event, String dbNameToLoadIn, TaskTracker loadTaskTracker) {
     this.context = context;
     this.event = event;
     this.dbNameToLoadIn = dbNameToLoadIn;
     this.tracker = new TaskTracker(loadTaskTracker);
-    //TODO : Load database should not be called for table level load.
-    isTableLevelLoad = tblNameToLoadIn != null && !tblNameToLoadIn.isEmpty();
   }
 
   public TaskTracker tasks() throws Exception {
@@ -121,7 +117,7 @@ public class LoadDatabase {
   private Task<? extends Serializable> createDbTask(Database dbObj) {
     // note that we do not set location - for repl load, we want that auto-created.
     CreateDatabaseDesc createDbDesc = new CreateDatabaseDesc(dbObj.getName(), dbObj.getDescription(), null, false,
-        updateDbProps(dbObj, context.dumpDirectory, !isTableLevelLoad));
+        updateDbProps(dbObj, context.dumpDirectory, true));
     // If it exists, we want this to be an error condition. Repl Load is not intended to replace a
     // db.
     // TODO: we might revisit this in create-drop-recreate cases, needs some thinking on.
@@ -130,7 +126,7 @@ public class LoadDatabase {
   }
 
   private Task<? extends Serializable> alterDbTask(Database dbObj) {
-    return alterDbTask(dbObj.getName(), updateDbProps(dbObj, context.dumpDirectory, !isTableLevelLoad),
+    return alterDbTask(dbObj.getName(), updateDbProps(dbObj, context.dumpDirectory, true),
             context.hiveConf);
   }
 
@@ -176,7 +172,7 @@ public class LoadDatabase {
 
     public AlterDatabase(Context context, DatabaseEvent event, String dbNameToLoadIn,
         TaskTracker loadTaskTracker) {
-      super(context, event, dbNameToLoadIn, null, loadTaskTracker);
+      super(context, event, dbNameToLoadIn, loadTaskTracker);
     }
 
     @Override
