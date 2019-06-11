@@ -73,7 +73,7 @@ public class IncrementalLoadTasksBuilder {
   private Logger log;
   private final HiveConf conf;
   private final ReplLogger replLogger;
-  private static long numIteration;
+  private static long numIteration = 0;
   private final Long eventTo;
 
   public IncrementalLoadTasksBuilder(String dbName, String loadPath,
@@ -85,7 +85,6 @@ public class IncrementalLoadTasksBuilder {
     log = null;
     this.conf = conf;
     replLogger = new IncrementalLoadLogger(dbName, loadPath, iterator.getNumEvents());
-    numIteration = 0;
     replLogger.startLog();
     this.eventTo = eventTo;
   }

@@ -196,12 +196,12 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     String[] replicatedTables = new String[]{};
     boolean failed;
     String[] invalidReplPolicies = new String[] {
-            primaryDbName + ".t1.t2", // Two explicit table names not allowed.
-            primaryDbName + ".['t1'].t2", // Table name and include list not allowed.
-            primaryDbName + ".t1.['t2']", // Table name and exclude list not allowed.
-            primaryDbName + ".[t1].t2", // Table name and include list not allowed.
-            primaryDbName + ".['t1+'].", // Abrubtly ended dot.
-            primaryDbName + "..[]" // Multiple dots
+        primaryDbName + ".t1.t2", // Two explicit table names not allowed.
+        primaryDbName + ".['t1'].t2", // Table name and include list not allowed.
+        primaryDbName + ".t1.['t2']", // Table name and exclude list not allowed.
+        primaryDbName + ".[t1].t2", // Table name and include list not allowed.
+        primaryDbName + ".['t1+'].", // Abrubtly ended dot.
+        primaryDbName + "..[]" // Multiple dots
     };
     for (String replPolicy : invalidReplPolicies) {
       failed = false;
