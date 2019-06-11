@@ -1383,7 +1383,7 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       input vertices:
                         0 Map 1
-                      Statistics: Num rows: 12 Data size: 2100 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 4 Data size: 700 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -1393,7 +1393,7 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 12 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 4 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -1403,7 +1403,7 @@ STAGE PLANS:
                           outputColumnNames: _col1
                           input vertices:
                             1 Map 5
-                          Statistics: Num rows: 76 Data size: 6764 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 4 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                           Map Join Operator
                             condition map:
                                  Inner Join 0 to 1
@@ -1412,10 +1412,10 @@ STAGE PLANS:
                               1 value (type: string)
                             input vertices:
                               1 Map 6
-                            Statistics: Num rows: 123 Data size: 984 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: count()
-                              minReductionHashAggr: 0.99
+                              minReductionHashAggr: 0.75
                               mode: hash
                               outputColumnNames: _col0
                               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1428,7 +1428,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y1
-                  filterExpr: ((value < 'zzzzzzzz') and (key < 'zzzzzzzz')) (type: boolean)
+                  filterExpr: (key is not null and (value < 'zzzzzzzz')) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and (value < 'zzzzzzzz')) (type: boolean)
@@ -1609,7 +1609,7 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       input vertices:
                         0 Map 1
-                      Statistics: Num rows: 12 Data size: 2100 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 4 Data size: 700 Basic stats: COMPLETE Column stats: COMPLETE
                       HybridGraceHashJoin: true
                       Map Join Operator
                         condition map:
@@ -1620,7 +1620,7 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 12 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 4 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                         HybridGraceHashJoin: true
                         Map Join Operator
                           condition map:
@@ -1631,7 +1631,7 @@ STAGE PLANS:
                           outputColumnNames: _col1
                           input vertices:
                             1 Map 5
-                          Statistics: Num rows: 76 Data size: 6764 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 4 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                           HybridGraceHashJoin: true
                           Map Join Operator
                             condition map:
@@ -1641,11 +1641,11 @@ STAGE PLANS:
                               1 value (type: string)
                             input vertices:
                               1 Map 6
-                            Statistics: Num rows: 123 Data size: 984 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                             HybridGraceHashJoin: true
                             Group By Operator
                               aggregations: count()
-                              minReductionHashAggr: 0.99
+                              minReductionHashAggr: 0.75
                               mode: hash
                               outputColumnNames: _col0
                               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1658,7 +1658,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y1
-                  filterExpr: ((value < 'zzzzzzzz') and (key < 'zzzzzzzz')) (type: boolean)
+                  filterExpr: (key is not null and (value < 'zzzzzzzz')) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and (value < 'zzzzzzzz')) (type: boolean)

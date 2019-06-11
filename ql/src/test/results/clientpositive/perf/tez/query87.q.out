@@ -145,7 +145,7 @@ Stage-0
                                                   Select Operator [SEL_288] (rows=143930993 width=7)
                                                     Output:["_col0","_col1"]
                                                     Filter Operator [FIL_287] (rows=143930993 width=7)
-                                                      predicate:(ws_bill_customer_sk is not null and ws_sold_date_sk is not null and (ws_sold_date_sk BETWEEN DynamicValue(RS_73_date_dim_d_date_sk_min) AND DynamicValue(RS_73_date_dim_d_date_sk_max) and in_bloom_filter(ws_sold_date_sk, DynamicValue(RS_73_date_dim_d_date_sk_bloom_filter))))
+                                                      predicate:(ws_bill_customer_sk is not null and ws_sold_date_sk is not null and ws_sold_date_sk BETWEEN DynamicValue(RS_73_date_dim_d_date_sk_min) AND DynamicValue(RS_73_date_dim_d_date_sk_max) and in_bloom_filter(ws_sold_date_sk, DynamicValue(RS_73_date_dim_d_date_sk_bloom_filter)))
                                                       TableScan [TS_63] (rows=144002668 width=7)
                                                         default@web_sales,web_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ws_sold_date_sk","ws_bill_customer_sk"]
                                                       <-Reducer 19 [BROADCAST_EDGE] vectorized
@@ -218,7 +218,7 @@ Stage-0
                                                                     Select Operator [SEL_276] (rows=285117831 width=7)
                                                                       Output:["_col0","_col1"]
                                                                       Filter Operator [FIL_275] (rows=285117831 width=7)
-                                                                        predicate:(cs_sold_date_sk is not null and cs_bill_customer_sk is not null and (cs_sold_date_sk BETWEEN DynamicValue(RS_35_date_dim_d_date_sk_min) AND DynamicValue(RS_35_date_dim_d_date_sk_max) and in_bloom_filter(cs_sold_date_sk, DynamicValue(RS_35_date_dim_d_date_sk_bloom_filter))))
+                                                                        predicate:(cs_sold_date_sk is not null and cs_bill_customer_sk is not null and cs_sold_date_sk BETWEEN DynamicValue(RS_35_date_dim_d_date_sk_min) AND DynamicValue(RS_35_date_dim_d_date_sk_max) and in_bloom_filter(cs_sold_date_sk, DynamicValue(RS_35_date_dim_d_date_sk_bloom_filter)))
                                                                         TableScan [TS_25] (rows=287989836 width=7)
                                                                           default@catalog_sales,catalog_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["cs_sold_date_sk","cs_bill_customer_sk"]
                                                                         <-Reducer 15 [BROADCAST_EDGE] vectorized
@@ -273,7 +273,7 @@ Stage-0
                                                                     Select Operator [SEL_243] (rows=525327388 width=7)
                                                                       Output:["_col0","_col1"]
                                                                       Filter Operator [FIL_242] (rows=525327388 width=7)
-                                                                        predicate:(ss_sold_date_sk is not null and ss_customer_sk is not null and (ss_sold_date_sk BETWEEN DynamicValue(RS_10_date_dim_d_date_sk_min) AND DynamicValue(RS_10_date_dim_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_10_date_dim_d_date_sk_bloom_filter))))
+                                                                        predicate:(ss_sold_date_sk is not null and ss_customer_sk is not null and ss_sold_date_sk BETWEEN DynamicValue(RS_10_date_dim_d_date_sk_min) AND DynamicValue(RS_10_date_dim_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_10_date_dim_d_date_sk_bloom_filter)))
                                                                         TableScan [TS_0] (rows=575995635 width=7)
                                                                           default@store_sales,store_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_sold_date_sk","ss_customer_sk"]
                                                                         <-Reducer 11 [BROADCAST_EDGE] vectorized

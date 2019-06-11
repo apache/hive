@@ -35,11 +35,13 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
+import java.util.stream.Collectors;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -1653,10 +1655,33 @@ public class SharedWorkOptimizer extends Transform {
             }
           }
         }
-        ExprNodeGenericFuncDesc newPred = ExprNodeGenericFuncDesc.newInstance(
-                new GenericUDFOPAnd(),
-                Arrays.<ExprNodeDesc>asList(tableScanExprNode.clone(), filterExprNode));
-        filterOp.getConf().setPredicate(newPred);
+        // Combine filters trying to remove any duplicate nodes
+        boolean isOpAndFilter = FunctionRegistry.isOpAnd(filterExprNode);
+        boolean isOpAndTS = FunctionRegistry.isOpAnd(tableScanExprNode);
+        if (isOpAndFilter && isOpAndTS) {
+          Set<String> visitedExprs = filterExprNode.getChildren()
+              .stream()
+              .map(ExprNodeDesc::getExprString)
+              .collect(Collectors.toSet());
+          for (ExprNodeDesc e : tableScanExprNode.getChildren()) {
+            if (visitedExprs.add(e.getExprString())) {
+              filterExprNode.getChildren().add(e.clone());
+            }
+          }
+        } else if (isOpAndFilter) {
+          Set<String> visitedExprs = filterExprNode.getChildren()
+              .stream()
+              .map(ExprNodeDesc::getExprString)
+              .collect(Collectors.toSet());
+          if (visitedExprs.add(tableScanExprNode.getExprString())) {
+            filterExprNode.getChildren().add(tableScanExprNode.clone());
+          }
+        } else {
+          ExprNodeGenericFuncDesc newPred = ExprNodeGenericFuncDesc.newInstance(
+              new GenericUDFOPAnd(),
+              Arrays.<ExprNodeDesc>asList(tableScanExprNode.clone(), filterExprNode));
+          filterOp.getConf().setPredicate(newPred);
+        }
       } else {
         Operator<FilterDesc> newOp = OperatorFactory.get(tsOp.getCompilationOpContext(),
                 new FilterDesc(tableScanExprNode.clone(), false),

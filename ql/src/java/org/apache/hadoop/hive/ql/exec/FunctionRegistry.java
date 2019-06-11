@@ -1645,6 +1645,14 @@ public final class FunctionRegistry {
     return isOpCast(desc);
   }
 
+  public static boolean isOpBetween(ExprNodeDesc desc) {
+    return GenericUDFBetween.class == getGenericUDFClassFromExprDesc(desc);
+  }
+
+  public static boolean isOpInBloomFilter(ExprNodeDesc desc) {
+    return GenericUDFInBloomFilter.class == getGenericUDFClassFromExprDesc(desc);
+  }
+
   /**
    * Registers the appropriate kind of temporary function based on a class's
    * type.

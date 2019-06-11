@@ -17,9 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Sets;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
@@ -29,6 +31,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.Stack;
@@ -47,6 +50,7 @@ import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -108,6 +112,8 @@ import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
@@ -1484,6 +1490,71 @@ public class TezCompiler extends TaskCompiler {
     return netBenefit;
   }
 
+  /**
+   * Sort semijoin filters depending on the benefit (computed depending on selectivity and cost)
+   * that they provide. We create three blocks: first all normal predicates, second between clauses
+   * for the min/max dynamic values, and finally the in bloom filter predicates. The intuition is
+   * that evaluating the between clause will be cheaper than evaluating the bloom filter predicates.
+   * Hence, after this method runs, normal predicates come first (possibly sorted by Calcite),
+   * then we will have sorted between clauses, and finally sorted in bloom filter clauses.
+   */
+  private static void sortSemijoinFilters(OptimizeTezProcContext procCtx,
+      ListMultimap<FilterOperator, SemijoinOperatorInfo> globalReductionFactorMap) throws SemanticException {
+    for (Entry<FilterOperator, Collection<SemijoinOperatorInfo>> e : globalReductionFactorMap.asMap().entrySet()) {
+      FilterOperator filterOp = e.getKey();
+      Collection<SemijoinOperatorInfo> semijoinInfos = e.getValue();
+
+      ExprNodeDesc pred = filterOp.getConf().getPredicate();
+      if (FunctionRegistry.isOpAnd(pred)) {
+        LinkedHashSet<ExprNodeDesc> allPreds = new LinkedHashSet<>(pred.getChildren());
+        List<ExprNodeDesc> betweenPreds = new ArrayList<>();
+        List<ExprNodeDesc> inBloomFilterPreds = new ArrayList<>();
+        // We check whether we can find semijoin predicates
+        for (SemijoinOperatorInfo roi : semijoinInfos) {
+          for (ExprNodeDesc expr : pred.getChildren()) {
+            if (FunctionRegistry.isOpBetween(expr) &&
+                expr.getChildren().get(2) instanceof ExprNodeDynamicValueDesc) {
+              // BETWEEN in SJ
+              String dynamicValueIdFromExpr = ((ExprNodeDynamicValueDesc) expr.getChildren().get(2))
+                  .getDynamicValue().getId();
+              List<String> dynamicValueIdsFromMap = procCtx.parseContext.getRsToRuntimeValuesInfoMap()
+                  .get(roi.rsOperator).getDynamicValueIDs();
+              for (String dynamicValueIdFromMap : dynamicValueIdsFromMap) {
+                if (dynamicValueIdFromExpr.equals(dynamicValueIdFromMap)) {
+                  betweenPreds.add(expr);
+                  allPreds.remove(expr);
+                  break;
+                }
+              }
+            } else if (FunctionRegistry.isOpInBloomFilter(expr) &&
+                expr.getChildren().get(1) instanceof ExprNodeDynamicValueDesc) {
+              // IN_BLOOM_FILTER in SJ
+              String dynamicValueIdFromExpr = ((ExprNodeDynamicValueDesc) expr.getChildren().get(1))
+                  .getDynamicValue().getId();
+              List<String> dynamicValueIdsFromMap = procCtx.parseContext.getRsToRuntimeValuesInfoMap()
+                  .get(roi.rsOperator).getDynamicValueIDs();
+              for (String dynamicValueIdFromMap : dynamicValueIdsFromMap) {
+                if (dynamicValueIdFromExpr.equals(dynamicValueIdFromMap)) {
+                  inBloomFilterPreds.add(expr);
+                  allPreds.remove(expr);
+                  break;
+                }
+              }
+            }
+          }
+        }
+
+        List<ExprNodeDesc> newAndArgs = new ArrayList<>(allPreds); // First rest of predicates
+        newAndArgs.addAll(betweenPreds);  // Then sorted between predicates
+        newAndArgs.addAll(inBloomFilterPreds); // Finally, sorted in bloom predicates
+
+        ExprNodeDesc andExpr = ExprNodeGenericFuncDesc.newInstance(
+            FunctionRegistry.getFunctionInfo("and").getGenericUDF(), newAndArgs);
+        filterOp.getConf().setPredicate(andExpr);
+      }
+    }
+  }
+
   private void removeSemijoinOptimizationByBenefit(OptimizeTezProcContext procCtx)
       throws SemanticException {
     Map<ReduceSinkOperator, SemiJoinBranchInfo> map = procCtx.parseContext.getRsToSemiJoinBranchInfo();
@@ -1501,6 +1572,7 @@ public class TezCompiler extends TaskCompiler {
         (ReduceSinkOperator o1, ReduceSinkOperator o2) -> (o1.toString().compareTo(o2.toString()));
     SortedSet<ReduceSinkOperator> semiJoinRsOps = new TreeSet<>(rsOpComp);
     semiJoinRsOps.addAll(map.keySet());
+    ListMultimap<FilterOperator, SemijoinOperatorInfo> globalReductionFactorMap = ArrayListMultimap.create();
     while (!semiJoinRsOps.isEmpty()) {
       Map<FilterOperator, SemijoinOperatorInfo> reductionFactorMap = new HashMap<>();
       SortedSet<ReduceSinkOperator> semiJoinRsOpsNewIter = new TreeSet<>(rsOpComp);
@@ -1589,6 +1661,7 @@ public class TezCompiler extends TaskCompiler {
           LOG.debug("New stats for {}: {}", roi.filterOperator, roi.filterStats);
         }
         adjustedStatsMap.put(roi.filterOperator, roi.filterStats);
+        globalReductionFactorMap.put(roi.filterOperator, roi);
       }
 
       semiJoinRsOps = semiJoinRsOpsNewIter;
@@ -1602,6 +1675,10 @@ public class TezCompiler extends TaskCompiler {
       }
       GenTezUtils.removeBranch(rs);
       GenTezUtils.removeSemiJoinOperator(procCtx.parseContext, rs, ts);
+    }
+
+    if (!globalReductionFactorMap.isEmpty()) {
+      sortSemijoinFilters(procCtx, globalReductionFactorMap);
     }
   }
 

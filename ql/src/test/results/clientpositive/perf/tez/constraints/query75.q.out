@@ -278,7 +278,7 @@ Stage-0
                                                             TableScan [TS_0] (rows=287989836 width=127)
 =======
                                                           Filter Operator [FIL_630] (rows=286549727 width=127)
-                                                            predicate:(cs_sold_date_sk is not null and (cs_sold_date_sk BETWEEN DynamicValue(RS_94_date_dim_d_date_sk_min) AND DynamicValue(RS_94_date_dim_d_date_sk_max) and in_bloom_filter(cs_sold_date_sk, DynamicValue(RS_94_date_dim_d_date_sk_bloom_filter))))
+                                                            predicate:(cs_sold_date_sk is not null and cs_sold_date_sk BETWEEN DynamicValue(RS_94_date_dim_d_date_sk_min) AND DynamicValue(RS_94_date_dim_d_date_sk_max) and in_bloom_filter(cs_sold_date_sk, DynamicValue(RS_94_date_dim_d_date_sk_bloom_filter)))
                                                             TableScan [TS_82] (rows=287989836 width=127)
 >>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                                                               default@catalog_sales,catalog_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["cs_sold_date_sk","cs_item_sk","cs_order_number","cs_quantity","cs_ext_sales_price"]
@@ -331,7 +331,7 @@ Stage-0
                                                             TableScan [TS_21] (rows=575995635 width=122)
 =======
                                                           Filter Operator [FIL_638] (rows=550076554 width=122)
-                                                            predicate:(ss_sold_date_sk is not null and (ss_sold_date_sk BETWEEN DynamicValue(RS_115_date_dim_d_date_sk_min) AND DynamicValue(RS_115_date_dim_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_115_date_dim_d_date_sk_bloom_filter))))
+                                                            predicate:(ss_sold_date_sk is not null and ss_sold_date_sk BETWEEN DynamicValue(RS_115_date_dim_d_date_sk_min) AND DynamicValue(RS_115_date_dim_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_115_date_dim_d_date_sk_bloom_filter)))
                                                             TableScan [TS_103] (rows=575995635 width=122)
 >>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                                                               default@store_sales,store_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_sold_date_sk","ss_item_sk","ss_ticket_number","ss_quantity","ss_ext_sales_price"]
@@ -384,7 +384,7 @@ Stage-0
                                                     TableScan [TS_49] (rows=144002668 width=127)
 =======
                                                   Filter Operator [FIL_643] (rows=143966864 width=127)
-                                                    predicate:(ws_sold_date_sk is not null and (ws_sold_date_sk BETWEEN DynamicValue(RS_143_date_dim_d_date_sk_min) AND DynamicValue(RS_143_date_dim_d_date_sk_max) and in_bloom_filter(ws_sold_date_sk, DynamicValue(RS_143_date_dim_d_date_sk_bloom_filter))))
+                                                    predicate:(ws_sold_date_sk is not null and ws_sold_date_sk BETWEEN DynamicValue(RS_143_date_dim_d_date_sk_min) AND DynamicValue(RS_143_date_dim_d_date_sk_max) and in_bloom_filter(ws_sold_date_sk, DynamicValue(RS_143_date_dim_d_date_sk_bloom_filter)))
                                                     TableScan [TS_131] (rows=144002668 width=127)
 >>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                                                       default@web_sales,web_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ws_sold_date_sk","ws_item_sk","ws_order_number","ws_quantity","ws_ext_sales_price"]
@@ -440,7 +440,7 @@ Stage-0
                                                 Select Operator [SEL_623] (rows=143966864 width=127)
                                                   Output:["_col0","_col1","_col2","_col3","_col4"]
                                                   Filter Operator [FIL_622] (rows=143966864 width=127)
-                                                    predicate:(ws_sold_date_sk is not null and (ws_sold_date_sk BETWEEN DynamicValue(RS_61_date_dim_d_date_sk_min) AND DynamicValue(RS_61_date_dim_d_date_sk_max) and in_bloom_filter(ws_sold_date_sk, DynamicValue(RS_61_date_dim_d_date_sk_bloom_filter))))
+                                                    predicate:(ws_sold_date_sk is not null and ws_sold_date_sk BETWEEN DynamicValue(RS_61_date_dim_d_date_sk_min) AND DynamicValue(RS_61_date_dim_d_date_sk_max) and in_bloom_filter(ws_sold_date_sk, DynamicValue(RS_61_date_dim_d_date_sk_bloom_filter)))
                                                     TableScan [TS_49] (rows=144002668 width=127)
                                                       default@web_sales,web_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ws_sold_date_sk","ws_item_sk","ws_order_number","ws_quantity","ws_ext_sales_price"]
                                                     <-Reducer 20 [BROADCAST_EDGE] vectorized
@@ -503,7 +503,7 @@ Stage-0
                                                         Select Operator [SEL_615] (rows=550076554 width=122)
                                                           Output:["_col0","_col1","_col2","_col3","_col4"]
                                                           Filter Operator [FIL_614] (rows=550076554 width=122)
-                                                            predicate:(ss_sold_date_sk is not null and (ss_sold_date_sk BETWEEN DynamicValue(RS_33_date_dim_d_date_sk_min) AND DynamicValue(RS_33_date_dim_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_33_date_dim_d_date_sk_bloom_filter))))
+                                                            predicate:(ss_sold_date_sk is not null and ss_sold_date_sk BETWEEN DynamicValue(RS_33_date_dim_d_date_sk_min) AND DynamicValue(RS_33_date_dim_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_33_date_dim_d_date_sk_bloom_filter)))
                                                             TableScan [TS_21] (rows=575995635 width=122)
                                                               default@store_sales,store_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_sold_date_sk","ss_item_sk","ss_ticket_number","ss_quantity","ss_ext_sales_price"]
                                                             <-Reducer 16 [BROADCAST_EDGE] vectorized
@@ -558,7 +558,7 @@ Stage-0
                                                         Select Operator [SEL_586] (rows=286549727 width=127)
                                                           Output:["_col0","_col1","_col2","_col3","_col4"]
                                                           Filter Operator [FIL_585] (rows=286549727 width=127)
-                                                            predicate:(cs_sold_date_sk is not null and (cs_sold_date_sk BETWEEN DynamicValue(RS_12_date_dim_d_date_sk_min) AND DynamicValue(RS_12_date_dim_d_date_sk_max) and in_bloom_filter(cs_sold_date_sk, DynamicValue(RS_12_date_dim_d_date_sk_bloom_filter))))
+                                                            predicate:(cs_sold_date_sk is not null and cs_sold_date_sk BETWEEN DynamicValue(RS_12_date_dim_d_date_sk_min) AND DynamicValue(RS_12_date_dim_d_date_sk_max) and in_bloom_filter(cs_sold_date_sk, DynamicValue(RS_12_date_dim_d_date_sk_bloom_filter)))
                                                             TableScan [TS_0] (rows=287989836 width=127)
                                                               default@catalog_sales,catalog_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["cs_sold_date_sk","cs_item_sk","cs_order_number","cs_quantity","cs_ext_sales_price"]
                                                             <-Reducer 12 [BROADCAST_EDGE] vectorized
