@@ -262,6 +262,8 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.plan.mapper.EmptyStatsSource;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
@@ -280,7 +282,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.joda.time.Interval;
-
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -408,11 +409,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   public static RelOptPlanner createPlanner(HiveConf conf) {
-    return createPlanner(conf, new HashSet<RelNode>());
+    return createPlanner(conf, new HashSet<RelNode>(), EmptyStatsSource.INSTANCE);
   }
 
   private static RelOptPlanner createPlanner(
-      HiveConf conf, Set<RelNode> corrScalarRexSQWithAgg) {
+      HiveConf conf, Set<RelNode> corrScalarRexSQWithAgg,
+      StatsSource statsSource) {
     final Double maxSplitSize = (double) HiveConf.getLongVar(
             conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE);
     final Double maxMemory = (double) HiveConf.getLongVar(
@@ -432,7 +434,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_SELECTION_STRATEGY).equals("heuristic");
     HivePlannerContext confContext = new HivePlannerContext(algorithmsConf, registry, calciteConfig,
         corrScalarRexSQWithAgg,
-        new HiveConfPlannerContext(isCorrelatedColumns, heuristicMaterializationStrategy));
+        new HiveConfPlannerContext(isCorrelatedColumns, heuristicMaterializationStrategy), statsSource);
     return HiveVolcanoPlanner.createPlanner(confContext);
   }
 
@@ -1476,7 +1478,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
     calcitePlannerAction = new CalcitePlannerAction(
         prunedPartitions,
-        ctx.getOpContext().getColStatsCache(),
+        ctx.getStatsSource(),
         this.columnAccessInfo);
 
     try {
@@ -1547,7 +1549,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
    */
   ASTNode getOptimizedAST(RelNode optimizedOptiqPlan) throws SemanticException {
     ASTNode optiqOptimizedAST = ASTConverter.convert(optimizedOptiqPlan, resultSchema,
-            HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_COLUMN_ALIGNMENT));
+            HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_COLUMN_ALIGNMENT),ctx.getPlanMapper());
     return optiqOptimizedAST;
   }
 
@@ -1565,7 +1567,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
     calcitePlannerAction = new CalcitePlannerAction(
         prunedPartitions,
-        ctx.getOpContext().getColStatsCache(),
+        ctx.getStatsSource(),
         this.columnAccessInfo);
 
     try {
@@ -1745,13 +1747,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
     // just last one.
     LinkedHashMap<RelNode, RowResolver>                   relToHiveRR                   = new LinkedHashMap<RelNode, RowResolver>();
     LinkedHashMap<RelNode, ImmutableMap<String, Integer>> relToHiveColNameCalcitePosMap = new LinkedHashMap<RelNode, ImmutableMap<String, Integer>>();
+    private final StatsSource statsSource;
 
     CalcitePlannerAction(
         Map<String, PrunedPartitionList> partitionCache,
-        Map<String, ColumnStatsList> colStatsCache,
+        StatsSource statsSource,
         ColumnAccessInfo columnAccessInfo) {
       this.partitionCache = partitionCache;
-      this.colStatsCache = colStatsCache;
+      this.statsSource = statsSource;
+      this.colStatsCache = ctx.getOpContext().getColStatsCache();
       this.columnAccessInfo = columnAccessInfo;
     }
 
@@ -1765,7 +1769,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       /*
        * recreate cluster, so that it picks up the additional traitDef
        */
-      RelOptPlanner planner = createPlanner(conf, corrScalarRexSQWithAgg);
+      RelOptPlanner planner = createPlanner(conf, corrScalarRexSQWithAgg, statsSource);
       final RexBuilder rexBuilder = cluster.getRexBuilder();
       final RelOptCluster optCluster = RelOptCluster.create(planner, rexBuilder);
 

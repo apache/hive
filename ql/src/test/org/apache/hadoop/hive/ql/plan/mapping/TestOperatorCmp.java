@@ -135,8 +135,6 @@ public class TestOperatorCmp {
     PlanMapper pm0 = getMapperForQuery(driver, "select u from tu where id_uv = 1 group by u");
     PlanMapper pm1 = getMapperForQuery(driver, "select u from tu where id_uv = 2 group by u");
 
-    //Since we have hive.optimize.index.filter=true we will have different table scan operator
-    assertHelper(AssertHelperOp.NOT_SAME, pm0, pm1, TableScanOperator.class);
     assertHelper(AssertHelperOp.NOT_SAME, pm0, pm1, FilterOperator.class);
 
   }
@@ -194,6 +192,7 @@ public class TestOperatorCmp {
   private static IDriver createDriver() {
     HiveConf conf = env_setup.getTestCtx().hiveConf;
 
+    conf.setBoolVar(ConfVars.HIVEOPTPPD, false);
     conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ENABLED, true);
     conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS, true);
