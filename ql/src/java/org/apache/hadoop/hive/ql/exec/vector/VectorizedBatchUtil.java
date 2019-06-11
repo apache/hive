@@ -619,6 +619,8 @@ public class VectorizedBatchUtil {
         copy[i] = makeLikeColumnVector(src.fields[i]);
       }
       return new UnionColumnVector(src.tags.length, copy);
+    } else if (source instanceof VoidColumnVector) {
+      return new VoidColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
     } else
       throw new HiveException("Column vector class " +
           source.getClass().getName() +
