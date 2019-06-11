@@ -292,12 +292,12 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
       }
     }
     StringBuilder sb = new StringBuilder();
-    sb.append("Object [type=" + type + ", name=" + name + actionTypeStr + ",");
+    sb.append("Object [type=" + type + ", name=" + name + actionTypeStr);
     if (ownerName != null){
-      sb.append(" ownername=" + ownerName + ",");
+      sb.append(", ownername=" + ownerName);
     }
     if (ownerType != null){
-      sb.append(" ownertype=" + ownerType);
+      sb.append(", ownertype=" + ownerType);
     }
     sb.append("]");
     return sb.toString();
