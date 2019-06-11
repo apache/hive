@@ -43,14 +43,14 @@ STAGE PLANS:
         TableScan
           alias: partint
           filterExpr: (hr < 11) (type: boolean)
-          Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
+          Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             predicate: (hr < 11) (type: boolean)
-            Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string), value (type: string), hr (type: int)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
+              Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: select key, value, hr from partint where hr < 11

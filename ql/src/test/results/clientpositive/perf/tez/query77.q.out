@@ -316,7 +316,7 @@ Stage-0
                                           Select Operator [SEL_371] (rows=286549727 width=231)
                                             Output:["_col0","_col1","_col2","_col3"]
                                             Filter Operator [FIL_370] (rows=286549727 width=231)
-                                              predicate:((cs_sold_date_sk BETWEEN DynamicValue(RS_51_date_dim_d_date_sk_min) AND DynamicValue(RS_51_date_dim_d_date_sk_max) and in_bloom_filter(cs_sold_date_sk, DynamicValue(RS_51_date_dim_d_date_sk_bloom_filter))) and cs_sold_date_sk is not null)
+                                              predicate:(cs_sold_date_sk is not null and (cs_sold_date_sk BETWEEN DynamicValue(RS_51_date_dim_d_date_sk_min) AND DynamicValue(RS_51_date_dim_d_date_sk_max) and in_bloom_filter(cs_sold_date_sk, DynamicValue(RS_51_date_dim_d_date_sk_bloom_filter))))
                                               TableScan [TS_44] (rows=287989836 width=231)
                                                 default@catalog_sales,catalog_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["cs_sold_date_sk","cs_call_center_sk","cs_ext_sales_price","cs_net_profit"]
                                               <-Reducer 17 [BROADCAST_EDGE] vectorized
@@ -400,7 +400,7 @@ Stage-0
                                               Select Operator [SEL_383] (rows=143931136 width=231)
                                                 Output:["_col0","_col1","_col2","_col3"]
                                                 Filter Operator [FIL_382] (rows=143931136 width=231)
-                                                  predicate:((ws_sold_date_sk BETWEEN DynamicValue(RS_87_date_dim_d_date_sk_min) AND DynamicValue(RS_87_date_dim_d_date_sk_max) and in_bloom_filter(ws_sold_date_sk, DynamicValue(RS_87_date_dim_d_date_sk_bloom_filter))) and ws_sold_date_sk is not null and ws_web_page_sk is not null)
+                                                  predicate:(ws_sold_date_sk is not null and ws_web_page_sk is not null and (ws_sold_date_sk BETWEEN DynamicValue(RS_87_date_dim_d_date_sk_min) AND DynamicValue(RS_87_date_dim_d_date_sk_max) and in_bloom_filter(ws_sold_date_sk, DynamicValue(RS_87_date_dim_d_date_sk_bloom_filter))))
                                                   TableScan [TS_77] (rows=144002668 width=231)
                                                     default@web_sales,web_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ws_sold_date_sk","ws_web_page_sk","ws_ext_sales_price","ws_net_profit"]
                                                   <-Reducer 24 [BROADCAST_EDGE] vectorized
@@ -445,7 +445,7 @@ Stage-0
                                               Select Operator [SEL_392] (rows=13129719 width=221)
                                                 Output:["_col0","_col1","_col2","_col3"]
                                                 Filter Operator [FIL_391] (rows=13129719 width=221)
-                                                  predicate:(wr_returned_date_sk is not null and wr_web_page_sk is not null)
+                                                  predicate:(wr_web_page_sk is not null and wr_returned_date_sk is not null)
                                                   TableScan [TS_97] (rows=14398467 width=221)
                                                     default@web_returns,web_returns,Tbl:COMPLETE,Col:COMPLETE,Output:["wr_returned_date_sk","wr_web_page_sk","wr_return_amt","wr_net_loss"]
                   <-Reducer 5 [CONTAINS]
@@ -495,7 +495,7 @@ Stage-0
                                               Select Operator [SEL_358] (rows=53634860 width=223)
                                                 Output:["_col0","_col1","_col2","_col3"]
                                                 Filter Operator [FIL_357] (rows=53634860 width=223)
-                                                  predicate:(sr_returned_date_sk is not null and sr_store_sk is not null)
+                                                  predicate:(sr_store_sk is not null and sr_returned_date_sk is not null)
                                                   TableScan [TS_20] (rows=57591150 width=223)
                                                     default@store_returns,store_returns,Tbl:COMPLETE,Col:COMPLETE,Output:["sr_returned_date_sk","sr_store_sk","sr_return_amt","sr_net_loss"]
                             <-Reducer 4 [ONE_TO_ONE_EDGE] vectorized
@@ -529,7 +529,7 @@ Stage-0
                                               Select Operator [SEL_349] (rows=525329897 width=221)
                                                 Output:["_col0","_col1","_col2","_col3"]
                                                 Filter Operator [FIL_348] (rows=525329897 width=221)
-                                                  predicate:((ss_sold_date_sk BETWEEN DynamicValue(RS_10_date_dim_d_date_sk_min) AND DynamicValue(RS_10_date_dim_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_10_date_dim_d_date_sk_bloom_filter))) and ss_sold_date_sk is not null and ss_store_sk is not null)
+                                                  predicate:(ss_sold_date_sk is not null and ss_store_sk is not null and (ss_sold_date_sk BETWEEN DynamicValue(RS_10_date_dim_d_date_sk_min) AND DynamicValue(RS_10_date_dim_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_10_date_dim_d_date_sk_bloom_filter))))
                                                   TableScan [TS_0] (rows=575995635 width=221)
                                                     default@store_sales,store_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_sold_date_sk","ss_store_sk","ss_ext_sales_price","ss_net_profit"]
                                                   <-Reducer 10 [BROADCAST_EDGE] vectorized

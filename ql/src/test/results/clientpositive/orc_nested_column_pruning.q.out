@@ -1019,7 +1019,7 @@ STAGE PLANS:
             filterExpr: (s1.f6 is not null and (not s2.f8.f9)) (type: boolean)
             Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((not s2.f8.f9) and s1.f6 is not null) (type: boolean)
+              predicate: (s1.f6 is not null and (not s2.f8.f9)) (type: boolean)
               Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: s1 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>), s2 (type: struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>)
@@ -1116,7 +1116,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
           TableScan
             alias: t2
-            filterExpr: (s2.f8.f9 and s1.f6 is not null) (type: boolean)
+            filterExpr: (s1.f6 is not null and s2.f8.f9) (type: boolean)
             Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (s1.f6 is not null and s2.f8.f9) (type: boolean)
@@ -1212,11 +1212,11 @@ STAGE PLANS:
                   value expressions: _col0 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
           TableScan
             alias: t2
-            filterExpr: (s2.f8.f9 and s1.f6 is not null and s2.f8.f9 is not null) (type: boolean)
+            filterExpr: (s1.f6 is not null and s2.f8.f9 is not null and s2.f8.f9) (type: boolean)
             Pruned Column Paths: s1.f6, s2.f8.f9
             Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (s1.f6 is not null and s2.f8.f9 and s2.f8.f9 is not null) (type: boolean)
+              predicate: (s1.f6 is not null and s2.f8.f9 is not null and s2.f8.f9) (type: boolean)
               Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: s1.f6 (type: int), s2.f8.f9 (type: boolean)

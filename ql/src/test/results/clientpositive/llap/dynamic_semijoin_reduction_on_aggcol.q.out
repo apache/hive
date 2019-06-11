@@ -79,7 +79,7 @@ STAGE PLANS:
                   filterExpr: (eventid is not null and (eventid BETWEEN DynamicValue(RS_11_dynamic_semijoin_reduction_on_aggcol__col1_min) AND DynamicValue(RS_11_dynamic_semijoin_reduction_on_aggcol__col1_max) and in_bloom_filter(eventid, DynamicValue(RS_11_dynamic_semijoin_reduction_on_aggcol__col1_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((eventid BETWEEN DynamicValue(RS_11_dynamic_semijoin_reduction_on_aggcol__col1_min) AND DynamicValue(RS_11_dynamic_semijoin_reduction_on_aggcol__col1_max) and in_bloom_filter(eventid, DynamicValue(RS_11_dynamic_semijoin_reduction_on_aggcol__col1_bloom_filter))) and eventid is not null) (type: boolean)
+                    predicate: (eventid is not null and (eventid BETWEEN DynamicValue(RS_11_dynamic_semijoin_reduction_on_aggcol__col1_min) AND DynamicValue(RS_11_dynamic_semijoin_reduction_on_aggcol__col1_max) and in_bloom_filter(eventid, DynamicValue(RS_11_dynamic_semijoin_reduction_on_aggcol__col1_bloom_filter)))) (type: boolean)
                     Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: outcome (type: string), eventid (type: int)

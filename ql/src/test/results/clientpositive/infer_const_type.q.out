@@ -64,7 +64,7 @@ STAGE PLANS:
             filterExpr: ((ti = 127Y) and (si = 32767S) and (i = 12345) and (bi = -12345L) and (fl = 906.0) and (db = -307.0D) and (UDFToDouble(str) = 1234.0D)) (type: boolean)
             Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(str) = 1234.0D) and (bi = -12345L) and (db = -307.0D) and (fl = 906.0) and (i = 12345) and (si = 32767S) and (ti = 127Y)) (type: boolean)
+              predicate: ((ti = 127Y) and (si = 32767S) and (i = 12345) and (bi = -12345L) and (fl = 906.0) and (db = -307.0D) and (UDFToDouble(str) = 1234.0D)) (type: boolean)
               Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: 127Y (type: tinyint), 32767S (type: smallint), 12345 (type: int), -12345L (type: bigint), 906.0 (type: float), -307.0D (type: double), str (type: string)
@@ -205,10 +205,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: infertypes
-            filterExpr: ((ti = 127Y) or (CAST( si AS decimal(5,0)) = 327) or (i = -100)) (type: boolean)
+            filterExpr: ((ti = 127Y) or (i = -100) or (CAST( si AS decimal(5,0)) = 327)) (type: boolean)
             Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((CAST( si AS decimal(5,0)) = 327) or (i = -100) or (ti = 127Y)) (type: boolean)
+              predicate: ((ti = 127Y) or (i = -100) or (CAST( si AS decimal(5,0)) = 327)) (type: boolean)
               Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ti (type: tinyint), si (type: smallint), i (type: int), bi (type: bigint), fl (type: float), db (type: double), str (type: string)
@@ -271,7 +271,7 @@ STAGE PLANS:
             filterExpr: ((ti < 127Y) and (i > 100) and (UDFToDouble(str) = 1.57D)) (type: boolean)
             Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(str) = 1.57D) and (i > 100) and (ti < 127Y)) (type: boolean)
+              predicate: ((ti < 127Y) and (i > 100) and (UDFToDouble(str) = 1.57D)) (type: boolean)
               Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ti (type: tinyint), si (type: smallint), i (type: int), bi (type: bigint), fl (type: float), db (type: double), str (type: string)

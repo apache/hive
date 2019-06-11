@@ -139,7 +139,7 @@ POSTHOOK: Input: default@fact_daily_n4@ds=1
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST(484 AS INTEGER) AS `$f0`
 FROM `default`.`fact_daily_n4`
-WHERE `ds` = '1' AND `x` = 484
+WHERE `x` = 484 AND `ds` = '1'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -150,23 +150,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: fact_daily_n4
-            filterExpr: ((ds = '1') and (x = 484)) (type: boolean)
-            Statistics: Num rows: 1 Data size: 84 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: ((x = 484) and (ds = '1')) (type: boolean)
+            Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: (x = 484) (type: boolean)
-              Statistics: Num rows: 1 Data size: 84 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: 484 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 84 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 1 Data size: 84 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -265,7 +265,7 @@ POSTHOOK: Input: default@fact_daily_n4@ds=1
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST(495 AS INTEGER) AS `$f0`
 FROM `default`.`fact_daily_n4`
-WHERE `ds` = '1' AND `x` = 495
+WHERE `x` = 495 AND `ds` = '1'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -276,23 +276,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: fact_daily_n4
-            filterExpr: ((ds = '1') and (x = 495)) (type: boolean)
-            Statistics: Num rows: 1 Data size: 84 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: ((x = 495) and (ds = '1')) (type: boolean)
+            Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: (x = 495) (type: boolean)
-              Statistics: Num rows: 1 Data size: 84 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: 495 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 84 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 1 Data size: 84 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -391,7 +391,7 @@ POSTHOOK: Input: default@fact_daily_n4@ds=1
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST(1 AS INTEGER) AS `$f0`
 FROM `default`.`fact_daily_n4`
-WHERE `ds` = '1' AND `x` = 1
+WHERE `x` = 1 AND `ds` = '1'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -402,23 +402,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: fact_daily_n4
-            filterExpr: ((ds = '1') and (x = 1)) (type: boolean)
-            Statistics: Num rows: 1 Data size: 84 Basic stats: PARTIAL Column stats: NONE
+            filterExpr: ((x = 1) and (ds = '1')) (type: boolean)
+            Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: (x = 1) (type: boolean)
-              Statistics: Num rows: 1 Data size: 84 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: 1 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 84 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 1 Data size: 84 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat

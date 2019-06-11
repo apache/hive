@@ -112,7 +112,7 @@ STAGE PLANS:
                   filterExpr: (ws_sold_date_sk is not null and ws_item_sk is not null and ws_sold_time_sk is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ws_item_sk is not null and ws_sold_date_sk is not null and ws_sold_time_sk is not null) (type: boolean)
+                    predicate: (ws_sold_date_sk is not null and ws_item_sk is not null and ws_sold_time_sk is not null) (type: boolean)
                     Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ws_sold_date_sk (type: int), ws_sold_time_sk (type: int), ws_item_sk (type: int), ws_ext_sales_price (type: decimal(7,2))
@@ -151,7 +151,7 @@ STAGE PLANS:
                   filterExpr: (ss_sold_date_sk is not null and ss_item_sk is not null and ss_sold_time_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ss_item_sk is not null and ss_sold_date_sk is not null and ss_sold_time_sk is not null) (type: boolean)
+                    predicate: (ss_sold_date_sk is not null and ss_item_sk is not null and ss_sold_time_sk is not null) (type: boolean)
                     Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_sold_date_sk (type: int), ss_sold_time_sk (type: int), ss_item_sk (type: int), ss_ext_sales_price (type: decimal(7,2))
@@ -207,10 +207,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: time_dim
-                  filterExpr: ((t_meal_time) IN ('breakfast', 'dinner') and t_time_sk is not null) (type: boolean)
+                  filterExpr: (t_time_sk is not null and (t_meal_time) IN ('breakfast', 'dinner')) (type: boolean)
                   Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t_meal_time) IN ('breakfast', 'dinner') and t_time_sk is not null) (type: boolean)
+                    predicate: (t_time_sk is not null and (t_meal_time) IN ('breakfast', 'dinner')) (type: boolean)
                     Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: t_time_sk (type: int), t_hour (type: int), t_minute (type: int)
@@ -230,7 +230,7 @@ STAGE PLANS:
                   filterExpr: (cs_sold_date_sk is not null and cs_item_sk is not null and cs_sold_time_sk is not null) (type: boolean)
                   Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cs_item_sk is not null and cs_sold_date_sk is not null and cs_sold_time_sk is not null) (type: boolean)
+                    predicate: (cs_sold_date_sk is not null and cs_item_sk is not null and cs_sold_time_sk is not null) (type: boolean)
                     Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cs_sold_date_sk (type: int), cs_sold_time_sk (type: int), cs_item_sk (type: int), cs_ext_sales_price (type: decimal(7,2))

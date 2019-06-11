@@ -63,7 +63,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesparquet
-                  filterExpr: (((cdouble > UDFToDouble(ctinyint)) and (cboolean2 > 0)) or (cbigint < UDFToLong(ctinyint)) or (UDFToLong(cint) > cbigint) or (cboolean1 < 0)) (type: boolean)
+                  filterExpr: ((cboolean1 < 0) or (cbigint < UDFToLong(ctinyint)) or (UDFToLong(cint) > cbigint) or ((cdouble > UDFToDouble(ctinyint)) and (cboolean2 > 0))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 593751 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -71,8 +71,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDoubleColGreaterDoubleColumn(col 5:double, col 13:double)(children: CastLongToDouble(col 0:tinyint) -> 13:double), FilterLongColGreaterLongScalar(col 11:boolean, val 0)), FilterLongColLessLongColumn(col 3:bigint, col 0:bigint)(children: col 0:tinyint), FilterLongColGreaterLongColumn(col 2:bigint, col 3:bigint)(children: col 2:int), FilterLongColLessLongScalar(col 10:boolean, val 0))
-                    predicate: (((cdouble > UDFToDouble(ctinyint)) and (cboolean2 > 0)) or (UDFToLong(cint) > cbigint) or (cbigint < UDFToLong(ctinyint)) or (cboolean1 < 0)) (type: boolean)
+                        predicateExpression: FilterExprOrExpr(children: FilterLongColLessLongScalar(col 10:boolean, val 0), FilterLongColLessLongColumn(col 3:bigint, col 0:bigint)(children: col 0:tinyint), FilterLongColGreaterLongColumn(col 2:bigint, col 3:bigint)(children: col 2:int), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleColumn(col 5:double, col 13:double)(children: CastLongToDouble(col 0:tinyint) -> 13:double), FilterLongColGreaterLongScalar(col 11:boolean, val 0)))
+                    predicate: ((cboolean1 < 0) or (cbigint < UDFToLong(ctinyint)) or (UDFToLong(cint) > cbigint) or ((cdouble > UDFToDouble(ctinyint)) and (cboolean2 > 0))) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 593751 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ctinyint (type: tinyint), cfloat (type: float), cint (type: int), cdouble (type: double), UDFToDouble(ctinyint) (type: double), (UDFToDouble(ctinyint) * UDFToDouble(ctinyint)) (type: double), (cdouble * cdouble) (type: double)

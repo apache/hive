@@ -44,7 +44,7 @@ POSTHOOK: Input: default@push_or@ds=2000-04-09
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`
 FROM `default`.`push_or`
-WHERE `ds` = '2000-04-09' OR `key` = 5
+WHERE `key` = 5 OR `ds` = '2000-04-09'
 ORDER BY `key`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -56,12 +56,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: push_or
-            filterExpr: ((ds = '2000-04-09') or (key = 5)) (type: boolean)
+            filterExpr: ((key = 5) or (ds = '2000-04-09')) (type: boolean)
             Statistics: Num rows: 40 Data size: 11120 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((ds = '2000-04-09') or (key = 5)) (type: boolean)
+              predicate: ((key = 5) or (ds = '2000-04-09')) (type: boolean)
               Statistics: Num rows: 40 Data size: 11120 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), value (type: string), ds (type: string)

@@ -1373,7 +1373,7 @@ STAGE PLANS:
                   filterExpr: ((value < 'zzzzzzzzzz') and (key < 'zzzzzzzz')) (type: boolean)
                   Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key < 'zzzzzzzz') and (value < 'zzzzzzzzzz')) (type: boolean)
+                    predicate: ((value < 'zzzzzzzzzz') and (key < 'zzzzzzzz')) (type: boolean)
                     Statistics: Num rows: 2 Data size: 350 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: string)
@@ -1450,7 +1450,7 @@ STAGE PLANS:
                   filterExpr: (key is not null and (value < 'zzzzzzzz')) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((value < 'zzzzzzzz') and key is not null) (type: boolean)
+                    predicate: (key is not null and (value < 'zzzzzzzz')) (type: boolean)
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: string)
@@ -1604,7 +1604,7 @@ STAGE PLANS:
                   filterExpr: ((value < 'zzzzzzzzzz') and (key < 'zzzzzzzz')) (type: boolean)
                   Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key < 'zzzzzzzz') and (value < 'zzzzzzzzzz')) (type: boolean)
+                    predicate: ((value < 'zzzzzzzzzz') and (key < 'zzzzzzzz')) (type: boolean)
                     Statistics: Num rows: 2 Data size: 350 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: string)
@@ -1681,7 +1681,7 @@ STAGE PLANS:
                   filterExpr: (key is not null and (value < 'zzzzzzzz')) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((value < 'zzzzzzzz') and key is not null) (type: boolean)
+                    predicate: (key is not null and (value < 'zzzzzzzz')) (type: boolean)
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: string)

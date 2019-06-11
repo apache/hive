@@ -97,7 +97,7 @@ STAGE PLANS:
                   filterExpr: (d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (d_date_sk is not null and d_month_seq BETWEEN 1212 AND 1223) (type: boolean)
+                    predicate: (d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)
@@ -116,7 +116,7 @@ STAGE PLANS:
                   filterExpr: (d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (d_date_sk is not null and d_month_seq BETWEEN 1212 AND 1223) (type: boolean)
+                    predicate: (d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)

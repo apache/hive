@@ -61,7 +61,7 @@ STAGE PLANS:
             filterExpr: ((name = 'c') and (id = 'a')) (type: boolean)
             Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((id = 'a') and (name = 'c')) (type: boolean)
+              predicate: ((name = 'c') and (id = 'a')) (type: boolean)
               Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE

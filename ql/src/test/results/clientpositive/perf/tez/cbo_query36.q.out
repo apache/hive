@@ -77,7 +77,7 @@ HiveProject(gross_margin=[$0], i_category=[$1], i_class=[$2], lochierarchy=[$3],
               HiveJoin(condition=[=($6, $2)], joinType=[inner], algorithm=[none], cost=[not available])
                 HiveJoin(condition=[=($5, $0)], joinType=[inner], algorithm=[none], cost=[not available])
                   HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_store_sk=[$7], ss_ext_sales_price=[$15], ss_net_profit=[$22])
-                    HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($2), IS NOT NULL($7))])
+                    HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($7), IS NOT NULL($2))])
                       HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
                   HiveProject(d_date_sk=[$0])
                     HiveFilter(condition=[AND(=($6, 1999), IS NOT NULL($0))])

@@ -85,7 +85,7 @@ Stage-0
                               Select Operator [SEL_81] (rows=297 width=400)
                                 Output:["_col0","_col1","_col2","_col3"]
                                 Filter Operator [FIL_80] (rows=297 width=404)
-                                  predicate:((i_manufact_id) IN (678, 964, 918, 849) and i_current_price BETWEEN 22 AND 52 and i_item_sk is not null)
+                                  predicate:(i_current_price BETWEEN 22 AND 52 and (i_manufact_id) IN (678, 964, 918, 849) and i_item_sk is not null)
                                   TableScan [TS_3] (rows=462000 width=403)
                                     default@item,item,Tbl:COMPLETE,Col:COMPLETE,Output:["i_item_sk","i_item_id","i_item_desc","i_current_price","i_manufact_id"]
                           <-Map 1 [SIMPLE_EDGE] vectorized
@@ -94,7 +94,7 @@ Stage-0
                               Select Operator [SEL_89] (rows=287989836 width=4)
                                 Output:["_col0"]
                                 Filter Operator [FIL_88] (rows=287989836 width=4)
-                                  predicate:((cs_item_sk BETWEEN DynamicValue(RS_17_item_i_item_sk_min) AND DynamicValue(RS_17_item_i_item_sk_max) and in_bloom_filter(cs_item_sk, DynamicValue(RS_17_item_i_item_sk_bloom_filter))) and cs_item_sk is not null)
+                                  predicate:(cs_item_sk is not null and (cs_item_sk BETWEEN DynamicValue(RS_17_item_i_item_sk_min) AND DynamicValue(RS_17_item_i_item_sk_max) and in_bloom_filter(cs_item_sk, DynamicValue(RS_17_item_i_item_sk_bloom_filter))))
                                   TableScan [TS_0] (rows=287989836 width=4)
                                     default@catalog_sales,catalog_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["cs_item_sk"]
                                   <-Reducer 7 [BROADCAST_EDGE] vectorized
@@ -128,7 +128,7 @@ Stage-0
                               Select Operator [SEL_92] (rows=4176000 width=8)
                                 Output:["_col0","_col1"]
                                 Filter Operator [FIL_91] (rows=4176000 width=11)
-                                  predicate:(inv_date_sk is not null and inv_item_sk is not null and inv_quantity_on_hand BETWEEN 100 AND 500)
+                                  predicate:(inv_quantity_on_hand BETWEEN 100 AND 500 and inv_item_sk is not null and inv_date_sk is not null)
                                   TableScan [TS_6] (rows=37584000 width=11)
                                     default@inventory,inventory,Tbl:COMPLETE,Col:COMPLETE,Output:["inv_date_sk","inv_item_sk","inv_quantity_on_hand"]
 

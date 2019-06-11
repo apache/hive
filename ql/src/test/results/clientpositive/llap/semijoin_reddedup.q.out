@@ -273,7 +273,7 @@ STAGE PLANS:
                   filterExpr: (o_orderkey is not null and o_custkey is not null) (type: boolean)
                   Statistics: Num rows: 1500000000 Data size: 296399999792 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (o_custkey is not null and o_orderkey is not null) (type: boolean)
+                    predicate: (o_orderkey is not null and o_custkey is not null) (type: boolean)
                     Statistics: Num rows: 1349999996 Data size: 266759999022 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: o_orderkey (type: bigint), o_custkey (type: bigint), o_totalprice (type: double), o_orderdate (type: string)

@@ -957,14 +957,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
           Object val = null;
           try {
-            if(postProcess(xpl_note)) {
-              val = m.invoke(work, inTest);
-            }
-            else{
-              val = m.invoke(work);
-            }
-          }
-          catch (InvocationTargetException ex) {
+            val = m.invoke(work);
+          } catch (InvocationTargetException ex) {
             // Ignore the exception, this may be caused by external jars
             val = null;
           }
@@ -1081,15 +1075,6 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       return json;
     }
     return null;
-  }
-
-  /**
-   * use case: this is only use for testing purposes. For instance, we might
-   * want to sort the expressions in a filter so we get deterministic comparable
-   * golden files
-   */
-  private boolean postProcess(Explain exp) {
-    return exp.postProcess();
   }
 
   /**

@@ -39,7 +39,7 @@ STAGE PLANS:
                   filterExpr: ((value = 'val_105') and (key = '105')) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key = '105') and (value = 'val_105')) (type: boolean)
+                    predicate: ((value = 'val_105') and (key = '105')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE

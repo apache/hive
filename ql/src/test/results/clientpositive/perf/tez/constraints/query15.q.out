@@ -81,7 +81,7 @@ Stage-0
                       Select Operator [SEL_22] (rows=20154874 width=205)
                         Output:["_col3","_col8"]
                         Filter Operator [FIL_21] (rows=20154874 width=205)
-                          predicate:(_col4 or _col5 or _col9)
+                          predicate:(_col9 or _col4 or _col5)
                           Merge Join Operator [MERGEJOIN_76] (rows=20154874 width=205)
                             Conds:RS_18._col0=RS_19._col1(Inner),Output:["_col3","_col4","_col5","_col8","_col9"]
                           <-Reducer 2 [SIMPLE_EDGE]
@@ -116,7 +116,7 @@ Stage-0
                                   Select Operator [SEL_83] (rows=130 width=4)
                                     Output:["_col0"]
                                     Filter Operator [FIL_82] (rows=130 width=12)
-                                      predicate:((d_qoy = 2) and (d_year = 2000))
+                                      predicate:((d_year = 2000) and (d_qoy = 2))
                                       TableScan [TS_8] (rows=73049 width=12)
                                         default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_year","d_qoy"]
                               <-Map 7 [SIMPLE_EDGE] vectorized
@@ -125,7 +125,7 @@ Stage-0
                                   Select Operator [SEL_91] (rows=285117831 width=123)
                                     Output:["_col0","_col1","_col2","_col3"]
                                     Filter Operator [FIL_90] (rows=285117831 width=119)
-                                      predicate:((cs_sold_date_sk BETWEEN DynamicValue(RS_12_date_dim_d_date_sk_min) AND DynamicValue(RS_12_date_dim_d_date_sk_max) and in_bloom_filter(cs_sold_date_sk, DynamicValue(RS_12_date_dim_d_date_sk_bloom_filter))) and cs_bill_customer_sk is not null and cs_sold_date_sk is not null)
+                                      predicate:(cs_sold_date_sk is not null and cs_bill_customer_sk is not null and (cs_sold_date_sk BETWEEN DynamicValue(RS_12_date_dim_d_date_sk_min) AND DynamicValue(RS_12_date_dim_d_date_sk_max) and in_bloom_filter(cs_sold_date_sk, DynamicValue(RS_12_date_dim_d_date_sk_bloom_filter))))
                                       TableScan [TS_5] (rows=287989836 width=119)
                                         default@catalog_sales,catalog_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["cs_sold_date_sk","cs_bill_customer_sk","cs_sales_price"]
                                       <-Reducer 10 [BROADCAST_EDGE] vectorized

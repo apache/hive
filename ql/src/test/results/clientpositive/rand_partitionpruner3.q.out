@@ -10,7 +10,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
 FROM `default`.`srcpart`
-WHERE RAND(1) < 0.1 AND `ds` = '2008-04-08' AND CAST(`key` AS DOUBLE) BETWEEN 10 AND 50 AND `hr` LIKE '%2'
+WHERE CAST(`key` AS DOUBLE) BETWEEN 10 AND 50 AND RAND(1) < 0.1 AND `ds` = '2008-04-08' AND `hr` LIKE '%2'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -25,7 +25,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((rand(1) < 0.1D) and UDFToDouble(key) BETWEEN 10.0D AND 50.0D) (type: boolean)
+              predicate: (UDFToDouble(key) BETWEEN 10.0D AND 50.0D and (rand(1) < 0.1D)) (type: boolean)
               Statistics: Num rows: 18 Data size: 6516 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string), '2008-04-08' (type: string), hr (type: string)
@@ -125,11 +125,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
-42	val_42	2008-04-08	12
-44	val_44	2008-04-08	12
-26	val_26	2008-04-08	12
-18	val_18	2008-04-08	12
-37	val_37	2008-04-08	12
+47	val_47	2008-04-08	12
+35	val_35	2008-04-08	12
 PREHOOK: query: explain extended select a.* from srcpart a where a.ds = '2008-04-08' and not(key > 50 or key < 10) and a.hr like '%2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -142,7 +139,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
 FROM `default`.`srcpart`
-WHERE `ds` = '2008-04-08' AND CAST(`key` AS DOUBLE) BETWEEN 10 AND 50 AND `hr` LIKE '%2'
+WHERE CAST(`key` AS DOUBLE) BETWEEN 10 AND 50 AND `ds` = '2008-04-08' AND `hr` LIKE '%2'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -153,7 +150,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            filterExpr: ((ds = '2008-04-08') and UDFToDouble(key) BETWEEN 10.0D AND 50.0D and (hr like '%2')) (type: boolean)
+            filterExpr: (UDFToDouble(key) BETWEEN 10.0D AND 50.0D and (ds = '2008-04-08') and (hr like '%2')) (type: boolean)
             Statistics: Num rows: 500 Data size: 181000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator

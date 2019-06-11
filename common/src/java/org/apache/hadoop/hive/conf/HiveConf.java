@@ -2348,6 +2348,9 @@ public class HiveConf extends Configuration {
     HIVE_OPTIMIZE_CONSTRAINTS_JOIN("hive.optimize.constraints.join", true, "Whether to use referential constraints\n" +
         "to optimize (remove or transform) join operators"),
 
+    HIVE_OPTIMIZE_SORT_PREDS_WITH_STATS("hive.optimize.filter.preds.sort", true, "Whether to sort conditions in filters\n" +
+        "based on estimated selectivity and compute cost"),
+
     HIVE_OPTIMIZE_REDUCE_WITH_STATS("hive.optimize.filter.stats.reduction", false, "Whether to simplify comparison\n" +
         "expressions in filter operators using column stats"),
 

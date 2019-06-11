@@ -274,7 +274,7 @@ STAGE PLANS:
             filterExpr: ((key < 15) and (key < 10)) (type: boolean)
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((key < 10) and (key < 15)) (type: boolean)
+              predicate: ((key < 15) and (key < 10)) (type: boolean)
               Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
               HashTable Sink Operator
                 keys:

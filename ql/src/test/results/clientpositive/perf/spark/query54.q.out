@@ -207,7 +207,7 @@ STAGE PLANS:
                   filterExpr: (cs_item_sk is not null and cs_sold_date_sk is not null and cs_bill_customer_sk is not null) (type: boolean)
                   Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cs_bill_customer_sk is not null and cs_item_sk is not null and cs_sold_date_sk is not null) (type: boolean)
+                    predicate: (cs_item_sk is not null and cs_sold_date_sk is not null and cs_bill_customer_sk is not null) (type: boolean)
                     Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cs_sold_date_sk (type: int), cs_bill_customer_sk (type: int), cs_item_sk (type: int)
@@ -227,7 +227,7 @@ STAGE PLANS:
                   filterExpr: (ws_item_sk is not null and ws_sold_date_sk is not null and ws_bill_customer_sk is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ws_bill_customer_sk is not null and ws_item_sk is not null and ws_sold_date_sk is not null) (type: boolean)
+                    predicate: (ws_item_sk is not null and ws_sold_date_sk is not null and ws_bill_customer_sk is not null) (type: boolean)
                     Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ws_sold_date_sk (type: int), ws_bill_customer_sk (type: int), ws_item_sk (type: int)
@@ -244,10 +244,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
-                  filterExpr: ((i_category = 'Jewelry') and (i_class = 'consignment') and i_item_sk is not null) (type: boolean)
+                  filterExpr: (i_item_sk is not null and (i_category = 'Jewelry') and (i_class = 'consignment')) (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((i_category = 'Jewelry') and (i_class = 'consignment') and i_item_sk is not null) (type: boolean)
+                    predicate: (i_item_sk is not null and (i_category = 'Jewelry') and (i_class = 'consignment')) (type: boolean)
                     Statistics: Num rows: 115500 Data size: 165890114 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: i_item_sk (type: int)
@@ -285,7 +285,7 @@ STAGE PLANS:
                   filterExpr: (c_customer_sk is not null and c_current_addr_sk is not null) (type: boolean)
                   Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (c_current_addr_sk is not null and c_customer_sk is not null) (type: boolean)
+                    predicate: (c_customer_sk is not null and c_current_addr_sk is not null) (type: boolean)
                     Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: c_customer_sk (type: int), c_current_addr_sk (type: int)
@@ -305,7 +305,7 @@ STAGE PLANS:
                   filterExpr: ((d_year = 1999) and (d_moy = 3) and d_month_seq is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d_moy = 3) and (d_year = 1999) and d_month_seq is not null) (type: boolean)
+                    predicate: ((d_year = 1999) and (d_moy = 3) and d_month_seq is not null) (type: boolean)
                     Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: (d_month_seq + 1) (type: int)
@@ -330,7 +330,7 @@ STAGE PLANS:
                   filterExpr: ((d_year = 1999) and (d_moy = 3) and d_month_seq is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d_moy = 3) and (d_year = 1999) and d_month_seq is not null) (type: boolean)
+                    predicate: ((d_year = 1999) and (d_moy = 3) and d_month_seq is not null) (type: boolean)
                     Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: (d_month_seq + 3) (type: int)
@@ -355,7 +355,7 @@ STAGE PLANS:
                   filterExpr: ((d_year = 1999) and (d_moy = 3)) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d_moy = 3) and (d_year = 1999)) (type: boolean)
+                    predicate: ((d_year = 1999) and (d_moy = 3)) (type: boolean)
                     Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: (d_month_seq + 3) (type: int)
@@ -380,7 +380,7 @@ STAGE PLANS:
                   filterExpr: ((d_year = 1999) and (d_moy = 3)) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d_moy = 3) and (d_year = 1999)) (type: boolean)
+                    predicate: ((d_year = 1999) and (d_moy = 3)) (type: boolean)
                     Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: (d_month_seq + 1) (type: int)
@@ -677,7 +677,7 @@ STAGE PLANS:
                 outputColumnNames: _col2, _col4, _col10, _col12, _col13
                 Statistics: Num rows: 58108714324214428 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((_col12 <= _col4) and (_col4 <= _col13)) (type: boolean)
+                  predicate: ((_col4 <= _col13) and (_col12 <= _col4)) (type: boolean)
                   Statistics: Num rows: 6456523813801603 Data size: 1024819115206086144 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: decimal(7,2)), _col10 (type: int)

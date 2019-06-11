@@ -147,7 +147,7 @@ STAGE PLANS:
                   filterExpr: (ws_sold_date_sk is not null and ws_bill_addr_sk is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ws_bill_addr_sk is not null and ws_sold_date_sk is not null) (type: boolean)
+                    predicate: (ws_sold_date_sk is not null and ws_bill_addr_sk is not null) (type: boolean)
                     Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ws_sold_date_sk (type: int), ws_bill_addr_sk (type: int), ws_ext_sales_price (type: decimal(7,2))
@@ -206,7 +206,7 @@ STAGE PLANS:
                   filterExpr: (ws_sold_date_sk is not null and ws_bill_addr_sk is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ws_bill_addr_sk is not null and ws_sold_date_sk is not null) (type: boolean)
+                    predicate: (ws_sold_date_sk is not null and ws_bill_addr_sk is not null) (type: boolean)
                     Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ws_sold_date_sk (type: int), ws_bill_addr_sk (type: int), ws_ext_sales_price (type: decimal(7,2))
@@ -265,7 +265,7 @@ STAGE PLANS:
                   filterExpr: (ss_sold_date_sk is not null and ss_addr_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ss_addr_sk is not null and ss_sold_date_sk is not null) (type: boolean)
+                    predicate: (ss_sold_date_sk is not null and ss_addr_sk is not null) (type: boolean)
                     Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_sold_date_sk (type: int), ss_addr_sk (type: int), ss_ext_sales_price (type: decimal(7,2))
@@ -324,7 +324,7 @@ STAGE PLANS:
                   filterExpr: (ss_sold_date_sk is not null and ss_addr_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ss_addr_sk is not null and ss_sold_date_sk is not null) (type: boolean)
+                    predicate: (ss_sold_date_sk is not null and ss_addr_sk is not null) (type: boolean)
                     Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_sold_date_sk (type: int), ss_addr_sk (type: int), ss_ext_sales_price (type: decimal(7,2))
@@ -383,7 +383,7 @@ STAGE PLANS:
                   filterExpr: (ss_sold_date_sk is not null and ss_addr_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ss_addr_sk is not null and ss_sold_date_sk is not null) (type: boolean)
+                    predicate: (ss_sold_date_sk is not null and ss_addr_sk is not null) (type: boolean)
                     Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_sold_date_sk (type: int), ss_addr_sk (type: int), ss_ext_sales_price (type: decimal(7,2))
@@ -481,7 +481,7 @@ STAGE PLANS:
                   filterExpr: (ws_sold_date_sk is not null and ws_bill_addr_sk is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ws_bill_addr_sk is not null and ws_sold_date_sk is not null) (type: boolean)
+                    predicate: (ws_sold_date_sk is not null and ws_bill_addr_sk is not null) (type: boolean)
                     Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ws_sold_date_sk (type: int), ws_bill_addr_sk (type: int), ws_ext_sales_price (type: decimal(7,2))
@@ -843,7 +843,7 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col4, _col6, _col7, _col8, _col9, _col11, _col13
                 Statistics: Num rows: 2529945843 Data size: 223192556861 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: (CASE WHEN ((_col11 > 0)) THEN (CASE WHEN (_col2) THEN (((_col6 / _col1) > (_col9 / _col11))) ELSE (false) END) ELSE (false) END and CASE WHEN ((_col9 > 0)) THEN (CASE WHEN (_col7) THEN (((_col4 / _col6) > (_col13 / _col9))) ELSE (false) END) ELSE (false) END) (type: boolean)
+                  predicate: (CASE WHEN ((_col9 > 0)) THEN (CASE WHEN (_col7) THEN (((_col4 / _col6) > (_col13 / _col9))) ELSE (false) END) ELSE (false) END and CASE WHEN ((_col11 > 0)) THEN (CASE WHEN (_col2) THEN (((_col6 / _col1) > (_col9 / _col11))) ELSE (false) END) ELSE (false) END) (type: boolean)
                   Statistics: Num rows: 632486460 Data size: 55798139149 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col8 (type: string), 2000 (type: int), (_col6 / _col1) (type: decimal(37,20)), (_col9 / _col11) (type: decimal(37,20)), (_col4 / _col6) (type: decimal(37,20)), (_col13 / _col9) (type: decimal(37,20))

@@ -70,10 +70,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
-                  filterExpr: ((s_state = 'NM') and s_store_sk is not null) (type: boolean)
+                  filterExpr: (s_store_sk is not null and (s_state = 'NM')) (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((s_state = 'NM') and s_store_sk is not null) (type: boolean)
+                    predicate: (s_store_sk is not null and (s_state = 'NM')) (type: boolean)
                     Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s_store_sk (type: int)
@@ -145,7 +145,7 @@ STAGE PLANS:
                   filterExpr: (sr_returned_date_sk is not null and sr_store_sk is not null and sr_customer_sk is not null) (type: boolean)
                   Statistics: Num rows: 57591150 Data size: 4462194832 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (sr_customer_sk is not null and sr_returned_date_sk is not null and sr_store_sk is not null) (type: boolean)
+                    predicate: (sr_returned_date_sk is not null and sr_store_sk is not null and sr_customer_sk is not null) (type: boolean)
                     Statistics: Num rows: 57591150 Data size: 4462194832 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: sr_returned_date_sk (type: int), sr_customer_sk (type: int), sr_store_sk (type: int), sr_fee (type: decimal(7,2))

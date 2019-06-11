@@ -84,7 +84,7 @@ STAGE PLANS:
                   filterExpr: ((x+1 < '11') and !@#$%^&*()_q is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (!@#$%^&*()_q is not null and (x+1 < '11')) (type: boolean)
+                    predicate: ((x+1 < '11') and !@#$%^&*()_q is not null) (type: boolean)
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: x+1 (type: string), !@#$%^&*()_q (type: string)

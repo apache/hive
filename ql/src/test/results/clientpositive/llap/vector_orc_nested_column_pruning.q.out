@@ -1503,7 +1503,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 8:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 3:int) -> 8:int), SelectColumnIsFalse(col 10:boolean)(children: VectorUDFStructField(col 9:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 0:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 9:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 10:boolean))
-                    predicate: ((not s2.f8.f9) and s1.f6 is not null) (type: boolean)
+                    predicate: (s1.f6 is not null and (not s2.f8.f9)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s1 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>), s2 (type: struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>)
@@ -1665,7 +1665,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
-                  filterExpr: (s2.f8.f9 and s1.f6 is not null) (type: boolean)
+                  filterExpr: (s1.f6 is not null and s2.f8.f9) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (s1.f6 is not null and s2.f8.f9) (type: boolean)
@@ -1815,7 +1815,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
-                  filterExpr: (s2.f8.f9 and s1.f6 is not null and s2.f8.f9 is not null) (type: boolean)
+                  filterExpr: (s1.f6 is not null and s2.f8.f9 is not null and s2.f8.f9) (type: boolean)
                   Pruned Column Paths: s1.f6, s2.f8.f9
                   Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -1824,8 +1824,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsTrue(col 15:boolean)(children: VectorUDFAdaptor((s2.f8.f9 and s1.f6 is not null and s2.f8.f9 is not null))(children: VectorUDFStructField(col 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 0:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 9:boolean, IsNotNull(col 10:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 3:int) -> 10:int) -> 11:boolean, IsNotNull(col 13:boolean)(children: VectorUDFStructField(col 12:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 0:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 12:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 13:boolean) -> 14:boolean) -> 15:boolean)
-                    predicate: (s1.f6 is not null and s2.f8.f9 and s2.f8.f9 is not null) (type: boolean)
+                        predicateExpression: SelectColumnIsTrue(col 15:boolean)(children: VectorUDFAdaptor((s1.f6 is not null and s2.f8.f9 is not null and s2.f8.f9))(children: IsNotNull(col 8:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 3:int) -> 8:int) -> 9:boolean, IsNotNull(col 11:boolean)(children: VectorUDFStructField(col 10:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 0:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 10:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 11:boolean) -> 12:boolean, VectorUDFStructField(col 13:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 0:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 13:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 14:boolean) -> 15:boolean)
+                    predicate: (s1.f6 is not null and s2.f8.f9 is not null and s2.f8.f9) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s1.f6 (type: int), s2.f8.f9 (type: boolean)

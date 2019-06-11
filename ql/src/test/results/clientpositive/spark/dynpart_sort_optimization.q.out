@@ -134,7 +134,7 @@ STAGE PLANS:
                   filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -204,7 +204,7 @@ STAGE PLANS:
                   filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -290,7 +290,7 @@ STAGE PLANS:
                   filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -358,7 +358,7 @@ STAGE PLANS:
                   filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -494,7 +494,7 @@ STAGE PLANS:
                   filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -564,7 +564,7 @@ STAGE PLANS:
                   filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -650,7 +650,7 @@ STAGE PLANS:
                   filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -718,7 +718,7 @@ STAGE PLANS:
                   filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -1240,7 +1240,7 @@ STAGE PLANS:
                   filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -1309,7 +1309,7 @@ STAGE PLANS:
                   filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -1397,7 +1397,7 @@ STAGE PLANS:
                   Number of rows: 10
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((_col0 = 27Y) or _col0 is null) (type: boolean)
+                    predicate: (_col0 is null or (_col0 = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col1 (type: smallint), _col2 (type: int), _col3 (type: bigint), _col4 (type: float), _col0 (type: tinyint)
@@ -1466,7 +1466,7 @@ STAGE PLANS:
                   filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: t (type: tinyint), si (type: smallint), i (type: int), b (type: bigint), f (type: float)
@@ -1542,7 +1542,7 @@ STAGE PLANS:
                   filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: t (type: tinyint), si (type: smallint), i (type: int), b (type: bigint), f (type: float)
@@ -1923,7 +1923,7 @@ STAGE PLANS:
                   filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -1992,7 +1992,7 @@ STAGE PLANS:
                   filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -2704,7 +2704,7 @@ STAGE PLANS:
                   filterExpr: ((t = 27Y) and (s = 'foo')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((s = 'foo') and (t = 27Y)) (type: boolean)
+                    predicate: ((t = 27Y) and (s = 'foo')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), b (type: bigint), f (type: float), 'foo' (type: string), 27Y (type: tinyint), i (type: int)
@@ -2772,7 +2772,7 @@ STAGE PLANS:
                   filterExpr: ((i = 100) and (t = 27Y) and (s = 'foo')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((i = 100) and (s = 'foo') and (t = 27Y)) (type: boolean)
+                    predicate: ((i = 100) and (t = 27Y) and (s = 'foo')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), b (type: bigint), f (type: float), 'foo' (type: string), 27Y (type: tinyint), 100 (type: int)
@@ -3220,7 +3220,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
-                  filterExpr: (t is null or (t > 27Y)) (type: boolean)
+                  filterExpr: ((t > 27Y) or t is null) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 25160 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((t > 27Y) or t is null) (type: boolean)
@@ -3293,7 +3293,7 @@ STAGE PLANS:
                   filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 25160 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -3374,7 +3374,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
-                  filterExpr: (t is null or (t > 27Y)) (type: boolean)
+                  filterExpr: ((t > 27Y) or t is null) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 25160 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((t > 27Y) or t is null) (type: boolean)
@@ -3436,7 +3436,7 @@ STAGE PLANS:
                   filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 25160 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -3559,7 +3559,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
-                  filterExpr: ((s like 'bob%') and (i > 1)) (type: boolean)
+                  filterExpr: ((i > 1) and (s like 'bob%')) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 105949 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((i > 1) and (s like 'bob%')) (type: boolean)
@@ -3581,7 +3581,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
-                  filterExpr: ((s like 'bob%') and (i > 1)) (type: boolean)
+                  filterExpr: ((i > 1) and (s like 'bob%')) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 105949 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((i > 1) and (s like 'bob%')) (type: boolean)

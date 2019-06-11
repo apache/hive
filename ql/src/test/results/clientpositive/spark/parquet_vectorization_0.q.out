@@ -1018,7 +1018,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesparquet
-                  filterExpr: ((cstring2 like '%b%') or (CAST( cint AS decimal(13,3)) <> 79.553) or (UDFToDouble(cbigint) < cdouble)) (type: boolean)
+                  filterExpr: ((CAST( cint AS decimal(13,3)) <> 79.553) or (UDFToDouble(cbigint) < cdouble) or (cstring2 like '%b%')) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 593751 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1026,7 +1026,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterStringColLikeStringScalar(col 7:string, pattern %b%), FilterDecimalColNotEqualDecimalScalar(col 13:decimal(13,3), val 79.553)(children: CastLongToDecimal(col 2:int) -> 13:decimal(13,3)), FilterDoubleColLessDoubleColumn(col 14:double, col 5:double)(children: CastLongToDouble(col 3:bigint) -> 14:double))
+                        predicateExpression: FilterExprOrExpr(children: FilterDecimalColNotEqualDecimalScalar(col 13:decimal(13,3), val 79.553)(children: CastLongToDecimal(col 2:int) -> 13:decimal(13,3)), FilterDoubleColLessDoubleColumn(col 14:double, col 5:double)(children: CastLongToDouble(col 3:bigint) -> 14:double), FilterStringColLikeStringScalar(col 7:string, pattern %b%))
                     predicate: ((CAST( cint AS decimal(13,3)) <> 79.553) or (UDFToDouble(cbigint) < cdouble) or (cstring2 like '%b%')) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 593751 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -1211,7 +1211,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (((length(cstring1) < 50) and (cstring1 like '%n') and (length(cstring1) > 0)) or (cstring1 like 'a%') or (cstring1 like 'b%') or (cstring1 like 'c%')) (type: boolean)
+                    predicate: ((cstring1 like 'a%') or (cstring1 like 'b%') or (cstring1 like 'c%') or ((length(cstring1) < 50) and (cstring1 like '%n') and (length(cstring1) > 0))) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 593751 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 12288 Data size: 593751 Basic stats: COMPLETE Column stats: NONE
@@ -30030,7 +30030,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (((cint = 45) and (cfloat = 3.02)) or ((cint = 47) and (cfloat = 2.09)) or ((cint = 49) and (cfloat = 3.5))) (type: boolean)
+                    predicate: (((cint = 49) and (cfloat = 3.5)) or ((cint = 47) and (cfloat = 2.09)) or ((cint = 45) and (cfloat = 3.02))) (type: boolean)
                     Statistics: Num rows: 9216 Data size: 445313 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
@@ -30277,7 +30277,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (((cint = 45) or (cfloat = 3.02)) and ((cint = 47) or (cfloat = 2.09)) and ((cint = 49) or (cfloat = 3.5))) (type: boolean)
+                    predicate: (((cint = 49) or (cfloat = 3.5)) and ((cint = 47) or (cfloat = 2.09)) and ((cint = 45) or (cfloat = 3.02))) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 593751 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)

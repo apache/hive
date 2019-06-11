@@ -212,7 +212,7 @@ STAGE PLANS:
                   filterExpr: (cs_item_sk is not null and cs_sold_date_sk is not null and cs_call_center_sk is not null) (type: boolean)
                   Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cs_call_center_sk is not null and cs_item_sk is not null and cs_sold_date_sk is not null) (type: boolean)
+                    predicate: (cs_item_sk is not null and cs_sold_date_sk is not null and cs_call_center_sk is not null) (type: boolean)
                     Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cs_sold_date_sk (type: int), cs_call_center_sk (type: int), cs_item_sk (type: int), cs_sales_price (type: decimal(7,2))
@@ -232,7 +232,7 @@ STAGE PLANS:
                   filterExpr: (cs_item_sk is not null and cs_sold_date_sk is not null and cs_call_center_sk is not null) (type: boolean)
                   Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cs_call_center_sk is not null and cs_item_sk is not null and cs_sold_date_sk is not null) (type: boolean)
+                    predicate: (cs_item_sk is not null and cs_sold_date_sk is not null and cs_call_center_sk is not null) (type: boolean)
                     Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cs_sold_date_sk (type: int), cs_call_center_sk (type: int), cs_item_sk (type: int), cs_sales_price (type: decimal(7,2))
@@ -249,10 +249,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: ((d_year) IN (2000, 1999, 2001) and ((d_year = 2000) or (struct(d_year,d_moy)) IN (const struct(1999,12), const struct(2001,1))) and d_date_sk is not null) (type: boolean)
+                  filterExpr: ((d_year) IN (2000, 1999, 2001) and d_date_sk is not null and ((d_year = 2000) or (struct(d_year,d_moy)) IN (const struct(1999,12), const struct(2001,1)))) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((d_year = 2000) or (struct(d_year,d_moy)) IN (const struct(1999,12), const struct(2001,1))) and (d_year) IN (2000, 1999, 2001) and d_date_sk is not null) (type: boolean)
+                    predicate: ((d_year) IN (2000, 1999, 2001) and d_date_sk is not null and ((d_year = 2000) or (struct(d_year,d_moy)) IN (const struct(1999,12), const struct(2001,1)))) (type: boolean)
                     Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int), d_year (type: int), d_moy (type: int)
@@ -272,7 +272,7 @@ STAGE PLANS:
                   filterExpr: (i_item_sk is not null and i_category is not null and i_brand is not null) (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (i_brand is not null and i_category is not null and i_item_sk is not null) (type: boolean)
+                    predicate: (i_item_sk is not null and i_category is not null and i_brand is not null) (type: boolean)
                     Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: i_item_sk (type: int), i_brand (type: string), i_category (type: string)
@@ -292,7 +292,7 @@ STAGE PLANS:
                   filterExpr: (cs_item_sk is not null and cs_sold_date_sk is not null and cs_call_center_sk is not null) (type: boolean)
                   Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cs_call_center_sk is not null and cs_item_sk is not null and cs_sold_date_sk is not null) (type: boolean)
+                    predicate: (cs_item_sk is not null and cs_sold_date_sk is not null and cs_call_center_sk is not null) (type: boolean)
                     Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cs_sold_date_sk (type: int), cs_call_center_sk (type: int), cs_item_sk (type: int), cs_sales_price (type: decimal(7,2))
@@ -309,10 +309,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: ((d_year) IN (2000, 1999, 2001) and ((d_year = 2000) or (struct(d_year,d_moy)) IN (const struct(1999,12), const struct(2001,1))) and d_date_sk is not null) (type: boolean)
+                  filterExpr: ((d_year) IN (2000, 1999, 2001) and d_date_sk is not null and ((d_year = 2000) or (struct(d_year,d_moy)) IN (const struct(1999,12), const struct(2001,1)))) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((d_year = 2000) or (struct(d_year,d_moy)) IN (const struct(1999,12), const struct(2001,1))) and (d_year) IN (2000, 1999, 2001) and d_date_sk is not null) (type: boolean)
+                    predicate: ((d_year) IN (2000, 1999, 2001) and d_date_sk is not null and ((d_year = 2000) or (struct(d_year,d_moy)) IN (const struct(1999,12), const struct(2001,1)))) (type: boolean)
                     Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int), d_year (type: int), d_moy (type: int)
@@ -332,7 +332,7 @@ STAGE PLANS:
                   filterExpr: (i_item_sk is not null and i_category is not null and i_brand is not null) (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (i_brand is not null and i_category is not null and i_item_sk is not null) (type: boolean)
+                    predicate: (i_item_sk is not null and i_category is not null and i_brand is not null) (type: boolean)
                     Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: i_item_sk (type: int), i_brand (type: string), i_category (type: string)
@@ -349,10 +349,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: ((d_year) IN (2000, 1999, 2001) and ((d_year = 2000) or (struct(d_year,d_moy)) IN (const struct(1999,12), const struct(2001,1))) and d_date_sk is not null) (type: boolean)
+                  filterExpr: ((d_year) IN (2000, 1999, 2001) and d_date_sk is not null and ((d_year = 2000) or (struct(d_year,d_moy)) IN (const struct(1999,12), const struct(2001,1)))) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((d_year = 2000) or (struct(d_year,d_moy)) IN (const struct(1999,12), const struct(2001,1))) and (d_year) IN (2000, 1999, 2001) and d_date_sk is not null) (type: boolean)
+                    predicate: ((d_year) IN (2000, 1999, 2001) and d_date_sk is not null and ((d_year = 2000) or (struct(d_year,d_moy)) IN (const struct(1999,12), const struct(2001,1)))) (type: boolean)
                     Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int), d_year (type: int), d_moy (type: int)
@@ -372,7 +372,7 @@ STAGE PLANS:
                   filterExpr: (i_item_sk is not null and i_category is not null and i_brand is not null) (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (i_brand is not null and i_category is not null and i_item_sk is not null) (type: boolean)
+                    predicate: (i_item_sk is not null and i_category is not null and i_brand is not null) (type: boolean)
                     Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: i_item_sk (type: int), i_brand (type: string), i_category (type: string)
@@ -517,7 +517,7 @@ STAGE PLANS:
                               isPivotResult: true
                   Statistics: Num rows: 191657247 Data size: 25954241376 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((_col0 > 0) and (_col4 = 2000) and rank_window_1 is not null) (type: boolean)
+                    predicate: (rank_window_1 is not null and (_col0 > 0) and (_col4 = 2000)) (type: boolean)
                     Statistics: Num rows: 31942874 Data size: 4325706828 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: rank_window_1 (type: int), _col0 (type: decimal(21,6)), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: decimal(17,2))

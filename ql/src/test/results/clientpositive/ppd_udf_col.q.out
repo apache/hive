@@ -174,7 +174,7 @@ STAGE PLANS:
             filterExpr: ((UDFToDouble(key) = 100.0D) and ((UDFToDouble(value) * 10.0D) <= 200.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((UDFToDouble(value) * 10.0D) <= 200.0D) and (UDFToDouble(key) = 100.0D)) (type: boolean)
+              predicate: ((UDFToDouble(key) = 100.0D) and ((UDFToDouble(value) * 10.0D) <= 200.0D)) (type: boolean)
               Statistics: Num rows: 83 Data size: 14774 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), rand() (type: double), (UDFToDouble(value) * 10.0D) (type: double)
@@ -371,7 +371,7 @@ STAGE PLANS:
             filterExpr: ((UDFToDouble(key) = 100.0D) and ((UDFToDouble(value) * 10.0D) <= 200.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((UDFToDouble(value) * 10.0D) <= 200.0D) and (UDFToDouble(key) = 100.0D)) (type: boolean)
+              predicate: ((UDFToDouble(key) = 100.0D) and ((UDFToDouble(value) * 10.0D) <= 200.0D)) (type: boolean)
               Statistics: Num rows: 83 Data size: 14774 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), rand() (type: double), (UDFToDouble(value) * 10.0D) (type: double)
@@ -583,7 +583,7 @@ STAGE PLANS:
             filterExpr: ((key = 100) and ((value * 10) <= 200.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((value * 10) <= 200.0D) and (key = 100)) (type: boolean)
+              predicate: ((key = 100) and ((value * 10) <= 200.0D)) (type: boolean)
               Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), rand() (type: double), (value * 10) (type: double)
@@ -805,7 +805,7 @@ STAGE PLANS:
             filterExpr: ((key = 100) and ((value * 10) <= 200.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((value * 10) <= 200.0D) and (key = 100)) (type: boolean)
+              predicate: ((key = 100) and ((value * 10) <= 200.0D)) (type: boolean)
               Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), rand() (type: double), (value * 10) (type: double)

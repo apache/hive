@@ -142,7 +142,7 @@ STAGE PLANS:
                   filterExpr: (ss_sold_date_sk is not null and ss_store_sk is not null and ss_item_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ss_item_sk is not null and ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
+                    predicate: (ss_sold_date_sk is not null and ss_store_sk is not null and ss_item_sk is not null) (type: boolean)
                     Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_sold_date_sk (type: int), ss_item_sk (type: int), ss_store_sk (type: int), CASE WHEN ((ss_sales_price is not null and CAST( ss_quantity AS decimal(10,0)) is not null)) THEN ((ss_sales_price * CAST( ss_quantity AS decimal(10,0)))) ELSE (0) END (type: decimal(18,2))
@@ -162,7 +162,7 @@ STAGE PLANS:
                   filterExpr: (d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (d_date_sk is not null and d_month_seq BETWEEN 1212 AND 1223) (type: boolean)
+                    predicate: (d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int), d_year (type: int), d_moy (type: int), d_qoy (type: int)

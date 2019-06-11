@@ -127,10 +127,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
-                  filterExpr: ((i_class) IN ('wallpaper', 'parenting', 'musical', 'womens', 'birdal', 'pants') and (i_category) IN ('Home', 'Books', 'Electronics', 'Shoes', 'Jewelry', 'Men') and (((i_category) IN ('Home', 'Books', 'Electronics') and (i_class) IN ('wallpaper', 'parenting', 'musical')) or ((i_category) IN ('Shoes', 'Jewelry', 'Men') and (i_class) IN ('womens', 'birdal', 'pants'))) and i_item_sk is not null) (type: boolean)
+                  filterExpr: (i_item_sk is not null and (i_category) IN ('Home', 'Books', 'Electronics', 'Shoes', 'Jewelry', 'Men') and (i_class) IN ('wallpaper', 'parenting', 'musical', 'womens', 'birdal', 'pants') and (((i_category) IN ('Home', 'Books', 'Electronics') and (i_class) IN ('wallpaper', 'parenting', 'musical')) or ((i_category) IN ('Shoes', 'Jewelry', 'Men') and (i_class) IN ('womens', 'birdal', 'pants')))) (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((((i_category) IN ('Home', 'Books', 'Electronics') and (i_class) IN ('wallpaper', 'parenting', 'musical')) or ((i_category) IN ('Shoes', 'Jewelry', 'Men') and (i_class) IN ('womens', 'birdal', 'pants'))) and (i_category) IN ('Home', 'Books', 'Electronics', 'Shoes', 'Jewelry', 'Men') and (i_class) IN ('wallpaper', 'parenting', 'musical', 'womens', 'birdal', 'pants') and i_item_sk is not null) (type: boolean)
+                    predicate: (i_item_sk is not null and (i_category) IN ('Home', 'Books', 'Electronics', 'Shoes', 'Jewelry', 'Men') and (i_class) IN ('wallpaper', 'parenting', 'musical', 'womens', 'birdal', 'pants') and (((i_category) IN ('Home', 'Books', 'Electronics') and (i_class) IN ('wallpaper', 'parenting', 'musical')) or ((i_category) IN ('Shoes', 'Jewelry', 'Men') and (i_class) IN ('womens', 'birdal', 'pants')))) (type: boolean)
                     Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: i_item_sk (type: int), i_brand (type: string), i_class (type: string), i_category (type: string)

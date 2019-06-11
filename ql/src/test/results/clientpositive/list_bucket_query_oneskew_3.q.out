@@ -174,22 +174,22 @@ STAGE PLANS:
           TableScan
             alias: fact_daily_n0
             filterExpr: ((ds = '1') and (x <> 86)) (type: boolean)
-            Statistics: Num rows: 2 Data size: 1178 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 2 Data size: 8 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: (x <> 86) (type: boolean)
-              Statistics: Num rows: 2 Data size: 1178 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 2 Data size: 8 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: x (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 2 Data size: 1178 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 2 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 2 Data size: 1178 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: PARTIAL Column stats: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat

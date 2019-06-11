@@ -262,7 +262,7 @@ Stage-0
                                     Select Operator [SEL_120] (rows=4 width=12)
                                       Output:["d_month_seq"]
                                       Filter Operator [FIL_119] (rows=4 width=12)
-                                        predicate:(((d_year * d_moy) > 200000) and (d_moy = 2) and (d_year = 2000) and d_month_seq is not null)
+                                        predicate:((d_year = 2000) and ((d_year * d_moy) > 200000) and (d_moy = 2) and d_month_seq is not null)
                                         TableScan [TS_17] (rows=28 width=12)
                                           default@x1_date_dim,x1_date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_month_seq","d_year","d_moy"]
                           <-Select Operator [SEL_126] (rows=28 width=8)
@@ -305,7 +305,7 @@ Stage-0
                             <-Select Operator [SEL_2] (rows=18 width=201)
                                 Output:["_col0","_col1","_col2"]
                                 Filter Operator [FIL_58] (rows=18 width=201)
-                                  predicate:(i_category is not null and i_current_price is not null and i_item_sk is not null)
+                                  predicate:(i_item_sk is not null and i_category is not null and i_current_price is not null)
                                   TableScan [TS_0] (rows=18 width=201)
                                     default@x1_item,i,Tbl:COMPLETE,Col:COMPLETE,Output:["i_item_sk","i_category","i_current_price"]
                         <-Select Operator [SEL_133] (rows=123457 width=8)

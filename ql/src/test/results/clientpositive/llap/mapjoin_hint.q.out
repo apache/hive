@@ -160,7 +160,7 @@ STAGE PLANS:
                   filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_n1_key1_min) AND DynamicValue(RS_7_srcpart_small_n1_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n1_key1_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key BETWEEN DynamicValue(RS_7_srcpart_small_n1_key1_min) AND DynamicValue(RS_7_srcpart_small_n1_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n1_key1_bloom_filter))) and key is not null) (type: boolean)
+                    predicate: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_n1_key1_min) AND DynamicValue(RS_7_srcpart_small_n1_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n1_key1_bloom_filter)))) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)

@@ -2855,7 +2855,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col2, _col5, _col6, _col7
                 Statistics: Num rows: 2 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: ((_col0 = _col6) and (_col6 < 3)) (type: boolean)
+                  predicate: ((_col6 < 3) and (_col0 = _col6)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col5 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
@@ -2867,7 +2867,7 @@ STAGE PLANS:
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                       Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: ((_col0 = _col6) and (_col6 > 3) and (_col6 >= 3) and enforce_constraint(_col0 is not null)) (type: boolean)
+                  predicate: ((_col6 > 3) and (_col6 >= 3) and enforce_constraint(_col0 is not null) and (_col0 = _col6)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col5 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col0 (type: int), _col2 (type: string)
@@ -2900,7 +2900,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint)
                 Filter Operator
-                  predicate: (_col0 is null and enforce_constraint(_col6 is not null)) (type: boolean)
+                  predicate: (enforce_constraint(_col6 is not null) and _col0 is null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col6 (type: int), _col7 (type: string)

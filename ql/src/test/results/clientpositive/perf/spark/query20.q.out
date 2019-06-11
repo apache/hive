@@ -76,10 +76,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'2001-01-12 00:00:00' AND TIMESTAMP'2001-02-11 00:00:00' and d_date_sk is not null) (type: boolean)
+                  filterExpr: (d_date_sk is not null and CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'2001-01-12 00:00:00' AND TIMESTAMP'2001-02-11 00:00:00') (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'2001-01-12 00:00:00' AND TIMESTAMP'2001-02-11 00:00:00' and d_date_sk is not null) (type: boolean)
+                    predicate: (d_date_sk is not null and CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'2001-01-12 00:00:00' AND TIMESTAMP'2001-02-11 00:00:00') (type: boolean)
                     Statistics: Num rows: 8116 Data size: 9081804 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)
@@ -138,10 +138,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
-                  filterExpr: ((i_category) IN ('Jewelry', 'Sports', 'Books') and i_item_sk is not null) (type: boolean)
+                  filterExpr: (i_item_sk is not null and (i_category) IN ('Jewelry', 'Sports', 'Books')) (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((i_category) IN ('Jewelry', 'Sports', 'Books') and i_item_sk is not null) (type: boolean)
+                    predicate: (i_item_sk is not null and (i_category) IN ('Jewelry', 'Sports', 'Books')) (type: boolean)
                     Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: i_item_sk (type: int), i_item_id (type: string), i_item_desc (type: string), i_current_price (type: decimal(7,2)), i_class (type: string), i_category (type: string)

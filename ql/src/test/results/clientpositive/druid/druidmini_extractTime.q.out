@@ -36,7 +36,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames extract_second
             druid.fieldTypes int
-            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract_second","extractionFn":{"type":"timeFormat","format":"s","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract_second","extractionFn":{"type":"timeFormat","format":"s","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Select Operator
             expressions: extract_second (type: int)
@@ -82,7 +82,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames extract_minute
             druid.fieldTypes int
-            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract_minute","extractionFn":{"type":"timeFormat","format":"m","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract_minute","extractionFn":{"type":"timeFormat","format":"m","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Select Operator
             expressions: extract_minute (type: int)
@@ -128,7 +128,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames extract_hour
             druid.fieldTypes int
-            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract_hour","extractionFn":{"type":"timeFormat","format":"H","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract_hour","extractionFn":{"type":"timeFormat","format":"H","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Select Operator
             expressions: extract_hour (type: int)
@@ -173,7 +173,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames extract_day
             druid.fieldTypes int
-            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract_day","extractionFn":{"type":"timeFormat","format":"d","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract_day","extractionFn":{"type":"timeFormat","format":"d","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Select Operator
             expressions: extract_day (type: int)
@@ -218,7 +218,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames extract_week
             druid.fieldTypes int
-            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract_week","extractionFn":{"type":"timeFormat","format":"w","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract_week","extractionFn":{"type":"timeFormat","format":"w","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Select Operator
             expressions: extract_week (type: int)
@@ -263,7 +263,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames extract_month
             druid.fieldTypes int
-            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract_month","extractionFn":{"type":"timeFormat","format":"M","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract_month","extractionFn":{"type":"timeFormat","format":"M","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Select Operator
             expressions: extract_month (type: int)
@@ -308,7 +308,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames vc
             druid.fieldTypes int
-            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"LONG"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_extract(\"__time\",'QUARTER','US/Pacific')","outputType":"LONG"}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"LONG"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_extract(\"__time\",'QUARTER','US/Pacific')","outputType":"LONG"}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Select Operator
             expressions: vc (type: int)
@@ -353,7 +353,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames extract_year
             druid.fieldTypes int
-            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract_year","extractionFn":{"type":"timeFormat","format":"yyyy","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_alltypesorc","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract_year","extractionFn":{"type":"timeFormat","format":"yyyy","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Select Operator
             expressions: extract_year (type: int)
@@ -464,7 +464,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames vc
             druid.fieldTypes int
-            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_extract(\"__time\",'HOUR','US/Pacific')","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList","limit":1}
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"and","fields":[{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"}]},"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_extract(\"__time\",'HOUR','US/Pacific')","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList","limit":1}
             druid.query.type scan
           Select Operator
             expressions: vc (type: int)

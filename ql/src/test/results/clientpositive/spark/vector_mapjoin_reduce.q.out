@@ -81,7 +81,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: lineitem
-                  filterExpr: ((l_shipmode = 'AIR') and l_orderkey is not null) (type: boolean)
+                  filterExpr: (l_orderkey is not null and (l_shipmode = 'AIR')) (type: boolean)
                   Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -89,8 +89,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 14:string, val AIR), SelectColumnIsNotNull(col 0:int))
-                    predicate: ((l_shipmode = 'AIR') and l_orderkey is not null) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:int), FilterStringGroupColEqualStringScalar(col 14:string, val AIR))
+                    predicate: (l_orderkey is not null and (l_shipmode = 'AIR')) (type: boolean)
                     Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: l_orderkey (type: int)
@@ -180,7 +180,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 3:int, val 1), SelectColumnIsNotNull(col 1:int), SelectColumnIsNotNull(col 0:int))
-                    predicate: ((l_linenumber = 1) and l_orderkey is not null and l_partkey is not null) (type: boolean)
+                    predicate: ((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null) (type: boolean)
                     Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: l_orderkey (type: int), l_partkey (type: int), l_suppkey (type: int)
@@ -370,7 +370,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: lineitem
-                  filterExpr: ((l_shipmode = 'AIR') and (l_linenumber = 1) and l_orderkey is not null) (type: boolean)
+                  filterExpr: ((l_linenumber = 1) and l_orderkey is not null and (l_shipmode = 'AIR')) (type: boolean)
                   Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -378,8 +378,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 14:string, val AIR), FilterLongColEqualLongScalar(col 3:int, val 1), SelectColumnIsNotNull(col 0:int))
-                    predicate: ((l_linenumber = 1) and (l_shipmode = 'AIR') and l_orderkey is not null) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 3:int, val 1), SelectColumnIsNotNull(col 0:int), FilterStringGroupColEqualStringScalar(col 14:string, val AIR))
+                    predicate: ((l_linenumber = 1) and l_orderkey is not null and (l_shipmode = 'AIR')) (type: boolean)
                     Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: l_orderkey (type: int), 1 (type: int)
@@ -440,7 +440,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 3:int, val 1), SelectColumnIsNotNull(col 1:int), SelectColumnIsNotNull(col 0:int))
-                    predicate: ((l_linenumber = 1) and l_orderkey is not null and l_partkey is not null) (type: boolean)
+                    predicate: ((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null) (type: boolean)
                     Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: l_orderkey (type: int), l_partkey (type: int), l_suppkey (type: int), 1 (type: int)

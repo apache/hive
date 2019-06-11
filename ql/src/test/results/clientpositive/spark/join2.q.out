@@ -38,7 +38,7 @@ STAGE PLANS:
                   filterExpr: (key is not null and UDFToDouble(key) is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(key) is not null and key is not null) (type: boolean)
+                    predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), UDFToDouble(key) (type: double)
@@ -58,7 +58,7 @@ STAGE PLANS:
                   filterExpr: (key is not null and UDFToDouble(key) is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(key) is not null and key is not null) (type: boolean)
+                    predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), UDFToDouble(key) (type: double)

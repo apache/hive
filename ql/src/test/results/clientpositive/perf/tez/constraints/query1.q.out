@@ -133,7 +133,7 @@ Stage-0
                                             Select Operator [SEL_143] (rows=53634860 width=119)
                                               Output:["_col0","_col1","_col2","_col3"]
                                               Filter Operator [FIL_141] (rows=53634860 width=119)
-                                                predicate:(sr_returned_date_sk is not null and sr_store_sk is not null)
+                                                predicate:(sr_store_sk is not null and sr_returned_date_sk is not null)
                                                 TableScan [TS_3] (rows=57591150 width=119)
                                                   default@store_returns,store_returns,Tbl:COMPLETE,Col:COMPLETE,Output:["sr_returned_date_sk","sr_customer_sk","sr_store_sk","sr_fee"]
                       <-Reducer 2 [ONE_TO_ONE_EDGE]
@@ -176,6 +176,6 @@ Stage-0
                                             Select Operator [SEL_142] (rows=51757026 width=119)
                                               Output:["_col0","_col1","_col2","_col3"]
                                               Filter Operator [FIL_140] (rows=51757026 width=119)
-                                                predicate:(sr_customer_sk is not null and sr_returned_date_sk is not null and sr_store_sk is not null)
+                                                predicate:(sr_customer_sk is not null and sr_store_sk is not null and sr_returned_date_sk is not null)
                                                  Please refer to the previous TableScan [TS_3]
 

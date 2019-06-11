@@ -221,7 +221,7 @@ Stage-0
                                                             Select Operator [SEL_252] (rows=652 width=16)
                                                               Output:["_col0","_col1","_col2"]
                                                               Filter Operator [FIL_251] (rows=652 width=106)
-                                                                predicate:((d_year = 2001) and UDFToDouble(d_date) is not null and d_week_seq is not null)
+                                                                predicate:((d_year = 2001) and d_week_seq is not null and UDFToDouble(d_date) is not null)
                                                                 TableScan [TS_12] (rows=73049 width=106)
                                                                   default@date_dim,d1,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_date","d_week_seq","d_year"]
                                                     <-Reducer 3 [SIMPLE_EDGE]
@@ -241,15 +241,15 @@ Stage-0
                                                         <-Reducer 2 [SIMPLE_EDGE]
                                                           SHUFFLE [RS_34]
                                                             PartitionCols:_col3
-                                                            Merge Join Operator [MERGEJOIN_238] (rows=40690728 width=27)
+                                                            Merge Join Operator [MERGEJOIN_238] (rows=40690727 width=27)
                                                               Conds:RS_258._col2=RS_261._col0(Inner),Output:["_col0","_col1","_col3","_col4","_col5","_col6","_col7"]
                                                             <-Map 1 [SIMPLE_EDGE] vectorized
                                                               SHUFFLE [RS_258]
                                                                 PartitionCols:_col2
-                                                                Select Operator [SEL_257] (rows=280863799 width=31)
+                                                                Select Operator [SEL_257] (rows=280863798 width=31)
                                                                   Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
-                                                                  Filter Operator [FIL_256] (rows=280863799 width=31)
-                                                                    predicate:((cs_sold_date_sk BETWEEN DynamicValue(RS_38_d1_d_date_sk_min) AND DynamicValue(RS_38_d1_d_date_sk_max) and in_bloom_filter(cs_sold_date_sk, DynamicValue(RS_38_d1_d_date_sk_bloom_filter))) and cs_bill_cdemo_sk is not null and cs_bill_hdemo_sk is not null and cs_quantity is not null and cs_ship_date_sk is not null and cs_sold_date_sk is not null)
+                                                                  Filter Operator [FIL_256] (rows=280863798 width=31)
+                                                                    predicate:(cs_sold_date_sk is not null and cs_bill_cdemo_sk is not null and cs_ship_date_sk is not null and cs_quantity is not null and cs_bill_hdemo_sk is not null and (cs_sold_date_sk BETWEEN DynamicValue(RS_38_d1_d_date_sk_min) AND DynamicValue(RS_38_d1_d_date_sk_max) and in_bloom_filter(cs_sold_date_sk, DynamicValue(RS_38_d1_d_date_sk_bloom_filter))))
                                                                     TableScan [TS_0] (rows=287989836 width=31)
                                                                       default@catalog_sales,catalog_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["cs_sold_date_sk","cs_ship_date_sk","cs_bill_cdemo_sk","cs_bill_hdemo_sk","cs_item_sk","cs_promo_sk","cs_order_number","cs_quantity"]
                                                                     <-Reducer 17 [BROADCAST_EDGE] vectorized

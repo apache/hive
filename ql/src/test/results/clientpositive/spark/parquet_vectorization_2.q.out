@@ -67,7 +67,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesparquet
-                  filterExpr: (((ctimestamp1 < ctimestamp2) and (cstring2 like 'b%') and (cfloat <= -5638.15)) or ((cdouble < UDFToDouble(ctinyint)) and ((UDFToDouble(ctimestamp2) <> -10669.0D) or (cint < 359)))) (type: boolean)
+                  filterExpr: (((cdouble < UDFToDouble(ctinyint)) and ((UDFToDouble(ctimestamp2) <> -10669.0D) or (cint < 359))) or ((ctimestamp1 < ctimestamp2) and (cstring2 like 'b%') and (cfloat <= -5638.15))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 593751 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -75,7 +75,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterTimestampColLessTimestampColumn(col 8:timestamp, col 9:timestamp), FilterStringColLikeStringScalar(col 7:string, pattern b%), FilterDoubleColLessEqualDoubleScalar(col 4:float, val -5638.14990234375)), FilterExprAndExpr(children: FilterDoubleColLessDoubleColumn(col 5:double, col 13:double)(children: CastLongToDouble(col 0:tinyint) -> 13:double), FilterExprOrExpr(children: FilterDoubleColNotEqualDoubleScalar(col 14:double, val -10669.0)(children: CastTimestampToDouble(col 9:timestamp) -> 14:double), FilterLongColLessLongScalar(col 2:int, val 359))))
+                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDoubleColLessDoubleColumn(col 5:double, col 13:double)(children: CastLongToDouble(col 0:tinyint) -> 13:double), FilterExprOrExpr(children: FilterDoubleColNotEqualDoubleScalar(col 14:double, val -10669.0)(children: CastTimestampToDouble(col 9:timestamp) -> 14:double), FilterLongColLessLongScalar(col 2:int, val 359))), FilterExprAndExpr(children: FilterTimestampColLessTimestampColumn(col 8:timestamp, col 9:timestamp), FilterStringColLikeStringScalar(col 7:string, pattern b%), FilterDoubleColLessEqualDoubleScalar(col 4:float, val -5638.14990234375)))
                     predicate: (((cdouble < UDFToDouble(ctinyint)) and ((UDFToDouble(ctimestamp2) <> -10669.0D) or (cint < 359))) or ((ctimestamp1 < ctimestamp2) and (cstring2 like 'b%') and (cfloat <= -5638.15))) (type: boolean)
                     Statistics: Num rows: 4778 Data size: 230870 Basic stats: COMPLETE Column stats: NONE
                     Select Operator

@@ -74,7 +74,7 @@ STAGE PLANS:
             filterExpr: ((c2 > 100) and (c1 < 120) and c3 is not null) (type: boolean)
             Statistics: Num rows: 1028 Data size: 101772 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((c1 < 120) and (c2 > 100) and c3 is not null) (type: boolean)
+              predicate: ((c2 > 100) and (c1 < 120) and c3 is not null) (type: boolean)
               Statistics: Num rows: 114 Data size: 11286 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: c1 (type: int), c3 (type: string)

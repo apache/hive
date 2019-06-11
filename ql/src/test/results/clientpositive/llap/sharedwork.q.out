@@ -103,7 +103,7 @@ POSTHOOK: Input: default@my_table_0003
 OPTIMIZED SQL: SELECT `t0`.`col_7`, `t0`.`CAST` AS `col_3`, `t0`.`col_20`, `t2`.`col_21` AS `col_21_1232`, `t0`.`col_1`, `t4`.`col_22`, `t6`.`col_21` AS `col_21_879`, `t4`.`col_23`
 FROM (SELECT `col_1`, `col_7`, `col_20`, CAST(`col_3` AS DATE) AS `CAST`
 FROM `default`.`my_table_0001`
-WHERE `col_20` IN ('part1', 'part2', 'part3') AND (CAST(`col_7` AS DOUBLE) IS NOT NULL OR `col_7` IS NULL) AND CAST(`col_3` AS DATE) BETWEEN DATE '2018-07-01' AND DATE '2019-01-23') AS `t0`
+WHERE (CAST(`col_7` AS DOUBLE) IS NOT NULL OR `col_7` IS NULL) AND `col_20` IN ('part1', 'part2', 'part3') AND CAST(`col_3` AS DATE) BETWEEN DATE '2018-07-01' AND DATE '2019-01-23') AS `t0`
 LEFT JOIN (SELECT `col_24`, `col_21`
 FROM `default`.`my_table_0003`
 WHERE `col_24` IN ('part1', 'part2', 'part3')) AS `t2` ON `t0`.`col_20` = `t2`.`col_24`
@@ -135,7 +135,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table__323
-                  filterExpr: ((col_20) IN ('part1', 'part2', 'part3') and (UDFToDouble(col_7) is not null or col_7 is null) and CAST( col_3 AS DATE) BETWEEN DATE'2018-07-01' AND DATE'2019-01-23') (type: boolean)
+                  filterExpr: ((UDFToDouble(col_7) is not null or col_7 is null) and (col_20) IN ('part1', 'part2', 'part3') and CAST( col_3 AS DATE) BETWEEN DATE'2018-07-01' AND DATE'2019-01-23') (type: boolean)
                   Statistics: Num rows: 1 Data size: 592 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -654,7 +654,7 @@ INNER JOIN (SELECT `p_size` + 1 AS `$f0`
 FROM `default`.`part`
 WHERE `p_size` IS NOT NULL
 GROUP BY `p_size` + 1) AS `t11` ON `t8`.`$f1` = `t11`.`$f0`) AS `t12` ON `part`.`p_type` = `t12`.`p_type` AND `part`.`p_size` + 1 = `t12`.`size`) AS `t13`
-WHERE (`t13`.`$f2` IS NULL OR `t13`.`c` = 0 OR `t13`.`c` IS NULL) AND (`t13`.`p_type` IS NOT NULL OR `t13`.`c` = 0 OR `t13`.`c` IS NULL OR `t13`.`$f2` IS NOT NULL) AND (`t13`.`ck` < (`t13`.`c` IS NOT TRUE) OR `t13`.`c` = 0 OR `t13`.`c` IS NULL OR `t13`.`$f2` IS NOT NULL OR `t13`.`p_type` IS NULL)
+WHERE (`t13`.`$f2` IS NULL OR `t13`.`c` = 0 OR `t13`.`c` IS NULL) AND (`t13`.`ck` < (`t13`.`c` IS NOT TRUE) OR `t13`.`c` = 0 OR `t13`.`c` IS NULL OR `t13`.`$f2` IS NOT NULL OR `t13`.`p_type` IS NULL) AND (`t13`.`p_type` IS NOT NULL OR `t13`.`c` = 0 OR `t13`.`c` IS NULL OR `t13`.`$f2` IS NOT NULL)
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1022,7 +1022,7 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 9387 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (((_col5 < _col4 is not true) or (_col4 = 0L) or _col4 is null or _col8 is not null or _col1 is null) and (_col1 is not null or (_col4 = 0L) or _col4 is null or _col8 is not null) and (_col8 is null or (_col4 = 0L) or _col4 is null)) (type: boolean)
+                    predicate: ((_col8 is null or (_col4 = 0L) or _col4 is null) and ((_col5 < _col4 is not true) or (_col4 = 0L) or _col4 is null or _col8 is not null or _col1 is null) and (_col1 is not null or (_col4 = 0L) or _col4 is null or _col8 is not null)) (type: boolean)
                     Statistics: Num rows: 39 Data size: 9387 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: string)

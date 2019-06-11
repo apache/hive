@@ -80,10 +80,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
-                  filterExpr: ((s_state) IN ('SD', 'FL', 'MI', 'LA', 'MO', 'SC', 'AL', 'GA') and s_store_sk is not null) (type: boolean)
+                  filterExpr: (s_store_sk is not null and (s_state) IN ('SD', 'FL', 'MI', 'LA', 'MO', 'SC', 'AL', 'GA')) (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((s_state) IN ('SD', 'FL', 'MI', 'LA', 'MO', 'SC', 'AL', 'GA') and s_store_sk is not null) (type: boolean)
+                    predicate: (s_store_sk is not null and (s_state) IN ('SD', 'FL', 'MI', 'LA', 'MO', 'SC', 'AL', 'GA')) (type: boolean)
                     Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s_store_sk (type: int)
@@ -114,7 +114,7 @@ STAGE PLANS:
                   filterExpr: (ss_sold_date_sk is not null and ss_item_sk is not null and ss_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ss_item_sk is not null and ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
+                    predicate: (ss_sold_date_sk is not null and ss_item_sk is not null and ss_store_sk is not null) (type: boolean)
                     Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_sold_date_sk (type: int), ss_item_sk (type: int), ss_store_sk (type: int), ss_ext_sales_price (type: decimal(7,2)), ss_net_profit (type: decimal(7,2))
