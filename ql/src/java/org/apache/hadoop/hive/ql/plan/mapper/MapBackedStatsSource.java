@@ -18,21 +18,28 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
+import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
 public class MapBackedStatsSource implements StatsSource {
 
   private Map<OpTreeSignature, OperatorStats> map = new ConcurrentHashMap<>();
+  private Map<RelTreeSignature, OperatorStats> map2 = new ConcurrentHashMap<>();
 
   @Override
   public boolean canProvideStatsFor(Class<?> clazz) {
     if (Operator.class.isAssignableFrom(clazz)) {
+      return true;
+    }
+    if (HiveFilter.class.isAssignableFrom(clazz)) {
       return true;
     }
     return false;
@@ -43,8 +50,21 @@ public class MapBackedStatsSource implements StatsSource {
     return Optional.ofNullable(map.get(treeSig));
   }
 
+
   @Override
-  public void putAll(Map<OpTreeSignature, OperatorStats> map) {
-    this.map.putAll(map);
+  public Optional<OperatorStats> lookup(RelTreeSignature of) {
+    return Optional.ofNullable(map2.get(of));
+  }
+
+  @Override
+  public void load(List<PersistedRuntimeStats> statMap) {
+    for (PersistedRuntimeStats persistedRuntimeStats : statMap) {
+      if (persistedRuntimeStats.sig != null) {
+        map.put(persistedRuntimeStats.sig, persistedRuntimeStats.stat);
+      }
+      if (persistedRuntimeStats.rSig != null) {
+        map2.put(persistedRuntimeStats.rSig, persistedRuntimeStats.stat);
+      }
+    }
   }
 }

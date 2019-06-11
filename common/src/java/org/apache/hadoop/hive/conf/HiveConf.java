@@ -4667,6 +4667,8 @@ public class HiveConf extends Configuration {
         "If runtime stats are stored in metastore; the maximal batch size per round during load."),
     HIVE_QUERY_REEXECUTION_STATS_CACHE_SIZE("hive.query.reexecution.stats.cache.size", 100_000,
         "Size of the runtime statistics cache. Unit is: OperatorStat entry; a query plan consist ~100."),
+    HIVE_QUERY_PLANMAPPER_LINK_RELNODES("hive.query.planmapper.link.relnodes", true,
+        "Wether to link Calcite nodes to runtime statistics."),
 
     HIVE_QUERY_RESULTS_CACHE_ENABLED("hive.query.results.cache.enabled", true,
         "If the query results cache is enabled. This will keep results of previously executed queries " +

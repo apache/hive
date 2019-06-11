@@ -32,13 +32,13 @@ import org.slf4j.LoggerFactory;
  * Writer implementation for rel nodes that produces an output in json that is easily
  * parseable back into rel nodes.
  */
-public class HiveRelWriterImpl extends RelJsonWriter {
+public class HiveRelJsonImpl extends RelJsonWriter {
 
-  protected static final Logger LOG = LoggerFactory.getLogger(HiveRelWriterImpl.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(HiveRelJsonImpl.class);
 
   //~ Constructors -------------------------------------------------------------
 
-  public HiveRelWriterImpl() {
+  public HiveRelJsonImpl() {
     super();
   }
 

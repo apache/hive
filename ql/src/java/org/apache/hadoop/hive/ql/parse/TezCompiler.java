@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -89,6 +90,7 @@ import org.apache.hadoop.hive.ql.optimizer.SetReducerParallelism;
 import org.apache.hadoop.hive.ql.optimizer.SharedWorkOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.SortedDynPartitionOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.TopNKeyProcessor;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkDeDuplication;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkJoinDeDuplication;
 import org.apache.hadoop.hive.ql.optimizer.metainfo.annotation.AnnotateWithOpTraits;
@@ -104,6 +106,7 @@ import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.optimizer.physical.SerializeFilter;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
+import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.optimizer.stats.annotation.AnnotateWithStatistics;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
@@ -119,7 +122,9 @@ import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.plan.mapper.AuxOpTreeSignature;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
@@ -215,10 +220,6 @@ public class TezCompiler extends TaskCompiler {
     }
     perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Shared scans optimization");
 
-    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
-    markOperatorsWithUnstableRuntimeStats(procCtx);
-    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "markOperatorsWithUnstableRuntimeStats");
-
     // need a new run of the constant folding because we might have created lots
     // of "and true and true" conditions.
     // Rather than run the full constant folding just need to shortcut AND/OR expressions
@@ -226,6 +227,11 @@ public class TezCompiler extends TaskCompiler {
     if(procCtx.conf.getBoolVar(ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
       new ConstantPropagate(ConstantPropagateOption.SHORTCUT).transform(procCtx.parseContext);
     }
+
+    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+    AuxOpTreeSignature.linkAuxSignatures(procCtx.parseContext);
+    markOperatorsWithUnstableRuntimeStats(procCtx);
+    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "markOperatorsWithUnstableRuntimeStats");
 
     // ATTENTION : DO NOT, I REPEAT, DO NOT WRITE ANYTHING AFTER updateBucketingVersionForUpgrade()
     // ANYTHING WHICH NEEDS TO BE ADDED MUST BE ADDED ABOVE
@@ -948,6 +954,35 @@ public class TezCompiler extends TaskCompiler {
     ogw.startWalking(topNodes, null);
   }
 
+  private static class CollectAll implements NodeProcessor {
+    private PlanMapper planMapper;
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+        throws SemanticException {
+      ParseContext pCtx = ((OptimizeTezProcContext) procCtx).parseContext;
+      planMapper = pCtx.getContext().getPlanMapper();
+      FilterOperator fop = (FilterOperator) nd;
+      OpTreeSignature sig = planMapper.getSignatureOf(fop);
+      List<EquivGroup> ar = getGroups(planMapper, HiveFilter.class);
+
+
+      return nd;
+    }
+
+    private List<EquivGroup> getGroups(PlanMapper planMapper2, Class<HiveFilter> class1) {
+      Iterator<EquivGroup> it = planMapper.iterateGroups();
+      List<EquivGroup> ret = new ArrayList<PlanMapper.EquivGroup>();
+      while (it.hasNext()) {
+        EquivGroup g = it.next();
+        if (g.getAll(class1).size() > 0) {
+          ret.add(g);
+        }
+      }
+      return ret;
+    }
+  }
+
   private static class MarkRuntimeStatsAsIncorrect implements NodeProcessor {
 
     private PlanMapper planMapper;
@@ -971,6 +1006,14 @@ public class TezCompiler extends TaskCompiler {
         if (c instanceof DynamicPruningEventDesc) {
           DynamicPruningEventDesc dped = (DynamicPruningEventDesc) c;
           mark(dped.getTableScan());
+        }
+      }
+      if (nd instanceof TableScanOperator) {
+        // If the tablescan operator is making use of filtering capabilities of readers then
+        // we will not see the actual incoming rowcount which was processed - so we may not use it for relNodes
+        TableScanOperator ts = (TableScanOperator) nd;
+        if (ts.getConf().getPredicateString() != null) {
+          planMapper.link(ts, new OperatorStats.MayNotUseForRelNodes());
         }
       }
       return null;
@@ -1006,13 +1049,17 @@ public class TezCompiler extends TaskCompiler {
         new RuleRegExp("R2",
             AppMasterEventOperator.getOperatorName() + "%"),
         new MarkRuntimeStatsAsIncorrect());
+    opRules.put(
+        new RuleRegExp("R3",
+            TableScanOperator.getOperatorName() + "%"),
+        new MarkRuntimeStatsAsIncorrect());
     Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
     GraphWalker ogw = new PreOrderOnceWalker(disp);
     ogw.startWalking(topNodes, null);
   }
-    
+
   private class SemiJoinRemovalProc implements NodeProcessor {
 
     private final boolean removeBasedOnStats;

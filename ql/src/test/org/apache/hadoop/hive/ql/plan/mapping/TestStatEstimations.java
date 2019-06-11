@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.ql.plan.mapping;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+
 import java.util.List;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -28,6 +30,7 @@ import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.testutils.HiveTestEnvSetup;
+import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -91,7 +94,7 @@ public class TestStatEstimations {
     List<FilterOperator> fos = pm.getAll(FilterOperator.class);
     // the same operator is present 2 times
     fos.sort(TestCounterMapping.OPERATOR_ID_COMPARATOR.reversed());
-    assertEquals(1, fos.size());
+    assertThat(fos.size(), Matchers.greaterThanOrEqualTo(1));
     FilterOperator fop = fos.get(0);
 
     // all outside elements should be ignored from stat estimation

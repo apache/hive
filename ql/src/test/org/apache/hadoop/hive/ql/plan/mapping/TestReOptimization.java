@@ -23,12 +23,17 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
+
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
@@ -235,12 +240,53 @@ public class TestReOptimization {
       res.addAll(res1);
     }
 
-    assertEquals("2TS", 2, res.stream().filter(line -> line.contains("TS_")).count());
-    assertEquals("2TS(runtime)", 2,
-        res.stream().filter(line -> line.contains("TS") && line.contains("runtime")).count());
+    assertEquals("2FIL", 2, res.stream().filter(line -> line.contains("FIL_")).count());
+    assertEquals("2FIL(runtime)", 2,
+        res.stream().filter(line -> line.contains("FIL") && line.contains("runtime")).count());
 
   }
 
+  @Test
+  public void testReOptimizationCanSendBackStatsToCBO() throws Exception {
+    IDriver driver = createDriver("overlay,reoptimize");
+    // @formatter:off
+    String query="select assert_true_oom(${hiveconf:zzz} > sum(u*v*w)) from tu\n" +
+    "        join tv on (tu.id_uv=tv.id_uv)\n" +
+    "        join tw on (tu.id_uw=tw.id_uw)\n" +
+    "        where w>9 and u>1 and v>3";
+    // @formatter:on
+    PlanMapper pm = getMapperForQuery(driver, query);
+
+    Iterator<EquivGroup> itG = pm.iterateGroups();
+    int checkedOperators = 0;
+    while (itG.hasNext()) {
+      EquivGroup g = itG.next();
+      List<FilterOperator> fos = g.getAll(FilterOperator.class);
+      List<OperatorStats> oss = g.getAll(OperatorStats.class);
+      List<HiveFilter> hfs = g.getAll(HiveFilter.class);
+
+      if (fos.size() > 0 && oss.size() > 0 && hfs.size() > 0) {
+        fos.sort(TestCounterMapping.OPERATOR_ID_COMPARATOR.reversed());
+
+        HiveFilter hf = hfs.get(0);
+        FilterOperator fo = fos.get(0);
+        OperatorStats os = oss.get(0);
+
+        Optional<OperatorStats> prevOs = driver.getContext().getStatsSource().lookup(RelTreeSignature.of(hf));
+
+        long cntFilter = RelMetadataQuery.instance().getRowCount(hf).longValue();
+        if (fo.getStatistics() != null) {
+          // in case the join order is changed the subTree-s are not matching anymore because an RS is present in the condition
+          // assertEquals(os.getOutputRecords(), fo.getStatistics().getNumRows());
+        }
+        assertEquals(os.getOutputRecords(), cntFilter);
+
+        checkedOperators++;
+      }
+    }
+    assertEquals(3, checkedOperators);
+
+  }
 
   private static IDriver createDriver(String strategies) {
     HiveConf conf = env_setup.getTestCtx().hiveConf;

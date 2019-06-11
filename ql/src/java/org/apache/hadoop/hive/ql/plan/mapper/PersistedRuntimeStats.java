@@ -18,23 +18,43 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 
-import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
-@InterfaceAudience.Private
-public interface StatsSource {
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-  boolean canProvideStatsFor(Class<?> clazz);
+public final class PersistedRuntimeStats {
 
-  Optional<OperatorStats> lookup(OpTreeSignature treeSig);
+  @JsonProperty
+  public OpTreeSignature sig;
+  @JsonProperty
+  public OperatorStats stat;
+  @JsonProperty
+  public RelTreeSignature rSig;
 
-  Optional<OperatorStats> lookup(RelTreeSignature treeSig);
+  PersistedRuntimeStats() {
+  }
 
-  void load(List<PersistedRuntimeStats> list);
+  public PersistedRuntimeStats(OpTreeSignature sig, OperatorStats stat, RelTreeSignature rSig) {
+    this.sig = sig;
+    this.stat = stat;
+    this.rSig = rSig;
+  }
 
+  @Override
+  public int hashCode() {
+    return Objects.hash(sig, stat, rSig);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof PersistedRuntimeStats)) {
+      return false;
+    }
+    PersistedRuntimeStats o = (PersistedRuntimeStats) obj;
+    return Objects.equals(sig, o.sig) && Objects.equals(stat, o.stat) && Objects.equals(rSig, o.rSig);
+  }
 }
