@@ -154,7 +154,7 @@ STAGE PLANS:
                   filterExpr: (ss_sold_date_sk is not null and (ss_sold_date_sk BETWEEN DynamicValue(RS_7_d_d_date_sk_min) AND DynamicValue(RS_7_d_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_7_d_d_date_sk_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 123456 Data size: 987648 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ss_sold_date_sk BETWEEN DynamicValue(RS_7_d_d_date_sk_min) AND DynamicValue(RS_7_d_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_7_d_d_date_sk_bloom_filter))) and ss_sold_date_sk is not null) (type: boolean)
+                    predicate: (ss_sold_date_sk is not null and (ss_sold_date_sk BETWEEN DynamicValue(RS_7_d_d_date_sk_min) AND DynamicValue(RS_7_d_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_7_d_d_date_sk_bloom_filter)))) (type: boolean)
                     Statistics: Num rows: 123456 Data size: 987648 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_sold_date_sk (type: int), ss_item_sk (type: int)
@@ -331,7 +331,7 @@ STAGE PLANS:
                   filterExpr: (ss_sold_date_sk is not null and (ss_sold_date_sk BETWEEN DynamicValue(RS_7_d_d_date_sk_min) AND DynamicValue(RS_7_d_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_7_d_d_date_sk_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 123456 Data size: 987648 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ss_sold_date_sk BETWEEN DynamicValue(RS_7_d_d_date_sk_min) AND DynamicValue(RS_7_d_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_7_d_d_date_sk_bloom_filter))) and ss_sold_date_sk is not null) (type: boolean)
+                    predicate: (ss_sold_date_sk is not null and (ss_sold_date_sk BETWEEN DynamicValue(RS_7_d_d_date_sk_min) AND DynamicValue(RS_7_d_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_7_d_d_date_sk_bloom_filter)))) (type: boolean)
                     Statistics: Num rows: 123456 Data size: 987648 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_sold_date_sk (type: int), ss_item_sk (type: int)

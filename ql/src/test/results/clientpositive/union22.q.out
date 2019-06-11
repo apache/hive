@@ -82,7 +82,7 @@ POSTHOOK: Input: default@dst_union22_delta@ds=1
 POSTHOOK: Output: default@dst_union22@ds=2
 OPTIMIZED SQL: SELECT `k1`, `k2`, `k3`, `k4`
 FROM `default`.`dst_union22_delta`
-WHERE `ds` = '1' AND `k0` <= 50
+WHERE `k0` <= 50 AND `ds` = '1'
 UNION ALL
 SELECT `t2`.`k1`, `t2`.`k2`, `t4`.`k3`, `t4`.`k4`
 FROM (SELECT `k1`, `k2`, `ds` = '1' AS `=`
@@ -90,7 +90,7 @@ FROM `default`.`dst_union22`
 WHERE `k1` > 20) AS `t2`
 LEFT JOIN (SELECT `k1`, `k3`, `k4`
 FROM `default`.`dst_union22_delta`
-WHERE `ds` = '1' AND `k0` > 50 AND `k1` > 20) AS `t4` ON `t2`.`k1` = `t4`.`k1` AND `t2`.`=`
+WHERE `k0` > 50 AND `k1` > 20 AND `ds` = '1') AS `t4` ON `t2`.`k1` = `t4`.`k1` AND `t2`.`=`
 STAGE DEPENDENCIES:
   Stage-7 is a root stage , consists of Stage-8, Stage-4
   Stage-8 has a backup stage: Stage-4
@@ -346,7 +346,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: dst_union22_delta
-            filterExpr: ((ds = '1') and (UDFToDouble(k0) <= 50.0D)) (type: boolean)
+            filterExpr: ((UDFToDouble(k0) <= 50.0D) and (ds = '1')) (type: boolean)
             Statistics: Num rows: 500 Data size: 221500 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator

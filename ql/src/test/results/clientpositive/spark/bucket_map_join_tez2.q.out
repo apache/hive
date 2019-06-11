@@ -2405,7 +2405,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((UDFToDouble(accounting_period) = 10.0D) and (fiscal_year = '2015') and join_col is not null) (type: boolean)
+                    predicate: ((fiscal_year = '2015') and (UDFToDouble(accounting_period) = 10.0D) and join_col is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: bucket_col (type: string), join_col (type: string), accounting_period (type: string)

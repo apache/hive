@@ -37,7 +37,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: true
-              predicate: ((((hash(key) & 2147483647) % 1) = 0) and (((hash(key) & 2147483647) % 10) = 0) and value is not null) (type: boolean)
+              predicate: ((((hash(key) & 2147483647) % 10) = 0) and value is not null and (((hash(key) & 2147483647) % 1) = 0)) (type: boolean)
               Statistics: Num rows: 125 Data size: 22250 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)
@@ -53,7 +53,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: true
-              predicate: ((((hash(key) & 2147483647) % 1) = 0) and (((hash(key) & 2147483647) % 10) = 0) and value is not null) (type: boolean)
+              predicate: ((((hash(key) & 2147483647) % 1) = 0) and value is not null and (((hash(key) & 2147483647) % 10) = 0)) (type: boolean)
               Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string), value (type: string)

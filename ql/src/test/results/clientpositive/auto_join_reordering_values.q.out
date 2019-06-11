@@ -121,7 +121,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (cityid is not null and date is not null and dealid is not null and userid is not null) (type: boolean)
+              predicate: (date is not null and dealid is not null and cityid is not null and userid is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 106 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: dealid (type: int), date (type: string), cityid (type: int), userid (type: int)

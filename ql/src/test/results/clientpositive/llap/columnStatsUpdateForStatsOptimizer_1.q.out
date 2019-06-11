@@ -754,11 +754,11 @@ STAGE PLANS:
                 TableScan
                   alias: calendarp
                   filterExpr: (p = 1) (type: boolean)
-                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: year (type: int)
                     outputColumnNames: year
-                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: max(year)
                       minReductionHashAggr: 0.99

@@ -213,10 +213,10 @@ Stage-0
                                           <-Map 11 [SIMPLE_EDGE] vectorized
                                             SHUFFLE [RS_197]
                                               PartitionCols:_col0
-                                              Select Operator [SEL_195] (rows=12539215 width=118)
+                                              Select Operator [SEL_195] (rows=12539214 width=118)
                                                 Output:["_col0","_col1","_col2","_col3"]
-                                                Filter Operator [FIL_193] (rows=12539215 width=118)
-                                                  predicate:(wr_returned_date_sk is not null and wr_returning_addr_sk is not null and wr_returning_customer_sk is not null)
+                                                Filter Operator [FIL_193] (rows=12539214 width=118)
+                                                  predicate:(wr_returning_customer_sk is not null and wr_returned_date_sk is not null and wr_returning_addr_sk is not null)
                                                    Please refer to the previous TableScan [TS_6]
                                           <-Map 14 [SIMPLE_EDGE] vectorized
                                             SHUFFLE [RS_201]

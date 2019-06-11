@@ -123,7 +123,7 @@ Stage-0
                                   Select Operator [SEL_191] (rows=1433911 width=119)
                                     Output:["_col0","_col1","_col2"]
                                     Filter Operator [FIL_190] (rows=1433911 width=123)
-                                      predicate:(cs_item_sk is not null and cs_sold_date_sk is not null and cs_warehouse_sk is null)
+                                      predicate:(cs_warehouse_sk is null and cs_sold_date_sk is not null and cs_item_sk is not null)
                                       TableScan [TS_33] (rows=287989836 width=123)
                                         default@catalog_sales,catalog_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["cs_sold_date_sk","cs_warehouse_sk","cs_item_sk","cs_ext_sales_price"]
                 <-Reducer 3 [CONTAINS]
@@ -161,7 +161,7 @@ Stage-0
                                   Select Operator [SEL_174] (rows=24749363 width=114)
                                     Output:["_col0","_col1","_col2"]
                                     Filter Operator [FIL_173] (rows=24749363 width=118)
-                                      predicate:(ss_addr_sk is null and ss_item_sk is not null and ss_sold_date_sk is not null)
+                                      predicate:(ss_addr_sk is null and ss_sold_date_sk is not null and ss_item_sk is not null)
                                       TableScan [TS_3] (rows=575995635 width=118)
                                         default@store_sales,store_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_sold_date_sk","ss_item_sk","ss_addr_sk","ss_ext_sales_price"]
                 <-Reducer 8 [CONTAINS]
@@ -199,7 +199,7 @@ Stage-0
                                   Select Operator [SEL_185] (rows=35728 width=119)
                                     Output:["_col0","_col1","_col2"]
                                     Filter Operator [FIL_184] (rows=35728 width=123)
-                                      predicate:(ws_item_sk is not null and ws_sold_date_sk is not null and ws_web_page_sk is null)
+                                      predicate:(ws_web_page_sk is null and ws_sold_date_sk is not null and ws_item_sk is not null)
                                       TableScan [TS_16] (rows=144002668 width=123)
                                         default@web_sales,web_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ws_sold_date_sk","ws_item_sk","ws_web_page_sk","ws_ext_sales_price"]
 

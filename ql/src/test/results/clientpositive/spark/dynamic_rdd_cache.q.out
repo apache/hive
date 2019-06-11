@@ -751,7 +751,7 @@ STAGE PLANS:
                   filterExpr: (inv_item_sk is not null and inv_warehouse_sk is not null and inv_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
-                    predicate: (inv_date_sk is not null and inv_item_sk is not null and inv_warehouse_sk is not null) (type: boolean)
+                    predicate: (inv_item_sk is not null and inv_warehouse_sk is not null and inv_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: inv_date_sk (type: int), inv_item_sk (type: int), inv_quantity_on_hand (type: int), inv_warehouse_sk (type: int)
@@ -791,7 +791,7 @@ STAGE PLANS:
                   filterExpr: (inv_item_sk is not null and inv_warehouse_sk is not null and inv_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
-                    predicate: (inv_date_sk is not null and inv_item_sk is not null and inv_warehouse_sk is not null) (type: boolean)
+                    predicate: (inv_item_sk is not null and inv_warehouse_sk is not null and inv_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: inv_date_sk (type: int), inv_item_sk (type: int), inv_quantity_on_hand (type: int), inv_warehouse_sk (type: int)
@@ -830,7 +830,7 @@ STAGE PLANS:
                   filterExpr: ((d_year = 1999) and (d_moy = 4) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
-                    predicate: ((d_moy = 4) and (d_year = 1999) and d_date_sk is not null) (type: boolean)
+                    predicate: ((d_year = 1999) and (d_moy = 4) and d_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)
@@ -888,7 +888,7 @@ STAGE PLANS:
                   filterExpr: ((d_year = 1999) and (d_moy = 3) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
-                    predicate: ((d_moy = 3) and (d_year = 1999) and d_date_sk is not null) (type: boolean)
+                    predicate: ((d_year = 1999) and (d_moy = 3) and d_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)

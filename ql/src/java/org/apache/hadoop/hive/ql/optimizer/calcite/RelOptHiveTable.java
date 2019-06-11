@@ -682,7 +682,9 @@ public class RelOptHiveTable implements RelOptTable {
     Set<Integer> projIndxSet = new HashSet<Integer>(projIndxLst);
     if (projIndxLst != null) {
       for (Integer i : projIndxLst) {
-        if (hiveColStatsMap.get(i) != null) {
+        if (i >= noOfNonVirtualCols) {
+          projIndxSet.remove(i);
+        } else if (hiveColStatsMap.get(i) != null) {
           colStatsBldr.add(hiveColStatsMap.get(i));
           projIndxSet.remove(i);
         }

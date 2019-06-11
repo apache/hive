@@ -231,7 +231,7 @@ STAGE PLANS:
             filterExpr: ((a = 1) or ((a = 2) and (b = 3))) (type: boolean)
             Statistics: Num rows: 1000/1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((a = 2) and (b = 3)) or (a = 1)) (type: boolean)
+              predicate: ((a = 1) or ((a = 2) and (b = 3))) (type: boolean)
               Statistics: Num rows: 110/110 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: sum(a)

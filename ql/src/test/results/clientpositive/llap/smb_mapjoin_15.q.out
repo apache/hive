@@ -664,7 +664,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (key is not null and key2 is not null) (type: boolean)
+                    predicate: (key2 is not null and key is not null) (type: boolean)
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), key2 (type: int), value (type: string)
@@ -747,7 +747,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (key is not null and key2 is not null) (type: boolean)
+                    predicate: (key2 is not null and key is not null) (type: boolean)
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), key2 (type: int), value (type: string)

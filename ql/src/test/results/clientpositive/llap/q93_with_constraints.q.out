@@ -260,20 +260,20 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: reason
-                  filterExpr: ((r_reason_desc = 'Did not like the warranty') and r_reason_sk is not null) (type: boolean)
+                  filterExpr: (r_reason_sk is not null and (r_reason_desc = 'Did not like the warranty')) (type: boolean)
                   Statistics: Num rows: 72 Data size: 13160 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((r_reason_desc = 'Did not like the warranty') and r_reason_sk is not null) (type: boolean)
-                    Statistics: Num rows: 2 Data size: 365 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (r_reason_sk is not null and (r_reason_desc = 'Did not like the warranty')) (type: boolean)
+                    Statistics: Num rows: 5 Data size: 913 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: r_reason_sk (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 365 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 5 Data size: 913 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 2 Data size: 365 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 5 Data size: 913 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 7 

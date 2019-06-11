@@ -224,7 +224,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: bucket_small_n17
-                  filterExpr: (pri BETWEEN 1L AND 2L and key is not null) (type: boolean)
+                  filterExpr: (key is not null and pri BETWEEN 1L AND 2L) (type: boolean)
                   Statistics: Num rows: 236 Data size: 2244 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)

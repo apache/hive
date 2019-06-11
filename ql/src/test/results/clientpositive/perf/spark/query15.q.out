@@ -107,7 +107,7 @@ STAGE PLANS:
                   filterExpr: (c_customer_sk is not null and c_current_addr_sk is not null) (type: boolean)
                   Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (c_current_addr_sk is not null and c_customer_sk is not null) (type: boolean)
+                    predicate: (c_customer_sk is not null and c_current_addr_sk is not null) (type: boolean)
                     Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: c_customer_sk (type: int), c_current_addr_sk (type: int)
@@ -183,7 +183,7 @@ STAGE PLANS:
                 outputColumnNames: _col2, _col3, _col8, _col9, _col10
                 Statistics: Num rows: 383314495 Data size: 51908482889 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: (_col10 or _col3 or _col9) (type: boolean)
+                  predicate: (_col3 or _col9 or _col10) (type: boolean)
                   Statistics: Num rows: 383314495 Data size: 51908482889 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: decimal(7,2)), _col8 (type: string)

@@ -66,7 +66,7 @@ STAGE PLANS:
                   className: VectorFilterOperator
                   native: true
                   predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterStringColLikeStringScalar(col 6:string, pattern %b%), SelectColumnIsNotNull(col 11:boolean)), FilterExprAndExpr(children: FilterDoubleColEqualDoubleColumn(col 13:double, col 5:double)(children: CastLongToDouble(col 0:tinyint) -> 13:double), FilterStringColLikeStringScalar(col 7:string, pattern a), SelectColumnIsNotNull(col 9:timestamp)))
-              predicate: (((UDFToDouble(ctinyint) = cdouble) and (cstring2 like 'a') and ctimestamp2 is not null) or ((cstring1 like '%b%') and cboolean2 is not null)) (type: boolean)
+              predicate: (((cstring1 like '%b%') and cboolean2 is not null) or ((UDFToDouble(ctinyint) = cdouble) and (cstring2 like 'a') and ctimestamp2 is not null)) (type: boolean)
               Statistics: Num rows: 7658 Data size: 1529972 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int)

@@ -86,7 +86,7 @@ STAGE PLANS:
             filterExpr: (foo_id is not null and bar_id is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (bar_id is not null and foo_id is not null) (type: boolean)
+              predicate: (foo_id is not null and bar_id is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: bar_id (type: int), foo_id (type: int), bar_name (type: string)

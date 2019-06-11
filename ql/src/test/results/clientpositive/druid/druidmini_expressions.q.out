@@ -114,7 +114,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames $f0
             druid.fieldTypes bigint
-            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table_alltypesorc","descending":false,"granularity":"all","filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"aggregations":[{"type":"count","name":"$f0"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":false}}
+            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table_alltypesorc","descending":false,"granularity":"all","filter":{"type":"and","fields":[{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"}]},"aggregations":[{"type":"count","name":"$f0"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":false}}
             druid.query.type timeseries
           Select Operator
             expressions: $f0 (type: bigint)

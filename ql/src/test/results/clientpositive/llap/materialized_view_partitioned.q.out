@@ -50,7 +50,7 @@ STAGE PLANS:
                   filterExpr: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(key) < 250.0D) and (UDFToDouble(key) > 200.0D)) (type: boolean)
+                    predicate: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: value (type: string), key (type: string)
@@ -623,7 +623,7 @@ STAGE PLANS:
                   filterExpr: ((ROW__ID.writeid > 1L) and (UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
                   Statistics: Num rows: 501 Data size: 90180 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ROW__ID.writeid > 1L) and (UDFToDouble(key) < 250.0D) and (UDFToDouble(key) > 200.0D)) (type: boolean)
+                    predicate: ((ROW__ID.writeid > 1L) and (UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
                     Statistics: Num rows: 18 Data size: 3240 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: value (type: string), key (type: string)
@@ -937,10 +937,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_txn
-                  filterExpr: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D) and (ROW__ID.writeid > 2L)) (type: boolean)
+                  filterExpr: ((ROW__ID.writeid > 2L) and (UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
                   Statistics: Num rows: 502 Data size: 90862 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ROW__ID.writeid > 2L) and (UDFToDouble(key) < 250.0D) and (UDFToDouble(key) > 200.0D)) (type: boolean)
+                    predicate: ((ROW__ID.writeid > 2L) and (UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
                     Statistics: Num rows: 18 Data size: 3258 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -961,7 +961,7 @@ STAGE PLANS:
                   filterExpr: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(key) < 250.0D) and (UDFToDouble(key) > 200.0D)) (type: boolean)
+                    predicate: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 4785 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)

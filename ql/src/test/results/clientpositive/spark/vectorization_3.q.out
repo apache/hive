@@ -72,7 +72,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  filterExpr: (((UDFToFloat(cint) <= cfloat) and (CAST( cbigint AS decimal(22,3)) <> 79.553) and (UDFToDouble(ctimestamp2) = -29071.0D)) or ((UDFToDouble(cbigint) > cdouble) and (CAST( csmallint AS decimal(8,3)) >= 79.553) and (ctimestamp1 > ctimestamp2))) (type: boolean)
+                  filterExpr: (((UDFToDouble(cbigint) > cdouble) and (CAST( csmallint AS decimal(8,3)) >= 79.553) and (ctimestamp1 > ctimestamp2)) or ((UDFToFloat(cint) <= cfloat) and (CAST( cbigint AS decimal(22,3)) <> 79.553) and (UDFToDouble(ctimestamp2) = -29071.0D))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -81,7 +81,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDoubleColLessEqualDoubleColumn(col 13:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 13:float), FilterDecimalColNotEqualDecimalScalar(col 14:decimal(22,3), val 79.553)(children: CastLongToDecimal(col 3:bigint) -> 14:decimal(22,3)), FilterDoubleColEqualDoubleScalar(col 15:double, val -29071.0)(children: CastTimestampToDouble(col 9:timestamp) -> 15:double)), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleColumn(col 16:double, col 5:double)(children: CastLongToDouble(col 3:bigint) -> 16:double), FilterDecimalColGreaterEqualDecimalScalar(col 17:decimal(8,3), val 79.553)(children: CastLongToDecimal(col 1:smallint) -> 17:decimal(8,3)), FilterTimestampColGreaterTimestampColumn(col 8:timestamp, col 9:timestamp)))
+                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDoubleColGreaterDoubleColumn(col 13:double, col 5:double)(children: CastLongToDouble(col 3:bigint) -> 13:double), FilterDecimalColGreaterEqualDecimalScalar(col 14:decimal(8,3), val 79.553)(children: CastLongToDecimal(col 1:smallint) -> 14:decimal(8,3)), FilterTimestampColGreaterTimestampColumn(col 8:timestamp, col 9:timestamp)), FilterExprAndExpr(children: FilterDoubleColLessEqualDoubleColumn(col 15:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 15:float), FilterDecimalColNotEqualDecimalScalar(col 16:decimal(22,3), val 79.553)(children: CastLongToDecimal(col 3:bigint) -> 16:decimal(22,3)), FilterDoubleColEqualDoubleScalar(col 17:double, val -29071.0)(children: CastTimestampToDouble(col 9:timestamp) -> 17:double)))
                     predicate: (((UDFToDouble(cbigint) > cdouble) and (CAST( csmallint AS decimal(8,3)) >= 79.553) and (ctimestamp1 > ctimestamp2)) or ((UDFToFloat(cint) <= cfloat) and (CAST( cbigint AS decimal(22,3)) <> 79.553) and (UDFToDouble(ctimestamp2) = -29071.0D))) (type: boolean)
                     Statistics: Num rows: 2503 Data size: 592342 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -130,7 +130,7 @@ STAGE PLANS:
                     includeColumns: [0, 1, 2, 3, 4, 5, 8, 9]
                     dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, decimal(22,3), double, double, decimal(8,3), double, double, double, double, double, double, double, double, double, double, double, double, double]
+                    scratchColumnTypeNames: [double, decimal(8,3), double, decimal(22,3), double, double, double, double, double, double, double, double, double, double, double, double, double, double]
         Reducer 2 
             Execution mode: vectorized
             Reduce Vectorization:

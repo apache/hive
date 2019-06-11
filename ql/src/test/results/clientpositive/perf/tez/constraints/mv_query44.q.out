@@ -207,7 +207,7 @@ Stage-0
                                                             Select Operator [SEL_173] (rows=287946 width=114)
                                                               Output:["_col1"]
                                                               Filter Operator [FIL_172] (rows=287946 width=114)
-                                                                predicate:((ss_store_sk = 410) and ss_hdemo_sk is null)
+                                                                predicate:(ss_hdemo_sk is null and (ss_store_sk = 410))
                                                                 TableScan [TS_15] (rows=575995635 width=114)
                                                                   default@store_sales,store_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_hdemo_sk","ss_store_sk","ss_net_profit"]
                                             <-Reducer 3 [CUSTOM_SIMPLE_EDGE] vectorized
@@ -231,7 +231,7 @@ Stage-0
                                                                   Output:["_col0"],keys:true
                                                                   Select Operator [SEL_161] (rows=287946 width=7)
                                                                     Filter Operator [FIL_160] (rows=287946 width=7)
-                                                                      predicate:((ss_store_sk = 410) and ss_hdemo_sk is null)
+                                                                      predicate:(ss_hdemo_sk is null and (ss_store_sk = 410))
                                                                       TableScan [TS_0] (rows=575995635 width=7)
                                                                         default@store_sales,store_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_hdemo_sk","ss_store_sk"]
                         <-Reducer 6 [SIMPLE_EDGE] vectorized

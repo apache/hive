@@ -100,10 +100,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_address
-                  filterExpr: ((ca_state) IN ('ND', 'WI', 'AL', 'NC', 'OK', 'MS', 'TN') and ca_address_sk is not null) (type: boolean)
+                  filterExpr: (ca_address_sk is not null and (ca_state) IN ('ND', 'WI', 'AL', 'NC', 'OK', 'MS', 'TN')) (type: boolean)
                   Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((ca_state) IN ('ND', 'WI', 'AL', 'NC', 'OK', 'MS', 'TN') and ca_address_sk is not null) (type: boolean)
+                    predicate: (ca_address_sk is not null and (ca_state) IN ('ND', 'WI', 'AL', 'NC', 'OK', 'MS', 'TN')) (type: boolean)
                     Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ca_address_sk (type: int), ca_county (type: string), ca_state (type: string), ca_country (type: string)
@@ -123,7 +123,7 @@ STAGE PLANS:
                   filterExpr: (cs_bill_cdemo_sk is not null and cs_bill_customer_sk is not null and cs_sold_date_sk is not null and cs_item_sk is not null) (type: boolean)
                   Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cs_bill_cdemo_sk is not null and cs_bill_customer_sk is not null and cs_item_sk is not null and cs_sold_date_sk is not null) (type: boolean)
+                    predicate: (cs_bill_cdemo_sk is not null and cs_bill_customer_sk is not null and cs_sold_date_sk is not null and cs_item_sk is not null) (type: boolean)
                     Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cs_sold_date_sk (type: int), cs_bill_customer_sk (type: int), cs_bill_cdemo_sk (type: int), cs_item_sk (type: int), CAST( cs_quantity AS decimal(12,2)) (type: decimal(12,2)), CAST( cs_list_price AS decimal(12,2)) (type: decimal(12,2)), CAST( cs_coupon_amt AS decimal(12,2)) (type: decimal(12,2)), CAST( cs_sales_price AS decimal(12,2)) (type: decimal(12,2)), CAST( cs_net_profit AS decimal(12,2)) (type: decimal(12,2))
@@ -140,10 +140,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cd1
-                  filterExpr: ((cd_gender = 'M') and (cd_education_status = 'College') and cd_demo_sk is not null) (type: boolean)
+                  filterExpr: (cd_demo_sk is not null and (cd_gender = 'M') and (cd_education_status = 'College')) (type: boolean)
                   Statistics: Num rows: 1861800 Data size: 717186159 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((cd_education_status = 'College') and (cd_gender = 'M') and cd_demo_sk is not null) (type: boolean)
+                    predicate: (cd_demo_sk is not null and (cd_gender = 'M') and (cd_education_status = 'College')) (type: boolean)
                     Statistics: Num rows: 465450 Data size: 179296539 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cd_demo_sk (type: int), CAST( cd_dep_count AS decimal(12,2)) (type: decimal(12,2))
@@ -202,7 +202,7 @@ STAGE PLANS:
                   filterExpr: ((c_birth_month) IN (9, 5, 12, 4, 1, 10) and c_customer_sk is not null and c_current_cdemo_sk is not null and c_current_addr_sk is not null) (type: boolean)
                   Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((c_birth_month) IN (9, 5, 12, 4, 1, 10) and c_current_addr_sk is not null and c_current_cdemo_sk is not null and c_customer_sk is not null) (type: boolean)
+                    predicate: ((c_birth_month) IN (9, 5, 12, 4, 1, 10) and c_customer_sk is not null and c_current_cdemo_sk is not null and c_current_addr_sk is not null) (type: boolean)
                     Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: c_customer_sk (type: int), c_current_cdemo_sk (type: int), c_current_addr_sk (type: int), CAST( c_birth_year AS decimal(12,2)) (type: decimal(12,2))

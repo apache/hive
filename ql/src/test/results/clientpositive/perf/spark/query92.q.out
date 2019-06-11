@@ -79,10 +79,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-03-18 00:00:00' AND TIMESTAMP'1998-06-16 00:00:00' and d_date_sk is not null) (type: boolean)
+                  filterExpr: (d_date_sk is not null and CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-03-18 00:00:00' AND TIMESTAMP'1998-06-16 00:00:00') (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-03-18 00:00:00' AND TIMESTAMP'1998-06-16 00:00:00' and d_date_sk is not null) (type: boolean)
+                    predicate: (d_date_sk is not null and CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-03-18 00:00:00' AND TIMESTAMP'1998-06-16 00:00:00') (type: boolean)
                     Statistics: Num rows: 8116 Data size: 9081804 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)
@@ -104,10 +104,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-03-18 00:00:00' AND TIMESTAMP'1998-06-16 00:00:00' and d_date_sk is not null) (type: boolean)
+                  filterExpr: (d_date_sk is not null and CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-03-18 00:00:00' AND TIMESTAMP'1998-06-16 00:00:00') (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-03-18 00:00:00' AND TIMESTAMP'1998-06-16 00:00:00' and d_date_sk is not null) (type: boolean)
+                    predicate: (d_date_sk is not null and CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-03-18 00:00:00' AND TIMESTAMP'1998-06-16 00:00:00') (type: boolean)
                     Statistics: Num rows: 8116 Data size: 9081804 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)
@@ -137,7 +137,7 @@ STAGE PLANS:
                   filterExpr: (ws_item_sk is not null and ws_sold_date_sk is not null and ws_ext_discount_amt is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ws_ext_discount_amt is not null and ws_item_sk is not null and ws_sold_date_sk is not null) (type: boolean)
+                    predicate: (ws_item_sk is not null and ws_sold_date_sk is not null and ws_ext_discount_amt is not null) (type: boolean)
                     Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ws_sold_date_sk (type: int), ws_item_sk (type: int), ws_ext_discount_amt (type: decimal(7,2))

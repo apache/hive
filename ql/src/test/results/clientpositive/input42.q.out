@@ -1157,7 +1157,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
 FROM `default`.`srcpart`
-WHERE `ds` = '2008-04-08' AND `key` < 200
+WHERE `key` < 200 AND `ds` = '2008-04-08'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1168,7 +1168,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            filterExpr: ((ds = '2008-04-08') and (UDFToDouble(key) < 200.0D)) (type: boolean)
+            filterExpr: ((UDFToDouble(key) < 200.0D) and (ds = '2008-04-08')) (type: boolean)
             Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator

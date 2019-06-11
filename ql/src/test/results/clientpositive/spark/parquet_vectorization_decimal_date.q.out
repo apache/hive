@@ -46,7 +46,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:int), SelectColumnIsNotNull(col 1:double))
-                    predicate: (cdouble is not null and cint is not null) (type: boolean)
+                    predicate: (cint is not null and cdouble is not null) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 176614 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdate (type: date), cdecimal (type: decimal(20,10))

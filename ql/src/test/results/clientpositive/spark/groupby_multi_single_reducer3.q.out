@@ -63,7 +63,7 @@ STAGE PLANS:
                   filterExpr: ((((value = 'val_400') or (value = 'val_500')) and ((key = 400) or (key = 450))) or (((value = 'val_100') or (value = 'val_200') or (value = 'val_300')) and ((key = 100) or (key = 150) or (key = 200)))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((((value = 'val_100') or (value = 'val_200') or (value = 'val_300')) and ((key = 100) or (key = 150) or (key = 200))) or (((value = 'val_400') or (value = 'val_500')) and ((key = 400) or (key = 450)))) (type: boolean)
+                    predicate: ((((value = 'val_400') or (value = 'val_500')) and ((key = 400) or (key = 450))) or (((value = 'val_100') or (value = 'val_200') or (value = 'val_300')) and ((key = 100) or (key = 150) or (key = 200)))) (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string)
@@ -77,7 +77,7 @@ STAGE PLANS:
               Forward
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: (((KEY._col0 = 100) or (KEY._col0 = 150) or (KEY._col0 = 200)) and ((VALUE._col0 = 'val_100') or (VALUE._col0 = 'val_200') or (VALUE._col0 = 'val_300'))) (type: boolean)
+                  predicate: (((VALUE._col0 = 'val_100') or (VALUE._col0 = 'val_200') or (VALUE._col0 = 'val_300')) and ((KEY._col0 = 100) or (KEY._col0 = 150) or (KEY._col0 = 200))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
@@ -98,7 +98,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.e1_n1
                 Filter Operator
-                  predicate: (((KEY._col0 = 400) or (KEY._col0 = 450)) and ((VALUE._col0 = 'val_400') or (VALUE._col0 = 'val_500'))) (type: boolean)
+                  predicate: (((VALUE._col0 = 'val_400') or (VALUE._col0 = 'val_500')) and ((KEY._col0 = 400) or (KEY._col0 = 450))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
@@ -245,7 +245,7 @@ STAGE PLANS:
                   filterExpr: ((((key + key) = 400) or (((key - 100) = 500) and value is not null)) or (((key + key) = 200) or ((key - 100) = 100) or ((key = 300) and value is not null))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((((key + key) = 200) or ((key - 100) = 100) or ((key = 300) and value is not null)) or (((key + key) = 400) or (((key - 100) = 500) and value is not null))) (type: boolean)
+                    predicate: ((((key + key) = 400) or (((key - 100) = 500) and value is not null)) or (((key + key) = 200) or ((key - 100) = 100) or ((key = 300) and value is not null))) (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: value (type: string)
@@ -280,7 +280,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.e1_n1
                 Filter Operator
-                  predicate: ((((VALUE._col0 - 100) = 500) and KEY._col0 is not null) or ((VALUE._col0 + VALUE._col0) = 400)) (type: boolean)
+                  predicate: (((VALUE._col0 + VALUE._col0) = 400) or (((VALUE._col0 - 100) = 500) and KEY._col0 is not null)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
@@ -426,7 +426,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((((value = 'val_100') or (value = 'val_200') or (value = 'val_300')) and ((key = 100) or (key = 150) or (key = 200))) or (((value = 'val_400') or (value = 'val_500')) and ((key = 400) or (key = 450)))) (type: boolean)
+                    predicate: ((((value = 'val_400') or (value = 'val_500')) and ((key = 400) or (key = 450))) or (((value = 'val_100') or (value = 'val_200') or (value = 'val_300')) and ((key = 100) or (key = 150) or (key = 200)))) (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string)
@@ -440,7 +440,7 @@ STAGE PLANS:
               Forward
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: (((KEY._col0 = 100) or (KEY._col0 = 150) or (KEY._col0 = 200)) and ((VALUE._col0 = 'val_100') or (VALUE._col0 = 'val_200') or (VALUE._col0 = 'val_300'))) (type: boolean)
+                  predicate: (((VALUE._col0 = 'val_100') or (VALUE._col0 = 'val_200') or (VALUE._col0 = 'val_300')) and ((KEY._col0 = 100) or (KEY._col0 = 150) or (KEY._col0 = 200))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
@@ -461,7 +461,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.e1_n1
                 Filter Operator
-                  predicate: (((KEY._col0 = 400) or (KEY._col0 = 450)) and ((VALUE._col0 = 'val_400') or (VALUE._col0 = 'val_500'))) (type: boolean)
+                  predicate: (((VALUE._col0 = 'val_400') or (VALUE._col0 = 'val_500')) and ((KEY._col0 = 400) or (KEY._col0 = 450))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
@@ -607,7 +607,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((((key + key) = 200) or ((key - 100) = 100) or ((key = 300) and value is not null)) or (((key + key) = 400) or (((key - 100) = 500) and value is not null))) (type: boolean)
+                    predicate: ((((key + key) = 400) or (((key - 100) = 500) and value is not null)) or (((key + key) = 200) or ((key - 100) = 100) or ((key = 300) and value is not null))) (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: value (type: string)
@@ -642,7 +642,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.e1_n1
                 Filter Operator
-                  predicate: ((((VALUE._col0 - 100) = 500) and KEY._col0 is not null) or ((VALUE._col0 + VALUE._col0) = 400)) (type: boolean)
+                  predicate: (((VALUE._col0 + VALUE._col0) = 400) or (((VALUE._col0 - 100) = 500) and KEY._col0 is not null)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()

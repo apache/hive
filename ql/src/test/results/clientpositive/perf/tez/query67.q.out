@@ -174,7 +174,7 @@ Stage-0
                                             Select Operator [SEL_85] (rows=317 width=16)
                                               Output:["_col0","_col1","_col2","_col3"]
                                               Filter Operator [FIL_84] (rows=317 width=20)
-                                                predicate:(d_date_sk is not null and d_month_seq BETWEEN 1212 AND 1223)
+                                                predicate:(d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null)
                                                 TableScan [TS_3] (rows=73049 width=20)
                                                   default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_month_seq","d_year","d_moy","d_qoy"]
                                         <-Map 1 [SIMPLE_EDGE] vectorized
@@ -183,7 +183,7 @@ Stage-0
                                             Select Operator [SEL_93] (rows=525329897 width=123)
                                               Output:["_col0","_col1","_col2","_col3"]
                                               Filter Operator [FIL_92] (rows=525329897 width=122)
-                                                predicate:((ss_sold_date_sk BETWEEN DynamicValue(RS_13_date_dim_d_date_sk_min) AND DynamicValue(RS_13_date_dim_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_13_date_dim_d_date_sk_bloom_filter))) and ss_item_sk is not null and ss_sold_date_sk is not null and ss_store_sk is not null)
+                                                predicate:(ss_sold_date_sk is not null and ss_store_sk is not null and ss_item_sk is not null and (ss_sold_date_sk BETWEEN DynamicValue(RS_13_date_dim_d_date_sk_min) AND DynamicValue(RS_13_date_dim_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_13_date_dim_d_date_sk_bloom_filter))))
                                                 TableScan [TS_0] (rows=575995635 width=122)
                                                   default@store_sales,store_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_sold_date_sk","ss_item_sk","ss_store_sk","ss_quantity","ss_sales_price"]
                                                 <-Reducer 9 [BROADCAST_EDGE] vectorized

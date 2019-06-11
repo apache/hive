@@ -1175,7 +1175,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((ds = '2008-04-08') and (struct(ds)) IN (const struct('2000-04-08'), const struct('2000-04-09')) and (struct(ds,key)) IN (const struct('2000-04-08',1), const struct('2000-04-09',2))) (type: boolean)
+              predicate: ((struct(ds,key)) IN (const struct('2000-04-08',1), const struct('2000-04-09',2)) and (struct(ds)) IN (const struct('2000-04-08'), const struct('2000-04-09')) and (ds = '2008-04-08')) (type: boolean)
               Statistics: Num rows: 1 Data size: 282 Basic stats: COMPLETE Column stats: PARTIAL
               Select Operator
                 expressions: key (type: int), value (type: string)
@@ -1201,7 +1201,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((ds = '2008-04-08') and (struct(ds)) IN (const struct('2000-04-08'), const struct('2000-04-09')) and (struct(ds,key)) IN (const struct('2000-04-08',1), const struct('2000-04-09',2))) (type: boolean)
+              predicate: ((struct(ds,key)) IN (const struct('2000-04-08',1), const struct('2000-04-09',2)) and (struct(ds)) IN (const struct('2000-04-08'), const struct('2000-04-09')) and (ds = '2008-04-08')) (type: boolean)
               Statistics: Num rows: 1 Data size: 282 Basic stats: COMPLETE Column stats: PARTIAL
               Select Operator
                 expressions: key (type: int), value (type: string)
@@ -1567,7 +1567,7 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ds`
 FROM `default`.`pcs_t1`
-WHERE (`ds` = '2000-04-08' OR `key` IS NOT NULL) AND `key` = 2 OR `ds` <> '2000-04-08' AND `key` = 3
+WHERE `ds` <> '2000-04-08' AND `key` = 3 OR (`ds` = '2000-04-08' OR `key` IS NOT NULL) AND `key` = 2
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1578,12 +1578,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcs_t1
-            filterExpr: ((((ds = '2000-04-08') or key is not null) and (key = 2)) or ((ds <> '2000-04-08') and (key = 3))) (type: boolean)
+            filterExpr: (((ds <> '2000-04-08') and (key = 3)) or (((ds = '2000-04-08') or key is not null) and (key = 2))) (type: boolean)
             Statistics: Num rows: 60 Data size: 11280 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((((ds = '2000-04-08') or key is not null) and (key = 2)) or ((ds <> '2000-04-08') and (key = 3))) (type: boolean)
+              predicate: (((ds <> '2000-04-08') and (key = 3)) or (((ds = '2000-04-08') or key is not null) and (key = 2))) (type: boolean)
               Statistics: Num rows: 10 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ds (type: string)
@@ -1819,7 +1819,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((((((ds = '2000-04-08') or key is not null) and (key = 2)) or ((ds <> '2000-04-08') and (key = 3))) and ((key + 5) > 0)) or (key = 3)) (type: boolean)
+              predicate: ((key = 3) or (((((ds = '2000-04-08') or key is not null) and (key = 2)) or ((ds <> '2000-04-08') and (key = 3))) and ((key + 5) > 0))) (type: boolean)
               Statistics: Num rows: 8 Data size: 1504 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ds (type: string)

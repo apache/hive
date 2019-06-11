@@ -142,22 +142,22 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 2 Data size: 1508 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 368 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 2 Data size: 1508 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 368 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 1508 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 2 Data size: 1508 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 368 Basic stats: PARTIAL Column stats: NONE
                         tag: 0
                         auto parallelism: true
             Execution mode: vectorized, llap
@@ -222,22 +222,22 @@ STAGE PLANS:
                 TableScan
                   alias: b
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 240 Data size: 158376 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 240 Data size: 39008 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 228 Data size: 150457 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 211 Data size: 34294 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 228 Data size: 150457 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 211 Data size: 34294 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 228 Data size: 150457 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 211 Data size: 34294 Basic stats: PARTIAL Column stats: NONE
                         tag: 1
                         auto parallelism: true
             Execution mode: vectorized, llap
@@ -359,7 +359,7 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 Position of Big Table: 1
-                Statistics: Num rows: 250 Data size: 165502 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 232 Data size: 37723 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   minReductionHashAggr: 0.99
@@ -468,16 +468,16 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 2 Data size: 1508 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 368 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 2 Data size: 1508 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 368 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 1508 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: PARTIAL Column stats: NONE
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -536,16 +536,16 @@ STAGE PLANS:
                 TableScan
                   alias: b
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 240 Data size: 158376 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 240 Data size: 39008 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 228 Data size: 150457 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 211 Data size: 34294 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 228 Data size: 150457 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 211 Data size: 34294 Basic stats: PARTIAL Column stats: NONE
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -553,7 +553,7 @@ STAGE PLANS:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
                         Position of Big Table: 1
-                        Statistics: Num rows: 250 Data size: 165502 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 232 Data size: 37723 Basic stats: PARTIAL Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           minReductionHashAggr: 0.99

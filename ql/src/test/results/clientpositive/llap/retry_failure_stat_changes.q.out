@@ -95,7 +95,7 @@ Stage-0
                     Select Operator [SEL_5] (runtime: rows=3 width=4)
                       Output:["_col0"]
                       Filter Operator [FIL_19] (runtime: rows=3 width=4)
-                        predicate:((p < 10) and (p > 2))
+                        predicate:((p > 2) and (p < 10))
                         TableScan [TS_3] (runtime: rows=5 width=4)
                           default@px,px,Tbl:COMPLETE,Col:COMPLETE,Output:["p"]
 
@@ -158,7 +158,7 @@ Stage-0
                     Select Operator [SEL_5] (rows=1/3 width=4)
                       Output:["_col0"]
                       Filter Operator [FIL_19] (rows=1/3 width=4)
-                        predicate:((p < 10) and (p > 2))
+                        predicate:((p > 2) and (p < 10))
                         TableScan [TS_3] (rows=5/5 width=4)
                           default@px,px,Tbl:COMPLETE,Col:COMPLETE,Output:["p"]
 
@@ -212,7 +212,7 @@ Stage-0
                     Select Operator [SEL_5] (rows=1/3 width=4)
                       Output:["_col0"]
                       Filter Operator [FIL_19] (rows=1/3 width=4)
-                        predicate:((p < 10) and (p > 2))
+                        predicate:((p > 2) and (p < 10))
                         TableScan [TS_3] (rows=5/5 width=4)
                           default@px,px,Tbl:COMPLETE,Col:COMPLETE,Output:["p"]
                 <-Select Operator [SEL_2] (rows=1/5 width=4)

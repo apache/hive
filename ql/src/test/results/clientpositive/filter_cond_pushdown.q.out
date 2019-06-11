@@ -319,7 +319,7 @@ STAGE PLANS:
             filterExpr: ((c_int = 1) and (UDFToDouble(key) = 1.0D)) (type: boolean)
             Statistics: Num rows: 20 Data size: 1767 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((UDFToDouble(key) = 1.0D) and (c_int = 1)) (type: boolean)
+              predicate: ((c_int = 1) and (UDFToDouble(key) = 1.0D)) (type: boolean)
               Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), c_float (type: float)
@@ -446,7 +446,7 @@ STAGE PLANS:
             filterExpr: ((value) IN ('2008-04-10', '2008-04-08') and (value <> '') and key is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((value <> '') and (value) IN ('2008-04-10', '2008-04-08') and key is not null) (type: boolean)
+              predicate: ((value) IN ('2008-04-10', '2008-04-08') and (value <> '') and key is not null) (type: boolean)
               Statistics: Num rows: 3 Data size: 534 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string), (value = '2008-04-10') (type: boolean), (value = '2008-04-08') (type: boolean)

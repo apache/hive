@@ -157,7 +157,7 @@ STAGE PLANS:
                   filterExpr: (ss_sold_date_sk is not null and ss_item_sk is not null and ss_customer_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ss_customer_sk is not null and ss_item_sk is not null and ss_sold_date_sk is not null) (type: boolean)
+                    predicate: (ss_sold_date_sk is not null and ss_item_sk is not null and ss_customer_sk is not null) (type: boolean)
                     Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_sold_date_sk (type: int), ss_item_sk (type: int), ss_customer_sk (type: int), ss_ticket_number (type: int), ss_quantity (type: int), ss_wholesale_cost (type: decimal(7,2)), ss_sales_price (type: decimal(7,2))
@@ -177,7 +177,7 @@ STAGE PLANS:
                   filterExpr: (ws_sold_date_sk is not null and ws_item_sk is not null and ws_bill_customer_sk is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ws_bill_customer_sk is not null and ws_item_sk is not null and ws_sold_date_sk is not null) (type: boolean)
+                    predicate: (ws_sold_date_sk is not null and ws_item_sk is not null and ws_bill_customer_sk is not null) (type: boolean)
                     Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ws_sold_date_sk (type: int), ws_item_sk (type: int), ws_bill_customer_sk (type: int), ws_order_number (type: int), ws_quantity (type: int), ws_wholesale_cost (type: decimal(7,2)), ws_sales_price (type: decimal(7,2))
@@ -197,7 +197,7 @@ STAGE PLANS:
                   filterExpr: (wr_order_number is not null and wr_item_sk is not null) (type: boolean)
                   Statistics: Num rows: 14398467 Data size: 1325194184 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (wr_item_sk is not null and wr_order_number is not null) (type: boolean)
+                    predicate: (wr_order_number is not null and wr_item_sk is not null) (type: boolean)
                     Statistics: Num rows: 14398467 Data size: 1325194184 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: wr_item_sk (type: int), wr_order_number (type: int)
@@ -235,7 +235,7 @@ STAGE PLANS:
                   filterExpr: (cs_sold_date_sk is not null and cs_item_sk is not null and cs_bill_customer_sk is not null) (type: boolean)
                   Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cs_bill_customer_sk is not null and cs_item_sk is not null and cs_sold_date_sk is not null) (type: boolean)
+                    predicate: (cs_sold_date_sk is not null and cs_item_sk is not null and cs_bill_customer_sk is not null) (type: boolean)
                     Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cs_sold_date_sk (type: int), cs_bill_customer_sk (type: int), cs_item_sk (type: int), cs_order_number (type: int), cs_quantity (type: int), cs_wholesale_cost (type: decimal(7,2)), cs_sales_price (type: decimal(7,2))
@@ -255,7 +255,7 @@ STAGE PLANS:
                   filterExpr: (cr_order_number is not null and cr_item_sk is not null) (type: boolean)
                   Statistics: Num rows: 28798881 Data size: 3057234680 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cr_item_sk is not null and cr_order_number is not null) (type: boolean)
+                    predicate: (cr_order_number is not null and cr_item_sk is not null) (type: boolean)
                     Statistics: Num rows: 28798881 Data size: 3057234680 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cr_item_sk (type: int), cr_order_number (type: int)
@@ -293,7 +293,7 @@ STAGE PLANS:
                   filterExpr: (sr_ticket_number is not null and sr_item_sk is not null) (type: boolean)
                   Statistics: Num rows: 57591150 Data size: 4462194832 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (sr_item_sk is not null and sr_ticket_number is not null) (type: boolean)
+                    predicate: (sr_ticket_number is not null and sr_item_sk is not null) (type: boolean)
                     Statistics: Num rows: 57591150 Data size: 4462194832 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: sr_item_sk (type: int), sr_ticket_number (type: int)

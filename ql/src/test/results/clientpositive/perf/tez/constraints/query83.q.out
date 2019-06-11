@@ -235,7 +235,7 @@ Stage-0
                                                   Select Operator [SEL_368] (rows=73049 width=98)
                                                     Output:["_col0","_col1"]
                                                     Filter Operator [FIL_367] (rows=73049 width=98)
-                                                      predicate:(d_date is not null and d_week_seq is not null)
+                                                      predicate:(d_week_seq is not null and d_date is not null)
                                                       TableScan [TS_3] (rows=73049 width=98)
                                                         default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date","d_week_seq"]
                                               <-Map 18 [SIMPLE_EDGE] vectorized

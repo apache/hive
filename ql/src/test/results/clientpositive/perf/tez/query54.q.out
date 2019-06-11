@@ -206,7 +206,7 @@ Stage-0
                                             Select Operator [SEL_316] (rows=50 width=12)
                                               Output:["_col0"]
                                               Filter Operator [FIL_312] (rows=50 width=12)
-                                                predicate:((d_moy = 3) and (d_year = 1999) and d_month_seq is not null)
+                                                predicate:((d_year = 1999) and (d_moy = 3) and d_month_seq is not null)
                                                 TableScan [TS_50] (rows=73049 width=12)
                                                   default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_month_seq","d_year","d_moy"]
                                   <-Reducer 6 [CUSTOM_SIMPLE_EDGE]
@@ -227,7 +227,7 @@ Stage-0
                                                   Select Operator [SEL_315] (rows=50 width=12)
                                                     Output:["_col0"]
                                                     Filter Operator [FIL_311] (rows=50 width=12)
-                                                      predicate:((d_moy = 3) and (d_year = 1999) and d_month_seq is not null)
+                                                      predicate:((d_year = 1999) and (d_moy = 3) and d_month_seq is not null)
                                                        Please refer to the previous TableScan [TS_50]
                                         <-Reducer 5 [CUSTOM_SIMPLE_EDGE]
                                           PARTITION_ONLY_SHUFFLE [RS_108]
@@ -255,7 +255,7 @@ Stage-0
                                                                   Select Operator [SEL_314] (rows=50 width=12)
                                                                     Output:["_col0"]
                                                                     Filter Operator [FIL_310] (rows=50 width=12)
-                                                                      predicate:((d_moy = 3) and (d_year = 1999))
+                                                                      predicate:((d_year = 1999) and (d_moy = 3))
                                                                        Please refer to the previous TableScan [TS_50]
                                             <-Reducer 4 [CUSTOM_SIMPLE_EDGE]
                                               PARTITION_ONLY_SHUFFLE [RS_105]
@@ -335,7 +335,7 @@ Stage-0
                                                                         Select Operator [SEL_305] (rows=80000000 width=8)
                                                                           Output:["_col0","_col1"]
                                                                           Filter Operator [FIL_304] (rows=80000000 width=8)
-                                                                            predicate:(c_current_addr_sk is not null and c_customer_sk is not null)
+                                                                            predicate:(c_customer_sk is not null and c_current_addr_sk is not null)
                                                                             TableScan [TS_26] (rows=80000000 width=8)
                                                                               default@customer,customer,Tbl:COMPLETE,Col:COMPLETE,Output:["c_customer_sk","c_current_addr_sk"]
                                                                     <-Reducer 19 [SIMPLE_EDGE]
@@ -349,7 +349,7 @@ Stage-0
                                                                             Select Operator [SEL_302] (rows=453 width=4)
                                                                               Output:["_col0"]
                                                                               Filter Operator [FIL_301] (rows=453 width=186)
-                                                                                predicate:((i_category = 'Jewelry') and (i_class = 'consignment') and i_item_sk is not null)
+                                                                                predicate:((i_class = 'consignment') and (i_category = 'Jewelry') and i_item_sk is not null)
                                                                                 TableScan [TS_23] (rows=462000 width=186)
                                                                                   default@item,item,Tbl:COMPLETE,Col:COMPLETE,Output:["i_item_sk","i_class","i_category"]
                                                                         <-Reducer 18 [SIMPLE_EDGE]
@@ -363,7 +363,7 @@ Stage-0
                                                                                 Select Operator [SEL_296] (rows=50 width=4)
                                                                                   Output:["_col0"]
                                                                                   Filter Operator [FIL_295] (rows=50 width=12)
-                                                                                    predicate:((d_moy = 3) and (d_year = 1999) and d_date_sk is not null)
+                                                                                    predicate:((d_year = 1999) and (d_moy = 3) and d_date_sk is not null)
                                                                                     TableScan [TS_20] (rows=73049 width=12)
                                                                                       default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_year","d_moy"]
                                                                             <-Union 17 [SIMPLE_EDGE]
@@ -373,7 +373,7 @@ Stage-0
                                                                                   Select Operator [SEL_359] (rows=285117831 width=11)
                                                                                     Output:["_col0","_col1","_col2"]
                                                                                     Filter Operator [FIL_358] (rows=285117831 width=11)
-                                                                                      predicate:((cs_sold_date_sk BETWEEN DynamicValue(RS_30_date_dim_d_date_sk_min) AND DynamicValue(RS_30_date_dim_d_date_sk_max) and in_bloom_filter(cs_sold_date_sk, DynamicValue(RS_30_date_dim_d_date_sk_bloom_filter))) and cs_bill_customer_sk is not null and cs_item_sk is not null and cs_sold_date_sk is not null)
+                                                                                      predicate:(cs_sold_date_sk is not null and cs_bill_customer_sk is not null and cs_item_sk is not null and (cs_sold_date_sk BETWEEN DynamicValue(RS_30_date_dim_d_date_sk_min) AND DynamicValue(RS_30_date_dim_d_date_sk_max) and in_bloom_filter(cs_sold_date_sk, DynamicValue(RS_30_date_dim_d_date_sk_bloom_filter))))
                                                                                       TableScan [TS_273] (rows=287989836 width=11)
                                                                                         Output:["cs_sold_date_sk","cs_bill_customer_sk","cs_item_sk"]
                                                                                       <-Reducer 24 [BROADCAST_EDGE] vectorized
@@ -393,7 +393,7 @@ Stage-0
                                                                                   Select Operator [SEL_362] (rows=143930993 width=11)
                                                                                     Output:["_col0","_col1","_col2"]
                                                                                     Filter Operator [FIL_361] (rows=143930993 width=11)
-                                                                                      predicate:((ws_sold_date_sk BETWEEN DynamicValue(RS_30_date_dim_d_date_sk_min) AND DynamicValue(RS_30_date_dim_d_date_sk_max) and in_bloom_filter(ws_sold_date_sk, DynamicValue(RS_30_date_dim_d_date_sk_bloom_filter))) and ws_bill_customer_sk is not null and ws_item_sk is not null and ws_sold_date_sk is not null)
+                                                                                      predicate:(ws_bill_customer_sk is not null and ws_sold_date_sk is not null and ws_item_sk is not null and (ws_sold_date_sk BETWEEN DynamicValue(RS_30_date_dim_d_date_sk_min) AND DynamicValue(RS_30_date_dim_d_date_sk_max) and in_bloom_filter(ws_sold_date_sk, DynamicValue(RS_30_date_dim_d_date_sk_bloom_filter))))
                                                                                       TableScan [TS_278] (rows=144002668 width=11)
                                                                                         Output:["ws_sold_date_sk","ws_item_sk","ws_bill_customer_sk"]
                                                                                       <-Reducer 24 [BROADCAST_EDGE] vectorized
@@ -410,7 +410,7 @@ Stage-0
                                                             Select Operator [SEL_284] (rows=525327388 width=114)
                                                               Output:["_col0","_col1","_col2"]
                                                               Filter Operator [FIL_283] (rows=525327388 width=114)
-                                                                predicate:(ss_customer_sk is not null and ss_sold_date_sk is not null)
+                                                                predicate:(ss_sold_date_sk is not null and ss_customer_sk is not null)
                                                                 TableScan [TS_0] (rows=575995635 width=114)
                                                                   default@store_sales,store_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_sold_date_sk","ss_customer_sk","ss_ext_sales_price"]
                                                         <-Map 11 [SIMPLE_EDGE] vectorized

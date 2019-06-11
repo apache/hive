@@ -176,10 +176,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: (d_date is not null and d_date_sk is not null) (type: boolean)
+                  filterExpr: (d_date_sk is not null and d_date is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (d_date is not null and d_date_sk is not null) (type: boolean)
+                    predicate: (d_date_sk is not null and d_date is not null) (type: boolean)
                     Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int), d_date (type: string)
@@ -196,10 +196,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: ((d_date) IN ('1998-01-02', '1998-10-15', '1998-11-10') and d_week_seq is not null) (type: boolean)
+                  filterExpr: (d_week_seq is not null and (d_date) IN ('1998-01-02', '1998-10-15', '1998-11-10')) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d_date) IN ('1998-01-02', '1998-10-15', '1998-11-10') and d_week_seq is not null) (type: boolean)
+                    predicate: (d_week_seq is not null and (d_date) IN ('1998-01-02', '1998-10-15', '1998-11-10')) (type: boolean)
                     Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_week_seq (type: int)
@@ -244,7 +244,7 @@ STAGE PLANS:
                   filterExpr: (i_item_sk is not null and i_item_id is not null) (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (i_item_id is not null and i_item_sk is not null) (type: boolean)
+                    predicate: (i_item_sk is not null and i_item_id is not null) (type: boolean)
                     Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: i_item_sk (type: int), i_item_id (type: string)
@@ -261,10 +261,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: (d_date is not null and d_date_sk is not null) (type: boolean)
+                  filterExpr: (d_date_sk is not null and d_date is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (d_date is not null and d_date_sk is not null) (type: boolean)
+                    predicate: (d_date_sk is not null and d_date is not null) (type: boolean)
                     Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int), d_date (type: string)
@@ -284,7 +284,7 @@ STAGE PLANS:
                   filterExpr: (d_week_seq is not null and d_date is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (d_date is not null and d_week_seq is not null) (type: boolean)
+                    predicate: (d_week_seq is not null and d_date is not null) (type: boolean)
                     Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date (type: string), d_week_seq (type: int)
@@ -301,10 +301,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: ((d_date) IN ('1998-01-02', '1998-10-15', '1998-11-10') and d_week_seq is not null) (type: boolean)
+                  filterExpr: (d_week_seq is not null and (d_date) IN ('1998-01-02', '1998-10-15', '1998-11-10')) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d_date) IN ('1998-01-02', '1998-10-15', '1998-11-10') and d_week_seq is not null) (type: boolean)
+                    predicate: (d_week_seq is not null and (d_date) IN ('1998-01-02', '1998-10-15', '1998-11-10')) (type: boolean)
                     Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_week_seq (type: int)
@@ -349,7 +349,7 @@ STAGE PLANS:
                   filterExpr: (i_item_sk is not null and i_item_id is not null) (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (i_item_id is not null and i_item_sk is not null) (type: boolean)
+                    predicate: (i_item_sk is not null and i_item_id is not null) (type: boolean)
                     Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: i_item_sk (type: int), i_item_id (type: string)
@@ -366,10 +366,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: (d_date is not null and d_date_sk is not null) (type: boolean)
+                  filterExpr: (d_date_sk is not null and d_date is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (d_date is not null and d_date_sk is not null) (type: boolean)
+                    predicate: (d_date_sk is not null and d_date is not null) (type: boolean)
                     Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int), d_date (type: string)
@@ -389,7 +389,7 @@ STAGE PLANS:
                   filterExpr: (d_week_seq is not null and d_date is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (d_date is not null and d_week_seq is not null) (type: boolean)
+                    predicate: (d_week_seq is not null and d_date is not null) (type: boolean)
                     Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date (type: string), d_week_seq (type: int)
@@ -406,10 +406,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: ((d_date) IN ('1998-01-02', '1998-10-15', '1998-11-10') and d_week_seq is not null) (type: boolean)
+                  filterExpr: (d_week_seq is not null and (d_date) IN ('1998-01-02', '1998-10-15', '1998-11-10')) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d_date) IN ('1998-01-02', '1998-10-15', '1998-11-10') and d_week_seq is not null) (type: boolean)
+                    predicate: (d_week_seq is not null and (d_date) IN ('1998-01-02', '1998-10-15', '1998-11-10')) (type: boolean)
                     Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_week_seq (type: int)
@@ -454,7 +454,7 @@ STAGE PLANS:
                   filterExpr: (i_item_sk is not null and i_item_id is not null) (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (i_item_id is not null and i_item_sk is not null) (type: boolean)
+                    predicate: (i_item_sk is not null and i_item_id is not null) (type: boolean)
                     Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: i_item_sk (type: int), i_item_id (type: string)
@@ -474,7 +474,7 @@ STAGE PLANS:
                   filterExpr: (d_week_seq is not null and d_date is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (d_date is not null and d_week_seq is not null) (type: boolean)
+                    predicate: (d_week_seq is not null and d_date is not null) (type: boolean)
                     Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date (type: string), d_week_seq (type: int)

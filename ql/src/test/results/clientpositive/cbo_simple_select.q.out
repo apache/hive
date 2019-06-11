@@ -932,7 +932,7 @@ STAGE PLANS:
             filterExpr: (c_int is not null or (c_int = (2 * c_int))) (type: boolean)
             Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((c_int = (2 * c_int)) or c_int is not null) (type: boolean)
+              predicate: (c_int is not null or (c_int = (2 * c_int))) (type: boolean)
               Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string), c_int (type: int), c_float (type: float), c_boolean (type: boolean), dt (type: string)
@@ -978,7 +978,7 @@ STAGE PLANS:
             filterExpr: (c_int is not null or (c_int = 0)) (type: boolean)
             Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((c_int = 0) or c_int is not null) (type: boolean)
+              predicate: (c_int is not null or (c_int = 0)) (type: boolean)
               Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string), c_int (type: int), c_float (type: float), c_boolean (type: boolean), dt (type: string)

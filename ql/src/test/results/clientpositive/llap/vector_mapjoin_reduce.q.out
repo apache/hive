@@ -43,7 +43,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 3:int, val 1), SelectColumnIsNotNull(col 1:int), SelectColumnIsNotNull(col 0:int))
-                    predicate: ((l_linenumber = 1) and l_orderkey is not null and l_partkey is not null) (type: boolean)
+                    predicate: ((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null) (type: boolean)
                     Statistics: Num rows: 14 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: l_orderkey (type: int), l_partkey (type: int), l_suppkey (type: int)
@@ -323,7 +323,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 3:int, val 1), SelectColumnIsNotNull(col 1:int), SelectColumnIsNotNull(col 0:int))
-                    predicate: ((l_linenumber = 1) and l_orderkey is not null and l_partkey is not null) (type: boolean)
+                    predicate: ((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null) (type: boolean)
                     Statistics: Num rows: 14 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: l_orderkey (type: int), l_partkey (type: int), l_suppkey (type: int), 1 (type: int)
@@ -462,7 +462,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: lineitem
-                  filterExpr: ((l_shipmode = 'AIR') and (l_linenumber = 1) and l_orderkey is not null) (type: boolean)
+                  filterExpr: ((l_linenumber = 1) and (l_shipmode = 'AIR') and l_orderkey is not null) (type: boolean)
                   Statistics: Num rows: 100 Data size: 9600 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -470,7 +470,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 14:string, val AIR), FilterLongColEqualLongScalar(col 3:int, val 1), SelectColumnIsNotNull(col 0:int))
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 3:int, val 1), FilterStringGroupColEqualStringScalar(col 14:string, val AIR), SelectColumnIsNotNull(col 0:int))
                     predicate: ((l_linenumber = 1) and (l_shipmode = 'AIR') and l_orderkey is not null) (type: boolean)
                     Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator

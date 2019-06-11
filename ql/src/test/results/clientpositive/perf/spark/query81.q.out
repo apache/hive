@@ -210,10 +210,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_address
-                  filterExpr: ((ca_state = 'IL') and ca_address_sk is not null) (type: boolean)
+                  filterExpr: (ca_address_sk is not null and (ca_state = 'IL')) (type: boolean)
                   Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((ca_state = 'IL') and ca_address_sk is not null) (type: boolean)
+                    predicate: (ca_address_sk is not null and (ca_state = 'IL')) (type: boolean)
                     Statistics: Num rows: 20000000 Data size: 20297597642 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ca_address_sk (type: int), ca_street_number (type: string), ca_street_name (type: string), ca_street_type (type: string), ca_suite_number (type: string), ca_city (type: string), ca_county (type: string), ca_zip (type: string), ca_country (type: string), ca_gmt_offset (type: decimal(5,2)), ca_location_type (type: string)

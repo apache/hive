@@ -37,7 +37,7 @@ STAGE PLANS:
             filterExpr: ((UDFToDouble(key) >= 200.0D) and (UDFToDouble(key) < 300.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((UDFToDouble(key) < 300.0D) and (UDFToDouble(key) >= 200.0D)) (type: boolean)
+              predicate: ((UDFToDouble(key) >= 200.0D) and (UDFToDouble(key) < 300.0D)) (type: boolean)
               Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: UDFToInteger(key) (type: int), value (type: string)
@@ -167,14 +167,14 @@ STAGE PLANS:
         TableScan
           alias: int
           filterExpr: (table = '2008-04-08') (type: boolean)
-          Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
+          Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             predicate: (table = '2008-04-08') (type: boolean)
-            Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: location (type: int), type (type: string), '2008-04-08' (type: string)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 1 Data size: 282 Basic stats: COMPLETE Column stats: PARTIAL
+              Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: FROM src

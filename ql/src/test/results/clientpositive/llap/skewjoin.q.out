@@ -892,7 +892,7 @@ STAGE PLANS:
                   filterExpr: (key is not null and UDFToDouble(substring(value, 5)) is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(substring(value, 5)) is not null and key is not null) (type: boolean)
+                    predicate: (key is not null and UDFToDouble(substring(value, 5)) is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -912,7 +912,7 @@ STAGE PLANS:
                   filterExpr: (key is not null and (substring(value, 5) + 1) is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((substring(value, 5) + 1) is not null and key is not null) (type: boolean)
+                    predicate: (key is not null and (substring(value, 5) + 1) is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)

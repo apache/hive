@@ -54,10 +54,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'2002-05-30 00:00:00' AND TIMESTAMP'2002-07-29 00:00:00' and d_date_sk is not null) (type: boolean)
+                  filterExpr: (d_date_sk is not null and CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'2002-05-30 00:00:00' AND TIMESTAMP'2002-07-29 00:00:00') (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'2002-05-30 00:00:00' AND TIMESTAMP'2002-07-29 00:00:00' and d_date_sk is not null) (type: boolean)
+                    predicate: (d_date_sk is not null and CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'2002-05-30 00:00:00' AND TIMESTAMP'2002-07-29 00:00:00') (type: boolean)
                     Statistics: Num rows: 8116 Data size: 9081804 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)
@@ -102,10 +102,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
-                  filterExpr: ((i_manufact_id) IN (437, 129, 727, 663) and i_current_price BETWEEN 30 AND 60 and i_item_sk is not null) (type: boolean)
+                  filterExpr: (i_current_price BETWEEN 30 AND 60 and (i_manufact_id) IN (437, 129, 727, 663) and i_item_sk is not null) (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((i_manufact_id) IN (437, 129, 727, 663) and i_current_price BETWEEN 30 AND 60 and i_item_sk is not null) (type: boolean)
+                    predicate: (i_current_price BETWEEN 30 AND 60 and (i_manufact_id) IN (437, 129, 727, 663) and i_item_sk is not null) (type: boolean)
                     Statistics: Num rows: 51333 Data size: 73728460 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: i_item_sk (type: int), i_item_id (type: string), i_item_desc (type: string), i_current_price (type: decimal(7,2))
@@ -125,7 +125,7 @@ STAGE PLANS:
                   filterExpr: (inv_quantity_on_hand BETWEEN 100 AND 500 and inv_item_sk is not null and inv_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 37584000 Data size: 593821104 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (inv_date_sk is not null and inv_item_sk is not null and inv_quantity_on_hand BETWEEN 100 AND 500) (type: boolean)
+                    predicate: (inv_quantity_on_hand BETWEEN 100 AND 500 and inv_item_sk is not null and inv_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 4176000 Data size: 65980122 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: inv_date_sk (type: int), inv_item_sk (type: int)

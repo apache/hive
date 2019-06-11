@@ -670,7 +670,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1_n0
-                  filterExpr: ((name = name2) and (deptno = deptno2)) (type: boolean)
+                  filterExpr: ((deptno = deptno2) and (name = name2)) (type: boolean)
                   Statistics: Num rows: 8 Data size: 1536 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((deptno = deptno2) and (name = name2)) (type: boolean)

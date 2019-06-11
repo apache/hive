@@ -262,11 +262,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: stats_tbl_part
-            Statistics: Num rows: 9489 Data size: 4116353 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 9489 Data size: 3137568 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: s (type: string), bo (type: boolean), bin (type: binary), si (type: smallint), i (type: int), b (type: bigint)
               outputColumnNames: _col2, _col3, _col4, _col5, _col6, _col7
-              Statistics: Num rows: 9489 Data size: 4116353 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 9489 Data size: 3137568 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count(), sum(1), sum(0.2), count(_col2), count(_col3), count(_col4), count(_col5), max(_col6), min(_col7)
                 minReductionHashAggr: 0.99
@@ -388,11 +388,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: stats_tbl_part
-            Statistics: Num rows: 9489 Data size: 4116353 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 9489 Data size: 3137568 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: s (type: string), bo (type: boolean), bin (type: binary), si (type: smallint), i (type: int), b (type: bigint)
               outputColumnNames: _col2, _col3, _col4, _col5, _col6, _col7
-              Statistics: Num rows: 9489 Data size: 4116353 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 9489 Data size: 3137568 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count(), sum(1), sum(0.2), count(_col2), count(_col3), count(_col4), count(_col5), max(_col6), min(_col7)
                 minReductionHashAggr: 0.99
@@ -678,11 +678,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: stats_tbl_part
-            Statistics: Num rows: 9489 Data size: 1339425 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 9489 Data size: 360640 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: ts (type: timestamp)
               outputColumnNames: ts
-              Statistics: Num rows: 9489 Data size: 1339425 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 9489 Data size: 360640 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count(ts)
                 minReductionHashAggr: 0.99

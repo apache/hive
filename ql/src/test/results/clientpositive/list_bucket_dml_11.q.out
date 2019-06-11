@@ -299,7 +299,7 @@ POSTHOOK: Input: default@list_bucketing_static_part_n3@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, CAST('val_466' AS STRING) AS `value`
 FROM `default`.`list_bucketing_static_part_n3`
-WHERE `ds` = '2008-04-08' AND `hr` = '11' AND `value` = 'val_466'
+WHERE `value` = 'val_466' AND `ds` = '2008-04-08' AND `hr` = '11'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -310,7 +310,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: list_bucketing_static_part_n3
-            filterExpr: ((ds = '2008-04-08') and (hr = '11') and (value = 'val_466')) (type: boolean)
+            filterExpr: ((value = 'val_466') and (ds = '2008-04-08') and (hr = '11')) (type: boolean)
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator

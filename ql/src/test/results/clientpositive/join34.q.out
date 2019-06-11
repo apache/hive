@@ -35,11 +35,11 @@ POSTHOOK: Output: default@dest_j1_n1
 OPTIMIZED SQL: SELECT `t5`.`key`, `t5`.`value`, `t3`.`value` AS `value1`
 FROM (SELECT `key`, `value`
 FROM `default`.`src`
-WHERE `key` < 20 AND CAST(`key` AS DOUBLE) BETWEEN 20 AND 100
+WHERE CAST(`key` AS DOUBLE) BETWEEN 20 AND 100 AND `key` < 20
 UNION ALL
 SELECT `key`, `value`
 FROM `default`.`src`
-WHERE `key` > 100 AND CAST(`key` AS DOUBLE) BETWEEN 20 AND 100) AS `t3`
+WHERE CAST(`key` AS DOUBLE) BETWEEN 20 AND 100 AND `key` > 100) AS `t3`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
 WHERE CAST(`key` AS DOUBLE) BETWEEN 20 AND 100 AND `key` IS NOT NULL) AS `t5` ON `t3`.`key` = `t5`.`key`
@@ -83,12 +83,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
-            filterExpr: ((UDFToDouble(key) < 20.0D) and UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D) (type: boolean)
+            filterExpr: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) < 20.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((UDFToDouble(key) < 20.0D) and UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D) (type: boolean)
+              predicate: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) < 20.0D)) (type: boolean)
               Statistics: Num rows: 148 Data size: 26344 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -172,12 +172,12 @@ STAGE PLANS:
                             MultiFileSpray: false
           TableScan
             alias: x1
-            filterExpr: ((UDFToDouble(key) > 100.0D) and UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D) (type: boolean)
+            filterExpr: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) > 100.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((UDFToDouble(key) > 100.0D) and UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D) (type: boolean)
+              predicate: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) > 100.0D)) (type: boolean)
               Statistics: Num rows: 148 Data size: 26344 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string)

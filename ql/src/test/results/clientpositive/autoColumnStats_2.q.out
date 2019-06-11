@@ -829,11 +829,11 @@ STAGE PLANS:
         TableScan
           alias: alter5
           filterExpr: (dt = 'a') (type: boolean)
-          Statistics: Num rows: 49 Data size: 27892 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 49 Data size: 7544 Basic stats: PARTIAL Column stats: NONE
           Select Operator
             expressions: col1 (type: string), 'a' (type: string)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 49 Data size: 27892 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 49 Data size: 7544 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
 PREHOOK: query: drop table src_stat_part

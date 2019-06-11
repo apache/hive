@@ -170,7 +170,7 @@ STAGE PLANS:
                   filterExpr: (cs_warehouse_sk is not null and cs_ship_mode_sk is not null and cs_call_center_sk is not null and cs_ship_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cs_call_center_sk is not null and cs_ship_date_sk is not null and cs_ship_mode_sk is not null and cs_warehouse_sk is not null) (type: boolean)
+                    predicate: (cs_warehouse_sk is not null and cs_ship_mode_sk is not null and cs_call_center_sk is not null and cs_ship_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cs_ship_date_sk (type: int), cs_call_center_sk (type: int), cs_ship_mode_sk (type: int), cs_warehouse_sk (type: int), CASE WHEN (((cs_ship_date_sk - cs_sold_date_sk) <= 30)) THEN (1) ELSE (0) END (type: int), CASE WHEN ((((cs_ship_date_sk - cs_sold_date_sk) > 30) and ((cs_ship_date_sk - cs_sold_date_sk) <= 60))) THEN (1) ELSE (0) END (type: int), CASE WHEN ((((cs_ship_date_sk - cs_sold_date_sk) > 60) and ((cs_ship_date_sk - cs_sold_date_sk) <= 90))) THEN (1) ELSE (0) END (type: int), CASE WHEN ((((cs_ship_date_sk - cs_sold_date_sk) > 90) and ((cs_ship_date_sk - cs_sold_date_sk) <= 120))) THEN (1) ELSE (0) END (type: int), CASE WHEN (((cs_ship_date_sk - cs_sold_date_sk) > 120)) THEN (1) ELSE (0) END (type: int)
@@ -202,7 +202,7 @@ STAGE PLANS:
                   filterExpr: (d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (d_date_sk is not null and d_month_seq BETWEEN 1212 AND 1223) (type: boolean)
+                    predicate: (d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)

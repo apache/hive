@@ -73,7 +73,7 @@ STAGE PLANS:
             filterExpr: (value is not null and (key < 10)) (type: boolean)
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((key < 10) and value is not null) (type: boolean)
+              predicate: (value is not null and (key < 10)) (type: boolean)
               Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
               Sorted Merge Bucket Map Join Operator
                 condition map:

@@ -20,7 +20,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            filterExpr: (cdouble is not null and cint is not null and cboolean1 is not null and ctimestamp1 is not null) (type: boolean)
+            filterExpr: (cboolean1 is not null and cint is not null and cdouble is not null and ctimestamp1 is not null) (type: boolean)
             Statistics: Num rows: 12288 Data size: 638316 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
@@ -29,8 +29,8 @@ STAGE PLANS:
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 5:double), SelectColumnIsNotNull(col 2:int), SelectColumnIsNotNull(col 10:boolean), SelectColumnIsNotNull(col 8:timestamp))
-              predicate: (cboolean1 is not null and cdouble is not null and cint is not null and ctimestamp1 is not null) (type: boolean)
+                  predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 10:boolean), SelectColumnIsNotNull(col 2:int), SelectColumnIsNotNull(col 5:double), SelectColumnIsNotNull(col 8:timestamp))
+              predicate: (cboolean1 is not null and cint is not null and cdouble is not null and ctimestamp1 is not null) (type: boolean)
               Statistics: Num rows: 5112 Data size: 265564 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: cdouble (type: double), cint (type: int), cboolean1 (type: boolean), ctimestamp1 (type: timestamp), CAST( cdouble AS decimal(20,10)) (type: decimal(20,10)), CAST( cint AS decimal(23,14)) (type: decimal(23,14)), CAST( cboolean1 AS decimal(5,2)) (type: decimal(5,2)), CAST( ctimestamp1 AS decimal(15,0)) (type: decimal(15,0))
@@ -144,7 +144,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypes_small
-            filterExpr: (cdouble is not null and cint is not null and cboolean1 is not null and ctimestamp1 is not null) (type: boolean)
+            filterExpr: (cboolean1 is not null and cint is not null and cdouble is not null and ctimestamp1 is not null) (type: boolean)
             Statistics: Num rows: 12288 Data size: 638316 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
@@ -153,8 +153,8 @@ STAGE PLANS:
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 5:double), SelectColumnIsNotNull(col 2:int), SelectColumnIsNotNull(col 10:boolean), SelectColumnIsNotNull(col 8:timestamp))
-              predicate: (cboolean1 is not null and cdouble is not null and cint is not null and ctimestamp1 is not null) (type: boolean)
+                  predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 10:boolean), SelectColumnIsNotNull(col 2:int), SelectColumnIsNotNull(col 5:double), SelectColumnIsNotNull(col 8:timestamp))
+              predicate: (cboolean1 is not null and cint is not null and cdouble is not null and ctimestamp1 is not null) (type: boolean)
               Statistics: Num rows: 5112 Data size: 265564 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: cdouble (type: double), cint (type: int), cboolean1 (type: boolean), ctimestamp1 (type: timestamp), CAST( cdouble AS decimal(20,10)) (type: decimal(20,10)), CAST( cint AS decimal(23,14)) (type: decimal(23,14)), CAST( cboolean1 AS decimal(5,2)) (type: decimal(5,2)), CAST( ctimestamp1 AS decimal(15,0)) (type: decimal(15,0))

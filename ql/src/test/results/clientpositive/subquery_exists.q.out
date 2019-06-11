@@ -1300,7 +1300,7 @@ STAGE PLANS:
             filterExpr: (j is not null and i is not null) (type: boolean)
             Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (i is not null and j is not null) (type: boolean)
+              predicate: (j is not null and i is not null) (type: boolean)
               Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: i (type: int), j (type: int)

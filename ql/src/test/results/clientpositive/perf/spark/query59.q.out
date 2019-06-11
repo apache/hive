@@ -110,7 +110,7 @@ STAGE PLANS:
                   filterExpr: (s_store_sk is not null and s_store_id is not null) (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (s_store_id is not null and s_store_sk is not null) (type: boolean)
+                    predicate: (s_store_sk is not null and s_store_id is not null) (type: boolean)
                     Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s_store_sk (type: int), s_store_id (type: string), s_store_name (type: string)
@@ -135,7 +135,7 @@ STAGE PLANS:
                   filterExpr: (s_store_sk is not null and s_store_id is not null) (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (s_store_id is not null and s_store_sk is not null) (type: boolean)
+                    predicate: (s_store_sk is not null and s_store_id is not null) (type: boolean)
                     Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s_store_sk (type: int), s_store_id (type: string)
