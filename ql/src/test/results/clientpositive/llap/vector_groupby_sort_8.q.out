@@ -61,7 +61,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_n2
-                  Statistics: Num rows: 6 Data size: 1128 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 1104 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:val:string, 2:ds:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -72,7 +72,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0]
-                    Statistics: Num rows: 6 Data size: 1128 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 1104 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
@@ -84,7 +84,7 @@ STAGE PLANS:
                       keys: key (type: string)
                       mode: final
                       outputColumnNames: _col0
-                      Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count(_col0)
                         Group By Vectorization:

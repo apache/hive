@@ -60,7 +60,7 @@ STAGE PLANS:
             alias: masking_test_n_masking_reserved
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (((key % 2) = 0) and (key < 10) and id is not null) (type: boolean)
+              predicate: ((key < 10) and ((key % 2) = 0) and id is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: id (type: int), reverse(value) (type: string)
@@ -147,7 +147,7 @@ STAGE PLANS:
             alias: masking_test_n_masking_reserved
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (((key % 2) = 0) and (key < 10) and id is not null) (type: boolean)
+              predicate: ((key < 10) and ((key % 2) = 0) and id is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: id (type: int), reverse(value) (type: string)

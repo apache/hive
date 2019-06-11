@@ -39,7 +39,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key < '400') and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311')) (type: boolean)
+              predicate: ((key < '400') and (key <> '305') and (key <> '302') and (key <> '14') and (key <> '311')) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -55,7 +55,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((value <> 'val_50') or (key > '1')) and (key < '400') and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311') and value is not null) (type: boolean)
+              predicate: ((key < '400') and (key <> '302') and (key <> '305') and (key <> '311') and (key <> '14') and ((value <> 'val_50') or (key > '1')) and value is not null) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -100,7 +100,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key <> '306') and (sqrt(key) <> 13.0D) and value is not null) (type: boolean)
+              predicate: ((sqrt(key) <> 13.0D) and (key <> '306') and value is not null) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string)
@@ -1723,7 +1723,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key < '400') and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311')) (type: boolean)
+              predicate: ((key < '400') and (key <> '305') and (key <> '302') and (key <> '14') and (key <> '311')) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -1739,7 +1739,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((value <> 'val_50') or (key > '1')) and (key < '400') and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311') and value is not null) (type: boolean)
+              predicate: ((key < '400') and (key <> '302') and (key <> '305') and (key <> '311') and (key <> '14') and ((value <> 'val_50') or (key > '1')) and value is not null) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -1784,7 +1784,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key <> '306') and (sqrt(key) <> 13.0D) and value is not null) (type: boolean)
+              predicate: ((sqrt(key) <> 13.0D) and (key <> '306') and value is not null) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string)

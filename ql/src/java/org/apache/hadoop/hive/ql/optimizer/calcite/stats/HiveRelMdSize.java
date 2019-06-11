@@ -121,6 +121,10 @@ public class HiveRelMdSize extends RelMdSize {
   //       supports all types
   @Override
   public Double averageTypeValueSize(RelDataType type) {
+    return averageTypeSize(type);
+  }
+
+  public static Double averageTypeSize(RelDataType type) {
     switch (type.getSqlTypeName()) {
     case BOOLEAN:
     case TINYINT:
@@ -163,7 +167,7 @@ public class HiveRelMdSize extends RelMdSize {
     case ROW:
       Double average = 0.0;
       for (RelDataTypeField field : type.getFieldList()) {
-        average += averageTypeValueSize(field.getType());
+        average += averageTypeSize(field.getType());
       }
       return average;
     default:

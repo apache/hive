@@ -32,7 +32,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((value < 'val_50') or (key > '2')) and (key < '400') and (key <> '4') and (key > '20')) (type: boolean)
+              predicate: ((key < '400') and (key > '20') and ((value < 'val_50') or (key > '2')) and (key <> '4')) (type: boolean)
               Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -47,7 +47,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key < '400') and (key <> '4') and (key > '20')) (type: boolean)
+              predicate: ((key < '400') and (key > '20') and (key <> '4')) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -558,7 +558,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((value < 'val_50') or (key > '2')) and (key < '400') and (key <> '4') and (key > '20')) (type: boolean)
+              predicate: ((key < '400') and (key > '20') and ((value < 'val_50') or (key > '2')) and (key <> '4')) (type: boolean)
               Statistics: Num rows: 36 Data size: 382 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -573,7 +573,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key < '400') and (key <> '4') and (key > '20')) (type: boolean)
+              predicate: ((key < '400') and (key > '20') and (key <> '4')) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)

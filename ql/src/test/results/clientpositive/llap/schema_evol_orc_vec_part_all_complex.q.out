@@ -163,7 +163,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_change_various_various_struct1_n8
-                  Statistics: Num rows: 6 Data size: 21030 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 6 Data size: 16320 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:insert_num:int, 1:s1:struct<c1:string,c2:string,c3:string,c4:string,c5:string,c6:string,c7:string,c8:string,c9:string,c10:string,c11:string,c12:string,c13:string>, 2:b:string, 3:part:int, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -713,7 +713,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_add_to_various_various_struct4_n8
-                  Statistics: Num rows: 4 Data size: 4892 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 4 Data size: 3736 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:insert_num:int, 1:b:string, 2:s3:struct<c1:boolean,c2:tinyint,c3:smallint,c4:int,c5:bigint,c6:float,c7:double,c8:decimal(38,18),c9:char(25),c10:varchar(25),c11:timestamp,c12:date,c13:binary>, 3:part:int, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]

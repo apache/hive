@@ -52,6 +52,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: time_dim
+                  filterExpr: ((t_hour = 8) and (t_minute >= 30) and t_time_sk is not null) (type: boolean)
                   Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t_hour = 8) and (t_minute >= 30) and t_time_sk is not null) (type: boolean)
@@ -71,6 +72,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: household_demographics
+                  filterExpr: ((hd_dep_count = 5) and hd_demo_sk is not null) (type: boolean)
                   Statistics: Num rows: 7200 Data size: 770400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((hd_dep_count = 5) and hd_demo_sk is not null) (type: boolean)
@@ -90,9 +92,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
+                  filterExpr: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
+                    predicate: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
                     Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s_store_sk (type: int)
@@ -116,6 +119,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_hdemo_sk is not null and ss_sold_time_sk is not null and ss_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_hdemo_sk is not null and ss_sold_time_sk is not null and ss_store_sk is not null) (type: boolean)
@@ -155,6 +159,7 @@ STAGE PLANS:
                             Statistics: Num rows: 766650239 Data size: 67634106676 Basic stats: COMPLETE Column stats: NONE
                             Group By Operator
                               aggregations: count()
+                              minReductionHashAggr: 0.99
                               mode: hash
                               outputColumnNames: _col0
                               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
