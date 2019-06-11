@@ -176,7 +176,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: ((d_year) IN (2001, 2002) and (d_year = 2001) and d_date_sk is not null) (type: boolean)
+                  filterExpr: ((d_year = 2001) and (d_year) IN (2001, 2002) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_year = 2001) and (d_year) IN (2001, 2002) and d_date_sk is not null) (type: boolean)
@@ -199,7 +199,7 @@ STAGE PLANS:
                   filterExpr: (c_customer_sk is not null and c_customer_id is not null) (type: boolean)
                   Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (c_customer_id is not null and c_customer_sk is not null) (type: boolean)
+                    predicate: (c_customer_sk is not null and c_customer_id is not null) (type: boolean)
                     Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: c_customer_sk (type: int), c_customer_id (type: string), c_first_name (type: string), c_last_name (type: string)
@@ -236,7 +236,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+<<<<<<< HEAD
                   filterExpr: ((d_year) IN (2001, 2002) and (d_year = 2002) and d_date_sk is not null) (type: boolean)
+=======
+                  filterExpr: ((d_year = 2001) and (d_year) IN (2001, 2002) and d_date_sk is not null) (type: boolean)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_year = 2002) and (d_year) IN (2001, 2002) and d_date_sk is not null) (type: boolean)
@@ -259,7 +263,7 @@ STAGE PLANS:
                   filterExpr: (c_customer_sk is not null and c_customer_id is not null) (type: boolean)
                   Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (c_customer_id is not null and c_customer_sk is not null) (type: boolean)
+                    predicate: (c_customer_sk is not null and c_customer_id is not null) (type: boolean)
                     Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: c_customer_sk (type: int), c_customer_id (type: string), c_first_name (type: string), c_last_name (type: string)
@@ -296,7 +300,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: ((d_year) IN (2001, 2002) and (d_year = 2002) and d_date_sk is not null) (type: boolean)
+                  filterExpr: ((d_year = 2002) and (d_year) IN (2001, 2002) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_year = 2002) and (d_year) IN (2001, 2002) and d_date_sk is not null) (type: boolean)
@@ -319,7 +323,7 @@ STAGE PLANS:
                   filterExpr: (c_customer_sk is not null and c_customer_id is not null) (type: boolean)
                   Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (c_customer_id is not null and c_customer_sk is not null) (type: boolean)
+                    predicate: (c_customer_sk is not null and c_customer_id is not null) (type: boolean)
                     Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: c_customer_sk (type: int), c_customer_id (type: string), c_first_name (type: string), c_last_name (type: string)
@@ -336,7 +340,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+<<<<<<< HEAD
                   filterExpr: ((d_year) IN (2001, 2002) and (d_year = 2001) and d_date_sk is not null) (type: boolean)
+=======
+                  filterExpr: ((d_year = 2002) and (d_year) IN (2001, 2002) and d_date_sk is not null) (type: boolean)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_year = 2001) and (d_year) IN (2001, 2002) and d_date_sk is not null) (type: boolean)
@@ -359,7 +367,7 @@ STAGE PLANS:
                   filterExpr: (c_customer_sk is not null and c_customer_id is not null) (type: boolean)
                   Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (c_customer_id is not null and c_customer_sk is not null) (type: boolean)
+                    predicate: (c_customer_sk is not null and c_customer_id is not null) (type: boolean)
                     Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: c_customer_sk (type: int), c_customer_id (type: string), c_first_name (type: string), c_last_name (type: string)

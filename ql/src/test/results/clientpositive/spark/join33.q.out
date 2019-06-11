@@ -42,7 +42,7 @@ FROM `default`.`src`
 WHERE `key` IS NOT NULL) AS `t0`
 INNER JOIN ((SELECT `value`
 FROM `default`.`srcpart`
-WHERE `ds` = '2008-04-08' AND `hr` = 11 AND `value` IS NOT NULL) AS `t2`
+WHERE `value` IS NOT NULL AND `ds` = '2008-04-08' AND `hr` = 11) AS `t2`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
 WHERE `key` IS NOT NULL AND `value` IS NOT NULL) AS `t4` ON `t2`.`value` = `t4`.`value`) ON `t0`.`key` = `t4`.`key`
@@ -230,11 +230,15 @@ STAGE PLANS:
 <<<<<<< HEAD
 =======
                   alias: z
+<<<<<<< HEAD
                   filterExpr: ((ds = '2008-04-08') and (11.0D = 11.0D) and value is not null) (type: boolean)
 >>>>>>> 6664c44c79... HIVE-21793: CBO retrieves column stats even if hive.stats.fetch.column.stats is set to false (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
 =======
                   filterExpr: key is not null (type: boolean)
 >>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+=======
+                  filterExpr: (value is not null and (ds = '2008-04-08') and (11.0D = 11.0D)) (type: boolean)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator

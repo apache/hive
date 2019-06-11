@@ -74,6 +74,10 @@ STAGE PLANS:
                 TableScan
 <<<<<<< HEAD
                   alias: z
+<<<<<<< HEAD
+=======
+                  filterExpr: (key is not null and (ds = '2008-04-08') and (11.0D = 11.0D)) (type: boolean)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
 =======
                   alias: x

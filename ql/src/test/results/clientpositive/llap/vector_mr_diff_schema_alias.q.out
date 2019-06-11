@@ -266,7 +266,7 @@ STAGE PLANS:
                   filterExpr: (ss_store_sk is not null and ss_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
+                    predicate: (ss_store_sk is not null and ss_sold_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_sold_date_sk (type: int), ss_store_sk (type: int)

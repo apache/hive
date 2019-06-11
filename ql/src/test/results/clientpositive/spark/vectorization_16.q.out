@@ -71,7 +71,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterStringColLikeStringScalar(col 7:string, pattern %b%), FilterExprOrExpr(children: FilterDoubleColGreaterEqualDoubleScalar(col 5:double, val -1.389), FilterStringGroupColLessStringScalar(col 6:string, val a)))
-                    predicate: (((cdouble >= -1.389D) or (cstring1 < 'a')) and (cstring2 like '%b%')) (type: boolean)
+                    predicate: ((cstring2 like '%b%') and ((cdouble >= -1.389D) or (cstring1 < 'a'))) (type: boolean)
                     Statistics: Num rows: 4096 Data size: 969331 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cstring1 (type: string), cdouble (type: double), ctimestamp1 (type: timestamp), (cdouble * cdouble) (type: double)

@@ -854,7 +854,7 @@ STAGE PLANS:
                   alias: bigtbl
                   Statistics: Num rows: 5000 Data size: 2622552 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key1 is not null and key2 is not null and value is not null) (type: boolean)
+                    predicate: (key1 is not null and value is not null and key2 is not null) (type: boolean)
                     Statistics: Num rows: 4250 Data size: 2229169 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key1 (type: string), key2 (type: string), value (type: string)
@@ -1190,7 +1190,7 @@ STAGE PLANS:
                   alias: bigtbl
                   Statistics: Num rows: 5000 Data size: 2622552 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key1 is not null and key2 is not null and value is not null) (type: boolean)
+                    predicate: (key1 is not null and value is not null and key2 is not null) (type: boolean)
                     Statistics: Num rows: 4250 Data size: 2229169 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key1 (type: string), key2 (type: string), value (type: string)
@@ -1529,7 +1529,7 @@ STAGE PLANS:
                   alias: bigtbl
                   Statistics: Num rows: 5000 Data size: 2622552 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key1 is not null and key2 is not null and value is not null) (type: boolean)
+                    predicate: (key1 is not null and value is not null and key2 is not null) (type: boolean)
                     Statistics: Num rows: 4250 Data size: 2229169 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key1 (type: string), key2 (type: string), value (type: string)
@@ -1896,7 +1896,7 @@ STAGE PLANS:
                   alias: bigtbl
                   Statistics: Num rows: 5000 Data size: 2622552 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key1 is not null and key2 is not null and value is not null) (type: boolean)
+                    predicate: (key1 is not null and value is not null and key2 is not null) (type: boolean)
                     Statistics: Num rows: 4250 Data size: 2229169 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key1 (type: string), key2 (type: string), value (type: string)

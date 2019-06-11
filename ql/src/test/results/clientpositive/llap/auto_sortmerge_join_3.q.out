@@ -124,16 +124,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 4 Data size: 3016 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 736 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 4 Data size: 3016 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 736 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 4 Data size: 3016 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 736 Basic stats: PARTIAL Column stats: NONE
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -241,16 +241,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 120 Data size: 79280 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 120 Data size: 19688 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 114 Data size: 75316 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 106 Data size: 17391 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 114 Data size: 75316 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 106 Data size: 17391 Basic stats: PARTIAL Column stats: NONE
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -258,7 +258,7 @@ STAGE PLANS:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
                         Position of Big Table: 1
-                        Statistics: Num rows: 125 Data size: 82847 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 116 Data size: 19130 Basic stats: PARTIAL Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           minReductionHashAggr: 0.99
@@ -421,16 +421,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 4 Data size: 3016 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 736 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 4 Data size: 3016 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 736 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 4 Data size: 3016 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 736 Basic stats: PARTIAL Column stats: NONE
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -538,16 +538,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 120 Data size: 79280 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 120 Data size: 19688 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 114 Data size: 75316 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 106 Data size: 17391 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 114 Data size: 75316 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 106 Data size: 17391 Basic stats: PARTIAL Column stats: NONE
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -555,7 +555,7 @@ STAGE PLANS:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
                         Position of Big Table: 0
-                        Statistics: Num rows: 125 Data size: 82847 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 116 Data size: 19130 Basic stats: PARTIAL Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           minReductionHashAggr: 0.99
@@ -718,16 +718,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 4 Data size: 3016 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 736 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 4 Data size: 3016 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 736 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 4 Data size: 3016 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 736 Basic stats: PARTIAL Column stats: NONE
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -835,16 +835,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 120 Data size: 79280 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 120 Data size: 19688 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 114 Data size: 75316 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 106 Data size: 17391 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 114 Data size: 75316 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 106 Data size: 17391 Basic stats: PARTIAL Column stats: NONE
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -852,7 +852,7 @@ STAGE PLANS:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
                         Position of Big Table: 0
-                        Statistics: Num rows: 125 Data size: 82847 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 116 Data size: 19130 Basic stats: PARTIAL Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           minReductionHashAggr: 0.99

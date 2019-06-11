@@ -206,10 +206,10 @@ STAGE PLANS:
         $hdt$_1:vectortab_b_1korc 
           TableScan
             alias: vectortab_b_1korc
-            filterExpr: (dt is not null and ts is not null and s is not null) (type: boolean)
+            filterExpr: (dt is not null and CAST( ts AS DATE) is not null and s is not null) (type: boolean)
             Statistics: Num rows: 1000 Data size: 458448 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (CAST( ts AS DATE) is not null and dt is not null and s is not null) (type: boolean)
+              predicate: (dt is not null and CAST( ts AS DATE) is not null and s is not null) (type: boolean)
               Statistics: Num rows: 1000 Data size: 458448 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: s (type: string), (dt - CAST( ts AS DATE)) (type: interval_day_time)
@@ -225,7 +225,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: vectortab_a_1korc
-            filterExpr: (dt is not null and ts is not null and s is not null) (type: boolean)
+            filterExpr: (dt is not null and CAST( ts AS DATE) is not null and s is not null) (type: boolean)
             Statistics: Num rows: 1000 Data size: 460264 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -234,7 +234,7 @@ STAGE PLANS:
                   className: VectorFilterOperator
                   native: true
                   predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 12:date), SelectColumnIsNotNull(col 14:date)(children: CastTimestampToDate(col 10:timestamp) -> 14:date), SelectColumnIsNotNull(col 8:string))
-              predicate: (CAST( ts AS DATE) is not null and dt is not null and s is not null) (type: boolean)
+              predicate: (dt is not null and CAST( ts AS DATE) is not null and s is not null) (type: boolean)
               Statistics: Num rows: 1000 Data size: 460264 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: s (type: string), (dt - CAST( ts AS DATE)) (type: interval_day_time)

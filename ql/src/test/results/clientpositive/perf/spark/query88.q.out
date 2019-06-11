@@ -215,10 +215,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
-                  filterExpr: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
+                  filterExpr: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
+                    predicate: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
                     Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s_store_sk (type: int)
@@ -236,6 +236,10 @@ STAGE PLANS:
                 TableScan
 <<<<<<< HEAD
                   alias: household_demographics
+<<<<<<< HEAD
+=======
+                  filterExpr: ((hd_dep_count) IN (3, 0, 1) and (((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null and ((hd_vehicle_count <= 5) or (hd_vehicle_count <= 2) or (hd_vehicle_count <= 3))) (type: boolean)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Statistics: Num rows: 7200 Data size: 770400 Basic stats: COMPLETE Column stats: NONE
 =======
                   alias: time_dim
@@ -243,7 +247,7 @@ STAGE PLANS:
                   Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
 >>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Filter Operator
-                    predicate: ((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and ((hd_vehicle_count <= 5) or (hd_vehicle_count <= 2) or (hd_vehicle_count <= 3)) and (hd_dep_count) IN (3, 0, 1) and hd_demo_sk is not null) (type: boolean)
+                    predicate: ((hd_dep_count) IN (3, 0, 1) and (((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null and ((hd_vehicle_count <= 5) or (hd_vehicle_count <= 2) or (hd_vehicle_count <= 3))) (type: boolean)
                     Statistics: Num rows: 3600 Data size: 385200 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hd_demo_sk (type: int)
@@ -829,6 +833,10 @@ STAGE PLANS:
                 TableScan
 <<<<<<< HEAD
                   alias: household_demographics
+<<<<<<< HEAD
+=======
+                  filterExpr: ((hd_dep_count) IN (3, 0, 1) and (((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null and ((hd_vehicle_count <= 5) or (hd_vehicle_count <= 2) or (hd_vehicle_count <= 3))) (type: boolean)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Statistics: Num rows: 7200 Data size: 770400 Basic stats: COMPLETE Column stats: NONE
 =======
                   alias: time_dim
@@ -836,7 +844,7 @@ STAGE PLANS:
                   Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
 >>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Filter Operator
-                    predicate: ((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and ((hd_vehicle_count <= 5) or (hd_vehicle_count <= 2) or (hd_vehicle_count <= 3)) and (hd_dep_count) IN (3, 0, 1) and hd_demo_sk is not null) (type: boolean)
+                    predicate: ((hd_dep_count) IN (3, 0, 1) and (((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null and ((hd_vehicle_count <= 5) or (hd_vehicle_count <= 2) or (hd_vehicle_count <= 3))) (type: boolean)
                     Statistics: Num rows: 3600 Data size: 385200 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hd_demo_sk (type: int)
@@ -878,10 +886,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
-                  filterExpr: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
+                  filterExpr: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
+                    predicate: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
                     Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s_store_sk (type: int)
@@ -1015,6 +1023,10 @@ STAGE PLANS:
                 TableScan
 <<<<<<< HEAD
                   alias: household_demographics
+<<<<<<< HEAD
+=======
+                  filterExpr: ((hd_dep_count) IN (3, 0, 1) and (((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null and ((hd_vehicle_count <= 5) or (hd_vehicle_count <= 2) or (hd_vehicle_count <= 3))) (type: boolean)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Statistics: Num rows: 7200 Data size: 770400 Basic stats: COMPLETE Column stats: NONE
 =======
                   alias: time_dim
@@ -1022,7 +1034,7 @@ STAGE PLANS:
                   Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
 >>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Filter Operator
-                    predicate: ((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and ((hd_vehicle_count <= 5) or (hd_vehicle_count <= 2) or (hd_vehicle_count <= 3)) and (hd_dep_count) IN (3, 0, 1) and hd_demo_sk is not null) (type: boolean)
+                    predicate: ((hd_dep_count) IN (3, 0, 1) and (((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null and ((hd_vehicle_count <= 5) or (hd_vehicle_count <= 2) or (hd_vehicle_count <= 3))) (type: boolean)
                     Statistics: Num rows: 3600 Data size: 385200 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hd_demo_sk (type: int)
@@ -1064,10 +1076,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
-                  filterExpr: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
+                  filterExpr: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
+                    predicate: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
                     Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s_store_sk (type: int)
@@ -1090,6 +1102,10 @@ STAGE PLANS:
                 TableScan
 <<<<<<< HEAD
                   alias: household_demographics
+<<<<<<< HEAD
+=======
+                  filterExpr: ((hd_dep_count) IN (3, 0, 1) and (((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null and ((hd_vehicle_count <= 5) or (hd_vehicle_count <= 2) or (hd_vehicle_count <= 3))) (type: boolean)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Statistics: Num rows: 7200 Data size: 770400 Basic stats: COMPLETE Column stats: NONE
 =======
                   alias: time_dim
@@ -1097,7 +1113,7 @@ STAGE PLANS:
                   Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
 >>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Filter Operator
-                    predicate: ((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and ((hd_vehicle_count <= 5) or (hd_vehicle_count <= 2) or (hd_vehicle_count <= 3)) and (hd_dep_count) IN (3, 0, 1) and hd_demo_sk is not null) (type: boolean)
+                    predicate: ((hd_dep_count) IN (3, 0, 1) and (((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null and ((hd_vehicle_count <= 5) or (hd_vehicle_count <= 2) or (hd_vehicle_count <= 3))) (type: boolean)
                     Statistics: Num rows: 3600 Data size: 385200 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hd_demo_sk (type: int)
@@ -1139,10 +1155,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
-                  filterExpr: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
+                  filterExpr: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
+                    predicate: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
                     Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s_store_sk (type: int)
@@ -1165,6 +1181,10 @@ STAGE PLANS:
                 TableScan
 <<<<<<< HEAD
                   alias: household_demographics
+<<<<<<< HEAD
+=======
+                  filterExpr: ((hd_dep_count) IN (3, 0, 1) and (((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null and ((hd_vehicle_count <= 5) or (hd_vehicle_count <= 2) or (hd_vehicle_count <= 3))) (type: boolean)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Statistics: Num rows: 7200 Data size: 770400 Basic stats: COMPLETE Column stats: NONE
 =======
                   alias: time_dim
@@ -1172,7 +1192,7 @@ STAGE PLANS:
                   Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
 >>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Filter Operator
-                    predicate: ((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and ((hd_vehicle_count <= 5) or (hd_vehicle_count <= 2) or (hd_vehicle_count <= 3)) and (hd_dep_count) IN (3, 0, 1) and hd_demo_sk is not null) (type: boolean)
+                    predicate: ((hd_dep_count) IN (3, 0, 1) and (((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null and ((hd_vehicle_count <= 5) or (hd_vehicle_count <= 2) or (hd_vehicle_count <= 3))) (type: boolean)
                     Statistics: Num rows: 3600 Data size: 385200 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hd_demo_sk (type: int)
@@ -1214,10 +1234,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
-                  filterExpr: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
+                  filterExpr: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
+                    predicate: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
                     Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s_store_sk (type: int)
@@ -1240,6 +1260,10 @@ STAGE PLANS:
                 TableScan
 <<<<<<< HEAD
                   alias: household_demographics
+<<<<<<< HEAD
+=======
+                  filterExpr: ((hd_dep_count) IN (3, 0, 1) and (((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null and ((hd_vehicle_count <= 5) or (hd_vehicle_count <= 2) or (hd_vehicle_count <= 3))) (type: boolean)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Statistics: Num rows: 7200 Data size: 770400 Basic stats: COMPLETE Column stats: NONE
 =======
                   alias: time_dim
@@ -1247,7 +1271,7 @@ STAGE PLANS:
                   Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
 >>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Filter Operator
-                    predicate: ((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and ((hd_vehicle_count <= 5) or (hd_vehicle_count <= 2) or (hd_vehicle_count <= 3)) and (hd_dep_count) IN (3, 0, 1) and hd_demo_sk is not null) (type: boolean)
+                    predicate: ((hd_dep_count) IN (3, 0, 1) and (((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null and ((hd_vehicle_count <= 5) or (hd_vehicle_count <= 2) or (hd_vehicle_count <= 3))) (type: boolean)
                     Statistics: Num rows: 3600 Data size: 385200 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hd_demo_sk (type: int)
@@ -1289,10 +1313,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
-                  filterExpr: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
+                  filterExpr: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
+                    predicate: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
                     Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s_store_sk (type: int)
@@ -1315,6 +1339,10 @@ STAGE PLANS:
                 TableScan
 <<<<<<< HEAD
                   alias: household_demographics
+<<<<<<< HEAD
+=======
+                  filterExpr: ((hd_dep_count) IN (3, 0, 1) and (((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null and ((hd_vehicle_count <= 5) or (hd_vehicle_count <= 2) or (hd_vehicle_count <= 3))) (type: boolean)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Statistics: Num rows: 7200 Data size: 770400 Basic stats: COMPLETE Column stats: NONE
 =======
                   alias: time_dim
@@ -1322,7 +1350,7 @@ STAGE PLANS:
                   Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
 >>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Filter Operator
-                    predicate: ((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and ((hd_vehicle_count <= 5) or (hd_vehicle_count <= 2) or (hd_vehicle_count <= 3)) and (hd_dep_count) IN (3, 0, 1) and hd_demo_sk is not null) (type: boolean)
+                    predicate: ((hd_dep_count) IN (3, 0, 1) and (((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null and ((hd_vehicle_count <= 5) or (hd_vehicle_count <= 2) or (hd_vehicle_count <= 3))) (type: boolean)
                     Statistics: Num rows: 3600 Data size: 385200 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hd_demo_sk (type: int)
@@ -1364,10 +1392,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
-                  filterExpr: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
+                  filterExpr: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
+                    predicate: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
                     Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s_store_sk (type: int)
@@ -1390,6 +1418,10 @@ STAGE PLANS:
                 TableScan
 <<<<<<< HEAD
                   alias: household_demographics
+<<<<<<< HEAD
+=======
+                  filterExpr: ((hd_dep_count) IN (3, 0, 1) and (((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null and ((hd_vehicle_count <= 5) or (hd_vehicle_count <= 2) or (hd_vehicle_count <= 3))) (type: boolean)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Statistics: Num rows: 7200 Data size: 770400 Basic stats: COMPLETE Column stats: NONE
 =======
                   alias: time_dim
@@ -1397,7 +1429,7 @@ STAGE PLANS:
                   Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
 >>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Filter Operator
-                    predicate: ((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and ((hd_vehicle_count <= 5) or (hd_vehicle_count <= 2) or (hd_vehicle_count <= 3)) and (hd_dep_count) IN (3, 0, 1) and hd_demo_sk is not null) (type: boolean)
+                    predicate: ((hd_dep_count) IN (3, 0, 1) and (((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null and ((hd_vehicle_count <= 5) or (hd_vehicle_count <= 2) or (hd_vehicle_count <= 3))) (type: boolean)
                     Statistics: Num rows: 3600 Data size: 385200 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hd_demo_sk (type: int)
@@ -1439,10 +1471,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
-                  filterExpr: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
+                  filterExpr: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
+                    predicate: (s_store_sk is not null and (s_store_name = 'ese')) (type: boolean)
                     Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s_store_sk (type: int)

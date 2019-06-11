@@ -438,10 +438,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p1
-                  filterExpr: (p_name is not null and p_partkey is not null) (type: boolean)
+                  filterExpr: (p_partkey is not null and p_name is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (p_name is not null and p_partkey is not null) (type: boolean)
+                    predicate: (p_partkey is not null and p_name is not null) (type: boolean)
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: p_partkey (type: int), p_name (type: string)
@@ -461,14 +461,18 @@ STAGE PLANS:
 <<<<<<< HEAD
 =======
                   alias: p2
+<<<<<<< HEAD
                   filterExpr: (p_name is not null and p_partkey is not null) (type: boolean)
 >>>>>>> 6664c44c79... HIVE-21793: CBO retrieves column stats even if hive.stats.fetch.column.stats is set to false (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
 =======
                   filterExpr: p_partkey is not null (type: boolean)
 >>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+=======
+                  filterExpr: (p_partkey is not null and p_name is not null) (type: boolean)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (p_name is not null and p_partkey is not null) (type: boolean)
+                    predicate: (p_partkey is not null and p_name is not null) (type: boolean)
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: p_partkey (type: int), p_name (type: string)
@@ -626,10 +630,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p1
-                  filterExpr: (p_name is not null and p_partkey is not null) (type: boolean)
+                  filterExpr: (p_partkey is not null and p_name is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (p_name is not null and p_partkey is not null) (type: boolean)
+                    predicate: (p_partkey is not null and p_name is not null) (type: boolean)
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: p_partkey (type: int), p_name (type: string)
@@ -649,14 +653,18 @@ STAGE PLANS:
 <<<<<<< HEAD
 =======
                   alias: p2
+<<<<<<< HEAD
                   filterExpr: (p_name is not null and p_partkey is not null) (type: boolean)
 >>>>>>> 6664c44c79... HIVE-21793: CBO retrieves column stats even if hive.stats.fetch.column.stats is set to false (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
 =======
                   filterExpr: p_partkey is not null (type: boolean)
 >>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+=======
+                  filterExpr: (p_partkey is not null and p_name is not null) (type: boolean)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (p_name is not null and p_partkey is not null) (type: boolean)
+                    predicate: (p_partkey is not null and p_name is not null) (type: boolean)
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: p_partkey (type: int), p_name (type: string)

@@ -10,7 +10,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
 FROM `default`.`srcpart`
-WHERE RAND(1) < 0.1 AND `ds` = '2008-04-08' AND `key` <= 50 AND `key` >= 10 AND `hr` LIKE '%2'
+WHERE `key` <= 50 AND `key` >= 10 AND RAND(1) < 0.1 AND `ds` = '2008-04-08' AND `hr` LIKE '%2'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -125,11 +125,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
-42	val_42	2008-04-08	12
-44	val_44	2008-04-08	12
-26	val_26	2008-04-08	12
-18	val_18	2008-04-08	12
-37	val_37	2008-04-08	12
+47	val_47	2008-04-08	12
+35	val_35	2008-04-08	12
 PREHOOK: query: explain extended select a.* from srcpart a where a.ds = '2008-04-08' and not(key > 50 or key < 10) and a.hr like '%2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -142,7 +139,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
 FROM `default`.`srcpart`
-WHERE `ds` = '2008-04-08' AND `key` <= 50 AND `key` >= 10 AND `hr` LIKE '%2'
+WHERE `key` <= 50 AND `key` >= 10 AND `ds` = '2008-04-08' AND `hr` LIKE '%2'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

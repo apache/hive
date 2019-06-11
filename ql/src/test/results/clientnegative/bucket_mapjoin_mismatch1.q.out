@@ -104,7 +104,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
+            filterExpr: (key is not null and (ds = '2008-04-08')) (type: boolean)
             Statistics: Num rows: 108 Data size: 42000 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -121,7 +121,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: b
-            filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
+            filterExpr: (key is not null and (ds = '2008-04-08')) (type: boolean)
             Statistics: Num rows: 70 Data size: 27500 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)

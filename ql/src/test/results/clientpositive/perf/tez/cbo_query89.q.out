@@ -74,7 +74,7 @@ HiveProject(i_category=[$0], i_class=[$1], i_brand=[$2], s_store_name=[$3], s_co
                 HiveJoin(condition=[=($0, $8)], joinType=[inner], algorithm=[none], cost=[not available])
                   HiveJoin(condition=[=($1, $4)], joinType=[inner], algorithm=[none], cost=[not available])
                     HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_store_sk=[$7], ss_sales_price=[$13])
-                      HiveFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($0), IS NOT NULL($7))])
+                      HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($7), IS NOT NULL($2))])
                         HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
                     HiveProject(i_item_sk=[$0], i_brand=[$8], i_class=[$10], i_category=[$12])
                       HiveFilter(condition=[AND(IN($10, _UTF-16LE'wallpaper', _UTF-16LE'parenting', _UTF-16LE'musical', _UTF-16LE'womens', _UTF-16LE'birdal', _UTF-16LE'pants'), IN($12, _UTF-16LE'Home', _UTF-16LE'Books', _UTF-16LE'Electronics', _UTF-16LE'Shoes', _UTF-16LE'Jewelry', _UTF-16LE'Men'), OR(AND(IN($12, _UTF-16LE'Home', _UTF-16LE'Books', _UTF-16LE'Electronics'), IN($10, _UTF-16LE'wallpaper', _UTF-16LE'parenting', _UTF-16LE'musical')), AND(IN($12, _UTF-16LE'Shoes', _UTF-16LE'Jewelry', _UTF-16LE'Men'), IN($10, _UTF-16LE'womens', _UTF-16LE'birdal', _UTF-16LE'pants'))), IS NOT NULL($0))])

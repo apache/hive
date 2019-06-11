@@ -116,10 +116,10 @@ STAGE PLANS:
                   value expressions: _col1 (type: int), _col2 (type: int)
           TableScan
             alias: lineitem
-            filterExpr: ((l_shipmode = 'AIR') and (l_linenumber = 1) and l_orderkey is not null) (type: boolean)
+            filterExpr: ((l_linenumber = 1) and l_orderkey is not null and (l_shipmode = 'AIR')) (type: boolean)
             Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((l_linenumber = 1) and (l_shipmode = 'AIR') and l_orderkey is not null) (type: boolean)
+              predicate: ((l_linenumber = 1) and l_orderkey is not null and (l_shipmode = 'AIR')) (type: boolean)
               Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: l_orderkey (type: int), 1 (type: int)

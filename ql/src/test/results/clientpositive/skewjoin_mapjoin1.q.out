@@ -68,7 +68,7 @@ STAGE PLANS:
             filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key = '2') or (key = '3')) and key is not null) (type: boolean)
+              predicate: (key is not null and ((key = '2') or (key = '3'))) (type: boolean)
               Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), val (type: string)
@@ -83,7 +83,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((not ((key = '2') or (key = '3'))) and key is not null) (type: boolean)
+              predicate: (key is not null and (not ((key = '2') or (key = '3')))) (type: boolean)
               Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), val (type: string)
@@ -102,7 +102,7 @@ STAGE PLANS:
             filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key = '2') or (key = '3')) and key is not null) (type: boolean)
+              predicate: (key is not null and ((key = '2') or (key = '3'))) (type: boolean)
               Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), val (type: string)
@@ -129,7 +129,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((not ((key = '2') or (key = '3'))) and key is not null) (type: boolean)
+              predicate: (key is not null and (not ((key = '2') or (key = '3')))) (type: boolean)
               Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), val (type: string)
@@ -210,9 +210,10 @@ STAGE PLANS:
         $hdt$_0:a 
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key = '2') or (key = '3')) and key is not null) (type: boolean)
+              predicate: (key is not null and ((key = '2') or (key = '3'))) (type: boolean)
               Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), val (type: string)
@@ -227,7 +228,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((not ((key = '2') or (key = '3'))) and key is not null) (type: boolean)
+              predicate: (key is not null and (not ((key = '2') or (key = '3')))) (type: boolean)
               Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), val (type: string)
@@ -358,7 +359,7 @@ STAGE PLANS:
             filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key = '2') or (key = '3')) and key is not null) (type: boolean)
+              predicate: (key is not null and ((key = '2') or (key = '3'))) (type: boolean)
               Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -373,7 +374,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((not ((key = '2') or (key = '3'))) and key is not null) (type: boolean)
+              predicate: (key is not null and (not ((key = '2') or (key = '3')))) (type: boolean)
               Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -392,7 +393,7 @@ STAGE PLANS:
             filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key = '2') or (key = '3')) and key is not null) (type: boolean)
+              predicate: (key is not null and ((key = '2') or (key = '3'))) (type: boolean)
               Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -421,7 +422,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((not ((key = '2') or (key = '3'))) and key is not null) (type: boolean)
+              predicate: (key is not null and (not ((key = '2') or (key = '3')))) (type: boolean)
               Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -510,9 +511,10 @@ STAGE PLANS:
         $hdt$_0:a 
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key = '2') or (key = '3')) and key is not null) (type: boolean)
+              predicate: (key is not null and ((key = '2') or (key = '3'))) (type: boolean)
               Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -527,7 +529,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((not ((key = '2') or (key = '3'))) and key is not null) (type: boolean)
+              predicate: (key is not null and (not ((key = '2') or (key = '3')))) (type: boolean)
               Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)

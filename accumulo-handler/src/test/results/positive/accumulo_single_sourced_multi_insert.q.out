@@ -77,7 +77,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key < 50) and (key > 0)) (type: boolean)
+              predicate: ((key > 0) and (key < 50)) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), '' (type: string)
@@ -106,7 +106,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
             Filter Operator
-              predicate: ((key < 100) and (key > 50)) (type: boolean)
+              predicate: ((key > 50) and (key < 100)) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string), '' (type: string)

@@ -135,7 +135,7 @@ STAGE PLANS:
                   filterExpr: (ss_quantity BETWEEN 16 AND 20 and (ss_list_price BETWEEN 142 AND 152 or ss_coupon_amt BETWEEN 3054 AND 4054 or ss_wholesale_cost BETWEEN 80 AND 100)) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((ss_list_price BETWEEN 142 AND 152 or ss_coupon_amt BETWEEN 3054 AND 4054 or ss_wholesale_cost BETWEEN 80 AND 100) and ss_quantity BETWEEN 16 AND 20) (type: boolean)
+                    predicate: (ss_quantity BETWEEN 16 AND 20 and (ss_list_price BETWEEN 142 AND 152 or ss_coupon_amt BETWEEN 3054 AND 4054 or ss_wholesale_cost BETWEEN 80 AND 100)) (type: boolean)
                     Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_list_price (type: decimal(7,2))
@@ -162,7 +162,7 @@ STAGE PLANS:
                   filterExpr: (ss_quantity BETWEEN 11 AND 15 and (ss_list_price BETWEEN 66 AND 76 or ss_coupon_amt BETWEEN 920 AND 1920 or ss_wholesale_cost BETWEEN 4 AND 24)) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((ss_list_price BETWEEN 66 AND 76 or ss_coupon_amt BETWEEN 920 AND 1920 or ss_wholesale_cost BETWEEN 4 AND 24) and ss_quantity BETWEEN 11 AND 15) (type: boolean)
+                    predicate: (ss_quantity BETWEEN 11 AND 15 and (ss_list_price BETWEEN 66 AND 76 or ss_coupon_amt BETWEEN 920 AND 1920 or ss_wholesale_cost BETWEEN 4 AND 24)) (type: boolean)
                     Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_list_price (type: decimal(7,2))
@@ -189,7 +189,7 @@ STAGE PLANS:
                   filterExpr: (ss_quantity BETWEEN 6 AND 10 and (ss_list_price BETWEEN 91 AND 101 or ss_coupon_amt BETWEEN 1430 AND 2430 or ss_wholesale_cost BETWEEN 32 AND 52)) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((ss_list_price BETWEEN 91 AND 101 or ss_coupon_amt BETWEEN 1430 AND 2430 or ss_wholesale_cost BETWEEN 32 AND 52) and ss_quantity BETWEEN 6 AND 10) (type: boolean)
+                    predicate: (ss_quantity BETWEEN 6 AND 10 and (ss_list_price BETWEEN 91 AND 101 or ss_coupon_amt BETWEEN 1430 AND 2430 or ss_wholesale_cost BETWEEN 32 AND 52)) (type: boolean)
                     Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_list_price (type: decimal(7,2))
@@ -216,7 +216,7 @@ STAGE PLANS:
                   filterExpr: (ss_quantity BETWEEN 26 AND 30 and (ss_list_price BETWEEN 28 AND 38 or ss_coupon_amt BETWEEN 2513 AND 3513 or ss_wholesale_cost BETWEEN 42 AND 62)) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((ss_list_price BETWEEN 28 AND 38 or ss_coupon_amt BETWEEN 2513 AND 3513 or ss_wholesale_cost BETWEEN 42 AND 62) and ss_quantity BETWEEN 26 AND 30) (type: boolean)
+                    predicate: (ss_quantity BETWEEN 26 AND 30 and (ss_list_price BETWEEN 28 AND 38 or ss_coupon_amt BETWEEN 2513 AND 3513 or ss_wholesale_cost BETWEEN 42 AND 62)) (type: boolean)
                     Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_list_price (type: decimal(7,2))
@@ -243,7 +243,7 @@ STAGE PLANS:
                   filterExpr: (ss_quantity BETWEEN 21 AND 25 and (ss_list_price BETWEEN 135 AND 145 or ss_coupon_amt BETWEEN 14180 AND 15180 or ss_wholesale_cost BETWEEN 38 AND 58)) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((ss_list_price BETWEEN 135 AND 145 or ss_coupon_amt BETWEEN 14180 AND 15180 or ss_wholesale_cost BETWEEN 38 AND 58) and ss_quantity BETWEEN 21 AND 25) (type: boolean)
+                    predicate: (ss_quantity BETWEEN 21 AND 25 and (ss_list_price BETWEEN 135 AND 145 or ss_coupon_amt BETWEEN 14180 AND 15180 or ss_wholesale_cost BETWEEN 38 AND 58)) (type: boolean)
                     Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_list_price (type: decimal(7,2))
@@ -478,7 +478,7 @@ STAGE PLANS:
                   filterExpr: (ss_quantity BETWEEN 0 AND 5 and (ss_list_price BETWEEN 11 AND 21 or ss_coupon_amt BETWEEN 460 AND 1460 or ss_wholesale_cost BETWEEN 14 AND 34)) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((ss_list_price BETWEEN 11 AND 21 or ss_coupon_amt BETWEEN 460 AND 1460 or ss_wholesale_cost BETWEEN 14 AND 34) and ss_quantity BETWEEN 0 AND 5) (type: boolean)
+                    predicate: (ss_quantity BETWEEN 0 AND 5 and (ss_list_price BETWEEN 11 AND 21 or ss_coupon_amt BETWEEN 460 AND 1460 or ss_wholesale_cost BETWEEN 14 AND 34)) (type: boolean)
                     Statistics: Num rows: 191998545 Data size: 16938167362 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_list_price (type: decimal(7,2))

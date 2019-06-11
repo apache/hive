@@ -39,10 +39,10 @@ STAGE PLANS:
         $hdt$_0:src1 
           TableScan
             alias: src1
-            filterExpr: key is not null (type: boolean)
+            filterExpr: (key is not null and UDFToDouble(key) is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) is not null and key is not null) (type: boolean)
+              predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -55,7 +55,7 @@ STAGE PLANS:
         $hdt$_2:src3 
           TableScan
             alias: src3
-            filterExpr: key is not null (type: boolean)
+            filterExpr: UDFToDouble(key) is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)
@@ -74,10 +74,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src2
-            filterExpr: key is not null (type: boolean)
+            filterExpr: (key is not null and UDFToDouble(key) is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) is not null and key is not null) (type: boolean)
+              predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)

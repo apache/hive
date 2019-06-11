@@ -251,7 +251,7 @@ STAGE PLANS:
                   alias: emps_n8
                   Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((deptno <= 11) and (deptno > 10)) (type: boolean)
+                    predicate: ((deptno > 10) and (deptno <= 11)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: deptno (type: int)
@@ -311,7 +311,7 @@ STAGE PLANS:
                   alias: depts_n6
                   Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((deptno <= 11) and (deptno > 10) and name is not null) (type: boolean)
+                    predicate: ((deptno > 10) and (deptno <= 11) and name is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: deptno (type: int), name (type: varchar(256))
@@ -563,7 +563,7 @@ STAGE PLANS:
                   alias: depts_n6
                   Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (((deptno <= 11) or (deptno >= 19)) and (deptno < 20) and (deptno > 10) and name is not null) (type: boolean)
+                    predicate: ((deptno > 10) and (deptno < 20) and ((deptno <= 11) or (deptno >= 19)) and name is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: deptno (type: int), name (type: varchar(256))
@@ -626,7 +626,7 @@ STAGE PLANS:
                   alias: emps_n8
                   Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (((deptno <= 11) or (deptno >= 19)) and (deptno < 20) and (deptno > 10)) (type: boolean)
+                    predicate: ((deptno > 10) and (deptno < 20) and ((deptno <= 11) or (deptno >= 19))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: deptno (type: int), salary (type: float)
@@ -879,7 +879,7 @@ STAGE PLANS:
                   alias: depts_n6
                   Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((deptno < 10) and (deptno > 0) and name is not null) (type: boolean)
+                    predicate: ((deptno > 0) and (deptno < 10) and name is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: deptno (type: int), name (type: varchar(256))
@@ -899,7 +899,7 @@ STAGE PLANS:
                   alias: emps_n8
                   Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((deptno < 10) and (deptno > 0)) (type: boolean)
+                    predicate: ((deptno > 0) and (deptno < 10)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: deptno (type: int)

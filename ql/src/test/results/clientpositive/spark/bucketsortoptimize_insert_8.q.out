@@ -115,7 +115,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: ((ds = '1') and key is not null) (type: boolean)
+                  filterExpr: (key is not null and (ds = '1')) (type: boolean)
                   Statistics: Num rows: 84 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -305,7 +305,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: ((ds = '1') and key is not null) (type: boolean)
+                  filterExpr: (key is not null and (ds = '1')) (type: boolean)
                   Statistics: Num rows: 84 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)

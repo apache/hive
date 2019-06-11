@@ -70,8 +70,13 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterStringColLikeStringScalar(col 7:string, pattern %b%), FilterExprOrExpr(children: FilterDoubleColGreaterEqualDoubleScalar(col 5:double, val -1.389), FilterStringGroupColLessStringScalar(col 6:string, val a)))
+<<<<<<< HEAD
                     predicate: (((cdouble >= -1.389D) or (cstring1 < 'a')) and (cstring2 like '%b%')) (type: boolean)
                     Statistics: Num rows: 4096 Data size: 49152 Basic stats: COMPLETE Column stats: NONE
+=======
+                    predicate: ((cstring2 like '%b%') and ((cdouble >= -1.389D) or (cstring1 < 'a'))) (type: boolean)
+                    Statistics: Num rows: 4096 Data size: 197917 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                     Select Operator
                       expressions: cstring1 (type: string), cdouble (type: double), ctimestamp1 (type: timestamp), (cdouble * cdouble) (type: double)
                       outputColumnNames: _col0, _col1, _col2, _col3

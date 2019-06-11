@@ -153,7 +153,6 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            filterExpr: value is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: UDFToInteger(key) (type: int), value (type: string)
@@ -255,7 +254,6 @@ STAGE PLANS:
                     value expressions: _col0 (type: int), _col1 (type: string)
           TableScan
             alias: src
-            filterExpr: UDFToDouble(value) is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: UDFToInteger(key) (type: int), value (type: string)

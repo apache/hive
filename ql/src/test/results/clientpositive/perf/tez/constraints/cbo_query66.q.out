@@ -471,7 +471,7 @@ HiveProject(w_warehouse_name=[$0], w_warehouse_sq_ft=[$1], w_city=[$2], w_county
                       HiveJoin(condition=[=($0, $7)], joinType=[inner], algorithm=[none], cost=[not available])
                         HiveJoin(condition=[=($1, $6)], joinType=[inner], algorithm=[none], cost=[not available])
                           HiveProject(ws_sold_date_sk=[$0], ws_sold_time_sk=[$1], ws_ship_mode_sk=[$14], ws_warehouse_sk=[$15], *=[*($21, CAST($18):DECIMAL(10, 0))], *5=[*($30, CAST($18):DECIMAL(10, 0))])
-                            HiveFilter(condition=[AND(IS NOT NULL($15), IS NOT NULL($0), IS NOT NULL($1), IS NOT NULL($14))])
+                            HiveFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($15), IS NOT NULL($0), IS NOT NULL($14))])
                               HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
                           HiveProject(t_time_sk=[$0])
                             HiveFilter(condition=[BETWEEN(false, $2, 49530, 78330)])

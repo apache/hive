@@ -29,10 +29,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  filterExpr: ((UDFToDouble(cbigint) < cdouble) and (cint > 0)) (type: boolean)
+                  filterExpr: ((cint > 0) and (UDFToDouble(cbigint) < cdouble)) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 183488 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(cbigint) < cdouble) and (cint > 0)) (type: boolean)
+                    predicate: ((cint > 0) and (UDFToDouble(cbigint) < cdouble)) (type: boolean)
                     Statistics: Num rows: 1365 Data size: 20400 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cbigint (type: bigint), cdouble (type: double)

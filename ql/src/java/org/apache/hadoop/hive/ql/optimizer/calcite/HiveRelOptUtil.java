@@ -558,8 +558,16 @@ public class HiveRelOptUtil extends RelOptUtil {
     // 1) Gather all tables from the FK side and the table from the
     // non-FK side
     final Set<RelTableRef> leftTables = mq.getTableReferences(join.getLeft());
-    final Set<RelTableRef> rightTables =
-        Sets.difference(mq.getTableReferences(join), mq.getTableReferences(join.getLeft()));
+    if (leftTables == null) {
+      // Could not infer, bail out
+      return cannotExtract;
+    }
+    final Set<RelTableRef> joinTables = mq.getTableReferences(join);
+    if (joinTables == null) {
+      // Could not infer, bail out
+      return cannotExtract;
+    }
+    final Set<RelTableRef> rightTables = Sets.difference(joinTables, leftTables);
     final Set<RelTableRef> fkTables = join.getLeft() == fkInput ? leftTables : rightTables;
     final Set<RelTableRef> nonFkTables = join.getLeft() == fkInput ? rightTables : leftTables;
 

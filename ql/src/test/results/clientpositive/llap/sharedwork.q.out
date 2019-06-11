@@ -103,7 +103,7 @@ POSTHOOK: Input: default@my_table_0003
 OPTIMIZED SQL: SELECT `t0`.`col_7`, CAST(`t0`.`col_3` AS DATE) AS `col_3`, `t0`.`col_20`, `t2`.`col_21` AS `col_21_1232`, `t0`.`col_1`, `t4`.`col_22`, `t6`.`col_21` AS `col_21_879`, `t4`.`col_23`
 FROM (SELECT `col_1`, `col_3`, `col_7`, `col_20`
 FROM `default`.`my_table_0001`
-WHERE `col_20` IN ('part1', 'part2', 'part3') AND (CAST(`col_7` AS DOUBLE) IS NOT NULL OR `col_7` IS NULL) AND CAST(`col_3` AS DATE) BETWEEN DATE '2018-07-01' AND DATE '2019-01-23') AS `t0`
+WHERE (CAST(`col_7` AS DOUBLE) IS NOT NULL OR `col_7` IS NULL) AND `col_20` IN ('part1', 'part2', 'part3') AND CAST(`col_3` AS DATE) BETWEEN DATE '2018-07-01' AND DATE '2019-01-23') AS `t0`
 LEFT JOIN (SELECT `col_24`, `col_21`
 FROM `default`.`my_table_0003`
 WHERE `col_24` IN ('part1', 'part2', 'part3')) AS `t2` ON `t0`.`col_20` = `t2`.`col_24`
@@ -135,7 +135,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table__323
-                  filterExpr: ((col_20) IN ('part1', 'part2', 'part3') and (UDFToDouble(col_7) is not null or col_7 is null) and CAST( col_3 AS DATE) BETWEEN DATE'2018-07-01' AND DATE'2019-01-23') (type: boolean)
+                  filterExpr: ((UDFToDouble(col_7) is not null or col_7 is null) and (col_20) IN ('part1', 'part2', 'part3') and CAST( col_3 AS DATE) BETWEEN DATE'2018-07-01' AND DATE'2019-01-23') (type: boolean)
                   Statistics: Num rows: 1 Data size: 592 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator

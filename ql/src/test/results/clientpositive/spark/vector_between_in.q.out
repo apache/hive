@@ -158,7 +158,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterDateColNotEqualDateScalar(col 3:date, val -67), FilterDateColNotEqualDateScalar(col 3:date, val -171), FilterDateColNotEqualDateScalar(col 3:date, val 20))
-                    predicate: ((cdate <> DATE'1969-07-14') and (cdate <> DATE'1969-10-26') and (cdate <> DATE'1970-01-21')) (type: boolean)
+                    predicate: ((cdate <> DATE'1969-10-26') and (cdate <> DATE'1969-07-14') and (cdate <> DATE'1970-01-21')) (type: boolean)
                     Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Select Vectorization:
@@ -369,7 +369,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterDecimalColNotEqualDecimalScalar(col 1:decimal(20,10), val 2365.8945945946), FilterDecimalColNotEqualDecimalScalar(col 1:decimal(20,10), val 881.0135135135), FilterDecimalColNotEqualDecimalScalar(col 1:decimal(20,10), val -3367.6517567568))
-                    predicate: ((cdecimal1 <> -3367.6517567568) and (cdecimal1 <> 2365.8945945946) and (cdecimal1 <> 881.0135135135)) (type: boolean)
+                    predicate: ((cdecimal1 <> 2365.8945945946) and (cdecimal1 <> 881.0135135135) and (cdecimal1 <> -3367.6517567568)) (type: boolean)
                     Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Select Vectorization:

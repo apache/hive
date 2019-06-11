@@ -1053,6 +1053,7 @@ STAGE PLANS:
         $hdt$_0:test2_n5 
           TableScan
             alias: test2_n5
+            filterExpr: value is not null (type: boolean)
             Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: value is not null (type: boolean)

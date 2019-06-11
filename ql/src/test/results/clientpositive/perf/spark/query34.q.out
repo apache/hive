@@ -85,11 +85,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: household_demographics
+<<<<<<< HEAD
                   filterExpr: (((hd_buy_potential = '>10000') or (hd_buy_potential = 'unknown')) and (hd_vehicle_count > 0) and CASE WHEN ((hd_vehicle_count > 0)) THEN (((UDFToDouble(hd_dep_count) / UDFToDouble(hd_vehicle_count)) > 1.2D)) ELSE (null) END and hd_demo_sk is not null) (type: boolean)
                   Statistics: Num rows: 7200 Data size: 770400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((UDFToDouble(hd_dep_count) / UDFToDouble(hd_vehicle_count)) > 1.2D) and (hd_buy_potential) IN ('>10000', 'unknown') and (hd_vehicle_count > 0) and hd_demo_sk is not null) (type: boolean)
                     Statistics: Num rows: 800 Data size: 85600 Basic stats: COMPLETE Column stats: NONE
+=======
+                  filterExpr: ((hd_vehicle_count > 0) and hd_demo_sk is not null and (hd_buy_potential) IN ('>10000', 'unknown') and CASE WHEN ((hd_vehicle_count > 0)) THEN (((UDFToDouble(hd_dep_count) / UDFToDouble(hd_vehicle_count)) > 1.2D)) ELSE (false) END) (type: boolean)
+                  Statistics: Num rows: 7200 Data size: 770400 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((hd_vehicle_count > 0) and hd_demo_sk is not null and (hd_buy_potential) IN ('>10000', 'unknown') and CASE WHEN ((hd_vehicle_count > 0)) THEN (((UDFToDouble(hd_dep_count) / UDFToDouble(hd_vehicle_count)) > 1.2D)) ELSE (false) END) (type: boolean)
+                    Statistics: Num rows: 1200 Data size: 128400 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                     Select Operator
                       expressions: hd_demo_sk (type: int)
                       outputColumnNames: _col0
@@ -105,10 +113,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
-                  filterExpr: ((s_county) IN ('Mobile County', 'Maverick County', 'Huron County', 'Kittitas County', 'Fairfield County', 'Jackson County', 'Barrow County', 'Pennington County') and s_store_sk is not null) (type: boolean)
+                  filterExpr: (s_store_sk is not null and (s_county) IN ('Mobile County', 'Maverick County', 'Huron County', 'Kittitas County', 'Fairfield County', 'Jackson County', 'Barrow County', 'Pennington County')) (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((s_county) IN ('Mobile County', 'Maverick County', 'Huron County', 'Kittitas County', 'Fairfield County', 'Jackson County', 'Barrow County', 'Pennington County') and s_store_sk is not null) (type: boolean)
+                    predicate: (s_store_sk is not null and (s_county) IN ('Mobile County', 'Maverick County', 'Huron County', 'Kittitas County', 'Fairfield County', 'Jackson County', 'Barrow County', 'Pennington County')) (type: boolean)
                     Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s_store_sk (type: int)
@@ -160,7 +168,7 @@ STAGE PLANS:
                   filterExpr: (ss_sold_date_sk is not null and ss_store_sk is not null and ss_hdemo_sk is not null and ss_customer_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ss_customer_sk is not null and ss_hdemo_sk is not null and ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
+                    predicate: (ss_sold_date_sk is not null and ss_store_sk is not null and ss_hdemo_sk is not null and ss_customer_sk is not null) (type: boolean)
                     Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_sold_date_sk (type: int), ss_customer_sk (type: int), ss_hdemo_sk (type: int), ss_store_sk (type: int), ss_ticket_number (type: int)
@@ -177,10 +185,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+<<<<<<< HEAD
                   filterExpr: ((d_year) IN (2000, 2001, 2002) and (d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28) and (d_year) IN (2000, 2001, 2002) and d_date_sk is not null) (type: boolean)
+=======
+                  filterExpr: ((d_year) IN (2000, 2001, 2002) and (d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28) and d_date_sk is not null and ((d_dom >= 1) or (d_dom <= 3) or (d_dom >= 25) or (d_dom <= 28))) (type: boolean)
+                  Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((d_year) IN (2000, 2001, 2002) and (d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28) and d_date_sk is not null and ((d_dom >= 1) or (d_dom <= 3) or (d_dom >= 25) or (d_dom <= 28))) (type: boolean)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                     Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)

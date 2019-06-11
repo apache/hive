@@ -74,7 +74,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: lineitem
-                  filterExpr: ((l_shipmode = 'AIR') and l_orderkey is not null) (type: boolean)
+                  filterExpr: (l_orderkey is not null and (l_shipmode = 'AIR')) (type: boolean)
                   Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -82,8 +82,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 14:string, val AIR), SelectColumnIsNotNull(col 0:int))
-                    predicate: ((l_shipmode = 'AIR') and l_orderkey is not null) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:int), FilterStringGroupColEqualStringScalar(col 14:string, val AIR))
+                    predicate: (l_orderkey is not null and (l_shipmode = 'AIR')) (type: boolean)
                     Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: l_orderkey (type: int)
@@ -226,12 +226,18 @@ STAGE PLANS:
                     Map Join Vectorization:
                         className: VectorMapJoinLeftSemiLongOperator
                         native: true
+<<<<<<< HEAD
                         nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                         hashTableImplementationType: OPTIMIZED
                     outputColumnNames: _col0, _col3
                     input vertices:
                       1 Map 4
                     Statistics: Num rows: 60 Data size: 7257 Basic stats: COMPLETE Column stats: NONE
+=======
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 3:int, val 1), SelectColumnIsNotNull(col 1:int), SelectColumnIsNotNull(col 0:int))
+                    predicate: ((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null) (type: boolean)
+                    Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                     Select Operator
                       expressions: _col0 (type: int), _col3 (type: int)
                       outputColumnNames: _col0, _col1
@@ -358,7 +364,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: lineitem
-                  filterExpr: ((l_shipmode = 'AIR') and (l_linenumber = 1) and l_orderkey is not null) (type: boolean)
+                  filterExpr: ((l_linenumber = 1) and l_orderkey is not null and (l_shipmode = 'AIR')) (type: boolean)
                   Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -366,8 +372,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 14:string, val AIR), FilterLongColEqualLongScalar(col 3:int, val 1), SelectColumnIsNotNull(col 0:int))
-                    predicate: ((l_linenumber = 1) and (l_shipmode = 'AIR') and l_orderkey is not null) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 3:int, val 1), SelectColumnIsNotNull(col 0:int), FilterStringGroupColEqualStringScalar(col 14:string, val AIR))
+                    predicate: ((l_linenumber = 1) and l_orderkey is not null and (l_shipmode = 'AIR')) (type: boolean)
                     Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: l_orderkey (type: int), 1 (type: int)
@@ -429,6 +435,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
+<<<<<<< HEAD
                         predicateExpression: SelectColumnIsNotNull(col 1:int)
                     predicate: l_partkey is not null (type: boolean)
                     Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
@@ -451,6 +458,28 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
+=======
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 3:int, val 1), SelectColumnIsNotNull(col 1:int), SelectColumnIsNotNull(col 0:int))
+                    predicate: ((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null) (type: boolean)
+                    Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: l_orderkey (type: int), l_partkey (type: int), l_suppkey (type: int), 1 (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0, 1, 2, 17]
+                          selectExpressions: ConstantVectorExpression(val 1) -> 17:int
+                      Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Left Semi Join 0 to 1
+                        keys:
+                          0 _col1 (type: int)
+                          1 _col0 (type: int)
+                        Map Join Vectorization:
+                            className: VectorMapJoinLeftSemiLongOperator
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE

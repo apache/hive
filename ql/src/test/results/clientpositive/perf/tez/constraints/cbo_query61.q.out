@@ -1,4 +1,4 @@
-Warning: Shuffle Join MERGEJOIN[156][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 5' is a cross product
+Warning: Shuffle Join MERGEJOIN[266][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 5' is a cross product
 PREHOOK: query: explain cbo
 select  promotions,total,cast(promotions as decimal(15,4))/cast(total as decimal(15,4))*100
 from
@@ -121,7 +121,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC-nulls-first], dir1=[ASC-nulls-fi
                   HiveJoin(condition=[=($1, $7)], joinType=[inner], algorithm=[none], cost=[not available])
                     HiveJoin(condition=[=($0, $6)], joinType=[inner], algorithm=[none], cost=[not available])
                       HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_customer_sk=[$3], ss_store_sk=[$7], ss_promo_sk=[$8], ss_ext_sales_price=[$15])
-                        HiveFilter(condition=[AND(IS NOT NULL($7), IS NOT NULL($8), IS NOT NULL($0), IS NOT NULL($3))])
+                        HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($8), IS NOT NULL($3), IS NOT NULL($7))])
                           HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
                       HiveProject(d_date_sk=[$0])
                         HiveFilter(condition=[AND(=($6, 1999), =($8, 11))])
@@ -133,7 +133,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC-nulls-first], dir1=[ASC-nulls-fi
                     HiveFilter(condition=[=($27, -7:DECIMAL(1, 0))])
                       HiveTableScan(table=[[default, store]], table:alias=[store])
                 HiveProject(p_promo_sk=[$0])
-                  HiveFilter(condition=[OR(=($8, _UTF-16LE'Y'), =($9, _UTF-16LE'Y'), =($11, _UTF-16LE'Y'))])
+                  HiveFilter(condition=[OR(=($9, _UTF-16LE'Y'), =($11, _UTF-16LE'Y'), =($8, _UTF-16LE'Y'))])
                     HiveTableScan(table=[[default, promotion]], table:alias=[promotion])
       HiveProject($f0=[$0])
         HiveAggregate(group=[{}], agg#0=[sum($7)])
@@ -150,7 +150,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC-nulls-first], dir1=[ASC-nulls-fi
                 HiveJoin(condition=[=($1, $6)], joinType=[inner], algorithm=[none], cost=[not available])
                   HiveJoin(condition=[=($0, $5)], joinType=[inner], algorithm=[none], cost=[not available])
                     HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_customer_sk=[$3], ss_store_sk=[$7], ss_ext_sales_price=[$15])
-                      HiveFilter(condition=[AND(IS NOT NULL($7), IS NOT NULL($0), IS NOT NULL($3))])
+                      HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($3), IS NOT NULL($7))])
                         HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
                     HiveProject(d_date_sk=[$0])
                       HiveFilter(condition=[AND(=($6, 1999), =($8, 11))])

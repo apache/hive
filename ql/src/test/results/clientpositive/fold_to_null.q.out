@@ -96,6 +96,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 1 Basic stats: PARTIAL Column stats: NONE
           TableScan
             alias: t
+            filterExpr: ((a > 3) and null) is null (type: boolean)
             Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((a > 3) and null) is null (type: boolean)
@@ -162,9 +163,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t
+            filterExpr: ((a > 5) and ((a * a) < 101)) (type: boolean)
             Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((a * a) < 101) and (a > 5)) (type: boolean)
+              predicate: ((a > 5) and ((a * a) < 101)) (type: boolean)
               Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: a (type: int)
@@ -177,9 +179,10 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: t2
+            filterExpr: ((b > 5) and ((b * b) < 101)) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (((b * b) < 101) and (b > 5)) (type: boolean)
+              predicate: ((b > 5) and ((b * b) < 101)) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: b (type: int)
@@ -217,9 +220,10 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 1 Basic stats: PARTIAL Column stats: NONE
           TableScan
             alias: t3
+            filterExpr: ((c > 5) and ((c * c) < 101)) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (((c * c) < 101) and (c > 5)) (type: boolean)
+              predicate: ((c > 5) and ((c * c) < 101)) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: c (type: int)

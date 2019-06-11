@@ -430,7 +430,7 @@ STAGE PLANS:
                   Statistics: Num rows: 31 Data size: 496 Basic stats: COMPLETE Column stats: NONE
 >>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Filter Operator
-                    predicate: ((a = 3) and (d = 3)) (type: boolean)
+                    predicate: ((d = 3) and (a = 3)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c (type: double)
@@ -540,13 +540,17 @@ STAGE PLANS:
                 TableScan
                   alias: cmv_basetable_n2
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+                  filterExpr: ((a = 3) and (ROW__ID.writeid > 1L)) (type: boolean)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Statistics: Num rows: 7 Data size: 1652 Basic stats: COMPLETE Column stats: COMPLETE
 =======
                   filterExpr: (a = 3) (type: boolean)
                   Statistics: Num rows: 31 Data size: 22692 Basic stats: COMPLETE Column stats: NONE
 >>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Filter Operator
-                    predicate: ((ROW__ID.writeid > 1L) and (a = 3)) (type: boolean)
+                    predicate: ((a = 3) and (ROW__ID.writeid > 1L)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 236 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: CAST( t AS timestamp with local time zone) (type: timestamp with local time zone), 3 (type: int), b (type: varchar(256)), c (type: double), userid (type: varchar(256))

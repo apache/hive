@@ -385,7 +385,7 @@ STAGE PLANS:
             filterExpr: (int_col_1 is not null and decimal0801_col is not null) (type: boolean)
             Statistics: Num rows: 5 Data size: 576 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (decimal0801_col is not null and int_col_1 is not null) (type: boolean)
+              predicate: (int_col_1 is not null and decimal0801_col is not null) (type: boolean)
               Statistics: Num rows: 5 Data size: 576 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: decimal0801_col (type: decimal(8,1)), int_col_1 (type: int)

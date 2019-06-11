@@ -116,8 +116,13 @@ Stage-0
                                     Output:["_col0"],keys:d_month_seq
                                     Select Operator [SEL_124] (rows=50 width=12)
                                       Output:["d_month_seq"]
+<<<<<<< HEAD
                                       Filter Operator [FIL_122] (rows=50 width=12)
                                         predicate:((d_moy = 2) and (d_year = 2000) and d_month_seq is not null)
+=======
+                                      Filter Operator [FIL_182] (rows=50 width=12)
+                                        predicate:((d_year = 2000) and (d_moy = 2) and d_month_seq is not null)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                                         TableScan [TS_3] (rows=73049 width=12)
                                           default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_month_seq","d_year","d_moy"]
                           <-Select Operator [SEL_161] (rows=73049 width=8)
@@ -162,8 +167,13 @@ Stage-0
                                                       default@item,j,Tbl:COMPLETE,Col:COMPLETE,Output:["i_current_price","i_category"]
                                     <-Select Operator [SEL_151] (rows=460833 width=205)
                                         Output:["_col0","_col1","_col2"]
+<<<<<<< HEAD
                                         Filter Operator [FIL_150] (rows=460833 width=205)
                                           predicate:(i_category is not null and i_current_price is not null)
+=======
+                                        Filter Operator [FIL_210] (rows=460833 width=205)
+                                          predicate:(i_current_price is not null and i_category is not null)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                                           TableScan [TS_19] (rows=462000 width=205)
                                             default@item,i,Tbl:COMPLETE,Col:COMPLETE,Output:["i_item_sk","i_current_price","i_category"]
                               <-Map 14 [SIMPLE_EDGE] vectorized
@@ -171,8 +181,13 @@ Stage-0
                                   PartitionCols:_col1
                                   Select Operator [SEL_156] (rows=525327388 width=11)
                                     Output:["_col0","_col1","_col2"]
+<<<<<<< HEAD
                                     Filter Operator [FIL_155] (rows=525327388 width=11)
                                       predicate:(ss_customer_sk is not null and ss_sold_date_sk is not null)
+=======
+                                    Filter Operator [FIL_226] (rows=525327388 width=11)
+                                      predicate:(ss_sold_date_sk is not null and ss_customer_sk is not null and (ss_sold_date_sk BETWEEN DynamicValue(RS_65_d_d_date_sk_min) AND DynamicValue(RS_65_d_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_65_d_d_date_sk_bloom_filter))))
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                                       TableScan [TS_30] (rows=575995635 width=11)
                                         default@store_sales,s,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_sold_date_sk","ss_item_sk","ss_customer_sk"]
                         <-Merge Join Operator [MERGEJOIN_110] (rows=80000000 width=90)
@@ -203,8 +218,13 @@ Stage-0
                                                     Output:["_col0"],keys:d_month_seq
                                                     Select Operator [SEL_123] (rows=50 width=12)
                                                       Output:["d_month_seq"]
+<<<<<<< HEAD
                                                       Filter Operator [FIL_121] (rows=50 width=12)
                                                         predicate:((d_moy = 2) and (d_year = 2000))
+=======
+                                                      Filter Operator [FIL_181] (rows=50 width=12)
+                                                        predicate:((d_year = 2000) and (d_moy = 2))
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                                                          Please refer to the previous TableScan [TS_3]
                               <-Select Operator [SEL_138] (rows=80000000 width=8)
                                   Output:["_col0","_col1"]

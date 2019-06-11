@@ -213,9 +213,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: default.masking_test_view_n_mv
+            filterExpr: ((key < 10) and (0 = (key % 2))) (type: boolean)
             Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((0 = (key % 2)) and (key < 10)) (type: boolean)
+              predicate: ((key < 10) and (0 = (key % 2))) (type: boolean)
               Statistics: Num rows: 83 Data size: 332 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
@@ -286,9 +287,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: default.masking_test_view_n_mv
+            filterExpr: ((key < 10) and (0 = (key % 2))) (type: boolean)
             Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((0 = (key % 2)) and (key < 10)) (type: boolean)
+              predicate: ((key < 10) and (0 = (key % 2))) (type: boolean)
               Statistics: Num rows: 83 Data size: 332 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: key (type: int)
@@ -358,9 +360,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_n_mv
+            filterExpr: ((key < 10) and ((key % 2) = 0)) (type: boolean)
             Statistics: Num rows: 500 Data size: 30200 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key % 2) = 0) and (key < 10)) (type: boolean)
+              predicate: ((key < 10) and ((key % 2) = 0)) (type: boolean)
               Statistics: Num rows: 83 Data size: 5013 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: reverse(value) (type: string)
@@ -434,9 +437,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_n_mv
+            filterExpr: ((key < 10) and ((key % 2) = 0)) (type: boolean)
             Statistics: Num rows: 500 Data size: 30200 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key % 2) = 0) and (key < 10)) (type: boolean)
+              predicate: ((key < 10) and ((key % 2) = 0)) (type: boolean)
               Statistics: Num rows: 83 Data size: 5013 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: reverse(value) (type: string), key (type: int)
@@ -527,9 +531,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: default.masking_test_view_n_mv_4
+            filterExpr: ((key < 10) and (0 = (key % 2))) (type: boolean)
             Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((0 = (key % 2)) and (key < 10)) (type: boolean)
+              predicate: ((key < 10) and (0 = (key % 2))) (type: boolean)
               Statistics: Num rows: 83 Data size: 7802 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: reverse(value) (type: string)
@@ -607,9 +612,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: default.masking_test_view_n_mv_4
+            filterExpr: ((key < 10) and (0 = (key % 2))) (type: boolean)
             Statistics: Num rows: 500 Data size: 47000 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((0 = (key % 2)) and (key < 10)) (type: boolean)
+              predicate: ((key < 10) and (0 = (key % 2))) (type: boolean)
               Statistics: Num rows: 83 Data size: 7802 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: reverse(value) (type: string), key (type: int)

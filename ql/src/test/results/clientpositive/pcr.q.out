@@ -62,7 +62,7 @@ POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`
 FROM `default`.`pcr_t1`
-WHERE `ds` <= '2000-04-09' AND `key` < 5
+WHERE `key` < 5 AND `ds` <= '2000-04-09'
 ORDER BY `key`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -74,7 +74,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
-            filterExpr: ((ds <= '2000-04-09') and (key < 5)) (type: boolean)
+            filterExpr: ((key < 5) and (ds <= '2000-04-09')) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -269,7 +269,7 @@ POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`
 FROM `default`.`pcr_t1`
-WHERE `ds` <= '2000-04-09' OR `key` < 5
+WHERE `key` < 5 OR `ds` <= '2000-04-09'
 ORDER BY `key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -281,12 +281,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
-            filterExpr: ((ds <= '2000-04-09') or (key < 5)) (type: boolean)
+            filterExpr: ((key < 5) or (ds <= '2000-04-09')) (type: boolean)
             Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((ds <= '2000-04-09') or (key < 5)) (type: boolean)
+              predicate: ((key < 5) or (ds <= '2000-04-09')) (type: boolean)
               Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
@@ -560,7 +560,7 @@ POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`
 FROM `default`.`pcr_t1`
-WHERE `ds` <= '2000-04-09' AND `key` < 5 AND `value` <> 'val_2'
+WHERE `key` < 5 AND `value` <> 'val_2' AND `ds` <= '2000-04-09'
 ORDER BY `key`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1525,7 +1525,7 @@ POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 OPTIMIZED SQL: SELECT CAST(14 AS INTEGER) AS `key`, `value`
 FROM (SELECT `value`
 FROM `default`.`pcr_t1`
-WHERE `ds` IN ('2000-04-08', '2000-04-09') AND `key` = 14
+WHERE `key` = 14 AND `ds` IN ('2000-04-08', '2000-04-09')
 ORDER BY `value`) AS `t1`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1537,7 +1537,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
-            filterExpr: (((ds = '2000-04-08') or (ds = '2000-04-09')) and (key = 14)) (type: boolean)
+            filterExpr: ((key = 14) and (ds) IN ('2000-04-08', '2000-04-09')) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -1731,7 +1731,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
-            filterExpr: ((ds = '2000-04-08') or (ds = '2000-04-09')) (type: boolean)
+            filterExpr: (ds) IN ('2000-04-08', '2000-04-09') (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -2264,7 +2264,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
-            filterExpr: (((ds = '2000-04-08') and (key = 1)) or ((ds = '2000-04-09') and (key = 2))) (type: boolean)
+            filterExpr: ((struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) and (struct(ds)) IN (struct('2000-04-08'), struct('2000-04-09'))) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -2447,10 +2447,10 @@ OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS 
 FROM (SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`
 FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds`
 FROM `default`.`pcr_t1`
-WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
+WHERE `key` IS NOT NULL AND `ds` = '2000-04-08') AS `t0`
 INNER JOIN (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds`
 FROM `default`.`pcr_t1`
-WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+WHERE `key` IS NOT NULL AND `ds` = '2000-04-08') AS `t2` ON `t0`.`key` = `t2`.`key`
 ORDER BY `t0`.`key`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2463,7 +2463,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1
-            filterExpr: ((ds = '2000-04-08') and key is not null) (type: boolean)
+            filterExpr: (key is not null and (ds = '2000-04-08')) (type: boolean)
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -2485,7 +2485,7 @@ STAGE PLANS:
                   auto parallelism: false
           TableScan
             alias: t2
-            filterExpr: ((ds = '2000-04-08') and key is not null) (type: boolean)
+            filterExpr: (key is not null and (ds = '2000-04-08')) (type: boolean)
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -2731,10 +2731,10 @@ OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS 
 FROM (SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`
 FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds`
 FROM `default`.`pcr_t1`
-WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
+WHERE `key` IS NOT NULL AND `ds` = '2000-04-08') AS `t0`
 INNER JOIN (SELECT `key`, `value`, CAST('2000-04-09' AS STRING) AS `ds`
 FROM `default`.`pcr_t1`
-WHERE `ds` = '2000-04-09' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+WHERE `key` IS NOT NULL AND `ds` = '2000-04-09') AS `t2` ON `t0`.`key` = `t2`.`key`
 ORDER BY `t0`.`key`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2747,7 +2747,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1
-            filterExpr: ((ds = '2000-04-08') and key is not null) (type: boolean)
+            filterExpr: (key is not null and (ds = '2000-04-08')) (type: boolean)
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -2769,7 +2769,7 @@ STAGE PLANS:
                   auto parallelism: false
           TableScan
             alias: t2
-            filterExpr: ((ds = '2000-04-09') and key is not null) (type: boolean)
+            filterExpr: (key is not null and (ds = '2000-04-09')) (type: boolean)
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -3435,7 +3435,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (((ds <= '2000-04-09') and (key = 2)) or (ds > '2000-04-08')) (type: boolean)
+              predicate: ((ds > '2000-04-08') or ((ds <= '2000-04-09') and (key = 2))) (type: boolean)
               Statistics: Num rows: 30 Data size: 240 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string), ds (type: string)
@@ -5080,7 +5080,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
 FROM (SELECT `key`, `value`, `hr`
 FROM `default`.`srcpart`
-WHERE `hr` IN ('11', '12') AND `ds` = '2008-04-08' AND `key` = 11
+WHERE `key` = 11 AND `hr` IN ('11', '12') AND `ds` = '2008-04-08'
 ORDER BY `key`, `hr`) AS `t1`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -5092,7 +5092,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: srcpart
-            filterExpr: ((ds = '2008-04-08') and ((hr = '11') or (hr = '12')) and (UDFToDouble(key) = 11.0D)) (type: boolean)
+            filterExpr: ((UDFToDouble(key) = 11.0D) and (hr) IN ('11', '12') and (ds = '2008-04-08')) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -5280,7 +5280,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`, CAST('11' AS STRING) AS `hr`
 FROM (SELECT `key`, `value`, `ds`
 FROM `default`.`srcpart`
-WHERE `hr` = '11' AND `key` = 11
+WHERE `key` = 11 AND `hr` = '11'
 ORDER BY `key`, `ds`) AS `t1`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -5292,7 +5292,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: srcpart
-            filterExpr: ((hr = '11') and (UDFToDouble(key) = 11.0D)) (type: boolean)
+            filterExpr: ((UDFToDouble(key) = 11.0D) and (hr = '11')) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator

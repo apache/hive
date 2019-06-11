@@ -189,7 +189,7 @@ STAGE PLANS:
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
 >>>>>>> 6664c44c79... HIVE-21793: CBO retrieves column stats even if hive.stats.fetch.column.stats is set to false (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Filter Operator
-                    predicate: (ss_customer_sk is not null and ss_item_sk is not null and ss_sold_date_sk is not null and ss_store_sk is not null and ss_ticket_number is not null) (type: boolean)
+                    predicate: (ss_customer_sk is not null and ss_item_sk is not null and ss_ticket_number is not null and ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
                     Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_sold_date_sk (type: int), ss_item_sk (type: int), ss_customer_sk (type: int), ss_store_sk (type: int), ss_ticket_number (type: int), ss_quantity (type: int)
@@ -236,7 +236,7 @@ STAGE PLANS:
                   filterExpr: (sr_customer_sk is not null and sr_item_sk is not null and sr_ticket_number is not null and sr_returned_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 57591150 Data size: 4462194832 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (sr_customer_sk is not null and sr_item_sk is not null and sr_returned_date_sk is not null and sr_ticket_number is not null) (type: boolean)
+                    predicate: (sr_customer_sk is not null and sr_item_sk is not null and sr_ticket_number is not null and sr_returned_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 57591150 Data size: 4462194832 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: sr_returned_date_sk (type: int), sr_item_sk (type: int), sr_customer_sk (type: int), sr_ticket_number (type: int), sr_return_quantity (type: int)
@@ -253,9 +253,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d2
+<<<<<<< HEAD
+=======
+                  filterExpr: ((d_year = 1999) and d_moy BETWEEN 4 AND 7 and d_date_sk is not null) (type: boolean)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d_year = 1999) and d_date_sk is not null and d_moy BETWEEN 4 AND 7) (type: boolean)
+                    predicate: ((d_year = 1999) and d_moy BETWEEN 4 AND 7 and d_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)

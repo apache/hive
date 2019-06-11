@@ -44,10 +44,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: lineitem
-            filterExpr: ((DATE'1996-03-30' = to_date(l_shipdate)) and (l_shipmode = 'RAIL')) (type: boolean)
+            filterExpr: ((l_shipmode = 'RAIL') and (DATE'1996-03-30' = to_date(CAST( l_shipdate AS TIMESTAMP)))) (type: boolean)
             Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((DATE'1996-03-30' = to_date(CAST( l_shipdate AS TIMESTAMP))) and (l_shipmode = 'RAIL')) (type: boolean)
+              predicate: ((l_shipmode = 'RAIL') and (DATE'1996-03-30' = to_date(CAST( l_shipdate AS TIMESTAMP)))) (type: boolean)
               Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: l_orderkey (type: int), (UDFToDouble(l_partkey) / 1000000.0D) (type: double)
@@ -152,7 +152,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            filterExpr: ((key = '238') or (key = '94')) (type: boolean)
+            filterExpr: (key) IN ('238', '94') (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key) IN ('238', '94') (type: boolean)
@@ -236,7 +236,6 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            filterExpr: CASE WHEN ((key <> '238')) THEN ((key = '238')) WHEN ((key = '23')) THEN ((key = '238')) ELSE (null) END (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: false (type: boolean)

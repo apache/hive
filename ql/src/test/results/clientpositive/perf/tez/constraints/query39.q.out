@@ -128,8 +128,13 @@ Stage-0
                                       PartitionCols:_col0
                                       Select Operator [SEL_80] (rows=50 width=4)
                                         Output:["_col0"]
+<<<<<<< HEAD
                                         Filter Operator [FIL_78] (rows=50 width=12)
                                           predicate:((d_moy = 5) and (d_year = 1999))
+=======
+                                        Filter Operator [FIL_148] (rows=50 width=12)
+                                          predicate:((d_year = 1999) and (d_moy = 5))
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                                           TableScan [TS_2] (rows=73049 width=12)
                                             default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_year","d_moy"]
               <-Reducer 9 [SIMPLE_EDGE] vectorized
@@ -168,8 +173,13 @@ Stage-0
                                       PartitionCols:_col0
                                       Select Operator [SEL_81] (rows=50 width=4)
                                         Output:["_col0"]
+<<<<<<< HEAD
                                         Filter Operator [FIL_79] (rows=50 width=12)
                                           predicate:((d_moy = 4) and (d_year = 1999))
+=======
+                                        Filter Operator [FIL_149] (rows=50 width=12)
+                                          predicate:((d_year = 1999) and (d_moy = 4))
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                                            Please refer to the previous TableScan [TS_2]
 
 PREHOOK: query: with inv as

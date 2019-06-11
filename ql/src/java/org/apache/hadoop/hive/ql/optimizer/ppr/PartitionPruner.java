@@ -203,17 +203,17 @@ public class PartitionPruner extends Transform {
     prunerExpr = removeNonPartCols(prunerExpr, extractPartColNames(tab), partColsUsedInFilter);
     // Remove all parts that are not partition columns. See javadoc for details.
     ExprNodeDesc compactExpr = compactExpr(prunerExpr.clone());
-    String oldFilter = prunerExpr.getExprString();
+    String oldFilter = prunerExpr.getExprString(true);
     if (compactExpr == null || isBooleanExpr(compactExpr)) {
       if (isFalseExpr(compactExpr)) {
-        return new PrunedPartitionList(tab, key + compactExpr.getExprString(),
+        return new PrunedPartitionList(tab, key + compactExpr.getExprString(true),
             new LinkedHashSet<Partition>(0), new ArrayList<String>(0), false);
       }
       // For null and true values, return every partition
       return getAllPartsFromCacheOrServer(tab, key, true, prunedPartitionsMap);
     }
 
-    String compactExprString = compactExpr.getExprString();
+    String compactExprString = compactExpr.getExprString(true);
     if (LOG.isDebugEnabled()) {
       LOG.debug("Filter w/ compacting: " + compactExprString
           + "; filter w/o compacting: " + oldFilter);
@@ -224,8 +224,8 @@ public class PartitionPruner extends Transform {
       return ppList;
     }
 
-    ppList = getPartitionsFromServer(tab, key, (ExprNodeGenericFuncDesc)compactExpr,
-        conf, alias, partColsUsedInFilter, oldFilter.equals(compactExpr.getExprString()));
+    ppList = getPartitionsFromServer(tab, key, (ExprNodeGenericFuncDesc) compactExpr,
+        conf, alias, partColsUsedInFilter, oldFilter.equals(compactExprString));
     prunedPartitionsMap.put(key, ppList);
     return ppList;
   }
@@ -285,7 +285,7 @@ public class PartitionPruner extends Transform {
       }
       if (!isBooleanExpr(expr)) {
         throw new IllegalStateException("Unexpected non-boolean ExprNodeConstantDesc: "
-            + expr.getExprString());
+            + expr.getExprString(true));
       }
       return expr;
     } else if (expr instanceof ExprNodeColumnDesc) {
@@ -363,7 +363,7 @@ public class PartitionPruner extends Transform {
 
       return expr;
     } else {
-      throw new IllegalStateException("Unexpected type of ExprNodeDesc: " + expr.getExprString());
+      throw new IllegalStateException("Unexpected type of ExprNodeDesc: " + expr.getExprString(true));
     }
   }
 

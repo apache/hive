@@ -141,7 +141,7 @@ STAGE PLANS:
                   filterExpr: (ss_sold_date_sk is not null and ss_store_sk is not null and ss_hdemo_sk is not null and ss_customer_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ss_customer_sk is not null and ss_hdemo_sk is not null and ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
+                    predicate: (ss_sold_date_sk is not null and ss_store_sk is not null and ss_hdemo_sk is not null and ss_customer_sk is not null) (type: boolean)
                     Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_sold_date_sk (type: int), ss_customer_sk (type: int), ss_hdemo_sk (type: int), ss_addr_sk (type: int), ss_store_sk (type: int), ss_ticket_number (type: int), ss_coupon_amt (type: decimal(7,2)), ss_net_profit (type: decimal(7,2))
@@ -158,7 +158,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: ((d_year) IN (1998, 1999, 2000) and (d_dow = 1) and d_date_sk is not null) (type: boolean)
+                  filterExpr: ((d_dow = 1) and (d_year) IN (1998, 1999, 2000) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_dow = 1) and (d_year) IN (1998, 1999, 2000) and d_date_sk is not null) (type: boolean)

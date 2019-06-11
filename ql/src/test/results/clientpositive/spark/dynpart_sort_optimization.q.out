@@ -133,7 +133,7 @@ STAGE PLANS:
                   alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -204,7 +204,7 @@ STAGE PLANS:
                   alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -291,7 +291,7 @@ STAGE PLANS:
                   alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -360,7 +360,7 @@ STAGE PLANS:
                   alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -497,7 +497,7 @@ STAGE PLANS:
                   alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -568,7 +568,7 @@ STAGE PLANS:
                   alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -655,7 +655,7 @@ STAGE PLANS:
                   alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -724,7 +724,7 @@ STAGE PLANS:
                   alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -1247,7 +1247,7 @@ STAGE PLANS:
                   alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -1315,7 +1315,7 @@ STAGE PLANS:
                   alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -1405,7 +1405,7 @@ STAGE PLANS:
                   Number of rows: 10
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((_col0 = 27Y) or _col0 is null) (type: boolean)
+                    predicate: (_col0 is null or (_col0 = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col1 (type: smallint), _col2 (type: int), _col3 (type: bigint), _col4 (type: float), _col0 (type: tinyint)
@@ -1475,7 +1475,7 @@ STAGE PLANS:
                   alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: t (type: tinyint), si (type: smallint), i (type: int), b (type: bigint), f (type: float)
@@ -1550,7 +1550,7 @@ STAGE PLANS:
                   alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: t (type: tinyint), si (type: smallint), i (type: int), b (type: bigint), f (type: float)
@@ -1930,7 +1930,7 @@ STAGE PLANS:
                   alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -1998,7 +1998,7 @@ STAGE PLANS:
                   alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((t = 27Y) or t is null) (type: boolean)
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -2716,7 +2716,7 @@ STAGE PLANS:
                   alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((s = 'foo') and (t = 27Y)) (type: boolean)
+                    predicate: ((t = 27Y) and (s = 'foo')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), b (type: bigint), f (type: float), 'foo' (type: string), 27Y (type: tinyint), i (type: int)
@@ -2785,7 +2785,7 @@ STAGE PLANS:
                   alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((i = 100) and (s = 'foo') and (t = 27Y)) (type: boolean)
+                    predicate: ((i = 100) and (t = 27Y) and (s = 'foo')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1066360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), b (type: bigint), f (type: float), 'foo' (type: string), 27Y (type: tinyint), 100 (type: int)
@@ -3150,3 +3150,741 @@ POSTHOOK: Input: default@over1k_part3@s=wendy van buren/t=27/i=65680
 POSTHOOK: Input: default@over1k_part3@s=xavier quirinius/t=27/i=65599
 #### A masked pattern was here ####
 17814641134
+<<<<<<< HEAD
+=======
+PREHOOK: query: drop table over1k_n3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_n3
+POSTHOOK: query: drop table over1k_n3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@over1k_n3
+POSTHOOK: Output: default@over1k_n3
+PREHOOK: query: create table over1k_n3(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           `dec` decimal(4,2),
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k_n3
+POSTHOOK: query: create table over1k_n3(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           `dec` decimal(4,2),
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@over1k_n3
+PREHOOK: query: load data local inpath '../../data/files/over1k' into table over1k_n3
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@over1k_n3
+POSTHOOK: query: load data local inpath '../../data/files/over1k' into table over1k_n3
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@over1k_n3
+PREHOOK: query: analyze table over1k_n3 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_n3
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table over1k_n3 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@over1k_n3
+POSTHOOK: Output: default@over1k_n3
+#### A masked pattern was here ####
+PREHOOK: query: explain insert overwrite table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t>27
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part@ds=foo
+POSTHOOK: query: explain insert overwrite table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t>27
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: over1k_n3
+                  filterExpr: ((t > 27Y) or t is null) (type: boolean)
+                  Statistics: Num rows: 1049 Data size: 25160 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((t > 27Y) or t is null) (type: boolean)
+                    Statistics: Num rows: 352 Data size: 8448 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 352 Data size: 8448 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col4 (type: tinyint)
+                        sort order: +
+                        Map-reduce partition columns: _col4 (type: tinyint)
+                        value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float)
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), KEY._col4 (type: tinyint)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 352 Data size: 8448 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.over1k_part
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds foo
+            t 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.over1k_part
+
+  Stage: Stage-2
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: explain insert overwrite table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27 limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part@ds=foo
+POSTHOOK: query: explain insert overwrite table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27 limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 1)
+        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: over1k_n3
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
+                  Statistics: Num rows: 1049 Data size: 25160 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
+                    Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+                      Limit
+                        Number of rows: 10
+                        Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col4 (type: tinyint)
+                    sort order: +
+                    Map-reduce partition columns: _col4 (type: tinyint)
+                    value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float)
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), KEY._col4 (type: tinyint)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.over1k_part
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds foo
+            t 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.over1k_part
+
+  Stage: Stage-2
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: explain insert overwrite table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t>27
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part@ds=foo
+POSTHOOK: query: explain insert overwrite table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t>27
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: over1k_n3
+                  filterExpr: ((t > 27Y) or t is null) (type: boolean)
+                  Statistics: Num rows: 1049 Data size: 25160 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((t > 27Y) or t is null) (type: boolean)
+                    Statistics: Num rows: 352 Data size: 8448 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 352 Data size: 8448 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 352 Data size: 8448 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.over1k_part
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds foo
+            t 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.over1k_part
+
+  Stage: Stage-2
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: explain insert overwrite table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27 limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part@ds=foo
+POSTHOOK: query: explain insert overwrite table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27 limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 1)
+        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: over1k_n3
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
+                  Statistics: Num rows: 1049 Data size: 25160 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (t is null or (t = 27Y)) (type: boolean)
+                    Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 11 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
+                      Limit
+                        Number of rows: 10
+                        Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: tinyint)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col4 (type: tinyint)
+                    sort order: +
+                    Map-reduce partition columns: _col4 (type: tinyint)
+                    value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float)
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), KEY._col4 (type: tinyint)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.over1k_part
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds foo
+            t 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.over1k_part
+
+  Stage: Stage-2
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: create table over1k_part4_0(i int) partitioned by (s string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k_part4_0
+POSTHOOK: query: create table over1k_part4_0(i int) partitioned by (s string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@over1k_part4_0
+PREHOOK: query: create table over1k_part4_1(i int) partitioned by (s string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k_part4_1
+POSTHOOK: query: create table over1k_part4_1(i int) partitioned by (s string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@over1k_part4_1
+PREHOOK: query: EXPLAIN
+WITH CTE AS (
+select i, s from over1k_n3 where s like 'bob%'
+)
+FROM (
+select * from CTE where i > 1 ORDER BY s
+) src1k
+insert overwrite table over1k_part4_0 partition(s)
+select i+1, s
+insert overwrite table over1k_part4_1 partition(s)
+select i+0, s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part4_0
+PREHOOK: Output: default@over1k_part4_1
+POSTHOOK: query: EXPLAIN
+WITH CTE AS (
+select i, s from over1k_n3 where s like 'bob%'
+)
+FROM (
+select * from CTE where i > 1 ORDER BY s
+) src1k
+insert overwrite table over1k_part4_0 partition(s)
+select i+1, s
+insert overwrite table over1k_part4_1 partition(s)
+select i+0, s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+      Edges:
+        Reducer 2 <- Map 4 (PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Map 5 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: over1k_n3
+                  filterExpr: ((i > 1) and (s like 'bob%')) (type: boolean)
+                  Statistics: Num rows: 1049 Data size: 105949 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((i > 1) and (s like 'bob%')) (type: boolean)
+                    Statistics: Num rows: 524 Data size: 52924 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: i (type: int), s (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 524 Data size: 52924 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: (_col0 + 1) (type: int), _col1 (type: string)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 524 Data size: 52924 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col1 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col1 (type: string)
+                          value expressions: _col0 (type: int)
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: over1k_n3
+                  filterExpr: ((i > 1) and (s like 'bob%')) (type: boolean)
+                  Statistics: Num rows: 1049 Data size: 105949 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((i > 1) and (s like 'bob%')) (type: boolean)
+                    Statistics: Num rows: 524 Data size: 52924 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: i (type: int), s (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 524 Data size: 52924 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: (_col0 + 0) (type: int), _col1 (type: string)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 524 Data size: 52924 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col1 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col1 (type: string)
+                          value expressions: _col0 (type: int)
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), KEY._col1 (type: string)
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 524 Data size: 52924 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.over1k_part4_0
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), KEY._col1 (type: string)
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 524 Data size: 52924 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.over1k_part4_1
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            s 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.over1k_part4_0
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          partition:
+            s 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.over1k_part4_1
+
+  Stage: Stage-4
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: WITH CTE AS (
+select i, s from over1k_n3 where s like 'bob%'
+)
+FROM (
+select * from CTE where i > 1 ORDER BY s
+) src1k
+insert overwrite table over1k_part4_0 partition(s)
+select i+1, s
+insert overwrite table over1k_part4_1 partition(s)
+select i+0, s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part4_0
+PREHOOK: Output: default@over1k_part4_1
+POSTHOOK: query: WITH CTE AS (
+select i, s from over1k_n3 where s like 'bob%'
+)
+FROM (
+select * from CTE where i > 1 ORDER BY s
+) src1k
+insert overwrite table over1k_part4_0 partition(s)
+select i+1, s
+insert overwrite table over1k_part4_1 partition(s)
+select i+0, s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
+POSTHOOK: Output: default@over1k_part4_0@s=bob brown
+POSTHOOK: Output: default@over1k_part4_0@s=bob carson
+POSTHOOK: Output: default@over1k_part4_0@s=bob davidson
+POSTHOOK: Output: default@over1k_part4_0@s=bob ellison
+POSTHOOK: Output: default@over1k_part4_0@s=bob falkner
+POSTHOOK: Output: default@over1k_part4_0@s=bob garcia
+POSTHOOK: Output: default@over1k_part4_0@s=bob hernandez
+POSTHOOK: Output: default@over1k_part4_0@s=bob ichabod
+POSTHOOK: Output: default@over1k_part4_0@s=bob king
+POSTHOOK: Output: default@over1k_part4_0@s=bob laertes
+POSTHOOK: Output: default@over1k_part4_0@s=bob miller
+POSTHOOK: Output: default@over1k_part4_0@s=bob ovid
+POSTHOOK: Output: default@over1k_part4_0@s=bob polk
+POSTHOOK: Output: default@over1k_part4_0@s=bob quirinius
+POSTHOOK: Output: default@over1k_part4_0@s=bob steinbeck
+POSTHOOK: Output: default@over1k_part4_0@s=bob van buren
+POSTHOOK: Output: default@over1k_part4_0@s=bob white
+POSTHOOK: Output: default@over1k_part4_0@s=bob xylophone
+POSTHOOK: Output: default@over1k_part4_0@s=bob young
+POSTHOOK: Output: default@over1k_part4_0@s=bob zipper
+POSTHOOK: Output: default@over1k_part4_1@s=bob brown
+POSTHOOK: Output: default@over1k_part4_1@s=bob carson
+POSTHOOK: Output: default@over1k_part4_1@s=bob davidson
+POSTHOOK: Output: default@over1k_part4_1@s=bob ellison
+POSTHOOK: Output: default@over1k_part4_1@s=bob falkner
+POSTHOOK: Output: default@over1k_part4_1@s=bob garcia
+POSTHOOK: Output: default@over1k_part4_1@s=bob hernandez
+POSTHOOK: Output: default@over1k_part4_1@s=bob ichabod
+POSTHOOK: Output: default@over1k_part4_1@s=bob king
+POSTHOOK: Output: default@over1k_part4_1@s=bob laertes
+POSTHOOK: Output: default@over1k_part4_1@s=bob miller
+POSTHOOK: Output: default@over1k_part4_1@s=bob ovid
+POSTHOOK: Output: default@over1k_part4_1@s=bob polk
+POSTHOOK: Output: default@over1k_part4_1@s=bob quirinius
+POSTHOOK: Output: default@over1k_part4_1@s=bob steinbeck
+POSTHOOK: Output: default@over1k_part4_1@s=bob van buren
+POSTHOOK: Output: default@over1k_part4_1@s=bob white
+POSTHOOK: Output: default@over1k_part4_1@s=bob xylophone
+POSTHOOK: Output: default@over1k_part4_1@s=bob young
+POSTHOOK: Output: default@over1k_part4_1@s=bob zipper
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob brown).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob carson).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob davidson).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob ellison).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob falkner).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob garcia).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob hernandez).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob ichabod).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob king).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob laertes).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob miller).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob ovid).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob polk).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob quirinius).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob steinbeck).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob van buren).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob white).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob xylophone).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob young).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob zipper).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob brown).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob carson).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob davidson).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob ellison).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob falkner).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob garcia).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob hernandez).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob ichabod).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob king).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob laertes).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob miller).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob ovid).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob polk).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob quirinius).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob steinbeck).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob van buren).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob white).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob xylophone).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob young).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob zipper).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+PREHOOK: query: select count(1) from over1k_part4_0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_part4_0
+PREHOOK: Input: default@over1k_part4_0@s=bob brown
+PREHOOK: Input: default@over1k_part4_0@s=bob carson
+PREHOOK: Input: default@over1k_part4_0@s=bob davidson
+PREHOOK: Input: default@over1k_part4_0@s=bob ellison
+PREHOOK: Input: default@over1k_part4_0@s=bob falkner
+PREHOOK: Input: default@over1k_part4_0@s=bob garcia
+PREHOOK: Input: default@over1k_part4_0@s=bob hernandez
+PREHOOK: Input: default@over1k_part4_0@s=bob ichabod
+PREHOOK: Input: default@over1k_part4_0@s=bob king
+PREHOOK: Input: default@over1k_part4_0@s=bob laertes
+PREHOOK: Input: default@over1k_part4_0@s=bob miller
+PREHOOK: Input: default@over1k_part4_0@s=bob ovid
+PREHOOK: Input: default@over1k_part4_0@s=bob polk
+PREHOOK: Input: default@over1k_part4_0@s=bob quirinius
+PREHOOK: Input: default@over1k_part4_0@s=bob steinbeck
+PREHOOK: Input: default@over1k_part4_0@s=bob van buren
+PREHOOK: Input: default@over1k_part4_0@s=bob white
+PREHOOK: Input: default@over1k_part4_0@s=bob xylophone
+PREHOOK: Input: default@over1k_part4_0@s=bob young
+PREHOOK: Input: default@over1k_part4_0@s=bob zipper
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from over1k_part4_0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_part4_0
+POSTHOOK: Input: default@over1k_part4_0@s=bob brown
+POSTHOOK: Input: default@over1k_part4_0@s=bob carson
+POSTHOOK: Input: default@over1k_part4_0@s=bob davidson
+POSTHOOK: Input: default@over1k_part4_0@s=bob ellison
+POSTHOOK: Input: default@over1k_part4_0@s=bob falkner
+POSTHOOK: Input: default@over1k_part4_0@s=bob garcia
+POSTHOOK: Input: default@over1k_part4_0@s=bob hernandez
+POSTHOOK: Input: default@over1k_part4_0@s=bob ichabod
+POSTHOOK: Input: default@over1k_part4_0@s=bob king
+POSTHOOK: Input: default@over1k_part4_0@s=bob laertes
+POSTHOOK: Input: default@over1k_part4_0@s=bob miller
+POSTHOOK: Input: default@over1k_part4_0@s=bob ovid
+POSTHOOK: Input: default@over1k_part4_0@s=bob polk
+POSTHOOK: Input: default@over1k_part4_0@s=bob quirinius
+POSTHOOK: Input: default@over1k_part4_0@s=bob steinbeck
+POSTHOOK: Input: default@over1k_part4_0@s=bob van buren
+POSTHOOK: Input: default@over1k_part4_0@s=bob white
+POSTHOOK: Input: default@over1k_part4_0@s=bob xylophone
+POSTHOOK: Input: default@over1k_part4_0@s=bob young
+POSTHOOK: Input: default@over1k_part4_0@s=bob zipper
+#### A masked pattern was here ####
+41
+PREHOOK: query: select count(1) from over1k_part4_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_part4_1
+PREHOOK: Input: default@over1k_part4_1@s=bob brown
+PREHOOK: Input: default@over1k_part4_1@s=bob carson
+PREHOOK: Input: default@over1k_part4_1@s=bob davidson
+PREHOOK: Input: default@over1k_part4_1@s=bob ellison
+PREHOOK: Input: default@over1k_part4_1@s=bob falkner
+PREHOOK: Input: default@over1k_part4_1@s=bob garcia
+PREHOOK: Input: default@over1k_part4_1@s=bob hernandez
+PREHOOK: Input: default@over1k_part4_1@s=bob ichabod
+PREHOOK: Input: default@over1k_part4_1@s=bob king
+PREHOOK: Input: default@over1k_part4_1@s=bob laertes
+PREHOOK: Input: default@over1k_part4_1@s=bob miller
+PREHOOK: Input: default@over1k_part4_1@s=bob ovid
+PREHOOK: Input: default@over1k_part4_1@s=bob polk
+PREHOOK: Input: default@over1k_part4_1@s=bob quirinius
+PREHOOK: Input: default@over1k_part4_1@s=bob steinbeck
+PREHOOK: Input: default@over1k_part4_1@s=bob van buren
+PREHOOK: Input: default@over1k_part4_1@s=bob white
+PREHOOK: Input: default@over1k_part4_1@s=bob xylophone
+PREHOOK: Input: default@over1k_part4_1@s=bob young
+PREHOOK: Input: default@over1k_part4_1@s=bob zipper
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from over1k_part4_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_part4_1
+POSTHOOK: Input: default@over1k_part4_1@s=bob brown
+POSTHOOK: Input: default@over1k_part4_1@s=bob carson
+POSTHOOK: Input: default@over1k_part4_1@s=bob davidson
+POSTHOOK: Input: default@over1k_part4_1@s=bob ellison
+POSTHOOK: Input: default@over1k_part4_1@s=bob falkner
+POSTHOOK: Input: default@over1k_part4_1@s=bob garcia
+POSTHOOK: Input: default@over1k_part4_1@s=bob hernandez
+POSTHOOK: Input: default@over1k_part4_1@s=bob ichabod
+POSTHOOK: Input: default@over1k_part4_1@s=bob king
+POSTHOOK: Input: default@over1k_part4_1@s=bob laertes
+POSTHOOK: Input: default@over1k_part4_1@s=bob miller
+POSTHOOK: Input: default@over1k_part4_1@s=bob ovid
+POSTHOOK: Input: default@over1k_part4_1@s=bob polk
+POSTHOOK: Input: default@over1k_part4_1@s=bob quirinius
+POSTHOOK: Input: default@over1k_part4_1@s=bob steinbeck
+POSTHOOK: Input: default@over1k_part4_1@s=bob van buren
+POSTHOOK: Input: default@over1k_part4_1@s=bob white
+POSTHOOK: Input: default@over1k_part4_1@s=bob xylophone
+POSTHOOK: Input: default@over1k_part4_1@s=bob young
+POSTHOOK: Input: default@over1k_part4_1@s=bob zipper
+#### A masked pattern was here ####
+41
+PREHOOK: query: drop table over1k_n3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_n3
+POSTHOOK: query: drop table over1k_n3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@over1k_n3
+POSTHOOK: Output: default@over1k_n3
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)

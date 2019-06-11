@@ -191,7 +191,7 @@ Stage-0
               Select Operator [SEL_162] (rows=1 width=884)
                 Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
                 Filter Operator [FIL_158] (rows=1 width=436)
-                  predicate:(_col1 BETWEEN (0.9 * _col5) AND (1.1 * _col5) and _col3 BETWEEN (0.9 * _col5) AND (1.1 * _col5) and _col5 BETWEEN (0.9 * _col1) AND (1.1 * _col1) and _col5 BETWEEN (0.9 * _col3) AND (1.1 * _col3))
+                  predicate:(_col5 BETWEEN (0.9 * _col1) AND (1.1 * _col1) and _col5 BETWEEN (0.9 * _col3) AND (1.1 * _col3) and _col1 BETWEEN (0.9 * _col5) AND (1.1 * _col5) and _col3 BETWEEN (0.9 * _col5) AND (1.1 * _col5))
                   Merge Join Operator [MERGEJOIN_419] (rows=1 width=436)
                     Conds:RS_155._col0=RS_484._col0(Inner),Output:["_col0","_col1","_col3","_col5"]
                   <-Reducer 14 [SIMPLE_EDGE] vectorized
@@ -238,7 +238,7 @@ Stage-0
                                               Select Operator [SEL_445] (rows=73049 width=98)
                                                 Output:["_col0","_col1"]
                                                 Filter Operator [FIL_439] (rows=73049 width=98)
-                                                  predicate:(d_date is not null and d_week_seq is not null)
+                                                  predicate:(d_week_seq is not null and d_date is not null)
                                                   TableScan [TS_21] (rows=73049 width=98)
                                                     default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date","d_week_seq"]
                                           <-Reducer 30 [SIMPLE_EDGE]
@@ -280,7 +280,7 @@ Stage-0
                                     Select Operator [SEL_461] (rows=462000 width=104)
                                       Output:["_col0","_col1"]
                                       Filter Operator [FIL_460] (rows=462000 width=104)
-                                        predicate:(i_item_id is not null and i_item_sk is not null)
+                                        predicate:(i_item_sk is not null and i_item_id is not null)
                                         TableScan [TS_3] (rows=462000 width=104)
                                           default@item,item,Tbl:COMPLETE,Col:COMPLETE,Output:["i_item_sk","i_item_id"]
                                 <-Map 35 [SIMPLE_EDGE] vectorized
@@ -289,7 +289,7 @@ Stage-0
                                     Select Operator [SEL_481] (rows=143966864 width=119)
                                       Output:["_col0","_col1","_col2"]
                                       Filter Operator [FIL_480] (rows=143966864 width=119)
-                                        predicate:((ws_sold_date_sk BETWEEN DynamicValue(RS_143_date_dim_d_date_sk_min) AND DynamicValue(RS_143_date_dim_d_date_sk_max) and in_bloom_filter(ws_sold_date_sk, DynamicValue(RS_143_date_dim_d_date_sk_bloom_filter))) and ws_item_sk is not null and ws_sold_date_sk is not null)
+                                        predicate:(ws_sold_date_sk is not null and ws_item_sk is not null and (ws_sold_date_sk BETWEEN DynamicValue(RS_143_date_dim_d_date_sk_min) AND DynamicValue(RS_143_date_dim_d_date_sk_max) and in_bloom_filter(ws_sold_date_sk, DynamicValue(RS_143_date_dim_d_date_sk_bloom_filter))))
                                         TableScan [TS_100] (rows=144002668 width=119)
                                           default@web_sales,web_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ws_sold_date_sk","ws_item_sk","ws_ext_sales_price"]
                                         <-Reducer 21 [BROADCAST_EDGE] vectorized
@@ -349,7 +349,7 @@ Stage-0
                                                     Select Operator [SEL_443] (rows=73049 width=98)
                                                       Output:["_col0","_col1"]
                                                       Filter Operator [FIL_437] (rows=73049 width=98)
-                                                        predicate:(d_date is not null and d_week_seq is not null)
+                                                        predicate:(d_week_seq is not null and d_date is not null)
                                                          Please refer to the previous TableScan [TS_21]
                                                 <-Reducer 27 [SIMPLE_EDGE]
                                                   SHUFFLE [RS_77]
@@ -381,7 +381,7 @@ Stage-0
                                           Select Operator [SEL_472] (rows=550076554 width=114)
                                             Output:["_col0","_col1","_col2"]
                                             Filter Operator [FIL_471] (rows=550076554 width=114)
-                                              predicate:((ss_sold_date_sk BETWEEN DynamicValue(RS_93_date_dim_d_date_sk_min) AND DynamicValue(RS_93_date_dim_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_93_date_dim_d_date_sk_bloom_filter))) and ss_item_sk is not null and ss_sold_date_sk is not null)
+                                              predicate:(ss_sold_date_sk is not null and ss_item_sk is not null and (ss_sold_date_sk BETWEEN DynamicValue(RS_93_date_dim_d_date_sk_min) AND DynamicValue(RS_93_date_dim_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_93_date_dim_d_date_sk_bloom_filter))))
                                               TableScan [TS_50] (rows=575995635 width=114)
                                                 default@store_sales,store_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_sold_date_sk","ss_item_sk","ss_ext_sales_price"]
                                               <-Reducer 19 [BROADCAST_EDGE] vectorized
@@ -434,7 +434,7 @@ Stage-0
                                                     Select Operator [SEL_441] (rows=73049 width=98)
                                                       Output:["_col0","_col1"]
                                                       Filter Operator [FIL_435] (rows=73049 width=98)
-                                                        predicate:(d_date is not null and d_week_seq is not null)
+                                                        predicate:(d_week_seq is not null and d_date is not null)
                                                          Please refer to the previous TableScan [TS_21]
                                                 <-Reducer 24 [SIMPLE_EDGE]
                                                   SHUFFLE [RS_27]
@@ -466,7 +466,7 @@ Stage-0
                                           Select Operator [SEL_458] (rows=286549727 width=119)
                                             Output:["_col0","_col1","_col2"]
                                             Filter Operator [FIL_457] (rows=286549727 width=119)
-                                              predicate:((cs_sold_date_sk BETWEEN DynamicValue(RS_43_date_dim_d_date_sk_min) AND DynamicValue(RS_43_date_dim_d_date_sk_max) and in_bloom_filter(cs_sold_date_sk, DynamicValue(RS_43_date_dim_d_date_sk_bloom_filter))) and cs_item_sk is not null and cs_sold_date_sk is not null)
+                                              predicate:(cs_sold_date_sk is not null and cs_item_sk is not null and (cs_sold_date_sk BETWEEN DynamicValue(RS_43_date_dim_d_date_sk_min) AND DynamicValue(RS_43_date_dim_d_date_sk_max) and in_bloom_filter(cs_sold_date_sk, DynamicValue(RS_43_date_dim_d_date_sk_bloom_filter))))
                                               TableScan [TS_0] (rows=287989836 width=119)
                                                 default@catalog_sales,catalog_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["cs_sold_date_sk","cs_item_sk","cs_ext_sales_price"]
                                               <-Reducer 17 [BROADCAST_EDGE] vectorized

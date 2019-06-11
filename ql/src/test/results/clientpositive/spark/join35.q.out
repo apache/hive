@@ -35,12 +35,20 @@ POSTHOOK: Output: default@dest_j1_n24
 OPTIMIZED SQL: SELECT `t5`.`key`, `t5`.`value`, `t3`.`$f1` AS `cnt`
 FROM (SELECT `key`, COUNT(*) AS `$f1`
 FROM `default`.`src`
+<<<<<<< HEAD
 WHERE `key` < 20
+=======
+WHERE CAST(`key` AS DOUBLE) BETWEEN 20 AND 100 AND `key` < 20
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
 GROUP BY `key`
 UNION ALL
 SELECT `key`, COUNT(*) AS `$f1`
 FROM `default`.`src`
+<<<<<<< HEAD
 WHERE `key` > 100
+=======
+WHERE CAST(`key` AS DOUBLE) BETWEEN 20 AND 100 AND `key` > 100
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
 GROUP BY `key`) AS `t3`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
@@ -63,13 +71,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
+<<<<<<< HEAD
                   filterExpr: (UDFToDouble(key) < 20.0D) (type: boolean)
+=======
+                  filterExpr: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) < 20.0D)) (type: boolean)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
+<<<<<<< HEAD
                     predicate: (UDFToDouble(key) < 20.0D) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+=======
+                    predicate: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) < 20.0D)) (type: boolean)
+                    Statistics: Num rows: 148 Data size: 1572 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                     Group By Operator
                       aggregations: count()
                       keys: key (type: string)
@@ -144,13 +161,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x1
+<<<<<<< HEAD
                   filterExpr: (UDFToDouble(key) > 100.0D) (type: boolean)
+=======
+                  filterExpr: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) > 100.0D)) (type: boolean)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
+<<<<<<< HEAD
                     predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+=======
+                    predicate: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) > 100.0D)) (type: boolean)
+                    Statistics: Num rows: 148 Data size: 1572 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                     Group By Operator
                       aggregations: count()
                       keys: key (type: string)

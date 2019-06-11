@@ -2658,7 +2658,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: CastStringToDouble(col 3:string) -> 5:double), SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:string))
-                    predicate: ((UDFToDouble(hour) = 11.0D) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
+                    predicate: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0D) and ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
@@ -2797,7 +2797,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: CastStringToDouble(col 3:string) -> 5:double), SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:string))
-                    predicate: ((UDFToDouble(hour) = 11.0D) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
+                    predicate: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0D) and ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
@@ -3013,7 +3013,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: CastStringToDouble(col 3:string) -> 5:double), SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:string))
-                    predicate: ((UDFToDouble(hour) = 11.0D) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
+                    predicate: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0D) and ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
@@ -5323,7 +5323,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: CastStringToDouble(col 3:string) -> 5:double))
-                    predicate: ((UDFToDouble(hour) = 11.0D) and (date = '2008-04-08')) (type: boolean)
+                    predicate: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0D)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
@@ -5499,7 +5499,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: CastStringToDouble(col 3:string) -> 5:double), SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:string))
-                    predicate: ((UDFToDouble(hour) = 11.0D) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
+                    predicate: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0D) and ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
@@ -5638,7 +5638,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: CastStringToDouble(col 3:string) -> 5:double), SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:string))
-                    predicate: ((UDFToDouble(hour) = 11.0D) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
+                    predicate: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0D) and ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
@@ -10157,7 +10157,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: CastStringToDouble(col 3:string) -> 5:double), SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:string))
-                    predicate: ((UDFToDouble(hour) = 11.0D) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
+                    predicate: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0D) and ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)

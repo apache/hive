@@ -64,10 +64,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: promotion
-                  filterExpr: (((p_channel_email = 'N') or (p_channel_event = 'N')) and p_promo_sk is not null) (type: boolean)
+                  filterExpr: (p_promo_sk is not null and ((p_channel_email = 'N') or (p_channel_event = 'N'))) (type: boolean)
                   Statistics: Num rows: 2300 Data size: 2713420 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((p_channel_email = 'N') or (p_channel_event = 'N')) and p_promo_sk is not null) (type: boolean)
+                    predicate: (p_promo_sk is not null and ((p_channel_email = 'N') or (p_channel_event = 'N'))) (type: boolean)
                     Statistics: Num rows: 2300 Data size: 2713420 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: p_promo_sk (type: int)
@@ -98,7 +98,7 @@ STAGE PLANS:
                   filterExpr: (ss_cdemo_sk is not null and ss_sold_date_sk is not null and ss_item_sk is not null and ss_promo_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ss_cdemo_sk is not null and ss_item_sk is not null and ss_promo_sk is not null and ss_sold_date_sk is not null) (type: boolean)
+                    predicate: (ss_cdemo_sk is not null and ss_sold_date_sk is not null and ss_item_sk is not null and ss_promo_sk is not null) (type: boolean)
                     Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_sold_date_sk (type: int), ss_item_sk (type: int), ss_cdemo_sk (type: int), ss_promo_sk (type: int), ss_quantity (type: int), ss_list_price (type: decimal(7,2)), ss_sales_price (type: decimal(7,2)), ss_coupon_amt (type: decimal(7,2))
@@ -135,10 +135,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_demographics
-                  filterExpr: ((cd_gender = 'F') and (cd_marital_status = 'W') and (cd_education_status = 'Primary') and cd_demo_sk is not null) (type: boolean)
+                  filterExpr: (cd_demo_sk is not null and (cd_gender = 'F') and (cd_marital_status = 'W') and (cd_education_status = 'Primary')) (type: boolean)
                   Statistics: Num rows: 1861800 Data size: 717186159 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((cd_education_status = 'Primary') and (cd_gender = 'F') and (cd_marital_status = 'W') and cd_demo_sk is not null) (type: boolean)
+                    predicate: (cd_demo_sk is not null and (cd_gender = 'F') and (cd_marital_status = 'W') and (cd_education_status = 'Primary')) (type: boolean)
                     Statistics: Num rows: 232725 Data size: 89648269 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cd_demo_sk (type: int)

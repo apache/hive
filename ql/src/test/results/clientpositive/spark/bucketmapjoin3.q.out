@@ -137,10 +137,15 @@ POSTHOOK: Output: default@bucketmapjoin_tmp_result_n6
 OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`
 FROM `default`.`srcbucket_mapjoin_part_2_n11`
+<<<<<<< HEAD
 WHERE `ds` = '2008-04-08' AND `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`
+=======
+WHERE `key` IS NOT NULL AND `ds` = '2008-04-08') AS `t0`
+INNER JOIN (SELECT `key`, `value`
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
 FROM `default`.`srcbucket_mapjoin_part_n13`
-WHERE `ds` = '2008-04-08' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+WHERE `key` IS NOT NULL AND `ds` = '2008-04-08') AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -158,6 +163,10 @@ STAGE PLANS:
                 TableScan
                   alias: a
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+                  filterExpr: (key is not null and (ds = '2008-04-08')) (type: boolean)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Statistics: Num rows: 78 Data size: 30620 Basic stats: PARTIAL Column stats: NONE
 =======
                   filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
@@ -240,6 +249,10 @@ STAGE PLANS:
                 TableScan
                   alias: b
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+                  filterExpr: (key is not null and (ds = '2008-04-08')) (type: boolean)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Statistics: Num rows: 149 Data size: 58120 Basic stats: PARTIAL Column stats: NONE
 =======
                   filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
@@ -530,10 +543,15 @@ POSTHOOK: Output: default@bucketmapjoin_tmp_result_n6
 OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`
 FROM `default`.`srcbucket_mapjoin_part_2_n11`
+<<<<<<< HEAD
 WHERE `ds` = '2008-04-08' AND `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`
+=======
+WHERE `key` IS NOT NULL AND `ds` = '2008-04-08') AS `t0`
+INNER JOIN (SELECT `key`, `value`
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
 FROM `default`.`srcbucket_mapjoin_part_n13`
-WHERE `ds` = '2008-04-08' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+WHERE `key` IS NOT NULL AND `ds` = '2008-04-08') AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -551,6 +569,10 @@ STAGE PLANS:
                 TableScan
                   alias: a
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+                  filterExpr: (key is not null and (ds = '2008-04-08')) (type: boolean)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Statistics: Num rows: 78 Data size: 30620 Basic stats: PARTIAL Column stats: NONE
 =======
                   filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
@@ -633,6 +655,10 @@ STAGE PLANS:
                 TableScan
                   alias: b
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+                  filterExpr: (key is not null and (ds = '2008-04-08')) (type: boolean)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   Statistics: Num rows: 149 Data size: 58120 Basic stats: PARTIAL Column stats: NONE
 =======
                   filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)

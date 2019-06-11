@@ -442,7 +442,7 @@ STAGE PLANS:
                   filterExpr: ((deptno > 11) and (deptno < 19)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((deptno < 19) and (deptno > 11)) (type: boolean)
+                    predicate: ((deptno > 11) and (deptno < 19)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: empid (type: int)

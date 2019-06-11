@@ -173,7 +173,7 @@ STAGE PLANS:
                   filterExpr: ((d_year = 1999) and (d_qoy < 4) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d_qoy < 4) and (d_year = 1999) and d_date_sk is not null) (type: boolean)
+                    predicate: ((d_year = 1999) and (d_qoy < 4) and d_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 12174 Data size: 13622706 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)
@@ -212,7 +212,7 @@ STAGE PLANS:
                   filterExpr: ((d_year = 1999) and (d_qoy < 4) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d_qoy < 4) and (d_year = 1999) and d_date_sk is not null) (type: boolean)
+                    predicate: ((d_year = 1999) and (d_qoy < 4) and d_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 12174 Data size: 13622706 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)
@@ -251,7 +251,7 @@ STAGE PLANS:
                   filterExpr: ((d_year = 1999) and (d_qoy < 4) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d_qoy < 4) and (d_year = 1999) and d_date_sk is not null) (type: boolean)
+                    predicate: ((d_year = 1999) and (d_qoy < 4) and d_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 12174 Data size: 13622706 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)
