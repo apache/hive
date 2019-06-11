@@ -33,20 +33,15 @@ import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
-import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -742,34 +737,11 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
   }
 
   private List<String> externalTableBasePathWithClause() throws IOException, SemanticException {
-    Path externalTableLocation = new Path(REPLICA_EXTERNAL_BASE);
-    DistributedFileSystem fileSystem = replica.miniDFSCluster.getFileSystem();
-    externalTableLocation = PathBuilder.fullyQualifiedHDFSUri(externalTableLocation, fileSystem);
-    fileSystem.mkdirs(externalTableLocation);
-
-    // this is required since the same filesystem is used in both source and target
-    return Arrays.asList(
-            "'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'='"
-                    + externalTableLocation.toString() + "'",
-            "'distcp.options.pugpb'=''"
-    );
+    return ReplicationTestUtils.externalTableBasePathWithClause(REPLICA_EXTERNAL_BASE, replica);
   }
 
   private void assertExternalFileInfo(List<String> expected, Path externalTableInfoFile)
       throws IOException {
-    DistributedFileSystem fileSystem = primary.miniDFSCluster.getFileSystem();
-    assertTrue(fileSystem.exists(externalTableInfoFile));
-    InputStream inputStream = fileSystem.open(externalTableInfoFile);
-    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-    Set<String> tableNames = new HashSet<>();
-    for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-      String[] components = line.split(",");
-      assertEquals("The file should have tableName,base64encoded(data_location)",
-          2, components.length);
-      tableNames.add(components[0]);
-      assertTrue(components[1].length() > 0);
-    }
-    assertTrue(tableNames.containsAll(expected));
-    reader.close();
+    ReplicationTestUtils.assertExternalFileInfo(primary, expected, externalTableInfoFile);
   }
 }
