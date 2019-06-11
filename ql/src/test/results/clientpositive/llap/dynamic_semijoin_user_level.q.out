@@ -203,7 +203,7 @@ Stage-0
                   Select Operator [SEL_2] (rows=2000 width=87)
                     Output:["_col0"]
                     Filter Operator [FIL_17] (rows=2000 width=87)
-                      predicate:(key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_n4_key1_min) AND DynamicValue(RS_7_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n4_key1_bloom_filter))))
+                      predicate:(key is not null and key BETWEEN DynamicValue(RS_7_srcpart_small_n4_key1_min) AND DynamicValue(RS_7_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n4_key1_bloom_filter)))
                       TableScan [TS_0] (rows=2000 width=87)
                         default@srcpart_date_n9,srcpart_date_n9,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
                       <-Reducer 5 [BROADCAST_EDGE] llap
@@ -462,7 +462,7 @@ Stage-0
                   Select Operator [SEL_8] (rows=9174 width=70)
                     Output:["_col0"]
                     Filter Operator [FIL_28] (rows=9174 width=70)
-                      predicate:(cstring is not null and (cstring BETWEEN DynamicValue(RS_10_srcpart_small_n4_key1_min) AND DynamicValue(RS_10_srcpart_small_n4_key1_max) and in_bloom_filter(cstring, DynamicValue(RS_10_srcpart_small_n4_key1_bloom_filter))))
+                      predicate:(cstring is not null and cstring BETWEEN DynamicValue(RS_10_srcpart_small_n4_key1_min) AND DynamicValue(RS_10_srcpart_small_n4_key1_max) and in_bloom_filter(cstring, DynamicValue(RS_10_srcpart_small_n4_key1_bloom_filter)))
                       TableScan [TS_6] (rows=12288 width=70)
                         default@alltypesorc_int_n2,alltypesorc_int_n2,Tbl:COMPLETE,Col:COMPLETE,Output:["cstring"]
                       <-Reducer 6 [BROADCAST_EDGE] llap
@@ -496,7 +496,7 @@ Stage-0
                       Select Operator [SEL_2] (rows=2000 width=87)
                         Output:["_col0"]
                         Filter Operator [FIL_26] (rows=2000 width=87)
-                          predicate:(key is not null and (key BETWEEN DynamicValue(RS_10_srcpart_small_n4_key1_min) AND DynamicValue(RS_10_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n4_key1_bloom_filter))))
+                          predicate:(key is not null and key BETWEEN DynamicValue(RS_10_srcpart_small_n4_key1_min) AND DynamicValue(RS_10_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n4_key1_bloom_filter)))
                           TableScan [TS_0] (rows=2000 width=87)
                             default@srcpart_date_n9,srcpart_date_n9,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
                           <-Reducer 6 [BROADCAST_EDGE] llap
@@ -655,7 +655,7 @@ Stage-0
                   Select Operator [SEL_2] (rows=2000 width=178)
                     Output:["_col0","_col1"]
                     Filter Operator [FIL_17] (rows=2000 width=178)
-                      predicate:(key is not null and value is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_n4_key1_min) AND DynamicValue(RS_7_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n4_key1_bloom_filter))))
+                      predicate:(key is not null and value is not null and key BETWEEN DynamicValue(RS_7_srcpart_small_n4_key1_min) AND DynamicValue(RS_7_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n4_key1_bloom_filter)))
                       TableScan [TS_0] (rows=2000 width=178)
                         default@srcpart_date_n9,srcpart_date_n9,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                       <-Reducer 5 [BROADCAST_EDGE] llap
@@ -849,7 +849,7 @@ Stage-0
                       Select Operator [SEL_2] (rows=2000 width=178)
                         Output:["_col0","_col1"]
                         Filter Operator [FIL_26] (rows=2000 width=178)
-                          predicate:(key is not null and value is not null and (key BETWEEN DynamicValue(RS_10_srcpart_small_n4_key1_min) AND DynamicValue(RS_10_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n4_key1_bloom_filter))))
+                          predicate:(key is not null and value is not null and key BETWEEN DynamicValue(RS_10_srcpart_small_n4_key1_min) AND DynamicValue(RS_10_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n4_key1_bloom_filter)))
                           TableScan [TS_0] (rows=2000 width=178)
                             default@srcpart_date_n9,srcpart_date_n9,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                           <-Reducer 7 [BROADCAST_EDGE] llap
@@ -869,7 +869,7 @@ Stage-0
                   Select Operator [SEL_8] (rows=9174 width=70)
                     Output:["_col0"]
                     Filter Operator [FIL_28] (rows=9174 width=70)
-                      predicate:(cstring is not null and (cstring BETWEEN DynamicValue(RS_12_srcpart_date_n9_value_min) AND DynamicValue(RS_12_srcpart_date_n9_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_n9_value_bloom_filter))))
+                      predicate:(cstring is not null and cstring BETWEEN DynamicValue(RS_12_srcpart_date_n9_value_min) AND DynamicValue(RS_12_srcpart_date_n9_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_n9_value_bloom_filter)))
                       TableScan [TS_6] (rows=12288 width=70)
                         default@alltypesorc_int_n2,alltypesorc_int_n2,Tbl:COMPLETE,Col:COMPLETE,Output:["cstring"]
                       <-Reducer 5 [BROADCAST_EDGE] llap
@@ -949,12 +949,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n9
-                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_n4_key1_min) AND DynamicValue(RS_7_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n4_key1_bloom_filter)))) (type: boolean)
+                  filterExpr: (key is not null and key BETWEEN DynamicValue(RS_7_srcpart_small_n4_key1_min) AND DynamicValue(RS_7_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n4_key1_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_n4_key1_min) AND DynamicValue(RS_7_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n4_key1_bloom_filter)))) (type: boolean)
+                    predicate: (key is not null and key BETWEEN DynamicValue(RS_7_srcpart_small_n4_key1_min) AND DynamicValue(RS_7_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n4_key1_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)

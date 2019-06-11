@@ -200,7 +200,7 @@ Stage-0
                                                 Select Operator [SEL_288] (rows=285117980 width=123)
                                                   Output:["_col0","_col1","_col2","_col3"]
                                                   Filter Operator [FIL_287] (rows=285117980 width=123)
-                                                    predicate:(cs_sold_date_sk is not null and cs_call_center_sk is not null and (cs_sold_date_sk BETWEEN DynamicValue(RS_83_date_dim_d_date_sk_min) AND DynamicValue(RS_83_date_dim_d_date_sk_max) and in_bloom_filter(cs_sold_date_sk, DynamicValue(RS_83_date_dim_d_date_sk_bloom_filter))))
+                                                    predicate:(cs_sold_date_sk is not null and cs_call_center_sk is not null and cs_sold_date_sk BETWEEN DynamicValue(RS_83_date_dim_d_date_sk_min) AND DynamicValue(RS_83_date_dim_d_date_sk_max) and in_bloom_filter(cs_sold_date_sk, DynamicValue(RS_83_date_dim_d_date_sk_bloom_filter)))
                                                     TableScan [TS_70] (rows=287989836 width=123)
                                                       default@catalog_sales,catalog_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["cs_sold_date_sk","cs_call_center_sk","cs_item_sk","cs_sales_price"]
                                                     <-Reducer 13 [BROADCAST_EDGE] vectorized

@@ -1421,7 +1421,7 @@ STAGE PLANS:
                           outputColumnNames: _col1
                           input vertices:
                             1 Map 5
-                          Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 4 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                           Map Join Operator
                             condition map:
                                  Inner Join 0 to 1
@@ -1430,10 +1430,10 @@ STAGE PLANS:
                               1 value (type: string)
                             input vertices:
                               1 Map 6
-                            Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: count()
-                              minReductionHashAggr: 0.975
+                              minReductionHashAggr: 0.75
                               mode: hash
                               outputColumnNames: _col0
                               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1652,7 +1652,7 @@ STAGE PLANS:
                           outputColumnNames: _col1
                           input vertices:
                             1 Map 5
-                          Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 4 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                           Map Join Operator
                             condition map:
                                  Inner Join 0 to 1
@@ -1661,10 +1661,10 @@ STAGE PLANS:
                               1 value (type: string)
                             input vertices:
                               1 Map 6
-                            Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: count()
-                              minReductionHashAggr: 0.975
+                              minReductionHashAggr: 0.75
                               mode: hash
                               outputColumnNames: _col0
                               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE

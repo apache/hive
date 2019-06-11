@@ -94,7 +94,7 @@ Stage-0
                               Select Operator [SEL_89] (rows=287989836 width=4)
                                 Output:["_col0"]
                                 Filter Operator [FIL_88] (rows=287989836 width=4)
-                                  predicate:(cs_item_sk is not null and (cs_item_sk BETWEEN DynamicValue(RS_17_item_i_item_sk_min) AND DynamicValue(RS_17_item_i_item_sk_max) and in_bloom_filter(cs_item_sk, DynamicValue(RS_17_item_i_item_sk_bloom_filter))))
+                                  predicate:(cs_item_sk is not null and cs_item_sk BETWEEN DynamicValue(RS_17_item_i_item_sk_min) AND DynamicValue(RS_17_item_i_item_sk_max) and in_bloom_filter(cs_item_sk, DynamicValue(RS_17_item_i_item_sk_bloom_filter)))
                                   TableScan [TS_0] (rows=287989836 width=4)
                                     default@catalog_sales,catalog_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["cs_item_sk"]
                                   <-Reducer 7 [BROADCAST_EDGE] vectorized
