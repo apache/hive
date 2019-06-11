@@ -317,10 +317,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n7
-                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter)))) (type: boolean)
+                  filterExpr: (key is not null and key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter)))) (type: boolean)
+                    predicate: (key is not null and key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -799,10 +799,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n7
-                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter)))) (type: boolean)
+                  filterExpr: (key is not null and key BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key is not null and (key BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter)))) (type: boolean)
+                    predicate: (key is not null and key BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -853,10 +853,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_int_n1
-                  filterExpr: (cstring is not null and (cstring BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(cstring, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter)))) (type: boolean)
+                  filterExpr: (cstring is not null and cstring BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(cstring, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (cstring is not null and (cstring BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(cstring, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter)))) (type: boolean)
+                    predicate: (cstring is not null and cstring BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(cstring, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 9174 Data size: 643900 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cstring (type: string)
@@ -1133,10 +1133,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n7
-                  filterExpr: (key is not null and value is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter)))) (type: boolean)
+                  filterExpr: (key is not null and value is not null and key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key is not null and value is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter)))) (type: boolean)
+                    predicate: (key is not null and value is not null and key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -1472,10 +1472,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n7
-                  filterExpr: (key is not null and value is not null and (key BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter)))) (type: boolean)
+                  filterExpr: (key is not null and value is not null and key BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key is not null and value is not null and (key BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter)))) (type: boolean)
+                    predicate: (key is not null and value is not null and key BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -1527,10 +1527,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_int_n1
-                  filterExpr: (cstring is not null and (cstring BETWEEN DynamicValue(RS_12_srcpart_date_n7_value_min) AND DynamicValue(RS_12_srcpart_date_n7_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_n7_value_bloom_filter)))) (type: boolean)
+                  filterExpr: (cstring is not null and cstring BETWEEN DynamicValue(RS_12_srcpart_date_n7_value_min) AND DynamicValue(RS_12_srcpart_date_n7_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_n7_value_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (cstring is not null and (cstring BETWEEN DynamicValue(RS_12_srcpart_date_n7_value_min) AND DynamicValue(RS_12_srcpart_date_n7_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_n7_value_bloom_filter)))) (type: boolean)
+                    predicate: (cstring is not null and cstring BETWEEN DynamicValue(RS_12_srcpart_date_n7_value_min) AND DynamicValue(RS_12_srcpart_date_n7_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_n7_value_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 9174 Data size: 643900 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cstring (type: string)
@@ -1704,12 +1704,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n7
-                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter)))) (type: boolean)
+                  filterExpr: (key is not null and key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter)))) (type: boolean)
+                    predicate: (key is not null and key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -2323,10 +2323,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n7
-                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter)))) (type: boolean)
+                  filterExpr: (key is not null and key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter)))) (type: boolean)
+                    predicate: (key is not null and key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -2802,10 +2802,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n7
-                  filterExpr: (key is not null and value is not null and (key BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter)))) (type: boolean)
+                  filterExpr: (key is not null and value is not null and key BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key is not null and value is not null and (key BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter)))) (type: boolean)
+                    predicate: (key is not null and value is not null and key BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -2880,10 +2880,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_int_n1
-                  filterExpr: (cstring is not null and (cstring BETWEEN DynamicValue(RS_12_srcpart_date_n7_value_min) AND DynamicValue(RS_12_srcpart_date_n7_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_n7_value_bloom_filter)))) (type: boolean)
+                  filterExpr: (cstring is not null and cstring BETWEEN DynamicValue(RS_12_srcpart_date_n7_value_min) AND DynamicValue(RS_12_srcpart_date_n7_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_n7_value_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (cstring is not null and (cstring BETWEEN DynamicValue(RS_12_srcpart_date_n7_value_min) AND DynamicValue(RS_12_srcpart_date_n7_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_n7_value_bloom_filter)))) (type: boolean)
+                    predicate: (cstring is not null and cstring BETWEEN DynamicValue(RS_12_srcpart_date_n7_value_min) AND DynamicValue(RS_12_srcpart_date_n7_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_n7_value_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 9174 Data size: 643900 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cstring (type: string)
@@ -3575,10 +3575,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_small_n3
-                  filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_10_srcpart_small10_key1_min) AND DynamicValue(RS_10_srcpart_small10_key1_max) and in_bloom_filter(key1, DynamicValue(RS_10_srcpart_small10_key1_bloom_filter)))) (type: boolean)
+                  filterExpr: (key1 is not null and key1 BETWEEN DynamicValue(RS_10_srcpart_small10_key1_min) AND DynamicValue(RS_10_srcpart_small10_key1_max) and in_bloom_filter(key1, DynamicValue(RS_10_srcpart_small10_key1_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 20 Data size: 5420 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
-                    predicate: (key1 is not null and (key1 BETWEEN DynamicValue(RS_10_srcpart_small10_key1_min) AND DynamicValue(RS_10_srcpart_small10_key1_max) and in_bloom_filter(key1, DynamicValue(RS_10_srcpart_small10_key1_bloom_filter)))) (type: boolean)
+                    predicate: (key1 is not null and key1 BETWEEN DynamicValue(RS_10_srcpart_small10_key1_min) AND DynamicValue(RS_10_srcpart_small10_key1_max) and in_bloom_filter(key1, DynamicValue(RS_10_srcpart_small10_key1_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 20 Data size: 5420 Basic stats: PARTIAL Column stats: PARTIAL
                     Select Operator
                       expressions: key1 (type: string), ds (type: string)
@@ -3776,10 +3776,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_small_n3
-                  filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_10_srcpart_small10_key1_min) AND DynamicValue(RS_10_srcpart_small10_key1_max) and in_bloom_filter(key1, DynamicValue(RS_10_srcpart_small10_key1_bloom_filter)))) (type: boolean)
+                  filterExpr: (key1 is not null and key1 BETWEEN DynamicValue(RS_10_srcpart_small10_key1_min) AND DynamicValue(RS_10_srcpart_small10_key1_max) and in_bloom_filter(key1, DynamicValue(RS_10_srcpart_small10_key1_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 20 Data size: 5420 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
-                    predicate: (key1 is not null and (key1 BETWEEN DynamicValue(RS_10_srcpart_small10_key1_min) AND DynamicValue(RS_10_srcpart_small10_key1_max) and in_bloom_filter(key1, DynamicValue(RS_10_srcpart_small10_key1_bloom_filter)))) (type: boolean)
+                    predicate: (key1 is not null and key1 BETWEEN DynamicValue(RS_10_srcpart_small10_key1_min) AND DynamicValue(RS_10_srcpart_small10_key1_max) and in_bloom_filter(key1, DynamicValue(RS_10_srcpart_small10_key1_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 20 Data size: 5420 Basic stats: PARTIAL Column stats: PARTIAL
                     Select Operator
                       expressions: key1 (type: string), ds (type: string)
