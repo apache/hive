@@ -165,15 +165,25 @@ public class TezSessionPoolManager {
   }
 
   public void returnSession(TezSessionState tezSessionState)
-      throws Exception {
-    if (tezSessionState.isDefault()) {
-      LOG.info("The session " + tezSessionState.getSessionId()
-          + " belongs to the pool. Put it back in");
-      SessionState sessionState = SessionState.get();
-      if (sessionState != null) {
-        sessionState.setTezSession(null);
+          throws Exception {
+    boolean isInterrupted = Thread.interrupted();
+    try {
+      if (isInterrupted) {
+        LOG.info("returnSession invoked with interrupt status set");
       }
-      defaultQueuePool.put(tezSessionState);
+      if (tezSessionState.isDefault()) {
+        LOG.info("The session " + tezSessionState.getSessionId()
+                + " belongs to the pool. Put it back in");
+        SessionState sessionState = SessionState.get();
+        if (sessionState != null) {
+          sessionState.setTezSession(null);
+        }defaultQueuePool.put(tezSessionState);
+      }// non default session nothing changes. The user can continue to use the existing
+      // session in the SessionState
+    }finally {
+      if (isInterrupted) {
+        Thread.currentThread().interrupt();
+      }
     }
     // non default session nothing changes. The user can continue to use the existing
     // session in the SessionState
