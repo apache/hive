@@ -645,6 +645,7 @@ public class HiveServer2 extends CompositeService {
 
           // Add a Znode to the specified ZooKeeper with name: serverUri=host:port;
           // version=versionInfo; sequence=sequenceNumber
+          setUpZooKeeperAuth(hiveConf);
           zooKeeperHelper = hiveConf.getZKConfig();
           String znodePathPrefix = "serverUri=" + instanceURI + ";" +
                   "version=" + HiveVersionInfo.getVersion() + ";" + "sequence=";
