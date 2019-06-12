@@ -95,11 +95,11 @@ public class TestScheduledQueryService {
     return res.size();
   }
 
-  public static class ScheduledQueryX implements IScheduledQueryService {
+  public static class MockScheduledQueryService implements IScheduledQueryService {
     int id = 0;
     private String stmt;
 
-    public ScheduledQueryX(String string) {
+    public MockScheduledQueryService(String string) {
       stmt = string;
     }
 
@@ -131,7 +131,7 @@ public class TestScheduledQueryService {
         Executors.newCachedThreadPool(new ThreadFactoryBuilder().setDaemon(true).setNameFormat("SchQ %d").build());
     HiveConf conf = env_setup.getTestCtx().hiveConf;
     ScheduledQueryExecutionContext ctx = new ScheduledQueryExecutionContext(executor, conf);
-    ctx.schedulerService = new ScheduledQueryX("insert into tu values(1),(2),(3),(4),(5)");
+    ctx.schedulerService = new MockScheduledQueryService("insert into tu values(1),(2),(3),(4),(5)");
     ScheduledQueryExecutionService sQ = new ScheduledQueryExecutionService(ctx);
 
     Thread.sleep(5000);
