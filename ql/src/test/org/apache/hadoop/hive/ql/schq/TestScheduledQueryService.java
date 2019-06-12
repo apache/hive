@@ -105,12 +105,12 @@ public class TestScheduledQueryService {
     }
     
     @Override
-    public ScheduledQueryPollResponse scheduledQueryPoll(String namespace) {
+    public ScheduledQueryPollResponse scheduledQueryPoll() {
 
       ScheduledQueryPollResponse r = new ScheduledQueryPollResponse();
       r.setExecutionId(id++);
       r.setQuery(stmt);
-      r.setScheduleKey(new ScheduledQueryKey("sch1", namespace));
+      r.setScheduleKey(new ScheduledQueryKey("sch1", getClusterNamespace()));
       if (id == 1) {
         return r;
       } else {

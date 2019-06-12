@@ -30,7 +30,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -111,7 +110,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.sun.org.apache.xml.internal.utils.NameSpace;
 
 
 /**
@@ -12612,12 +12610,12 @@ public class ObjectStore implements RawStore, Configurable {
       q.setSerializeRead(true);
       q.declareParameters("java.lang.Integer now, java.lang.String ns");
       q.setOrdering("nextExecution");
-      q.setUnique(true);
       int now = (int) (System.currentTimeMillis() / 1000);
-      MScheduledQuery schq = (MScheduledQuery) q.execute(now, request.getClusterNamespace());
-      if (schq == null) {
+      List<MScheduledQuery> results = (List<MScheduledQuery>) q.execute(now, request.getClusterNamespace());
+      if (results == null || results.isEmpty()) {
         return new ScheduledQueryPollResponse();
       }
+      MScheduledQuery schq = results.get(0);
       Integer plannedExecutionTime = schq.getNextExecution();
       schq.setNextExecution(computeNextExecutionTime(schq.getSchedule()));
 

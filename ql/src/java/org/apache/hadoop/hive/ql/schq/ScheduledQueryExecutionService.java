@@ -28,8 +28,8 @@ public class ScheduledQueryExecutionService {
     @Override
     public void run() {
       while (true) {
-        ScheduledQueryPollResponse q = context.schedulerService.scheduledQueryPoll("x");
-        if (q != null) {
+        ScheduledQueryPollResponse q = context.schedulerService.scheduledQueryPoll();
+        if (q.isSetExecutionId()) {
           processQuery(q);
         } else {
           try {

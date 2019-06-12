@@ -17,10 +17,10 @@ public class MetastoreBasedScheduledQueryService implements IScheduledQueryServi
   }
 
   @Override
-  public ScheduledQueryPollResponse scheduledQueryPoll(String catalog) {
+  public ScheduledQueryPollResponse scheduledQueryPoll() {
     try {
       ScheduledQueryPollRequest request = new ScheduledQueryPollRequest();
-      request.setClusterNamespace(catalog);
+      request.setClusterNamespace(getClusterNamespace());
       ScheduledQueryPollResponse resp = Hive.get().getMSC().scheduledQueryPoll(request);
       return resp;
     } catch (Exception e) {

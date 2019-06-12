@@ -14,7 +14,13 @@ import org.apache.hadoop.hive.metastore.api.ScheduledQueryProgressInfo;
 @Deprecated
 public interface IScheduledQueryService {
 
-  ScheduledQueryPollResponse scheduledQueryPoll(String catalog);
+  ScheduledQueryPollResponse scheduledQueryPoll();
 
   void scheduledQueryProgress(ScheduledQueryProgressInfo info);
+
+  default String getClusterNamespace() {
+    //FIXME default
+    return "default";
+  }
+
 }
