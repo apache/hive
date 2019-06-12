@@ -253,6 +253,11 @@ public final class FileUtils {
     }
   }
 
+  /**
+   * Hex characters with positional access by 4-bit value for escaping characters in path names
+   */
+  private static final char[] HEX_UPPER_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
   static boolean needsEscaping(char c) {
     return c >= 0 && c < charToEscape.size() && charToEscape.get(c);
   }
@@ -282,12 +287,28 @@ public final class FileUtils {
       }
     }
 
-    StringBuilder sb = new StringBuilder();
+    //  Fast-path detection, no escaping and therefore no copying necessary
+    int firstEscapeIndex = -1;
     for (int i = 0; i < path.length(); i++) {
+      if (needsEscaping(path.charAt(i))) {
+        firstEscapeIndex = i;
+        break;
+      }
+    }
+    if (firstEscapeIndex == -1) {
+      return path;
+    }
+
+    // slow path, escape beyond the first required escape character into a new string
+    StringBuilder sb = new StringBuilder();
+    if (firstEscapeIndex > 0) {
+      sb.append(path, 0, firstEscapeIndex);
+    }
+
+    for (int i = firstEscapeIndex; i < path.length(); i++) {
       char c = path.charAt(i);
       if (needsEscaping(c)) {
-        sb.append('%');
-        sb.append(String.format("%1$02X", (int) c));
+        sb.append('%').append(HEX_UPPER_CHARS[(0xF0 & c) >>> 4]).append(HEX_UPPER_CHARS[0x0F & c]);
       } else {
         sb.append(c);
       }
