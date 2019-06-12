@@ -222,6 +222,11 @@ public class SharedCache {
             @Override public void onRemoval(RemovalNotification<String, TableWrapper> notification) {
               LOG.debug("Evication happened for table " + notification.getKey());
               LOG.debug("current table cache contains " + tableCache.size() + "entries");
+              TableWrapper tblWrapper = notification.getValue();
+              byte[] sdHash = tblWrapper.getSdHash();
+              if (sdHash != null) {
+                decrSd(sdHash);
+              }
             }
           });
 

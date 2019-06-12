@@ -203,12 +203,10 @@ public class CachedStore implements RawStore, Configurable {
     synchronized (lock) {
       if (!sharedCacheInited) {
         sharedCacheInited = true;
-      } else {
-        return;
+        SharedCache.Builder builder = new SharedCache.Builder();
+        builder.configuration(conf).build(sharedCache);
       }
     }
-    SharedCache.Builder builder = new SharedCache.Builder();
-    builder.configuration(conf).build(sharedCache);
   }
 
   @VisibleForTesting public static SharedCache getSharedCache() {
