@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
+import org.apache.hadoop.hive.ql.schq.IScheduledQueryService.ScheduledQueryPollResp;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 import org.apache.hive.testutils.HiveTestEnvSetup;
@@ -82,13 +83,6 @@ public class TestScheduledQueryService {
     }
   }
 
-  private PlanMapper getMapperForQuery(IDriver driver, String query) {
-    int ret = driver.run(query).getResponseCode();
-    assertEquals("Checking command success", 0, ret);
-    PlanMapper pm0 = driver.getContext().getPlanMapper();
-    return pm0;
-  }
-
   private int getNumRowsReturned(IDriver driver, String query) throws Exception {
     int ret = driver.run(query).getResponseCode();
     assertEquals("Checking command success", 0, ret);
@@ -99,6 +93,34 @@ public class TestScheduledQueryService {
     }
     ft.fetch(res);
     return res.size();
+  }
+
+  public static class ScheduledQueryX implements IScheduledQueryService {
+    int id = 0;
+    private String stmt;
+
+    public ScheduledQueryX(String string) {
+      stmt = string;
+    }
+
+    @Override
+    public ScheduledQueryPollResp scheduledQueryPoll(String catalog) {
+
+      ScheduledQueryPollResp r = new ScheduledQueryPollResp();
+      r.executionId = id++;
+      r.queryString = stmt;
+      if (id >= 1) {
+        return r;
+      } else {
+        return null;
+      }
+    }
+
+    @Override
+    public void scheduledQueryProgress(int executionId, String state, String errorMsg) {
+      System.out.printf("%d, state: %s, error: %s", executionId, state, errorMsg);
+    }
+
   }
 
   @Test
