@@ -22,7 +22,6 @@ public class ScheduledQueryExecutionService {
   class ScheduledQueryExecutor implements Runnable {
 
     private ScheduledQueryPollResponse executing;
-    private String hiveQueryId;
     private ScheduledQueryProgressInfo info;
 
     @Override
@@ -56,12 +55,13 @@ public class ScheduledQueryExecutionService {
         executing = q;
         // FIXME: missing impersonation?
         IDriver driver = DriverFactory.newDriver(context.conf);
-        hiveQueryId = driver.getQueryState().getQueryId();
+        info.setExecutorQueryId(driver.getQueryState().getQueryId());
         CommandProcessorResponse resp;
         resp = driver.run(q.getQuery());
         if (resp.getResponseCode() != 0) {
           throw resp;
         }
+        // FIXME: use transitionstate instead
         info.setState(QueryState.FINISHED);
       } catch (Throwable t) {
         info.setErrorMessage(getErrorStringForException(t));

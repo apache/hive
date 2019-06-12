@@ -66,6 +66,8 @@ public class TestScheduledQueryStatements {
 
     startScheduledQueryExecutorService();
 
+
+
   }
 
   private static void startScheduledQueryExecutorService() {
