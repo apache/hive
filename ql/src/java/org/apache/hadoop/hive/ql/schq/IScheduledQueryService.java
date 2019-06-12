@@ -2,7 +2,7 @@ package org.apache.hadoop.hive.ql.schq;
 
 /**
  * Interface to cover Scheduled Query source service
- * 
+ *
  * Main reason to have this layer in place is to make testing easier.
  */
 public interface IScheduledQueryService {
