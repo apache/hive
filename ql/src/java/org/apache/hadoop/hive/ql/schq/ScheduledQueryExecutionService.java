@@ -1,9 +1,9 @@
 package org.apache.hadoop.hive.ql.schq;
 
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollResponse;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
-import org.apache.hadoop.hive.ql.schq.IScheduledQueryService.ScheduledQueryPollResp;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 public class ScheduledQueryExecutionService {
@@ -19,13 +19,13 @@ public class ScheduledQueryExecutionService {
 
   class ScheduledQueryExecutor implements Runnable {
 
-    private ScheduledQueryPollResp executing;
+    private ScheduledQueryPollResponse executing;
     private String hiveQueryId;
 
     @Override
     public void run() {
       while (true) {
-        ScheduledQueryPollResp q = context.schedulerService.scheduledQueryPoll("x");
+        ScheduledQueryPollResponse q = context.schedulerService.scheduledQueryPoll("x");
         if (q != null) {
           processQuery(q);
         } else {
@@ -44,7 +44,7 @@ public class ScheduledQueryExecutionService {
       }
     }
 
-    private void processQuery(ScheduledQueryPollResp q) {
+    private void processQuery(ScheduledQueryPollResponse q) {
       try {
         SessionState.start(context.conf);
         executing = q;
@@ -52,7 +52,7 @@ public class ScheduledQueryExecutionService {
         IDriver driver = DriverFactory.newDriver(context.conf);
         hiveQueryId = driver.getQueryState().getQueryId();
         CommandProcessorResponse resp;
-        resp = driver.run(q.queryString);
+        resp = driver.run(q.getQuery());
         if (resp.getResponseCode() != 0) {
           throw resp;
         }
@@ -68,7 +68,7 @@ public class ScheduledQueryExecutionService {
       //FIXME no progress message after FINISGH/ERRORED
       //FIXME hivequeryid
       System.out.println(hiveQueryId);
-      context.schedulerService.scheduledQueryProgress(executing.executionId, state, errorMessage);
+      context.schedulerService.scheduledQueryProgress((int) executing.getExecutionId(), state, errorMessage);
     }
 
     private String getErrorStringForException(Throwable t) {

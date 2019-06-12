@@ -27,12 +27,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollResponse;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.parse.ParseException;
-import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
-import org.apache.hadoop.hive.ql.schq.IScheduledQueryService.ScheduledQueryPollResp;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 import org.apache.hive.testutils.HiveTestEnvSetup;
@@ -102,13 +102,14 @@ public class TestScheduledQueryService {
     public MockScheduledQueryService(String string) {
       stmt = string;
     }
-
+    
     @Override
-    public ScheduledQueryPollResp scheduledQueryPoll(String catalog) {
+    public ScheduledQueryPollResponse scheduledQueryPoll(String namespace) {
 
-      ScheduledQueryPollResp r = new ScheduledQueryPollResp();
-      r.executionId = id++;
-      r.queryString = stmt;
+      ScheduledQueryPollResponse r = new ScheduledQueryPollResponse();
+      r.setExecutionId(id++);
+      r.setQuery(stmt);
+      r.setScheduleKey(new ScheduledQueryKey("sch1", namespace));
       if (id >= 1) {
         return r;
       } else {
@@ -124,7 +125,7 @@ public class TestScheduledQueryService {
   }
 
   @Test
-  public void testScheduledQ() throws ParseException, Exception {
+  public void testScheduledQueryExecution() throws ParseException, Exception {
     IDriver driver = createDriver();
 
     ExecutorService executor =
