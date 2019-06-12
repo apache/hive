@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.hamcrest.Matchers;
 import org.junit.AfterClass;
@@ -123,8 +122,6 @@ public class TestScheduledQueryService {
       System.out.printf("%ld, state: %s, error: %s", info.getScheduledExecutionId(), info.getState(),
           info.getErrorMessage());
     }
-
-
   }
 
   @Test
@@ -152,10 +149,6 @@ public class TestScheduledQueryService {
   private static IDriver createDriver() {
     HiveConf conf = env_setup.getTestCtx().hiveConf;
 
-    conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
-        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    HiveConf.setVar(conf, HiveConf.ConfVars.POSTEXECHOOKS, OperatorStatsReaderHook.class.getName());
     SessionState.start(conf);
 
     IDriver driver = DriverFactory.newDriver(conf);
