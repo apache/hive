@@ -1,6 +1,8 @@
 package org.apache.hadoop.hive.ql.schq;
 
+import org.apache.hadoop.hive.metastore.api.QueryState;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollResponse;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryProgressInfo;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -21,6 +23,7 @@ public class ScheduledQueryExecutionService {
 
     private ScheduledQueryPollResponse executing;
     private String hiveQueryId;
+    private ScheduledQueryProgressInfo info;
 
     @Override
     public void run() {
@@ -39,16 +42,19 @@ public class ScheduledQueryExecutionService {
     }
 
     public synchronized void reportQueryProgress() {
-      if (executing != null) {
-        worker.reportQueryState("RUNNING", null);
+      if (info != null) {
+        context.schedulerService.scheduledQueryProgress(info);
       }
     }
 
     private void processQuery(ScheduledQueryPollResponse q) {
       try {
         SessionState.start(context.conf);
+        info = new ScheduledQueryProgressInfo();
+        info.setScheduledExecutionId(q.getExecutionId());
+        info.setState(QueryState.EXECUTING);
         executing = q;
-        // FIXME: missing impersonation
+        // FIXME: missing impersonation?
         IDriver driver = DriverFactory.newDriver(context.conf);
         hiveQueryId = driver.getQueryState().getQueryId();
         CommandProcessorResponse resp;
@@ -56,19 +62,17 @@ public class ScheduledQueryExecutionService {
         if (resp.getResponseCode() != 0) {
           throw resp;
         }
-        reportQueryState("FINISHED", null);
+        info.setState(QueryState.FINISHED);
       } catch (Throwable t) {
-        reportQueryState("ERROR", getErrorStringForException(t));
+        info.setErrorMessage(getErrorStringForException(t));
+        info.setState(QueryState.ERRORED);
       } finally {
-        executing = null;
+        synchronized (this) {
+          reportQueryProgress();
+          executing = null;
+          info = null;
+        }
       }
-    }
-
-    private synchronized void reportQueryState(String state, String errorMessage) {
-      //FIXME no progress message after FINISGH/ERRORED
-      //FIXME hivequeryid
-      System.out.println(hiveQueryId);
-      context.schedulerService.scheduledQueryProgress((int) executing.getExecutionId(), state, errorMessage);
     }
 
     private String getErrorStringForException(Throwable t) {

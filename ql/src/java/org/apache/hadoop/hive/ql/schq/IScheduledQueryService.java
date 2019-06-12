@@ -1,6 +1,7 @@
 package org.apache.hadoop.hive.ql.schq;
 
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollResponse;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryProgressInfo;
 
 /**
  * Interface to cover Scheduled Query source service
@@ -15,5 +16,5 @@ public interface IScheduledQueryService {
 
   ScheduledQueryPollResponse scheduledQueryPoll(String catalog);
 
-  void scheduledQueryProgress(int executionId, String state, String errorMsg);
+  void scheduledQueryProgress(ScheduledQueryProgressInfo info);
 }

@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollResponse;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryProgressInfo;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
@@ -118,9 +119,11 @@ public class TestScheduledQueryService {
     }
 
     @Override
-    public void scheduledQueryProgress(int executionId, String state, String errorMsg) {
-      System.out.printf("%d, state: %s, error: %s", executionId, state, errorMsg);
+    public void scheduledQueryProgress(ScheduledQueryProgressInfo info) {
+      System.out.printf("%ld, state: %s, error: %s", info.getScheduledExecutionId(), info.getState(),
+          info.getErrorMessage());
     }
+
 
   }
 
