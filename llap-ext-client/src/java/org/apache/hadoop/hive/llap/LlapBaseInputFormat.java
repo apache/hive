@@ -31,6 +31,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -345,8 +346,11 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
    */
   public static void closeAll() {
     LOG.debug("Closing all handles");
-    for (String handleId : connectionMap.keySet()) {
+    Iterator<String> handleIds = connectionMap.keySet().iterator();
+    String handleId = null;
+    while (handleIds.hasNext()) {
       try {
+        handleId = handleIds.next();
         close(handleId);
       } catch (Exception err) {
         LOG.error("Error closing handle ID " + handleId, err);
