@@ -245,8 +245,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
     // List of repl policy formats that leads to Full DB replication.
     String[] fullDbReplPolicies = new String[] {
-            primaryDbName + ".['.*?']",
-            primaryDbName + ".['.*?'].[]"
+        primaryDbName + ".['.*?']",
+        primaryDbName + ".['.*?'].[]"
     };
 
     // Replicate and verify if all 3 tables are replicated to target.
