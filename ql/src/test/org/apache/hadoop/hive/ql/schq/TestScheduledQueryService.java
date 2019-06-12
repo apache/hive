@@ -111,7 +111,7 @@ public class TestScheduledQueryService {
       r.setExecutionId(id++);
       r.setQuery(stmt);
       r.setScheduleKey(new ScheduledQueryKey("sch1", namespace));
-      if (id >= 1) {
+      if (id == 1) {
         return r;
       } else {
         return null;
@@ -145,7 +145,7 @@ public class TestScheduledQueryService {
     String query = "select 1 from tu";
 
     int nr = getNumRowsReturned(driver, query);
-    assertThat(nr, Matchers.greaterThan(10));
+    assertThat(nr, Matchers.equalTo(5));
 
   }
 
