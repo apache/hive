@@ -139,9 +139,7 @@ public class TestScheduledQueryService {
     executor.shutdown();
     executor.awaitTermination(2, TimeUnit.SECONDS);
 
-    String query = "select 1 from tu";
-
-    int nr = getNumRowsReturned(driver, query);
+    int nr = getNumRowsReturned(driver, "select 1 from tu");
     assertThat(nr, Matchers.equalTo(5));
 
   }
