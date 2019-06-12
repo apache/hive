@@ -30,12 +30,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * AlterTableDesc.
@@ -64,6 +59,8 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     private final String name;
     private AlterTableTypes(String name) { this.name = name; }
     public String getName() { return name; }
+    public static final List<AlterTableTypes> nonNativeTableAllowedTypes = Arrays
+            .asList(new AlterTableTypes[] { ADDPROPS, DROPPROPS, RENAMECOLUMN, ADDCOLS, RENAME, REPLACECOLS });
   }
 
   public static enum ProtectModeType {
