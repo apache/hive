@@ -515,6 +515,8 @@ public class QTestUtil {
 
     initMaterializedViews(); // Create views registry
     firstStartSessionState();
+    
+    //    initScheduledQueries();
   }
 
   private void initMaterializedViews() {

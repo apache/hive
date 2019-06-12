@@ -3,7 +3,7 @@ package org.apache.hadoop.hive.ql.schq;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
-import org.apache.hadoop.hive.ql.schq.IScheduledQueryX.ScheduledQueryPollResp;
+import org.apache.hadoop.hive.ql.schq.IScheduledQueryService.ScheduledQueryPollResp;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 public class ScheduledQueryExecutionService {
