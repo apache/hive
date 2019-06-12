@@ -659,7 +659,7 @@ public class MetastoreConf {
         "Stat entries which are older than this are removed."),
 
     SCHEDULED_QUERIES_CRON_SYNTAX("scheduled.queries.cron.syntax", "hive.metastore.scheduled.queries.cron.syntax",
-        "UNIX", new StringSetValidator("UNIX", "QUARTZ", "CRON4J", "SPRING"),
+        "QUARTZ", new StringSetValidator("UNIX", "QUARTZ", "CRON4J", "SPRING"),
         "Defines the format of the schedule expressions to be used in scheduled queries."),
     // FIXME: implement
     SCHEDULED_QUERIES_PROGRESS_TIMEOUT("scheduled.queries.progress.timeout",
