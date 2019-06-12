@@ -45,6 +45,7 @@ import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.ContainerExitStatus;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
+import org.apache.hadoop.yarn.exceptions.ApplicationNotFoundException;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.service.api.records.Container;
 import org.apache.hadoop.yarn.service.api.records.Service;
@@ -205,7 +206,7 @@ public class LlapStatusServiceDriver {
       // Get the App report from YARN
       ApplicationReport appReport;
       try {
-        appReport = getAppReport(appName, serviceClient, cl.getFindAppTimeoutMs());
+        appReport = getAppReport(appName, cl.getFindAppTimeoutMs());
       } catch (LlapStatusCliException e) {
         logError(e);
         return e.getExitCode();
@@ -252,7 +253,7 @@ public class LlapStatusServiceDriver {
     }
   }
 
-  private ApplicationReport getAppReport(String appName, ServiceClient serviceClient, long timeoutMs)
+  private ApplicationReport getAppReport(String appName, long timeoutMs)
       throws LlapStatusCliException {
     Clock clock = SystemClock.getInstance();
     long startTime = clock.getTime();
@@ -281,7 +282,13 @@ public class LlapStatusServiceDriver {
             break;
           }
         }
-      } catch (Exception e) { // No point separating IOException vs YarnException vs others
+      } catch (Exception e) {
+        if (e instanceof ApplicationNotFoundException) {
+          //This might happen when serviceClient caches an appId from the past which is now not
+          // valid (i.e. Yarn RM restart). This will force re-creation of service client in the
+          // next check (if watch mode is on..) which effectively invalidates such cache.
+          serviceClient = null;
+        }
         throw new LlapStatusCliException(ExitCode.YARN_ERROR, "Failed to get Yarn AppReport", e);
       }
     }
