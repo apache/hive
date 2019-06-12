@@ -21,14 +21,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.parse.ParseException;
-import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
@@ -36,10 +35,11 @@ import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
+
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class TestScheduledQueryStatements {
 
@@ -64,6 +64,18 @@ public class TestScheduledQueryStatements {
       int ret = driver.run(cmd).getResponseCode();
       assertEquals("Checking command success", 0, ret);
     }
+
+    startScheduledQueryExecutorService();
+
+  }
+
+  private static void startScheduledQueryExecutorService() {
+    HiveConf conf = env_setup.getTestCtx().hiveConf;
+    MetastoreBasedScheduledQueryService qService = new MetastoreBasedScheduledQueryService(conf);
+    ExecutorService executor =
+        Executors.newCachedThreadPool(new ThreadFactoryBuilder().setDaemon(true).setNameFormat("SchQ %d").build());
+    ScheduledQueryExecutionContext ctx = new ScheduledQueryExecutionContext(executor, conf, qService);
+    new ScheduledQueryExecutionService(ctx);
   }
 
   @AfterClass
@@ -100,7 +112,6 @@ public class TestScheduledQueryStatements {
       throw ret;
     }
   }
-
 
   @Test(expected = CommandProcessorResponse.class)
   public void testNonExistentTable2() throws ParseException, Exception {

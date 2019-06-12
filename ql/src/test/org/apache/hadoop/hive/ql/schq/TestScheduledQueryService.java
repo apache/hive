@@ -134,8 +134,8 @@ public class TestScheduledQueryService {
     ExecutorService executor =
         Executors.newCachedThreadPool(new ThreadFactoryBuilder().setDaemon(true).setNameFormat("SchQ %d").build());
     HiveConf conf = env_setup.getTestCtx().hiveConf;
-    ScheduledQueryExecutionContext ctx = new ScheduledQueryExecutionContext(executor, conf);
-    ctx.schedulerService = new MockScheduledQueryService("insert into tu values(1),(2),(3),(4),(5)");
+    MockScheduledQueryService qService = new MockScheduledQueryService("insert into tu values(1),(2),(3),(4),(5)");
+    ScheduledQueryExecutionContext ctx = new ScheduledQueryExecutionContext(executor, conf, qService);
     ScheduledQueryExecutionService sQ = new ScheduledQueryExecutionService(ctx);
 
     Thread.sleep(5000);
