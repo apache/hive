@@ -131,11 +131,12 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void setReplDumpTablesList(Tree replTablesNode) throws HiveException {
-    assert(replTablesNode.getChildCount() <= 2);
+    int childCount = replTablesNode.getChildCount();
+    assert(childCount <= 2);
 
     // Traverse the children which can be either just include tables list or both include
     // and exclude tables lists.
-    for (int listIdx = 0; listIdx < replTablesNode.getChildCount(); listIdx++) {
+    for (int listIdx = 0; listIdx < childCount; listIdx++) {
       Tree tablesListNode = replTablesNode.getChild(listIdx);
       assert(tablesListNode.getType() == TOK_REPL_TABLES_LIST);
 
@@ -212,7 +213,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
           break;
         }
         default: {
-          throw new SemanticException("Unrecognized token in REPL DUMP statement.");
+          throw new SemanticException("Unrecognized token " + currNode.getType() + " in REPL DUMP statement.");
         }
       }
       // Move to the next root node

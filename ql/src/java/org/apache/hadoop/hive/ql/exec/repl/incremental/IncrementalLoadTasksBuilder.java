@@ -227,11 +227,9 @@ public class IncrementalLoadTasksBuilder {
 
   private Task<? extends Serializable> getMigrationCommitTxnTask(String dbName, String tableName,
                                                     List<Map <String, String>> partSpec, String replState,
-                                                    boolean needUpdateDBReplId,
                                                     Task<? extends Serializable> preCursor) throws SemanticException {
     ReplLastIdInfo replLastIdInfo = new ReplLastIdInfo(dbName, Long.parseLong(replState));
     replLastIdInfo.setTable(tableName);
-    replLastIdInfo.setNeedUpdateDBReplId(needUpdateDBReplId);
     if (partSpec != null && !partSpec.isEmpty()) {
       List<String> partitionList = new ArrayList<>();
       for (Map <String, String> part : partSpec) {
@@ -327,7 +325,7 @@ public class IncrementalLoadTasksBuilder {
       if (needCommitTx) {
         if (updateMetaData.getPartitionsList().size() > 0) {
           updateReplIdTask = getMigrationCommitTxnTask(dbName, tableName,
-                  updateMetaData.getPartitionsList(), replState, true, barrierTask);
+                  updateMetaData.getPartitionsList(), replState, barrierTask);
           tasks.add(updateReplIdTask);
           // commit txn task will update repl id for table and database also.
           break;
@@ -343,7 +341,7 @@ public class IncrementalLoadTasksBuilder {
       if (tableName != null) {
         if (needCommitTx) {
           updateReplIdTask = getMigrationCommitTxnTask(dbName, tableName, null,
-                  replState, true, barrierTask);
+                  replState, barrierTask);
           tasks.add(updateReplIdTask);
           // commit txn task will update repl id for database also.
           break;
@@ -355,7 +353,7 @@ public class IncrementalLoadTasksBuilder {
       // If any table/partition is updated, then update repl state in db object
       if (needCommitTx) {
         updateReplIdTask = getMigrationCommitTxnTask(dbName, null, null,
-                replState, true, barrierTask);
+                replState, barrierTask);
         tasks.add(updateReplIdTask);
       } else {
         // For table level load, need not update replication state for the database

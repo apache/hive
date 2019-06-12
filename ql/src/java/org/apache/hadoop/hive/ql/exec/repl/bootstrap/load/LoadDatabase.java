@@ -117,7 +117,7 @@ public class LoadDatabase {
   private Task<? extends Serializable> createDbTask(Database dbObj) {
     // note that we do not set location - for repl load, we want that auto-created.
     CreateDatabaseDesc createDbDesc = new CreateDatabaseDesc(dbObj.getName(), dbObj.getDescription(), null, false,
-        updateDbProps(dbObj, context.dumpDirectory, true));
+        updateDbProps(dbObj, context.dumpDirectory));
     // If it exists, we want this to be an error condition. Repl Load is not intended to replace a
     // db.
     // TODO: we might revisit this in create-drop-recreate cases, needs some thinking on.
@@ -126,7 +126,7 @@ public class LoadDatabase {
   }
 
   private Task<? extends Serializable> alterDbTask(Database dbObj) {
-    return alterDbTask(dbObj.getName(), updateDbProps(dbObj, context.dumpDirectory, true),
+    return alterDbTask(dbObj.getName(), updateDbProps(dbObj, context.dumpDirectory),
             context.hiveConf);
   }
 
@@ -137,7 +137,7 @@ public class LoadDatabase {
     return TaskFactory.get(work, context.hiveConf);
   }
 
-  private static Map<String, String> updateDbProps(Database dbObj, String dumpDirectory, boolean needSetIncFlag) {
+  private static Map<String, String> updateDbProps(Database dbObj, String dumpDirectory) {
     /*
     explicitly remove the setting of last.repl.id from the db object parameters as loadTask is going
     to run multiple times and explicit logic is in place which prevents updates to tables when db level
@@ -150,13 +150,11 @@ public class LoadDatabase {
     // So, if retry using same dump, we shall skip Database object update.
     parameters.put(ReplUtils.REPL_CHECKPOINT_KEY, dumpDirectory);
 
-    if (needSetIncFlag) {
-      // This flag will be set to false after first incremental load is done. This flag is used by repl copy task to
-      // check if duplicate file check is required or not. This flag is used by compaction to check if compaction can be
-      // done for this database or not. If compaction is done before first incremental then duplicate check will fail as
-      // compaction may change the directory structure.
-      parameters.put(ReplUtils.REPL_FIRST_INC_PENDING_FLAG, "true");
-    }
+    // This flag will be set to false after first incremental load is done. This flag is used by repl copy task to
+    // check if duplicate file check is required or not. This flag is used by compaction to check if compaction can be
+    // done for this database or not. If compaction is done before first incremental then duplicate check will fail as
+    // compaction may change the directory structure.
+    parameters.put(ReplUtils.REPL_FIRST_INC_PENDING_FLAG, "true");
 
     return parameters;
   }
