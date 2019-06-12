@@ -291,16 +291,7 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
       default:
       }
     }
-    StringBuilder sb = new StringBuilder();
-    sb.append("Object [type=" + type + ", name=" + name + actionTypeStr);
-    if (ownerName != null){
-      sb.append(", ownername=" + ownerName);
-    }
-    if (ownerType != null){
-      sb.append(", ownertype=" + ownerType);
-    }
-    sb.append("]");
-    return sb.toString();
+    return "Object [type=" + type + ", name=" + name + actionTypeStr + "]";
   }
 
   /**
