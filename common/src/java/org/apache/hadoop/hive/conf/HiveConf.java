@@ -1950,7 +1950,7 @@ public class HiveConf extends Configuration {
             "partition num of some time"
     ),
     HIVE_DRUID_SKETCH_THETA_SIZE("hive.druid.sketch.theta.size", "-1",
-            new PatternSet("-1", "16384", "8192", "4096", "2048", "1024", "512", "256", "128", "64", "32"),
+            new PatternSet("-1", "1048576","524288","262144", "131072", "65536", "32768", "16384", "8192", "4096", "2048", "1024", "512", "256", "128", "64", "32"),
             "https://datasketches.github.io/docs/Theta/ThetaSize.html"
     ),
     HIVE_DRUID_MAX_PARTITION_SIZE("hive.druid.indexer.partition.size.max", 5000000,
