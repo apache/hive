@@ -1,5 +1,9 @@
 package org.apache.hadoop.hive.ql.schq;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.QueryState;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryPollResponse;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryProgressInfo;
@@ -8,10 +12,21 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 public class ScheduledQueryExecutionService {
 
   private ScheduledQueryExecutionContext context;
   private ScheduledQueryExecutor worker;
+
+  public static ScheduledQueryExecutionService startScheduledQueryExecutorService(HiveConf conf) {
+    MetastoreBasedScheduledQueryService qService = new MetastoreBasedScheduledQueryService(conf);
+    ExecutorService executor =
+        Executors.newCachedThreadPool(
+            new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Scheduled Query Thread %d").build());
+    ScheduledQueryExecutionContext ctx = new ScheduledQueryExecutionContext(executor, conf, qService);
+    return new ScheduledQueryExecutionService(ctx);
+  }
 
   public ScheduledQueryExecutionService(ScheduledQueryExecutionContext ctx) {
     context = ctx;
@@ -83,7 +98,6 @@ public class ScheduledQueryExecutionService {
         return String.format("%s: %s", t.getClass().getName(), t.getMessage());
       }
     }
-
   }
 
   class ProgressReporter implements Runnable {

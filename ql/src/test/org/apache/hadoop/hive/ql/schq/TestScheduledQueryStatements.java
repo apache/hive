@@ -21,9 +21,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
@@ -37,8 +34,6 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
-
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class TestScheduledQueryStatements {
 
@@ -64,19 +59,8 @@ public class TestScheduledQueryStatements {
       assertEquals("Checking command success", 0, ret);
     }
 
-    startScheduledQueryExecutorService();
+    ScheduledQueryExecutionService.startScheduledQueryExecutorService(env_setup.getTestCtx().hiveConf);
 
-
-
-  }
-
-  private static void startScheduledQueryExecutorService() {
-    HiveConf conf = env_setup.getTestCtx().hiveConf;
-    MetastoreBasedScheduledQueryService qService = new MetastoreBasedScheduledQueryService(conf);
-    ExecutorService executor =
-        Executors.newCachedThreadPool(new ThreadFactoryBuilder().setDaemon(true).setNameFormat("SchQ %d").build());
-    ScheduledQueryExecutionContext ctx = new ScheduledQueryExecutionContext(executor, conf, qService);
-    new ScheduledQueryExecutionService(ctx);
   }
 
   @AfterClass
