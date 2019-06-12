@@ -11,6 +11,12 @@ public class ScheduledQueryExecutionService {
   private ScheduledQueryExecutionContext context;
   private ScheduledQueryExecutor worker;
 
+  public ScheduledQueryExecutionService(ScheduledQueryExecutionContext ctx) {
+    context = ctx;
+    ctx.executor.submit(worker = new ScheduledQueryExecutor());
+    ctx.executor.submit(new ProgressReporter());
+  }
+
   class ScheduledQueryExecutor implements Runnable {
 
     private ScheduledQueryPollResp executing;
@@ -29,6 +35,12 @@ public class ScheduledQueryExecutionService {
             Thread.currentThread().interrupt();
           }
         }
+      }
+    }
+
+    public synchronized void reportQueryProgress() {
+      if (executing != null) {
+        worker.reportQueryState("RUNNING", null);
       }
     }
 
@@ -67,6 +79,7 @@ public class ScheduledQueryExecutionService {
         return String.format("%s: %s", t.getClass().getName(), t.getMessage());
       }
     }
+
   }
 
   class ProgressReporter implements Runnable {
@@ -75,19 +88,14 @@ public class ScheduledQueryExecutionService {
     public void run() {
       while (true) {
         try {
-          Thread.sleep(1000);
+          // FIXME configurable
+          Thread.sleep(context.getProgressReporterSleepTime());
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
         }
-        worker.reportQueryState("RUNNING", null);
+        worker.reportQueryProgress();
       }
     }
-  }
-
-  public ScheduledQueryExecutionService(ScheduledQueryExecutionContext c1) {
-    context = c1;
-    c1.executor.submit(worker = new ScheduledQueryExecutor());
-    c1.executor.submit(new ProgressReporter());
   }
 
 }

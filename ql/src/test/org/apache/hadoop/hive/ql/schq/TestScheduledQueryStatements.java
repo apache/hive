@@ -18,34 +18,30 @@
 package org.apache.hadoop.hive.ql.schq;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 import org.apache.hive.testutils.HiveTestEnvSetup;
-import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
-public class TestScheduledQuery {
+public class TestScheduledQueryStatements {
 
   @ClassRule
   public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup();
@@ -60,6 +56,8 @@ public class TestScheduledQuery {
     String cmds[] = {
         // @formatter:off
         "create table tu(c int)",
+        "create database asd",
+        "create table asd.tasd(c int)",
         // @formatter:on
     };
     for (String cmd : cmds) {
@@ -82,45 +80,83 @@ public class TestScheduledQuery {
     }
   }
 
-  private PlanMapper getMapperForQuery(IDriver driver, String query) {
-    int ret = driver.run(query).getResponseCode();
-    assertEquals("Checking command success", 0, ret);
-    PlanMapper pm0 = driver.getContext().getPlanMapper();
-    return pm0;
+  @Test
+  public void testSimpleCreate() throws ParseException, Exception {
+    IDriver driver = createDriver();
+
+    CommandProcessorResponse ret;
+    ret = driver.run("create scheduled query simplecreate cron '* * * * * ? *' as select 1 from tu");
+    if (ret.getResponseCode() != 0) {
+      throw ret;
+    }
   }
 
-  private int getNumRowsReturned(IDriver driver, String query) throws Exception {
-    int ret = driver.run(query).getResponseCode();
-    assertEquals("Checking command success", 0, ret);
-    FetchTask ft = driver.getFetchTask();
-    List res = new ArrayList();
-    if (ft == null) {
-      return 0;
+  @Test(expected = CommandProcessorResponse.class)
+  public void testNonExistentTable1() throws ParseException, Exception {
+    IDriver driver = createDriver();
+    CommandProcessorResponse ret =
+        driver.run("create scheduled query nonexist cron '* * * * * ? *' as select 1 from nonexist");
+    if (ret.getResponseCode() != 0) {
+      throw ret;
     }
-    ft.fetch(res);
-    return res.size();
+  }
+
+
+  @Test(expected = CommandProcessorResponse.class)
+  public void testNonExistentTable2() throws ParseException, Exception {
+    IDriver driver = createDriver();
+
+    CommandProcessorResponse ret;
+    ret = driver.run("use asd");
+    if (ret.getResponseCode() != 0) {
+      fail("use database failed");
+    }
+
+    ret = driver.run("create scheduled query nonexist2 cron '* * * * * ? *' as select 1 from tu");
+    if (ret.getResponseCode() != 0) {
+      throw ret;
+    }
+  }
+
+  // FIXME: I think this case should fail for now...
+  @Test(expected = CommandProcessorResponse.class)
+  public void testCreateFromNonDefaultDatabase() throws ParseException, Exception {
+    IDriver driver = createDriver();
+
+    CommandProcessorResponse ret;
+    ret = driver.run("use asd");
+
+    if (ret.getResponseCode() != 0) {
+      fail("use database failed");
+    }
+
+    // FIXME: the query is actually correct; but it should 
+    ret = driver.run("create scheduled query nonDef cron '* * * * * ? *' as select 1");
+    if (ret.getResponseCode() != 0) {
+      throw ret;
+    }
   }
 
   @Test
-  public void testScheduledQ() throws ParseException, Exception {
+  public void testDoubleCreate() throws ParseException, Exception {
     IDriver driver = createDriver();
 
-    ExecutorService executor =
-        Executors.newCachedThreadPool(new ThreadFactoryBuilder().setDaemon(true).setNameFormat("SchQ %d").build());
-    HiveConf conf = env_setup.getTestCtx().hiveConf;
-    ScheduledQueryExecutionContext ctx = new ScheduledQueryExecutionContext(executor, conf);
-    ctx.schedulerService = new ScheduledQueryX("insert into tu values(1),(2),(3),(4),(5)");
-    ScheduledQueryExecutionService sQ = new ScheduledQueryExecutionService(ctx);
+    CommandProcessorResponse ret;
+    ret = driver.run("create scheduled query dc cron '* * * * * ? *' as select 1 from tu");
+    assertEquals(0, ret.getResponseCode());
+    ret = driver.run("create scheduled query dc cron '* * * * * ? *' as select 1 from tu");
+    assertNotEquals("expected to fail", 0, ret.getResponseCode());
+  }
 
-    Thread.sleep(5000);
-    executor.shutdown();
-    executor.awaitTermination(2, TimeUnit.SECONDS);
+  @Test
+  public void testAlter() throws ParseException, Exception {
+    IDriver driver = createDriver();
 
-    String query = "select 1 from tu";
-
-    int nr = getNumRowsReturned(driver, query);
-    assertThat(nr, Matchers.greaterThan(10));
-
+    CommandProcessorResponse ret;
+    ret = driver.run("create scheduled query alter1 cron '* * * * * ? *' as select 1 from tu");
+    assertEquals(0, ret.getResponseCode());
+    ret = driver.run("alter scheduled query alter1 as select 22 from tu");
+    assertEquals(0, ret.getResponseCode());
   }
 
   private static IDriver createDriver() {

@@ -20,4 +20,9 @@ public class ScheduledQueryExecutionContext {
     return 1000;
   }
 
+  public long getProgressReporterSleepTime() {
+    // FIXME make this configurable?
+    return 1000;
+  }
+
 }
