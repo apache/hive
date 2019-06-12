@@ -173,12 +173,6 @@
                       </excludes>
                     </filter>
                     <filter>
-                      <artifact>org.apache.logging.log4j:log4j-core</artifact>
-                      <excludes>
-                        <exclude>org/apache/logging/log4j/core/jackson/**</exclude>
-                      </excludes>
-                    </filter>
-                    <filter>
                       <artifact>org.apache.hadoop:hadoop-common</artifact>
                       <includes>
                         <include>org/apache/hadoop/security/*</include>
@@ -261,6 +255,7 @@
                       <exclude>org.antlr:*</exclude>
                       <exclude>org.slf4j:slf4j-log4j12</exclude>
                       <exclude>log4j:*</exclude>
+                      <exclude>org.apache.logging.log4j:*</exclude>
                       <exclude>antlr:*</exclude>
                       <exclude>aopalliance:*</exclude>
                       <exclude>asm:*</exclude>
@@ -334,14 +329,6 @@
                     <relocation>
                       <pattern>org.apache.commons</pattern>
                       <shadedPattern>org.apache.hive.org.apache.commons</shadedPattern>
-                    </relocation>
-                    <relocation>
-                      <pattern>org.apache.log4j</pattern>
-                      <shadedPattern>org.apache.hive.org.apache.log4j</shadedPattern>
-                    </relocation>
-                    <relocation>
-                      <pattern>org.slf4j</pattern>
-                      <shadedPattern>org.apache.hive.org.slf4j</shadedPattern>
                     </relocation>
                     <relocation>
                       <pattern>com.facebook</pattern>
