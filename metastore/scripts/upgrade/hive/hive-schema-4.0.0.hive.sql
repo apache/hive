@@ -1,5 +1,8 @@
 -- HIVE system db
 
+-- FIXME: p#1 apdiff -- `apdiff --name-only |grep -v thrift/gen|grep -v '^standalone'|grep -v hive-schema-4.0.0.hive.sql`  > ../cdpd/b
+
+
 CREATE DATABASE IF NOT EXISTS SYS;
 
 USE SYS;
@@ -32,8 +35,33 @@ FROM
   \"SCHEDULED_QUERIES\""
 );
 
-
-
+CREATE EXTERNAL TABLE IF NOT EXISTS `SCHEDULED_EXECUTIONS` (
+  `SCHEDULED_EXECUTION_ID` bigint,
+  `SCHEDULED_QUERY_ID` bigint,
+  `EXECUTOR_QUERY_ID` string,
+  `STATE` string,
+  `START_TIME` int,
+  `END_TIME` int,
+  `ERROR_MESSAGE` string,
+  `LAST_UPDATE_TIME` int,
+  CONSTRAINT `SYS_PK_SCHEDULED_EXECUTIONS` PRIMARY KEY (`SCHEDULED_EXECUTION_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"SCHEDULED_QUERY_ID\",
+  \"SCHEDULE_NAME\",
+  \"ENABLED\",
+  \"CLUSTER_NAMESPACE\",
+  \"SCHEDULE\",
+  \"USER\",
+  \"QUERY\",
+  \"NEXT_EXECUTION\"
+FROM
+  \"SCHEDULED_QUERIES\""
+);
 
 CREATE EXTERNAL TABLE IF NOT EXISTS `BUCKETING_COLS` (
   `SD_ID` bigint,
