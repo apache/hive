@@ -327,6 +327,10 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     synchronized (lock) {
       handleConnections = connectionMap.remove(handleId);
     }
+    closeConnections(handleId, handleConnections);
+  }
+
+  private static void closeConnections(String handleId, List<Connection> handleConnections) {
     if (handleConnections != null) {
       LOG.debug("Closing {} connections for handle ID {}", handleConnections.size(), handleId);
       for (Connection conn : handleConnections) {
@@ -346,14 +350,13 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
    */
   public static void closeAll() {
     LOG.debug("Closing all handles");
-    Iterator<String> handleIds = connectionMap.keySet().iterator();
-    String handleId = null;
-    while (handleIds.hasNext()) {
-      try {
-        handleId = handleIds.next();
-        close(handleId);
-      } catch (Exception err) {
-        LOG.error("Error closing handle ID " + handleId, err);
+    synchronized (lock) {
+      Iterator<Map.Entry<String, List<Connection>>> itr = connectionMap.entrySet().iterator();
+      Map.Entry<String, List<Connection>> connHandle = null;
+      while (itr.hasNext()) {
+        connHandle = itr.next();
+        closeConnections(connHandle.getKey(), connHandle.getValue());
+        itr.remove();
       }
     }
   }
