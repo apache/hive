@@ -78,6 +78,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.events.NotificationEventPoll;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
+import org.apache.hadoop.hive.ql.schq.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.PolicyProviderContainer;
 import org.apache.hadoop.hive.ql.security.authorization.PrivilegeSynchronizer;
@@ -255,6 +256,8 @@ public class HiveServer2 extends CompositeService {
     HiveMaterializedViewsRegistry.get().init();
 
     StatsSources.initialize(hiveConf);
+
+    ScheduledQueryExecutionService.startScheduledQueryExecutorService(hiveConf);
 
     // Setup cache if enabled.
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED)) {
@@ -797,7 +800,9 @@ public class HiveServer2 extends CompositeService {
 
   private void closeAndDisallowHiveSessions() {
     LOG.info("Closing all open hive sessions.");
-    if (cliService == null) return;
+    if (cliService == null) {
+      return;
+    }
     cliService.getSessionManager().allowSessions(false);
     // No sessions can be opened after the above call. Close the existing ones if any.
     try {

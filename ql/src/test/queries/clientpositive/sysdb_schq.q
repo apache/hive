@@ -11,8 +11,9 @@ use sys;
 
 create scheduled query asd cron '* * * * * ? *' defined as select 1;
 
-!sleep 1
+!sleep 2;
 
 desc formatted scheduled_queries;
 
 select * from scheduled_queries;
+select * from scheduled_executions;

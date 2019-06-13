@@ -3565,18 +3565,72 @@ PREHOOK: Input: database:sys
 POSTHOOK: query: use sys
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:sys
-PREHOOK: query: select bucket_col_name, integer_idx from bucketing_cols order by bucket_col_name, integer_idx limit 5
+PREHOOK: query: create scheduled query asd cron '* * * * * ? *' defined as select 1
 PREHOOK: type: QUERY
-PREHOOK: Input: sys@bucketing_cols
-#### A masked pattern was here ####
-POSTHOOK: query: select bucket_col_name, integer_idx from bucketing_cols order by bucket_col_name, integer_idx limit 5
+POSTHOOK: query: create scheduled query asd cron '* * * * * ? *' defined as select 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: sys@bucketing_cols
+PREHOOK: query: desc formatted scheduled_queries
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: sys@scheduled_queries
+POSTHOOK: query: desc formatted scheduled_queries
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: sys@scheduled_queries
+# col_name            	data_type           	comment             
+scheduled_query_id  	bigint              	from deserializer   
+schedule_name       	string              	from deserializer   
+enabled             	boolean             	from deserializer   
+cluster_namespace   	string              	from deserializer   
+schedule            	string              	from deserializer   
+user                	string              	from deserializer   
+query               	string              	from deserializer   
+next_execution      	bigint              	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	sys                 	 
 #### A masked pattern was here ####
-PREHOOK: query: create scheduled query asd cron '1 * * * *' defined as select 1
-PREHOOK: type: QUERY
-POSTHOOK: query: create scheduled query asd cron '1 * * * *' defined as select 1
-POSTHOOK: type: QUERY
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cluster_namespace\":\"true\",\"enabled\":\"true\",\"next_execution\":\"true\",\"query\":\"true\",\"schedule\":\"true\",\"schedule_name\":\"true\",\"scheduled_query_id\":\"true\",\"user\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	hive.sql.database.type	METASTORE           
+	hive.sql.query      	SELECT              
+	                    	  \"SCHEDULED_QUERY_ID\",
+	                    	  \"SCHEDULE_NAME\",
+	                    	  \"ENABLED\",      
+	                    	  \"CLUSTER_NAMESPACE\",
+	                    	  \"SCHEDULE\",     
+	                    	  \"USER\",         
+	                    	  \"QUERY\",        
+	                    	  \"NEXT_EXECUTION\"
+	                    	FROM                
+	                    	  \"SCHEDULED_QUERIES\"
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	storage_handler     	org.apache.hive.storage.jdbc.JdbcStorageHandler
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hive.storage.jdbc.JdbcSerDe	 
+InputFormat:        	null                	 
+OutputFormat:       	null                	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	sys.scheduled_queries	 
+Constraint Name:    	sys_pk_scheduled_queries	 
+Column Name:        	scheduled_query_id  	 
 PREHOOK: query: select * from scheduled_queries
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@scheduled_queries
@@ -3585,4 +3639,4 @@ POSTHOOK: query: select * from scheduled_queries
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@scheduled_queries
 #### A masked pattern was here ####
-1	asd	false	default	1 * * * *	NULL	select 1	1559905260
+1	asd	false	default	* * * * * ? *	NULL	select 1	1560414690
