@@ -216,6 +216,7 @@ public class QTestUtil {
 
     postInit();
     savedConf = new HiveConf(conf);
+    ScheduledQueryExecutionService.startScheduledQueryExecutorService(conf);
   }
 
   private String getScriptsDir() {
@@ -541,8 +542,6 @@ public class QTestUtil {
 
     initMaterializedViews(); // Create views registry
     firstStartSessionState();
-    
-    ScheduledQueryExecutionService.startScheduledQueryExecutorService(conf);
   }
 
   private void initMaterializedViews() {
