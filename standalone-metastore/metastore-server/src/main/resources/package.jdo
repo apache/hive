@@ -1467,6 +1467,11 @@
       <field name="nextExecution">
         <column name="NEXT_EXECUTION" jdbc-type="integer" allows-null="true"/>
       </field>
+      <field name="executions">
+        <collection element-type="MScheduledExecution"/>
+        <foreign-key name="SCHEDULED_EXECUTIONS_SCHQ_FK" delete-action="cascade"/>
+      </field>
+      
       <index name="UniqueSchedule" unique="true">
         <column name="SCHEDULE_NAME"/>
         <column name="CLUSTER_NAMESPACE"/>
@@ -1481,8 +1486,9 @@
       <field name="scheduledExecutionId" primary-key="true" value-strategy="native">
         <column name="SCHEDULED_EXECUTION_ID" jdbc-type="integer" />
       </field>
-      <field name="scheduledQuery" dependent="true">
+      <field name="scheduledQuery" dependent="false" >
         <column name="SCHEDULED_QUERY_ID"/>
+        <foreign-key name="SCHEDULED_EXECUTIONS_SCHQ_FK" delete-action="cascade"/>
       </field>
       <field name="executorQueryId">
         <column name="EXECUTOR_QUERY_ID" jdbc-type="varchar" length="256" allows-null="true"/>

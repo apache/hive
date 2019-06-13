@@ -12767,13 +12767,14 @@ public class ObjectStore implements RawStore, Configurable {
     MScheduledQuery schq = MScheduledQuery.fromThrift(scheduledQuery);
     boolean commited = false;
     try {
+      openTransaction();
       Optional<MScheduledQuery> existing = getMScheduledQuery(scheduledQuery.getScheduleKey());
       if (!existing.isPresent()) {
         throw new NoSuchObjectException(
             "Scheduled query with name: " + scheduledQueryKeyRef(schq.getScheduleKey()) + " doesn't exists.");
       }
-      openTransaction();
-      pm.deletePersistent(schq);
+      MScheduledQuery persisted = existing.get();
+      pm.deletePersistent(persisted);
       commited = commitTransaction();
     } finally {
       if (!commited) {

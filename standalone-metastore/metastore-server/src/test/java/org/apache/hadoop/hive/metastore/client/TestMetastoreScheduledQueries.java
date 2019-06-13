@@ -146,9 +146,43 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
     assertEquals(schq2, schq3);
   }
 
+  @Test
+  public void testNormalDelete() throws Exception {
+    ScheduledQuery schq = createScheduledQuery(createKey("q1", "nsdel"));
+    ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
+    r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
+    r.setScheduledQuery(schq);
+    client.scheduledQueryMaintenance(r);
+    r.setType(ScheduledQueryMaintenanceRequestType.DELETE);
+    client.scheduledQueryMaintenance(r);
+  }
+
+  @Test
+  public void testNormalDeleteWithExec() throws Exception {
+    String testCaseNS = "delwithexec";
+    // insert
+    ScheduledQuery schq = createScheduledQuery(createKey("del2", testCaseNS));
+    ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
+    r.setType(ScheduledQueryMaintenanceRequestType.INSERT);
+    r.setScheduledQuery(schq);
+    client.scheduledQueryMaintenance(r);
+
+    // wait 2 sec to have the query exection 
+    Thread.sleep(2000);
+
+    // invoke poll to create a dependent execution
+    ScheduledQueryPollRequest pollRequest=new ScheduledQueryPollRequest(testCaseNS);
+    client.scheduledQueryPoll(pollRequest);
+
+    // delete scheduled query
+    r.setType(ScheduledQueryMaintenanceRequestType.DELETE);
+    client.scheduledQueryMaintenance(r);
+
+  }
+
   @Test(expected = NoSuchObjectException.class)
   public void testDeleteNonExistent() throws Exception {
-    ScheduledQuery schq = createScheduledQuery(createKey("delnonexist", "c1"));
+    ScheduledQuery schq = createScheduledQuery(createKey("nonexistent", "nsdel"));
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
     r.setType(ScheduledQueryMaintenanceRequestType.DELETE);
     r.setScheduledQuery(schq);

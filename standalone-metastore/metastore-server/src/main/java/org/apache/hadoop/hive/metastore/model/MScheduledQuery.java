@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.metastore.model;
 
+import java.util.Set;
+
 import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 
@@ -30,6 +32,7 @@ public class MScheduledQuery {
   private String user;
   private String query;
   private Integer nextExecution;
+  private Set<MScheduledExecution> executions;
 
   public MScheduledQuery(ScheduledQuery s) {
     scheduleName = s.getScheduleKey().getScheduleName();

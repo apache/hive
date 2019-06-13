@@ -51,6 +51,10 @@ import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequest;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequestType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.FsType;
@@ -59,6 +63,7 @@ import org.apache.hadoop.hive.ql.dataset.QTestDatasetHandler;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.hooks.ScheduledQueryCreationRegistryHook;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
@@ -75,6 +80,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.processors.HiveCommand;
+import org.apache.hadoop.hive.ql.schq.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -266,6 +272,25 @@ public class QTestUtil {
     }
   }
 
+  public void clearScheduledQueries() {
+    if (System.getenv(QTEST_LEAVE_FILES) != null) {
+      return;
+    }
+    Set<String> scheduledQueries = ScheduledQueryCreationRegistryHook.getSchedules();
+    for (String name : scheduledQueries) {
+      ScheduledQueryMaintenanceRequest request = new ScheduledQueryMaintenanceRequest();
+      request.setType(ScheduledQueryMaintenanceRequestType.DELETE);
+      ScheduledQuery schq = new ScheduledQuery();
+      schq.setScheduleKey(new ScheduledQueryKey(name, "default"));
+      request.setScheduledQuery(schq);
+      try {
+        db.getMSC().scheduledQueryMaintenance(request);
+      } catch (Exception e) {
+        LOG.error("Cant remove scheduled query: " + name + " " + e.getMessage());
+      }
+    }
+    scheduledQueries.clear();
+  }
   public void clearUDFsCreatedDuringTests() throws Exception {
     if (System.getenv(QTEST_LEAVE_FILES) != null) {
       return;
@@ -428,6 +453,7 @@ public class QTestUtil {
     conf.setBoolean("hive.test.shutdown.phase", true);
 
     clearTablesCreatedDuringTests();
+    clearScheduledQueries();
     clearUDFsCreatedDuringTests();
     clearKeysCreatedInTests();
 
@@ -516,7 +542,7 @@ public class QTestUtil {
     initMaterializedViews(); // Create views registry
     firstStartSessionState();
     
-    //    initScheduledQueries();
+    ScheduledQueryExecutionService.startScheduledQueryExecutorService(conf);
   }
 
   private void initMaterializedViews() {

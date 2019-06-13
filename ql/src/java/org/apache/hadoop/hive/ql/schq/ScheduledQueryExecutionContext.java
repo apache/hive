@@ -2,8 +2,6 @@ package org.apache.hadoop.hive.ql.schq;
 
 import java.util.concurrent.ExecutorService;
 
-import javax.annotation.Nonnull;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 
 public class ScheduledQueryExecutionContext {
@@ -13,9 +11,9 @@ public class ScheduledQueryExecutionContext {
   public final HiveConf conf;
 
   public ScheduledQueryExecutionContext(
-      @Nonnull ExecutorService executor,
-      @Nonnull HiveConf conf,
-      @Nonnull IScheduledQueryService service) {
+      ExecutorService executor,
+      HiveConf conf,
+      IScheduledQueryService service) {
     this.executor = executor;
     this.conf = conf;
     this.schedulerService = service;
