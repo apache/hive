@@ -1,7 +1,8 @@
 -- HIVE system db
 
 -- FIXME: p#1 apdiff -- `apdiff --name-only |grep -v thrift/gen|grep -v '^standalone'|grep -v hive-schema-4.0.0.hive.sql`  > ../cdpd/b
-
+-- FIXME: p#2 apdiff -- `apdiff --name-only |grep -v thrift/gen|grep common|grep ^standalone` | sed 's+standalone-metastore/metastore-server/+standalone-metastore/+;s+standalone-metastore/metastore-common/+standalone-metastore/+' > ../cdpd/b
+-- FIXME: p#3 apdiff -- `apdiff --name-only |grep -v thrift/gen|grep -v hive-schema-4.0.0|grep server/|grep ^standalone` | sed 's+standalone-metastore/metastore-server/+standalone-metastore/+;s+standalone-metastore/metastore-common/+standalone-metastore/+' > ../cdpd/b
 
 CREATE DATABASE IF NOT EXISTS SYS;
 
