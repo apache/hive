@@ -386,6 +386,12 @@ public class MetastoreConf {
         new RangeValidator(1, 20), "Number of consecutive compaction failures (per table/partition) " +
         "after which automatic compactions will not be scheduled any more.  Note that this must be less " +
         "than hive.compactor.history.retention.failed."),
+    METASTORE_HOUSEKEEPING_LEADER_HOSTNAME("metastore.housekeeping.leader.hostname",
+            "hive.metastore.housekeeping.leader.hostname", "",
+"If there are multiple Thrift metastore services running, the hostname of Thrift metastore " +
+        "service to run housekeeping tasks at. By default this values is empty, which " +
+        "means that the current metastore will run the housekeeping tasks. This value should " +
+        "match that of configuration metastore.thrift.bind.host of the leader HMS, if set."),
     COMPACTOR_INITIATOR_ON("metastore.compactor.initiator.on", "hive.compactor.initiator.on", false,
         "Whether to run the initiator and cleaner threads on this metastore instance or not.\n" +
             "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
