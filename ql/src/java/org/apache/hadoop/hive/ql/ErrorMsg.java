@@ -514,6 +514,9 @@ public enum ErrorMsg {
   REPL_LOAD_PATH_NOT_FOUND(20019, "Load path does not exist."),
   REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION(20020,
           "Source of replication (repl.source.for) is not set in the database properties."),
+  REPL_INVALID_DB_OR_TABLE_PATTERN(20021,
+          "Invalid pattern for the DB or table name in the replication policy. "
+                  + "It should be a valid regex enclosed within single or double quotes."),
 
   // An exception from runtime that will show the full stack to client
   UNRESOLVED_RT_EXCEPTION(29999, "Runtime Error: {0}", "58004", true),

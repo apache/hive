@@ -84,7 +84,7 @@ public class LoadFunction {
       CreateFunctionHandler handler = new CreateFunctionHandler();
       List<Task<? extends Serializable>> tasks = handler.handle(
           new MessageHandler.Context(
-              dbNameToLoadIn, null, fromPath.toString(), null, null, context.hiveConf,
+              dbNameToLoadIn, fromPath.toString(), null, null, context.hiveConf,
               context.hiveDb, context.nestedContext, LOG)
       );
       createFunctionReplLogTask(tasks, handler.getFunctionName());

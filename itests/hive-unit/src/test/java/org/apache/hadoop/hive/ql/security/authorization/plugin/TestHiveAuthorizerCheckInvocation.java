@@ -582,7 +582,7 @@ public class TestHiveAuthorizerCheckInvocation {
     assertEquals("db name", dbName.toLowerCase(), dbObj.getDbname());
 
     resetAuthorizer();
-    status = driver.compile("repl dump " + fullInTableName);
+    status = driver.compile("repl dump " + dbName + ".['" + inDbTableName + "']");
     assertEquals(0, status);
     inputs = getHivePrivilegeObjectInputs().getLeft();
     dbObj = inputs.get(0);

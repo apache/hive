@@ -35,12 +35,7 @@ public class RenameTableHandler extends AbstractMessageHandler {
   @Override
   public List<Task<? extends Serializable>> handle(Context context)
       throws SemanticException {
-
     AlterTableMessage msg = deserializer.getAlterTableMessage(context.dmd.getPayload());
-    if (!context.isTableNameEmpty()) {
-      throw new SemanticException(
-          "RENAMES of tables are not supported for table-level replication");
-    }
     try {
       Table tableObjBefore = msg.getTableObjBefore();
       Table tableObjAfter = msg.getTableObjAfter();

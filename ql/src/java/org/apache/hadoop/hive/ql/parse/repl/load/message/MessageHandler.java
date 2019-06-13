@@ -47,7 +47,7 @@ public interface MessageHandler {
 
   class Context {
     public String location;
-    public final String tableName, dbName;
+    public final String dbName;
     public final Task<? extends Serializable> precursor;
     public DumpMetaData dmd;
     final HiveConf hiveConf;
@@ -55,11 +55,10 @@ public interface MessageHandler {
     final org.apache.hadoop.hive.ql.Context nestedContext;
     final Logger log;
 
-    public Context(String dbName, String tableName, String location,
+    public Context(String dbName, String location,
         Task<? extends Serializable> precursor, DumpMetaData dmd, HiveConf hiveConf,
         Hive db, org.apache.hadoop.hive.ql.Context nestedContext, Logger log) {
       this.dbName = dbName;
-      this.tableName = tableName;
       this.location = location;
       this.precursor = precursor;
       this.dmd = dmd;
@@ -69,9 +68,8 @@ public interface MessageHandler {
       this.log = log;
     }
 
-    public Context(Context other, String dbName, String tableName) {
+    public Context(Context other, String dbName) {
       this.dbName = dbName;
-      this.tableName = tableName;
       this.location = other.location;
       this.precursor = other.precursor;
       this.dmd = other.dmd;
@@ -79,10 +77,6 @@ public interface MessageHandler {
       this.db = other.db;
       this.nestedContext = other.nestedContext;
       this.log = other.log;
-    }
-
-    boolean isTableNameEmpty() {
-      return StringUtils.isEmpty(tableName);
     }
 
     public boolean isDbNameEmpty() {

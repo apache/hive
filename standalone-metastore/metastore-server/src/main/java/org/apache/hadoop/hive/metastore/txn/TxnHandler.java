@@ -873,7 +873,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     String db = normalizeIdentifier(replLastIdInfo.getDatabase());
     String table = replLastIdInfo.isSetTable() ? normalizeIdentifier(replLastIdInfo.getTable()) : null;
     List<String> partList = replLastIdInfo.isSetPartitionList() ? replLastIdInfo.getPartitionList() : null;
-    boolean needUpdateDBReplId = replLastIdInfo.isSetNeedUpdateDBReplId() && replLastIdInfo.isNeedUpdateDBReplId();
 
     try {
       stmt = dbConn.createStatement();
@@ -895,26 +894,24 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       rs.close();
       pst.close();
 
-      if (needUpdateDBReplId) {
-        // not used select for update as it will be updated by single thread only from repl load
-        rs = stmt.executeQuery("select \"PARAM_VALUE\" from \"DATABASE_PARAMS\" where \"PARAM_KEY\" = " +
-                "'repl.last.id' and \"DB_ID\" = " + dbId);
-        if (!rs.next()) {
-          query = "insert into \"DATABASE_PARAMS\" values ( " + dbId + " , 'repl.last.id' , ? )";
-        } else {
-          query = "update \"DATABASE_PARAMS\" set \"PARAM_VALUE\" = ? where \"DB_ID\" = " + dbId +
-                  " and \"PARAM_KEY\" = 'repl.last.id'";
-        }
-        close(rs);
-        params = Arrays.asList(lastReplId);
-        pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
-        LOG.debug("Updating repl id for db <" + query.replaceAll("\\?", "{}") + ">", lastReplId);
-        if (pst.executeUpdate() != 1) {
-          //only one row insert or update should happen
-          throw new RuntimeException("DATABASE_PARAMS is corrupted for db " + db);
-        }
-        pst.close();
+      // not used select for update as it will be updated by single thread only from repl load
+      rs = stmt.executeQuery("select \"PARAM_VALUE\" from \"DATABASE_PARAMS\" where \"PARAM_KEY\" = " +
+              "'repl.last.id' and \"DB_ID\" = " + dbId);
+      if (!rs.next()) {
+        query = "insert into \"DATABASE_PARAMS\" values ( " + dbId + " , 'repl.last.id' , ? )";
+      } else {
+        query = "update \"DATABASE_PARAMS\" set \"PARAM_VALUE\" = ? where \"DB_ID\" = " + dbId +
+                " and \"PARAM_KEY\" = 'repl.last.id'";
       }
+      close(rs);
+      params = Arrays.asList(lastReplId);
+      pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
+      LOG.debug("Updating repl id for db <" + query.replaceAll("\\?", "{}") + ">", lastReplId);
+      if (pst.executeUpdate() != 1) {
+        //only one row insert or update should happen
+        throw new RuntimeException("DATABASE_PARAMS is corrupted for db " + db);
+      }
+      pst.close();
 
       if (table == null) {
         // if only database last repl id to be updated.

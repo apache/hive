@@ -44,12 +44,6 @@ public class AlterDatabaseHandler extends AbstractMessageHandler {
   @Override
   public List<Task<? extends Serializable>> handle(Context context)
       throws SemanticException {
-
-    if (!context.isTableNameEmpty()) {
-      throw new SemanticException(
-              "Alter Database are not supported for table-level replication");
-    }
-
     AlterDatabaseMessage msg = deserializer.getAlterDatabaseMessage(context.dmd.getPayload());
     String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
 
