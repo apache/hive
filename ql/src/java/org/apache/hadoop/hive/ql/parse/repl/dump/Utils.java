@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse.repl.dump;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
@@ -88,18 +89,24 @@ public class Utils {
   public static Iterable<String> matchesTbl(Hive db, String dbName, String tblPattern)
       throws HiveException {
     if (tblPattern == null) {
-      return getAllTables(db, dbName);
+      return getAllTables(db, dbName, null);
     } else {
       return db.getTablesByPattern(dbName, tblPattern);
     }
   }
 
-  public static Collection<String> getAllTables(Hive db, String dbName) throws HiveException {
+  public static Iterable<String> matchesTbl(Hive db, String dbName, ReplScope replScope)
+          throws HiveException {
+    return getAllTables(db, dbName, replScope);
+  }
+
+  public static Collection<String> getAllTables(Hive db, String dbName, ReplScope replScope) throws HiveException {
     return Collections2.filter(db.getAllTables(dbName),
             tableName -> {
-              assert tableName != null;
+              assert(tableName != null);
               return !tableName.toLowerCase().startsWith(
-                      SemanticAnalyzer.VALUES_TMP_TABLE_NAME_PREFIX.toLowerCase());
+                      SemanticAnalyzer.VALUES_TMP_TABLE_NAME_PREFIX.toLowerCase())
+                      && ((replScope == null) || replScope.tableIncludedInReplScope(tableName));
             });
   }
 

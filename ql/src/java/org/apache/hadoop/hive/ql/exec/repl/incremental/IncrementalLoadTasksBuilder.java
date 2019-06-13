@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
@@ -67,7 +66,7 @@ import java.util.HashSet;
  * Iterate through the dump directory and create tasks to load the events.
  */
 public class IncrementalLoadTasksBuilder {
-  private final String dbName, tableName;
+  private final String dbName;
   private final IncrementalLoadEventsIterator iterator;
   private final HashSet<ReadEntity> inputs;
   private final HashSet<WriteEntity> outputs;
@@ -77,19 +76,18 @@ public class IncrementalLoadTasksBuilder {
   private static long numIteration;
   private final Long eventTo;
 
-  public IncrementalLoadTasksBuilder(String dbName, String tableName, String loadPath,
+  public IncrementalLoadTasksBuilder(String dbName, String loadPath,
                                      IncrementalLoadEventsIterator iterator, HiveConf conf, Long eventTo) {
     this.dbName = dbName;
-    this.tableName = tableName;
     this.iterator = iterator;
     inputs = new HashSet<>();
     outputs = new HashSet<>();
     log = null;
     this.conf = conf;
     replLogger = new IncrementalLoadLogger(dbName, loadPath, iterator.getNumEvents());
-    numIteration = 0;
     replLogger.startLog();
     this.eventTo = eventTo;
+    numIteration = 0;
   }
 
   public Task<? extends Serializable> build(DriverContext driverContext, Hive hive, Logger log,
@@ -106,14 +104,14 @@ public class IncrementalLoadTasksBuilder {
       String location = dir.getPath().toUri().toString();
       DumpMetaData eventDmd = new DumpMetaData(new Path(location), conf);
 
-      if (!shouldReplayEvent(dir, eventDmd.getDumpType(), dbName, tableName)) {
-        this.log.debug("Skipping event {} from {} for table {}.{} maxTasks: {}",
-                eventDmd.getDumpType(), dir.getPath().toUri(), dbName, tableName, tracker.numberOfTasks());
+      if (!shouldReplayEvent(dir, eventDmd.getDumpType(), dbName)) {
+        this.log.debug("Skipping event {} from {} for DB {} maxTasks: {}",
+                eventDmd.getDumpType(), dir.getPath().toUri(), dbName, tracker.numberOfTasks());
         continue;
       }
 
-      this.log.debug("Loading event {} from {} for table {}.{} maxTasks: {}",
-              eventDmd.getDumpType(), dir.getPath().toUri(), dbName, tableName, tracker.numberOfTasks());
+      this.log.debug("Loading event {} from {} for DB {} maxTasks: {}",
+              eventDmd.getDumpType(), dir.getPath().toUri(), dbName, tracker.numberOfTasks());
 
       // event loads will behave similar to table loads, with one crucial difference
       // precursor order is strict, and each event must be processed after the previous one.
@@ -134,7 +132,7 @@ public class IncrementalLoadTasksBuilder {
       // Once this entire chain is generated, we add evTaskRoot to rootTasks, so as to execute the
       // entire chain
 
-      MessageHandler.Context context = new MessageHandler.Context(dbName, tableName, location,
+      MessageHandler.Context context = new MessageHandler.Context(dbName, location,
               taskChainTail, eventDmd, conf, hive, driverContext.getCtx(), this.log);
       List<Task<? extends Serializable>> evTasks = analyzeEventLoad(context);
 
@@ -157,17 +155,11 @@ public class IncrementalLoadTasksBuilder {
       // if no events were replayed, then add a task to update the last repl id of the database/table to last event id.
       if (taskChainTail == evTaskRoot) {
         String lastEventid = eventTo.toString();
-        if (StringUtils.isEmpty(tableName)) {
-          taskChainTail = dbUpdateReplStateTask(dbName, lastEventid, taskChainTail);
-          this.log.debug("no events to replay, set last repl id of db  " + dbName + " to " + lastEventid);
-        } else {
-          taskChainTail = tableUpdateReplStateTask(dbName, tableName, null, lastEventid, taskChainTail);
-          this.log.debug("no events to replay, set last repl id of table " + dbName + "." + tableName + " to " +
-                  lastEventid);
-        }
+        taskChainTail = dbUpdateReplStateTask(dbName, lastEventid, taskChainTail);
+        this.log.debug("no events to replay, set last repl id of db  " + dbName + " to " + lastEventid);
       }
 
-      ReplRemoveFirstIncLoadPendFlagDesc desc = new ReplRemoveFirstIncLoadPendFlagDesc(dbName, tableName);
+      ReplRemoveFirstIncLoadPendFlagDesc desc = new ReplRemoveFirstIncLoadPendFlagDesc(dbName);
       Task<? extends Serializable> updateIncPendTask = TaskFactory.get(new DDLWork(inputs, outputs, desc), conf);
       taskChainTail.addDependentTask(updateIncPendTask);
       taskChainTail = updateIncPendTask;
@@ -200,30 +192,19 @@ public class IncrementalLoadTasksBuilder {
     return true;
   }
 
-  private boolean shouldReplayEvent(FileStatus dir, DumpType dumpType, String dbName, String tableName) {
-    // if database itself is null then we can not filter out anything.
-    if (dbName == null || dbName.isEmpty()) {
+  private boolean shouldReplayEvent(FileStatus dir, DumpType dumpType, String dbName) {
+    // If database itself is null then we can not filter out anything.
+    if (StringUtils.isBlank(dbName)) {
       return true;
-    } else if ((tableName == null) || (tableName.isEmpty())) {
-      Database database;
-      try {
-        database = Hive.get().getDatabase(dbName);
-        return database == null ? true : isEventNotReplayed(database.getParameters(), dir, dumpType);
-      } catch (HiveException e) {
-        //may be the db is getting created in this load
-        log.debug("failed to get the database " + dbName);
-        return true;
-      }
-    } else {
-      Table tbl;
-      try {
-        tbl = Hive.get().getTable(dbName, tableName);
-        return isEventNotReplayed(tbl.getParameters(), dir, dumpType);
-      } catch (HiveException e) {
-        // may be the table is getting created in this load
-        log.debug("failed to get the table " + dbName + "." + tableName);
-        return true;
-      }
+    }
+
+    try {
+      Database database = Hive.get().getDatabase(dbName);
+      return (database == null) || isEventNotReplayed(database.getParameters(), dir, dumpType);
+    } catch (HiveException e) {
+      // May be the db is getting created in this load
+      log.debug("Failed to get the database " + dbName);
+      return true;
     }
   }
 
@@ -241,16 +222,14 @@ public class IncrementalLoadTasksBuilder {
 
     inputs.addAll(messageHandler.readEntities());
     outputs.addAll(messageHandler.writeEntities());
-    return addUpdateReplStateTasks(StringUtils.isEmpty(context.tableName), messageHandler.getUpdatedMetadata(), tasks);
+    return addUpdateReplStateTasks(messageHandler.getUpdatedMetadata(), tasks);
   }
 
   private Task<? extends Serializable> getMigrationCommitTxnTask(String dbName, String tableName,
                                                     List<Map <String, String>> partSpec, String replState,
-                                                    boolean needUpdateDBReplId,
                                                     Task<? extends Serializable> preCursor) throws SemanticException {
     ReplLastIdInfo replLastIdInfo = new ReplLastIdInfo(dbName, Long.parseLong(replState));
     replLastIdInfo.setTable(tableName);
-    replLastIdInfo.setNeedUpdateDBReplId(needUpdateDBReplId);
     if (partSpec != null && !partSpec.isEmpty()) {
       List<String> partitionList = new ArrayList<>();
       for (Map <String, String> part : partSpec) {
@@ -315,7 +294,6 @@ public class IncrementalLoadTasksBuilder {
   }
 
   private List<Task<? extends Serializable>> addUpdateReplStateTasks(
-          boolean isDatabaseLoad,
           UpdatedMetaDataTracker updatedMetaDataTracker,
           List<Task<? extends Serializable>> importTasks) throws SemanticException {
     // If no import tasks generated by the event then no need to update the repl state to any object.
@@ -347,7 +325,7 @@ public class IncrementalLoadTasksBuilder {
       if (needCommitTx) {
         if (updateMetaData.getPartitionsList().size() > 0) {
           updateReplIdTask = getMigrationCommitTxnTask(dbName, tableName,
-                  updateMetaData.getPartitionsList(), replState, isDatabaseLoad, barrierTask);
+                  updateMetaData.getPartitionsList(), replState, barrierTask);
           tasks.add(updateReplIdTask);
           // commit txn task will update repl id for table and database also.
           break;
@@ -363,7 +341,7 @@ public class IncrementalLoadTasksBuilder {
       if (tableName != null) {
         if (needCommitTx) {
           updateReplIdTask = getMigrationCommitTxnTask(dbName, tableName, null,
-                  replState, isDatabaseLoad, barrierTask);
+                  replState, barrierTask);
           tasks.add(updateReplIdTask);
           // commit txn task will update repl id for database also.
           break;
@@ -375,9 +353,9 @@ public class IncrementalLoadTasksBuilder {
       // If any table/partition is updated, then update repl state in db object
       if (needCommitTx) {
         updateReplIdTask = getMigrationCommitTxnTask(dbName, null, null,
-                replState, isDatabaseLoad, barrierTask);
+                replState, barrierTask);
         tasks.add(updateReplIdTask);
-      } else if (isDatabaseLoad) {
+      } else {
         // For table level load, need not update replication state for the database
         updateReplIdTask = dbUpdateReplStateTask(dbName, replState, barrierTask);
         tasks.add(updateReplIdTask);

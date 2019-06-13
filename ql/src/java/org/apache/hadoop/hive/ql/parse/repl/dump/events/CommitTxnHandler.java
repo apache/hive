@@ -18,10 +18,12 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
@@ -101,6 +103,20 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
     createDumpFile(context, qlMdTable, qlPtns, fileListArray);
   }
 
+  private List<WriteEventInfo> getAllWriteEventInfo(Context withinContext) throws Exception {
+    String contextDbName = StringUtils.normalizeIdentifier(withinContext.replScope.getDbName());
+    RawStore rawStore = HiveMetaStore.HMSHandler.getMSForConf(withinContext.hiveConf);
+    List<WriteEventInfo> writeEventInfoList
+            = rawStore.getAllWriteEventInfo(eventMessage.getTxnId(), contextDbName, null);
+    return ((writeEventInfoList == null)
+            ? null
+            : new ArrayList<>(Collections2.filter(writeEventInfoList,
+              writeEventInfo -> {
+                assert(writeEventInfo != null);
+                return withinContext.replScope.tableIncludedInReplScope(writeEventInfo.getTable());
+              })));
+  }
+
   @Override
   public void handle(Context withinContext) throws Exception {
     LOG.info("Processing#{} COMMIT_TXN message : {}", fromEventId(), eventMessageAsJSON);
@@ -125,15 +141,12 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
                 "not dumping acid tables.");
         replicatingAcidEvents = false;
       }
-      String contextDbName =  withinContext.dbName == null ? null :
-              StringUtils.normalizeIdentifier(withinContext.dbName);
-      String contextTableName =  withinContext.tableName == null ? null :
-              StringUtils.normalizeIdentifier(withinContext.tableName);
+
       List<WriteEventInfo> writeEventInfoList = null;
       if (replicatingAcidEvents) {
-        writeEventInfoList = HiveMetaStore.HMSHandler.getMSForConf(withinContext.hiveConf).
-                getAllWriteEventInfo(eventMessage.getTxnId(), contextDbName, contextTableName);
+        writeEventInfoList = getAllWriteEventInfo(withinContext);
       }
+
       int numEntry = (writeEventInfoList != null ? writeEventInfoList.size() : 0);
       if (numEntry != 0) {
         eventMessage.addWriteEventInfo(writeEventInfoList);

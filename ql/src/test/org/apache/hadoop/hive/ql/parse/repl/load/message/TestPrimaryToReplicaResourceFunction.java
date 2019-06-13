@@ -73,7 +73,7 @@ public class TestPrimaryToReplicaResourceFunction {
   public void setup() {
     MetaData metadata = new MetaData(null, null, null, null, functionObj);
     Context context =
-        new Context("primaryDb", null, null, null, null, hiveConf, null, null, logger);
+        new Context("primaryDb", null, null, null, hiveConf, null, null, logger);
     when(hiveConf.getVar(HiveConf.ConfVars.REPL_FUNCTIONS_ROOT_DIR))
         .thenReturn("/someBasePath/withADir/");
     function = new PrimaryToReplicaResourceFunction(context, metadata, "replicaDbName");

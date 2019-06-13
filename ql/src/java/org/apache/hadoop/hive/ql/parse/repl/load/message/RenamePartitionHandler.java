@@ -41,7 +41,7 @@ public class RenamePartitionHandler extends AbstractMessageHandler {
 
     AlterPartitionMessage msg = deserializer.getAlterPartitionMessage(context.dmd.getPayload());
     String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
-    String actualTblName = context.isTableNameEmpty() ? msg.getTable() : context.tableName;
+    String actualTblName = msg.getTable();
 
     Map<String, String> newPartSpec = new LinkedHashMap<>();
     Map<String, String> oldPartSpec = new LinkedHashMap<>();

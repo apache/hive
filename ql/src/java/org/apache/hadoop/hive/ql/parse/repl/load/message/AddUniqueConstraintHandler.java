@@ -37,7 +37,7 @@ public class AddUniqueConstraintHandler extends AbstractMessageHandler {
       throws SemanticException {
     AddUniqueConstraintMessage msg = deserializer.getAddUniqueConstraintMessage(context.dmd.getPayload());
 
-    List<SQLUniqueConstraint> uks = null;
+    List<SQLUniqueConstraint> uks;
     try {
       uks = msg.getUniqueConstraints();
     } catch (Exception e) {
@@ -54,7 +54,7 @@ public class AddUniqueConstraintHandler extends AbstractMessageHandler {
     }
 
     String actualDbName = context.isDbNameEmpty() ? uks.get(0).getTable_db() : context.dbName;
-    String actualTblName = context.isTableNameEmpty() ? uks.get(0).getTable_name() : context.tableName;
+    String actualTblName = uks.get(0).getTable_name();
 
     for (SQLUniqueConstraint uk : uks) {
       uk.setTable_db(actualDbName);

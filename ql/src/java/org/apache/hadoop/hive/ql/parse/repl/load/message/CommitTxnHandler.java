@@ -52,10 +52,10 @@ public class CommitTxnHandler extends AbstractMessageHandler {
     List<Task<? extends Serializable>> tasks = new ArrayList<>();
     String dbName = context.dbName;
     String tableNamePrev = null;
-    String tblName = context.tableName;
+    String tblName = null;
 
-    ReplTxnWork work = new ReplTxnWork(HiveUtils.getReplPolicy(context.dbName, context.tableName), context.dbName,
-      context.tableName, msg.getTxnId(), ReplTxnWork.OperationType.REPL_COMMIT_TXN, context.eventOnlyReplicationSpec());
+    ReplTxnWork work = new ReplTxnWork(HiveUtils.getReplPolicy(context.dbName), context.dbName,
+        null, msg.getTxnId(), ReplTxnWork.OperationType.REPL_COMMIT_TXN, context.eventOnlyReplicationSpec());
 
     if (numEntry > 0) {
       context.log.debug("Commit txn handler for txnid " + msg.getTxnId() + " databases : " + msg.getDatabases() +
@@ -73,10 +73,10 @@ public class CommitTxnHandler extends AbstractMessageHandler {
       if (tableNamePrev == null || !(completeName.equals(tableNamePrev))) {
         // The data location is created by source, so the location should be formed based on the table name in msg.
         Path location = HiveUtils.getDumpPath(new Path(context.location), actualDBName, actualTblName);
-        tblName = context.isTableNameEmpty() ? actualTblName : context.tableName;
+        tblName = actualTblName;
         // for warehouse level dump, use db name from write event
         dbName = (context.isDbNameEmpty() ? actualDBName : context.dbName);
-        Context currentContext = new Context(context, dbName, tblName);
+        Context currentContext = new Context(context, dbName);
         currentContext.setLocation(location.toUri().toString());
 
         // Piggybacking in Import logic for now
@@ -105,7 +105,7 @@ public class CommitTxnHandler extends AbstractMessageHandler {
     // For warehouse level dump, don't update the metadata of database as we don't know this txn is for which database.
     // Anyways, if this event gets executed again, it is taken care of.
     if (!context.isDbNameEmpty()) {
-      updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName, context.tableName, null);
+      updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName, null, null);
     }
     context.log.debug("Added Commit txn task : {}", commitTxnTask.getId());
     if (tasks.isEmpty()) {

@@ -15,20 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table;
+package org.apache.hadoop.hive.common.repl;
 
-import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
+/**
+ * A class that defines the constant strings used by the replication implementation.
+ */
 
-public class TableContext {
-  final String dbNameToLoadIn;
-  private final TaskTracker parentTracker;
+public class ReplConst {
 
-  public TableContext(TaskTracker parentTracker, String dbNameToLoadIn) {
-    this.dbNameToLoadIn = dbNameToLoadIn;
-    this.parentTracker = parentTracker;
-  }
+  /**
+   * The constant that denotes the table data location is changed to different path. This indicates
+   * Metastore to update corresponding path in Partitions and also need to delete old path.
+   */
+  public static final String REPL_DATA_LOCATION_CHANGED = "REPL_DATA_LOCATION_CHANGED";
 
-  boolean waitOnPrecursor() {
-    return parentTracker.hasTasks();
-  }
+  public static final String TRUE = "true";
 }
