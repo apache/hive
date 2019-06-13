@@ -37,7 +37,7 @@ public class AddForeignKeyHandler extends AbstractMessageHandler {
       throws SemanticException {
     AddForeignKeyMessage msg = deserializer.getAddForeignKeyMessage(context.dmd.getPayload());
 
-    List<SQLForeignKey> fks = null;
+    List<SQLForeignKey> fks;
     try {
       fks = msg.getForeignKeys();
     } catch (Exception e) {
@@ -54,7 +54,7 @@ public class AddForeignKeyHandler extends AbstractMessageHandler {
     }
 
     String actualDbName = context.isDbNameEmpty() ? fks.get(0).getFktable_db() : context.dbName;
-    String actualTblName = context.isTableNameEmpty() ? fks.get(0).getFktable_name() : context.tableName;
+    String actualTblName = fks.get(0).getFktable_name();
 
     for (SQLForeignKey fk : fks) {
       // If parent table is in the same database, change it to the actual db on destination

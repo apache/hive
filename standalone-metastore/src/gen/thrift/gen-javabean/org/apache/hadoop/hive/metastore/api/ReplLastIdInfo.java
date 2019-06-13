@@ -43,7 +43,6 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField CATALOG_FIELD_DESC = new org.apache.thrift.protocol.TField("catalog", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField PARTITION_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("partitionList", org.apache.thrift.protocol.TType.LIST, (short)5);
-  private static final org.apache.thrift.protocol.TField NEED_UPDATE_DBREPL_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("needUpdateDBReplId", org.apache.thrift.protocol.TType.BOOL, (short)6);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -56,7 +55,6 @@ import org.slf4j.LoggerFactory;
   private String table; // optional
   private String catalog; // optional
   private List<String> partitionList; // optional
-  private boolean needUpdateDBReplId; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -64,8 +62,7 @@ import org.slf4j.LoggerFactory;
     LAST_REPL_ID((short)2, "lastReplId"),
     TABLE((short)3, "table"),
     CATALOG((short)4, "catalog"),
-    PARTITION_LIST((short)5, "partitionList"),
-    NEED_UPDATE_DBREPL_ID((short)6, "needUpdateDBReplId");
+    PARTITION_LIST((short)5, "partitionList");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -90,8 +87,6 @@ import org.slf4j.LoggerFactory;
           return CATALOG;
         case 5: // PARTITION_LIST
           return PARTITION_LIST;
-        case 6: // NEED_UPDATE_DBREPL_ID
-          return NEED_UPDATE_DBREPL_ID;
         default:
           return null;
       }
@@ -133,9 +128,8 @@ import org.slf4j.LoggerFactory;
 
   // isset id assignments
   private static final int __LASTREPLID_ISSET_ID = 0;
-  private static final int __NEEDUPDATEDBREPLID_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.TABLE,_Fields.CATALOG,_Fields.PARTITION_LIST,_Fields.NEED_UPDATE_DBREPL_ID};
+  private static final _Fields optionals[] = {_Fields.TABLE,_Fields.CATALOG,_Fields.PARTITION_LIST};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -150,8 +144,6 @@ import org.slf4j.LoggerFactory;
     tmpMap.put(_Fields.PARTITION_LIST, new org.apache.thrift.meta_data.FieldMetaData("partitionList", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-    tmpMap.put(_Fields.NEED_UPDATE_DBREPL_ID, new org.apache.thrift.meta_data.FieldMetaData("needUpdateDBReplId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ReplLastIdInfo.class, metaDataMap);
   }
@@ -188,7 +180,6 @@ import org.slf4j.LoggerFactory;
       List<String> __this__partitionList = new ArrayList<String>(other.partitionList);
       this.partitionList = __this__partitionList;
     }
-    this.needUpdateDBReplId = other.needUpdateDBReplId;
   }
 
   public ReplLastIdInfo deepCopy() {
@@ -203,8 +194,6 @@ import org.slf4j.LoggerFactory;
     this.table = null;
     this.catalog = null;
     this.partitionList = null;
-    setNeedUpdateDBReplIdIsSet(false);
-    this.needUpdateDBReplId = false;
   }
 
   public String getDatabase() {
@@ -336,28 +325,6 @@ import org.slf4j.LoggerFactory;
     }
   }
 
-  public boolean isNeedUpdateDBReplId() {
-    return this.needUpdateDBReplId;
-  }
-
-  public void setNeedUpdateDBReplId(boolean needUpdateDBReplId) {
-    this.needUpdateDBReplId = needUpdateDBReplId;
-    setNeedUpdateDBReplIdIsSet(true);
-  }
-
-  public void unsetNeedUpdateDBReplId() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __NEEDUPDATEDBREPLID_ISSET_ID);
-  }
-
-  /** Returns true if field needUpdateDBReplId is set (has been assigned a value) and false otherwise */
-  public boolean isSetNeedUpdateDBReplId() {
-    return EncodingUtils.testBit(__isset_bitfield, __NEEDUPDATEDBREPLID_ISSET_ID);
-  }
-
-  public void setNeedUpdateDBReplIdIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __NEEDUPDATEDBREPLID_ISSET_ID, value);
-  }
-
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case DATABASE:
@@ -400,14 +367,6 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
-    case NEED_UPDATE_DBREPL_ID:
-      if (value == null) {
-        unsetNeedUpdateDBReplId();
-      } else {
-        setNeedUpdateDBReplId((Boolean)value);
-      }
-      break;
-
     }
   }
 
@@ -427,9 +386,6 @@ import org.slf4j.LoggerFactory;
 
     case PARTITION_LIST:
       return getPartitionList();
-
-    case NEED_UPDATE_DBREPL_ID:
-      return isNeedUpdateDBReplId();
 
     }
     throw new IllegalStateException();
@@ -452,8 +408,6 @@ import org.slf4j.LoggerFactory;
       return isSetCatalog();
     case PARTITION_LIST:
       return isSetPartitionList();
-    case NEED_UPDATE_DBREPL_ID:
-      return isSetNeedUpdateDBReplId();
     }
     throw new IllegalStateException();
   }
@@ -516,15 +470,6 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
-    boolean this_present_needUpdateDBReplId = true && this.isSetNeedUpdateDBReplId();
-    boolean that_present_needUpdateDBReplId = true && that.isSetNeedUpdateDBReplId();
-    if (this_present_needUpdateDBReplId || that_present_needUpdateDBReplId) {
-      if (!(this_present_needUpdateDBReplId && that_present_needUpdateDBReplId))
-        return false;
-      if (this.needUpdateDBReplId != that.needUpdateDBReplId)
-        return false;
-    }
-
     return true;
   }
 
@@ -556,11 +501,6 @@ import org.slf4j.LoggerFactory;
     list.add(present_partitionList);
     if (present_partitionList)
       list.add(partitionList);
-
-    boolean present_needUpdateDBReplId = true && (isSetNeedUpdateDBReplId());
-    list.add(present_needUpdateDBReplId);
-    if (present_needUpdateDBReplId)
-      list.add(needUpdateDBReplId);
 
     return list.hashCode();
   }
@@ -619,16 +559,6 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetPartitionList()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.partitionList, other.partitionList);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetNeedUpdateDBReplId()).compareTo(other.isSetNeedUpdateDBReplId());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetNeedUpdateDBReplId()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.needUpdateDBReplId, other.needUpdateDBReplId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -692,12 +622,6 @@ import org.slf4j.LoggerFactory;
       } else {
         sb.append(this.partitionList);
       }
-      first = false;
-    }
-    if (isSetNeedUpdateDBReplId()) {
-      if (!first) sb.append(", ");
-      sb.append("needUpdateDBReplId:");
-      sb.append(this.needUpdateDBReplId);
       first = false;
     }
     sb.append(")");
@@ -803,14 +727,6 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 6: // NEED_UPDATE_DBREPL_ID
-            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
-              struct.needUpdateDBReplId = iprot.readBool();
-              struct.setNeedUpdateDBReplIdIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -860,11 +776,6 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
-      if (struct.isSetNeedUpdateDBReplId()) {
-        oprot.writeFieldBegin(NEED_UPDATE_DBREPL_ID_FIELD_DESC);
-        oprot.writeBool(struct.needUpdateDBReplId);
-        oprot.writeFieldEnd();
-      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -894,10 +805,7 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetPartitionList()) {
         optionals.set(2);
       }
-      if (struct.isSetNeedUpdateDBReplId()) {
-        optionals.set(3);
-      }
-      oprot.writeBitSet(optionals, 4);
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetTable()) {
         oprot.writeString(struct.table);
       }
@@ -913,9 +821,6 @@ import org.slf4j.LoggerFactory;
           }
         }
       }
-      if (struct.isSetNeedUpdateDBReplId()) {
-        oprot.writeBool(struct.needUpdateDBReplId);
-      }
     }
 
     @Override
@@ -925,7 +830,7 @@ import org.slf4j.LoggerFactory;
       struct.setDatabaseIsSet(true);
       struct.lastReplId = iprot.readI64();
       struct.setLastReplIdIsSet(true);
-      BitSet incoming = iprot.readBitSet(4);
+      BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.table = iprot.readString();
         struct.setTableIsSet(true);
@@ -946,10 +851,6 @@ import org.slf4j.LoggerFactory;
           }
         }
         struct.setPartitionListIsSet(true);
-      }
-      if (incoming.get(3)) {
-        struct.needUpdateDBReplId = iprot.readBool();
-        struct.setNeedUpdateDBReplIdIsSet(true);
       }
     }
   }

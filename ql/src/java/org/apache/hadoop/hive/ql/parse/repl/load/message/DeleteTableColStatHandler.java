@@ -36,7 +36,7 @@ public class DeleteTableColStatHandler extends AbstractMessageHandler {
       throws SemanticException {
     context.log.info("Replication of table stat delete event is not supported yet");
     if (!context.isDbNameEmpty()) {
-      updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName, context.tableName, null);
+      updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName, null, null);
     }
     return Collections.singletonList(TaskFactory.get(new DependencyCollectionWork(), context.hiveConf));
   }

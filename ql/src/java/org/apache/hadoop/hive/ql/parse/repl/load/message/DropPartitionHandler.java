@@ -39,7 +39,7 @@ public class DropPartitionHandler extends AbstractMessageHandler {
     try {
       DropPartitionMessage msg = deserializer.getDropPartitionMessage(context.dmd.getPayload());
       String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
-      String actualTblName = context.isTableNameEmpty() ? msg.getTable() : context.tableName;
+      String actualTblName = msg.getTable();
       Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs =
           ReplUtils.genPartSpecs(new Table(msg.getTableObj()), msg.getPartitions());
       if (partSpecs.size() > 0) {

@@ -94,7 +94,7 @@ public class LoadTable {
     String dbName = tableContext.dbNameToLoadIn; //this can never be null or empty;
     // Create table associated with the import
     // Executed if relevant, and used to contain all the other details about the table if not.
-    ImportTableDesc tableDesc = tableContext.overrideProperties(event.tableDesc(dbName));
+    ImportTableDesc tableDesc = event.tableDesc(dbName);
     Table table = ImportSemanticAnalyzer.tableIfExists(tableDesc, context.hiveDb);
 
     // Normally, on import, trying to create a table or a partition in a db that does not yet exist

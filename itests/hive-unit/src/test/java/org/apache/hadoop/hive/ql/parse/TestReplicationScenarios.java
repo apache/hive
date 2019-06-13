@@ -395,7 +395,7 @@ public class TestReplicationScenarios {
     HiveConf confTemp = new HiveConf();
     confTemp.set("hive.repl.enable.move.optimization", "true");
     ReplLoadWork replLoadWork = new ReplLoadWork(confTemp, tuple.dumpLocation, replicadb,
-            null, null, isIncrementalDump, Long.valueOf(tuple.lastReplId),
+            null, isIncrementalDump, Long.valueOf(tuple.lastReplId),
         Collections.emptyList());
     Task replLoadTask = TaskFactory.get(replLoadWork, confTemp);
     replLoadTask.initialize(null, null, new DriverContext(driver.getContext()), null);
@@ -2784,7 +2784,7 @@ public class TestReplicationScenarios {
   }
 
   @Test
-  public void testStatus() throws IOException {
+  public void testStatus() throws Throwable {
     String name = testName.getMethodName();
     String dbName = createDB(name, driver);
     String replDbName = dbName + "_dupe";
@@ -2794,25 +2794,25 @@ public class TestReplicationScenarios {
     // Bootstrap done, now on to incremental. First, we test db-level REPL LOADs.
     // Both db-level and table-level repl.last.id must be updated.
 
-    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, "ptned", lastReplDumpId,
+    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, lastReplDumpId,
         "CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE",
             replDbName);
-    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, "ptned", lastReplDumpId,
+    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, lastReplDumpId,
         "ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=1)",
             replDbName);
-    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, "ptned", lastReplDumpId,
+    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, lastReplDumpId,
         "ALTER TABLE " + dbName + ".ptned PARTITION (b=1) RENAME TO PARTITION (b=11)",
             replDbName);
-    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, "ptned", lastReplDumpId,
+    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, lastReplDumpId,
         "ALTER TABLE " + dbName + ".ptned SET TBLPROPERTIES ('blah'='foo')",
             replDbName);
-    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, "ptned_rn", lastReplDumpId,
+    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, lastReplDumpId,
         "ALTER TABLE " + dbName + ".ptned RENAME TO  " + dbName + ".ptned_rn",
             replDbName);
-    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, "ptned_rn", lastReplDumpId,
+    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, lastReplDumpId,
         "ALTER TABLE " + dbName + ".ptned_rn DROP PARTITION (b=11)",
             replDbName);
-    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, null, lastReplDumpId,
+    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, lastReplDumpId,
         "DROP TABLE " + dbName + ".ptned_rn",
             replDbName);
 
@@ -2820,36 +2820,27 @@ public class TestReplicationScenarios {
     // In each of these cases, the table-level repl.last.id must move forward, but the
     // db-level last.repl.id must not.
 
-    String lastTblReplDumpId = lastReplDumpId;
-    lastTblReplDumpId = verifyAndReturnTblReplStatus(
-        dbName, "ptned2", lastReplDumpId, lastTblReplDumpId,
+    lastReplDumpId = verifyAndReturnTblReplStatus(
+        dbName, "ptned2", lastReplDumpId,
         "CREATE TABLE " + dbName + ".ptned2(a string) partitioned by (b int) STORED AS TEXTFILE",
             replDbName);
-    lastTblReplDumpId = verifyAndReturnTblReplStatus(
-        dbName, "ptned2", lastReplDumpId, lastTblReplDumpId,
+    lastReplDumpId = verifyAndReturnTblReplStatus(
+        dbName, "ptned2", lastReplDumpId,
         "ALTER TABLE " + dbName + ".ptned2 ADD PARTITION (b=1)",
             replDbName);
-    lastTblReplDumpId = verifyAndReturnTblReplStatus(
-        dbName, "ptned2", lastReplDumpId, lastTblReplDumpId,
+    lastReplDumpId = verifyAndReturnTblReplStatus(
+        dbName, "ptned2", lastReplDumpId,
         "ALTER TABLE " + dbName + ".ptned2 PARTITION (b=1) RENAME TO PARTITION (b=11)",
             replDbName);
-    lastTblReplDumpId = verifyAndReturnTblReplStatus(
-        dbName, "ptned2", lastReplDumpId, lastTblReplDumpId,
+    lastReplDumpId = verifyAndReturnTblReplStatus(
+        dbName, "ptned2", lastReplDumpId,
         "ALTER TABLE " + dbName + ".ptned2 SET TBLPROPERTIES ('blah'='foo')",
             replDbName);
     // Note : Not testing table rename because table rename replication is not supported for table-level repl.
-    String finalTblReplDumpId = verifyAndReturnTblReplStatus(
-        dbName, "ptned2", lastReplDumpId, lastTblReplDumpId,
+    verifyAndReturnTblReplStatus(
+        dbName, "ptned2", lastReplDumpId,
         "ALTER TABLE " + dbName + ".ptned2 DROP PARTITION (b=11)",
             replDbName);
-
-    /*
-    Comparisons using Strings for event Ids is wrong. This should be numbers since lexical string comparison
-    and numeric comparision differ. This requires a broader change where we return the dump Id as long and not string
-    fixing this here for now as it was observed in one of the builds where "1001".compareTo("998") results
-    in failure of the assertion below.
-     */
-    assertTrue(new Long(Long.parseLong(finalTblReplDumpId)).compareTo(Long.parseLong(lastTblReplDumpId)) > 0);
 
     // TODO : currently not testing the following scenarios:
     //   a) Multi-db wh-level REPL LOAD - need to add that
@@ -3494,27 +3485,29 @@ public class TestReplicationScenarios {
     return event;
   }
 
-  private String verifyAndReturnDbReplStatus(String dbName, String tblName,
+  private String verifyAndReturnDbReplStatus(String dbName,
                                              String prevReplDumpId, String cmd,
                                              String replDbName) throws IOException {
     run(cmd, driver);
     String lastReplDumpId = incrementalLoadAndVerify(dbName, prevReplDumpId, replDbName).lastReplId;
-    if (tblName != null){
-      verifyRun("REPL STATUS " + replDbName + "." + tblName, lastReplDumpId, driverMirror);
-    }
     assertTrue(Long.parseLong(lastReplDumpId) > Long.parseLong(prevReplDumpId));
     return lastReplDumpId;
   }
 
-  // Tests that doing a table-level REPL LOAD updates table repl.last.id, but not db-level repl.last.id
+  // Tests that verify table's last repl ID
   private String verifyAndReturnTblReplStatus(
-      String dbName, String tblName, String lastDbReplDumpId, String prevReplDumpId, String cmd,
-      String replDbName) throws IOException {
+      String dbName, String tblName, String lastDbReplDumpId, String cmd,
+      String replDbName) throws IOException, TException {
     run(cmd, driver);
     String lastReplDumpId
-            = incrementalLoadAndVerify(dbName + "." + tblName, prevReplDumpId, replDbName + "." + tblName).lastReplId;
-    verifyRun("REPL STATUS " + replDbName, lastDbReplDumpId, driverMirror);
-    assertTrue(Long.parseLong(lastReplDumpId) > Long.parseLong(prevReplDumpId));
+            = incrementalLoadAndVerify(dbName, lastDbReplDumpId, replDbName).lastReplId;
+    verifyRun("REPL STATUS " + replDbName, lastReplDumpId, driverMirror);
+    assertTrue(Long.parseLong(lastReplDumpId) > Long.parseLong(lastDbReplDumpId));
+
+    Table tbl = metaStoreClientMirror.getTable(replDbName, tblName);
+    String tblLastReplId = tbl.getParameters().get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
+    assertTrue(Long.parseLong(tblLastReplId) > Long.parseLong(lastDbReplDumpId));
+    assertTrue(Long.parseLong(tblLastReplId) <= Long.parseLong(lastReplDumpId));
     return lastReplDumpId;
   }
 

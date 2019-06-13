@@ -34,9 +34,11 @@ public class DropTableHandler extends AbstractMessageHandler {
       throws SemanticException {
     DropTableMessage msg = deserializer.getDropTableMessage(context.dmd.getPayload());
     String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
-    String actualTblName = context.isTableNameEmpty() ? msg.getTable() : context.tableName;
-    DropTableDesc dropTableDesc = new DropTableDesc(actualDbName + "." + actualTblName, true, true,
-        context.eventOnlyReplicationSpec(), false);
+    String actualTblName = msg.getTable();
+    DropTableDesc dropTableDesc = new DropTableDesc(
+        actualDbName + "." + actualTblName,
+        true, true, context.eventOnlyReplicationSpec(), false
+    );
     Task<DDLWork> dropTableTask = TaskFactory.get(
         new DDLWork(readEntitySet, writeEntitySet, dropTableDesc), context.hiveConf
     );

@@ -37,7 +37,7 @@ public class AddNotNullConstraintHandler extends AbstractMessageHandler {
       throws SemanticException {
     AddNotNullConstraintMessage msg = deserializer.getAddNotNullConstraintMessage(context.dmd.getPayload());
 
-    List<SQLNotNullConstraint> nns = null;
+    List<SQLNotNullConstraint> nns;
     try {
       nns = msg.getNotNullConstraints();
     } catch (Exception e) {
@@ -54,7 +54,7 @@ public class AddNotNullConstraintHandler extends AbstractMessageHandler {
     }
 
     String actualDbName = context.isDbNameEmpty() ? nns.get(0).getTable_db() : context.dbName;
-    String actualTblName = context.isTableNameEmpty() ? nns.get(0).getTable_name() : context.tableName;
+    String actualTblName = nns.get(0).getTable_name();
 
     for (SQLNotNullConstraint nn : nns) {
       nn.setTable_db(actualDbName);

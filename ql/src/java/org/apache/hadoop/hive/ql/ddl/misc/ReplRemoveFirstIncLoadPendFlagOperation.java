@@ -38,29 +38,14 @@ public class ReplRemoveFirstIncLoadPendFlagOperation extends DDLOperation<ReplRe
   @Override
   public int execute() throws Exception {
     String dbNameOrPattern = desc.getDatabaseName();
-    String tableNameOrPattern = desc.getTableName();
     Map<String, String> parameters;
-    // For database level load tableNameOrPattern will be null. Flag is set only in database for db level load.
-    if (tableNameOrPattern != null && !tableNameOrPattern.isEmpty()) {
-      // For table level load, dbNameOrPattern is db name and not a pattern.
-      for (String tableName : Utils.matchesTbl(context.getDb(), dbNameOrPattern, tableNameOrPattern)) {
-        org.apache.hadoop.hive.metastore.api.Table tbl = context.getDb().getMSC().getTable(dbNameOrPattern, tableName);
-        parameters = tbl.getParameters();
-        String incPendPara = parameters != null ? parameters.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG) : null;
-        if (incPendPara != null) {
-          parameters.remove(ReplUtils.REPL_FIRST_INC_PENDING_FLAG);
-          context.getDb().getMSC().alter_table(dbNameOrPattern, tableName, tbl);
-        }
-      }
-    } else {
-      for (String dbName : Utils.matchesDb(context.getDb(), dbNameOrPattern)) {
-        Database database = context.getDb().getMSC().getDatabase(dbName);
-        parameters = database.getParameters();
-        String incPendPara = parameters != null ? parameters.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG) : null;
-        if (incPendPara != null) {
-          parameters.remove(ReplUtils.REPL_FIRST_INC_PENDING_FLAG);
-          context.getDb().getMSC().alterDatabase(dbName, database);
-        }
+    for (String dbName : Utils.matchesDb(context.getDb(), dbNameOrPattern)) {
+      Database database = context.getDb().getMSC().getDatabase(dbName);
+      parameters = database.getParameters();
+      String incPendPara = parameters != null ? parameters.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG) : null;
+      if (incPendPara != null) {
+        parameters.remove(ReplUtils.REPL_FIRST_INC_PENDING_FLAG);
+        context.getDb().getMSC().alterDatabase(dbName, database);
       }
     }
     return 0;

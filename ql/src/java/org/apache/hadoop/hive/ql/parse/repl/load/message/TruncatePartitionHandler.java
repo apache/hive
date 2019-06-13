@@ -37,7 +37,7 @@ public class TruncatePartitionHandler extends AbstractMessageHandler {
   public List<Task<? extends Serializable>> handle(Context context) throws SemanticException {
     AlterPartitionMessage msg = deserializer.getAlterPartitionMessage(context.dmd.getPayload());
     String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
-    String actualTblName = context.isTableNameEmpty() ? msg.getTable() : context.tableName;
+    String actualTblName = msg.getTable();
 
     Map<String, String> partSpec = new LinkedHashMap<>();
     org.apache.hadoop.hive.metastore.api.Table tblObj;

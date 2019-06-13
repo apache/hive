@@ -394,6 +394,8 @@ TOK_REPL_LOAD;
 TOK_REPL_STATUS;
 TOK_REPL_CONFIG;
 TOK_REPL_CONFIG_LIST;
+TOK_REPL_TABLES;
+TOK_REPL_TABLES_LIST;
 TOK_TO;
 TOK_ONLY;
 TOK_SUMMARY;
@@ -884,23 +886,23 @@ replDumpStatement
 @init { pushMsg("replication dump statement", state); }
 @after { popMsg(state); }
       : KW_REPL KW_DUMP
-        (dbName=identifier) (DOT tblName=identifier)?
+        (dbName=identifier) (DOT tablePolicy=replTableLevelPolicy)?
         (KW_FROM (eventId=Number)
           (KW_TO (rangeEnd=Number))?
           (KW_LIMIT (batchSize=Number))?
         )?
         (KW_WITH replConf=replConfigs)?
-    -> ^(TOK_REPL_DUMP $dbName ^(TOK_TABNAME $tblName)? ^(TOK_FROM $eventId (TOK_TO $rangeEnd)? (TOK_LIMIT $batchSize)?)? $replConf?)
+    -> ^(TOK_REPL_DUMP $dbName $tablePolicy? ^(TOK_FROM $eventId (TOK_TO $rangeEnd)? (TOK_LIMIT $batchSize)?)? $replConf?)
     ;
 
 replLoadStatement
 @init { pushMsg("replication load statement", state); }
 @after { popMsg(state); }
       : KW_REPL KW_LOAD
-        ((dbName=identifier) (DOT tblName=identifier)?)?
+        (dbName=identifier)?
         KW_FROM (path=StringLiteral)
         (KW_WITH replConf=replConfigs)?
-      -> ^(TOK_REPL_LOAD $path ^(TOK_DBNAME $dbName)? ^(TOK_TABNAME $tblName)? $replConf?)
+      -> ^(TOK_REPL_LOAD $path ^(TOK_DBNAME $dbName)? $replConf?)
       ;
 
 replConfigs
@@ -917,13 +919,37 @@ replConfigsList
       keyValueProperty (COMMA keyValueProperty)* -> ^(TOK_REPL_CONFIG_LIST keyValueProperty+)
     ;
 
+replTableLevelPolicy
+@init { pushMsg("replication table level policy definition", state); }
+@after { popMsg(state); }
+    :
+      ((replTablesIncludeList=replTablesList) (DOT replTablesExcludeList=replTablesList)?)
+      -> ^(TOK_REPL_TABLES $replTablesIncludeList $replTablesExcludeList?)
+    ;
+
+replTablesList
+@init { pushMsg("replication table name or comma separated table names pattern list", state); }
+@after { popMsg(state); }
+    :
+      (LSQUARE (tablePattern (COMMA tablePattern)*)? RSQUARE) -> ^(TOK_REPL_TABLES_LIST tablePattern*)
+    ;
+
+tablePattern
+@init { pushMsg("Table name pattern", state); }
+@after { popMsg(state); }
+    :
+      (pattern=StringLiteral) -> $pattern
+      |
+      (identifier) -> TOK_NULL
+    ;
+
 replStatusStatement
 @init { pushMsg("replication status statement", state); }
 @after { popMsg(state); }
       : KW_REPL KW_STATUS
-        (dbName=identifier) (DOT tblName=identifier)?
+        (dbName=identifier)
         (KW_WITH replConf=replConfigs)?
-      -> ^(TOK_REPL_STATUS $dbName ^(TOK_TABNAME $tblName)? $replConf?)
+      -> ^(TOK_REPL_STATUS $dbName $replConf?)
       ;
 
 ddlStatement

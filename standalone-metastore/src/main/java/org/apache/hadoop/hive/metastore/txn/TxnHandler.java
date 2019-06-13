@@ -889,8 +889,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     String db = normalizeIdentifier(replLastIdInfo.getDatabase());
     String table = replLastIdInfo.isSetTable() ? normalizeIdentifier(replLastIdInfo.getTable()) : null;
     List<String> partList = replLastIdInfo.isSetPartitionList() ? replLastIdInfo.getPartitionList() : null;
-    boolean needUpdateDBReplId = replLastIdInfo.isSetNeedUpdateDBReplId() ?
-            replLastIdInfo.isNeedUpdateDBReplId() : false;
 
     try {
       stmt = dbConn.createStatement();
@@ -910,16 +908,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
       long dbId = rs.getLong(1);
 
-      if (needUpdateDBReplId) {
-        rs = stmt.executeQuery("select \"PARAM_VALUE\" from \"DATABASE_PARAMS\" where \"PARAM_KEY\" = " +
-                "'repl.last.id' and \"DB_ID\" = " + dbId);
-        if (rs == null || !rs.next()) {
-          stmt.executeUpdate("insert into \"DATABASE_PARAMS\" values ( " + dbId +
-                  " , 'repl.last.id' , " + lastReplId + ")");
-        } else {
-          stmt.executeUpdate("update \"DATABASE_PARAMS\" set \"PARAM_VALUE\" = " + lastReplId +
-                  " where \"DB_ID\" = " + dbId + " and \"PARAM_KEY\" = 'repl.last.id'");
-        }
+      rs = stmt.executeQuery("select \"PARAM_VALUE\" from \"DATABASE_PARAMS\" where \"PARAM_KEY\" = " +
+              "'repl.last.id' and \"DB_ID\" = " + dbId);
+      if (rs == null || !rs.next()) {
+        stmt.executeUpdate("insert into \"DATABASE_PARAMS\" values ( " + dbId +
+                " , 'repl.last.id' , " + lastReplId + ")");
+      } else {
+        stmt.executeUpdate("update \"DATABASE_PARAMS\" set \"PARAM_VALUE\" = " + lastReplId +
+                " where \"DB_ID\" = " + dbId + " and \"PARAM_KEY\" = 'repl.last.id'");
       }
 
       if (table == null) {
