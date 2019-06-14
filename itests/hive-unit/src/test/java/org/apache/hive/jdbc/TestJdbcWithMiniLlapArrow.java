@@ -439,9 +439,7 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
   }
 
   @Test
-  public void testAddCloseCloseAllConnections() throws Exception {
-    System.out.println("BaseJdbcWithMiniLlap.testAddCloseCloseAllConnections");
-
+  public void testConcurrentAddAndCloseAndCloseAllConnections() throws Exception {
     createTestTable("testtab1");
 
     String url = miniHS2.getJdbcURL();
@@ -458,7 +456,6 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
     job.set(LlapBaseInputFormat.QUERY_KEY, "select * from testtab1");
 
     final String[] handleIds = IntStream.range(0, 20).boxed().map(i -> "handleId-" + i).toArray(String[]::new);
-    final Iterator<String> handleIdsItr = Iterables.cycle(handleIds).iterator();
 
     final ExceptionHolder exceptionHolder = new ExceptionHolder();
 
@@ -467,16 +464,18 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
     // closeAllConnThread thread tries to close All at once.
 
     final int numIterations = 100;
+    final Iterator<String> addConnIterator = Iterables.cycle(handleIds).iterator();
     Thread addConnThread = new Thread(() -> executeNTimes(() -> {
-      String handleId = handleIdsItr.next();
+      String handleId = addConnIterator.next();
       job.set(LlapBaseInputFormat.HANDLE_ID, handleId);
       InputSplit[] splits = inputFormat.getSplits(job, 1);
       assertTrue(splits.length > 0);
       return null;
     }, numIterations, 1, exceptionHolder));
 
+    final Iterator<String> removeConnIterator = Iterables.cycle(handleIds).iterator();
     Thread closeConnThread = new Thread(() -> executeNTimes(() -> {
-      String handleId = handleIdsItr.next();
+      String handleId = removeConnIterator.next();
       LlapBaseInputFormat.close(handleId);
       return null;
     }, numIterations, 2, exceptionHolder));
