@@ -1518,29 +1518,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int remFirstIncPendFlag(Hive hive, ReplRemoveFirstIncLoadPendFlagDesc desc) throws HiveException, TException {
     String dbNameOrPattern = desc.getDatabaseName();
-    String tableNameOrPattern = desc.getTableName();
     Map<String, String> parameters;
-    // For database level load tableNameOrPattern will be null. Flag is set only in database for db level load.
-    if (tableNameOrPattern != null && !tableNameOrPattern.isEmpty()) {
-      // For table level load, dbNameOrPattern is db name and not a pattern.
-      for (String tableName : Utils.matchesTbl(hive, dbNameOrPattern, tableNameOrPattern)) {
-        org.apache.hadoop.hive.metastore.api.Table tbl = hive.getMSC().getTable(dbNameOrPattern, tableName);
-        parameters = tbl.getParameters();
-        String incPendPara = parameters != null ? parameters.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG) : null;
-        if (incPendPara != null) {
-          parameters.remove(ReplUtils.REPL_FIRST_INC_PENDING_FLAG);
-          hive.getMSC().alter_table(dbNameOrPattern, tableName, tbl);
-        }
-      }
-    } else {
-      for (String dbName : Utils.matchesDb(hive, dbNameOrPattern)) {
-        Database database = hive.getMSC().getDatabase(dbName);
-        parameters = database.getParameters();
-        String incPendPara = parameters != null ? parameters.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG) : null;
-        if (incPendPara != null) {
-          parameters.remove(ReplUtils.REPL_FIRST_INC_PENDING_FLAG);
-          hive.getMSC().alterDatabase(dbName, database);
-        }
+
+    // Flag is set only in database for db level load.
+    for (String dbName : Utils.matchesDb(hive, dbNameOrPattern)) {
+      Database database = hive.getMSC().getDatabase(dbName);
+      parameters = database.getParameters();
+      String incPendPara = parameters != null ? parameters.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG) : null;
+      if (incPendPara != null) {
+        parameters.remove(ReplUtils.REPL_FIRST_INC_PENDING_FLAG);
+        hive.getMSC().alterDatabase(dbName, database);
       }
     }
     return 0;

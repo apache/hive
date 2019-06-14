@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.messaging.event.filters;
 
 import org.apache.hadoop.hive.metastore.IMetaStoreClient.NotificationFilter;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 
 public abstract class BasicFilter implements NotificationFilter {
   @Override
@@ -27,6 +28,12 @@ public abstract class BasicFilter implements NotificationFilter {
       return false; // get rid of trivial case first, so that we can safely assume non-null
     }
     return shouldAccept(event);
+  }
+
+  boolean isTxnRelatedEvent(final NotificationEvent event) {
+    return ((event.getEventType().equals(MessageBuilder.OPEN_TXN_EVENT)) ||
+            (event.getEventType().equals(MessageBuilder.COMMIT_TXN_EVENT)) ||
+            (event.getEventType().equals(MessageBuilder.ABORT_TXN_EVENT)));
   }
 
   abstract boolean shouldAccept(final NotificationEvent event);

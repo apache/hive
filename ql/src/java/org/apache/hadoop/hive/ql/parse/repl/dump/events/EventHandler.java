@@ -18,10 +18,10 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
-
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 
@@ -40,18 +40,16 @@ public interface EventHandler {
     final Hive db;
     final HiveConf hiveConf;
     final ReplicationSpec replicationSpec;
-    final String dbName;
-    final String tableName;
+    final ReplScope replScope;
 
     public Context(Path eventRoot, Path cmRoot, Hive db, HiveConf hiveConf,
-        ReplicationSpec replicationSpec, String dbName, String tableName) {
+        ReplicationSpec replicationSpec, ReplScope replScope) {
       this.eventRoot = eventRoot;
       this.cmRoot = cmRoot;
       this.db = db;
       this.hiveConf = hiveConf;
       this.replicationSpec = replicationSpec;
-      this.dbName = dbName;
-      this.tableName = tableName;
+      this.replScope = replScope;
     }
 
     public Context(Context other) {
@@ -60,11 +58,10 @@ public interface EventHandler {
       this.db = other.db;
       this.hiveConf = other.hiveConf;
       this.replicationSpec = other.replicationSpec;
-      this.dbName = other.dbName;
-      this.tableName = other.tableName;
+      this.replScope = other.replScope;
     }
 
-    public void setEventRoot(Path eventRoot) {
+    void setEventRoot(Path eventRoot) {
       this.eventRoot = eventRoot;
     }
 

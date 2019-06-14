@@ -33,8 +33,8 @@ import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
-import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFilter;
+import org.apache.hadoop.hive.metastore.messaging.event.filters.ReplEventFilter;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -184,9 +184,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     if (conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES)) {
       bootDumpBeginReplId = queryState.getConf().getLong(ReplUtils.LAST_REPL_ID_KEY, -1L);
       assert (bootDumpBeginReplId >= 0);
-      LOG.info("Dump for bootstrapping ACID tables during an incremental dump for db {} and table {}",
-              work.dbNameOrPattern,
-              work.tableNameOrPattern);
+      LOG.info("Dump for bootstrapping ACID tables during an incremental dump for db {}",
+              work.dbNameOrPattern);
       long timeoutInMs = HiveConf.getTimeVar(conf,
               HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
       waitUntilTime = System.currentTimeMillis() + timeoutInMs;
@@ -201,7 +200,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     work.overrideLastEventToDump(hiveDb, bootDumpBeginReplId);
 
     IMetaStoreClient.NotificationFilter evFilter = new AndFilter(
-        new DatabaseAndTableFilter(work.dbNameOrPattern, work.tableNameOrPattern),
+        new ReplEventFilter(work.replScope),
         new EventBoundaryFilter(work.eventFrom, work.eventTo));
 
     EventUtils.MSClientNotificationFetcher evFetcher
@@ -255,7 +254,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       Path dbRoot = getBootstrapDbRoot(dumpRoot, dbName, true);
 
       try (Writer writer = new Writer(dumpRoot, conf)) {
-        for (String tableName : Utils.matchesTbl(hiveDb, dbName, work.tableNameOrPattern)) {
+        for (String tableName : Utils.matchesTbl(hiveDb, dbName, work.replScope)) {
           try {
             Table table = hiveDb.getTable(dbName, tableName);
 
@@ -297,8 +296,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         db,
         conf,
         getNewEventOnlyReplicationSpec(ev.getEventId()),
-        work.dbNameOrPattern,
-        work.tableNameOrPattern
+        work.replScope
     );
     EventHandler eventHandler = EventHandlerFactory.handlerFor(ev);
     eventHandler.handle(context);
@@ -321,7 +319,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     Long bootDumpBeginReplId = queryState.getConf().getLong(ReplUtils.LAST_REPL_ID_KEY, -1L);
     assert (bootDumpBeginReplId >= 0L);
 
-    LOG.info("Bootstrap Dump for db {} and table {}", work.dbNameOrPattern, work.tableNameOrPattern);
+    LOG.info("Bootstrap Dump for db {}", work.dbNameOrPattern);
     long timeoutInMs = HiveConf.getTimeVar(conf,
             HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
     long waitUntilTime = System.currentTimeMillis() + timeoutInMs;
@@ -337,7 +335,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
                 " with first incremental dump pending : " + dbName);
       }
       replLogger = new BootstrapDumpLogger(dbName, dumpRoot.toString(),
-              Utils.getAllTables(hiveDb, dbName).size(),
+              Utils.getAllTables(hiveDb, dbName, work.replScope).size(),
               hiveDb.getAllFunctions().size());
       replLogger.startLog();
       Path dbRoot = dumpDbMetadata(dbName, dumpRoot, bootDumpBeginReplId, hiveDb);
@@ -349,7 +347,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)
                       && !conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY);
       try (Writer writer = new Writer(dbRoot, conf)) {
-        for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.tableNameOrPattern)) {
+        for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.replScope)) {
           LOG.debug(
               "analyzeReplDump dumping table: " + tblName + " to db root " + dbRoot.toUri());
 

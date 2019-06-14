@@ -2256,7 +2256,7 @@ FROM "STORE_SALES"
 WHERE "ss_customer_sk" IS NOT NULL AND "ss_sold_date_sk" IS NOT NULL) AS "t0"
 INNER JOIN (SELECT "d_date_sk"
 FROM "DATE_DIM"
-WHERE "d_moy" BETWEEN 1 AND 3 AND "d_year" = 1999 AND "d_date_sk" IS NOT NULL) AS "t2" ON "t0"."ss_sold_date_sk" = "t2"."d_date_sk"
+WHERE "d_year" = 1999 AND "d_moy" BETWEEN 1 AND 3 AND "d_date_sk" IS NOT NULL) AS "t2" ON "t0"."ss_sold_date_sk" = "t2"."d_date_sk"
                     hive.sql.query.fieldNames ss_customer_sk0
                     hive.sql.query.fieldTypes int
                     hive.sql.query.split false
@@ -2289,7 +2289,7 @@ FROM "WEB_SALES"
 WHERE "ws_bill_customer_sk" IS NOT NULL AND "ws_sold_date_sk" IS NOT NULL) AS "t0"
 INNER JOIN (SELECT "d_date_sk"
 FROM "DATE_DIM"
-WHERE "d_moy" BETWEEN 1 AND 3 AND "d_year" = 1999 AND "d_date_sk" IS NOT NULL) AS "t2" ON "t0"."ws_sold_date_sk" = "t2"."d_date_sk"
+WHERE "d_year" = 1999 AND "d_moy" BETWEEN 1 AND 3 AND "d_date_sk" IS NOT NULL) AS "t2" ON "t0"."ws_sold_date_sk" = "t2"."d_date_sk"
 GROUP BY "t0"."ws_bill_customer_sk"
                     hive.sql.query.fieldNames ws_bill_customer_sk0,$f1
                     hive.sql.query.fieldTypes int,boolean
@@ -2318,7 +2318,7 @@ FROM "CATALOG_SALES"
 WHERE "cs_ship_customer_sk" IS NOT NULL AND "cs_sold_date_sk" IS NOT NULL) AS "t0"
 INNER JOIN (SELECT "d_date_sk"
 FROM "DATE_DIM"
-WHERE "d_moy" BETWEEN 1 AND 3 AND "d_year" = 1999 AND "d_date_sk" IS NOT NULL) AS "t2" ON "t0"."cs_sold_date_sk" = "t2"."d_date_sk"
+WHERE "d_year" = 1999 AND "d_moy" BETWEEN 1 AND 3 AND "d_date_sk" IS NOT NULL) AS "t2" ON "t0"."cs_sold_date_sk" = "t2"."d_date_sk"
 GROUP BY "t0"."cs_ship_customer_sk"
                     hive.sql.query.fieldNames cs_ship_customer_sk0,$f1
                     hive.sql.query.fieldTypes int,boolean

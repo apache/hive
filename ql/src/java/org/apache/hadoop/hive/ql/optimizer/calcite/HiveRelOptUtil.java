@@ -1036,7 +1036,7 @@ public class HiveRelOptUtil extends RelOptUtil {
       return null;
     }
 
-    final HiveRelWriterImpl planWriter = new HiveRelWriterImpl();
+    final HiveRelJsonImpl planWriter = new HiveRelJsonImpl();
     rel.explain(planWriter);
     return planWriter.asString();
   }

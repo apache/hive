@@ -12782,7 +12782,6 @@ class ReplLastIdInfo:
    - table
    - catalog
    - partitionList
-   - needUpdateDBReplId
   """
 
   thrift_spec = (
@@ -12792,16 +12791,14 @@ class ReplLastIdInfo:
     (3, TType.STRING, 'table', None, None, ), # 3
     (4, TType.STRING, 'catalog', None, None, ), # 4
     (5, TType.LIST, 'partitionList', (TType.STRING,None), None, ), # 5
-    (6, TType.BOOL, 'needUpdateDBReplId', None, None, ), # 6
   )
 
-  def __init__(self, database=None, lastReplId=None, table=None, catalog=None, partitionList=None, needUpdateDBReplId=None,):
+  def __init__(self, database=None, lastReplId=None, table=None, catalog=None, partitionList=None,):
     self.database = database
     self.lastReplId = lastReplId
     self.table = table
     self.catalog = catalog
     self.partitionList = partitionList
-    self.needUpdateDBReplId = needUpdateDBReplId
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -12842,11 +12839,6 @@ class ReplLastIdInfo:
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
-      elif fid == 6:
-        if ftype == TType.BOOL:
-          self.needUpdateDBReplId = iprot.readBool()
-        else:
-          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -12880,10 +12872,6 @@ class ReplLastIdInfo:
         oprot.writeString(iter564)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
-    if self.needUpdateDBReplId is not None:
-      oprot.writeFieldBegin('needUpdateDBReplId', TType.BOOL, 6)
-      oprot.writeBool(self.needUpdateDBReplId)
-      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -12902,7 +12890,6 @@ class ReplLastIdInfo:
     value = (value * 31) ^ hash(self.table)
     value = (value * 31) ^ hash(self.catalog)
     value = (value * 31) ^ hash(self.partitionList)
-    value = (value * 31) ^ hash(self.needUpdateDBReplId)
     return value
 
   def __repr__(self):

@@ -221,18 +221,16 @@ public class TestReplicationWithTableMigrationEx {
     WarehouseInstance.Tuple tuple = primary
             .run("use " + primaryDbName)
             .run("create table t1 (i int, j int)")
-            .dump(primaryDbName+".t1", null);
+            .dump(primaryDbName+".['t1']", null);
     replica.run("create database " + replicatedDbName);
-    replica.loadWithoutExplain(replicatedDbName + ".t1", tuple.dumpLocation);
-    assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
-    assertTrue(ReplUtils.isFirstIncPending(replica.getTable(replicatedDbName, "t1").getParameters()));
+    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
+    assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
 
     tuple = primary.run("use " + primaryDbName)
             .run("insert into t1 values (1, 2)")
-            .dump(primaryDbName+".t1", tuple.lastReplicationId);
-    replica.loadWithoutExplain(replicatedDbName + ".t1", tuple.dumpLocation);
+            .dump(primaryDbName+".['t1']", tuple.lastReplicationId);
+    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
     assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
-    assertFalse(ReplUtils.isFirstIncPending(replica.getTable(replicatedDbName, "t1").getParameters()));
   }
 
   @Test

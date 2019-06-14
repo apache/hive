@@ -15,19 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.common;
+package org.apache.hive.service.auth;
 
-/**
- * A class that defines the constant strings used by the replication implementation.
- */
+import org.junit.BeforeClass;
 
-public class ReplConst {
+public class TestTrustDomainAuthenticationHttp extends TrustDomainAuthenticationTest {
 
-  /**
-   * The constant that denotes the table data location is changed to different path. This indicates
-   * Metastore to update corresponding path in Partitions and also need to delete old path.
-   */
-  public static final String REPL_DATA_LOCATION_CHANGED = "REPL_DATA_LOCATION_CHANGED";
-
-  public static final String TRUE = "true";
+    @BeforeClass
+    public static void setUp() throws Exception {
+        initialize(HS2_TRANSPORT_MODE_HTTP, true);
+    }
 }

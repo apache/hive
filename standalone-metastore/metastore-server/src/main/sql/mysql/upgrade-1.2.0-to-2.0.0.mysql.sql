@@ -1,4 +1,4 @@
-SELECT 'Upgrading MetaStore schema from 1.2.0 to 2.0.0' AS ' ';
+SELECT 'Upgrading MetaStore schema from 1.2.0 to 2.0.0' AS MESSAGE;
 --SOURCE 021-HIVE-7018.mysql.sql;
 ALTER TABLE `TBLS` DROP FOREIGN KEY `TBLS_FK3`;
 ALTER TABLE `TBLS` DROP KEY `TBLS_N51`;
@@ -71,5 +71,5 @@ CREATE TABLE AUX_TABLE (
 
 
 UPDATE VERSION SET SCHEMA_VERSION='2.0.0', VERSION_COMMENT='Hive release version 2.0.0' where VER_ID=1;
-SELECT 'Finished upgrading MetaStore schema from 1.2.0 to 2.0.0' AS ' ';
+SELECT 'Finished upgrading MetaStore schema from 1.2.0 to 2.0.0' AS MESSAGE;
 
