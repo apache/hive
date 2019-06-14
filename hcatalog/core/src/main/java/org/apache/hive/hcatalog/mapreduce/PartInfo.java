@@ -57,11 +57,8 @@ public class PartInfo implements Serializable {
   /** Job properties associated with this parition */
   Map<String, String> jobProperties;
 
-  /**
-   * The table info associated with this partition.
-   * Not serialized per PartInfo instance. Constant, per table.
-   */
-  transient HCatTableInfo tableInfo;
+  /** The table info associated with this partition.*/
+  HCatTableInfo tableInfo;
 
   /**
    * Instantiates a new hcat partition info.
