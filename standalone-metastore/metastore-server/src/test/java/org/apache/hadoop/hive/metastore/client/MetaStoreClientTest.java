@@ -22,7 +22,9 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
@@ -47,12 +49,15 @@ public abstract class MetaStoreClientTest {
   // Then we should remove our own copy
   private static Set<AbstractMetaStoreService> metaStoreServices = null;
 
+  @Rule
+  public TestRule ignoreRule;
+
   @Parameterized.Parameters(name = "{0}")
   public static List<Object[]> getMetaStoreToTest() throws Exception {
     List<Object[]> result = MetaStoreFactoryForTests.getMetaStores();
     metaStoreServices = result.stream()
-                            .map(test -> (AbstractMetaStoreService)test[1])
-                            .collect(Collectors.toSet());
+        .map(test -> (AbstractMetaStoreService)test[1])
+        .collect(Collectors.toSet());
     return result;
   }
 
@@ -68,7 +73,7 @@ public abstract class MetaStoreClientTest {
    * @param extraConf Specific other configuration values
    */
   public static void startMetaStores(Map<MetastoreConf.ConfVars, String> msConf,
-                              Map<String, String> extraConf) {
+      Map<String, String> extraConf) {
     for(AbstractMetaStoreService metaStoreService : metaStoreServices) {
       try {
         metaStoreService.start(msConf, extraConf);
