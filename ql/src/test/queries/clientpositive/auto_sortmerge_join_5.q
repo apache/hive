@@ -6,13 +6,15 @@ set hive.mapred.mode=nonstrict;
 
 -- SORT_QUERY_RESULTS
 
-CREATE TABLE bucket_small_n0 (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
+CREATE TABLE bucket_small_n0 (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+TBLPROPERTIES('bucketing_version'='1');
 load data local inpath '../../data/files/auto_sortmerge_join/small/000000_0' INTO TABLE bucket_small_n0;
 load data local inpath '../../data/files/auto_sortmerge_join/small/000001_0' INTO TABLE bucket_small_n0;
 load data local inpath '../../data/files/auto_sortmerge_join/small/000002_0' INTO TABLE bucket_small_n0;
 load data local inpath '../../data/files/auto_sortmerge_join/small/000003_0' INTO TABLE bucket_small_n0;
 
-CREATE TABLE bucket_big_n0 (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
+CREATE TABLE bucket_big_n0 (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+TBLPROPERTIES('bucketing_version'='1');
 load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_big_n0;
 load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_big_n0;
 
