@@ -146,7 +146,8 @@ public class SharedCache {
       cache = cache1;
     }
 
-    @Override public void run() {
+    @Override
+    public void run() {
       for (String s : setToUpdate) {
         refreshTableWrapperInCache(s);
       }
@@ -215,18 +216,15 @@ public class SharedCache {
       CacheBuilder<String, TableWrapper> b = CacheBuilder.newBuilder()
           .maximumWeight(maxCacheSizeInBytes > 0 ? maxCacheSizeInBytes : MAX_DEFAULT_CACHE_SIZE)
           .weigher(new Weigher<String, TableWrapper>() {
-            @Override public int weigh(String key, TableWrapper value) {
+            @Override
+            public int weigh(String key, TableWrapper value) {
               return value.getSize();
             }
           }).removalListener(new RemovalListener<String, TableWrapper>() {
-            @Override public void onRemoval(RemovalNotification<String, TableWrapper> notification) {
+            @Override
+            public void onRemoval(RemovalNotification<String, TableWrapper> notification) {
               LOG.debug("Evication happened for table " + notification.getKey());
               LOG.debug("current table cache contains " + tableCache.size() + "entries");
-              TableWrapper tblWrapper = notification.getValue();
-              byte[] sdHash = tblWrapper.getSdHash();
-              if (sdHash != null) {
-                decrSd(sdHash);
-              }
             }
           });
 
@@ -237,7 +235,8 @@ public class SharedCache {
     }
 
     executor = Executors.newScheduledThreadPool(1, new ThreadFactory() {
-      @Override public Thread newThread(Runnable r) {
+      @Override
+      public Thread newThread(Runnable r) {
         Thread t = Executors.defaultThreadFactory().newThread(r);
         t.setName("SharedCache table size updater: Thread-" + t.getId());
         t.setDaemon(true);
@@ -2152,15 +2151,18 @@ public class SharedCache {
     return sdWrapper.getSd();
   }
 
-  @VisibleForTesting Map<String, Database> getDatabaseCache() {
+  @VisibleForTesting
+  Map<String, Database> getDatabaseCache() {
     return databaseCache;
   }
 
-  @VisibleForTesting Map<String, TableWrapper> getTableCache() {
-    return tableCache.asMap();
+  @VisibleForTesting
+  void clearTableCache() {
+    tableCache.invalidateAll();
   }
 
-  @VisibleForTesting Map<ByteArrayWrapper, StorageDescriptorWrapper> getSdCache() {
+  @VisibleForTesting
+  Map<ByteArrayWrapper, StorageDescriptorWrapper> getSdCache() {
     return sdCache;
   }
 
