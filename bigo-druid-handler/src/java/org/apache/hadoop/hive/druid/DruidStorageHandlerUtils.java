@@ -623,7 +623,9 @@ public final class DruidStorageHandlerUtils {
    * @return a sanitize file name
    */
   public static Path makeSegmentDescriptorOutputPath(DataSegment pushedSegment, Path segmentsDescriptorDir) {
-    return new Path(segmentsDescriptorDir, String.format("%s.json", pushedSegment.getId().toString().replace(":", "")));
+    return new Path(segmentsDescriptorDir, String.format("%s%s.json",
+            pushedSegment.getId().toString().replace(":", ""),
+            DataSegmentPusher.generateUniquePath()));
   }
 
   public static String createScanAllQuery(String dataSourceName, List<String> columns) throws JsonProcessingException {

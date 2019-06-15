@@ -85,7 +85,12 @@ public class DruidOutputFormat implements HiveOutputFormat<NullWritable, DruidWr
     targetNumShardsPerGranularity = HiveConf.getIntVar(jc,
             HiveConf.ConfVars.HIVE_DRUID_TARGET_SHARDS_PER_GRANULARITY) > 0?HiveConf.getIntVar(jc,
             HiveConf.ConfVars.HIVE_DRUID_TARGET_SHARDS_PER_GRANULARITY): targetNumShardsPerGranularity;
+    boolean distributeByDim = HiveConf.getBoolVar(jc,
+            HiveConf.ConfVars.HIVE_DRUID_INDEX_DISTRIBUTE_BY_DIM);
 
+    if (distributeByDim) {
+      targetNumShardsPerGranularity = -1;
+    }
     final int maxPartitionSize = targetNumShardsPerGranularity > 0 ? -1 : HiveConf
         .getIntVar(jc, HiveConf.ConfVars.HIVE_DRUID_MAX_PARTITION_SIZE);
     // If datasource is in the table properties, it is an INSERT/INSERT OVERWRITE as the datasource
@@ -118,12 +123,16 @@ public class DruidOutputFormat implements HiveOutputFormat<NullWritable, DruidWr
 
     Pair<List<DimensionSchema>, AggregatorFactory[]> dimensionsAndAggregates = DruidStorageHandlerUtils
         .getDimensionsAndAggregates(columnNames, columnTypes, jc, tableProperties);
+
+    String partKey = DruidConstants.DRUID_SHARD_KEY_COL_NAME;
+    if (distributeByDim) {
+      partKey = DruidConstants.DRUID_DISTRBUTE_KEY_COL_NAME;
+    }
+
     final InputRowParser inputRowParser = new MapInputRowParser(new TimeAndDimsParseSpec(
             new TimestampSpec(DruidConstants.DEFAULT_TIMESTAMP_COLUMN, "auto", null),
             new DimensionsSpec(dimensionsAndAggregates.lhs, Lists
-                .newArrayList(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME,
-                        DruidConstants.DRUID_SHARD_KEY_COL_NAME
-                ), null
+                .newArrayList(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME, partKey), null
             )
     ));
 

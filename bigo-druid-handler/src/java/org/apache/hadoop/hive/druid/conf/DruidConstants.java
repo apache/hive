@@ -29,6 +29,7 @@ public final class DruidConstants {
   public static final String DRUID_QUERY_FIELD_NAMES = "druid.fieldNames";
   public static final String DRUID_QUERY_FIELD_TYPES = "druid.fieldTypes";
   public static final String DRUID_SHARD_KEY_COL_NAME = "__druid_extra_partition_key";
+  public static final String DRUID_DISTRBUTE_KEY_COL_NAME = "__druid_distribute_key";
 
   public static final String DRUID_QUERY_FETCH = "druid.query.fetch";
 

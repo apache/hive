@@ -1350,7 +1350,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(ErrorMsg.ALTER_COMMAND_FOR_TABLES.getMsg());
       }
     }
-    if (tbl.isNonNative()) {
+    if (tbl.isNonNative() && !AlterTableTypes.nonNativeTableAllowedTypes.contains(op)) {
       throw new SemanticException(ErrorMsg.ALTER_TABLE_NON_NATIVE.getMsg(tbl.getTableName()));
     }
   }

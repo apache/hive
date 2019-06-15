@@ -1944,15 +1944,20 @@ public class HiveConf extends Configuration {
             new PatternSet("YEAR", "MONTH", "WEEK", "DAY", "HOUR", "MINUTE", "SECOND"),
             "Granularity for the segments created by the Druid storage handler"
     ),
+    HIVE_DRUID_INDEX_DISTRIBUTE_BY_DIM("hive.druid.index.distribute.by.dim", true,
+            "If it is set to true, we distribute the data by hash code of dims"),
     HIVE_DRUID_TARGET_SHARDS_PER_GRANULARITY("hive.druid.segment.target.shards.per.granularity", -1,
             "partition num of some time"
     ),
     HIVE_DRUID_SKETCH_THETA_SIZE("hive.druid.sketch.theta.size", "-1",
-            new PatternSet("-1", "16384", "8192", "4096", "2048", "1024", "512", "256", "128", "64", "32"),
+            new PatternSet("-1", "1048576","524288","262144", "131072", "65536", "32768", "16384", "8192", "4096", "2048", "1024", "512", "256", "128", "64", "32"),
             "https://datasketches.github.io/docs/Theta/ThetaSize.html"
     ),
     HIVE_DRUID_MAX_PARTITION_SIZE("hive.druid.indexer.partition.size.max", 5000000,
             "Maximum number of records per segment partition"
+    ),
+    HIVE_DRUID_MAX_SEGMENT_NUM_PER_GRANULARITY("hive.druid.max.segment.num.per.granularity", -1,
+            "Maximum number of  segment partition per granularity"
     ),
     HIVE_DRUID_MAX_ROW_IN_MEMORY("hive.druid.indexer.memory.rownum.max", 75000,
             "Maximum number of records in memory while storing data in Druid"

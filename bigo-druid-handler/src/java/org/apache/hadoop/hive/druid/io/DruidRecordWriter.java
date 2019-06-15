@@ -169,7 +169,7 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
 
   private void pushSegments(List<SegmentIdWithShardSpec> segmentsToPush) {
     try {
-      SegmentsAndMetadata segmentsAndMetadata = appenderator.push(segmentsToPush, committerSupplier.get(), false).get();
+      SegmentsAndMetadata segmentsAndMetadata = appenderator.push(segmentsToPush, committerSupplier.get(), true).get();
       final Set<String> pushedSegmentIdentifierHashSet = new HashSet<>();
 
       for (DataSegment pushedSegment : segmentsAndMetadata.getSegments()) {
