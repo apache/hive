@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.repl.util;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.repl.ReplConst;
+import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -271,5 +272,9 @@ public class ReplUtils {
     }
 
     return true;
+  }
+
+  public static boolean tableIncludedInReplScope(ReplScope replScope, String tableName) {
+    return ((replScope == null) || replScope.tableIncludedInReplScope(tableName));
   }
 }

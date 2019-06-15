@@ -894,12 +894,20 @@ replDumpStatement
 @after { popMsg(state); }
       : KW_REPL KW_DUMP
         (dbName=identifier) (DOT tablePolicy=replTableLevelPolicy)?
+        (KW_REPLACE replacePolicy=replReplacePolicy)?
         (KW_FROM (eventId=Number)
           (KW_TO (rangeEnd=Number))?
           (KW_LIMIT (batchSize=Number))?
         )?
         (KW_WITH replConf=replConfigs)?
-    -> ^(TOK_REPL_DUMP $dbName $tablePolicy? ^(TOK_FROM $eventId (TOK_TO $rangeEnd)? (TOK_LIMIT $batchSize)?)? $replConf?)
+    -> ^(TOK_REPL_DUMP $dbName $tablePolicy? $replacePolicy? ^(TOK_FROM $eventId (TOK_TO $rangeEnd)? (TOK_LIMIT $batchSize)?)? $replConf?)
+    ;
+
+replReplacePolicy
+@init { pushMsg("repl dump replaces replication policy", state); }
+@after { popMsg(state); }
+    :
+      (dbName=identifier) (DOT tablePolicy=replTableLevelPolicy)? -> ^(TOK_REPLACE $dbName $tablePolicy?)
     ;
 
 replLoadStatement

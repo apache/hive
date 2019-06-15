@@ -88,7 +88,8 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
 
     Table qlMdTableBefore = new Table(before);
     if (!Utils
-        .shouldReplicate(withinContext.replicationSpec, qlMdTableBefore, true, withinContext.hiveConf)) {
+        .shouldReplicate(withinContext.replicationSpec, qlMdTableBefore,
+                true, withinContext.oldReplScope, withinContext.hiveConf)) {
       return;
     }
 

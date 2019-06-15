@@ -395,7 +395,7 @@ public class TestReplicationScenarios {
     HiveConf confTemp = new HiveConf();
     confTemp.set("hive.repl.enable.move.optimization", "true");
     ReplLoadWork replLoadWork = new ReplLoadWork(confTemp, tuple.dumpLocation, replicadb,
-            null, isIncrementalDump, Long.valueOf(tuple.lastReplId),
+            null, null, isIncrementalDump, Long.valueOf(tuple.lastReplId),
         Collections.emptyList());
     Task replLoadTask = TaskFactory.get(replLoadWork, confTemp);
     replLoadTask.initialize(null, null, new DriverContext(driver.getContext()), null);

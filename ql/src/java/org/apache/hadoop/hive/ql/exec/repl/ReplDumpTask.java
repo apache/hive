@@ -134,7 +134,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     for (String s : values) {
       LOG.debug("    > " + s);
     }
-    Utils.writeOutput(values, new Path(work.resultTempPath), conf);
+    Utils.writeOutput(Collections.singletonList(values), new Path(work.resultTempPath), conf);
   }
 
   /**
@@ -152,22 +152,27 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   }
 
   private boolean shouldExamineTablesToDump() {
-    return shouldDumpExternalTableLocation() ||
-            conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES);
+    return (work.oldReplScope != null)
+            || shouldDumpExternalTableLocation()
+            || conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES);
   }
 
   private boolean shouldBootstrapDumpTable(Table table) {
-    if (conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES) &&
-            TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
+    if (conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES)
+            && TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
       return true;
     }
 
-    if (conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES) &&
-           AcidUtils.isTransactionalTable(table)) {
+    if (conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES)
+            && AcidUtils.isTransactionalTable(table)) {
       return true;
     }
 
-    return false;
+    // If replication policy is replaced with new included/excluded tables list, then tables which
+    // are not included in old policy but included in new policy should be bootstrapped along with
+    // the current incremental replication dump.
+    // Note: If control reaches here, it means, table is included in new replication policy.
+    return !ReplUtils.tableIncludedInReplScope(work.oldReplScope, table.getTableName());
   }
 
   private Long incrementalDump(Path dumpRoot, DumpMetaData dmd, Path cmRoot, Hive hiveDb) throws Exception {
@@ -181,7 +186,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     // bootstrap (See bootstrapDump() for more details. Only difference here is instead of
     // waiting for the concurrent transactions to finish, we start dumping the incremental events
     // and wait only for the remaining time if any.
-    if (conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES)) {
+    if (needBootstrapAcidTablesDuringIncrementalDump()) {
       bootDumpBeginReplId = queryState.getConf().getLong(ReplUtils.LAST_REPL_ID_KEY, -1L);
       assert (bootDumpBeginReplId >= 0);
       LOG.info("Dump for bootstrapping ACID tables during an incremental dump for db {}",
@@ -233,24 +238,23 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     replLogger.endLog(lastReplId.toString());
 
     LOG.info("Done dumping events, preparing to return {},{}", dumpRoot.toUri(), lastReplId);
-    Utils.writeOutput(
-        Arrays.asList(
-            "incremental",
-            String.valueOf(work.eventFrom),
-            String.valueOf(lastReplId)
-        ),
-        dmd.getDumpFilePath(), conf);
     dmd.setDump(DumpType.INCREMENTAL, work.eventFrom, lastReplId, cmRoot);
-    dmd.write();
 
-    // If required wait more for any transactions open at the time of starting the ACID bootstrap.
-    if (conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES)) {
-      assert (waitUntilTime > 0);
-      validTxnList = getValidTxnListForReplDump(hiveDb, waitUntilTime);
+    // If repl policy is changed (oldReplScope is set), then pass the current replication policy,
+    // so that REPL LOAD would drop the tables which are not included in current policy.
+    if (work.oldReplScope != null) {
+      dmd.setReplScope(work.replScope);
     }
+    dmd.write();
 
     // Examine all the tables if required.
     if (shouldExamineTablesToDump()) {
+      // If required wait more for any transactions open at the time of starting the ACID bootstrap.
+      if (needBootstrapAcidTablesDuringIncrementalDump()) {
+        assert (waitUntilTime > 0);
+        validTxnList = getValidTxnListForReplDump(hiveDb, waitUntilTime);
+      }
+
       Path dbRoot = getBootstrapDbRoot(dumpRoot, dbName, true);
 
       try (Writer writer = new Writer(dumpRoot, conf)) {
@@ -259,8 +263,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             Table table = hiveDb.getTable(dbName, tableName);
 
             // Dump external table locations if required.
-            if (shouldDumpExternalTableLocation() &&
-                    TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
+            // Note: If repl policy is replaced, then need to dump external tables if table is getting replicated
+            // for the first time in current dump. So, need to check if table is included in old policy.
+            if ((shouldDumpExternalTableLocation() || !ReplUtils.tableIncludedInReplScope(work.oldReplScope, tableName))
+                    && TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
               writer.dataLocationDump(table);
             }
 
@@ -282,6 +288,12 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return lastReplId;
   }
 
+  private boolean needBootstrapAcidTablesDuringIncrementalDump() {
+    // If old replication policy is available, then it is possible some of the ACID tables might be
+    // included for bootstrap during incremental dump.
+    return (work.oldReplScope != null) || conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES);
+  }
+
   private Path getBootstrapDbRoot(Path dumpRoot, String dbName, boolean isIncrementalPhase) {
     if (isIncrementalPhase) {
       dumpRoot = new Path(dumpRoot, ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME);
@@ -296,7 +308,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         db,
         conf,
         getNewEventOnlyReplicationSpec(ev.getEventId()),
-        work.replScope
+        work.replScope,
+        work.oldReplScope
     );
     EventHandler eventHandler = EventHandlerFactory.handlerFor(ev);
     eventHandler.handle(context);

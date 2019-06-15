@@ -19,32 +19,38 @@ package org.apache.hadoop.hive.ql.parse.repl.load;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class DumpMetaData {
   // wrapper class for reading and writing metadata about a dump
   // responsible for _dumpmetadata files
   private static final String DUMP_METADATA = "_dumpmetadata";
+  private static final Logger LOG = LoggerFactory.getLogger(DumpMetaData.class);
 
   private DumpType dumpType;
   private Long eventFrom = null;
   private Long eventTo = null;
+  private Path cmRoot;
   private String payload = null;
-  private boolean initialized = false;
+  private ReplScope replScope = null;
 
+  private boolean initialized = false;
   private final Path dumpFile;
   private final HiveConf hiveConf;
-  private Path cmRoot;
 
   public DumpMetaData(Path dumpRoot, HiveConf hiveConf) {
     this.hiveConf = hiveConf;
@@ -61,8 +67,66 @@ public class DumpMetaData {
     this.dumpType = lvl;
     this.eventFrom = eventFrom;
     this.eventTo = eventTo;
-    this.initialized = true;
     this.cmRoot = cmRoot;
+    this.initialized = true;
+  }
+
+  public void setPayload(String payload) {
+    this.payload = payload;
+  }
+
+  public void setReplScope(ReplScope replScope) {
+    this.replScope = replScope;
+  }
+
+  private void readReplScope(String line) throws IOException {
+    if (line == null) {
+      return;
+    }
+
+    String[] lineContents = line.split("\t");
+    if (lineContents.length < 1) {
+      return;
+    }
+
+    replScope = new ReplScope();
+
+    LOG.info("Read ReplScope: Set Db Name: {}.", lineContents[0]);
+    replScope.setDbName(lineContents[0]);
+
+    // Read/set include and exclude tables list.
+    int idx = readReplScopeTablesList(lineContents, 1, true);
+    readReplScopeTablesList(lineContents, idx, false);
+  }
+
+  private int readReplScopeTablesList(String[] lineContents, int startIdx, boolean includeList)
+          throws IOException {
+    // If the list doesn't exist, then return.
+    if (startIdx >= lineContents.length) {
+      return startIdx;
+    }
+
+    // Each tables list should start with "{" and ends with "}"
+    if (!"{".equals(lineContents[startIdx])) {
+      throw new IOException("Invalid repl tables list data in dump metadata file. Missing \"{\".");
+    }
+
+    List<String>tableNames = new ArrayList<>();
+    for (int i = (startIdx + 1); i < lineContents.length; i++) {
+      String value = lineContents[i];
+      if ("}".equals(value)) {
+        if (includeList) {
+          LOG.info("Read ReplScope: Set Include Table Names: {}.", tableNames);
+          replScope.setIncludedTablePatterns(tableNames);
+        } else {
+          LOG.info("Read ReplScope: Set Exclude Table Names: {}.", tableNames);
+          replScope.setExcludedTablePatterns(tableNames);
+        }
+        return (i + 1);
+      }
+      tableNames.add(value);
+    }
+    throw new IOException("Invalid repl tables list data in dump metadata file. Missing \"}\".");
   }
 
   private void loadDumpFromFile() throws SemanticException {
@@ -71,7 +135,7 @@ public class DumpMetaData {
       // read from dumpfile and instantiate self
       FileSystem fs = dumpFile.getFileSystem(hiveConf);
       br = new BufferedReader(new InputStreamReader(fs.open(dumpFile)));
-      String line = null;
+      String line;
       if ((line = br.readLine()) != null) {
         String[] lineContents = line.split("\t", 5);
         setDump(DumpType.valueOf(lineContents[0]), Long.valueOf(lineContents[1]),
@@ -82,6 +146,7 @@ public class DumpMetaData {
         throw new IOException(
             "Unable to read valid values from dumpFile:" + dumpFile.toUri().toString());
       }
+      readReplScope(br.readLine());
     } catch (IOException ioe) {
       throw new SemanticException(ioe);
     } finally {
@@ -105,10 +170,6 @@ public class DumpMetaData {
     return this.payload;
   }
 
-  public void setPayload(String payload) {
-    this.payload = payload;
-  }
-
   public Long getEventFrom() throws SemanticException {
     initializeIfNot();
     return eventFrom;
@@ -119,6 +180,10 @@ public class DumpMetaData {
     return eventTo;
   }
 
+  public ReplScope getReplScope() throws SemanticException {
+    initializeIfNot();
+    return replScope;
+  }
   public Path getDumpFilePath() {
     return dumpFile;
   }
@@ -134,17 +199,42 @@ public class DumpMetaData {
     }
   }
 
+  private List<String> prepareReplScopeValues() {
+    assert(replScope != null);
+
+    List<String> values = new ArrayList<>();
+    values.add(replScope.getDbName());
+
+    List<String> includedTableNames = replScope.getIncludedTableNames();
+    List<String> excludedTableNames = replScope.getExcludedTableNames();
+    if (includedTableNames != null) {
+      values.add("{");
+      values.addAll(includedTableNames);
+      values.add("}");
+    }
+    if (excludedTableNames != null) {
+      values.add("{");
+      values.addAll(excludedTableNames);
+      values.add("}");
+    }
+    LOG.info("Preparing ReplScope {} to dump.", values);
+    return values;
+  }
 
   public void write() throws SemanticException {
-    Utils.writeOutput(
+    List<List<String>> listValues = new ArrayList<>();
+    listValues.add(
         Arrays.asList(
             dumpType.toString(),
             eventFrom.toString(),
             eventTo.toString(),
             cmRoot.toString(),
-            payload),
-        dumpFile,
-        hiveConf
+            payload)
+    );
+    if (replScope != null) {
+      listValues.add(prepareReplScopeValues());
+    }
+    Utils.writeOutput(listValues, dumpFile, hiveConf
     );
   }
 }

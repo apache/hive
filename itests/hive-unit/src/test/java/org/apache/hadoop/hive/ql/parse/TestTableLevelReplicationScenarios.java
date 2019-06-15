@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.FILE_NAME;
+import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME;
 
 /**
  * Tests Table level replication scenarios.
@@ -115,6 +116,14 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
                                   List<String> dumpWithClause,
                                   List<String> loadWithClause,
                                   String[] expectedTables) throws Throwable {
+    return replicateAndVerify(replPolicy, null, lastReplId, dumpWithClause, loadWithClause, null, expectedTables);
+  }
+
+  private String replicateAndVerify(String replPolicy, String oldReplPolicy, String lastReplId,
+                                    List<String> dumpWithClause,
+                                    List<String> loadWithClause,
+                                    String[] bootstrappedTables,
+                                    String[] expectedTables) throws Throwable {
     if (dumpWithClause == null) {
       dumpWithClause = new ArrayList<>();
     }
@@ -126,14 +135,38 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     if (lastReplId == null) {
       replica.run("drop database if exists " + replicatedDbName + " cascade");
     }
-    WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
-            .dump(replPolicy, lastReplId, dumpWithClause);
+    WarehouseInstance.Tuple tuple = primary.dump(replPolicy, oldReplPolicy, lastReplId, dumpWithClause);
+
+    if (oldReplPolicy != null) {
+      verifyBootstrapDirInIncrementalDump(tuple.dumpLocation, bootstrappedTables);
+    }
 
     replica.load(replicatedDbName, tuple.dumpLocation, loadWithClause)
             .run("use " + replicatedDbName)
             .run("show tables")
             .verifyResults(expectedTables);
     return tuple.lastReplicationId;
+  }
+
+  private void verifyBootstrapDirInIncrementalDump(String dumpLocation, String[] bootstrappedTables)
+          throws Throwable {
+    // _bootstrap directory should be created as bootstrap enabled on external tables.
+    Path dumpPath = new Path(dumpLocation, INC_BOOTSTRAP_ROOT_DIR_NAME);
+
+    // If nothing to be bootstrapped.
+    if (bootstrappedTables.length == 0) {
+      Assert.assertFalse(primary.miniDFSCluster.getFileSystem().exists(dumpPath));
+      return;
+    }
+
+    Assert.assertTrue(primary.miniDFSCluster.getFileSystem().exists(dumpPath));
+
+    // Eg: _bootstrap/<db_name>/t2, _bootstrap/<db_name>/t3 etc
+    Path dbPath = new Path(dumpPath, primaryDbName);
+    for (String tableName : bootstrappedTables) {
+      Path tblPath = new Path(dbPath, tableName);
+      Assert.assertTrue(primary.miniDFSCluster.getFileSystem().exists(tblPath));
+    }
   }
 
   @Test
@@ -335,7 +368,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     );
     String replPolicy = primaryDbName + ".['a[0-9]+', 'b2'].['a1']";
     String[] bootstrapReplicatedTables = new String[] {"b2" };
-    String lastReplId = replicateAndVerify(replPolicy, null, dumpWithClause, loadWithClause, bootstrapReplicatedTables);
+    String lastReplId = replicateAndVerify(replPolicy, null,
+            dumpWithClause, loadWithClause, bootstrapReplicatedTables);
 
     // Enable external tables replication and bootstrap in incremental phase.
     String[] incrementalReplicatedTables = new String[] {"a2", "b2" };
@@ -356,5 +390,46 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
             .run("use " + replicatedDbName)
             .run("show tables")
             .verifyResults(incrementalReplicatedTables);
+  }
+
+  @Test
+  public void testReplaceReplPolicy() throws Throwable {
+    String[] originalNonAcidTables = new String[] {"t1", "t2" };
+    String[] originalFullAcidTables = new String[] {"t3", "t4" };
+    String[] originalMMAcidTables = new String[] {"t5" };
+    createTables(originalNonAcidTables, CreateTableType.NON_ACID);
+    createTables(originalFullAcidTables, CreateTableType.FULL_ACID);
+    createTables(originalMMAcidTables, CreateTableType.MM_ACID);
+
+    // Replicate and verify if only 2 tables are replicated to target.
+    String replPolicy = primaryDbName + ".['t1', 't4']";
+    String oldReplPolicy = null;
+    String[] replicatedTables = new String[] {"t1", "t4" };
+    String lastReplId = replicateAndVerify(replPolicy, null, null, null, replicatedTables);
+
+    // Exclude t4 and include t3, t6
+    createTables(new String[] {"t6" }, CreateTableType.MM_ACID);
+    oldReplPolicy = replPolicy;
+    replPolicy = primaryDbName + ".['t1', 't3', 't6']";
+    replicatedTables = new String[] {"t1", "t3", "t6" };
+    String[] bootstrappedTables = new String[] {"t3", "t6" };
+    lastReplId = replicateAndVerify(replPolicy, oldReplPolicy, lastReplId,
+            null, null, bootstrappedTables, replicatedTables);
+
+    // Convert to Full Db repl policy. All tables should be included.
+    oldReplPolicy = replPolicy;
+    replPolicy = primaryDbName;
+    replicatedTables = new String[] {"t1", "t2", "t3", "t4", "t5", "t6" };
+    bootstrappedTables = new String[] {"t2", "t4", "t5" };
+    replicateAndVerify(replPolicy, oldReplPolicy, lastReplId,
+            null, null, bootstrappedTables, replicatedTables);
+
+    // Convert to regex that excludes t3, t4 and t5.
+    oldReplPolicy = replPolicy;
+    replPolicy = primaryDbName + ".['.*?'].['t[3-5]+']";
+    replicatedTables = new String[] {"t1", "t2", "t6" };
+    bootstrappedTables = new String[]{};
+    replicateAndVerify(replPolicy, oldReplPolicy, lastReplId,
+            null, null, bootstrappedTables, replicatedTables);
   }
 }

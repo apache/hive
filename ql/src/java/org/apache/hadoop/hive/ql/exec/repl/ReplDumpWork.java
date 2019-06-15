@@ -30,6 +30,7 @@ import java.io.Serializable;
     Explain.Level.EXTENDED })
 public class ReplDumpWork implements Serializable {
   final ReplScope replScope;
+  final ReplScope oldReplScope;
   final String dbNameOrPattern, astRepresentationForErrorMsg, resultTempPath;
   final Long eventFrom;
   Long eventTo;
@@ -40,10 +41,11 @@ public class ReplDumpWork implements Serializable {
     testInjectDumpDir = dumpDir;
   }
 
-  public ReplDumpWork(ReplScope replScope,
+  public ReplDumpWork(ReplScope replScope, ReplScope oldReplScope,
                       Long eventFrom, Long eventTo, String astRepresentationForErrorMsg, Integer maxEventLimit,
                       String resultTempPath) {
     this.replScope = replScope;
+    this.oldReplScope = oldReplScope;
     this.dbNameOrPattern = replScope.getDbName();
     this.eventFrom = eventFrom;
     this.eventTo = eventTo;
