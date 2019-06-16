@@ -397,4 +397,12 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
   public String getName() {
     return name;
   }
+
+  public int getNumExecutorsAvailable() {
+    return numExecutorsAvailable.value();
+  }
+
+  public int getWaitQueueSize() {
+    return waitQueueSize.value();
+  }
 }
