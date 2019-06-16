@@ -62,6 +62,8 @@ public enum LlapDaemonExecutorInfo implements MetricsInfo {
   ExecutorFallOffKilledTimeLost("Total time lost in an executor completing after informing the AM - killed fragments"),
   ExecutorFallOffKilledMaxTimeLost("Max value of time lost in an executor completing after informing the AM - killed fragments"),
   ExecutorFallOffNumCompletedFragments("Number of completed fragments w.r.t falloff values"),
+  AverageQueueTime("Average queue time for tasks"),
+  AverageResponseTime("Average response time for successful tasks"),
   ;
 
   private final String desc;

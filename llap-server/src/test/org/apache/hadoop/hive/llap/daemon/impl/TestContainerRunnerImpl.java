@@ -99,7 +99,7 @@ public class TestContainerRunnerImpl {
 
     this.metrics = LlapDaemonExecutorMetrics
         .create("ContinerRunerTests", MetricsUtils.getUUID(), numExecutors,
-            Ints.toArray(intervalList), 0, 0L);
+            Ints.toArray(intervalList), 0, 0L, 0);
 
     for (int i = 0; i < numLocalDirs; i++) {
       File f = new File(testWorkDir, "localDir");

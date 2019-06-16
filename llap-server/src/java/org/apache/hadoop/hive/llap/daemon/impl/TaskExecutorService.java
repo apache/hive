@@ -929,6 +929,10 @@ public class TaskExecutorService extends AbstractService
       taskWrapper.setIsInPreemptableQueue(false);
       taskWrapper.maybeUnregisterForFinishedStateNotifications();
       taskWrapper.getTaskRunnerCallable().setWmCountersDone();
+      if (metrics != null) {
+        metrics.addMetricsQueueTime(taskWrapper.getTaskRunnerCallable().getQueueTime());
+        metrics.addMetricsRunningTime(taskWrapper.getTaskRunnerCallable().getRunningTime());
+      }
       updatePreemptionListAndNotify(result.getEndReason());
       taskWrapper.getTaskRunnerCallable().getCallback().onSuccess(result);
     }
