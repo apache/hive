@@ -18,6 +18,7 @@
 package org.apache.hive.service.auth;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.security.Security;
 import java.util.HashMap;
 
@@ -39,10 +40,14 @@ import org.apache.thrift.TProcessor;
 import org.apache.thrift.TProcessorFactory;
 import org.apache.thrift.transport.TSaslClientTransport;
 import org.apache.thrift.transport.TSaslServerTransport;
+import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class PlainSaslHelper {
+  private static final Logger LOG = LoggerFactory.getLogger(PlainSaslHelper.class);
 
   public static TProcessorFactory getPlainProcessorFactory(ThriftCLIService service) {
     return new SQLPlainProcessorFactory(service);
@@ -65,14 +70,63 @@ public final class PlainSaslHelper {
     return saslFactory;
   }
 
+  static TTransportFactory getDualPlainTransportFactory(TTransportFactory otherTrans,
+                                                        String trustedDomain)
+          throws LoginException {
+    LOG.info("Created additional transport factory for skipping authentication when client " +
+            "connection is from the same domain.");
+    return new DualSaslTransportFactory(otherTrans, trustedDomain);
+  }
+
   public static TTransport getPlainTransport(String username, String password,
     TTransport underlyingTransport) throws SaslException {
     return new TSaslClientTransport("PLAIN", null, null, null, new HashMap<String, String>(),
       new PlainCallbackHandler(username, password), underlyingTransport);
   }
 
+  // Return true if the remote host is from the trusted domain, i.e. host URL has the same
+  // suffix as the trusted domain.
+  static public boolean isHostFromTrustedDomain(String remoteHost, String trustedDomain) {
+    return remoteHost.endsWith(trustedDomain);
+  }
+
   private PlainSaslHelper() {
     throw new UnsupportedOperationException("Can't initialize class");
+  }
+
+  static final class DualSaslTransportFactory extends TTransportFactory {
+    TTransportFactory otherFactory;
+    TTransportFactory noAuthFactory;
+    String trustedDomain;
+
+    DualSaslTransportFactory(TTransportFactory otherFactory, String trustedDomain)
+            throws LoginException {
+      this.noAuthFactory = getPlainTransportFactory(AuthMethods.NONE.toString());
+      this.otherFactory = otherFactory;
+      this.trustedDomain = trustedDomain;
+    }
+
+    @Override
+    public TTransport getTransport(final TTransport trans) {
+      TSocket tSocket = null;
+      // Attempt to avoid authentication if only we can fetch the client IP address and it
+      // happens to be from the same domain as the server.
+      if (trans instanceof TSocket) {
+        tSocket = (TSocket) trans;
+      } else if (trans instanceof TSaslServerTransport) {
+        TSaslServerTransport saslTrans = (TSaslServerTransport) trans;
+        tSocket = (TSocket)(saslTrans.getUnderlyingTransport());
+      }
+      String remoteHost = tSocket != null ?
+              tSocket.getSocket().getInetAddress().getCanonicalHostName() : null;
+      if (remoteHost != null && isHostFromTrustedDomain(remoteHost, trustedDomain)) {
+        LOG.info("No authentication performed because the connecting host " + remoteHost + " is " +
+                "from the trusted domain " + trustedDomain);
+        return noAuthFactory.getTransport(trans);
+      }
+
+      return otherFactory.getTransport(trans);
+    }
   }
 
   public static final class PlainServerCallbackHandler implements CallbackHandler {
