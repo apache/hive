@@ -3478,6 +3478,14 @@ public class HiveConf extends Configuration {
         "          (Use with property hive.server2.custom.authentication.class)\n" +
         "  PAM: Pluggable authentication module\n" +
         "  NOSASL:  Raw transport"),
+    HIVE_SERVER2_TRUSTED_DOMAIN("hive.server2.trusted.domain", "",
+        "Specifies the host or a domain to trust connections from. Authentication is skipped " +
+        "for any connection coming from a host whose hostname ends with the value of this" +
+        " property. If authentication is expected to be skipped for connections from " +
+        "only a given host, fully qualified hostname of that host should be specified. By default" +
+        " it is empty, which means that all the connections to HiveServer2 are authenticated. " +
+        "When it is non-empty, the client has to provide a Hive user name. Any password, if " +
+        "provided, will not be used when authentication is skipped."),
     HIVE_SERVER2_ALLOW_USER_SUBSTITUTION("hive.server2.allow.user.substitution", true,
         "Allow alternate user to be specified as part of HiveServer2 open connection request."),
     HIVE_SERVER2_KERBEROS_KEYTAB("hive.server2.authentication.kerberos.keytab", "",
