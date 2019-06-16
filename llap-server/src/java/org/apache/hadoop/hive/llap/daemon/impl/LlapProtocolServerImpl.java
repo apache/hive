@@ -17,6 +17,8 @@ package org.apache.hadoop.hive.llap.daemon.impl;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.PrivilegedAction;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.common.io.ByteArrayDataOutput;
@@ -28,6 +30,12 @@ import com.google.protobuf.ServiceException;
 
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
+import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
+import org.apache.hadoop.metrics2.AbstractMetric;
+import org.apache.hadoop.metrics2.MetricsCollector;
+import org.apache.hadoop.metrics2.MetricsInfo;
+import org.apache.hadoop.metrics2.MetricsRecordBuilder;
+import org.apache.hadoop.metrics2.MetricsTag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -79,11 +87,13 @@ public class LlapProtocolServerImpl extends AbstractService
   private String clusterUser = null;
   private boolean isRestrictedToClusterUser = false;
   private final DaemonId daemonId;
+  private final LlapDaemonExecutorMetrics executorMetrics;
   private TokenRequiresSigning isSigningRequiredConfig = TokenRequiresSigning.TRUE;
 
   public LlapProtocolServerImpl(SecretManager secretManager, int numHandlers,
       ContainerRunner containerRunner, AtomicReference<InetSocketAddress> srvAddress,
-      AtomicReference<InetSocketAddress> mngAddress, int srvPort, int mngPort, DaemonId daemonId) {
+      AtomicReference<InetSocketAddress> mngAddress, int srvPort, int mngPort, DaemonId daemonId,
+      LlapDaemonExecutorMetrics executorMetrics) {
     super("LlapDaemonProtocolServerImpl");
     this.numHandlers = numHandlers;
     this.containerRunner = containerRunner;
@@ -93,6 +103,7 @@ public class LlapProtocolServerImpl extends AbstractService
     this.mngAddress = mngAddress;
     this.mngPort = mngPort;
     this.daemonId = daemonId;
+    this.executorMetrics = executorMetrics;
     LOG.info("Creating: " + LlapProtocolServerImpl.class.getSimpleName() +
         " with port configured to: " + srvPort);
   }
@@ -302,6 +313,21 @@ public class LlapProtocolServerImpl extends AbstractService
     return responseProtoBuilder.build();
   }
 
+  @Override
+  public LlapDaemonProtocolProtos.GetDaemonMetricsResponseProto getDaemonMetrics(final RpcController controller,
+      final LlapDaemonProtocolProtos.GetDaemonMetricsRequestProto request) throws ServiceException {
+    LlapDaemonProtocolProtos.GetDaemonMetricsResponseProto.Builder responseProtoBuilder =
+        LlapDaemonProtocolProtos.GetDaemonMetricsResponseProto.newBuilder();
+    if (executorMetrics != null) {
+      Map<String, Long> data = new HashMap<>();
+      DumpingMetricsCollector dmc = new DumpingMetricsCollector(data);
+      executorMetrics.getMetrics(dmc, true);
+      data.forEach((key, value) -> responseProtoBuilder.addMetrics(
+          LlapDaemonProtocolProtos.MapEntry.newBuilder().setKey(key).setValue(value).build()));
+    }
+    return responseProtoBuilder.build();
+  }
+
   private boolean determineIfSigningIsRequired(UserGroupInformation callingUser) {
     switch (isSigningRequiredConfig) {
     case FALSE: return false;
@@ -311,6 +337,93 @@ public class LlapProtocolServerImpl extends AbstractService
     // better to consider the realm (although not the host, so not the full name).
     case EXCEPT_OWNER: return !clusterUser.equals(callingUser.getShortUserName());
     default: throw new AssertionError("Unknown value " + isSigningRequiredConfig);
+    }
+  }
+
+  private final class DumpingMetricsRecordBuilder extends MetricsRecordBuilder {
+    private Map<String, Long> data;
+
+    private DumpingMetricsRecordBuilder(Map<String, Long> data) {
+      this.data = data;
+    }
+
+    @Override
+    public MetricsCollector parent() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public MetricsRecordBuilder tag(MetricsInfo metricsInfo, String s) {
+      return this;
+    }
+
+    @Override
+    public MetricsRecordBuilder add(MetricsTag metricsTag) {
+      return this;
+    }
+
+    @Override
+    public MetricsRecordBuilder add(AbstractMetric abstractMetric) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public MetricsRecordBuilder setContext(String s) {
+      return this;
+    }
+
+    @Override
+    public MetricsRecordBuilder addCounter(MetricsInfo metricsInfo, int i) {
+      data.put(metricsInfo.name(), Long.valueOf(i));
+      return this;
+    }
+
+    @Override
+    public MetricsRecordBuilder addCounter(MetricsInfo metricsInfo, long l) {
+      data.put(metricsInfo.name(), l);
+      return this;
+    }
+
+    @Override
+    public MetricsRecordBuilder addGauge(MetricsInfo metricsInfo, int i) {
+      data.put(metricsInfo.name(), Long.valueOf(i));
+      return this;
+    }
+
+    @Override
+    public MetricsRecordBuilder addGauge(MetricsInfo metricsInfo, long l) {
+      data.put(metricsInfo.name(), l);
+      return this;
+    }
+
+    @Override
+    public MetricsRecordBuilder addGauge(MetricsInfo metricsInfo, float v) {
+      data.put(metricsInfo.name(), Long.valueOf(Math.round(v)));
+      return this;
+    }
+
+    @Override
+    public MetricsRecordBuilder addGauge(MetricsInfo metricsInfo, double v) {
+      data.put(metricsInfo.name(), Math.round(v));
+      return this;
+    }
+  }
+
+  private final class DumpingMetricsCollector implements MetricsCollector {
+    private MetricsRecordBuilder mrb;
+
+    DumpingMetricsCollector(Map<String, Long> data) {
+      mrb = new DumpingMetricsRecordBuilder(data);
+    }
+
+    @Override
+    public MetricsRecordBuilder addRecord(String s) {
+      return mrb;
+    }
+
+    @Override
+    public MetricsRecordBuilder addRecord(MetricsInfo metricsInfo) {
+      return mrb;
     }
   }
 }

@@ -285,7 +285,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     }
     this.secretManager = sm;
     this.server = new LlapProtocolServerImpl(secretManager,
-        numHandlers, this, srvAddress, mngAddress, srvPort, mngPort, daemonId);
+        numHandlers, this, srvAddress, mngAddress, srvPort, mngPort, daemonId, metrics);
 
     UgiFactory fsUgiFactory = null;
     try {
