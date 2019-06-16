@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.llap.metrics;
 
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.AverageQueueTime;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.AverageResponseTime;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorAvailableFreeSlots;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorAvailableFreeSlotsPercent;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorCacheMemoryPerInstance;
@@ -62,6 +64,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math3.stat.descriptive.SynchronizedDescriptiveStatistics;
 import org.apache.hadoop.hive.common.JvmMetrics;
 import org.apache.hadoop.hive.llap.daemon.impl.ContainerRunnerImpl;
 import org.apache.hadoop.metrics2.MetricsCollector;
@@ -102,6 +106,9 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
   private TimedAverageMetrics numExecutorsAvailableAverage;
 
   private final Map<String, Integer> executorNames;
+
+  private final DescriptiveStatistics queueTime;
+  private final DescriptiveStatistics runningTime;
 
   final MutableGaugeLong[] executorThreadCpuTime;
   final MutableGaugeLong[] executorThreadUserTime;
@@ -163,7 +170,7 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
 
   private LlapDaemonExecutorMetrics(String displayName, JvmMetrics jm, String sessionId,
       int numExecutors, final int[] intervals, int timedWindowAverageDataPoints,
-      long timedWindowAverageWindowLength) {
+      long timedWindowAverageWindowLength, int simpleAverageWindowDataSize) {
     this.name = displayName;
     this.jvmMetrics = jm;
     this.sessionId = sessionId;
@@ -203,22 +210,30 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
       this.executorThreadUserTime[i] = registry.newGauge(miu, 0L);
       this.executorNames.put(ContainerRunnerImpl.THREAD_NAME_FORMAT_PREFIX + i, i);
     }
+
     if (timedWindowAverageDataPoints > 0) {
       this.executorNumQueuedRequestsAverage = new TimedAverageMetrics(timedWindowAverageDataPoints,
           timedWindowAverageWindowLength);
       this.numExecutorsAvailableAverage = new TimedAverageMetrics(timedWindowAverageDataPoints,
           timedWindowAverageWindowLength);
     }
+    if (simpleAverageWindowDataSize > 0) {
+      this.queueTime = new SynchronizedDescriptiveStatistics(simpleAverageWindowDataSize);
+      this.runningTime = new SynchronizedDescriptiveStatistics(simpleAverageWindowDataSize);
+    } else {
+      this.queueTime = null;
+      this.runningTime = null;
+    }
   }
 
   public static LlapDaemonExecutorMetrics create(String displayName, String sessionId,
       int numExecutors, final int[] intervals, int timedWindowAverageDataPoints,
-      long timedWindowAverageWindowLength) {
+      long timedWindowAverageWindowLength, int simpleAverageWindowDataSize) {
     MetricsSystem ms = LlapMetricsSystem.instance();
     JvmMetrics jm = JvmMetrics.create(MetricsUtils.METRICS_PROCESS_NAME, sessionId, ms);
     return ms.register(displayName, "LlapDaemon Executor Metrics",
         new LlapDaemonExecutorMetrics(displayName, jm, sessionId, numExecutors, intervals,
-            timedWindowAverageDataPoints, timedWindowAverageWindowLength));
+            timedWindowAverageDataPoints, timedWindowAverageWindowLength, simpleAverageWindowDataSize));
   }
 
   @Override
@@ -325,6 +340,18 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
     executorTotalIKilled.incr();
   }
 
+  public void addMetricsQueueTime(long queueTime) {
+    if (this.queueTime != null) {
+      this.queueTime.addValue(queueTime);
+    }
+  }
+
+  public void addMetricsRunningTime(long runningTime) {
+    if (this.runningTime != null) {
+      this.runningTime.addValue(runningTime);
+    }
+  }
+
   public void setCacheMemoryPerInstance(long value) {
     cacheMemoryPerInstance.set(value);
   }
@@ -382,6 +409,13 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
     }
     if (executorNumQueuedRequestsAverage != null) {
       rb.addGauge(ExecutorNumQueuedRequestsAverage, executorNumQueuedRequestsAverage.value());
+    }
+
+    if (queueTime != null) {
+      rb.addGauge(AverageQueueTime, queueTime.getSum() / queueTime.getN());
+    }
+    if (runningTime != null) {
+      rb.addGauge(AverageResponseTime, runningTime.getSum() / runningTime.getN());
     }
 
     for (MutableQuantiles q : percentileTimeToKill) {

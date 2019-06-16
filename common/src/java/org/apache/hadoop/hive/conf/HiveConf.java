@@ -4353,6 +4353,11 @@ public class HiveConf extends Configuration {
       new TimeValidator(TimeUnit.NANOSECONDS),
       "The length of the time window used for calculating executor metrics timed averages.\n" +
       "Currently used for ExecutorNumExecutorsAvailableAverage and ExecutorNumQueuedRequestsAverage\n"),
+    LLAP_DAEMON_METRICS_SIMPLE_AVERAGE_DATA_POINTS(
+      "hive.llap.daemon.metrics.simple.average.data.points", 0,
+      "The number of data points stored for calculating executor metrics simple averages.\n" +
+      "Currently used for AverageQueueTime and AverageResponseTime\n" +
+      "0 means that average calculation is turned off"),
     LLAP_TASK_COMMUNICATOR_CONNECTION_TIMEOUT_MS(
       "hive.llap.task.communicator.connection.timeout.ms", "16000ms",
       new TimeValidator(TimeUnit.MILLISECONDS),

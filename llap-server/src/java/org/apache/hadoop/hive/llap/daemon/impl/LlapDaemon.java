@@ -185,12 +185,16 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         daemonConf, ConfVars.LLAP_DAEMON_METRICS_TIMED_WINDOW_AVERAGE_DATA_POINTS);
     long timedWindowAverageWindowLength = HiveConf.getTimeVar(
         daemonConf, ConfVars.LLAP_DAEMON_METRICS_TIMED_WINDOW_AVERAGE_WINDOW_LENGTH, TimeUnit.NANOSECONDS);
+    int simpleAverageWindowDataSize = HiveConf.getIntVar(
+        daemonConf, ConfVars.LLAP_DAEMON_METRICS_SIMPLE_AVERAGE_DATA_POINTS);
 
     Preconditions.checkArgument(timedWindowAverageDataPoints >= 0,
         "hive.llap.daemon.metrics.timed.window.average.data.points should be greater or equal to 0");
     Preconditions.checkArgument(timedWindowAverageDataPoints == 0 || timedWindowAverageWindowLength > 0,
         "hive.llap.daemon.metrics.timed.window.average.window.length should be greater than 0 if " +
             "hive.llap.daemon.metrics.average.timed.window.data.points is set fo greater than 0");
+    Preconditions.checkArgument(simpleAverageWindowDataSize >= 0,
+        "hive.llap.daemon.metrics.simple.average.data.points should be greater or equal to 0");
 
     final String logMsg = "Attempting to start LlapDaemon with the following configuration: " +
       "maxJvmMemory=" + maxJvmMemory + " ("
@@ -216,6 +220,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       ", enablePreemption= " + enablePreemption +
       ", timedWindowAverageDataPoints= " + timedWindowAverageDataPoints +
       ", timedWindowAverageWindowLength= " + timedWindowAverageWindowLength +
+      ", simpleAverageWindowDataSize= " + simpleAverageWindowDataSize +
       ", versionInfo= (" + HiveVersionInfo.getBuildVersion() + ")";
     LOG.info(logMsg);
     final String currTSISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date());
@@ -278,7 +283,8 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       }
     }
     this.metrics = LlapDaemonExecutorMetrics.create(displayName, sessionId, numExecutors,
-        Ints.toArray(intervalList), timedWindowAverageDataPoints, timedWindowAverageWindowLength);
+        Ints.toArray(intervalList), timedWindowAverageDataPoints, timedWindowAverageWindowLength,
+        simpleAverageWindowDataSize);
     this.metrics.setMemoryPerInstance(executorMemoryPerInstance);
     this.metrics.setCacheMemoryPerInstance(ioMemoryBytes);
     this.metrics.setJvmMaxMemory(maxJvmMemory);
