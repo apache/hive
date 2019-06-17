@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.CompletableFuture;
 import javax.security.auth.Subject;
 
 import org.apache.commons.lang.StringUtils;
@@ -51,7 +50,6 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FutureDataInputStreamBuilder;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
@@ -76,7 +74,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.MiniMRCluster;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapred.WebHCatJTShim23;
+import org.apache.hadoop.mapred.WebHCatJTShim20;
 import org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
@@ -105,12 +103,12 @@ import org.apache.tez.test.MiniTezCluster;
 /**
  * Implemention of shims against Hadoop 0.23.0.
  */
-public class Hadoop23Shims extends HadoopShimsSecure {
+public class Hadoop20Shims extends HadoopShimsSecure {
 
   HadoopShims.MiniDFSShim cluster = null;
   final boolean storagePolicy;
 
-  public Hadoop23Shims() {
+  public Hadoop20Shims() {
     // in-memory HDFS
     boolean storage = false;
     try {
@@ -342,7 +340,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     return new MiniTezLocalShim(conf, usingLlap);
   }
 
-  public class MiniTezLocalShim extends Hadoop23Shims.MiniMrShim {
+  public class MiniTezLocalShim extends Hadoop20Shims.MiniMrShim {
     private final Configuration conf;
     private final boolean isLlap;
 
@@ -394,7 +392,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   /**
    * Shim for MiniTezCluster
    */
-  public class MiniTezShim extends Hadoop23Shims.MiniMrShim {
+  public class MiniTezShim extends Hadoop20Shims.MiniMrShim {
 
     private final MiniTezCluster mr;
     private final Configuration conf;
@@ -471,7 +469,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   /**
-   * Returns a shim to wrap MiniSparkOnYARNCluster
+   * Returns a shim to wrap MiniSparkOnYARNCluster20
    */
   @Override
   public MiniMrShim getMiniSparkCluster(Configuration conf, int numberOfTaskTrackers,
@@ -480,16 +478,16 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   /**
-   * Shim for MiniSparkOnYARNCluster
+   * Shim for MiniSparkOnYARNCluster20
    */
-  public class MiniSparkShim extends Hadoop23Shims.MiniMrShim {
+  public class MiniSparkShim extends Hadoop20Shims.MiniMrShim {
 
-    private final MiniSparkOnYARNCluster mr;
+    private final MiniSparkOnYARNCluster20 mr;
     private final Configuration conf;
 
     public MiniSparkShim(Configuration conf, int numberOfTaskTrackers,
       String nameNode, int numDir) throws IOException {
-      mr = new MiniSparkOnYARNCluster("sparkOnYarn");
+      mr = new MiniSparkOnYARNCluster20("sparkOnYarn");
       conf.set("fs.defaultFS", nameNode);
       conf.set("yarn.resourcemanager.scheduler.class", "org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler");
       // disable resource monitoring, although it should be off by default
@@ -720,7 +718,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
   @Override
   public WebHCatJTShim getWebHCatShim(Configuration conf, UserGroupInformation ugi) throws IOException {
-    return new WebHCatJTShim23(conf, ugi);//this has state, so can't be cached
+    return new WebHCatJTShim20(conf, ugi);//this has state, so can't be cached
   }
 
   private static final class HdfsFileStatusWithIdImpl implements HdfsFileStatusWithId {
@@ -864,22 +862,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       } catch (Exception err) {
         throw new RuntimeException(err.getMessage(), err);
       }
-    }
-
-    @Override
-    public FutureDataInputStreamBuilder openFile(Path path)
-        throws IOException, UnsupportedOperationException {
-      return super.openFile(swizzleParamPath(path));
-    }
-
-    @Override
-    protected CompletableFuture<FSDataInputStream> openFileWithOptions(
-        final Path path,
-        final Set<String> mandatoryKeys,
-        final Configuration options,
-        final int bufferSize) throws IOException {
-      return super.openFileWithOptions(swizzleParamPath(path),
-          mandatoryKeys, options, bufferSize);
     }
   }
 
@@ -1154,13 +1136,13 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   @Override
   public boolean runDistCp(List<Path> srcPaths, Path dst, Configuration conf) throws IOException {
-    DistCpOptions options = new DistCpOptions.Builder(srcPaths, dst)
-            .withSyncFolder(true)
-            .withDeleteMissing(true)
-            .preserve(FileAttribute.BLOCKSIZE)
-            .preserve(FileAttribute.XATTR)
-            .build();
-
+    DistCpOptions options = new DistCpOptions(srcPaths, dst);
+    options.setSyncFolder(true);
+    options.setSkipCRC(true);
+    options.preserve(FileAttribute.BLOCKSIZE);
+    options.setDeleteMissing(true);
+    options.preserve(FileAttribute.XATTR);
+ 
     // Creates the command-line parameters for distcp
     List<String> params = constructDistCpParams(srcPaths, dst, conf);
 
@@ -1184,7 +1166,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   @Override
   public List<String> getGroups(org.apache.hadoop.security.UserGroupInformation user) {
-    return user.getGroups();
+    return new ArrayList<>();
   }
 
   private static Boolean hdfsEncryptionSupport;
@@ -1273,7 +1255,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     @Override
     public boolean arePathsOnSameEncryptionZone(Path path1, Path path2,
                                                 HadoopShims.HdfsEncryptionShim encryptionShim2) throws IOException {
-      if (!(encryptionShim2 instanceof Hadoop23Shims.HdfsEncryptionShim)) {
+      if (!(encryptionShim2 instanceof Hadoop20Shims.HdfsEncryptionShim)) {
         LOG.warn("EncryptionShim for path2 (" + path2 + ") is of unexpected type: " + encryptionShim2.getClass()
             + ". Assuming path2 is on the same EncryptionZone as path1(" + path1 + ").");
         return true;

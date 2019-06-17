@@ -31,7 +31,8 @@ import java.util.Map;
  */
 public abstract class ShimLoader {
   private static final Logger LOG = LoggerFactory.getLogger(ShimLoader.class);
-  public static final String HADOOP23VERSIONNAME = "0.23";
+  public static final String HADOOP3VERSIONNAME = "0.23";
+  public static final String HADOOP2VERSIONNAME = "0.20";
 
   private static volatile HadoopShims hadoopShims;
   private static JettyShims jettyShims;
@@ -45,7 +46,8 @@ public abstract class ShimLoader {
       new HashMap<String, String>();
 
   static {
-    HADOOP_SHIM_CLASSES.put(HADOOP23VERSIONNAME, "org.apache.hadoop.hive.shims.Hadoop23Shims");
+    HADOOP_SHIM_CLASSES.put(HADOOP3VERSIONNAME, "org.apache.hadoop.hive.shims.Hadoop23Shims");
+    HADOOP_SHIM_CLASSES.put(HADOOP2VERSIONNAME, "org.apache.hadoop.hive.shims.Hadoop20Shims");
   }
 
   /**
@@ -55,8 +57,10 @@ public abstract class ShimLoader {
       new HashMap<String, String>();
 
   static {
-    EVENT_COUNTER_SHIM_CLASSES.put(HADOOP23VERSIONNAME, "org.apache.hadoop.log.metrics" +
+    EVENT_COUNTER_SHIM_CLASSES.put(HADOOP2VERSIONNAME, "org.apache.hadoop.log.metrics" +
         ".EventCounter");
+    EVENT_COUNTER_SHIM_CLASSES.put(HADOOP3VERSIONNAME, "org.apache.hadoop.log.metrics" +
+            ".EventCounter");
   }
 
   /**
@@ -66,8 +70,10 @@ public abstract class ShimLoader {
       new HashMap<String, String>();
 
   static {
-    HADOOP_THRIFT_AUTH_BRIDGE_CLASSES.put(HADOOP23VERSIONNAME,
+    HADOOP_THRIFT_AUTH_BRIDGE_CLASSES.put(HADOOP3VERSIONNAME,
         "org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge23");
+    HADOOP_THRIFT_AUTH_BRIDGE_CLASSES.put(HADOOP2VERSIONNAME,
+            "org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge23");
   }
 
 
@@ -126,7 +132,7 @@ public abstract class ShimLoader {
   /**
    * Return the "major" version of Hadoop currently on the classpath.
    * Releases in the 1.x and 2.x series are mapped to the appropriate
-   * 0.x release series, e.g. 1.x is mapped to "0.20S" and 2.x
+   * 0.x release series, e.g. 2.x is mapped to "0.20" and 3.x
    * is mapped to "0.23".
    */
   public static String getMajorVersion() {
@@ -140,8 +146,9 @@ public abstract class ShimLoader {
 
     switch (Integer.parseInt(parts[0])) {
     case 2:
+      return HADOOP2VERSIONNAME;
     case 3:
-      return HADOOP23VERSIONNAME;
+      return HADOOP3VERSIONNAME;
     default:
       throw new IllegalArgumentException("Unrecognized Hadoop major version number: " + vers);
     }

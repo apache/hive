@@ -490,6 +490,13 @@ public interface HadoopShims {
           throws IOException;
 
   /**
+   * Get the group name of the user
+   * @param user
+   * @return list of group name the user belongs to.
+   */
+  List<String> getGroups(org.apache.hadoop.security.UserGroupInformation user);
+
+  /**
    * Copies a source dir/file to a destination by orchestrating the copy between hdfs nodes.
    * This distributed process is meant to copy huge files that could take some time if a single
    * copy is done.
