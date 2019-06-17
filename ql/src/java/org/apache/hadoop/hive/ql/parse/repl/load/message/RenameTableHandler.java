@@ -19,13 +19,13 @@ package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
+import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.table.misc.AlterTableRenameDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 
 import java.io.Serializable;
@@ -61,11 +61,10 @@ public class RenameTableHandler extends AbstractMessageHandler {
       if (ReplUtils.isTableMigratingToTransactional(context.hiveConf, tableObjAfter)) {
         replicationSpec.setMigratingToTxnTable();
       }
-      AlterTableDesc renameTableDesc = new AlterTableDesc(
-              oldName, newName, false, replicationSpec);
+      AlterTableRenameDesc renameTableDesc = new AlterTableRenameDesc(oldName, replicationSpec, false, newName);
       renameTableDesc.setWriteId(msg.getWriteId());
-      Task<DDLWork> renameTableTask = TaskFactory.get(
-          new DDLWork(readEntitySet, writeEntitySet, renameTableDesc), context.hiveConf);
+      Task<DDLWork2> renameTableTask = TaskFactory.get(
+          new DDLWork2(readEntitySet, writeEntitySet, renameTableDesc), context.hiveConf);
       context.log.debug("Added rename table task : {}:{}->{}",
                         renameTableTask.getId(), oldName, newName);
 

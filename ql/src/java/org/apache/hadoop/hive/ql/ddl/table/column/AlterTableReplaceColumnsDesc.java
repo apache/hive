@@ -23,9 +23,9 @@ import java.util.Map;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -45,7 +45,7 @@ public class AlterTableReplaceColumnsDesc extends AbstractAlterTableDesc impleme
 
   public AlterTableReplaceColumnsDesc(String tableName, Map<String, String> partitionSpec, boolean isCascade,
       List<FieldSchema> newColumns) throws SemanticException {
-    super(AlterTableTypes.REPLACE_COLUMNS, tableName, partitionSpec, null, isCascade, false, null);
+    super(AlterTableType.REPLACE_COLUMNS, tableName, partitionSpec, null, isCascade, false, null);
     this.newColumns = newColumns;
   }
 

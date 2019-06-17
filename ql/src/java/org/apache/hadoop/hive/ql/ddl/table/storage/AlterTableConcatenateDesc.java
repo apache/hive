@@ -16,25 +16,32 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.parse;
+package org.apache.hadoop.hive.ql.ddl.table.storage;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-
-@Explain(displayName = "Alter Table Partition Merge Files", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterTablePartMergeFilesDesc {
+/**
+ * DDL task description for ALTER TABLE ... [PARTITION ... ] CONCATENATE commands.
+ */
+@Explain(displayName = "Concatenate", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class AlterTableConcatenateDesc implements DDLDesc {
+  static {
+    DDLTask2.registerOperation(AlterTableConcatenateDesc.class, AlterTableConcatenateOperation.class);
+  }
 
   private String tableName;
-  private HashMap<String, String> partSpec;
+  private Map<String, String> partSpec;
   private ListBucketingCtx lbCtx; // context for list bucketing.
 
   private List<Path> inputDir = new ArrayList<Path>();
@@ -42,8 +49,8 @@ public class AlterTablePartMergeFilesDesc {
   private Class<? extends InputFormat> inputFormatClass;
   private TableDesc tableDesc;
 
-  public AlterTablePartMergeFilesDesc(String tableName,
-      HashMap<String, String> partSpec) {
+  public AlterTableConcatenateDesc(String tableName,
+      Map<String, String> partSpec) {
     this.tableName = tableName;
     this.partSpec = partSpec;
   }
@@ -53,17 +60,9 @@ public class AlterTablePartMergeFilesDesc {
     return tableName;
   }
 
-  public void setTableName(String tableName) {
-    this.tableName = tableName;
-  }
-
   @Explain(displayName = "partition desc")
-  public HashMap<String, String> getPartSpec() {
+  public Map<String, String> getPartSpec() {
     return partSpec;
-  }
-
-  public void setPartSpec(HashMap<String, String> partSpec) {
-    this.partSpec = partSpec;
   }
 
   public Path getOutputDir() {
@@ -82,16 +81,10 @@ public class AlterTablePartMergeFilesDesc {
     this.inputDir = inputDir;
   }
 
-  /**
-   * @return the lbCtx
-   */
   public ListBucketingCtx getLbCtx() {
     return lbCtx;
   }
 
-  /**
-   * @param lbCtx the lbCtx to set
-   */
   public void setLbCtx(ListBucketingCtx lbCtx) {
     this.lbCtx = lbCtx;
   }

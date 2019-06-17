@@ -24,6 +24,21 @@ PREHOOK: query: alter table T1_n105 partition (ds = 'today') compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
 POSTHOOK: query: alter table T1_n105 partition (ds = 'today') compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: query: explain alter table T1_n105 partition (ds = 'yesterday') compact 'minor'
+PREHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: query: explain alter table T1_n105 partition (ds = 'yesterday') compact 'minor'
+POSTHOOK: type: ALTERTABLE_COMPACT
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Compact
+      compaction type: minor
+      partition spec:
+        ds yesterday
+      table name: default.T1_n105
+
 PREHOOK: query: alter table T1_n105 partition (ds = 'yesterday') compact 'minor'
 PREHOOK: type: ALTERTABLE_COMPACT
 POSTHOOK: query: alter table T1_n105 partition (ds = 'yesterday') compact 'minor'

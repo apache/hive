@@ -23,7 +23,6 @@ import java.util.Map;
 import org.apache.hadoop.hive.ql.ddl.table.constaint.Constraints;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 
 /**
  * Abstract ancestor of all ALTER TABLE descriptors that are handled by the AlterTableWithWriteIdOperations framework
@@ -34,7 +33,7 @@ public abstract class AbstractAlterTableWithConstraintsDesc extends AbstractAlte
 
   private final Constraints constraints;
 
-  public AbstractAlterTableWithConstraintsDesc(AlterTableTypes type, String tableName,
+  public AbstractAlterTableWithConstraintsDesc(AlterTableType type, String tableName,
       Map<String, String> partitionSpec, ReplicationSpec replicationSpec, boolean isCascade, boolean expectView,
       Map<String, String> props, Constraints constraints) throws SemanticException {
     super(type, tableName, partitionSpec, replicationSpec, isCascade, expectView, props);

@@ -22,8 +22,8 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -41,7 +41,7 @@ public class AlterTableUpdateColumnsDesc extends AbstractAlterTableDesc implemen
 
   public AlterTableUpdateColumnsDesc(String tableName, Map<String, String> partitionSpec, boolean isCascade)
       throws SemanticException {
-    super(AlterTableTypes.UPDATE_COLUMNS, tableName, partitionSpec, null, isCascade, false, null);
+    super(AlterTableType.UPDATE_COLUMNS, tableName, partitionSpec, null, isCascade, false, null);
   }
 
   @Override

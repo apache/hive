@@ -26,6 +26,8 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.table.misc.AlterTableSetPropertiesDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
@@ -34,9 +36,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -58,7 +58,6 @@ import java.util.Map;
 import java.io.Serializable;
 
 import static org.apache.hadoop.hive.ql.util.HiveStrictManagedMigration.TableMigrationOption.MANAGED;
-
 
 public class ReplUtils {
 
@@ -144,14 +143,10 @@ public class ReplUtils {
     HashMap<String, String> mapProp = new HashMap<>();
     mapProp.put(REPL_CHECKPOINT_KEY, dumpRoot);
 
-    AlterTableDesc alterTblDesc =  new AlterTableDesc(AlterTableDesc.AlterTableTypes.ADDPROPS);
-    alterTblDesc.setProps(mapProp);
-    alterTblDesc.setOldName(
-            StatsUtils.getFullyQualifiedTableName(tableDesc.getDatabaseName(), tableDesc.getTableName()));
-    if (partSpec != null) {
-      alterTblDesc.setPartSpec(partSpec);
-    }
-    return TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), alterTblDesc), conf);
+    String fqTableName = StatsUtils.getFullyQualifiedTableName(tableDesc.getDatabaseName(), tableDesc.getTableName());
+    AlterTableSetPropertiesDesc alterTblDesc =  new AlterTableSetPropertiesDesc(fqTableName, partSpec, null, false,
+        mapProp, false, false, null);
+    return TaskFactory.get(new DDLWork2(new HashSet<>(), new HashSet<>(), alterTblDesc), conf);
   }
 
   public static boolean replCkptStatus(String dbName, Map<String, String> props, String dumpRoot)
