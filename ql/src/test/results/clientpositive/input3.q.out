@@ -107,11 +107,9 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Alter Table Operator:
-        Alter Table
-          type: rename
-          new name: default.TEST3c
-          old name: default.TEST3b
+    Rename Table
+      new table name: default.TEST3c
+      table name: default.TEST3b
 
 PREHOOK: query: ALTER TABLE TEST3b RENAME TO TEST3c
 PREHOOK: type: ALTERTABLE_RENAME

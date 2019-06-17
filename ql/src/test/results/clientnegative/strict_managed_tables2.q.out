@@ -10,4 +10,4 @@ PREHOOK: query: alter table strict_managed_tables2_tab1 set tblproperties ('EXTE
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@strict_managed_tables2_tab1
 PREHOOK: Output: default@strict_managed_tables2_tab1
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to alter table. Table default.strict_managed_tables2_tab1 failed strict managed table checks due to the following reason: Table is marked as a managed table but is not transactional.
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Unable to alter table. Table default.strict_managed_tables2_tab1 failed strict managed table checks due to the following reason: Table is marked as a managed table but is not transactional.

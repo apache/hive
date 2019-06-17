@@ -19,9 +19,9 @@ package org.apache.hadoop.hive.ql.ddl.table.constaint;
 
 import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableWithConstraintsDesc;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -38,7 +38,7 @@ public class AlterTableAddConstraintDesc extends AbstractAlterTableWithConstrain
 
   public AlterTableAddConstraintDesc(String tableName, ReplicationSpec replicationSpec, Constraints constraints)
       throws SemanticException {
-    super(AlterTableTypes.ADD_CONSTRAINT, tableName, null, replicationSpec, false, false, null, constraints);
+    super(AlterTableType.ADD_CONSTRAINT, tableName, null, replicationSpec, false, false, null, constraints);
   }
 
   @Override

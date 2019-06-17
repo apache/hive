@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 import java.io.Serializable;
@@ -34,8 +33,6 @@ public class DDLWork implements Serializable {
 
   // TODO: this can probably be replaced with much less code via dynamic dispatch and/or templates.
   private InsertCommitHookDesc insertCommitHookDesc;
-  private AlterTableDesc alterTblDesc;
-  private AlterTableSimpleDesc alterTblSimpleDesc;
   private MsckDesc msckDesc;
 
   private ShowConfDesc showConfDesc;
@@ -50,7 +47,6 @@ public class DDLWork implements Serializable {
    * List of WriteEntities that are passed to the hooks.
    */
   protected HashSet<WriteEntity> outputs;
-  private AlterTablePartMergeFilesDesc mergeFilesDesc;
   private CacheMetadataDesc cacheMetadataDesc;
 
   public DDLWork() {
@@ -67,39 +63,11 @@ public class DDLWork implements Serializable {
     this.showConfDesc = showConfDesc;
   }
 
-  /**
-   * @param alterTblDesc
-   *          alter table descriptor
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      AlterTableDesc alterTblDesc) {
-    this(inputs, outputs);
-    this.alterTblDesc = alterTblDesc;
-  }
-
-  /**
-   * @param inputs
-   * @param outputs
-   * @param simpleDesc
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      AlterTableSimpleDesc simpleDesc) {
-    this(inputs, outputs);
-
-    this.alterTblSimpleDesc = simpleDesc;
-  }
-
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       MsckDesc checkDesc) {
     this(inputs, outputs);
 
     msckDesc = checkDesc;
-  }
-
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      AlterTablePartMergeFilesDesc mergeDesc) {
-    this(inputs, outputs);
-    this.mergeFilesDesc = mergeDesc;
   }
 
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
@@ -116,21 +84,6 @@ public class DDLWork implements Serializable {
   }
 
   /**
-   * @return the alterTblDesc
-   */
-  @Explain(displayName = "Alter Table Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public AlterTableDesc getAlterTblDesc() {
-    return alterTblDesc;
-  }
-
-  /**
-   * @return information about the table/partitions we want to alter.
-   */
-  public AlterTableSimpleDesc getAlterTblSimpleDesc() {
-    return alterTblSimpleDesc;
-  }
-
-  /**
    * @return Metastore check description
    */
   public MsckDesc getMsckDesc() {
@@ -143,13 +96,6 @@ public class DDLWork implements Serializable {
 
   public HashSet<WriteEntity> getOutputs() {
     return outputs;
-  }
-
-  /**
-   * @return descriptor for merging files
-   */
-  public AlterTablePartMergeFilesDesc getMergeFilesDesc() {
-    return mergeFilesDesc;
   }
 
   public boolean getNeedLock() {

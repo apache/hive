@@ -747,6 +747,23 @@ POSTHOOK: query: select ROW__ID, count(*) from over10k_orc_bucketed_n0 group by 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k_orc_bucketed_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: explain alter table over10k_orc_bucketed_n0 compact 'major' WITH OVERWRITE TBLPROPERTIES ('compactor.mapreduce.map.memory.mb'='500', 'compactor.mapreduce.reduce.memory.mb'='500','compactor.mapreduce.map.memory.mb'='500', 'compactor.hive.tez.container.size'='500')
+PREHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: query: explain alter table over10k_orc_bucketed_n0 compact 'major' WITH OVERWRITE TBLPROPERTIES ('compactor.mapreduce.map.memory.mb'='500', 'compactor.mapreduce.reduce.memory.mb'='500','compactor.mapreduce.map.memory.mb'='500', 'compactor.hive.tez.container.size'='500')
+POSTHOOK: type: ALTERTABLE_COMPACT
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Compact
+      compaction type: major
+      properties:
+        compactor.hive.tez.container.size 500
+        compactor.mapreduce.map.memory.mb 500
+        compactor.mapreduce.reduce.memory.mb 500
+      table name: default.over10k_orc_bucketed_n0
+
 PREHOOK: query: alter table over10k_orc_bucketed_n0 compact 'major' WITH OVERWRITE TBLPROPERTIES ('compactor.mapreduce.map.memory.mb'='500', 'compactor.mapreduce.reduce.memory.mb'='500','compactor.mapreduce.map.memory.mb'='500', 'compactor.hive.tez.container.size'='500')
 PREHOOK: type: ALTERTABLE_COMPACT
 POSTHOOK: query: alter table over10k_orc_bucketed_n0 compact 'major' WITH OVERWRITE TBLPROPERTIES ('compactor.mapreduce.map.memory.mb'='500', 'compactor.mapreduce.reduce.memory.mb'='500','compactor.mapreduce.map.memory.mb'='500', 'compactor.hive.tez.container.size'='500')

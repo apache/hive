@@ -22,8 +22,8 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -44,7 +44,7 @@ public class AlterTableSetFileFormatDesc extends AbstractAlterTableDesc {
 
   public AlterTableSetFileFormatDesc(String tableName, Map<String, String> partitionSpec, String inputFormat,
       String outputFormat, String serdeName) throws SemanticException {
-    super(AlterTableTypes.SET_FILE_FORMAT, tableName, partitionSpec, null, false, false, null);
+    super(AlterTableType.SET_FILE_FORMAT, tableName, partitionSpec, null, false, false, null);
     this.inputFormat = inputFormat;
     this.outputFormat = outputFormat;
     this.serdeName = serdeName;

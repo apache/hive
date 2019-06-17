@@ -21,12 +21,12 @@ package org.apache.hadoop.hive.ql.ddl.table;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public abstract class AbstractAlterTableDesc implements DDLDesc, DDLDescWithWriteId, Serializable {
   private static final long serialVersionUID = 1L;
 
-  private final AlterTableTypes type;
+  private final AlterTableType type;
   private final String tableName;
   private final Map<String, String> partitionSpec;
   private final ReplicationSpec replicationSpec;
@@ -46,11 +46,11 @@ public abstract class AbstractAlterTableDesc implements DDLDesc, DDLDescWithWrit
 
   private Long writeId;
 
-  public AbstractAlterTableDesc(AlterTableTypes type, String tableName, Map<String, String> partitionSpec,
+  public AbstractAlterTableDesc(AlterTableType type, String tableName, Map<String, String> partitionSpec,
       ReplicationSpec replicationSpec, boolean isCascade, boolean expectView, Map<String, String> props)
       throws SemanticException {
     this.type = type;
-    this.tableName = String.join(".", Utilities.getDbTableName(tableName));
+    this.tableName = tableName.contains(".") ? tableName : String.join(".", Utilities.getDbTableName(tableName));
     this.partitionSpec = partitionSpec;
     this.replicationSpec = replicationSpec;
     this.isCascade = isCascade;
@@ -58,7 +58,7 @@ public abstract class AbstractAlterTableDesc implements DDLDesc, DDLDescWithWrit
     this.props = props;
   }
 
-  public AlterTableTypes getType() {
+  public AlterTableType getType() {
     return type;
   }
 
@@ -86,10 +86,14 @@ public abstract class AbstractAlterTableDesc implements DDLDesc, DDLDescWithWrit
     return expectView;
   }
 
-  @Explain(displayName = "props", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "properties", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Map<String, String> getProps() {
     return props;
   }
+
+  public EnvironmentContext getEnvironmentContext() {
+    return null;
+  };
 
   @Override
   public String getFullTableName() {

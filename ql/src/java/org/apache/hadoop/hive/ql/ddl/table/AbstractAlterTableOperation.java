@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
@@ -73,7 +72,7 @@ public abstract class AbstractAlterTableOperation extends DDLOperation {
     // Don't change the table object returned by the metastore, as we'll mess with it's caches.
     Table table = oldTable.copy();
 
-    environmentContext = initializeEnvironmentContext(null);
+    environmentContext = initializeEnvironmentContext(desc.getEnvironmentContext());
 
     if (partitions == null) {
       doAlteration(table, null);
@@ -146,7 +145,7 @@ public abstract class AbstractAlterTableOperation extends DDLOperation {
       } else {
         // Note: this is necessary for UPDATE_STATISTICS command, that operates via ADDPROPS (why?).
         //       For any other updates, we don't want to do txn check on partitions when altering table.
-        boolean isTxn = desc.getPartitionSpec() != null && desc.getType() == AlterTableTypes.ADDPROPS;
+        boolean isTxn = desc.getPartitionSpec() != null && desc.getType() == AlterTableType.ADDPROPS;
         context.getDb().alterPartitions(Warehouse.getQualifiedName(table.getTTable()), partitions, environmentContext,
             isTxn);
       }

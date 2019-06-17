@@ -153,7 +153,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
 
   private static final HttpClient HTTP_CLIENT;
 
-  private static List<String> allowedAlterTypes = ImmutableList.of("ADDPROPS", "DROPPROPS", "ADD_COLUMNS");
+  private static List<String> ALLOWED_ALTER_TYPES = ImmutableList.of("ADDPROPS", "DROPPROPS", "ADDCOLS");
 
   static {
     final Lifecycle lifecycle = new Lifecycle();
@@ -1145,7 +1145,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     String alterOpType = (context == null || context.getProperties() == null) ?
         null : context.getProperties().get(ALTER_TABLE_OPERATION_TYPE);
     // alterOpType is null in case of stats update
-    if (alterOpType != null && !allowedAlterTypes.contains(alterOpType)) {
+    if (alterOpType != null && !ALLOWED_ALTER_TYPES.contains(alterOpType)) {
       throw new MetaException(
           "ALTER TABLE can not be used for " + alterOpType + " to a non-native table ");
     }

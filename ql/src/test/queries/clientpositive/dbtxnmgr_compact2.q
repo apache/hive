@@ -8,6 +8,7 @@ alter table T1_n105 add partition (ds = 'yesterday');
 
 alter table T1_n105 partition (ds = 'today') compact 'major';
 
+explain alter table T1_n105 partition (ds = 'yesterday') compact 'minor';
 alter table T1_n105 partition (ds = 'yesterday') compact 'minor';
 
 drop table T1_n105;

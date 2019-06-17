@@ -107,6 +107,7 @@ import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.ddl.DDLWork2;
 import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableLikeDesc;
+import org.apache.hadoop.hive.ql.ddl.table.misc.AlterTableUnsetPropertiesDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.PreInsertTableDesc;
 import org.apache.hadoop.hive.ql.ddl.view.CreateViewDesc;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
@@ -199,8 +200,6 @@ import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -6980,13 +6979,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private void setStatsForNonNativeTable(String dbName, String tableName) throws SemanticException {
     String qTableName = DDLSemanticAnalyzer.getDotName(new String[] { dbName,
         tableName });
-    AlterTableDesc alterTblDesc = new AlterTableDesc(AlterTableTypes.DROPPROPS, null, false);
     HashMap<String, String> mapProp = new HashMap<>();
     mapProp.put(StatsSetupConst.COLUMN_STATS_ACCURATE, null);
-    alterTblDesc.setOldName(qTableName);
-    alterTblDesc.setProps(mapProp);
-    alterTblDesc.setDropIfExists(true);
-    this.rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc)));
+    AlterTableUnsetPropertiesDesc alterTblDesc = new AlterTableUnsetPropertiesDesc(qTableName, null, null, false,
+        mapProp, false, null);
+    this.rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), alterTblDesc)));
   }
 
 
@@ -12558,7 +12555,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       rootTasks.stream()
           .filter(task -> task.getWork() instanceof DDLWork2)
           .map(task -> (DDLWork2) task.getWork())
-          .filter(ddlWork -> ddlWork.getDDLDesc() != null)
+          .filter(ddlWork -> ddlWork.getDDLDesc() instanceof PreInsertTableDesc)
           .map(ddlWork -> (PreInsertTableDesc)ddlWork.getDDLDesc())
           .map(ddlPreInsertTask -> new InsertCommitHookDesc(ddlPreInsertTask.getTable(),
               ddlPreInsertTask.isOverwrite()))

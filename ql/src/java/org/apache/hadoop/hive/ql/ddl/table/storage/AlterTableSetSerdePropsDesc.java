@@ -22,8 +22,8 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -40,7 +40,7 @@ public class AlterTableSetSerdePropsDesc extends AbstractAlterTableDesc {
 
   public AlterTableSetSerdePropsDesc(String tableName, Map<String, String> partitionSpec, Map<String, String> props)
       throws SemanticException {
-    super(AlterTableTypes.SET_SERDE_PROPS, tableName, partitionSpec, null, false, false, props);
+    super(AlterTableType.SET_SERDE_PROPS, tableName, partitionSpec, null, false, false, props);
   }
 
   @Override

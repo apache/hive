@@ -108,7 +108,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   }
 
   @Override
-  protected int execute(DriverContext driverContext) {
+  public int execute(DriverContext driverContext) {
     try {
       Hive hiveDb = getHive();
       Path dumpRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLDIR), getNextDumpDir());

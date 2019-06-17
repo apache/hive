@@ -14,4 +14,4 @@ PREHOOK: query: alter table convert_mm unset tblproperties('transactional_proper
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@convert_mm
 PREHOOK: Output: default@convert_mm
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Cannot convert an ACID table to non-ACID
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Cannot convert an ACID table to non-ACID
