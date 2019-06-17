@@ -62,8 +62,9 @@ public class ScheduledQueryExecutionService {
     }
 
     private void processQuery(ScheduledQueryPollResponse q) {
+      SessionState state = null;
       try {
-        SessionState.start(context.conf);
+        state = SessionState.start(context.conf);
         info = new ScheduledQueryProgressInfo();
         info.setScheduledExecutionId(q.getExecutionId());
         info.setState(QueryState.EXECUTING);
@@ -82,6 +83,14 @@ public class ScheduledQueryExecutionService {
         info.setErrorMessage(getErrorStringForException(t));
         info.setState(QueryState.ERRORED);
       } finally {
+        if (state != null) {
+          try {
+            state.close();
+          } catch (Throwable e) {
+            //FIXME does it really have to throw exception?
+          }
+        }
+
         synchronized (this) {
           reportQueryProgress();
           executing = null;
