@@ -589,6 +589,25 @@ struct DropPartitionsRequest {
   8: optional bool needResult=true
 }
 
+struct PartitionValuesRequest {
+  1: required string dbName,
+  2: required string tblName,
+  3: required list<FieldSchema> partitionKeys;
+  4: optional bool applyDistinct = true;
+  5: optional string filter;
+  6: optional list<FieldSchema> partitionOrder;
+  7: optional bool ascending = true;
+  8: optional i64 maxParts = -1;
+}
+
+struct PartitionValuesRow {
+  1: required list<string> row;
+}
+
+struct PartitionValuesResponse {
+  1: required list<PartitionValuesRow> partitionValues;
+}
+
 enum FunctionType {
   JAVA = 1,
 }
@@ -1201,6 +1220,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   list<string> get_partition_names(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1)
                        throws(1:MetaException o2)
+
+  PartitionValuesResponse get_partition_values(1:PartitionValuesRequest request)
+    throws(1:MetaException o1, 2:NoSuchObjectException o2);
 
   // get_partition*_ps methods allow filtering by a partial partition specification,
   // as needed for dynamic partitions. The values that are not restricted should

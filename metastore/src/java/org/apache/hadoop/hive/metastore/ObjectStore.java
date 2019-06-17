@@ -96,6 +96,8 @@ import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
+import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
+import org.apache.hadoop.hive.metastore.api.PartitionValuesRow;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
@@ -2234,6 +2236,250 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return pns;
+  }
+
+  private String extractPartitionKey(FieldSchema key, List<FieldSchema> pkeys) {
+    StringBuilder buffer = new StringBuilder(256);
+
+    assert pkeys.size() >= 1;
+
+    String partKey = "/" + key.getName() + "=";
+
+    // Table is partitioned by single key
+    if (pkeys.size() == 1 && (pkeys.get(0).getName().matches(key.getName()))) {
+      buffer.append("partitionName.substring(partitionName.indexOf(\"")
+          .append(key.getName()).append("=\") + ").append(key.getName().length() + 1)
+          .append(")");
+
+      // First partition key - anything between key= and first /
+    } else if ((pkeys.get(0).getName().matches(key.getName()))) {
+
+      buffer.append("partitionName.substring(partitionName.indexOf(\"")
+          .append(key.getName()).append("=\") + ").append(key.getName().length() + 1).append(", ")
+          .append("partitionName.indexOf(\"/\")")
+          .append(")");
+
+      // Last partition key - anything between /key= and end
+    } else if ((pkeys.get(pkeys.size() - 1).getName().matches(key.getName()))) {
+      buffer.append("partitionName.substring(partitionName.indexOf(\"")
+          .append(partKey).append("\") + ").append(partKey.length())
+          .append(")");
+
+      // Intermediate key - anything between /key= and the following /
+    } else {
+
+      buffer.append("partitionName.substring(partitionName.indexOf(\"")
+          .append(partKey).append("\") + ").append(partKey.length()).append(", ")
+          .append("partitionName.indexOf(\"/\", partitionName.indexOf(\"").append(partKey)
+          .append("\") + 1))");
+    }
+    LOG.info("Query for Key:" + key.getName() + " is :" + buffer);
+    return buffer.toString();
+  }
+
+  @Override
+  public PartitionValuesResponse listPartitionValues(String dbName, String tableName, List<FieldSchema> cols,
+                                                     boolean applyDistinct, String filter, boolean ascending,
+                                                     List<FieldSchema> order, long maxParts) throws MetaException {
+
+    dbName = dbName.toLowerCase().trim();
+    tableName = tableName.toLowerCase().trim();
+    try {
+      if (filter == null || filter.isEmpty()) {
+        PartitionValuesResponse response =
+            getDistinctValuesForPartitionsNoTxn(dbName, tableName, cols, applyDistinct, ascending, maxParts);
+        LOG.info("Number of records fetched: " + response.getPartitionValues().size());
+        return response;
+      } else {
+        PartitionValuesResponse response =
+            extractPartitionNamesByFilter(dbName, tableName, filter, cols, ascending, applyDistinct, maxParts);
+        if (response != null && response.getPartitionValues() != null) {
+          LOG.info("Number of records fetched with filter: " + response.getPartitionValues().size());
+        }
+        return response;
+      }
+    } catch (Exception t) {
+      LOG.error("Exception in ORM", t);
+      throw new MetaException("Error retrieving partition values: " + t);
+    } finally {
+    }
+  }
+
+  private PartitionValuesResponse extractPartitionNamesByFilter(String dbName, String tableName, String filter,
+                                                                List<FieldSchema> cols, boolean ascending, boolean applyDistinct, long maxParts)
+      throws MetaException, NoSuchObjectException {
+
+    LOG.info("Database: " + dbName + " Table:" + tableName + " filter\"" + filter + "\" cols:" + cols);
+    List<String> partitionResults = new ArrayList<String>();
+    List<String> partitionNames = null;
+    List<Partition> partitions = null;
+    Table tbl = getTable(dbName, tableName);
+    try {
+      // Get partitions by name - ascending or descending
+      partitionNames = getPartitionNamesByFilter(dbName, tableName, filter, ascending, maxParts);
+    } catch (MetaException e) {
+      LOG.warn("Querying by partition names failed, trying out with partition objects, filter:" + filter);
+    }
+
+    if (partitionNames == null) {
+      partitions = getPartitionsByFilter(dbName, tableName, filter, (short) maxParts);
+    }
+
+    if (partitions != null) {
+      partitionNames = new ArrayList<String>(partitions.size());
+      for (Partition partition : partitions) {
+        // Check for NULL's just to be safe
+        if (tbl.getPartitionKeys() != null && partition.getValues() != null) {
+          partitionNames.add(Warehouse.makePartName(tbl.getPartitionKeys(), partition.getValues()));
+        }
+      }
+    }
+
+    if (partitionNames == null && partitions == null) {
+      throw new MetaException("Cannot obtain list of partitions by filter:\"" + filter +
+          "\" for " + dbName + ":" + tableName);
+    }
+
+    if (!ascending) {
+      Collections.sort(partitionNames, Collections.reverseOrder());
+    }
+
+    // Return proper response
+    PartitionValuesResponse response = new PartitionValuesResponse();
+    response.setPartitionValues(new ArrayList<PartitionValuesRow>(partitionNames.size()));
+    LOG.info("Converting responses to Partition values for items:" + partitionNames.size());
+    for (String partName : partitionNames) {
+      ArrayList<String> vals = new ArrayList<String>(tbl.getPartitionKeys().size());
+      for (FieldSchema key : tbl.getPartitionKeys()) {
+        vals.add(null);
+      }
+      PartitionValuesRow row = new PartitionValuesRow();
+      Warehouse.makeValsFromName(partName, vals);
+      for (String value : vals) {
+        row.addToRow(value);
+      }
+      response.addToPartitionValues(row);
+    }
+    return response;
+  }
+
+  private List<String> getPartitionNamesByFilter(String dbName, String tableName,
+                                                 String filter, boolean ascending, long maxParts)
+      throws MetaException {
+
+    boolean success = false;
+    List<String> partNames = new ArrayList<String>();
+    try {
+      openTransaction();
+      LOG.debug("Executing getPartitionNamesByFilter");
+      dbName = dbName.toLowerCase();
+      tableName = tableName.toLowerCase();
+
+      MTable mtable = getMTable(dbName, tableName);
+      if( mtable == null ) {
+        // To be consistent with the behavior of listPartitionNames, if the
+        // table or db does not exist, we return an empty list
+        return partNames;
+      }
+      Map<String, Object> params = new HashMap<String, Object>();
+      String queryFilterString = makeQueryFilterString(dbName, mtable, filter, params);
+      Query query = pm.newQuery(
+          "select partitionName from org.apache.hadoop.hive.metastore.model.MPartition "
+              + "where " + queryFilterString);
+
+      if (maxParts >= 0) {
+        //User specified a row limit, set it on the Query
+        query.setRange(0, maxParts);
+      }
+
+      LOG.debug("Filter specified is " + filter + "," +
+          " JDOQL filter is " + queryFilterString);
+      LOG.debug("Parms is " + params);
+
+      String parameterDeclaration = makeParameterDeclarationStringObj(params);
+      query.declareParameters(parameterDeclaration);
+      if (ascending) {
+        query.setOrdering("partitionName ascending");
+      } else {
+        query.setOrdering("partitionName descending");
+      }
+      query.setResult("partitionName");
+
+      Collection names = (Collection) query.executeWithMap(params);
+      partNames = new ArrayList<String>();
+      for (Iterator i = names.iterator(); i.hasNext();) {
+        partNames.add((String) i.next());
+      }
+
+      LOG.debug("Done executing query for getPartitionNamesByFilter");
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for getPartitionNamesByFilter, size:" + partNames.size());
+      query.closeAll();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return partNames;
+  }
+
+  private PartitionValuesResponse getDistinctValuesForPartitionsNoTxn(String dbName, String tableName, List<FieldSchema> cols,
+                                                                      boolean applyDistinct, boolean ascending, long maxParts)
+      throws MetaException {
+
+    try {
+      openTransaction();
+      Query q = pm.newQuery("select partitionName from org.apache.hadoop.hive.metastore.model.MPartition "
+          + "where table.database.name == t1 && table.tableName == t2 ");
+      q.declareParameters("java.lang.String t1, java.lang.String t2");
+
+      // TODO: Ordering seems to affect the distinctness, needs checking, disabling.
+/*
+      if (ascending) {
+        q.setOrdering("partitionName ascending");
+      } else {
+        q.setOrdering("partitionName descending");
+      }
+*/
+      if (maxParts > 0) {
+        q.setRange(0, maxParts);
+      }
+      StringBuilder partValuesSelect = new StringBuilder(256);
+      if (applyDistinct) {
+        partValuesSelect.append("DISTINCT ");
+      }
+      List<FieldSchema> partitionKeys = getTable(dbName, tableName).getPartitionKeys();
+      for (FieldSchema key : cols) {
+        partValuesSelect.append(extractPartitionKey(key, partitionKeys)).append(", ");
+      }
+      partValuesSelect.setLength(partValuesSelect.length() - 2);
+      LOG.info("Columns to be selected from Partitions: " + partValuesSelect);
+      q.setResult(partValuesSelect.toString());
+
+      PartitionValuesResponse response = new PartitionValuesResponse();
+      response.setPartitionValues(new ArrayList<PartitionValuesRow>());
+      if (cols.size() > 1) {
+        List<Object[]> results = (List<Object[]>) q.execute(dbName, tableName);
+        for (Object[] row : results) {
+          PartitionValuesRow rowResponse = new PartitionValuesRow();
+          for (Object columnValue : row) {
+            rowResponse.addToRow((String) columnValue);
+          }
+          response.addToPartitionValues(rowResponse);
+        }
+      } else {
+        List<Object> results = (List<Object>) q.execute(dbName, tableName);
+        for (Object row : results) {
+          PartitionValuesRow rowResponse = new PartitionValuesRow();
+          rowResponse.addToRow((String) row);
+          response.addToPartitionValues(rowResponse);
+        }
+      }
+      q.closeAll();
+      return response;
+    } finally {
+      commitTransaction();
+    }
   }
 
   private List<String> getPartitionNamesNoTxn(String dbName, String tableName, short max) {

@@ -1316,6 +1316,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
+  public PartitionValuesResponse listPartitionValues(PartitionValuesRequest request)
+      throws MetaException, TException, NoSuchObjectException {
+    return client.get_partition_values(request);
+  }
+
+  @Override
   public Partition getPartitionWithAuthInfo(String db_name, String tbl_name,
       List<String> part_vals, String user_name, List<String> group_names)
       throws MetaException, UnknownTableException, NoSuchObjectException,

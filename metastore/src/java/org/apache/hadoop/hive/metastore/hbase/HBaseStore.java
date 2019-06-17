@@ -23,6 +23,7 @@ import com.google.common.cache.CacheLoader;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
+import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -644,6 +645,15 @@ public class HBaseStore implements RawStore {
     } finally {
       commitOrRoleBack(commit);
     }
+  }
+
+  @Override
+  public PartitionValuesResponse listPartitionValues(String db_name, String tbl_name, List<FieldSchema> cols,
+                                                     boolean applyDistinct, String filter, boolean ascending,
+                                                     List<FieldSchema> order, long maxParts)
+  {
+    // TODO needs to wait until we support pushing filters into HBase.
+    throw new UnsupportedOperationException();
   }
 
   @Override

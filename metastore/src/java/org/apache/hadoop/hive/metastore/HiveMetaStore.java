@@ -3720,6 +3720,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public PartitionValuesResponse get_partition_values(PartitionValuesRequest request) throws MetaException {
+      String dbName = request.getDbName();
+      String tblName = request.getTblName();
+      List<FieldSchema> partCols = new ArrayList<FieldSchema>();
+      partCols.add(request.getPartitionKeys().get(0));
+      return getMS().listPartitionValues(dbName, tblName, request.getPartitionKeys(),
+          request.isApplyDistinct(), request.getFilter(), request.isAscending(),
+          request.getPartitionOrder(), request.getMaxParts());
+    }
+
+    @Override
     public void alter_partition(final String db_name, final String tbl_name,
         final Partition new_part)
         throws InvalidOperationException, MetaException, TException {

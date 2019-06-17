@@ -814,15 +814,15 @@ public class CompactionRequest implements org.apache.thrift.TBase<CompactionRequ
           case 6: // PROPERTIES
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map524 = iprot.readMapBegin();
-                struct.properties = new HashMap<String,String>(2*_map524.size);
-                String _key525;
-                String _val526;
-                for (int _i527 = 0; _i527 < _map524.size; ++_i527)
+                org.apache.thrift.protocol.TMap _map556 = iprot.readMapBegin();
+                struct.properties = new HashMap<String,String>(2*_map556.size);
+                String _key557;
+                String _val558;
+                for (int _i559 = 0; _i559 < _map556.size; ++_i559)
                 {
-                  _key525 = iprot.readString();
-                  _val526 = iprot.readString();
-                  struct.properties.put(_key525, _val526);
+                  _key557 = iprot.readString();
+                  _val558 = iprot.readString();
+                  struct.properties.put(_key557, _val558);
                 }
                 iprot.readMapEnd();
               }
@@ -878,10 +878,10 @@ public class CompactionRequest implements org.apache.thrift.TBase<CompactionRequ
           oprot.writeFieldBegin(PROPERTIES_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.properties.size()));
-            for (Map.Entry<String, String> _iter528 : struct.properties.entrySet())
+            for (Map.Entry<String, String> _iter560 : struct.properties.entrySet())
             {
-              oprot.writeString(_iter528.getKey());
-              oprot.writeString(_iter528.getValue());
+              oprot.writeString(_iter560.getKey());
+              oprot.writeString(_iter560.getValue());
             }
             oprot.writeMapEnd();
           }
@@ -928,10 +928,10 @@ public class CompactionRequest implements org.apache.thrift.TBase<CompactionRequ
       if (struct.isSetProperties()) {
         {
           oprot.writeI32(struct.properties.size());
-          for (Map.Entry<String, String> _iter529 : struct.properties.entrySet())
+          for (Map.Entry<String, String> _iter561 : struct.properties.entrySet())
           {
-            oprot.writeString(_iter529.getKey());
-            oprot.writeString(_iter529.getValue());
+            oprot.writeString(_iter561.getKey());
+            oprot.writeString(_iter561.getValue());
           }
         }
       }
@@ -957,15 +957,15 @@ public class CompactionRequest implements org.apache.thrift.TBase<CompactionRequ
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TMap _map530 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.properties = new HashMap<String,String>(2*_map530.size);
-          String _key531;
-          String _val532;
-          for (int _i533 = 0; _i533 < _map530.size; ++_i533)
+          org.apache.thrift.protocol.TMap _map562 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.properties = new HashMap<String,String>(2*_map562.size);
+          String _key563;
+          String _val564;
+          for (int _i565 = 0; _i565 < _map562.size; ++_i565)
           {
-            _key531 = iprot.readString();
-            _val532 = iprot.readString();
-            struct.properties.put(_key531, _val532);
+            _key563 = iprot.readString();
+            _val564 = iprot.readString();
+            struct.properties.put(_key563, _val564);
           }
         }
         struct.setPropertiesIsSet(true);
