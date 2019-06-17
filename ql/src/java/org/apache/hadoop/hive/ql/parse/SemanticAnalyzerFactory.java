@@ -147,6 +147,9 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_CREATE_MAPPING, HiveOperation.CREATE_MAPPING);
     commandType.put(HiveParser.TOK_ALTER_MAPPING, HiveOperation.ALTER_MAPPING);
     commandType.put(HiveParser.TOK_DROP_MAPPING, HiveOperation.DROP_MAPPING);
+    commandType.put(HiveParser.TOK_CREATE_SCHEDULED_QUERY, HiveOperation.CREATE_SCHEDULED_QUERY);
+    commandType.put(HiveParser.TOK_ALTER_SCHEDULED_QUERY, HiveOperation.ALTER_SCHEDULED_QUERY);
+    commandType.put(HiveParser.TOK_DROP_SCHEDULED_QUERY, HiveOperation.DROP_SCHEDULED_QUERY);
   }
 
   static {

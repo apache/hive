@@ -153,7 +153,11 @@ public enum HiveOperation {
   DROP_POOL("DROP POOL", null, null, false, false),
   CREATE_MAPPING("CREATE MAPPING", null, null, false, false),
   ALTER_MAPPING("ALTER MAPPING", null, null, false, false),
-  DROP_MAPPING("DROP MAPPING", null, null, false, false);
+  DROP_MAPPING("DROP MAPPING", null, null, false, false),
+  CREATE_SCHEDULED_QUERY("CREATE SCHEDULED QUERY", null, null),
+  ALTER_SCHEDULED_QUERY("ALTER SCHEDULED QUERY", null, null),
+  DROP_SCHEDULED_QUERY("DROP SCHEDULED QUERY", null, null),
+  ;
 
 
   private String operationName;
