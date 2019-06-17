@@ -6,15 +6,31 @@ apdiff="git diff $BASE"
 
 # +-- FIXME: p#1 
 $apdiff -- `$apdiff --name-only |grep -v thrift/gen|
+	grep -v '_run_cd'|
 		grep -v '^standalone'|grep -v hive-schema-4.0.0.hive.sql`  > ../cdpd/p1
-$apdiff -- `$apdiff --name-only |grep -v thrift/gen|
-		grep common|grep ^standalone` |
+
+F1="`$apdiff --name-only |grep -v thrift/gen|
+        grep  -v '^_run'|
+                grep common|grep ^standalone`"
+
+if [ "$F1" != "" ];then
+$apdiff -- $F1 |
 	sed 's+schema-4.0.0+schema-3.1.0+' |
 	sed 's+standalone-metastore/metastore-server/+standalone-metastore/+;s+standalone-metastore/metastore-common/+standalone-metastore/+' > ../cdpd/p2
+else
+	echo -n > ../cdpd/p2
+fi
 # +-- FIXME: p#3
-$apdiff -- `$apdiff --name-only |grep -v thrift/gen|
-		grep -v hive-schema-4.0.0|grep server/|
-		grep ^standalone` |
+F2="`$apdiff --name-only |grep -v thrift/gen|
+        grep  -v '^_run'|
+                grep -v hive-schema-3.1.0|grep server/|
+		grep ^standalone`"
+
+if [ "$F2" != "" ];then
+$apdiff -- $F2 |
 	sed 's+schema-4.0.0+schema-3.1.0+' |
 	sed 's+standalone-metastore/metastore-server/+standalone-metastore/+;s+standalone-metastore/metastore-common/+standalone-metastore/+' > ../cdpd/p3
 
+else
+	echo -n > ../cdpd/p3
+fi

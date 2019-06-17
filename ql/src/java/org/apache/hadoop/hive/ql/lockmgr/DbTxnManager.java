@@ -310,7 +310,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
         " for " + getQueryIdWaterMark(queryPlan));
     }
     if(queryPlan.getOperation() == null) {
-      throw new IllegalStateException("Unkown HiverOperation for " + getQueryIdWaterMark(queryPlan));
+      throw new IllegalStateException("Unkown HiveOperation(null) for " + getQueryIdWaterMark(queryPlan));
     }
     numStatements++;
     switch (queryPlan.getOperation()) {

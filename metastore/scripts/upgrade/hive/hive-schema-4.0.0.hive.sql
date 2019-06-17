@@ -8,7 +8,6 @@ CREATE DATABASE IF NOT EXISTS SYS;
 
 USE SYS;
 
--- drop table SCHEDULED_QUERIES;
 CREATE EXTERNAL TABLE IF NOT EXISTS `SCHEDULED_QUERIES` (
   `SCHEDULED_QUERY_ID` bigint,
   `SCHEDULE_NAME` string,
@@ -37,11 +36,7 @@ FROM
   SCHEDULED_QUERIES'
 );
 
-select * from SCHEDULED_QUERIES;
-
--- 2019-06-13 08:56:40,386 INFO  org.apache.tez.client.TezClient: [Scheduled Query Thread 0]: The url to track the Tez Session: http://papaya-1.vpc.cloudera.com:8088/proxy/application_1560416662949_0037/
--- 2019-06-13 09:01:34,177 INFO  org.apache.hadoop.hive.ql.Driver: [Scheduled Query Thread 0]: Compiling command(queryId=hive_20190613090134_cb5b4491-4578-44ff-a475-1a68c0158ba5): select 1
-
+-- select * from SCHEDULED_QUERIES;
 
 CREATE EXTERNAL TABLE IF NOT EXISTS `SCHEDULED_EXECUTIONS` (
   `SCHEDULED_EXECUTION_ID` bigint,
@@ -124,6 +119,9 @@ TBLPROPERTIES (
 FROM
   \"COLUMNS_V2\""
 );
+
+
+SELECT 'abc123' AS ORIG_VALUE, CAST('abc123' AS BIGINT) AS CAST_AS_BIGINT, CASE WHEN CAST('abc123' AS BIGINT) IS NULL THEN 'YES' ELSE 'NO' END AS IS_IT_NULL; 
 
 CREATE EXTERNAL TABLE IF NOT EXISTS `DATABASE_PARAMS` (
   `DB_ID` bigint,
