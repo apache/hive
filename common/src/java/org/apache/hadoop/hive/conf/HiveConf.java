@@ -4565,7 +4565,7 @@ public class HiveConf extends Configuration {
         "comma separated list of plugin can be used:\n"
             + "  overlay: hiveconf subtree 'reexec.overlay' is used as an overlay in case of an execution errors out\n"
             + "  reoptimize: collects operator statistics during execution and recompile the query after a failure"),
-    HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE("hive.query.reexecution.stats.persist.scope", "query",
+    HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE("hive.query.reexecution.stats.persist.scope", "metastore",
         new StringSet("query", "hiveserver", "metastore"),
         "Sets the persistence scope of runtime statistics\n"
             + "  query: runtime statistics are only used during re-execution\n"
