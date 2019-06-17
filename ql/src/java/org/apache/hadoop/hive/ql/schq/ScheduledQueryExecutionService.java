@@ -11,10 +11,14 @@ import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class ScheduledQueryExecutionService {
+
+  private static final Logger LOG = LoggerFactory.getLogger(ScheduledQueryExecutionService.class);
 
   private ScheduledQueryExecutionContext context;
   private ScheduledQueryExecutor worker;
@@ -57,6 +61,8 @@ public class ScheduledQueryExecutionService {
 
     public synchronized void reportQueryProgress() {
       if (info != null) {
+        LOG.info("Reporting query progress of {} as {} err:{}", info.getScheduledExecutionId(), info.getState(),
+            info.getErrorMessage());
         context.schedulerService.scheduledQueryProgress(info);
       }
     }
