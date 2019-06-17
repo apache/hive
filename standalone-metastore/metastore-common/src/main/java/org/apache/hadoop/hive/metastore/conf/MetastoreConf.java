@@ -390,8 +390,11 @@ public class MetastoreConf {
             "hive.metastore.housekeeping.leader.hostname", "",
 "If there are multiple Thrift metastore services running, the hostname of Thrift metastore " +
         "service to run housekeeping tasks at. By default this values is empty, which " +
-        "means that the current metastore will run the housekeeping tasks. This value should " +
-        "match that of configuration metastore.thrift.bind.host of the leader HMS, if set."),
+        "means that the current metastore will run the housekeeping tasks. If configuration" +
+        "metastore.thrift.bind.host is set on the intended leader metastore, this value should " +
+        "match that configuration. Otherwise it should be same as the hostname returned by " +
+        "InetAddress#getLocalHost#getHostName(). Given the uncertainty in the later " +
+        "it is desirable to configure metastore.thrift.bind.host on the intended leader HMS."),
     COMPACTOR_INITIATOR_ON("metastore.compactor.initiator.on", "hive.compactor.initiator.on", false,
         "Whether to run the initiator and cleaner threads on this metastore instance or not.\n" +
             "Set this to true on one instance of the Thrift metastore service as part of turning\n" +

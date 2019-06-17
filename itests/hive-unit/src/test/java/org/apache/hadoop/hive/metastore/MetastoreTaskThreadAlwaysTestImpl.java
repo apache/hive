@@ -26,9 +26,9 @@ import java.util.concurrent.TimeUnit;
 /**
  * An implementation of MetastoreTaskThread for testing metastore leader config.
  */
-public class MetastoreTaskThreadTestImpl1 implements MetastoreTaskThread {
-  static final String TASK_NAME = "metastore_task_thread_test_impl_1";
-  public static final Logger LOG = LoggerFactory.getLogger(MetastoreTaskThreadTestImpl1.class);
+public class MetastoreTaskThreadAlwaysTestImpl implements MetastoreTaskThread {
+  static final String TASK_NAME = "metastore_task_thread_test_impl_3";
+  public static final Logger LOG = LoggerFactory.getLogger(MetastoreTaskThreadAlwaysTestImpl.class);
   private Configuration conf;
 
   @Override

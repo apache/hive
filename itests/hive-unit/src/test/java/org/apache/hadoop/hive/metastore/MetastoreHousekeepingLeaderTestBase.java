@@ -123,21 +123,21 @@ class MetastoreHousekeepingLeaderTestBase {
 
   private long addRemoteOnlyTasksConfigs() {
     String remoteTaskClassPaths =
-            MetastoreTaskThreadTestImpl1.class.getCanonicalName() + "," +
-                    MetastoreTaskThreadTestImpl2.class.getCanonicalName();
+            RemoteMetastoreTaskThreadTestImpl1.class.getCanonicalName() + "," +
+                    RemoteMetastoreTaskThreadTestImpl2.class.getCanonicalName();
 
     MetastoreConf.setVar(conf, ConfVars.TASK_THREADS_REMOTE_ONLY, remoteTaskClassPaths);
 
-    threadNames.put(MetastoreTaskThreadTestImpl1.TASK_NAME, false);
-    threadNames.put(MetastoreTaskThreadTestImpl2.TASK_NAME, false);
+    threadNames.put(RemoteMetastoreTaskThreadTestImpl1.TASK_NAME, false);
+    threadNames.put(RemoteMetastoreTaskThreadTestImpl2.TASK_NAME, false);
 
     return 2;
   }
 
   private long addAlwaysTasksConfigs() throws Exception {
-    String alwaysTaskClassPaths = MetastoreTaskThreadTestImpl3.class.getCanonicalName();
+    String alwaysTaskClassPaths = MetastoreTaskThreadAlwaysTestImpl.class.getCanonicalName();
     MetastoreConf.setVar(conf, ConfVars.TASK_THREADS_ALWAYS, alwaysTaskClassPaths);
-    threadNames.put(MetastoreTaskThreadTestImpl3.TASK_NAME, false);
+    threadNames.put(MetastoreTaskThreadAlwaysTestImpl.TASK_NAME, false);
     return 1;
   }
 
