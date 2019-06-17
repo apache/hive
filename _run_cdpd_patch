@@ -1,0 +1,16 @@
+#!/bin/bash
+
+BASE="$1"
+
+# +-- FIXME: p#1 
+git diff $BASE -- `apdiff --name-only |grep -v thrift/gen|
+		grep -v '^standalone'|grep -v hive-schema-4.0.0.hive.sql`  > ../cdpd/p1
+git diff $BASE -- `apdiff --name-only |grep -v thrift/gen|
+		grep common|grep ^standalone` |
+	sed 's+standalone-metastore/metastore-server/+standalone-metastore/+;s+standalone-metastore/metastore-common/+standalone-metastore/+' > ../cdpd/p2
+# +-- FIXME: p#3
+git diff $BASE -- `apdiff --name-only |grep -v thrift/gen|
+		grep -v hive-schema-4.0.0|grep server/|
+		grep ^standalone` |
+	sed 's+standalone-metastore/metastore-server/+standalone-metastore/+;s+standalone-metastore/metastore-common/+standalone-metastore/+' > ../cdpd/p3
+
