@@ -22,8 +22,8 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -42,7 +42,7 @@ public class AlterTableSetLocationDesc extends AbstractAlterTableDesc {
 
   public AlterTableSetLocationDesc(String tableName, Map<String, String> partitionSpec, String location)
       throws SemanticException {
-    super(AlterTableTypes.SET_LOCATION, tableName, partitionSpec, null, false, false, null);
+    super(AlterTableType.ALTERLOCATION, tableName, partitionSpec, null, false, false, null);
     this.location = location;
   }
 

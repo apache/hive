@@ -106,6 +106,7 @@ explain select ROW__ID, count(*) from over10k_orc_bucketed_n0 group by ROW__ID h
 select ROW__ID, count(*) from over10k_orc_bucketed_n0 group by ROW__ID having count(*) > 1;
 
 -- schedule compactor
+explain alter table over10k_orc_bucketed_n0 compact 'major' WITH OVERWRITE TBLPROPERTIES ('compactor.mapreduce.map.memory.mb'='500', 'compactor.mapreduce.reduce.memory.mb'='500','compactor.mapreduce.map.memory.mb'='500', 'compactor.hive.tez.container.size'='500');
 alter table over10k_orc_bucketed_n0 compact 'major' WITH OVERWRITE TBLPROPERTIES ('compactor.mapreduce.map.memory.mb'='500', 'compactor.mapreduce.reduce.memory.mb'='500','compactor.mapreduce.map.memory.mb'='500', 'compactor.hive.tez.container.size'='500');
 
 

@@ -22,8 +22,8 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -42,7 +42,7 @@ public class AlterTableIntoBucketsDesc extends AbstractAlterTableDesc {
 
   public AlterTableIntoBucketsDesc(String tableName, Map<String, String> partitionSpec, int numberOfBuckets)
       throws SemanticException {
-    super(AlterTableTypes.INTO_BUCKETS, tableName, partitionSpec, null, false, false, null);
+    super(AlterTableType.INTO_BUCKETS, tableName, partitionSpec, null, false, false, null);
     this.numberOfBuckets = numberOfBuckets;
   }
 

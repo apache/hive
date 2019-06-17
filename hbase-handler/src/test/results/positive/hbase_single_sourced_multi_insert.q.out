@@ -54,12 +54,10 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Alter Table Operator:
-        Alter Table
-          type: drop props
-          old name: default.src_x2
-          properties:
-            COLUMN_STATS_ACCURATE 
+    Unset Properties
+      properties:
+        COLUMN_STATS_ACCURATE 
+      table name: default.src_x2
 
   Stage: Stage-4
     Stats Work

@@ -509,7 +509,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Set Serde Props
-      props:
+      properties:
         property1 value1
         property2 value2
       table name: default.t

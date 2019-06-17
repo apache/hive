@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.ddl.table.storage;
 
 import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -37,7 +37,7 @@ public class AlterTableNotSkewedDesc extends AbstractAlterTableDesc {
   }
 
   public AlterTableNotSkewedDesc(String tableName) throws SemanticException {
-    super(AlterTableTypes.NOT_SKEWED, tableName, null, null, false, false, null);
+    super(AlterTableType.NOT_SKEWED, tableName, null, null, false, false, null);
   }
 
   @Override

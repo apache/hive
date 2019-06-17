@@ -178,8 +178,7 @@ POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: newdb@tab_n1
 POSTHOOK: Output: newdb@tab_n1
 Stage-0
-  Alter Table Operator:
-    new name:newDB.newName,old name:newDB.tab_n1,type:rename
+  Rename Table{"new table name:":"newDB.newName","table name:":"newDB.tab_n1"}
 
 PREHOOK: query: explain drop table tab_n1
 PREHOOK: type: DROPTABLE
