@@ -545,7 +545,7 @@ public class CachedStore implements RawStore, Configurable {
               AggrStats aggrStatsAllButDefaultPartition = null;
               if (!table.getPartitionKeys().isEmpty()) {
                 Deadline.startTimer("getPartitions");
-                partitions = rawStore.getPartitions(catName, dbName, tblName, Integer.MAX_VALUE);
+                partitions = rawStore.getPartitions(catName, dbName, tblName, -1);
                 Deadline.stopTimer();
                 List<String> partNames = new ArrayList<>(partitions.size());
                 for (Partition p : partitions) {
@@ -893,7 +893,7 @@ public class CachedStore implements RawStore, Configurable {
     private void updateTablePartitions(RawStore rawStore, String catName, String dbName, String tblName) {
       try {
         Deadline.startTimer("getPartitions");
-        List<Partition> partitions = rawStore.getPartitions(catName, dbName, tblName, Integer.MAX_VALUE);
+        List<Partition> partitions = rawStore.getPartitions(catName, dbName, tblName, -1);
         Deadline.stopTimer();
         sharedCache.refreshPartitionsInCache(StringUtils.normalizeIdentifier(catName),
             StringUtils.normalizeIdentifier(dbName),
