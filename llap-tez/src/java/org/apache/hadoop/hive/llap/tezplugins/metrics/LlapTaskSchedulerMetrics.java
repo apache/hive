@@ -15,19 +15,7 @@
  */
 package org.apache.hadoop.hive.llap.tezplugins.metrics;
 
-import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerClusterNodeCount;
-import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerCompletedDagCount;
-import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerCpuCoresPerInstance;
-import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerDisabledNodeCount;
-import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerExecutorsPerInstance;
-import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerMemoryPerInstance;
-import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerMetrics;
-import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerPendingPreemptionTaskCount;
-import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerPendingTaskCount;
-import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerPreemptedTaskCount;
-import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerRunningTaskCount;
-import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerSchedulableTaskCount;
-import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerSuccessfulTaskCount;
+import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.*;
 import static org.apache.hadoop.metrics2.impl.MsInfo.ProcessName;
 import static org.apache.hadoop.metrics2.impl.MsInfo.SessionId;
 
@@ -92,6 +80,8 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
   MutableCounterInt wmSpeculativeCount;
   @Metric
   MutableCounterInt wmGuaranteedCount;
+  @Metric
+  MutableGaugeInt dagRunning;
 
   private LlapTaskSchedulerMetrics(String displayName, JvmMetrics jm, String sessionId) {
     this.name = displayName;
@@ -254,6 +244,10 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
     wmUnusedGuaranteedCount.set(unusedGuaranteed);
   }
 
+  public void setDagRunning(int value) {
+    dagRunning.set(value);
+  }
+
   public void resetWmMetrics() {
     wmTotalGuaranteedCount.set(0);
     wmUnusedGuaranteedCount.set(0);
@@ -265,6 +259,7 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
 
   private void getTaskSchedulerStats(MetricsRecordBuilder rb) {
     rb.addGauge(SchedulerClusterNodeCount, clusterNodeCount.value())
+        .addCounter(SchedulerDagRunning, dagRunning.value())
         .addGauge(SchedulerExecutorsPerInstance, numExecutors.value())
         .addGauge(SchedulerMemoryPerInstance, memoryPerInstance.value())
         .addGauge(SchedulerCpuCoresPerInstance, cpuCoresPerInstance.value())

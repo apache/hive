@@ -27,6 +27,7 @@ import com.google.common.base.Objects;
  */
 public enum LlapTaskSchedulerInfo implements MetricsInfo {
   SchedulerMetrics("Llap task scheduler related metrics"),
+  SchedulerDagRunning("Whether a DAG is currently running"),
   SchedulerClusterNodeCount("Number of nodes in the cluster"),
   SchedulerExecutorsPerInstance("Total number of executor threads per node"),
   SchedulerMemoryPerInstance("Total memory for executors per node in bytes"),

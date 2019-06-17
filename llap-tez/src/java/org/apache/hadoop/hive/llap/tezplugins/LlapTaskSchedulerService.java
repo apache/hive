@@ -1014,7 +1014,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     long tgVersionForZk;
     writeLock.lock();
     try {
-      dagRunning = false;
+      setDagRunning(false);
       dagStats = new StatsPerDag();
       int pendingCount = 0;
       for (Entry<Priority, List<TaskInfo>> entry : pendingTasks.entrySet()) {
@@ -1106,7 +1106,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       if (!dagRunning && metrics != null && id != null) {
         metrics.setDagId(id.getTaskID().getVertexID().getDAGId().toString());
       }
-      dagRunning = true;
+      setDagRunning(true);
       dagStats.registerTaskRequest(hosts, racks);
     } finally {
       writeLock.unlock();
@@ -1130,7 +1130,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       if (!dagRunning && metrics != null && id != null) {
         metrics.setDagId(id.getTaskID().getVertexID().getDAGId().toString());
       }
-      dagRunning = true;
+      setDagRunning(true);
       dagStats.registerTaskRequest(null, null);
     } finally {
       writeLock.unlock();
@@ -2276,6 +2276,13 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     if (!taskInfo.shouldForceLocality() && !taskInfo.isInDelayedQueue()) {
       taskInfo.setInDelayedQueue(true);
       delayedTaskQueue.add(taskInfo);
+    }
+  }
+
+  private void setDagRunning(boolean running) {
+    dagRunning = running;
+    if (metrics != null) {
+      metrics.setDagRunning(running ? 1 : 0);
     }
   }
 
