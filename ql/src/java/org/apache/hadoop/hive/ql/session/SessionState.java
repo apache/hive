@@ -316,8 +316,6 @@ public class SessionState {
 
   private List<Closeable> cleanupItems = new LinkedList<Closeable>();
 
-  private volatile long waitingTezSession;
-
   public HiveConf getConf() {
     return sessionConf;
   }
@@ -2036,8 +2034,6 @@ public class SessionState {
         return percentage;
       }
     };
-
-
   }
 
   public void updateProgressMonitor(ProgressMonitor progressMonitor) {
@@ -2072,17 +2068,6 @@ public class SessionState {
     return currentFunctionsInUse;
   }
 
-  public void setWaitingTezSession() {
-    this.waitingTezSession = System.currentTimeMillis();
-  }
-
-  public void resetWaitingTezSession() {
-    this.waitingTezSession = 0;
-  }
-
-  public long getWaitingTezSession() {
-    return this.waitingTezSession;
-  }
 }
 
 class ResourceMaps {
