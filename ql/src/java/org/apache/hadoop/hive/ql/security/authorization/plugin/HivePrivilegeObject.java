@@ -291,6 +291,10 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
       default:
       }
     }
+    /*Note that we are not adding ownername and ownertype here, because in many negative CLI unit tests,
+    we print out the HivePrivilegeObject. If ownername and type are included in the toString(), then
+    we will not have a standard control file that stays unchanged when the user running the test changes.
+    We would have many mismatches that will just be noise.*/
     return "Object [type=" + type + ", name=" + name + actionTypeStr + "]";
   }
 
