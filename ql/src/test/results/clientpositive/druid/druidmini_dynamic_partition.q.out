@@ -402,8 +402,7 @@ STAGE PLANS:
                       name: default.druid_partitioned_table
 
   Stage: Stage-4
-      Insert operator:
-        Commit-Insert-Hook
+    Commit Insert Hook
 
 PREHOOK: query: INSERT INTO TABLE druid_partitioned_table
 SELECT cast (`ctimestamp2` as timestamp with local time zone) as `__time`,
@@ -544,8 +543,8 @@ STAGE PLANS:
                       name: default.druid_partitioned_table
 
   Stage: Stage-4
-      Insert operator:
-        Commit-Insert-Hook
+    Commit Insert Hook
+      is overwrite: true
 
 PREHOOK: query: INSERT OVERWRITE TABLE druid_partitioned_table
   SELECT cast (`ctimestamp1` as timestamp with local time zone) as `__time`,

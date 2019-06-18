@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.ExplainSQRewriteWork;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
@@ -109,7 +108,6 @@ public class QueryPlanPostProcessor {
           work instanceof BasicStatsWork ||
           work instanceof ConditionalWork ||
           work instanceof CopyWork ||
-          work instanceof DDLWork ||
           work instanceof DDLWork2 ||
           work instanceof DependencyCollectionWork ||
           work instanceof ExplainSQRewriteWork ||
