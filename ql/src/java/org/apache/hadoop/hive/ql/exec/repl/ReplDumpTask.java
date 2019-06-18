@@ -143,35 +143,68 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
    * locations.
    * 2. External or ACID tables are being bootstrapped for the first time : so that we can dump
    * those tables as a whole.
-   * @return
+   * 3. If replication policy is changed/replaced, then need to examine all the tables to see if
+   * any of them need to be bootstrapped as old policy doesn't include it but new one does.
+   * @return true if need to examine tables for dump and false if not.
+   */
+  private boolean shouldExamineTablesToDump() {
+    return (work.oldReplScope != null)
+            || conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES)
+            || conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES);
+  }
+
+  /**
+   * Decide whether to dump external tables data. If external tables are enabled for replication,
+   * then need to dump it's data in all the incremental dumps.
+   * @return true if need to dump external table data and false if not.
    */
   private boolean shouldDumpExternalTableLocation() {
     return conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)
-            && (!conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY)
-            || conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES));
+            && !conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY);
   }
 
-  private boolean shouldExamineTablesToDump() {
-    return (work.oldReplScope != null)
-            || shouldDumpExternalTableLocation()
-            || conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES);
+  /**
+   * Decide whether to dump external tables.
+   * @param tableName - Name of external table to be replicated
+   * @return true if need to bootstrap dump external table and false if not.
+   */
+  private boolean shouldBootstrapDumpExternalTable(String tableName) {
+    // Note: If repl policy is replaced, then need to dump external tables if table is getting replicated
+    // for the first time in current dump. So, need to check if table is included in old policy.
+    return conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)
+            && (conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES)
+            || !ReplUtils.tableIncludedInReplScope(work.oldReplScope, tableName));
+  }
+
+  /**
+   * Decide whether to dump ACID tables.
+   * @param tableName - Name of ACID table to be replicated
+   * @return true if need to bootstrap dump ACID table and false if not.
+   */
+  private boolean shouldBootstrapDumpAcidTable(String tableName) {
+    // Note: If repl policy is replaced, then need to dump ACID tables if table is getting replicated
+    // for the first time in current dump. So, need to check if table is included in old policy.
+    return ReplUtils.includeAcidTableInDump(conf)
+            && (conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES)
+            || !ReplUtils.tableIncludedInReplScope(work.oldReplScope, tableName));
   }
 
   private boolean shouldBootstrapDumpTable(Table table) {
-    if (conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES)
-            && TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
+    // Note: If control reaches here, it means, table is already included in new replication policy.
+    if (TableType.EXTERNAL_TABLE.equals(table.getTableType())
+            && shouldBootstrapDumpExternalTable(table.getTableName())) {
       return true;
     }
 
-    if (conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES)
-            && AcidUtils.isTransactionalTable(table)) {
+    if (AcidUtils.isTransactionalTable(table)
+            && shouldBootstrapDumpAcidTable(table.getTableName())) {
       return true;
     }
 
-    // If replication policy is replaced with new included/excluded tables list, then tables which
+    // If replication policy is changed with new included/excluded tables list, then tables which
     // are not included in old policy but included in new policy should be bootstrapped along with
     // the current incremental replication dump.
-    // Note: If control reaches here, it means, table is included in new replication policy.
+    // Control reaches for Non-ACID tables.
     return !ReplUtils.tableIncludedInReplScope(work.oldReplScope, table.getTableName());
   }
 
@@ -263,10 +296,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             Table table = hiveDb.getTable(dbName, tableName);
 
             // Dump external table locations if required.
-            // Note: If repl policy is replaced, then need to dump external tables if table is getting replicated
-            // for the first time in current dump. So, need to check if table is included in old policy.
-            if ((shouldDumpExternalTableLocation() || !ReplUtils.tableIncludedInReplScope(work.oldReplScope, tableName))
-                    && TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
+            if (TableType.EXTERNAL_TABLE.equals(table.getTableType())
+                  && shouldDumpExternalTableLocation()) {
               writer.dataLocationDump(table);
             }
 
@@ -291,7 +322,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private boolean needBootstrapAcidTablesDuringIncrementalDump() {
     // If old replication policy is available, then it is possible some of the ACID tables might be
     // included for bootstrap during incremental dump.
-    return (work.oldReplScope != null) || conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES);
+    return (ReplUtils.includeAcidTableInDump(conf)
+            && ((work.oldReplScope != null) || conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES)));
   }
 
   private Path getBootstrapDbRoot(Path dumpRoot, String dbName, boolean isIncrementalPhase) {

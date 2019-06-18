@@ -491,7 +491,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
 
       // If replication policy is changed between previous and current repl load, then drop the tables
       // that are excluded in the new replication policy.
-      dropTablesExcludedInReplScope(work.changedReplScope);
+      dropTablesExcludedInReplScope(work.currentReplScope);
 
       IncrementalLoadTasksBuilder builder = work.incrementalLoadTasksBuilder();
 

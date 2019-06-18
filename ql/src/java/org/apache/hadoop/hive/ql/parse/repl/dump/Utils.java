@@ -196,22 +196,15 @@ public class Utils {
         return false;
       }
 
-      // If replication policy is replaced with new included/excluded tables list, then events
-      // corresponding to tables which are not included in old policy but included in new policy
-      // should be skipped. Those tables would be bootstrapped along with the current incremental
-      // replication dump.
-      // Note: If any event dump reaches here, it means, table is included in new replication policy.
-      if (isEventDump && !ReplUtils.tableIncludedInReplScope(oldReplScope, tableHandle.getTableName())) {
-        return false;
-      }
-
       if (MetaStoreUtils.isExternalTable(tableHandle.getTTable())) {
         boolean shouldReplicateExternalTables = hiveConf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)
                 || replicationSpec.isMetadataOnly();
         if (isEventDump) {
           // Skip dumping of events related to external tables if bootstrap is enabled on it.
+          // Also, skip if current table is included only in new policy but not in old policy.
           shouldReplicateExternalTables = shouldReplicateExternalTables
-                  && !hiveConf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES);
+                  && !hiveConf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES)
+                  && ReplUtils.tableIncludedInReplScope(oldReplScope, tableHandle.getTableName());
         }
         return shouldReplicateExternalTables;
       }
@@ -221,10 +214,21 @@ public class Utils {
           return false;
         }
 
-        // Skip dumping events related to ACID tables if bootstrap is enabled on it
+        // Skip dumping events related to ACID tables if bootstrap is enabled on it.
+        // Also, skip if current table is included only in new policy but not in old policy.
         if (isEventDump) {
-          return !hiveConf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES);
+          return !hiveConf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES)
+                  && ReplUtils.tableIncludedInReplScope(oldReplScope, tableHandle.getTableName());
         }
+      }
+
+      // If replication policy is replaced with new included/excluded tables list, then events
+      // corresponding to tables which are not included in old policy but included in new policy
+      // should be skipped. Those tables would be bootstrapped along with the current incremental
+      // replication dump.
+      // Note: If any event dump reaches here, it means, table is included in new replication policy.
+      if (isEventDump && !ReplUtils.tableIncludedInReplScope(oldReplScope, tableHandle.getTableName())) {
+        return false;
       }
     }
     return true;

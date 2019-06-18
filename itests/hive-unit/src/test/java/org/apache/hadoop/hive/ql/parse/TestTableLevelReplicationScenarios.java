@@ -478,8 +478,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
   @Test
   public void testReplacePolicyOnBootstrapAcidTablesIncrementalPhase() throws Throwable {
-    String[] originalNonAcidTables = new String[] {"a1", "b2" };
-    String[] originalFullAcidTables = new String[] {"a2", "b1" };
+    String[] originalNonAcidTables = new String[] {"a1", "b1", "c1" };
+    String[] originalFullAcidTables = new String[] {"a2", "b2" };
     String[] originalMMAcidTables = new String[] {"a3", "a4" };
     createTables(originalNonAcidTables, CreateTableType.NON_ACID);
     createTables(originalFullAcidTables, CreateTableType.FULL_ACID);
@@ -488,28 +488,54 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     // Replicate and verify if only non-acid tables are replicated to target.
     List<String> dumpWithoutAcidClause = Collections.singletonList(
             "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='false'");
-    String replPolicy = primaryDbName + ".['a[0-9]+', 'b[0-9]+'].['a4']";
-    String[] bootstrapReplicatedTables = new String[] {"a1", "b2" };
+    String replPolicy = primaryDbName + ".['a[0-9]+', 'b[0-9]+'].['b1']";
+    String[] bootstrapReplicatedTables = new String[] {"a1" };
     String lastReplId = replicateAndVerify(replPolicy, null,
             dumpWithoutAcidClause, null, bootstrapReplicatedTables);
 
-    // Enable acid tables for replication. Also, replace, replication policy to exclude "a3"
-    // instead of "a4" and also "b2".
+    // Enable acid tables for replication. Also, replace, replication policy to exclude "b1" and "a3"
+    // instead of "a1" alone.
     String oldReplPolicy = replPolicy;
-    replPolicy = primaryDbName + ".['a[0-9]+', 'b[0-9]+'].['a3', 'b2']";
+    replPolicy = primaryDbName + ".['[a-z]+[0-9]+'].['a3', 'b1']";
     List<String> dumpWithAcidBootstrapClause = Arrays.asList(
             "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='true'",
             "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES + "'='true'");
-    String[] incrementalReplicatedTables = new String[] {"a1", "a2", "a4", "b1" };
-    String[] bootstrappedTables = new String[] {"a2", "a4", "b1" };
+    String[] incrementalReplicatedTables = new String[] {"a1", "a2", "a4", "b2", "c1" };
+    String[] bootstrappedTables = new String[] {"a2", "a4", "b2", "c1" };
     replicateAndVerify(replPolicy, oldReplPolicy, lastReplId,
             dumpWithAcidBootstrapClause, null, bootstrappedTables, incrementalReplicatedTables);
   }
 
   @Test
+  public void testReplacePolicyWhenAcidTablesDisabledForRepl() throws Throwable {
+    String[] originalNonAcidTables = new String[] {"a1", "b1", "c1" };
+    String[] originalFullAcidTables = new String[] {"a2" };
+    createTables(originalNonAcidTables, CreateTableType.NON_ACID);
+    createTables(originalFullAcidTables, CreateTableType.FULL_ACID);
+
+    // Replicate and verify if only non-acid tables are replicated to target.
+    List<String> dumpWithoutAcidClause = Collections.singletonList(
+            "'" + ReplUtils.REPL_DUMP_INCLUDE_ACID_TABLES + "'='false'");
+    String replPolicy = primaryDbName + ".['a[0-9]+', 'b[0-9]+'].['b1']";
+    String[] bootstrapReplicatedTables = new String[] {"a1" };
+    String lastReplId = replicateAndVerify(replPolicy, null,
+            dumpWithoutAcidClause, null, bootstrapReplicatedTables);
+
+    // Continue to disable ACID tables for replication. Also, replace, replication policy to include
+    // "a2" but exclude "a1" and "b1". Still ACID tables shouldn't be bootstrapped. Only non-ACID
+    // table "b1" should be bootstrapped.
+    String oldReplPolicy = replPolicy;
+    replPolicy = primaryDbName + ".['a[0-9]+', 'b[0-9]+'].['a2']";
+    String[] incrementalReplicatedTables = new String[] {"a1", "b1" };
+    String[] bootstrappedTables = new String[] {"b1" };
+    lastReplId = replicateAndVerify(replPolicy, oldReplPolicy, lastReplId,
+            dumpWithoutAcidClause, null, bootstrappedTables, incrementalReplicatedTables);
+  }
+
+  @Test
   public void testReplacePolicyOnBootstrapExternalTablesIncrementalPhase() throws Throwable {
-    String[] originalAcidTables = new String[] {"a1", "b2" };
-    String[] originalExternalTables = new String[] {"a2", "b1", "c3" };
+    String[] originalAcidTables = new String[] {"a1", "b1" };
+    String[] originalExternalTables = new String[] {"a2", "b2", "c2" };
     createTables(originalAcidTables, CreateTableType.FULL_ACID);
     createTables(originalExternalTables, CreateTableType.EXTERNAL);
 
@@ -518,17 +544,26 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     List<String> dumpWithClause = Collections.singletonList(
             "'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'"
     );
-    String replPolicy = primaryDbName + ".['a[0-9]+', 'b2'].['a1']";
-    String[] bootstrapReplicatedTables = new String[] {"b2" };
+    String replPolicy = primaryDbName + ".['a[0-9]+', 'b1'].['a1']";
+    String[] bootstrapReplicatedTables = new String[] {"b1" };
     String lastReplId = replicateAndVerify(replPolicy, null,
             dumpWithClause, loadWithClause, bootstrapReplicatedTables);
 
+    // Continue to disable external tables for replication. Also, replace, replication policy to exclude
+    // "b1" and include "a1".
+    String oldReplPolicy = replPolicy;
+    replPolicy = primaryDbName + ".['a[0-9]+', 'b[0-9]+'].['a2', 'b1']";
+    String[] incrementalReplicatedTables = new String[] {"a1" };
+    String[] bootstrappedTables = new String[] {"a1" };
+    lastReplId = replicateAndVerify(replPolicy, oldReplPolicy, lastReplId,
+            dumpWithClause, loadWithClause, bootstrappedTables, incrementalReplicatedTables);
+
     // Enable external tables replication and bootstrap in incremental phase. Also, replace,
     // replication policy to exclude tables with prefix "b".
-    String oldReplPolicy = replPolicy;
+    oldReplPolicy = replPolicy;
     replPolicy = primaryDbName + ".['[a-z]+[0-9]+'].['b[0-9]+']";
-    String[] incrementalReplicatedTables = new String[] {"a1", "a2", "c3" };
-    String[] bootstrappedTables = new String[] {"a1", "a2", "c3" };
+    incrementalReplicatedTables = new String[] {"a1", "a2", "c2" };
+    bootstrappedTables = new String[] {"a2", "c2" };
     dumpWithClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
             "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'");
     WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
@@ -538,8 +573,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     Assert.assertTrue(primary.miniDFSCluster.getFileSystem()
             .exists(new Path(tuple.dumpLocation, FILE_NAME)));
 
-    // Verify that the external table info contains table "a2" and "c3".
-    ReplicationTestUtils.assertExternalFileInfo(primary, Arrays.asList("a2", "c3"),
+    // Verify that the external table info contains table "a2" and "c2".
+    ReplicationTestUtils.assertExternalFileInfo(primary, Arrays.asList("a2", "c2"),
             new Path(tuple.dumpLocation, FILE_NAME));
 
     // Verify if the expected tables are bootstrapped.

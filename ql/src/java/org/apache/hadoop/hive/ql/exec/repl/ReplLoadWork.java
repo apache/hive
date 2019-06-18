@@ -43,7 +43,7 @@ import static org.apache.hadoop.hive.ql.exec.repl.ExternalTableCopyTaskBuilder.D
     Explain.Level.EXTENDED })
 public class ReplLoadWork implements Serializable {
   final String dbNameToLoadIn;
-  final ReplScope changedReplScope;
+  final ReplScope currentReplScope;
   final String dumpDirectory;
   final String bootstrapDumpToCleanTables;
   boolean needCleanTablesFromBootstrap;
@@ -64,17 +64,17 @@ public class ReplLoadWork implements Serializable {
   final LineageState sessionStateLineageState;
 
   public ReplLoadWork(HiveConf hiveConf, String dumpDirectory,
-                      String dbNameToLoadIn, ReplScope changedReplScope,
+                      String dbNameToLoadIn, ReplScope currentReplScope,
                       LineageState lineageState, boolean isIncrementalDump, Long eventTo,
                       List<DirCopyWork> pathsToCopyIterator) throws IOException {
     sessionStateLineageState = lineageState;
     this.dumpDirectory = dumpDirectory;
     this.dbNameToLoadIn = dbNameToLoadIn;
-    this.changedReplScope = changedReplScope;
+    this.currentReplScope = currentReplScope;
 
     // If DB name is changed during REPL LOAD, then set it instead of referring to source DB name.
-    if ((changedReplScope != null) && StringUtils.isNotBlank(dbNameToLoadIn)) {
-      changedReplScope.setDbName(dbNameToLoadIn);
+    if ((currentReplScope != null) && StringUtils.isNotBlank(dbNameToLoadIn)) {
+      currentReplScope.setDbName(dbNameToLoadIn);
     }
     this.bootstrapDumpToCleanTables = hiveConf.get(ReplUtils.REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG);
     this.needCleanTablesFromBootstrap = StringUtils.isNotBlank(this.bootstrapDumpToCleanTables);
