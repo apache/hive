@@ -7,13 +7,13 @@ import org.apache.hadoop.hive.conf.HiveConf;
 public class ScheduledQueryExecutionContext {
 
   public final ExecutorService executor;
-  public final IScheduledQueryService schedulerService;
+  public final IScheduledQueryMaintenanceService schedulerService;
   public final HiveConf conf;
 
   public ScheduledQueryExecutionContext(
       ExecutorService executor,
       HiveConf conf,
-      IScheduledQueryService service) {
+      IScheduledQueryMaintenanceService service) {
     this.executor = executor;
     this.conf = conf;
     this.schedulerService = service;

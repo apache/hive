@@ -95,7 +95,7 @@ public class TestScheduledQueryService {
     return res.size();
   }
 
-  public static class MockScheduledQueryService implements IScheduledQueryService {
+  public static class MockScheduledQueryService implements IScheduledQueryMaintenanceService {
     int id = 0;
     private String stmt;
 
@@ -121,6 +121,11 @@ public class TestScheduledQueryService {
     public void scheduledQueryProgress(ScheduledQueryProgressInfo info) {
       System.out.printf("%ld, state: %s, error: %s", info.getScheduledExecutionId(), info.getState(),
           info.getErrorMessage());
+    }
+
+    @Override
+    public String getClusterNamespace() {
+      return "default";
     }
   }
 

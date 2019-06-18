@@ -6,21 +6,14 @@ import org.apache.hadoop.hive.metastore.api.ScheduledQueryProgressInfo;
 /**
  * Interface to cover Scheduled Query source service
  *
- * Main reason to have this layer in place is to make testing easier.
- * 
- * @deprecated rething methods
+ * Note that the main reason to have this layer is to make testing easier.
  */
-//FIXME rethink
-@Deprecated
-public interface IScheduledQueryService {
+public interface IScheduledQueryMaintenanceService {
 
   ScheduledQueryPollResponse scheduledQueryPoll();
 
   void scheduledQueryProgress(ScheduledQueryProgressInfo info);
 
-  default String getClusterNamespace() {
-    //FIXME default
-    return "default";
-  }
+  String getClusterNamespace();
 
 }
