@@ -4657,18 +4657,6 @@ public class HiveConf extends Configuration {
     HIVE_QUERY_REEXECUTION_STATS_CACHE_SIZE("hive.query.reexecution.stats.cache.size", 100_000,
         "Size of the runtime statistics cache. Unit is: OperatorStat entry; a query plan consist ~100."),
 
-    //    HIVE_METASTORE_SCHEDULED_QUERIES_CRON_SYNTAX("hive.metastore.scheduled.queries.cron.syntax",
-    //      "UNIX", new StringSet("UNIX", "QUARTZ", "CRON4J", "SPRING"),
-    //    "Defines the format of the schedule expressions to be used in scheduled queries."),
-    //    // FIXME: implement
-    //    HIVE_METASTORE_SCHEDULED_QUERIES_PROGRESS_TIMEOUT("scheduled.queries.progress.timeout",
-    //        "hive.metastore.scheduled.queries.progress.timeout", 120, TimeUnit.SECONDS,
-    //        "If a scheduled query is not making progress for this amount of time it will be considered TIMED_OUT"),
-    //    // FIXME: implement
-    //    HIVE_METASTORE_SCHEDULED_QUERIES_EXECUTION_MAX_AGE("scheduled.queries.execution.max.age",
-    //        "hive.metastore.scheduled.queries.execution.max.age", 3 * 86400, TimeUnit.SECONDS,
-    //        "FIXME"),
-
     HIVE_QUERY_RESULTS_CACHE_ENABLED("hive.query.results.cache.enabled", true,
         "If the query results cache is enabled. This will keep results of previously executed queries " +
         "to be reused if the same query is executed again."),

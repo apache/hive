@@ -1,76 +1,8 @@
 -- HIVE system db
 
--- FIXME: p#1 apdiff -- `apdiff --name-only |grep -v thrift/gen|grep -v '^standalone'|grep -v hive-schema-4.0.0.hive.sql`  > ../cdpd/b
--- FIXME: p#2 apdiff -- `apdiff --name-only |grep -v thrift/gen|grep common|grep ^standalone` | sed 's+standalone-metastore/metastore-server/+standalone-metastore/+;s+standalone-metastore/metastore-common/+standalone-metastore/+' > ../cdpd/b
--- FIXME: p#3 apdiff -- `apdiff --name-only |grep -v thrift/gen|grep -v hive-schema-4.0.0|grep server/|grep ^standalone` | sed 's+standalone-metastore/metastore-server/+standalone-metastore/+;s+standalone-metastore/metastore-common/+standalone-metastore/+' > ../cdpd/b
-
 CREATE DATABASE IF NOT EXISTS SYS;
 
 USE SYS;
-
--- FIXME move to the nend:
-DROP EXTERNAL TABLE  IF EXISTS SCHEDULED_QUERIES;
-CREATE EXTERNAL TABLE IF NOT EXISTS `SCHEDULED_QUERIES` (
-  `SCHEDULED_QUERY_ID` bigint,
-  `SCHEDULE_NAME` string,
-  `ENABLED` boolean,
-  `CLUSTER_NAMESPACE` string,
-  `SCHEDULE` string,
-  `USER` string,
-  `QUERY` string,
-  `NEXT_EXECUTION` bigint,
-  CONSTRAINT `SYS_PK_SCHEDULED_QUERIES` PRIMARY KEY (`SCHEDULED_QUERY_ID`) DISABLE
-)
-STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
-TBLPROPERTIES (
-"hive.sql.database.type" = "METASTORE",
-"hive.sql.query" =
-'SELECT
-  SCHEDULED_QUERY_ID,
-  SCHEDULE_NAME,
-  ENABLED,
-  CLUSTER_NAMESPACE,
-  SCHEDULE,
-  USER,
-  QUERY,
-  NEXT_EXECUTION
-FROM
-  SCHEDULED_QUERIES'
-);
-select * from SCHEDULED_QUERIES where `ENABLED`=true;
-
--- FIXME remove this drop:
-drop table if exists SCHEDULED_EXECUTIONS;
-CREATE EXTERNAL TABLE IF NOT EXISTS `SCHEDULED_EXECUTIONS` (
-  `SCHEDULED_EXECUTION_ID` bigint,
-  `SCHEDULED_QUERY_ID` bigint,
-  `EXECUTOR_QUERY_ID` string,
-  `STATE` string,
-  `START_TIME` int,
-  `END_TIME` int,
-  `ERROR_MESSAGE` string,
-  `LAST_UPDATE_TIME` int,
-  CONSTRAINT `SYS_PK_SCHEDULED_EXECUTIONS` PRIMARY KEY (`SCHEDULED_EXECUTION_ID`) DISABLE
-)
-STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
-TBLPROPERTIES (
-"hive.sql.database.type" = "METASTORE",
-"hive.sql.query" =
-'SELECT
-  SCHEDULED_EXECUTION_ID,
-  SCHEDULED_QUERY_ID,
-  EXECUTOR_QUERY_ID,
-  STATE,
-  START_TIME,
-  END_TIME,
-  ERROR_MESSAGE,
-  LAST_UPDATE_TIME
-FROM
-  SCHEDULED_EXECUTIONS'
-);
-
--- FIXME remove this:
-select * from SCHEDULED_EXECUTIONS;
 
 CREATE EXTERNAL TABLE IF NOT EXISTS `BUCKETING_COLS` (
   `SD_ID` bigint,
@@ -1263,12 +1195,70 @@ SELECT
 FROM COMPACTION_QUEUE;
 
 
+CREATE EXTERNAL TABLE IF NOT EXISTS `SCHEDULED_QUERIES` (
+  `SCHEDULED_QUERY_ID` bigint,
+  `SCHEDULE_NAME` string,
+  `ENABLED` boolean,
+  `CLUSTER_NAMESPACE` string,
+  `SCHEDULE` string,
+  `USER` string,
+  `QUERY` string,
+  `NEXT_EXECUTION` bigint,
+  CONSTRAINT `SYS_PK_SCHEDULED_QUERIES` PRIMARY KEY (`SCHEDULED_QUERY_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+'SELECT
+  SCHEDULED_QUERY_ID,
+  SCHEDULE_NAME,
+  ENABLED,
+  CLUSTER_NAMESPACE,
+  SCHEDULE,
+  USER,
+  QUERY,
+  NEXT_EXECUTION
+FROM
+  SCHEDULED_QUERIES'
+);
+
+CREATE EXTERNAL TABLE IF NOT EXISTS `SCHEDULED_EXECUTIONS` (
+  `SCHEDULED_EXECUTION_ID` bigint,
+  `SCHEDULED_QUERY_ID` bigint,
+  `EXECUTOR_QUERY_ID` string,
+  `STATE` string,
+  `START_TIME` int,
+  `END_TIME` int,
+  `ERROR_MESSAGE` string,
+  `LAST_UPDATE_TIME` int,
+  CONSTRAINT `SYS_PK_SCHEDULED_EXECUTIONS` PRIMARY KEY (`SCHEDULED_EXECUTION_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+'SELECT
+  SCHEDULED_EXECUTION_ID,
+  SCHEDULED_QUERY_ID,
+  EXECUTOR_QUERY_ID,
+  STATE,
+  START_TIME,
+  END_TIME,
+  ERROR_MESSAGE,
+  LAST_UPDATE_TIME
+FROM
+  SCHEDULED_EXECUTIONS'
+);
+
+
 -- FIXME missing create table stmts for specific databases!!!
 
 
 CREATE DATABASE IF NOT EXISTS INFORMATION_SCHEMA;
 
 USE INFORMATION_SCHEMA;
+
 
 CREATE OR REPLACE VIEW `SCHEMATA`
 (
@@ -1642,22 +1632,25 @@ FROM
 -- FIXME rem
 select * from SCHEDULED_QUERIES where `enabled`=true;
 
-
-
 -- FIXME rem
 drop view SCHEDULED_EXECUTIONS ;
 create or replace view SCHEDULED_EXECUTIONS as
 SELECT
   SCHEDULED_EXECUTION_ID,
-  SCHEDULED_QUERY_ID,
+  SCHEDULE_NAME,
   EXECUTOR_QUERY_ID,
   `STATE`,
-  START_TIME,
-  END_TIME,
+  FROM_UNIXTIME(START_TIME) as START_TIME,
+  FROM_UNIXTIME(END_TIME) as END_TIME,
+  END_TIME-START_TIME as ELAPSED,
   ERROR_MESSAGE,
   LAST_UPDATE_TIME
 FROM
-  SYS.SCHEDULED_EXECUTIONS;
+  SYS.SCHEDULED_EXECUTIONS SE
+JOIN
+  SYS.SCHEDULED_QUERIES SQ
+WHERE
+  SE.SCHEDULED_QUERY_ID=SQ.SCHEDULED_QUERY_ID;
 
 -- FIXME rem
 select * from SCHEDULED_EXECUTIONS order by SCHEDULED_EXECUTION_ID desc limit 10;
