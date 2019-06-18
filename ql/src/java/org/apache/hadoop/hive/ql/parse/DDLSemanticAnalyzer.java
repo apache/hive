@@ -85,6 +85,9 @@ import org.apache.hadoop.hive.ql.ddl.database.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.function.DescFunctionDesc;
 import org.apache.hadoop.hive.ql.ddl.function.ShowFunctionsDesc;
+import org.apache.hadoop.hive.ql.ddl.misc.CacheMetadataDesc;
+import org.apache.hadoop.hive.ql.ddl.misc.MsckDesc;
+import org.apache.hadoop.hive.ql.ddl.misc.ShowConfDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.ShowGrantDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.ShowPrincipalsDesc;
@@ -187,9 +190,7 @@ import org.apache.hadoop.hive.ql.parse.authorization.HiveAuthorizationTaskFactor
 import org.apache.hadoop.hive.ql.parse.authorization.HiveAuthorizationTaskFactoryImpl;
 import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
-import org.apache.hadoop.hive.ql.plan.CacheMetadataDesc;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -198,9 +199,7 @@ import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
-import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.ShowConfDesc;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.ValidationUtility;
@@ -660,7 +659,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       desc = new CacheMetadataDesc(tbl.getDbName(), tbl.getTableName(), tbl.isPartitioned());
       inputs.add(new ReadEntity(tbl));
     }
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), desc)));
   }
 
   private void analyzeAlterTableUpdateStats(ASTNode ast, String tblName, Map<String, String> partSpec)
@@ -795,7 +794,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void analyzeShowRoles(ASTNode ast) throws SemanticException {
     @SuppressWarnings("unchecked")
-    Task<DDLWork> roleDDLTask = (Task<DDLWork>) hiveAuthorizationTaskFactory
+    Task<DDLWork2> roleDDLTask = (Task<DDLWork2>) hiveAuthorizationTaskFactory
         .createShowRolesTask(ast, ctx.getResFile(), getInputs(), getOutputs());
 
     if (roleDDLTask != null) {
@@ -2866,9 +2865,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeShowConf(ASTNode ast) throws SemanticException {
     String confName = stripQuotes(ast.getChild(0).getText());
     ShowConfDesc showConfDesc = new ShowConfDesc(ctx.getResFile(), confName);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showConfDesc)));
-    setFetchTask(createFetchTask(showConfDesc.getSchema()));
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), showConfDesc)));
+    setFetchTask(createFetchTask(ShowConfDesc.SCHEMA));
   }
 
   private void analyzeShowViews(ASTNode ast) throws SemanticException {
@@ -3796,10 +3794,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     } else {
       outputs.add(new WriteEntity(tab, WriteEntity.WriteType.DDL_SHARED));
     }
-    MsckDesc checkDesc = new MsckDesc(tableName, specs, ctx.getResFile(),
-        repair, addPartitions, dropPartitions);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        checkDesc)));
+    MsckDesc checkDesc = new MsckDesc(tableName, specs, ctx.getResFile(), repair, addPartitions, dropPartitions);
+    rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), checkDesc)));
   }
 
   /**

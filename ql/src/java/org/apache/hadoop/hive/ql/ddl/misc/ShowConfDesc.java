@@ -15,27 +15,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.misc;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 import java.io.Serializable;
 
-public class ShowConfDesc extends DDLDesc implements Serializable {
+/**
+ * DDL task description for SHOW CONF commands.
+ */
+@Explain(displayName = "Show Configuration", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class ShowConfDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
+
+  static {
+    DDLTask2.registerOperation(ShowConfDesc.class, ShowConfOperation.class);
+  }
+
+  public static final String SCHEMA = "default,type,desc#string,string,string";
 
   private Path resFile;
   private String confName;
-
-  private static final String schema = "default,type,desc#string,string,string";
-
-  public String getSchema() {
-    return schema;
-  }
-
-  public ShowConfDesc() {
-  }
 
   public ShowConfDesc(Path resFile, String confName) {
     this.resFile = resFile;
@@ -47,16 +51,8 @@ public class ShowConfDesc extends DDLDesc implements Serializable {
     return resFile;
   }
 
-  public void setResFile(Path resFile) {
-    this.resFile = resFile;
-  }
-
-  @Explain(displayName = "conf name", explainLevels = { Level.EXTENDED })
+  @Explain(displayName = "conf name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getConfName() {
     return confName;
-  }
-
-  public void setConfName(String confName) {
-    this.confName = confName;
   }
 }

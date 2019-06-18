@@ -30,8 +30,7 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.ddl.DDLTask2;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.exec.DDLTask;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
@@ -370,7 +369,7 @@ public class CreateViewDesc implements DDLDesc, Serializable {
       } else {
         // let's validate that the serde exists
         serDeClassName = getSerde();
-        DDLTask.validateSerDe(serDeClassName, conf);
+        DDLUtils.validateSerDe(serDeClassName, conf);
       }
       tbl.setSerializationLib(serDeClassName);
 

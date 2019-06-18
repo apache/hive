@@ -10,6 +10,7 @@ insert overwrite table many_files partition (ds='2') select * from src;
 
 dfs -ls -R ${hiveconf:hive.metastore.warehouse.dir}/many_files/;
 
+explain analyze table many_files cache metadata;
 analyze table many_files cache metadata;
 
 set hive.fetch.task.conversion=none;
