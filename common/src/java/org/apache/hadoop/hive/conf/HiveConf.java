@@ -4660,6 +4660,12 @@ public class HiveConf extends Configuration {
     HIVE_SCHEDULED_QUERIES_NAMESPACE("hive.scheduled.queries.namespace", "hive",
         "Sets the scheduled query namespace to be used. New scheduled queries are created in this namespace;"
             + "and execution is also bound to the namespace"),
+    HIVE_SCHEDULED_QUERIES_EXECUTOR_IDLE_SLEEP_TIME("hive.scheduled.queries.namespace", "10s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Time to sleep between quering for the presence of a scheduled query."),
+    HIVE_SCHEDULED_QUERIES_EXECUTOR_PROGRESS_REPORT_INTERVAL("hive.scheduled.queries.namespace", "60s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "While scheduled queries are in flight; a background update happens periodically to report the actual state of the query"),
 
     HIVE_QUERY_RESULTS_CACHE_ENABLED("hive.query.results.cache.enabled", true,
         "If the query results cache is enabled. This will keep results of previously executed queries " +

@@ -76,6 +76,7 @@ public class ScheduledQueryExecutionService {
         // FIXME: missing impersonation?
         IDriver driver = DriverFactory.newDriver(context.conf);
         info.setExecutorQueryId(driver.getQueryState().getQueryId());
+        reportQueryProgress();
         CommandProcessorResponse resp;
         resp = driver.run(q.getQuery());
         if (resp.getResponseCode() != 0) {

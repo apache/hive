@@ -1,8 +1,10 @@
 package org.apache.hadoop.hive.ql.schq;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
 public class ScheduledQueryExecutionContext {
 
@@ -19,14 +21,16 @@ public class ScheduledQueryExecutionContext {
     this.schedulerService = service;
   }
 
+  /**
+   * @return time in milliseconds
+   */
   public long getIdleSleepTime() {
-    // FIXME make this configurable?
-    return 1000;
+    return conf.getTimeVar(ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_IDLE_SLEEP_TIME, TimeUnit.MILLISECONDS);
   }
 
+  // Interval
   public long getProgressReporterSleepTime() {
-    // FIXME make this configurable?
-    return 1000;
+    return conf.getTimeVar(ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_PROGRESS_REPORT_INTERVAL, TimeUnit.MILLISECONDS);
   }
 
 }
