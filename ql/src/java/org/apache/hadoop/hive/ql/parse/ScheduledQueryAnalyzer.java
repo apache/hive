@@ -134,21 +134,18 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
   private ScheduledQuery interpretAstNode(ASTNode ast) throws SemanticException {
     // child0 is the schedule name
     String scheduleName = ast.getChild(0).getText();
-    // FIXME: make this a hiveconf key
-    String clusterNamespace = "default";
+    String clusterNamespace = conf.getVar(ConfVars.HIVE_SCHEDULED_QUERIES_NAMESPACE);
     ScheduledQueryKey key = new ScheduledQueryKey(scheduleName, clusterNamespace);
     ScheduledQuery ret = new ScheduledQuery(key);
 
     // child 1..n are arguments/options/etc
     for (int i = 1; i < ast.getChildCount(); i++) {
-      //      processors.get(ast.getType())
-      processSS(ret, (ASTNode) ast.getChild(i));
+      processScheduledQueryAstNode(ret, (ASTNode) ast.getChild(i));
     }
     return ret;
   }
 
-  //FIXME remove
-  private void processSS(ScheduledQuery schq, ASTNode node) throws SemanticException {
+  private void processScheduledQueryAstNode(ScheduledQuery schq, ASTNode node) throws SemanticException {
     switch (node.getType()) {
     case HiveParser.TOK_ENABLE:
       schq.setEnabled(true);
@@ -171,117 +168,15 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private String unparseQuery(Tree child) throws SemanticException {
-    Tree viewSelect = child;
-    //    String originalText =
-    //        ctx.getTokenRewriteStream().toString(viewSelect.getTokenStartIndex(), viewSelect.getTokenStopIndex());
-    //    String origText = originalText;
-
     ASTNode input = (ASTNode) child;
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, input);
     sem.analyze(input, ctx);
     sem.validate();
 
-    // Now expand the view definition with extras such as explicit column
-    // references; this expanded form is what we'll re-parse when the view is
-    // referenced later.
     unparseTranslator.applyTranslations(ctx.getTokenRewriteStream());
     String expandedText = ctx.getTokenRewriteStream().toString(input.getTokenStartIndex(), input.getTokenStopIndex());
 
     return expandedText;
   }
 
-  //FIXME: del
-  @SuppressWarnings("unchecked")
-  private void analyzeCreateMacro(ASTNode ast) throws SemanticException {
-    String functionName = ast.getChild(0).getText();
-
-    // Temp macros are not allowed to have qualified names.
-    if (FunctionUtils.isQualifiedFunctionName(functionName)) {
-      throw new SemanticException("Temporary macro cannot be created with a qualified name.");
-    }
-
-    List<FieldSchema> arguments = BaseSemanticAnalyzer.getColumns((ASTNode) ast.getChild(1), true, conf);
-    boolean isNoArgumentMacro = arguments.size() == 0;
-    RowResolver rowResolver = new RowResolver();
-    ArrayList<String> macroColNames = new ArrayList<String>(arguments.size());
-    ArrayList<TypeInfo> macroColTypes = new ArrayList<TypeInfo>(arguments.size());
-    final Set<String> actualColumnNames = new HashSet<String>();
-
-    if (!isNoArgumentMacro) {
-      /*
-       * Walk down expression to see which arguments are actually used.
-       */
-      Node expression = (Node) ast.getChild(2);
-      PreOrderWalker walker = new PreOrderWalker(new Dispatcher() {
-        @Override
-        public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs) throws SemanticException {
-          if (nd instanceof ASTNode) {
-            ASTNode node = (ASTNode) nd;
-            if (node.getType() == HiveParser.TOK_TABLE_OR_COL) {
-              actualColumnNames.add(node.getChild(0).getText());
-            }
-          }
-          return null;
-        }
-      });
-      walker.startWalking(Collections.singletonList(expression), null);
-    }
-    for (FieldSchema argument : arguments) {
-      TypeInfo colType = TypeInfoUtils.getTypeInfoFromTypeString(argument.getType());
-      rowResolver.put("", argument.getName(), new ColumnInfo(argument.getName(), colType, "", false));
-      macroColNames.add(argument.getName());
-      macroColTypes.add(colType);
-    }
-    Set<String> expectedColumnNames = new LinkedHashSet<String>(macroColNames);
-    if (!expectedColumnNames.equals(actualColumnNames)) {
-      throw new SemanticException("Expected columns " + expectedColumnNames + " but found " + actualColumnNames);
-    }
-    if (expectedColumnNames.size() != macroColNames.size()) {
-      throw new SemanticException("At least one parameter name was used more than once " + macroColNames);
-    }
-    SemanticAnalyzer sa = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_ENABLED) ? new CalcitePlanner(queryState)
-      : new SemanticAnalyzer(queryState);
-    ;
-    ExprNodeDesc body;
-    if (isNoArgumentMacro) {
-      body = sa.genExprNodeDesc((ASTNode) ast.getChild(1), rowResolver);
-    } else {
-      body = sa.genExprNodeDesc((ASTNode) ast.getChild(2), rowResolver);
-    }
-    CreateMacroDesc desc = new CreateMacroDesc(functionName, macroColNames, macroColTypes, body);
-    rootTasks.add(TaskFactory.get(new FunctionWork(desc)));
-
-    addEntities();
-  }
-
-  //FIXME: del
-  @SuppressWarnings("unchecked")
-  private void analyzeDropMacro(ASTNode ast) throws SemanticException {
-    String functionName = ast.getChild(0).getText();
-    boolean ifExists = (ast.getFirstChildWithType(TOK_IFEXISTS) != null);
-    // we want to signal an error if the function doesn't exist and we're
-    // configured not to ignore this
-    boolean throwException = !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROPIGNORESNONEXISTENT);
-
-    // Temp macros are not allowed to have qualified names.
-    if (FunctionUtils.isQualifiedFunctionName(functionName)) {
-      throw new SemanticException("Temporary macro name cannot be a qualified name.");
-    }
-
-    if (throwException && FunctionRegistry.getFunctionInfo(functionName) == null) {
-      throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(functionName));
-    }
-
-    DropMacroDesc desc = new DropMacroDesc(functionName);
-    rootTasks.add(TaskFactory.get(new FunctionWork(desc)));
-
-    addEntities();
-  }
-
-  //FIXME: del?
-  private void addEntities() throws SemanticException {
-    Database database = getDatabase(Warehouse.DEFAULT_DATABASE_NAME);
-    // This restricts macro creation to privileged users.
-    outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
-  }
 }

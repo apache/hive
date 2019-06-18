@@ -4657,6 +4657,10 @@ public class HiveConf extends Configuration {
     HIVE_QUERY_REEXECUTION_STATS_CACHE_SIZE("hive.query.reexecution.stats.cache.size", 100_000,
         "Size of the runtime statistics cache. Unit is: OperatorStat entry; a query plan consist ~100."),
 
+    HIVE_SCHEDULED_QUERIES_NAMESPACE("hive.scheduled.queries.namespace", "hive",
+        "Sets the scheduled query namespace to be used. New scheduled queries are created in this namespace;"
+            + "and execution is also bound to the namespace"),
+
     HIVE_QUERY_RESULTS_CACHE_ENABLED("hive.query.results.cache.enabled", true,
         "If the query results cache is enabled. This will keep results of previously executed queries " +
         "to be reused if the same query is executed again."),
