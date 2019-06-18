@@ -1462,7 +1462,7 @@
         <column name="USER" jdbc-type="varchar" length="256" allows-null="true"/>
       </field>
       <field name="query">
-        <column name="QUERY" jdbc-type="varchar" length="256" allows-null="true"/>
+        <column name="QUERY" jdbc-type="varchar" length="4000" allows-null="true"/>
       </field>
       <field name="nextExecution">
         <column name="NEXT_EXECUTION" jdbc-type="integer" allows-null="true"/>
@@ -1484,7 +1484,7 @@
    </class>
     <class name="MScheduledExecution" identity-type="application" table="SCHEDULED_EXECUTIONS" detachable="true">
       <field name="scheduledExecutionId" primary-key="true" value-strategy="native">
-        <column name="SCHEDULED_EXECUTION_ID" jdbc-type="integer" />
+        <column name="SCHEDULED_EXECUTION_ID" jdbc-type="bigint" />
       </field>
       <field name="scheduledQuery" dependent="false" >
         <column name="SCHEDULED_QUERY_ID"/>
