@@ -663,7 +663,7 @@ public class MetastoreConf {
         "Defines the format of the schedule expressions to be used in scheduled queries."),
     SCHEDULED_QUERIES_PROGRESS_TIMEOUT("scheduled.queries.progress.timeout",
         "hive.metastore.scheduled.queries.progress.timeout", 120, TimeUnit.SECONDS,
-        "If a scheduled query is not making progress for this amount of time it will be considered TIMED_OUT"),
+        "FIXME; MISSING If a scheduled query is not making progress for this amount of time it will be considered TIMED_OUT"),
     SCHEDULED_QUERIES_EXECUTION_MAX_AGE("scheduled.queries.execution.max.age",
         "hive.metastore.scheduled.queries.execution.max.age", 3 * 86400, TimeUnit.SECONDS,
         "FIXME; MISSING"),
