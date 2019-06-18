@@ -42,6 +42,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheStats;
+import com.google.common.cache.RemovalCause;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 import com.google.common.cache.Weigher;
@@ -223,8 +224,18 @@ public class SharedCache {
           }).removalListener(new RemovalListener<String, TableWrapper>() {
             @Override
             public void onRemoval(RemovalNotification<String, TableWrapper> notification) {
-              LOG.debug("Evication happened for table " + notification.getKey());
+              LOG.debug("Eviction happened for table " + notification.getKey());
               LOG.debug("current table cache contains " + tableCache.size() + "entries");
+              TableWrapper tblWrapper = notification.getValue();
+              RemovalCause cause = notification.getCause();
+              if (!cause.equals(RemovalCause.REPLACED)) {
+                byte[] sdHash = tblWrapper.getSdHash();
+                if (sdHash != null) {
+                  decrSd(sdHash);
+                  LOG.info("decr SD called for " + notification.getKey());
+                  LOG.info("decr SD called for " + notification.getValue().getSdHash());
+                }
+              }
             }
           });
 
