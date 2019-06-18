@@ -136,6 +136,7 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     // child0 is the schedule name
     String scheduleName = ast.getChild(0).getText();
     String clusterNamespace = conf.getVar(ConfVars.HIVE_SCHEDULED_QUERIES_NAMESPACE);
+    LOG.info("scheduled query namespace:" + clusterNamespace);
     ScheduledQueryKey key = new ScheduledQueryKey(scheduleName, clusterNamespace);
     ScheduledQuery ret = new ScheduledQuery(key);
 
