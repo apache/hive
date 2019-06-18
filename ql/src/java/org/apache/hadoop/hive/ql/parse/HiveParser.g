@@ -2060,7 +2060,7 @@ executedAsSpec
 definedAsSpec
 @init { pushMsg("definedAs specification", state); }
 @after { popMsg(state); }
-        : KW_DEFINED? KW_AS statement -> ^(TOK_QUERY selectStatementWithCTE)
+        : KW_DEFINED? KW_AS statement -> ^(TOK_QUERY statement)
         ;
 
 showFunctionIdentifier
