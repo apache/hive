@@ -34,3 +34,8 @@ $apdiff -- $F2 |
 else
 	rm ../cdpd/p3
 fi
+
+
+apdiff='git diff `git merge-base HEAD asf/master`'
+$apdiff -- `$apdiff --name-only |grep -v thrift/gen|grep -v ^_run` > ../tmp/HIVE-21884.min.patch
+
