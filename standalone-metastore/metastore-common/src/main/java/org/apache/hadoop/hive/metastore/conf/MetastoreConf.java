@@ -658,18 +658,15 @@ public class MetastoreConf {
     RUNTIME_STATS_MAX_AGE("runtime.stats.max.age", "hive.metastore.runtime.stats.max.age", 86400 * 3, TimeUnit.SECONDS,
         "Stat entries which are older than this are removed."),
 
-// FIXME: default: quartz?
     SCHEDULED_QUERIES_CRON_SYNTAX("scheduled.queries.cron.syntax", "hive.metastore.scheduled.queries.cron.syntax",
         "QUARTZ", new StringSetValidator("UNIX", "QUARTZ", "CRON4J", "SPRING"),
         "Defines the format of the schedule expressions to be used in scheduled queries."),
-    // FIXME: implement
     SCHEDULED_QUERIES_PROGRESS_TIMEOUT("scheduled.queries.progress.timeout",
         "hive.metastore.scheduled.queries.progress.timeout", 120, TimeUnit.SECONDS,
         "If a scheduled query is not making progress for this amount of time it will be considered TIMED_OUT"),
-    // FIXME: implement
     SCHEDULED_QUERIES_EXECUTION_MAX_AGE("scheduled.queries.execution.max.age",
         "hive.metastore.scheduled.queries.execution.max.age", 3 * 86400, TimeUnit.SECONDS,
-        "FIXME"),
+        "FIXME; MISSING"),
 
     // Parameters for exporting metadata on table drop (requires the use of the)
     // org.apache.hadoop.hive.ql.parse.MetaDataExportListener preevent listener
