@@ -610,9 +610,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
 
       // We only initialize once the tasks that need to be run periodically. For remote metastore
-      // these threads are started along with the other housekeeping threads only in the leader HMS.
-      if (!isMetaStoreRemote()) {
+      // these threads are started along with the other housekeeping threads only in the leader
+      // HMS.
+      String leaderHost = MetastoreConf.getVar(conf,
+              MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_HOSTNAME);
+      if (!isMetaStoreRemote() && ((leaderHost == null) || leaderHost.trim().isEmpty())) {
         startAlwaysTaskThreads(conf);
+      } else if (!isMetaStoreRemote()) {
+        LOG.info("Not starting tasks specified by " + ConfVars.TASK_THREADS_ALWAYS.getVarname() +
+                " since " + leaderHost + " is configured to run these tasks.");
       }
       expressionProxy = PartFilterExprUtil.createExpressionProxy(conf);
       fileMetadataManager = new FileMetadataManager(this.getMS(), conf);
