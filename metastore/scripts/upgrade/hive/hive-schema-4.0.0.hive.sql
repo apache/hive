@@ -1252,9 +1252,6 @@ FROM
 );
 
 
--- FIXME missing create table stmts for specific databases!!!
-
-
 CREATE DATABASE IF NOT EXISTS INFORMATION_SCHEMA;
 
 USE INFORMATION_SCHEMA;
