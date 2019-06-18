@@ -75,6 +75,7 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     ScheduledQueryMaintenanceRequestType type = translateAstType(ast.getToken().getType());
     ScheduledQuery schq = interpretAstNode(ast);
     fillScheduledQuery(type, schq);
+    LOG.info("scheduled query operation: " + type + " " + schq);
     try {
       schq.validate();
     } catch (TException e) {
