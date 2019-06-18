@@ -119,7 +119,6 @@ public class ScheduledQueryExecutionService {
     public void run() {
       while (true) {
         try {
-          // FIXME configurable
           Thread.sleep(context.getProgressReporterSleepTime());
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();

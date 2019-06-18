@@ -3882,17 +3882,28 @@ public interface IMetaStoreClient {
    */
   String getServerVersion() throws TException;
 
-  // FIXME: apidoc
+  /**
+   * Returns details about a scheduled query by name.
+   * 
+   * @throws NoSuchObjectException if an object by the given name dosen't exists.
+   */
   ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) throws TException;
 
-  // FIXME: apidoc
-  void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws TException;
-
-  // FIXME: apidoc
-  ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) throws MetaException, TException;
-
-  // FIXME: apidoc
+  /**
+   * Carries out maintenance of scheduled queries (insert/update/drop).
+   */
   void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) throws MetaException, TException;
 
+  /**
+   * Checks whenever a query is available for execution.
+   * 
+   * @return optionally a scheduled query to be processed.
+   */
+  ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) throws MetaException, TException;
+
+  /**
+   * Registers the progress a scheduled query being executed.
+   */
+  void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws TException;
 
 }
