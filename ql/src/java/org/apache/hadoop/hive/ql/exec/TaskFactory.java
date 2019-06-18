@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.ExplainSQRewriteWork;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
@@ -89,7 +88,6 @@ public final class TaskFactory {
     taskvec.add(new TaskTuple<FetchWork>(FetchWork.class, FetchTask.class));
     taskvec.add(new TaskTuple<CopyWork>(CopyWork.class, CopyTask.class));
     taskvec.add(new TaskTuple<ReplCopyWork>(ReplCopyWork.class, ReplCopyTask.class));
-    taskvec.add(new TaskTuple<DDLWork>(DDLWork.class, DDLTask.class));
     taskvec.add(new TaskTuple<DDLWork2>(DDLWork2.class, DDLTask2.class));
     taskvec.add(new TaskTuple<MaterializedViewDesc>(
         MaterializedViewDesc.class,

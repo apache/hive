@@ -557,8 +557,8 @@ STAGE PLANS:
             Vertex: Union 2
 
   Stage: Stage-5
-      Insert operator:
-        Commit-Insert-Hook
+    Commit Insert Hook
+      is overwrite: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view2_n0 REBUILD
 PREHOOK: type: QUERY

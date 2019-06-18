@@ -1,3 +1,22 @@
+PREHOOK: query: explain show conf "hive.auto.convert.sortmerge.join.to.mapjoin"
+PREHOOK: type: SHOWCONF
+POSTHOOK: query: explain show conf "hive.auto.convert.sortmerge.join.to.mapjoin"
+POSTHOOK: type: SHOWCONF
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Configuration
+      conf name: hive.auto.convert.sortmerge.join.to.mapjoin
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: show conf "hive.auto.convert.sortmerge.join.to.mapjoin"
 PREHOOK: type: SHOWCONF
 POSTHOOK: query: show conf "hive.auto.convert.sortmerge.join.to.mapjoin"

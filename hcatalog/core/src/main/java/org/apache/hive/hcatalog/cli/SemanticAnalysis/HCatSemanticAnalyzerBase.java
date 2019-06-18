@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.AbstractSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -98,12 +97,7 @@ public class HCatSemanticAnalyzerBase extends AbstractSemanticAnalyzerHook {
       hive = context.getHive();
 
       for (Task<? extends Serializable> task : rootTasks) {
-        if (task.getWork() instanceof DDLWork) {
-          DDLWork work = (DDLWork) task.getWork();
-          if (work != null) {
-            authorizeDDLWork(context, hive, work);
-          }
-        } else if (task.getWork() instanceof DDLWork2) {
+        if (task.getWork() instanceof DDLWork2) {
           DDLWork2 work = (DDLWork2) task.getWork();
           if (work != null) {
             authorizeDDLWork2(context, hive, work);
@@ -117,15 +111,6 @@ public class HCatSemanticAnalyzerBase extends AbstractSemanticAnalyzerHook {
     } catch (Exception ex) {
       throw new SemanticException(ex);
     }
-  }
-
-  /**
-   * Authorized the given DDLWork. Does nothing by default. Override this
-   * and delegate to the relevant method in HiveAuthorizationProvider obtained by
-   * getAuthProvider().
-   */
-  protected void authorizeDDLWork(HiveSemanticAnalyzerHookContext context,
-                  Hive hive, DDLWork work) throws HiveException {
   }
 
   /**
