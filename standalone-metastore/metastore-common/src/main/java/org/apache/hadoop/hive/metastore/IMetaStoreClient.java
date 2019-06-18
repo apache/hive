@@ -3896,7 +3896,7 @@ public interface IMetaStoreClient {
 
   /**
    * Checks whenever a query is available for execution.
-   * 
+   *
    * @return optionally a scheduled query to be processed.
    */
   ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) throws MetaException, TException;
