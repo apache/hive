@@ -40,7 +40,6 @@ public class ScheduledQueryExecutionService {
 
   class ScheduledQueryExecutor implements Runnable {
 
-    private ScheduledQueryPollResponse executing;
     private ScheduledQueryProgressInfo info;
 
     @Override
@@ -74,7 +73,6 @@ public class ScheduledQueryExecutionService {
         info = new ScheduledQueryProgressInfo();
         info.setScheduledExecutionId(q.getExecutionId());
         info.setState(QueryState.EXECUTING);
-        executing = q;
         // FIXME: missing impersonation?
         IDriver driver = DriverFactory.newDriver(context.conf);
         info.setExecutorQueryId(driver.getQueryState().getQueryId());
@@ -99,7 +97,6 @@ public class ScheduledQueryExecutionService {
 
         synchronized (this) {
           reportQueryProgress();
-          executing = null;
           info = null;
         }
       }

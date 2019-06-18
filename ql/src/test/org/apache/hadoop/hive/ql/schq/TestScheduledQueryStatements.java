@@ -19,9 +19,21 @@ package org.apache.hadoop.hive.ql.schq;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Optional;
+
+import javax.jdo.PersistenceManager;
+
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;
+import org.apache.hadoop.hive.metastore.api.QueryState;
+import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
+import org.apache.hadoop.hive.metastore.model.MScheduledExecution;
+import org.apache.hadoop.hive.metastore.model.MScheduledQuery;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
@@ -151,8 +163,31 @@ public class TestScheduledQueryStatements {
     CommandProcessorResponse ret;
     ret = driver.run("create scheduled query alter1 cron '* * * * * ? *' as select 1 from tu");
     assertEquals(0, ret.getResponseCode());
-    ret = driver.run("alter scheduled query alter1 as select 22 from tu");
+    ret = driver.run("alter scheduled query alter1 executed as 'user3'");
     assertEquals(0, ret.getResponseCode());
+    ret = driver.run("alter scheduled query alter1 defined as select 22 from tu");
+    assertEquals(0, ret.getResponseCode());
+
+    //    try (PersistenceManager pm = PersistenceManagerProvider.getPersistenceManager()) {
+    try (XObjectStore os = new XObjectStore(env_setup.getTestCtx().hiveConf)) {
+      Optional<MScheduledQuery> sq = os.getMScheduledQuery(new ScheduledQueryKey("alter1", "default"));
+      assertTrue(sq.isPresent());
+      assertEquals("user3", sq.get().toThrift().getUser());
+    }
+
+  }
+
+  static class XObjectStore extends ObjectStore implements AutoCloseable {
+
+    public XObjectStore(HiveConf hiveConf) {
+      super();
+      super.setConf(hiveConf);
+    }
+
+    @Override
+    public void close() throws Exception {
+      super.shutdown();
+    }
   }
 
   private static IDriver createDriver() {
