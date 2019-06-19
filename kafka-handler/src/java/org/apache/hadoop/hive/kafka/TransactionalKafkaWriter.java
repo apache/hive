@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -124,7 +125,7 @@ class TransactionalKafkaWriter implements FileSinkOperator.RecordWriter, RecordW
         producer.abortTransaction();
       }
       LOG.error("Closing writer [{}] caused by ERROR [{}]", producer.getTransactionalId(), exception.getMessage());
-      producer.close(0, TimeUnit.MILLISECONDS);
+      producer.close(Duration.ofMillis(0L));
       throw exception;
     }
     writerIdTopicId = String.format("WriterId [%s], Kafka Topic [%s]", producer.getTransactionalId(), topic);
@@ -149,7 +150,7 @@ class TransactionalKafkaWriter implements FileSinkOperator.RecordWriter, RecordW
         // producer.send() may throw a KafkaException which wraps a FencedException re throw its wrapped inner cause.
         producer.abortTransaction();
       }
-      producer.close(0, TimeUnit.MILLISECONDS);
+      producer.close(Duration.ofMillis(0L));
       sendExceptionRef.compareAndSet(null, e);
       checkExceptions();
     }
@@ -178,7 +179,7 @@ class TransactionalKafkaWriter implements FileSinkOperator.RecordWriter, RecordW
       } catch (Exception e) {
         LOG.error("Aborting Transaction {} failed due to [{}]", writerIdTopicId, e.getMessage());
       }
-      producer.close(0, TimeUnit.MILLISECONDS);
+      producer.close(Duration.ofMillis(0L));
       return;
     }
 
@@ -276,7 +277,7 @@ class TransactionalKafkaWriter implements FileSinkOperator.RecordWriter, RecordW
         producer.abortTransaction();
       }
       LOG.error("Closing writer [{}] caused by ERROR [{}]", writerIdTopicId, exception.getMessage());
-      producer.close(0, TimeUnit.MILLISECONDS);
+      producer.close(Duration.ofMillis(0L));
       throw new IOException(exception);
     }
   }
