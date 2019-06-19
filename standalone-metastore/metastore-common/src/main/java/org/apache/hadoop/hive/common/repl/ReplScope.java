@@ -29,8 +29,12 @@ import java.util.regex.Pattern;
 public class ReplScope implements Serializable {
   private String dbName;
   private Pattern dbNamePattern;
-  private List<Pattern> includedTableNamePatterns; // Only for REPL DUMP and exist only if tableName == null.
-  private List<Pattern> excludedTableNamePatterns; // Only for REPL DUMP and exist only if tableName == null.
+
+  // Include and exclude table names/patterns exist only for REPL DUMP.
+  private List<String> includedTableNames;
+  private List<String> excludedTableNames;
+  private List<Pattern> includedTableNamePatterns;
+  private List<Pattern> excludedTableNamePatterns;
 
   public ReplScope() {
   }
@@ -49,12 +53,22 @@ public class ReplScope implements Serializable {
     return dbName;
   }
 
-  public void setIncludedTablePatterns(List<String> includedTableNamePatterns) {
-    this.includedTableNamePatterns = compilePatterns(includedTableNamePatterns);
+  public void setIncludedTablePatterns(List<String> includedTableNames) {
+    this.includedTableNames = includedTableNames;
+    this.includedTableNamePatterns = compilePatterns(includedTableNames);
   }
 
-  public void setExcludedTablePatterns(List<String> excludedTableNamePatterns) {
-    this.excludedTableNamePatterns = compilePatterns(excludedTableNamePatterns);
+  public List<String> getIncludedTableNames() {
+    return includedTableNames;
+  }
+
+  public void setExcludedTablePatterns(List<String> excludedTableNames) {
+    this.excludedTableNames = excludedTableNames;
+    this.excludedTableNamePatterns = compilePatterns(excludedTableNames);
+  }
+
+  public List<String> getExcludedTableNames() {
+    return excludedTableNames;
   }
 
   public boolean includeAllTables() {
