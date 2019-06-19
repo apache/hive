@@ -220,7 +220,7 @@ public class SharedCache {
               LOG.debug("current table cache contains " + tableCache.size() + "entries");
               TableWrapper tblWrapper = notification.getValue();
               RemovalCause cause = notification.getCause();
-              if (!cause.equals(RemovalCause.REPLACED)) {
+              if (cause.equals(RemovalCause.COLLECTED) || cause.equals(RemovalCause.EXPIRED)) {
                 byte[] sdHash = tblWrapper.getSdHash();
                 if (sdHash != null) {
                   decrSd(sdHash);
