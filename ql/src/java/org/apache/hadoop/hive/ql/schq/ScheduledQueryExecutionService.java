@@ -74,16 +74,17 @@ public class ScheduledQueryExecutionService {
         info.setScheduledExecutionId(q.getExecutionId());
         info.setState(QueryState.EXECUTING);
         // FIXME: missing impersonation?
-        IDriver driver = DriverFactory.newDriver(context.conf);
-        info.setExecutorQueryId(driver.getQueryState().getQueryId());
-        reportQueryProgress();
-        CommandProcessorResponse resp;
-        resp = driver.run(q.getQuery());
-        if (resp.getResponseCode() != 0) {
-          throw resp;
+        try (IDriver driver = DriverFactory.newDriver(context.conf)) {
+          info.setExecutorQueryId(driver.getQueryState().getQueryId());
+          reportQueryProgress();
+          CommandProcessorResponse resp;
+          resp = driver.run(q.getQuery());
+          if (resp.getResponseCode() != 0) {
+            throw resp;
+          }
+          // FIXME: use transitionstate instead
+          info.setState(QueryState.FINISHED);
         }
-        // FIXME: use transitionstate instead
-        info.setState(QueryState.FINISHED);
       } catch (Throwable t) {
         info.setErrorMessage(getErrorStringForException(t));
         info.setState(QueryState.ERRORED);
