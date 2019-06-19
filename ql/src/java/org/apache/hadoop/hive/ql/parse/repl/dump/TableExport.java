@@ -169,7 +169,7 @@ public class TableExport {
   }
 
   private boolean shouldExport() {
-    return Utils.shouldReplicate(replicationSpec, tableSpec.tableHandle, false, conf);
+    return Utils.shouldReplicate(replicationSpec, tableSpec.tableHandle, false, null, conf);
   }
 
   /**

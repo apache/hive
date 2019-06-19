@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.repl;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.DatabaseEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.BootstrapEventsIterator;
@@ -42,6 +43,7 @@ import static org.apache.hadoop.hive.ql.exec.repl.ExternalTableCopyTaskBuilder.D
     Explain.Level.EXTENDED })
 public class ReplLoadWork implements Serializable {
   final String dbNameToLoadIn;
+  final ReplScope currentReplScope;
   final String dumpDirectory;
   final String bootstrapDumpToCleanTables;
   boolean needCleanTablesFromBootstrap;
@@ -61,12 +63,19 @@ public class ReplLoadWork implements Serializable {
   */
   final LineageState sessionStateLineageState;
 
-  public ReplLoadWork(HiveConf hiveConf, String dumpDirectory, String dbNameToLoadIn,
-      LineageState lineageState, boolean isIncrementalDump, Long eventTo,
-      List<DirCopyWork> pathsToCopyIterator) throws IOException {
+  public ReplLoadWork(HiveConf hiveConf, String dumpDirectory,
+                      String dbNameToLoadIn, ReplScope currentReplScope,
+                      LineageState lineageState, boolean isIncrementalDump, Long eventTo,
+                      List<DirCopyWork> pathsToCopyIterator) throws IOException {
     sessionStateLineageState = lineageState;
     this.dumpDirectory = dumpDirectory;
     this.dbNameToLoadIn = dbNameToLoadIn;
+    this.currentReplScope = currentReplScope;
+
+    // If DB name is changed during REPL LOAD, then set it instead of referring to source DB name.
+    if ((currentReplScope != null) && StringUtils.isNotBlank(dbNameToLoadIn)) {
+      currentReplScope.setDbName(dbNameToLoadIn);
+    }
     this.bootstrapDumpToCleanTables = hiveConf.get(ReplUtils.REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG);
     this.needCleanTablesFromBootstrap = StringUtils.isNotBlank(this.bootstrapDumpToCleanTables);
 
