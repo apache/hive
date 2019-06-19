@@ -269,7 +269,7 @@ public final class TxnDbUtil {
       try {
         stmt.execute("CREATE TABLE \"APP\".\"PARTITION_PARAMS\" (" +
             " \"PART_ID\" BIGINT NOT NULL, \"PARAM_KEY\" VARCHAR(256) NOT NULL, " +
-            " \"PARAM_VALUE\" CLOB, " +
+            " \"PARAM_VALUE\" VARCHAR(4000), " +
             " PRIMARY KEY (PART_ID, PARAM_KEY))"
         );
       } catch (SQLException e) {
