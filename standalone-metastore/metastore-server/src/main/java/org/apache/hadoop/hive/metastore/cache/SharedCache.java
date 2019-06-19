@@ -95,6 +95,8 @@ public class SharedCache {
 
   // For caching TableWrapper objects. Key is aggregate of database name and table name
   private Cache<String, TableWrapper> tableCache = null;
+  private int concurrencyLevel = -1;
+  private int refreshInterval = 10000;
 
   private boolean isTableCachePrewarmed = false;
   private HashSet<String> tablesDeletedDuringPrewarm = new HashSet<>();
@@ -161,43 +163,20 @@ public class SharedCache {
     }
   }
 
-  /**
-   * Builder class for changing parameter of shared cache
-   */
-  public static class Builder {
-    private Map<String, Integer> tableSizeMap = null;
-    private int concurrencyLevel = -1;
-    private int refreshInterval = 10000;
-    private Configuration conf;
-
-    Builder tableSizeMap(Map<String, Integer> mp) {
-      this.tableSizeMap = mp;
-      return this;
-    }
-
-    Builder configuration(Configuration c) {
-      this.conf = c;
-      return this;
-    }
-
-    Builder concurrencyLevel(int cl) {
-      this.concurrencyLevel = cl;
-      return this;
-    }
-
-    Builder refreshInterval(int numMillis) {
-      this.refreshInterval = numMillis;
-      return this;
-    }
-
-    public SharedCache build(SharedCache sc) {
-      sc.tableSizeMap = this.tableSizeMap;
-      sc.initialize(conf, refreshInterval, concurrencyLevel);
-      return sc;
-    }
+  //concurrency level of table cache. Set to -1 to let Guava use default.
+  public void setConcurrencyLevel(int cl){
+    this.concurrencyLevel = cl;
+  }
+  //number of miliseconds between size updates.
+  public void setRefreshInterval(int interval){
+    this.refreshInterval = interval;
+  }
+  //set the table size map to fake table size. This is for testing only.
+  public void setTableSizeMap(Map<String, Integer> map){
+    this.tableSizeMap = map;
   }
 
-  public void initialize(Configuration conf, int refreshInterval, int concurrencyLevel) {
+  public void initialize(Configuration conf) {
     maxCacheSizeInBytes = MetastoreConf.getSizeVar(conf, MetastoreConf.ConfVars.CACHED_RAW_STORE_MAX_CACHE_MEMORY);
 
     // Create estimators

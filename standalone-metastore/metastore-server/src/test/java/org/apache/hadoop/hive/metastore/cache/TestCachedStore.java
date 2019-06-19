@@ -1392,7 +1392,9 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     newPart1.setValues(Arrays.asList("201701"));
 
     SharedCache sharedCache = cachedStore.getSharedCache();
-    new SharedCache.Builder().concurrencyLevel(1).configuration(conf).tableSizeMap(tableSizeMap).build(sharedCache);
+    sharedCache.setConcurrencyLevel(1);
+    sharedCache.setTableSizeMap(tableSizeMap);
+    sharedCache.initialize(conf);
 
     sharedCache.addDatabaseToCache(db);
     sharedCache.addTableToCache(DEFAULT_CATALOG_NAME, dbName, tbl1Name, tbl1);
@@ -1437,7 +1439,9 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     tableSizeMap.put(db2Ptbl1TblKey, 4000);
 
     SharedCache sc = cachedStore.getSharedCache();
-    new SharedCache.Builder().concurrencyLevel(1).configuration(conf).tableSizeMap(tableSizeMap).build(sc);
+    sc.setConcurrencyLevel(1);
+    sc.setTableSizeMap(tableSizeMap);
+    sc.initialize(conf);
 
     // Prewarm CachedStore
     CachedStore.setCachePrewarmedState(false);
@@ -1481,7 +1485,9 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Table tblDb2Ptbl1 = objectStore.getTable(DEFAULT_CATALOG_NAME, db2Ptbl1.getDbName(), db2Ptbl1.getTableName());
 
     SharedCache sc = cachedStore.getSharedCache();
-    new SharedCache.Builder().concurrencyLevel(1).configuration(conf).tableSizeMap(tableSizeMap).build(sc);
+    sc.setConcurrencyLevel(1);
+    sc.setTableSizeMap(tableSizeMap);
+    sc.initialize(conf);
 
     sc.addDatabaseToCache(db1);
     sc.addDatabaseToCache(db2);
