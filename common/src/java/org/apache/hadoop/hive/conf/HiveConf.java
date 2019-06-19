@@ -3486,6 +3486,13 @@ public class HiveConf extends Configuration {
         " it is empty, which means that all the connections to HiveServer2 are authenticated. " +
         "When it is non-empty, the client has to provide a Hive user name. Any password, if " +
         "provided, will not be used when authentication is skipped."),
+    HIVE_SERVER2_TRUSTED_DOMAIN_USE_XFF_HEADER("hive.server2.trusted.domain.use.xff.header", false,
+      "When trusted domain authentication is enabled, the clients connecting to the HS2 could pass" +
+        "through many layers of proxy. Some proxies append its own ip address to 'X-Forwarded-For' header" +
+        "before passing on the request to another proxy or HS2. Some proxies also connect on behalf of client" +
+        "and may create a separate connection to HS2 without binding using client IP. For such environments, instead" +
+        "of looking at client IP from the request, if this config is set and if 'X-Forwarded-For' is present," +
+        "trusted domain authentication will use left most ip address from X-Forwarded-For header."),
     HIVE_SERVER2_ALLOW_USER_SUBSTITUTION("hive.server2.allow.user.substitution", true,
         "Allow alternate user to be specified as part of HiveServer2 open connection request."),
     HIVE_SERVER2_KERBEROS_KEYTAB("hive.server2.authentication.kerberos.keytab", "",
