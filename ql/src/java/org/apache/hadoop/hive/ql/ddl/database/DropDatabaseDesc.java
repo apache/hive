@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.database;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -32,10 +31,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Drop Database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class DropDatabaseDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(DropDatabaseDesc.class, DropDatabaseOperation.class);
-  }
 
   private final String databaseName;
   private final boolean ifExists;

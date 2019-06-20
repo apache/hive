@@ -38,12 +38,9 @@ import com.google.common.collect.Iterables;
 /**
  * Operation process of dropping some partitions of a table.
  */
-public class AlterTableDropPartitionOperation extends DDLOperation {
-  private final AlterTableDropPartitionDesc desc;
-
+public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDropPartitionDesc> {
   public AlterTableDropPartitionOperation(DDLOperationContext context, AlterTableDropPartitionDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

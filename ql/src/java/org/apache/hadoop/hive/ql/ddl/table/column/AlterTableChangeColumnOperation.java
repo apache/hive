@@ -37,12 +37,9 @@ import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
 /**
  * Operation process changing a column.
  */
-public class AlterTableChangeColumnOperation extends AbstractAlterTableOperation {
-  private final AlterTableChangeColumnDesc desc;
-
+public class AlterTableChangeColumnOperation extends AbstractAlterTableOperation<AlterTableChangeColumnDesc> {
   public AlterTableChangeColumnOperation(DDLOperationContext context, AlterTableChangeColumnDesc desc) {
     super(context, desc);
-    this.desc = desc;
   }
 
   @Override

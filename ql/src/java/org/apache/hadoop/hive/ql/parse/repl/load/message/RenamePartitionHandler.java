@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableRenamePartitionDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -59,8 +59,8 @@ public class RenamePartitionHandler extends AbstractMessageHandler {
 
     AlterTableRenamePartitionDesc renamePtnDesc = new AlterTableRenamePartitionDesc(
             tableName, oldPartSpec, newPartSpec, context.eventOnlyReplicationSpec(), null);
-    Task<DDLWork2> renamePtnTask = TaskFactory.get(
-        new DDLWork2(readEntitySet, writeEntitySet, renamePtnDesc), context.hiveConf);
+    Task<DDLWork> renamePtnTask = TaskFactory.get(
+        new DDLWork(readEntitySet, writeEntitySet, renamePtnDesc), context.hiveConf);
     context.log.debug("Added rename ptn task : {}:{}->{}",
                       renamePtnTask.getId(), oldPartSpec, newPartSpec);
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, newPartSpec);

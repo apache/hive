@@ -46,12 +46,9 @@ import org.apache.hadoop.hive.ql.plan.TezWork;
 /**
  * Operation process of concatenating the files of a table/partition.
  */
-public class AlterTableConcatenateOperation extends DDLOperation {
-  private final AlterTableConcatenateDesc desc;
-
+public class AlterTableConcatenateOperation extends DDLOperation<AlterTableConcatenateDesc> {
   public AlterTableConcatenateOperation(DDLOperationContext context, AlterTableConcatenateDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

@@ -33,12 +33,9 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 /**
  * Operation process showing the table status.
  */
-public class ShowTablePropertiesOperation extends DDLOperation {
-  private final ShowTablePropertiesDesc desc;
-
+public class ShowTablePropertiesOperation extends DDLOperation<ShowTablePropertiesDesc> {
   public ShowTablePropertiesOperation(DDLOperationContext context, ShowTablePropertiesDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

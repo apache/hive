@@ -30,6 +30,7 @@
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
     <powermock.version>1.6.6</powermock.version>
+    <reflections.version>0.9.10</reflections.version>
   </properties>
 
   <dependencies>
@@ -238,7 +239,7 @@
             <artifactId>commons-logging</artifactId>
           </exclusion>
         </exclusions>
-   </dependency>
+    </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-hdfs</artifactId>
@@ -761,6 +762,17 @@
       <artifactId>powermock-api-mockito</artifactId>
       <version>${powermock.version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.reflections</groupId>
+      <artifactId>reflections</artifactId>
+      <version>${reflections.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>annotations</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 

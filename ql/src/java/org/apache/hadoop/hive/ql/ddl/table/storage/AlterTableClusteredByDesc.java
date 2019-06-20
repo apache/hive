@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -37,10 +36,6 @@ import org.apache.hadoop.hive.ql.util.DirectionUtils;
 @Explain(displayName = "Clustered By", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class AlterTableClusteredByDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(AlterTableClusteredByDesc.class, AlterTableClusteredByOperation.class);
-  }
 
   private final int numberBuckets;
   private final List<String> bucketColumns;

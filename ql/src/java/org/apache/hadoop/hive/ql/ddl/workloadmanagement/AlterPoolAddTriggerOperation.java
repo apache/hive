@@ -29,12 +29,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of adding a trigger to a pool.
  */
-public class AlterPoolAddTriggerOperation extends DDLOperation {
-  private final AlterPoolAddTriggerDesc desc;
-
+public class AlterPoolAddTriggerOperation extends DDLOperation<AlterPoolAddTriggerDesc> {
   public AlterPoolAddTriggerOperation(DDLOperationContext context, AlterPoolAddTriggerDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.table.misc;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -30,10 +29,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  */
 @Explain(displayName = "Touch", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class AlterTableTouchDesc implements DDLDesc {
-  static {
-    DDLTask2.registerOperation(AlterTableTouchDesc.class, AlterTableTouchOperation.class);
-  }
-
   private final String tableName;
   private Map<String, String> partitionSpec;
 

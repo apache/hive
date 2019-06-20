@@ -25,7 +25,6 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -35,10 +34,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Metastore Check", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class MsckDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(MsckDesc.class, MsckOperation.class);
-  }
 
   private final String tableName;
   private final ArrayList<LinkedHashMap<String, String>> partitionsSpecs;

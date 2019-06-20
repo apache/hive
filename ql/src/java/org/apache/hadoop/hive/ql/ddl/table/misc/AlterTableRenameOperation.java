@@ -29,12 +29,9 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 /**
  * Operation process of renaming a table.
  */
-public class AlterTableRenameOperation extends AbstractAlterTableOperation {
-  private final AlterTableRenameDesc desc;
-
+public class AlterTableRenameOperation extends AbstractAlterTableOperation<AlterTableRenameDesc> {
   public AlterTableRenameOperation(DDLOperationContext context, AlterTableRenameDesc desc) {
     super(context, desc);
-    this.desc = desc;
   }
 
   @Override

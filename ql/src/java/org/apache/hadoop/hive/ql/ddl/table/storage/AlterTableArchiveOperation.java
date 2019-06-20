@@ -49,12 +49,9 @@ import static org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableArchiveUtils
 /**
  * Operation process of archiving a table.
  */
-public class AlterTableArchiveOperation extends DDLOperation {
-  private final AlterTableArchiveDesc desc;
-
+public class AlterTableArchiveOperation extends DDLOperation<AlterTableArchiveDesc> {
   public AlterTableArchiveOperation(DDLOperationContext context, AlterTableArchiveDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

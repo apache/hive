@@ -27,12 +27,9 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 /**
  * Operation process of dropping a role.
  */
-public class DropRoleOperation extends DDLOperation {
-  private final DropRoleDesc desc;
-
+public class DropRoleOperation extends DDLOperation<DropRoleDesc> {
   public DropRoleOperation(DDLOperationContext context, DropRoleDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

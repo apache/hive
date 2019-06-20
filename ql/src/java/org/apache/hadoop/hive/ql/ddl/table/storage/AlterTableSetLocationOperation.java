@@ -34,12 +34,9 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 /**
  * Operation process of setting the location of a table.
  */
-public class AlterTableSetLocationOperation extends AbstractAlterTableOperation {
-  private final AlterTableSetLocationDesc desc;
-
+public class AlterTableSetLocationOperation extends AbstractAlterTableOperation<AlterTableSetLocationDesc> {
   public AlterTableSetLocationOperation(DDLOperationContext context, AlterTableSetLocationDesc desc) {
     super(context, desc);
-    this.desc = desc;
   }
 
   @Override

@@ -23,7 +23,6 @@ import java.io.Serializable;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -37,10 +36,6 @@ public class ShowTablesDesc implements DDLDesc, Serializable {
   private static final String TABLES_VIEWS_SCHEMA = "tab_name#string";
   private static final String EXTENDED_TABLES_SCHEMA = "tab_name,table_type#string,string";
   private static final String MATERIALIZED_VIEWS_SCHEMA = "mv_name,rewrite_enabled,mode#string:string:string";
-
-  static {
-    DDLTask2.registerOperation(ShowTablesDesc.class, ShowTablesOperation.class);
-  }
 
   private final String resFile;
   private final String dbName;

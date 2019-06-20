@@ -32,12 +32,9 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
 /**
  * Operation process of granting a role.
  */
-public class GrantRoleOperation extends DDLOperation {
-  private final GrantRoleDesc desc;
-
+public class GrantRoleOperation extends DDLOperation<GrantRoleDesc> {
   public GrantRoleOperation(DDLOperationContext context, GrantRoleDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

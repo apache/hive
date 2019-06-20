@@ -25,12 +25,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of aborting transactions.
  */
-public class AbortTransactionsOperation extends DDLOperation {
-  private final AbortTransactionsDesc desc;
-
+public class AbortTransactionsOperation extends DDLOperation<AbortTransactionsDesc> {
   public AbortTransactionsOperation(DDLOperationContext context, AbortTransactionsDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

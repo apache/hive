@@ -33,12 +33,9 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 /**
  * Operation process of revoking.
  */
-public class RevokeOperation extends DDLOperation {
-  private final RevokeDesc desc;
-
+public class RevokeOperation extends DDLOperation<RevokeDesc> {
   public RevokeOperation(DDLOperationContext context, RevokeDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

@@ -59,4 +59,4 @@ PREHOOK: query: unlock database lockneg1
 PREHOOK: type: UNLOCKDATABASE
 PREHOOK: Input: database:lockneg1
 PREHOOK: Output: database:lockneg1
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Database lockneg1 is not locked 
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Database lockneg1 is not locked 

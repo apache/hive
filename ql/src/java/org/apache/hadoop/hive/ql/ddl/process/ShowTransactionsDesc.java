@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.ddl.process;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -31,10 +30,6 @@ import java.io.Serializable;
 @Explain(displayName = "Show Transactions", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ShowTransactionsDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(ShowTransactionsDesc.class, ShowTransactionsOperation.class);
-  }
 
   public static final String SCHEMA =
       "txnid,state,startedtime,lastheartbeattime,user,host#string:string:string:string:string:string";

@@ -27,12 +27,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of dropping a workload management pool.
  */
-public class DropWMPoolOperation extends DDLOperation {
-  private final DropWMPoolDesc desc;
-
+public class DropWMPoolOperation extends DDLOperation<DropWMPoolDesc> {
   public DropWMPoolOperation(DDLOperationContext context, DropWMPoolDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

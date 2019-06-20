@@ -20,11 +20,9 @@ package org.apache.hadoop.hive.ql.ddl.table.column;
 
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -32,12 +30,8 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  * DDL task description for ALTER TABLE ... UPDATE COLUMNS ... commands.
  */
 @Explain(displayName = "Update Columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterTableUpdateColumnsDesc extends AbstractAlterTableDesc implements DDLDescWithWriteId {
+public class AlterTableUpdateColumnsDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(AlterTableUpdateColumnsDesc.class, AlterTableUpdateColumnsOperation.class);
-  }
 
   public AlterTableUpdateColumnsDesc(String tableName, Map<String, String> partitionSpec, boolean isCascade)
       throws SemanticException {

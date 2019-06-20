@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.ddl.table.misc;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -29,10 +28,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  */
 @Explain(displayName = "Pre-Insert task", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class PreInsertTableDesc implements DDLDesc {
-  static {
-    DDLTask2.registerOperation(PreInsertTableDesc.class, PreInsertTableOperation.class);
-  }
-
   private final Table table;
   private final boolean isOverwrite;
 

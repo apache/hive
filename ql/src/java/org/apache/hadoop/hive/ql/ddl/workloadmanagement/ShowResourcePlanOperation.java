@@ -30,12 +30,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of showing resource plans.
  */
-public class ShowResourcePlanOperation extends DDLOperation {
-  private final ShowResourcePlanDesc desc;
-
+public class ShowResourcePlanOperation extends DDLOperation<ShowResourcePlanDesc> {
   public ShowResourcePlanOperation(DDLOperationContext context, ShowResourcePlanDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

@@ -36,12 +36,9 @@ import org.apache.hadoop.hive.serde2.Deserializer;
 /**
  * Operation process of setting the serde.
  */
-public class AlterTableSetSerdeOperation extends AbstractAlterTableOperation {
-  private final AlterTableSetSerdeDesc desc;
-
+public class AlterTableSetSerdeOperation extends AbstractAlterTableOperation<AlterTableSetSerdeDesc> {
   public AlterTableSetSerdeOperation(DDLOperationContext context, AlterTableSetSerdeDesc desc) {
     super(context, desc);
-    this.desc = desc;
   }
 
   @Override

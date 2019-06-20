@@ -34,12 +34,9 @@ import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 /**
  * Operation process of adding some new columns.
  */
-public class AlterTableAddColumnsOperation extends AbstractAlterTableOperation {
-  private final AlterTableAddColumnsDesc desc;
-
+public class AlterTableAddColumnsOperation extends AbstractAlterTableOperation<AlterTableAddColumnsDesc> {
   public AlterTableAddColumnsOperation(DDLOperationContext context, AlterTableAddColumnsDesc desc) {
     super(context, desc);
-    this.desc = desc;
   }
 
   @Override

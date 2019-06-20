@@ -38,12 +38,9 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 /**
  * Operation process of showing a grant.
  */
-public class ShowGrantOperation extends DDLOperation {
-  private final ShowGrantDesc desc;
-
+public class ShowGrantOperation extends DDLOperation<ShowGrantDesc> {
   public ShowGrantOperation(DDLOperationContext context, ShowGrantDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

@@ -26,4 +26,4 @@ PREHOOK: query: alter table tstsrc change key value string
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@tstsrc
 PREHOOK: Output: default@tstsrc
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Duplicate column name: value
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Duplicate column name: value

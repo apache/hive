@@ -50,12 +50,9 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 /**
  * Operation process showing the locks.
  */
-public class ShowLocksOperation extends DDLOperation {
-  private final ShowLocksDesc desc;
-
+public class ShowLocksOperation extends DDLOperation<ShowLocksDesc> {
   public ShowLocksOperation(DDLOperationContext context, ShowLocksDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

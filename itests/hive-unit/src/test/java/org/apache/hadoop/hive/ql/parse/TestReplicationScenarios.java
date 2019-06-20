@@ -59,7 +59,7 @@ import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncod
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.ddl.DDLTask;
 import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc;
 import org.apache.hadoop.hive.ql.exec.MoveTask;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -379,8 +379,8 @@ public class TestReplicationScenarios {
   private boolean hasPartitionTask(Task rootTask) {
     checkTaskPresent validator =  new checkTaskPresent() {
       public boolean validate(Task task) {
-        if (task instanceof DDLTask2) {
-          DDLTask2 ddlTask = (DDLTask2)task;
+        if (task instanceof DDLTask) {
+          DDLTask ddlTask = (DDLTask)task;
           return ddlTask.getWork().getDDLDesc() instanceof AlterTableAddPartitionDesc;
         }
         return false;

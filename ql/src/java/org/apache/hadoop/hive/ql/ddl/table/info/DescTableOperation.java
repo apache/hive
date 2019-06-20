@@ -71,12 +71,9 @@ import org.apache.hadoop.io.IOUtils;
 /**
  * Operation process of dropping a table.
  */
-public class DescTableOperation extends DDLOperation {
-  private final DescTableDesc desc;
-
+public class DescTableOperation extends DDLOperation<DescTableDesc> {
   public DescTableOperation(DDLOperationContext context, DescTableDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

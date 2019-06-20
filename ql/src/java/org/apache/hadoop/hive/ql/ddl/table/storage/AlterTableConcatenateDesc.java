@@ -24,7 +24,6 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -36,10 +35,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  */
 @Explain(displayName = "Concatenate", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class AlterTableConcatenateDesc implements DDLDesc {
-  static {
-    DDLTask2.registerOperation(AlterTableConcatenateDesc.class, AlterTableConcatenateOperation.class);
-  }
-
   private String tableName;
   private Map<String, String> partSpec;
   private ListBucketingCtx lbCtx; // context for list bucketing.

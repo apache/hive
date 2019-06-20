@@ -55,4 +55,4 @@ public
 testrole
 PREHOOK: query: create role TESTRoLE
 PREHOOK: type: CREATEROLE
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Error create role: Got exception: org.apache.hadoop.hive.metastore.api.InvalidObjectException Role testrole already exists.
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Error create role: Got exception: org.apache.hadoop.hive.metastore.api.InvalidObjectException Role testrole already exists.

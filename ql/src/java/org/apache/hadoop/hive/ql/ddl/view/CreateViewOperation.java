@@ -36,12 +36,9 @@ import com.google.common.collect.ImmutableSet;
 /**
  * Operation process of creating a view.
  */
-public class CreateViewOperation extends DDLOperation {
-  private final CreateViewDesc desc;
-
+public class CreateViewOperation extends DDLOperation<CreateViewDesc> {
   public CreateViewOperation(DDLOperationContext context, CreateViewDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

@@ -43,12 +43,9 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 /**
  * Operation process of altering a partition to a table.
  */
-public class AlterTableAlterPartitionOperation extends DDLOperation {
-  private final AlterTableAlterPartitionDesc desc;
-
+public class AlterTableAlterPartitionOperation extends DDLOperation<AlterTableAlterPartitionDesc> {
   public AlterTableAlterPartitionOperation(DDLOperationContext context, AlterTableAlterPartitionDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

@@ -8,4 +8,4 @@ POSTHOOK: query: create role role1
 POSTHOOK: type: CREATEROLE
 PREHOOK: query: grant role1 to role nosuchrole
 PREHOOK: type: GRANT_ROLE
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Error granting role: Got exception: org.apache.hadoop.hive.metastore.api.NoSuchObjectException Role nosuchrole does not exist
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Error granting role: Got exception: org.apache.hadoop.hive.metastore.api.NoSuchObjectException Role nosuchrole does not exist

@@ -27,12 +27,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of dropping a workload management trigger.
  */
-public class DropWMTriggerOperation extends DDLOperation {
-  private final DropWMTriggerDesc desc;
-
+public class DropWMTriggerOperation extends DDLOperation<DropWMTriggerDesc> {
   public DropWMTriggerOperation(DDLOperationContext context, DropWMTriggerDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

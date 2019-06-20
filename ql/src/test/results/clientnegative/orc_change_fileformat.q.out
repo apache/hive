@@ -10,4 +10,4 @@ PREHOOK: query: alter table src_orc set fileformat textfile
 PREHOOK: type: ALTERTABLE_FILEFORMAT
 PREHOOK: Input: default@src_orc
 PREHOOK: Output: default@src_orc
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Changing file format (from ORC) is not supported for table default.src_orc
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Changing file format (from ORC) is not supported for table default.src_orc

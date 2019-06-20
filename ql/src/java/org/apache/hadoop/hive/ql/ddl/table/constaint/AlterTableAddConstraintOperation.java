@@ -31,12 +31,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of adding a new constraint.
  */
-public class AlterTableAddConstraintOperation extends DDLOperation {
-  private final AlterTableAddConstraintDesc desc;
-
+public class AlterTableAddConstraintOperation extends DDLOperation<AlterTableAddConstraintDesc> {
   public AlterTableAddConstraintOperation(DDLOperationContext context, AlterTableAddConstraintDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

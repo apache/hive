@@ -34,12 +34,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of describing a database.
  */
-public class DescDatabaseOperation extends DDLOperation {
-  private final DescDatabaseDesc desc;
-
+public class DescDatabaseOperation extends DDLOperation<DescDatabaseDesc> {
   public DescDatabaseOperation(DDLOperationContext context, DescDatabaseDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

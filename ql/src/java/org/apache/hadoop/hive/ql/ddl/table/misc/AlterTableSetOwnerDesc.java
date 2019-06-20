@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.misc;
 
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
@@ -32,10 +31,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Set Owner", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class AlterTableSetOwnerDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(AlterTableSetOwnerDesc.class, AlterTableSetOwnerOperation.class);
-  }
 
   private final PrincipalDesc ownerPrincipal;
 

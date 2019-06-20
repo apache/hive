@@ -34,12 +34,9 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRoleGrant;
 /**
  * Operation process of showing the principals.
  */
-public class ShowPrincipalsOperation extends DDLOperation {
-  private final ShowPrincipalsDesc desc;
-
+public class ShowPrincipalsOperation extends DDLOperation<ShowPrincipalsDesc> {
   public ShowPrincipalsOperation(DDLOperationContext context, ShowPrincipalsDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

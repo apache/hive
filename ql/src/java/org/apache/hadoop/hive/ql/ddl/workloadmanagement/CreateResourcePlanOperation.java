@@ -28,12 +28,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of creating a resource plan.
  */
-public class CreateResourcePlanOperation extends DDLOperation {
-  private final CreateResourcePlanDesc desc;
-
+public class CreateResourcePlanOperation extends DDLOperation<CreateResourcePlanDesc> {
   public CreateResourcePlanOperation(DDLOperationContext context, CreateResourcePlanDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

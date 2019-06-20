@@ -28,12 +28,9 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 /**
  * Operation process of enabling/disabling materialized view rewrite.
  */
-public class AlterMaterializedViewRewriteOperation extends DDLOperation {
-  private final AlterMaterializedViewRewriteDesc desc;
-
+public class AlterMaterializedViewRewriteOperation extends DDLOperation<AlterMaterializedViewRewriteDesc> {
   public AlterMaterializedViewRewriteOperation(DDLOperationContext context, AlterMaterializedViewRewriteDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

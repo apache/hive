@@ -22,18 +22,17 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
-import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
-import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
  * Abstract ancestor of all ALTER TABLE descriptors that are handled by the AlterTableWithWriteIdOperations framework.
  */
-public abstract class AbstractAlterTableDesc implements DDLDesc, DDLDescWithWriteId, Serializable {
+public abstract class AbstractAlterTableDesc implements DDLDescWithWriteId, Serializable {
   private static final long serialVersionUID = 1L;
 
   private final AlterTableType type;

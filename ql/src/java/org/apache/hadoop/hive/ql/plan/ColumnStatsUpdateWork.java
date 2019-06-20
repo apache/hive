@@ -22,7 +22,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 

@@ -4,4 +4,4 @@ POSTHOOK: query: set role admin
 POSTHOOK: type: SHOW_ROLES
 PREHOOK: query: drop role admin
 PREHOOK: type: DROPROLE
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Error dropping role: public,admin roles can't be dropped.
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Error dropping role: public,admin roles can't be dropped.

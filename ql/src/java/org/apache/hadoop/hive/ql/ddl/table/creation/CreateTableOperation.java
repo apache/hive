@@ -40,12 +40,9 @@ import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 /**
  * Operation process of creating a table.
  */
-public class CreateTableOperation extends DDLOperation {
-  private final CreateTableDesc desc;
-
+public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
   public CreateTableOperation(DDLOperationContext context, CreateTableDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override
