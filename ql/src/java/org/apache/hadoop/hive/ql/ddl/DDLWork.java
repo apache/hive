@@ -29,7 +29,7 @@ import java.util.Set;
 /**
  * A DDL operation.
  */
-public final class DDLWork2 implements Serializable {
+public final class DDLWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private DDLDesc ddlDesc;
@@ -40,15 +40,15 @@ public final class DDLWork2 implements Serializable {
   /** List of WriteEntities that are passed to the hooks. */
   private Set<WriteEntity> outputs;
 
-  public DDLWork2() {
+  public DDLWork() {
   }
 
-  public DDLWork2(Set<ReadEntity> inputs, Set<WriteEntity> outputs) {
+  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs) {
     this.inputs = inputs;
     this.outputs = outputs;
   }
 
-  public DDLWork2(Set<ReadEntity> inputs, Set<WriteEntity> outputs, DDLDesc ddlDesc) {
+  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs, DDLDesc ddlDesc) {
     this(inputs, outputs);
     this.ddlDesc = ddlDesc;
   }

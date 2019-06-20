@@ -27,12 +27,9 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 /**
  * Operation process of setting the number of buckets.
  */
-public class AlterTableIntoBucketsOperation extends AbstractAlterTableOperation {
-  private final AlterTableIntoBucketsDesc desc;
-
+public class AlterTableIntoBucketsOperation extends AbstractAlterTableOperation<AlterTableIntoBucketsDesc> {
   public AlterTableIntoBucketsOperation(DDLOperationContext context, AlterTableIntoBucketsDesc desc) {
     super(context, desc);
-    this.desc = desc;
   }
 
   @Override

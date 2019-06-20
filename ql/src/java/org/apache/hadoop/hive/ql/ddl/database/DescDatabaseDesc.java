@@ -22,7 +22,6 @@ import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -35,10 +34,6 @@ public class DescDatabaseDesc implements DDLDesc, Serializable {
 
   public static final String DESC_DATABASE_SCHEMA =
       "db_name,comment,location,owner_name,owner_type,parameters#string:string:string:string:string:string";
-
-  static {
-    DDLTask2.registerOperation(DescDatabaseDesc.class, DescDatabaseOperation.class);
-  }
 
   private final String resFile;
   private final String dbName;

@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.misc.TruncateTableDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -39,8 +39,8 @@ public class TruncateTableHandler extends AbstractMessageHandler {
             actualDbName + "." + actualTblName,
             null, context.eventOnlyReplicationSpec());
     truncateTableDesc.setWriteId(msg.getWriteId());
-    Task<DDLWork2> truncateTableTask = TaskFactory.get(
-        new DDLWork2(readEntitySet, writeEntitySet, truncateTableDesc), context.hiveConf);
+    Task<DDLWork> truncateTableTask = TaskFactory.get(
+        new DDLWork(readEntitySet, writeEntitySet, truncateTableDesc), context.hiveConf);
 
     context.log.debug("Added truncate tbl task : {}:{}:{}", truncateTableTask.getId(),
         truncateTableDesc.getTableName(), truncateTableDesc.getWriteId());

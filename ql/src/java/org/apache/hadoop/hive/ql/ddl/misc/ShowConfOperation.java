@@ -33,12 +33,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of showing some configuration.
  */
-public class ShowConfOperation extends DDLOperation {
-  private final ShowConfDesc desc;
-
+public class ShowConfOperation extends DDLOperation<ShowConfDesc> {
   public ShowConfOperation(DDLOperationContext context, ShowConfDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

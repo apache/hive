@@ -15,9 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.ql.ddl.table.constaint;
 
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableWithConstraintsDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
@@ -31,10 +31,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Add Constraint", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class AlterTableAddConstraintDesc extends AbstractAlterTableWithConstraintsDesc {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(AlterTableAddConstraintDesc.class, AlterTableAddConstraintOperation.class);
-  }
 
   public AlterTableAddConstraintDesc(String tableName, ReplicationSpec replicationSpec, Constraints constraints)
       throws SemanticException {

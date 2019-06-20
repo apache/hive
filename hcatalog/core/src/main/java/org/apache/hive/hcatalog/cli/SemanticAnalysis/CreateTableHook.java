@@ -28,7 +28,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.ddl.DDLTask;
 import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -140,10 +140,10 @@ final class CreateTableHook extends HCatSemanticAnalyzerBase {
       return;
     }
     Task<?> t = rootTasks.get(rootTasks.size() - 1);
-    if (!(t instanceof DDLTask2)) {
+    if (!(t instanceof DDLTask)) {
       return;
     }
-    DDLTask2 task = (DDLTask2)t;
+    DDLTask task = (DDLTask)t;
     DDLDesc d = task.getWork().getDDLDesc();
     if (!(d instanceof CreateTableDesc)) {
       return;

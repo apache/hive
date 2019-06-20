@@ -8,4 +8,4 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
 PREHOOK: query: show grant user user2 on table t1
 PREHOOK: type: SHOW_GRANT
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Error showing privileges: User : user1 is not allowed check privileges of another user : user2. User has to belong to ADMIN role and have it as current role, for this action.
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Error showing privileges: User : user1 is not allowed check privileges of another user : user2. User has to belong to ADMIN role and have it as current role, for this action.

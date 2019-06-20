@@ -48,12 +48,9 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 /**
  * Operation process of truncating a table.
  */
-public class AlterTableUnarchiveOperation extends DDLOperation {
-  private final AlterTableUnarchiveDesc desc;
-
+public class AlterTableUnarchiveOperation extends DDLOperation<AlterTableUnarchiveDesc> {
   public AlterTableUnarchiveOperation(DDLOperationContext context, AlterTableUnarchiveDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

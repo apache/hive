@@ -27,12 +27,9 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 /**
  * Operation process of setting the owner of a table.
  */
-public class AlterTableSetOwnerOperation extends AbstractAlterTableOperation {
-  private final AlterTableSetOwnerDesc desc;
-
+public class AlterTableSetOwnerOperation extends AbstractAlterTableOperation<AlterTableSetOwnerDesc> {
   public AlterTableSetOwnerOperation(DDLOperationContext context, AlterTableSetOwnerDesc desc) {
     super(context, desc);
-    this.desc = desc;
   }
 
   @Override

@@ -37,12 +37,9 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 /**
  * Operation process of showing the functions.
  */
-public class ShowFunctionsOperation extends DDLOperation {
-  private final ShowFunctionsDesc desc;
-
+public class ShowFunctionsOperation extends DDLOperation<ShowFunctionsDesc> {
   public ShowFunctionsOperation(DDLOperationContext context, ShowFunctionsDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

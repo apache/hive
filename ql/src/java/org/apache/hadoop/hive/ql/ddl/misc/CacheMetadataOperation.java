@@ -28,12 +28,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of caching the metadata.
  */
-public class CacheMetadataOperation extends DDLOperation {
-  private final CacheMetadataDesc desc;
-
+public class CacheMetadataOperation extends DDLOperation<CacheMetadataDesc> {
   public CacheMetadataOperation(DDLOperationContext context, CacheMetadataDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

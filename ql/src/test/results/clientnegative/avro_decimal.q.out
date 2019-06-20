@@ -19,4 +19,4 @@ TBLPROPERTIES (
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@avro_dec
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. java.lang.RuntimeException: MetaException(message:org.apache.hadoop.hive.serde2.avro.AvroSerdeException Invalid precision or scale for decimal type)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. java.lang.RuntimeException: MetaException(message:org.apache.hadoop.hive.serde2.avro.AvroSerdeException Invalid precision or scale for decimal type)

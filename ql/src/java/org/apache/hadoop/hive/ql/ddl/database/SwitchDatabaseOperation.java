@@ -31,12 +31,9 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 /**
  * Operation process of switching to another database.
  */
-public class SwitchDatabaseOperation extends DDLOperation {
-  private final SwitchDatabaseDesc desc;
-
+public class SwitchDatabaseOperation extends DDLOperation<SwitchDatabaseDesc> {
   public SwitchDatabaseOperation(DDLOperationContext context, SwitchDatabaseDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

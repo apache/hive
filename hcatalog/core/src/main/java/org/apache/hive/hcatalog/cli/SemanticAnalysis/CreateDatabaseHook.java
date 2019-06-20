@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.database.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -85,7 +85,7 @@ final class CreateDatabaseHook extends HCatSemanticAnalyzerBase {
   }
 
   @Override
-  protected void authorizeDDLWork2(HiveSemanticAnalyzerHookContext cntxt, Hive hive, DDLWork2 work)
+  protected void authorizeDDLWork(HiveSemanticAnalyzerHookContext cntxt, Hive hive, DDLWork work)
       throws HiveException {
     DDLDesc ddlDesc = work.getDDLDesc();
     if (ddlDesc instanceof CreateDatabaseDesc) {

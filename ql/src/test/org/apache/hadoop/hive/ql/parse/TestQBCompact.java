@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.storage.AlterTableCompactDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
@@ -91,7 +91,7 @@ public class TestQBCompact {
     a.analyze(head, new Context(conf));
     List<Task<?>> roots = a.getRootTasks();
     Assert.assertEquals(1, roots.size());
-    return (AlterTableCompactDesc)((DDLWork2)roots.get(0).getWork()).getDDLDesc();
+    return (AlterTableCompactDesc)((DDLWork)roots.get(0).getWork()).getDDLDesc();
   }
 
   @Test

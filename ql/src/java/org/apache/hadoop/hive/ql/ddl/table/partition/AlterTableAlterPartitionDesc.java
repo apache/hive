@@ -19,22 +19,16 @@
 package org.apache.hadoop.hive.ql.ddl.table.partition;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.Explain;
-import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
  * DDL task description for ALTER TABLE ... PARTITION COLUMN ... commands.
  */
 @Explain(displayName = "Alter Partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterTableAlterPartitionDesc implements DDLDesc, DDLDescWithWriteId {
+public class AlterTableAlterPartitionDesc implements DDLDescWithWriteId {
   public static final long serialVersionUID = 1;
-
-  static {
-    DDLTask2.registerOperation(AlterTableAlterPartitionDesc.class, AlterTableAlterPartitionOperation.class);
-  }
 
   private final String fqTableName;
   private final FieldSchema partKeySpec;

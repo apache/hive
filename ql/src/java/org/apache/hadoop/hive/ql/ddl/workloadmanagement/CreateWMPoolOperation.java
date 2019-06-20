@@ -27,12 +27,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of creating a workload management pool.
  */
-public class CreateWMPoolOperation extends DDLOperation {
-  private final CreateWMPoolDesc desc;
-
+public class CreateWMPoolOperation extends DDLOperation<CreateWMPoolDesc> {
   public CreateWMPoolOperation(DDLOperationContext context, CreateWMPoolDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

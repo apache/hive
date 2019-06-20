@@ -30,12 +30,9 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 /**
  * Operation process of adding a partition to a table.
  */
-public class AlterTableAddPartitionOperation extends DDLOperation {
-  private final AlterTableAddPartitionDesc desc;
-
+public class AlterTableAddPartitionOperation extends DDLOperation<AlterTableAddPartitionDesc> {
   public AlterTableAddPartitionOperation(DDLOperationContext context, AlterTableAddPartitionDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc;
 import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableDropPartitionDesc;
 import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
@@ -191,7 +191,7 @@ public class LoadPartitions {
         + partSpec.getLocation());
 
     Task<?> addPartTask = TaskFactory.get(
-            new DDLWork2(new HashSet<>(), new HashSet<>(), addPartitionDesc),
+            new DDLWork(new HashSet<>(), new HashSet<>(), addPartitionDesc),
             context.hiveConf
     );
 
@@ -345,14 +345,14 @@ public class LoadPartitions {
   }
 
   private Task<?> dropPartitionTask(Table table, Map<String, String> partSpec) throws SemanticException {
-    Task<DDLWork2> dropPtnTask = null;
+    Task<DDLWork> dropPtnTask = null;
     Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecsExpr =
             ReplUtils.genPartSpecs(table, Collections.singletonList(partSpec));
     if (partSpecsExpr.size() > 0) {
       AlterTableDropPartitionDesc dropPtnDesc = new AlterTableDropPartitionDesc(table.getFullyQualifiedName(),
           partSpecsExpr, true, event.replicationSpec());
       dropPtnTask = TaskFactory.get(
-              new DDLWork2(new HashSet<>(), new HashSet<>(), dropPtnDesc), context.hiveConf
+              new DDLWork(new HashSet<>(), new HashSet<>(), dropPtnDesc), context.hiveConf
       );
     }
     return dropPtnTask;

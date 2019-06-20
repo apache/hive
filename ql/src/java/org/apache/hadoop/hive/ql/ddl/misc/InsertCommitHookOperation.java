@@ -28,12 +28,9 @@ import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 /**
  * Operation process of inserting a commit hook.
  */
-public class InsertCommitHookOperation extends DDLOperation {
-  private final InsertCommitHookDesc desc;
-
+public class InsertCommitHookOperation extends DDLOperation<InsertCommitHookDesc> {
   public InsertCommitHookOperation(DDLOperationContext context, InsertCommitHookDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

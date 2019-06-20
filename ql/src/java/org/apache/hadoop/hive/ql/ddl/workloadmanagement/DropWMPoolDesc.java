@@ -15,12 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.ql.ddl.workloadmanagement;
 
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -30,10 +30,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName="Drop WM Pool", explainLevels={ Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class DropWMPoolDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = -2608462103392563252L;
-
-  static {
-    DDLTask2.registerOperation(DropWMPoolDesc.class, DropWMPoolOperation.class);
-  }
 
   private final String planName;
   private final String poolPath;

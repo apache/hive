@@ -22,7 +22,6 @@ import java.io.Serializable;
 
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -36,10 +35,6 @@ public class ShowRoleGrantDesc implements DDLDesc, Serializable {
   public static final String SCHEMA =
       "role,grant_option,grant_time,grantor#" +
       "string:boolean:bigint:string";
-
-  static {
-    DDLTask2.registerOperation(ShowRoleGrantDesc.class, ShowRoleGrantOperation.class);
-  }
 
   private final String name;
   private final PrincipalType principalType;

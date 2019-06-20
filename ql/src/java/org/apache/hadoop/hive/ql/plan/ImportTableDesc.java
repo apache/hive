@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.view.CreateViewDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -327,9 +327,9 @@ public class ImportTableDesc {
       HiveConf conf) {
     switch (getDescType()) {
     case TABLE:
-      return TaskFactory.get(new DDLWork2(inputs, outputs, createTblDesc), conf);
+      return TaskFactory.get(new DDLWork(inputs, outputs, createTblDesc), conf);
     case VIEW:
-      return TaskFactory.get(new DDLWork2(inputs, outputs, createViewDesc), conf);
+      return TaskFactory.get(new DDLWork(inputs, outputs, createViewDesc), conf);
     }
     return null;
   }

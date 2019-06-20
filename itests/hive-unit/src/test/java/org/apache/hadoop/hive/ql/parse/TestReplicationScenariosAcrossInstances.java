@@ -978,7 +978,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     CommandProcessorResponse response =
         replica.runCommand("REPL LOAD someJunkDB from '" + tuple.dumpLocation + "'");
     assertTrue(response.getErrorMessage().toLowerCase()
-        .contains("org.apache.hadoop.hive.ql.ddl.DDLTask2. Database does not exist: someJunkDB"
+        .contains("org.apache.hadoop.hive.ql.ddl.DDLTask. Database does not exist: someJunkDB"
             .toLowerCase()));
 
     // Bootstrap load from an empty dump directory should return empty load directory error.

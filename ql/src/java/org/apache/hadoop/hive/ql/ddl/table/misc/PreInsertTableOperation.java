@@ -28,12 +28,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of pre inserting a table.
  */
-public class PreInsertTableOperation extends DDLOperation {
-  private final PreInsertTableDesc desc;
-
+public class PreInsertTableOperation extends DDLOperation<PreInsertTableDesc> {
   public PreInsertTableOperation(DDLOperationContext context, PreInsertTableDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

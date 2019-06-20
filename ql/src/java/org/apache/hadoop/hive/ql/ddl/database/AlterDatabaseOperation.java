@@ -32,12 +32,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of altering a database.
  */
-public class AlterDatabaseOperation extends DDLOperation {
-  private final AlterDatabaseDesc desc;
-
+public class AlterDatabaseOperation extends DDLOperation<AlterDatabaseDesc> {
   public AlterDatabaseOperation(DDLOperationContext context, AlterDatabaseDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

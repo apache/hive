@@ -21,10 +21,8 @@ package org.apache.hadoop.hive.ql.ddl.database;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
-
 
 /**
  * DDL task description for SHOW CREATE DATABASE commands.
@@ -34,10 +32,6 @@ public class ShowCreateDatabaseDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
   public static final String SCHEMA = "createdb_stmt#string";
-
-  static {
-    DDLTask2.registerOperation(ShowCreateDatabaseDesc.class, ShowCreateDatabaseOperation.class);
-  }
 
   private final String resFile;
   private final String dbName;

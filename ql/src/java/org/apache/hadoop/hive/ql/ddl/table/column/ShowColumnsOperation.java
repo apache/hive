@@ -41,12 +41,9 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 /**
  * Operation process of showing the columns.
  */
-public class ShowColumnsOperation extends DDLOperation {
-  private final ShowColumnsDesc desc;
-
+public class ShowColumnsOperation extends DDLOperation<ShowColumnsDesc> {
   public ShowColumnsOperation(DDLOperationContext context, ShowColumnsDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

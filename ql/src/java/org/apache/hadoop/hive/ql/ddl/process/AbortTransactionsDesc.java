@@ -21,7 +21,6 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -31,10 +30,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Abort Transaction", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class AbortTransactionsDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(AbortTransactionsDesc.class, AbortTransactionsOperation.class);
-  }
 
   private final List<Long> transactionIds;
 

@@ -33,14 +33,11 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 /**
  * Operation process of creating a database.
  */
-public class CreateDatabaseOperation extends DDLOperation {
+public class CreateDatabaseOperation extends DDLOperation<CreateDatabaseDesc> {
   private static final String DATABASE_PATH_SUFFIX = ".db";
 
-  private final CreateDatabaseDesc desc;
-
   public CreateDatabaseOperation(DDLOperationContext context, CreateDatabaseDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

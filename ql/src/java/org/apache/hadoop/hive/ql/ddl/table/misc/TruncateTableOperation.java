@@ -37,12 +37,9 @@ import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 /**
  * Operation process of truncating a table.
  */
-public class TruncateTableOperation extends DDLOperation {
-  private final TruncateTableDesc desc;
-
+public class TruncateTableOperation extends DDLOperation<TruncateTableDesc> {
   public TruncateTableOperation(DDLOperationContext context, TruncateTableDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -49,10 +48,6 @@ import org.slf4j.LoggerFactory;
 public class CreateViewDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
   private static final Logger LOG = LoggerFactory.getLogger(CreateViewDesc.class);
-
-  static {
-    DDLTask2.registerOperation(CreateViewDesc.class, CreateViewOperation.class);
-  }
 
   private String viewName;
   private List<FieldSchema> schema;

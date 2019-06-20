@@ -31,4 +31,4 @@ PREHOOK: query: drop view cmv_mat_view
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@cmv_mat_view
 PREHOOK: Output: default@cmv_mat_view
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Cannot drop a materialized view with DROP VIEW
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Cannot drop a materialized view with DROP VIEW

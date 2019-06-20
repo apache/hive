@@ -31,8 +31,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 /**
  * Operation process of turning of skewing.
  */
-public class AlterTableNotSkewedOperation extends AbstractAlterTableOperation {
-
+public class AlterTableNotSkewedOperation extends AbstractAlterTableOperation<AlterTableNotSkewedDesc> {
   public AlterTableNotSkewedOperation(DDLOperationContext context, AlterTableNotSkewedDesc desc) {
     super(context, desc);
   }

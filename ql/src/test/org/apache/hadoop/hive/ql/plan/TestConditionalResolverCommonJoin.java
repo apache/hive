@@ -22,7 +22,7 @@ import org.junit.Assert;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.ddl.DDLTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.junit.Test;
 
@@ -49,9 +49,9 @@ public class TestConditionalResolverCommonJoin {
     aliasToKnownSize.put("alias2", 2048l);
     aliasToKnownSize.put("alias3", 4096l);
 
-    DDLTask2 task1 = new DDLTask2();
+    DDLTask task1 = new DDLTask();
     task1.setId("alias2");
-    DDLTask2 task2 = new DDLTask2();
+    DDLTask task2 = new DDLTask();
     task2.setId("alias3");
 
     // joins alias1, alias2, alias3 (alias1 was not eligible for big pos)

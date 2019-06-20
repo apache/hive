@@ -31,8 +31,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 /**
  * Operation process of turning off clustering.
  */
-public class AlterTableNotClusteredOperation extends AbstractAlterTableOperation {
-
+public class AlterTableNotClusteredOperation extends AbstractAlterTableOperation<AlterTableNotClusteredDesc> {
   public AlterTableNotClusteredOperation(DDLOperationContext context, AlterTableNotClusteredDesc desc) {
     super(context, desc);
   }

@@ -27,12 +27,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 /**
  * Operation process of altering a workload management mapping.
  */
-public class AlterWMMappingOperation extends DDLOperation {
-  private final AlterWMMappingDesc desc;
-
+public class AlterWMMappingOperation extends DDLOperation<AlterWMMappingDesc> {
   public AlterWMMappingOperation(DDLOperationContext context, AlterWMMappingDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

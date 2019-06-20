@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.ddl.DDLWork2;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -35,15 +35,15 @@ import org.junit.Assert;
  */
 public class AuthorizationTestUtil {
 
-  public static DDLWork2 analyze(ASTNode ast, QueryState queryState, Hive db) throws Exception {
+  public static DDLWork analyze(ASTNode ast, QueryState queryState, Hive db) throws Exception {
     DDLSemanticAnalyzer analyzer = new DDLSemanticAnalyzer(queryState, db);
     SessionState.start(queryState.getConf());
     analyzer.analyze(ast, new Context(queryState.getConf()));
     List<Task<?>> rootTasks = analyzer.getRootTasks();
-    return (DDLWork2) inList(rootTasks).ofSize(1).get(0).getWork();
+    return (DDLWork) inList(rootTasks).ofSize(1).get(0).getWork();
   }
 
-  public static DDLWork2 analyze(String command, QueryState queryState, Hive db) throws Exception {
+  public static DDLWork analyze(String command, QueryState queryState, Hive db) throws Exception {
     return analyze(parse(command), queryState, db);
   }
 

@@ -35,12 +35,9 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRoleGrant;
 /**
  * Operation process of showing the role grants.
  */
-public class ShowRoleGrantOperation extends DDLOperation {
-  private final ShowRoleGrantDesc desc;
-
+public class ShowRoleGrantOperation extends DDLOperation<ShowRoleGrantDesc> {
   public ShowRoleGrantOperation(DDLOperationContext context, ShowRoleGrantDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

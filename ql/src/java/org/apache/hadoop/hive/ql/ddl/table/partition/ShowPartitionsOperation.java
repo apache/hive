@@ -32,12 +32,9 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 /**
  * Operation process of showing the partitions of a table.
  */
-public class ShowPartitionsOperation extends DDLOperation {
-  private final ShowPartitionsDesc desc;
-
+public class ShowPartitionsOperation extends DDLOperation<ShowPartitionsDesc> {
   public ShowPartitionsOperation(DDLOperationContext context, ShowPartitionsDesc desc) {
-    super(context);
-    this.desc = desc;
+    super(context, desc);
   }
 
   @Override

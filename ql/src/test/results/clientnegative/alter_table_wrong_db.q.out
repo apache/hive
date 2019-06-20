@@ -22,4 +22,4 @@ PREHOOK: query: alter table bad_rename1.rename1 rename to bad_db_notexists.renam
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: bad_rename1@rename1
 PREHOOK: Output: bad_rename1@rename1
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. Unable to alter table. Unable to change partition or table. Object bad_db_notexists does not exist. Check metastore logs for detailed stack.
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Unable to alter table. Unable to change partition or table. Object bad_db_notexists does not exist. Check metastore logs for detailed stack.

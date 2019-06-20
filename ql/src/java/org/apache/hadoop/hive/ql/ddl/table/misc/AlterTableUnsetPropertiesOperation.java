@@ -32,12 +32,9 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 /**
  * Operation process of unsetting properties of a table.
  */
-public class AlterTableUnsetPropertiesOperation extends AbstractAlterTableOperation {
-  private final AlterTableUnsetPropertiesDesc desc;
-
+public class AlterTableUnsetPropertiesOperation extends AbstractAlterTableOperation<AlterTableUnsetPropertiesDesc> {
   public AlterTableUnsetPropertiesOperation(DDLOperationContext context, AlterTableUnsetPropertiesDesc desc) {
     super(context, desc);
-    this.desc = desc;
   }
 
   @Override

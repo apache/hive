@@ -31,12 +31,9 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 /**
  * Operation process of setting the file format.
  */
-public class AlterTableSetFileFormatOperation extends AbstractAlterTableOperation {
-  private final AlterTableSetFileFormatDesc desc;
-
+public class AlterTableSetFileFormatOperation extends AbstractAlterTableOperation<AlterTableSetFileFormatDesc> {
   public AlterTableSetFileFormatOperation(DDLOperationContext context, AlterTableSetFileFormatDesc desc) {
     super(context, desc);
-    this.desc = desc;
   }
 
   @Override

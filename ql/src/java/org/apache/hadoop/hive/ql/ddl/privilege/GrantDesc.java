@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
-import org.apache.hadoop.hive.ql.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -33,10 +32,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Grant", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class GrantDesc implements DDLDesc, Serializable, Cloneable {
   private static final long serialVersionUID = 1L;
-
-  static {
-    DDLTask2.registerOperation(GrantDesc.class, GrantOperation.class);
-  }
 
   private final PrivilegeObjectDesc privilegeSubject;
   private final List<PrivilegeDesc> privileges;

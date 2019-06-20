@@ -47,12 +47,9 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 /**
  * Operation process of running some alter table command that requires write id.
  */
-public abstract class AbstractAlterTableOperation extends DDLOperation {
-  private final AbstractAlterTableDesc desc;
-
-  public AbstractAlterTableOperation(DDLOperationContext context, AbstractAlterTableDesc desc) {
-    super(context);
-    this.desc = desc;
+public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDesc> extends DDLOperation<T> {
+  public AbstractAlterTableOperation(DDLOperationContext context, T desc) {
+    super(context, desc);
   }
 
   protected EnvironmentContext environmentContext;
