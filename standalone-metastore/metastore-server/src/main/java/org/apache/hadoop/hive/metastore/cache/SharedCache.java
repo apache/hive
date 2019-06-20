@@ -203,8 +203,6 @@ public class SharedCache {
                 byte[] sdHash = tblWrapper.getSdHash();
                 if (sdHash != null) {
                   decrSd(sdHash);
-                  LOG.info("decr SD called for " + notification.getKey());
-                  LOG.info("decr SD called for " + notification.getValue().getSdHash());
                 }
               }
             }
