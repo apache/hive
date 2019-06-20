@@ -60,6 +60,7 @@ public class ReplChangeManager {
   private static final String URI_FRAGMENT_SEPARATOR = "#";
   public static final String SOURCE_OF_REPLICATION = "repl.source.for";
   private static final String TXN_WRITE_EVENT_FILE_SEPARATOR = "]";
+  static final String CM_THREAD_NAME_PREFIX = "cmclearer-";
 
   public enum RecycleType {
     MOVE,
@@ -457,7 +458,7 @@ public class ReplChangeManager {
     if (MetastoreConf.getBoolVar(conf, ConfVars.REPLCMENABLED)) {
       ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(
           new BasicThreadFactory.Builder()
-          .namingPattern("cmclearer-%d")
+          .namingPattern(CM_THREAD_NAME_PREFIX + "%d")
           .daemon(true)
           .build());
       executor.scheduleAtFixedRate(new CMClearer(MetastoreConf.getVar(conf, ConfVars.REPLCMDIR),

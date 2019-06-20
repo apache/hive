@@ -609,22 +609,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         partitionValidationPattern = null;
       }
 
-      // We only initialize once the tasks that need to be run periodically
-      if (alwaysThreadsInitialized.compareAndSet(false, true)) {
-        ThreadPool.initialize(conf);
-        Collection<String> taskNames =
-            MetastoreConf.getStringCollection(conf, ConfVars.TASK_THREADS_ALWAYS);
-        for (String taskName : taskNames) {
-          MetastoreTaskThread task =
-              JavaUtils.newInstance(JavaUtils.getClass(taskName, MetastoreTaskThread.class));
-          task.setConf(conf);
-          long freq = task.runFrequency(TimeUnit.MILLISECONDS);
-          // For backwards compatibility, since some threads used to be hard coded but only run if
-          // frequency was > 0
-          if (freq > 0) {
-            ThreadPool.getPool().scheduleAtFixedRate(task, freq, freq, TimeUnit.MILLISECONDS);
-          }
-        }
+      // We only initialize once the tasks that need to be run periodically. For remote metastore
+      // these threads are started along with the other housekeeping threads only in the leader
+      // HMS.
+      String leaderHost = MetastoreConf.getVar(conf,
+              MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_HOSTNAME);
+      if (!isMetaStoreRemote() && ((leaderHost == null) || leaderHost.trim().isEmpty())) {
+        startAlwaysTaskThreads(conf);
+      } else if (!isMetaStoreRemote()) {
+        LOG.info("Not starting tasks specified by " + ConfVars.TASK_THREADS_ALWAYS.getVarname() +
+                " since " + leaderHost + " is configured to run these tasks.");
       }
       expressionProxy = PartFilterExprUtil.createExpressionProxy(conf);
       fileMetadataManager = new FileMetadataManager(this.getMS(), conf);
@@ -650,6 +644,27 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           | IllegalArgumentException | InvocationTargetException e) {
         LOG.error("Unable to create instance of class " + className, e);
         throw new IllegalArgumentException(e);
+      }
+    }
+
+    private static void startAlwaysTaskThreads(Configuration conf) throws MetaException {
+      if (alwaysThreadsInitialized.compareAndSet(false, true)) {
+        ThreadPool.initialize(conf);
+        Collection<String> taskNames =
+                MetastoreConf.getStringCollection(conf, ConfVars.TASK_THREADS_ALWAYS);
+        for (String taskName : taskNames) {
+          MetastoreTaskThread task =
+                  JavaUtils.newInstance(JavaUtils.getClass(taskName, MetastoreTaskThread.class));
+          task.setConf(conf);
+          long freq = task.runFrequency(TimeUnit.MILLISECONDS);
+          LOG.info("Scheduling for " + task.getClass().getCanonicalName() + " service with " +
+                  "frequency " + freq + "ms.");
+          // For backwards compatibility, since some threads used to be hard coded but only run if
+          // frequency was > 0
+          if (freq > 0) {
+            ThreadPool.getPool().scheduleAtFixedRate(task, freq, freq, TimeUnit.MILLISECONDS);
+          }
+        }
       }
     }
 
@@ -9723,7 +9738,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Lock startLock = new ReentrantLock();
       Condition startCondition = startLock.newCondition();
       AtomicBoolean startedServing = new AtomicBoolean();
-      startMetaStoreThreads(conf, startLock, startCondition, startedServing);
       startMetaStore(cli.getPort(), HadoopThriftAuthBridge.getBridge(), conf, startLock,
           startCondition, startedServing);
     } catch (Throwable t) {
@@ -9928,6 +9942,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     HMSHandler.LOG.info("Direct SQL optimization = {}",  directSqlEnabled);
 
     if (startLock != null) {
+      startMetaStoreThreads(conf, startLock, startCondition, startedServing,
+                isMetastoreHousekeepingLeader(conf, getServerHostName()));
       signalOtherThreadsToStart(tServer, startLock, startCondition, startedServing);
     }
 
@@ -9950,6 +9966,23 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     tServer.serve();
   }
 
+  private static boolean isMetastoreHousekeepingLeader(Configuration conf, String serverHost) {
+    String leaderHost =
+            MetastoreConf.getVar(conf,
+                    MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_HOSTNAME);
+
+    // For the sake of backward compatibility, when the current HMS becomes the leader when no
+    // leader is specified.
+    if (leaderHost == null || leaderHost.isEmpty()) {
+      LOG.info(ConfVars.METASTORE_HOUSEKEEPING_LEADER_HOSTNAME + " is empty. Start all the " +
+              "housekeeping threads.");
+      return true;
+    }
+
+    LOG.info(ConfVars.METASTORE_HOUSEKEEPING_LEADER_HOSTNAME + " is set to " + leaderHost);
+    return leaderHost.trim().equals(serverHost);
+  }
+
   /**
    * @param port where metastore server is running
    * @return metastore server instance URL. If the metastore server was bound to a configured
@@ -9958,13 +9991,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    * @throws Exception
    */
   private static String getServerInstanceURI(int port) throws Exception {
-    String hostName;
+    return getServerHostName() + ":" + port;
+  }
+
+  private static String getServerHostName() throws Exception {
     if (msHost != null && !msHost.trim().isEmpty()) {
-      hostName = msHost;
+      return msHost.trim();
     } else {
-      hostName = InetAddress.getLocalHost().getHostName();
+      return InetAddress.getLocalHost().getHostName();
     }
-    return hostName + ":" + port;
   }
 
   private static void cleanupRawStore() {
@@ -10014,14 +10049,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     t.start();
   }
 
-
   /**
    * Start threads outside of the thrift service, such as the compactor threads.
    * @param conf Hive configuration object
+   * @param isLeader true if this metastore is a leader. Most of the housekeeping threads are
+   *                 started only in a leader HMS.
    */
   private static void startMetaStoreThreads(final Configuration conf, final Lock startLock,
                                             final Condition startCondition, final
-                                            AtomicBoolean startedServing) {
+                                            AtomicBoolean startedServing, boolean isLeader) {
     // A thread is spun up to start these other threads.  That's because we can't start them
     // until after the TServer has started, but once TServer.serve is called we aren't given back
     // control.
@@ -10050,13 +10086,21 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           while (!startedServing.get()) {
             startCondition.await();
           }
-          startCompactorInitiator(conf);
+
+          if (isLeader) {
+            startCompactorInitiator(conf);
+            startCompactorCleaner(conf);
+            startRemoteOnlyTasks(conf);
+            startStatsUpdater(conf);
+            HiveMetaStore.HMSHandler.startAlwaysTaskThreads(conf);
+          }
+
+          // The leader HMS may not necessarily have sufficient compute capacity required to run
+          // actual compaction work. So it can run on a non-leader HMS with sufficient capacity
+          // or a configured HS2 instance.
           if (MetastoreConf.getVar(conf, MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN).equals("metastore")) {
             startCompactorWorkers(conf);
           }
-          startCompactorCleaner(conf);
-          startRemoteOnlyTasks(conf);
-          startStatsUpdater(conf);
         } catch (Throwable e) {
           LOG.error("Failure when starting the compactor, compactions may not happen, " +
               StringUtils.stringifyException(e));
@@ -10064,7 +10108,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           startLock.unlock();
         }
 
-        ReplChangeManager.scheduleCMClearer(conf);
+        if (isLeader) {
+          ReplChangeManager.scheduleCMClearer(conf);
+        }
       }
     };
     t.setDaemon(true);
@@ -10141,6 +10187,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           JavaUtils.newInstance(JavaUtils.getClass(taskName, MetastoreTaskThread.class));
       task.setConf(conf);
       long freq = task.runFrequency(TimeUnit.MILLISECONDS);
+      LOG.info("Scheduling for " + task.getClass().getCanonicalName() + " service.");
       ThreadPool.getPool().scheduleAtFixedRate(task, freq, freq, TimeUnit.MILLISECONDS);
     }
   }
