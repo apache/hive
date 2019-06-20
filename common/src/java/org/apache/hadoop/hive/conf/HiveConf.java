@@ -5756,6 +5756,8 @@ public class HiveConf extends Configuration {
     "hive\\.strict\\..*",
     "hive\\.tez\\..*",
     "hive\\.vectorized\\..*",
+    "hive\\.query\\.reexecution\\..*",
+    "reexec\\.overlay\\..*",
     "fs\\.defaultFS",
     "ssl\\.client\\.truststore\\.location",
     "distcp\\.atomic",
